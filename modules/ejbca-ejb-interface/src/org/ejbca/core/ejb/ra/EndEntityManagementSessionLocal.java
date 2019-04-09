@@ -48,17 +48,6 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * @return true if caid exists in UserData table.
      */
     boolean checkForCAId(int caid);
-
-   
-    /**
-     * Methods that checks if a user exists in the database having the given
-     * HardTokenProfile id. This function is mainly for avoiding
-     * desynchronization when a HardTokenProfile is deleted.
-     * 
-     * @param profileid of HardTokenProfile to look for.
-     * @return true if profileid exists in UserData table.
-     */
-    boolean checkForHardTokenProfileId(int profileid);
     
     /**
      * Removes the certificate serial number from the user data.

@@ -13,10 +13,6 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +47,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the hard token related entity beans.
  * 
@@ -82,17 +82,20 @@ public class HardTokenSessionTest extends CaTestCase {
         
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
 
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }

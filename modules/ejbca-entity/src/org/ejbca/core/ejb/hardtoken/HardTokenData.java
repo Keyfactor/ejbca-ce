@@ -52,7 +52,6 @@ public class HardTokenData extends ProtectedData implements Serializable {
 	private String username;
 	private long cTime;
 	private long mTime;
-	private int tokenType;
 	private String significantIssuerDN;
 	private Serializable data;
 	private int rowVersion = 0;
@@ -61,12 +60,11 @@ public class HardTokenData extends ProtectedData implements Serializable {
 	/**
 	 * Entity holding data of a hard token issuer.
 	 */
-	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, LinkedHashMap<?, ?> data) {
+	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, String significantissuerdn, LinkedHashMap<?, ?> data) {
 		setTokenSN(tokensn);
 		setUsername(username);
 		setCtime(createtime.getTime());
 		setMtime(modifytime.getTime());
-		setTokenType(tokentype);
 		setSignificantIssuerDN(significantissuerdn);
 		setData(data);
 		log.debug("Created Hard Token "+ tokensn );
@@ -89,11 +87,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
 	//@Column
 	public long getMtime() { return mTime; } 
 	public void setMtime(long modifyTime) { this.mTime = modifyTime; }
-
-	//@Column
-	public int getTokenType() { return tokenType; }
-	public void setTokenType(int tokenType) { this.tokenType = tokenType; }
-
+	
 	//@Column
 	public String getSignificantIssuerDN() { return significantIssuerDN; }
 	public void setSignificantIssuerDN(String significantIssuerDN) { this.significantIssuerDN = significantIssuerDN; }
@@ -136,7 +130,12 @@ public class HardTokenData extends ProtectedData implements Serializable {
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getTokenSN()).append(getUsername()).append(getCtime()).append(getMtime()).append(getTokenType()).append(getSignificantIssuerDN());
+        build.append(getTokenSN())
+            .append(getUsername())
+            .append(getCtime())
+            .append(getMtime())
+            .append(getSignificantIssuerDN());
+        
         LinkedHashMap<?, ?> data = getData();
         // We must have special handling here if the data is encrypted because the byte[] is a binary byte array 
         // in this case, when doing getData().toString in this case a reference to the byte array is printed, and 

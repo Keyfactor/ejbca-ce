@@ -755,20 +755,11 @@
     int[] tokenids = RAInterfaceBean.tokenids;
 
     if (globalconfiguration.getIssueHardwareTokens()) {
-        TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getHardTokenProfiles();
-
-        tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
+        tokentexts = new String[RAInterfaceBean.tokentexts.length];
         tokenids = new int[tokentexts.length];
         for (int i = 0; i < RAInterfaceBean.tokentexts.length; i++) {
  			tokentexts[i] = RAInterfaceBean.tokentexts[i];
    			tokenids[i] = RAInterfaceBean.tokenids[i];
-        }
-
-        int index = 0;
-        for(String name : hardtokenprofiles.keySet()) {
-    		tokentexts[index + RAInterfaceBean.tokentexts.length] = name;
-    		tokenids[index + RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
-    		index++;
         }
     }
 
@@ -792,10 +783,7 @@
             HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(Integer
                     .parseInt(availablehardtokenissuers[j]));
             if (issuerdata != null) {
-                for(Integer value : issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles()) {                        
-                    if (Integer.parseInt(availabletokens[i]) == value.intValue())
-                        tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
-                }
+                tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
             }
         }
     }

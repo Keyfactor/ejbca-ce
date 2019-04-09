@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.rainterface;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.TreeMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -102,32 +101,22 @@ public class ViewEndEntityHelper implements Serializable{
     /**
      * Method that initialized the bean.
      */
-    public void initialize(EjbcaWebBean ejbcawebbean,
-    		               RAInterfaceBean rabean, CAInterfaceBean cabean) throws Exception {
+    public void initialize(EjbcaWebBean ejbcawebbean, RAInterfaceBean rabean, CAInterfaceBean cabean) throws Exception {
 
-      if(!initialized){
-
+      if(!initialized) {
         this.rabean = rabean;
         this.ejbcawebbean = ejbcawebbean;
         this.cabean = cabean;
         initialized = true;
         
         if (ejbcawebbean.getGlobalConfiguration().getIssueHardwareTokens()){
-            final TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getHardTokenProfiles();
-            tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
+            tokentexts = new String[RAInterfaceBean.tokentexts.length];
             tokenids   = new int[tokentexts.length];
             for (int i=0; i < RAInterfaceBean.tokentexts.length; i++){
               tokentexts[i]= RAInterfaceBean.tokentexts[i];
               tokenids[i] = RAInterfaceBean.tokenids[i];
             }
-            int index=0;
-            for (String name : hardtokenprofiles.keySet()) {
-              tokentexts[index+RAInterfaceBean.tokentexts.length] = name;
-              tokenids[index+RAInterfaceBean.tokentexts.length] = hardtokenprofiles.get(name).intValue();
-              index++;
-            }
          }
-		
       }
     }
     

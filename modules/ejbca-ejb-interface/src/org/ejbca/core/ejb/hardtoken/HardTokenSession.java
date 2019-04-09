@@ -15,21 +15,15 @@ package org.ejbca.core.ejb.hardtoken;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
-import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
-import org.ejbca.core.model.hardtoken.UnavailableTokenException;
-import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 
 /** Session bean for managing hard tokens, hard token profiles and hard token issuers. 
@@ -38,78 +32,7 @@ import org.ejbca.core.model.hardtoken.types.HardToken;
  * @version $Id$
  */
 public interface HardTokenSession {
-
-	/**
-     * Adds a hard token profile to the database.
-     * @throws HardTokenProfileExistsException if hard token already exists.
-	 * @throws AuthorizationDeniedException 
-     */
-    void addHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException;
-
-    /**
-     * Adds a hard token profile to the database. Used for importing and
-     * exporting profiles from xml-files.
-     * 
-     * @throws HardTokenProfileExistsException if hard token already exists.
-     * @throws AuthorizationDeniedException 
-     */
-    void addHardTokenProfile(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException;
-
-    /** Updates hard token profile data. 
-     * @throws AuthorizationDeniedException */
-    void changeHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws AuthorizationDeniedException;
-
-    /**
-     * Adds a hard token profile with the same content as the original profile,
-     * @throws HardTokenProfileExistsException if hard token already exists.
-     * @throws AuthorizationDeniedException 
-     */
-    void cloneHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException;
-
-    /** Removes a hard token profile from the database. 
-     * @throws AuthorizationDeniedException */
-    void removeHardTokenProfile(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
-
-    /**
-     * Renames a hard token profile
-     * @throws HardTokenProfileExistsException if hard token already exists.
-     * @throws AuthorizationDeniedException 
-     */
-    void renameHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException;
-
-    /**
-     * Retrieves a Collection of id:s (Integer) to authorized profiles.
-     * Authorized hard token profiles are profiles containing only authorized
-     * certificate profiles and caids.
-     * 
-     * @return Collection of id:s (Integer)
-     */
-    Collection<Integer> getAuthorizedHardTokenProfileIds(AuthenticationToken admin);
-
-    /** @return a mapping of profile id (Integer) to profile name (String). */
-    HashMap<Integer, String> getHardTokenProfileIdToNameMap();
-
-    /** Retrieves a named hard token profile. */
-    HardTokenProfile getHardTokenProfile(String name);
-
-    /** Finds a hard token profile by id. */
-    HardTokenProfile getHardTokenProfile(int id);
-
-    /**
-     * Help method used by hard token profile proxys to indicate if it is time
-     * to update it's profile data.
-     */
-    int getHardTokenProfileUpdateCount(int hardtokenprofileid);
-
-    /** @return a hard token profile id from it's name or 0 if it can't be found. */
-    int getHardTokenProfileId(String name);
-
-    /**
-     * Returns a hard token profile name given its id.
-     * @return the name or null if id doesn't exist
-     */
-    String getHardTokenProfileName(int id);
-
+    
     /**
      * Adds a hard token issuer to the database.
      * @return false if hard token issuer already exists.
@@ -197,20 +120,7 @@ public interface HardTokenSession {
 
     /** @return the alias or null if id doesn't exist. */
     String getHardTokenIssuerAlias(int id);
-
-    /**
-     * Checks if a hard token profile is among a hard tokens issuers available
-     * token types.
-     * 
-     * @param admin the administrator calling the function
-     * @param issuerid the id of the issuer to check.
-     * @param userdata the data of user about to be generated
-     * @throws UnavailableTokenException
-     *             if users tokentype isn't among hard token issuers available
-     *             tokentypes.
-     */
-    void getIsHardTokenProfileAvailableToIssuer(int issuerid, EndEntityInformation userdata) throws UnavailableTokenException;
-
+    
     /**
      * Adds a hard token to the database
      * 
@@ -225,7 +135,7 @@ public interface HardTokenSession {
      * @throws HardTokenExistsException if tokensn already exists in database.
      */
     void addHardToken(AuthenticationToken admin, String tokensn, String username, String significantissuerdn,
-            int tokentype, HardToken hardtokendata, Collection<Certificate> certificates, String copyof)
+            HardToken hardtokendata, Collection<Certificate> certificates, String copyof)
             throws HardTokenExistsException;
 
     /**
@@ -237,7 +147,7 @@ public interface HardTokenSession {
      * @throws HardTokenDoesntExistsException
      *             if tokensn does not exist in database.
      */
-    void changeHardToken(AuthenticationToken admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException;
+    void changeHardToken(AuthenticationToken admin, String tokensn, HardToken hardtokendata) throws HardTokenDoesntExistsException;
 
     /**
      * Removes a hard token data from the database.
@@ -341,23 +251,5 @@ public interface HardTokenSession {
      *            indicates which CA the hard token should belong to.
      */
     void errorWhenGeneratingToken(AuthenticationToken admin, String tokensn, String username, String significantissuerdn);
-
-    /**
-     * Method to check if a certificate profile exists in any of the hard token
-     * profiles. Used to avoid desynchronization of certificate profile data.
-     * 
-     * @param certificateProfileId the CertificateProfile id to search for.
-     * @return a {@link List} of hard token profile names 
-     */
-    List<String> getHardTokenProfileUsingCertificateProfile(int certificateProfileId);
-
-    /**
-     * Method to check if a hard token profile exists in any of the hard token
-     * issuers. Used to avoid desynchronization of hard token profile data.
-     * 
-     * @param id the hard token profile id to search for.
-     * @return true if hard token profile id exists in any of the hard token
-     *         issuers.
-     */
-    boolean existsHardTokenProfileInHardTokenIssuer(int id);
+    
 }

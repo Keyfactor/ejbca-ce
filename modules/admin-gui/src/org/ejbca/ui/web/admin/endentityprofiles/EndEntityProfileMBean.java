@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -770,17 +769,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setDefaultCA(defaultCa);
     }
 
-    public List<SelectItem> getAllHardTokenProfiles() {
-        final List<SelectItem> selectItems = new ArrayList<>();
-        final HashMap<Integer,String> hardTokens = hardTokenSession.getHardTokenProfileIdToNameMap();
-        for (final Map.Entry<Integer,String> entry : hardTokens.entrySet()) {
-            final int hardTokenProfileId = entry.getKey();
-            final String hardTokenProfileName = entry.getValue();
-            selectItems.add(new SelectItem(hardTokenProfileId, hardTokenProfileName));
-        }
-        return selectItems;
-    }
-
     public List<SelectItem> getAllTokenTypes() {
         final String[] tokenString = SecConst.TOKENTEXTS;
         final int[] tokenIds = SecConst.TOKENIDS;
@@ -790,9 +778,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             final String tokenLanguageString = tokenString[stringElement];
             final String displayText = ejbcaWebBean.getText(tokenLanguageString);
             selectItems.add(new SelectItem(tokenTypeId, displayText));
-        }
-        if (isHardTokenIssuerSystemConfigured()) {
-            selectItems.addAll(getAllHardTokenProfiles());
         }
         return selectItems;
     }

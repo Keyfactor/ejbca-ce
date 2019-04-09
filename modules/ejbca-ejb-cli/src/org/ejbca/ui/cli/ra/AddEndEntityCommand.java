@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli.ra;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -295,15 +294,12 @@ public class AddEndEntityCommand extends BaseRaCommand {
      */
     private int getTokenId(String tokenname, boolean usehardtokens, HardTokenSessionRemote hardtokensession) {
         int returnval = 0;
-        // First check for soft token type
+        
         for (int i = 0; i < SOFT_TOKEN_NAMES.length; i++) {
             if (SOFT_TOKEN_NAMES[i].equals(tokenname)) {
                 returnval = SOFT_TOKEN_IDS[i];
                 break;
             }
-        }
-        if (returnval == 0 && usehardtokens) {
-            returnval = hardtokensession.getHardTokenProfileId(tokenname);
         }
         return returnval;
     }
@@ -333,15 +329,8 @@ public class AddEndEntityCommand extends BaseRaCommand {
         }
         sb.append("Existing certificate profiles: " + existingCps + "\n");
 
-        StringBuilder hardTokenString = new StringBuilder();
-        HashMap<Integer, String> hardtokenprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class)
-                .getHardTokenProfileIdToNameMap();
-        for (Integer id : EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class).getAuthorizedHardTokenProfileIds(
-                getAuthenticationToken())) {
-            hardTokenString.append((hardTokenString.length() == 0 ? "" : ", ") + hardtokenprofileidtonamemap.get(id));
-        }
-
-        sb.append("Existing tokens: " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + ", " + hardTokenString + "\n");
+        
+        sb.append("Existing tokens: " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + ", \n");
 
         StringBuilder existingEeps = new StringBuilder();
         Map<Integer, String> endentityprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)

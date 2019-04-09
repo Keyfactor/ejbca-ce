@@ -41,8 +41,7 @@ org.ejbca.util.HTMLTools
        final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
        final String HT_EDITHARDTOKENISSUERS_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
                                + "/hardtokenissuerspage.xhtml";
-       final String HT_EDITHARDTOKENPROFILES_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
-                               + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
+       
        final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
        final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()  + "/systemconfiguration.xhtml";
        final String UPGRADE_LINK             =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "upgrade.xhtml";
@@ -70,7 +69,6 @@ org.ejbca.util.HTMLTools
        final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
        final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
        final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
-       final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
        final String APPROVALPROFILEVIEW_RESOURCE           = StandardRules.APPROVALPROFILEVIEW.resource();
        final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
        final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.SYSTEMCONFIGURATION_VIEW.resource();
@@ -241,26 +239,16 @@ org.ejbca.util.HTMLTools
            <% } %>
 				<li><a href="<%= HT_EDITHARDTOKENISSUERS_LINK %>"><%=ejbcawebbean.getText("NAV_HARDTOKENISSUERS") %></a></li>
 <% } %>
-    <%
-     // If authorized to edit the hard token profiles then display related links.
-       if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
-           if(!htheaderprinted){
-               htheaderprinted=true;%> 
-		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
-			<ul>
-           <% } %>
-				<li><a href="<%= HT_EDITHARDTOKENPROFILES_LINK %>"><%=ejbcawebbean.getText("NAV_HARDTOKENPROFILES") %></a></li>
-<%     } %>
+     
 <%
 	if(htheaderprinted){
         out.write("</ul></li>"); 
       }
-%>
-<%
     }
+%>
 
    
-
+<%
    // --------------------------------------------------------------------------
    // SUPERVISION FUNCTIONS
 

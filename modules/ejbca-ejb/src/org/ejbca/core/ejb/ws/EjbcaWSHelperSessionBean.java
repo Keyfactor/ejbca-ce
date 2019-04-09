@@ -89,8 +89,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
-import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
-import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
@@ -553,35 +551,15 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             log.error("EJBCA WebService error, getHardToken: ", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
-
-        if (data.getHardToken() instanceof SwedishEIDHardToken) {
-            SwedishEIDHardToken ht = (SwedishEIDHardToken) data.getHardToken();
-            if (includePUK) {
-                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE, ht.getInitialSignaturePIN(), ht.getSignaturePUK()));
-                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialAuthEncPIN(), ht.getAuthEncPUK()));
-            }
-            retval.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
-            return retval;
+        
+        EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
+        retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
+        if (includePUK) {
+            retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE, ht.getInitialSignaturePIN(), ht.getSignaturePUK()));
+            retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialAuthPIN(), ht.getAuthPUK()));
         }
-        if (data.getHardToken() instanceof EnhancedEIDHardToken) {
-            EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
-            retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
-            if (includePUK) {
-                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE, ht.getInitialSignaturePIN(), ht.getSignaturePUK()));
-                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialAuthPIN(), ht.getAuthPUK()));
-            }
-            retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
-            return retval;
-        }
-        if (data.getHardToken() instanceof TurkishEIDHardToken) {
-            TurkishEIDHardToken ht = (TurkishEIDHardToken) data.getHardToken();
-            if (includePUK) {
-                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialPIN(), ht.getPUK()));
-            }
-            retval.setTokenType(HardTokenConstants.TOKENTYPE_TURKISHEID);
-            return retval;
-        }
-        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, "Error: only SwedishEIDHardToken, EnhancedEIDHardToken, TurkishEIDHardToken supported.");
+        retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
+        return retval;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -667,35 +645,27 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
     private int getTokenId(AuthenticationToken admin, String tokenname) {
         int returnval = 0;
-
-        // First check for soft token type
+        
         for (int i = 0; i < softtokennames.length; i++) {
             if (softtokennames[i].equals(tokenname)) {
                 returnval = softtokenids[i];
                 break;
             }
         }
-        if (returnval == 0) {
-            returnval = hardTokenSession.getHardTokenProfileId(tokenname);
-        }
-
+        
         return returnval;
     }
 
     private String getTokenName(int tokenid) {
         String returnval = null;
 
-        // First check for soft token type
         for (int i = 0; i < softtokenids.length; i++) {
             if (softtokenids[i] == tokenid) {
                 returnval = softtokennames[i];
                 break;
             }
         }
-        if (returnval == null) {
-            returnval = hardTokenSession.getHardTokenProfileName(tokenid);
-        }
-
+        
         return returnval;
     }
 

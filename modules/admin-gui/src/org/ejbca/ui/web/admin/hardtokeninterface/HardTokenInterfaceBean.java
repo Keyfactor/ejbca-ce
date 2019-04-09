@@ -26,16 +26,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
@@ -63,7 +59,6 @@ public class HardTokenInterfaceBean implements Serializable {
     private AuthenticationToken admin;
     private boolean initialized = false;
     private HardTokenView[] result;
-    private HardTokenProfileDataHandler hardtokenprofiledatahandler;
 
     /** Creates new LogInterfaceBean */
     public HardTokenInterfaceBean() {
@@ -80,15 +75,9 @@ public class HardTokenInterfaceBean implements Serializable {
             EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
             hardtokensession = ejbLocalHelper.getHardTokenSession();
             hardtokenbatchsession = ejbLocalHelper.getHardTokenBatchJobSession();
-            AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
-            EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
-            CertificateProfileSession certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
             keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
-            CaSessionLocal caSession = ejbLocalHelper.getCaSession();
             roleSession = new EjbLocalHelper().getRoleSession();
             initialized = true;
-            this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession,
-                    authorizationSession, endEntityManagementSession, caSession);
         }
     }
 
@@ -167,10 +156,6 @@ public class HardTokenInterfaceBean implements Serializable {
             roleIdToNameMap.put(role.getRoleId(), role.getRoleNameFull());
         }
         return roleIdToNameMap;
-    }
-    
-    public String getHardTokenProfileName(final int profileId) {
-        return hardtokensession.getHardTokenProfileName(profileId);
     }
     
     public List<Role> getHardTokenIssuingRoles() {
@@ -254,9 +239,5 @@ public class HardTokenInterfaceBean implements Serializable {
                 rabean.markForRecovery(username, x509cert);
             }
         }
-    }
-
-    public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {
-        return hardtokenprofiledatahandler;
     }
 }

@@ -433,16 +433,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                         + getAsCommaSeparatedString(endEntityProfilesReferencingCP));
             }
         }
-        // Check if certificate profile is in use by any hard token profile
-        if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
-            final List<String> hardTokenProfilesReferencingCP = getEjbcaWebBean().getEjb().getHardTokenSession()
-                    .getHardTokenProfileUsingCertificateProfile(certificateProfileId);
-            if (!hardTokenProfilesReferencingCP.isEmpty()) {
-                ret = false;
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CERTPROFILEUSEDINHARDTOKENPROFILES") + " "
-                        + getAsCommaSeparatedString(hardTokenProfilesReferencingCP));
-            }
-        }
+        
         if (certProfileType != CertificateConstants.CERTTYPE_ENDENTITY) {
             // Check if certificate profile is in use by any CA
             final List<String> casReferencingCP = getEjbcaWebBean().getEjb().getCaAdminSession().getCAsUsingCertificateProfile(certificateProfileId);

@@ -417,14 +417,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public long countByHardTokenProfileId(int hardTokenProfileId) {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.tokenType=:tokenType");
-        query.setParameter("tokenType", hardTokenProfileId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
     public long countNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId) {
         final javax.persistence.Query query = entityManager
                 .createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");

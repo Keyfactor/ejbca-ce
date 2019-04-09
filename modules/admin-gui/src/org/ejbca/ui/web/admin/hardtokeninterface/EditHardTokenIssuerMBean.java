@@ -14,12 +14,6 @@
 package org.ejbca.ui.web.admin.hardtokeninterface;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.faces.model.SelectItem;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
@@ -41,13 +35,11 @@ public class EditHardTokenIssuerMBean extends BaseManagedBean implements Seriali
         private String name;
         private String roleLabel;
         private String description;
-        private ArrayList<Integer> availableHardTokenProfiles;
 
-        public IssuerGui(String name, String roleLabel, String description, ArrayList<Integer> availableHardTokenProfiles) {
+        public IssuerGui(String name, String roleLabel, String description) {
             this.name = name;
             this.roleLabel = roleLabel;
             this.description = description;
-            this.availableHardTokenProfiles = availableHardTokenProfiles;
         }
 
         public String getRoleLabel() {
@@ -73,18 +65,6 @@ public class EditHardTokenIssuerMBean extends BaseManagedBean implements Seriali
         public void setDescription(String description) {
             this.description = description;
         }
-
-        public ArrayList<Integer> getAvailableHardTokenProfiles() {
-            return availableHardTokenProfiles;
-        }
-
-        public void setAvailableHardTokenProfiles(ArrayList<String> availableHardTokenProfiles) {
-            ArrayList<Integer> ap = new ArrayList<>();
-            for (String profile : availableHardTokenProfiles) {
-                ap.add(Integer.valueOf(profile));
-            }
-            this.availableHardTokenProfiles = ap;
-        }
     }
 
     public IssuerGui getIssuerGui() {
@@ -92,26 +72,14 @@ public class EditHardTokenIssuerMBean extends BaseManagedBean implements Seriali
             final HardTokenIssuerInformation issuerInformation = hardTokenIssuerMBean.getTokenbean().getHardTokenIssuerInformation(hardTokenIssuerMBean.getSelectedHardTokenIssuer());
             final String roleLabel = hardTokenIssuerMBean.getTokenbean().getRoleIdToNameMap().get(issuerInformation.getRoleDataId());
             final String description = issuerInformation.getHardTokenIssuer().getDescription();
-            final ArrayList<Integer> availableHardTokenProfiles = issuerInformation.getHardTokenIssuer().getAvailableHardTokenProfiles();
-            issuerGui = new IssuerGui(issuerInformation.getAlias(), roleLabel, description, availableHardTokenProfiles);
+            issuerGui = new IssuerGui(issuerInformation.getAlias(), roleLabel, description);
         }
         return issuerGui;
-    }
-
-
-    public List<SelectItem> getAvailableHardTokenProfilesSelectItemList() {
-        final TreeMap<String, Integer> hardTokenProfiles = getEjbcaWebBean().getHardTokenProfiles();
-        final List<SelectItem> ret = new ArrayList<>();
-        for (Map.Entry<String, Integer> hardTokenProfile : hardTokenProfiles.entrySet()) {
-            ret.add(new SelectItem(hardTokenProfile.getValue(), hardTokenProfile.getKey()));
-        }
-        return ret;
     }
 
     public String save() throws AuthorizationDeniedException {
         HardTokenIssuer issuer = hardTokenIssuerMBean.getTokenbean().getHardTokenIssuerInformation(issuerGui.name).getHardTokenIssuer();
         issuer.setDescription(issuerGui.getDescription());
-        issuer.setAvailableHardTokenProfiles(issuerGui.getAvailableHardTokenProfiles());
         try {
             hardTokenIssuerMBean.getTokenbean().changeHardTokenIssuer(issuerGui.name, issuer);
         } catch (HardTokenIssuerDoesntExistsException e) {

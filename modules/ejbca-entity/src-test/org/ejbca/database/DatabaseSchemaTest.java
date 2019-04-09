@@ -49,7 +49,6 @@ import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
-import org.ejbca.core.ejb.hardtoken.HardTokenProfileData;
 import org.ejbca.core.ejb.hardtoken.HardTokenPropertyData;
 import org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
@@ -442,7 +441,6 @@ public class DatabaseSchemaTest {
         entity.setRowVersion(0);
         entity.setSignificantIssuerDN(VARCHAR_250B);
         entity.setTokenSN(VARCHAR_250B);
-        entity.setTokenType(0);
         entity.setUsername(VARCHAR_250B);
         storeAndRemoveEntity(entity);
         LOG.trace("<testHardTokenData");
@@ -462,22 +460,7 @@ public class DatabaseSchemaTest {
         storeAndRemoveEntity(entity);
         LOG.trace("<testHardTokenIssuerData");
     }
-
-    @Test
-    public void testHardTokenProfileData() {
-        LOG.trace(">testHardTokenProfileData");
-        logMemStats();
-        HardTokenProfileData entity = new HardTokenProfileData();
-        entity.setData(CLOB_1MiB);
-        entity.setId(BOGUS_INTEGER);
-        entity.setName(VARCHAR_250B);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        entity.setUpdateCounter(0);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testHardTokenProfileData");
-    }
-
+    
     @Test
     public void testHardTokenPropertyData() {
         LOG.trace(">testHardTokenPropertyData");

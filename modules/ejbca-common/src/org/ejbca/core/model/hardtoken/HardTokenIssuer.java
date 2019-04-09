@@ -19,7 +19,6 @@
 package org.ejbca.core.model.hardtoken;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -39,27 +38,15 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
     // Default Values
     public static final float LATEST_VERSION = 1;
 
-    // Protected Constants, must be overloaded by all deriving classes.   
-    protected static final String AVAILABLEHARDTOKENSPROFILES  = "availablehardtokensprofiles"; 
-	protected static final String DESCRIPTION                  = "description"; 
+    // Protected Constants, must be overloaded by all deriving classes.    
+	protected static final String DESCRIPTION = "description"; 
     
     public HardTokenIssuer(){
-      data.put(AVAILABLEHARDTOKENSPROFILES,new ArrayList<Integer>());
       data.put(DESCRIPTION,"");         
     }
     
     // Public Methods
-    
-    // Availablehardtokens defines which hard tokens the issuer is able to issue. 
-    @SuppressWarnings("unchecked")
-    public ArrayList<Integer> getAvailableHardTokenProfiles(){
-      return (ArrayList<Integer>) data.get(AVAILABLEHARDTOKENSPROFILES); 
-    }
-    
-    public void setAvailableHardTokenProfiles(ArrayList<Integer> availablehardtokens){
-      data.put(AVAILABLEHARDTOKENSPROFILES,availablehardtokens); 
-    }    
-    
+        
     public String getDescription(){
       return  (String) data.get(DESCRIPTION);	
     }
@@ -73,14 +60,17 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
     }
     
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
+    @Override
     public void upgrade(){	
     }
     
+    @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object clone() throws CloneNotSupportedException {
       HardTokenIssuer clone = new HardTokenIssuer();

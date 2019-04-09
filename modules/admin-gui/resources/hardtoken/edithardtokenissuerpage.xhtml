@@ -48,12 +48,7 @@
                 <h:outputLabel for="textfielddescription" value="#{web.text.DESCRIPTION}"/>
                 <h:inputTextarea id="textfielddescription" cols="45" rows="2" name="textfielddescription"
                                  value="#{editHardTokenIssuerMBean.issuerGui.description}" />
-
-                <h:outputLabel for="selectavailablehardtokenprofiles" value="#{web.text.AVAILABLEHARDTOKENPROFILES}"/>
-                <h:selectManyListbox styleClass="select-list" id="selectavailablehardtokenprofiles" name="selectavailablehardtokenprofiles"
-                                     value="#{editHardTokenIssuerMBean.issuerGui.availableHardTokenProfiles}" size="7">
-                    <f:selectItems value="#{editHardTokenIssuerMBean.availableHardTokenProfilesSelectItemList}"/>
-                </h:selectManyListbox>
+                
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
                     <h:commandButton value="#{web.text.SAVE}" action="#{editHardTokenIssuerMBean.save}" name="buttonsave" />&nbsp;

@@ -89,7 +89,6 @@
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_HARDTOKENFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink value="#{adminMenuBean.adminWebUrl}/hardtoken/hardtokenissuerspage.xhtml" rendered="#{adminMenuBean.authorizedToEditHardTokenIssuers}"><h:outputText value="#{web.text.NAV_HARDTOKENISSUERS}"/></h:outputLink>
-          <h:outputLink value="#{adminMenuBean.adminWebUrl}/hardtoken/edithardtokenprofiles/edithardtokenprofiles.jsp" rendered="#{adminMenuBean.authorizedToEditHardTokenProfiles}"><h:outputText value="#{web.text.NAV_HARDTOKENPROFILES}"/></h:outputLink>         
         </h:panelGroup>
       </h:panelGroup>
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSupervisionFunctionsHeader}">

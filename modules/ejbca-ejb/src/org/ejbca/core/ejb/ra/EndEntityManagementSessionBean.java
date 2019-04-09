@@ -1977,16 +1977,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         return count > 0;
     }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public boolean checkForHardTokenProfileId(int profileid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">checkForHardTokenProfileId()");
-        }
-        return endEntityAccessSession.countByHardTokenProfileId(profileid) > 0;
-    }
-
+    
     private void print(EndEntityProfile profile, EndEntityInformation userdata) {
         try {
             if (log.isDebugEnabled()) {
