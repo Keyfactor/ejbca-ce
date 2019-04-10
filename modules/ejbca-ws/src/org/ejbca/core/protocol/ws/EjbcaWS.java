@@ -2239,7 +2239,7 @@ public class EjbcaWS implements IEjbcaWS {
             request.setCaName(caName);
             request.setCrlPartitionIndex(crlPartitionIndex);
             request.setDeltaCRL(deltaCRL);
-            return raMasterApiProxyBean.getLatestCrl(admin, request);
+            return raMasterApiProxyBean.getLatestCrlByRequest(admin, request);
         } catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {  // EJBException, ...

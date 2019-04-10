@@ -2424,7 +2424,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getLatestCrl(AuthenticationToken authenticationToken, RaCrlSearchRequest request) throws AuthorizationDeniedException, CADoesntExistsException {
+    public byte[] getLatestCrlByRequest(AuthenticationToken authenticationToken, RaCrlSearchRequest request) throws AuthorizationDeniedException, CADoesntExistsException {
         CADoesntExistsException caDoesntExistsException = null;
         byte[] result = null;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -2433,7 +2433,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     if (raMasterApi.getApiVersion() >= 7) {
 
                         // If there is a CA, there should be an initial CRL as well, assuming its not about an external CA.
-                        result = raMasterApi.getLatestCrl(authenticationToken, request);
+                        result = raMasterApi.getLatestCrlByRequest(authenticationToken, request);
                         if (result != null) {
                             return result;
                         }
