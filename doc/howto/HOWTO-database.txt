@@ -315,6 +315,11 @@ Under SQL Native Client Configuration, make sure that TCP/IP is enabled and
 that everything else is disabled. When configuring the TCP/IP (the properties
 view), make sure that 'Default Port' is set to 1433
 
+SQL server (some versions/some configurations? at least Windows Server 2017) do not like Hibernate/EJBCA/WildFly passing strings through as unicode and ends 
+up doing a full table scan after every insert/update to turn the strings into a more native encoding. This can cause deadlocks. 
+It is possible to eliminate this by putting an additional parameter into the WildFly database connection string:
+sendStringParametersAsUnicode=false
+
 
 Informix specifics
 ------------------
