@@ -133,7 +133,7 @@ public class CaRestResource extends BaseRestResource {
         request.setIssuerDn(issuerDn);
         request.setCrlPartitionIndex(crlPartitionIndex);
         request.setDeltaCRL(deltaCrl);
-        byte[] latestCrl = raMasterApiProxy.getLatestCrl(adminToken, request);
+        byte[] latestCrl = raMasterApiProxy.getLatestCrlByRequest(adminToken, request);
         CrlRestResponse restResponse = CrlRestResponse.builder().setCrl(latestCrl).setResponseFormat("DER").build();
         return Response.ok(restResponse).build();
     }
