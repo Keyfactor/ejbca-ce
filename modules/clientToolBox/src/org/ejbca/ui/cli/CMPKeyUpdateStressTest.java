@@ -191,13 +191,13 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				mout.writeObject(keyUpdateRequest);
 				mout.close();
 				final byte[] popoProtectionBytes = baos.toByteArray();
-				final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+				final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
 				sig.initSign(this.newKeyPair.getPrivate());
 				sig.update(popoProtectionBytes);
 
 				final DERBitString bs = new DERBitString(sig.sign());
 
-				final POPOSigningKey myPOPOSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption), bs);
+				final POPOSigningKey myPOPOSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption), bs);
 				myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);
 			}
 
@@ -232,7 +232,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
 		private PKIMessage signPKIMessage(final PKIMessage msg) throws NoSuchAlgorithmException, NoSuchProviderException,
 		InvalidKeyException, SignatureException {
-			final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+			final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), "BC");
 			sig.initSign(this.oldKey);
 			sig.update(CmpMessageHelper.getProtectedBytes(msg));
 			byte[] eeSignature = sig.sign();
@@ -361,7 +361,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				return true;
 			}
 			final String id = algId.getAlgorithm().getId();
-			if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) || id.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId())) {
+			if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) || id.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId()) || id.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId())) {
 				if (this.firstTime) {
 					this.firstTime = false;
 					this.isSign = true;
@@ -678,7 +678,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			this.sessionData.newSession();
 
 			final CertRequest keyUpdateReq = this.sessionData.genKeyUpdateReq();
-			final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+			final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
 			final PKIMessage certMsg = this.sessionData.genPKIMessage(false, keyUpdateReq, pAlg, null);
 			if (certMsg == null) {
 				this.sessionData.performanceTest.getLog().error("No certificate request.");

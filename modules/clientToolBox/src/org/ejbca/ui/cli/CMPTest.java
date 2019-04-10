@@ -207,7 +207,7 @@ class CMPTest extends ClientToolBox {
                 mout.writeObject( certRequest );
                 mout.close();
                 final byte[] popoProtectionBytes = baos.toByteArray();
-                final Signature sig = Signature.getInstance( PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
                 sig.initSign(this.keyPair.getPrivate());
                 sig.update( popoProtectionBytes );
 
@@ -215,7 +215,7 @@ class CMPTest extends ClientToolBox {
 
                 final POPOSigningKey myPOPOSigningKey =
                     new POPOSigningKey(null,
-                            new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption),
+                            new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption),
                             bs);
                 myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);           
             }
@@ -409,7 +409,7 @@ class CMPTest extends ClientToolBox {
                         return true;
                     }
                     id = algId.getAlgorithm().getId();
-                    if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) || id.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId())) {
+                    if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId()) || id.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId()) || id.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId())) {
                         if (this.firstTime) {
                             this.firstTime = false;
                             this.isSign = true;
