@@ -17,6 +17,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 
@@ -73,7 +74,7 @@ public class CAExportServlet extends HttpServlet {
 	    EjbcaWebBean ejbcawebbean= (EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
 	    if ( ejbcawebbean == null ) {
 	      try {
-	    	  ejbcawebbean = (EjbcaWebBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBean.class.getName());
+	    	  ejbcawebbean = (EjbcaWebBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBeanImpl.class.getName());
 	      } catch (ClassNotFoundException e) {
 	    	  throw new ServletException(e.getMessage());
 	      } catch (Exception e) {

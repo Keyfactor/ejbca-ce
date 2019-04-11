@@ -56,6 +56,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -395,11 +396,11 @@ public class AdminCertReqServlet extends HttpServlet {
         if (ejbcawebbean == null) {
             try {
                 ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(),
-                        EjbcaWebBean.class.getName());
+                        EjbcaWebBeanImpl.class.getName());
             } catch (ClassNotFoundException exc) {
                 throw new ServletException(exc.getMessage());
             } catch (Exception exc) {
-                throw new ServletException(" Cannot create bean of class " + EjbcaWebBean.class.getName(), exc);
+                throw new ServletException(" Cannot create bean of class " + EjbcaWebBeanImpl.class.getName(), exc);
             }
             session.setAttribute("ejbcawebbean", ejbcawebbean);
         }

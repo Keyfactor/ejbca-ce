@@ -35,6 +35,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
@@ -125,7 +126,7 @@ public class CaHttpSessionListener implements HttpSessionListener {
         if (ejbcawebbean == null) {
             try {
                 ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(),
-                        EjbcaWebBean.class.getName());
+                        EjbcaWebBeanImpl.class.getName());
             } catch (Exception e) {
                 log.error("Failed to audit log ended session with Id" + session.getId() + "\n" + e.getMessage());
             }
