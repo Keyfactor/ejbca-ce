@@ -61,7 +61,7 @@ JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Admini
 
 # manually change the "status" of CA from external -> active
 mysql -u ejbca -pejbca -hmariadb_selenium -e 'use ejbca; update CAData set status = 1 where status = 6;'
-PATH=$PATH:/usr/bin/firefox
+export PATH="/usr/bin/firefox"
 ant ejbca:setup:selenium
 echo '=================== import cert commands done ========================'
 
