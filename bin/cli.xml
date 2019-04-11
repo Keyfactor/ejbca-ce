@@ -414,7 +414,8 @@ appserver.home         : ${appserver.home}
         <condition property="macProfilePath" value="${env.HOME}/Library/Application Support/Firefox/" else="">
             <available file="${env.HOME}/Library/Application Support/Firefox/" type="dir" />
         </condition>
-        <fail message="Cannot find profiles.ini dir for Linux and Mac">
+    	<echo message="HOME:  ${env.HOME}"/>
+    	<fail message="Cannot find profiles.ini dir for Linux and Mac">
             <condition>
                 <and>
                     <equals arg1="${linuxProfilePath}" arg2="" />
