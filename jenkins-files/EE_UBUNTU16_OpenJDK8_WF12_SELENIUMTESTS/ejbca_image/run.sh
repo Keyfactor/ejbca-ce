@@ -6,6 +6,7 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
 export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
 export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
+export PATH="/usr/bin"
 
 cp /opt/conf/* /app/ejbca/conf/
 cp /opt/p12/* /app/ejbca/p12/
@@ -61,7 +62,6 @@ JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Admini
 
 # manually change the "status" of CA from external -> active
 mysql -u ejbca -pejbca -hmariadb_selenium -e 'use ejbca; update CAData set status = 1 where status = 6;'
-export PATH="/usr/bin/firefox"
 ant ejbca:setup:selenium
 echo '=================== import cert commands done ========================'
 
