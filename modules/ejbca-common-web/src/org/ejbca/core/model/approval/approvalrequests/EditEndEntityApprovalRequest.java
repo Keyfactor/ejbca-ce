@@ -36,7 +36,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -45,7 +44,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
-import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -187,7 +185,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
-			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
+			CertificateProfileSession certificateProfileSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
@@ -224,8 +222,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		    }
 		    retval.add(new ApprovalDataText("KEYALGORITHM", keyTypeString, true, false));
 		}
-		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, newuserdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(newuserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
@@ -245,7 +241,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession,
-			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
+			CertificateProfileSession certificateProfileSession) {
 		final List<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME", orguserdata.getUsername(), true, false));
 		retval.add(new ApprovalDataText("PASSWORD", "NOTSHOWN", true, true));
@@ -268,8 +264,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));
-		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, orguserdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(orguserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE", orguserdata.getKeyRecoverable() ? "YES" : "NO", true, true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION", orguserdata.getSendNotification() ? "YES" : "NO", true, true));
 		retval.add(new ApprovalDataText("STATUS", EndEntityConstants.getTranslatableStatusText(orguserdata.getStatus()), true, true));

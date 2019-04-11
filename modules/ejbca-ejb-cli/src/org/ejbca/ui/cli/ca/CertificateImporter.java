@@ -204,7 +204,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             final String email = CertTools.getEMailAddress(certificate);
             userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
                     EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null,
-                    null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
+                    null, SecConst.TOKEN_SOFT_BROWSERGEN, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(authenticationToken, userdata, false);
             log.info("User '" + username + "' has been added.");

@@ -116,7 +116,7 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
             IllegalKeyException, CADoesntExistsException, CertificateCreateException, CesecoreException, CertificateExtensionException {
         EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=" + TESTCLASS_NAME, x509ca.getCAId(), null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         endEntityInformation.setPassword("foo123");
         // Request a CSR for the key pair
         final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId, null);

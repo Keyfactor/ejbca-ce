@@ -61,7 +61,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -101,8 +100,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
@@ -281,10 +278,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN) {
             retval = signSession.createPKCS7(admin, cert, true);
         }
-
-        if (hardTokenSN != null) {
-            hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);
-        }
         return retval;
     }
 
@@ -329,9 +322,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     reusecertificate, endEntityProfileId);
             String alias = keyStore.aliases().nextElement();
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-            if ((hardTokenSN != null) && (cert != null)) {
-                hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);
-            }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());
             ret = baos.toByteArray();

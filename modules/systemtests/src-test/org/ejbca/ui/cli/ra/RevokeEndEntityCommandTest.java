@@ -13,11 +13,6 @@
 
 package org.ejbca.ui.cli.ra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -72,6 +67,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * System test class for RA revokeendentity and unrevokeendentity commands
  * 
@@ -94,12 +94,14 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         command0 = new RevokeEndEntityCommand();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -121,7 +123,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             assertFalse(eeSession.existsUser(USER_NAME));
             final EndEntityInformation userdata = new EndEntityInformation(USER_NAME, "C=SE, O=PrimeKey, CN=" + USER_NAME, caid, null, null,
                     EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
             userdata.setPassword("foo123");
             eeSession.addUser(admin, userdata, false);
             assertTrue(eeSession.existsUser(USER_NAME));

@@ -39,8 +39,6 @@ org.ejbca.util.HTMLTools
        final String RA_EDITPROFILESLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.xhtml";
        final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
        final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
-       final String HT_EDITHARDTOKENISSUERS_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
-                               + "/hardtokenissuerspage.xhtml";
        
        final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
        final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()  + "/systemconfiguration.xhtml";
@@ -68,7 +66,6 @@ org.ejbca.util.HTMLTools
 
        final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
        final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
-       final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
        final String APPROVALPROFILEVIEW_RESOURCE           = StandardRules.APPROVALPROFILEVIEW.resource();
        final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
        final String SYSTEMCONFIGURATION_RESOURCE           = StandardRules.SYSTEMCONFIGURATION_VIEW.resource();
@@ -222,32 +219,7 @@ org.ejbca.util.HTMLTools
      out.write("</ul></li>"); 
    }
 %>
-<%
-   // --------------------------------------------------------------------------
-   // HARD TOKEN FUNCTIONS
-%>
-<%
-   if(globalconfiguration.getIssueHardwareTokens()){
-       %>  
-<%
-     // If authorized to edit the hard token issuers then display related links.
-       if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(HTEDITHARDTOKENISSUERS_RESOURCE)){ 
-           if(!htheaderprinted){
-             htheaderprinted=true;%> 
-		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
-			<ul>
-           <% } %>
-				<li><a href="<%= HT_EDITHARDTOKENISSUERS_LINK %>"><%=ejbcawebbean.getText("NAV_HARDTOKENISSUERS") %></a></li>
-<% } %>
-     
-<%
-	if(htheaderprinted){
-        out.write("</ul></li>"); 
-      }
-    }
-%>
 
-   
 <%
    // --------------------------------------------------------------------------
    // SUPERVISION FUNCTIONS

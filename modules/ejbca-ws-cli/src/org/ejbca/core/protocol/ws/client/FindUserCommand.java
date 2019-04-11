@@ -92,6 +92,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
         try {   
@@ -140,11 +141,6 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
                         getPrintStream().println("  Status: "+ getStatus(next.getStatus()));
                         getPrintStream().println("  Certificate profile: "+next.getCertificateProfileName());
                         getPrintStream().println("  End entity profile: "+next.getEndEntityProfileName());
-                        if(next.getHardTokenIssuerName() == null){
-                        	getPrintStream().println("  Hard Token Issuer Alias: NONE");
-                        }else{
-                        	getPrintStream().println("  Hard Token Issuer Alias: " + next.getHardTokenIssuerName());
-                        }
             		}
             	}
             	             
@@ -227,7 +223,8 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		return type;
 	}
 	
-	protected void usage() {
+	@Override
+    protected void usage() {
 		getPrintStream().println("Command used to find userdata, maximum of 100 users will be returned ");
 		getPrintStream().println("Usage : finduser <matchwith> <matchtype> <value> \n\n");
         getPrintStream().print("Matchwith can be : ");

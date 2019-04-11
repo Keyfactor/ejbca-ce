@@ -13,11 +13,6 @@
 
 package org.ejbca.core.model.approval.approvalrequests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -75,7 +70,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -88,6 +82,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests approvals which are required by the certificate profile and not only by the CA or instead of by the CA.
@@ -379,7 +378,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
             		null, email, false, endEntityProfileId,
-                    certProfileIdNoApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+                    certProfileIdNoApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", new PublicKeyWrapper(keypair.getPublic()));
             assertNotNull("Cert should have been created.", cert);
             keyRecoverySession.addKeyRecoveryData(admin1, EJBTools.wrap(cert), username1, EJBTools.wrap(keypair));
@@ -402,7 +401,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(admin1, username2, "foo123", "CN=TESTKEYREC2" + username2, null, email, false, endEntityProfileId,
-                    certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+                    certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username2, "foo123", new PublicKeyWrapper(keypair.getPublic()));
             keyRecoverySession.addKeyRecoveryData(admin1, EJBTools.wrap(cert), username2, EJBTools.wrap(keypair));
 
@@ -416,6 +415,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -456,6 +456,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdAllApprovals);
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -497,7 +498,6 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     public static int createCA(AuthenticationToken internalAdmin, String nameOfCA,
             CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId, CAToken catoken) throws Exception {
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, certProfileId, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
@@ -520,7 +520,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId,
-                SecConst.TOKEN_SOFT_P12, 0, null);
+                SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         // userdata.setKeyRecoverable(true);
         createUser(cliUserName, cliPassword, userdata);

@@ -89,7 +89,7 @@ public class UserDataVOWS implements Serializable{
 	 * @param subjectAltName
 	 * @param email 
 	 * @param status one of the STATUS_ constants
-	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
+	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens
 	 * @param endEntityProfileName
 	 * @param certificateProfileName
 	 * @param hardTokenIssuerName if no hardTokenIssuer should be used then use null.
@@ -224,7 +224,7 @@ public class UserDataVOWS implements Serializable{
 
 
 	/**
-	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
+	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens
 	 */
 	public String getTokenType() {
 		return tokenType;

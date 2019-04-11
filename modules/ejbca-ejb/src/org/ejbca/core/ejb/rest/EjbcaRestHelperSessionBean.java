@@ -52,7 +52,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -144,7 +143,6 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         endEntityInformation.setDN(subjectDn);
 
         endEntityInformation.setCardNumber("");
-        endEntityInformation.setHardTokenIssuerId(0);
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
 
         Date timecreated = new Date();

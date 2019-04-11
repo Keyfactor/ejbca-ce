@@ -13,13 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -156,7 +149,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -170,6 +162,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -325,6 +324,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         return this.getClass().getSimpleName();
     }
 
+    @Override
     @Test
     public void test01Access() throws Exception {
         super.test01Access();
@@ -373,17 +373,20 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace("<test03OcspRevoked()");
     }
 
+    @Override
     @Test
     public void test04OcspUnknown() throws Exception {
         super.test04OcspUnknown();
     }    
     
+    @Override
     @Test
     public void test05OcspUnknownCA() throws Exception {
         super.test05OcspUnknownCA();
     }
 
 
+    @Override
     @Test
     public void test06OcspSendWrongContentType() throws Exception {
         super.test06OcspSendWrongContentType();
@@ -524,17 +527,20 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         }
     } // test09OcspEcdsaImplicitlyCAGood
 
+    @Override
     @Test
     public void test10MultipleRequests() throws Exception {
         this.helper.reloadKeys();
         super.test10MultipleRequests();
     }
 
+    @Override
     @Test
     public void test11MalformedRequest() throws Exception {     
         super.test11MalformedRequest();
     }
 
+    @Override
     @Test
     public void test12CorruptRequests() throws Exception {
         super.test12CorruptRequests();
@@ -543,6 +549,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     /**
      * Just verify that a simple GET works.
      */
+    @Override
     @Test
     public void test13GetRequests() throws Exception {
         // See if the OCSP Servlet can read non-encoded requests
@@ -577,11 +584,13 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber() );
     }
 
+    @Override
     @Test
     public void test14CorruptGetRequests() throws Exception {
         super.test14CorruptGetRequests();
     }
 
+    @Override
     @Test
     public void test15MultipleGetRequests() throws Exception {
         super.test15MultipleGetRequests();
@@ -1098,13 +1107,13 @@ Content-Type: text/html; charset=iso-8859-1
         
             if (!endEntityManagementSession.existsUser(username)) {
                 endEntityManagementSession.addUser(admin, username, "foo123", "CN=expiredCertUsername", null, "ocsptest@anatom.se", false,
-                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
+                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
                 log.debug("created user: expiredCertUsername, foo123, CN=expiredCertUsername");
             } else {
                 log.debug("User expiredCertUsername already exists.");
                 EndEntityInformation userData = new EndEntityInformation(username, "CN=expiredCertUsername",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, 0, null);
+                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
                 userData.setPassword("foo123");
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
@@ -1722,7 +1731,6 @@ Content-Type: text/html; charset=iso-8859-1
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -1791,7 +1799,6 @@ Content-Type: text/html; charset=iso-8859-1
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -1830,7 +1837,6 @@ Content-Type: text/html; charset=iso-8859-1
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -1855,6 +1861,7 @@ Content-Type: text/html; charset=iso-8859-1
     /**
      * This method creates the user "ocsptest" and generated a certificate for it
      */
+    @Override
     protected void loadUserCert(int caid) throws Exception {
         createUserCert(caid);
     }
@@ -1866,15 +1873,14 @@ Content-Type: text/html; charset=iso-8859-1
         if (!endEntityManagementSession.existsUser(USERNAME)) {
 
             endEntityManagementSession.addUser(admin, USERNAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
         } else {
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");

@@ -257,9 +257,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                                    // EJBCA 3.6.1 and earlier.
         final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer type : getExternalCAServiceTypes()) {
-            //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored
-            //for instantiation.
-            if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
+            // TYPE_OCSPEXTENDEDSERVICE type was removed in 6.0.0.
+            // TYPE_HARDTOKENENCEXTENDEDSERVICE type was removed in 7.1.0.
+            // They are removed from the database in the upgrade method in this class, but need to be ignored for instantiation.
+            if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE && type != ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE) {
                 ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type.intValue());
                 if (info != null) {
                     externalcaserviceinfos.add(info);
@@ -996,7 +997,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
                 final X509CAInfo info = (X509CAInfo) getCAInfo();
                 final EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
-                        0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, 0, null);
+                        0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, null);
                 final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final String provider = cryptoToken.getSignProviderName();

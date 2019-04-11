@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -137,6 +130,13 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test class for tests based on an RSA
@@ -261,6 +261,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         }
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         // Reset the end entity after each test, if it was changed during that test
@@ -513,14 +514,13 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         if (!endEntityManagementSession.existsUser(RSA_REVERSE_USERNAME)) {
             endEntityManagementSession.addUser(internalAdmin, RSA_REVERSE_USERNAME, "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null,
                     "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, rsareversecaid);
             log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
         } else {
             log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
             EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
                     rsareversecaid, null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, userData, false);
             log.debug("Reset status to NEW");
@@ -561,8 +561,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, userData, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
@@ -597,8 +596,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas1@xmpp.domain.com,srvName=_Service1.Name", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             endEntity.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
@@ -676,8 +674,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, userData, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
@@ -714,8 +711,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas1@xmpp.domain.com,srvName=_Service1.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             endEntity.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
@@ -791,8 +787,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             EndEntityInformation endEntity = new EndEntityInformation(qcCertEndEntityName,  "C=SE,CN=qc",
                     rsacaid, null, 
                     "foo@anatom.nu", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eeprofile, cprofile, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    eeprofile, cprofile, null, null, SecConst.TOKEN_SOFT_PEM, null);
             endEntity.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false); 
             log.debug("created user: foo, foo123, C=SE, CN=qc");
@@ -876,7 +871,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, endEntityProfile);
             int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
             EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, rsacaid, null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
             endEntity.setStatus(EndEntityConstants.STATUS_NEW);
             endEntity.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, endEntity, false);
@@ -951,7 +946,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         try {
            
             EndEntityInformation user = new EndEntityInformation(validityOverrideEndEntityName, "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu",
-                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setCardNumber("123456789");
@@ -1070,7 +1065,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // We use unicode encoding for the three Swedish character åäö
             endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, username
                     + "@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
             log.debug("created user: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user " + username + " already exists: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
@@ -1119,7 +1114,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         try {
     
             EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se",
-                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             // Change a user that we know...
             endEntityManagementSession.changeUser(internalAdmin, user, false);
@@ -1182,7 +1177,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         // New random username and create cert
         String username = genRandomUserName();
         endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was created
@@ -1195,7 +1190,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         // New random username and create cert
         username = genRandomUserName();
         endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was not created
@@ -1248,7 +1243,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(testName);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword("foo123");
         user.setStatus(EndEntityConstants.STATUS_NEW);
         // Change a user that we know...
@@ -1314,7 +1309,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
-                    SecConst.TOKEN_SOFT_PEM, 0, null);
+                    SecConst.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             user.setStatus(EndEntityConstants.STATUS_NEW);
             // Change a user that we know...
@@ -1522,7 +1517,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
         // Change already existing user
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), pid, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityTypes.ENDUSER), pid, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         // create first cert
@@ -1614,7 +1609,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         createEndEntity(dnOverrideEndEntityName, eeprofile, cprofile, rsacaid);
         try {
             EndEntityInformation user = new EndEntityInformation(dnOverrideEndEntityName, "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu",
-                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             user.setStatus(EndEntityConstants.STATUS_NEW);
             // Change a user that we know...

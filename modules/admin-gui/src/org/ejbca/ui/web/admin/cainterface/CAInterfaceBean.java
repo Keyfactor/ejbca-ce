@@ -99,7 +99,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -480,9 +479,6 @@ public class CAInterfaceBean implements Serializable {
         if (keyAliasCrlSignKey.length()>0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, keyAliasCrlSignKey);
         }
-        if (keyAliasHardTokenEncryptKey.length()>0) {
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, keyAliasHardTokenEncryptKey);
-        }
         if (keyAliasKeyEncryptKey.length()>0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyAliasKeyEncryptKey);
         }
@@ -825,7 +821,6 @@ public class CAInterfaceBean implements Serializable {
                 new CmsCAServiceInfo(cmsactive,
                         "CN=CMSCertificate, " + subjectdn, "",
                         keySpec, keyType));
-        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         return extendedcaservices;
     }
