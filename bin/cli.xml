@@ -409,10 +409,7 @@ appserver.home         : ${appserver.home}
         <fail message="Cannot find 'pk12util' command in your PATH (Do you have Mozzila NSS Tools Installed?)." unless="hasPk12util" />
 
         <condition property="linuxProfilePath" value="${env.HOME}/.mozilla/firefox/" else="">
-        	<or>
-            	<available file="${env.HOME}/.mozilla/firefox/" type="dir" />
-        		<available file="${env.HOME}.mozilla/firefox/" type="dir" />
-        	</or>
+            <available file="${env.HOME}/.mozilla/firefox/" type="dir" />
         </condition>
         <condition property="macProfilePath" value="${env.HOME}/Library/Application Support/Firefox/" else="">
             <available file="${env.HOME}/Library/Application Support/Firefox/" type="dir" />
