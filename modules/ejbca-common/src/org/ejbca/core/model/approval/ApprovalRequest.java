@@ -66,11 +66,6 @@ public abstract class ApprovalRequest implements Externalizable {
     private static final int LATEST_BASE_VERSION = 6;
 
     /**
-     * Constants indicating approval settings for viewing hard token through WS
-     */
-    public static final int REQ_APPROVAL_VIEW_HARD_TOKEN = 5;
-
-    /**
      * Constants indicating approval settings for generating token certificate through WS
      */
     public static final int REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE = 6;

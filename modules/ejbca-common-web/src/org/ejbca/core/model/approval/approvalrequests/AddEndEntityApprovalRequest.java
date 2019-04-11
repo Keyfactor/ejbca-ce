@@ -35,7 +35,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -44,7 +43,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
-import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -150,7 +148,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
-			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
+			CertificateProfileSession certificateProfileSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
@@ -176,8 +174,6 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
             }
             retval.add(new ApprovalDataText("KEYALGORITHM", keyTypeString, true, false));
         }
-		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, userdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(userdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",userdata.getSendNotification() ? "YES" : "NO",true,true));
 		return retval;

@@ -108,15 +108,6 @@ public class ViewEndEntityHelper implements Serializable{
         this.ejbcawebbean = ejbcawebbean;
         this.cabean = cabean;
         initialized = true;
-        
-        if (ejbcawebbean.getGlobalConfiguration().getIssueHardwareTokens()){
-            tokentexts = new String[RAInterfaceBean.tokentexts.length];
-            tokenids   = new int[tokentexts.length];
-            for (int i=0; i < RAInterfaceBean.tokentexts.length; i++){
-              tokentexts[i]= RAInterfaceBean.tokentexts[i];
-              tokenids[i] = RAInterfaceBean.tokenids[i];
-            }
-         }
       }
     }
     

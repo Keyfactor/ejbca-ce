@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
@@ -53,6 +48,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests signing session.
@@ -106,16 +106,19 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         CaTestCase.removeTestCA();
     }
     
+    @Override
     @Before
     public void setUp() throws Exception {
   
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
        
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -290,7 +293,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(EEPROFILE_PRIVKEYUSAGEPERIOD);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword("foo123");
         user.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(internalAdmin, user, false);

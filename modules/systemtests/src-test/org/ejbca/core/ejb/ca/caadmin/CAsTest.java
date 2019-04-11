@@ -13,14 +13,6 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -100,7 +92,6 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.protocol.cmp.CmpResponseMessage;
 import org.junit.After;
@@ -108,6 +99,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests CA administration.
@@ -146,16 +145,19 @@ public class CAsTest extends CaTestCase {
         removeTestCA();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         addDefaultRole();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         removeDefaultRole();
     }
 
+    @Override
     public String getRoleName() {
         return "CAsTest"; 
     }
@@ -194,7 +196,6 @@ public class CAsTest extends CaTestCase {
         final CAToken catoken = createCaToken("test01", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
         List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
@@ -622,7 +623,7 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not EC", false);
             }
-            cert = (X509Certificate) iter.next();
+            cert = iter.next();
             assertTrue("Error in root ca certificate", CertTools.getSubjectDN(cert).equals("CN=TEST"));
             assertTrue("Error in root ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
 
@@ -744,7 +745,7 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not EC", false);
             }
-            cert = (X509Certificate) iter.next();
+            cert = iter.next();
             assertTrue("Error in root ca certificate", CertTools.getSubjectDN(cert).equals("CN=TEST"));
           
             

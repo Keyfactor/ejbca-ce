@@ -76,17 +76,8 @@ public interface EndEntityAccessSessionLocal extends EndEntityAccessSession {
     /** @return return a count of UserDatas with the specified Certificate Profile. */
     long countByCertificateProfileId(int certificateProfileId);
     
-    /** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
-    long countByHardTokenIssuerId(int hardTokenIssuerId);
-    
-    /** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
-    long countNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId);
-    
     /** @return the found entity instance or null if the entity does not exist */
     UserData findByUsername(String username);
-    
-    /** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
-    List<UserData> findNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId, int maxResults);
     
     /** @return a list of subjectDNs that contain SN=serialnumber* for a CA and excludes a username. */
     List<String> findSubjectDNsByCaIdAndNotUsername(final int caId, final String username, final String serialnumber);

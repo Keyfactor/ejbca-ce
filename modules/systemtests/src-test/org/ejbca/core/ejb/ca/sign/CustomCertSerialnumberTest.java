@@ -13,10 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -77,6 +73,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * 
  * @version $Id$
@@ -104,6 +104,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -130,6 +131,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
       
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -172,7 +174,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         p10.setPassword("foo123");
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
@@ -209,7 +211,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         p10.setPassword("foo123");
 
         EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
 
         ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
@@ -243,7 +245,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         p10.setPassword("foo123");
 
         EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
@@ -283,7 +285,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         certificateProfileSession.changeCertificateProfile(internalAdmin, "FOOCERTPROFILE", fooCertProfile);
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
@@ -297,6 +299,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace("<test04CreateCertWithCustomSNNotAllowed()");
     }
 
+    @Override
     public String getRoleName() {
         return "";
     }

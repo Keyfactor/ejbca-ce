@@ -13,10 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -77,6 +73,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 /** 
  * Test requiring signed OCSP requests.
  * 
@@ -130,6 +130,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -145,6 +146,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     	internalCertificateStoreSession.reloadCaCertificateCache();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -155,6 +157,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(admin, internalKeyBindingId);
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -177,14 +180,13 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         if (!userExists) {
             endEntityManagementSession.addUser(admin, END_ENTITY_NAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    SecConst.TOKEN_SOFT_PEM, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } else {
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation(END_ENTITY_NAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");

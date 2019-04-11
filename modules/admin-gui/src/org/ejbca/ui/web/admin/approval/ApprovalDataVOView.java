@@ -335,10 +335,10 @@ public class ApprovalDataVOView implements Serializable {
     	final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
     		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(ejbLocalHelper.getCaSession(),
-    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
+    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession());
     	} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
     		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(ejbLocalHelper.getCaSession(),
-    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
+    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession());
     	} else {
     		return approvalRequest.getNewRequestDataAsText(admin);
     	}
@@ -349,7 +349,7 @@ public class ApprovalDataVOView implements Serializable {
     	final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
     		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
-    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
+    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession());
     	} else {
     		return approvalRequest.getOldRequestDataAsText(admin);
     	}

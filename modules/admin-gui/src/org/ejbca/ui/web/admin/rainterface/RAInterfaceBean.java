@@ -51,12 +51,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -108,7 +105,6 @@ public class RAInterfaceBean implements Serializable {
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    private HardTokenSessionLocal hardtokensession;
     private KeyRecoverySession keyrecoverysession;
 
     private UsersView usersView;
@@ -137,7 +133,6 @@ public class RAInterfaceBean implements Serializable {
     		caSession = ejbLocalHelper.getCaSession();
     		authorizationSession = ejbLocalHelper.getAuthorizationSession();
     		endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-    		hardtokensession = ejbLocalHelper.getHardTokenSession();
     		keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
     		certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     		this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
@@ -172,7 +167,7 @@ public class RAInterfaceBean implements Serializable {
         if (userdata.getEndEntityProfileId() != 0) {
             EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(),
         		userdata.getEmail(), EndEntityConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
-        		null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
+        		null,null, userdata.getTokenType(), null);
             EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
             if(StringUtils.isEmpty(userdata.getPassword()) && endEntityProfile.isPasswordPreDefined()) {
                 uservo.setPassword(endEntityProfile.getPredefinedPassword());
@@ -292,7 +287,7 @@ public class RAInterfaceBean implements Serializable {
         }
         EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(),
                 userdata.getSubjectAltName(), userdata.getEmail(), userdata.getStatus(), userdata.getType(), userdata.getEndEntityProfileId(),
-                userdata.getCertificateProfileId(), null, null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
+                userdata.getCertificateProfileId(), null, null, userdata.getTokenType(), null);
         uservo.setPassword(userdata.getPassword());
         uservo.setExtendedInformation(userdata.getExtendedInformation());
         uservo.setCardNumber(userdata.getCardNumber());
@@ -363,26 +358,6 @@ public class RAInterfaceBean implements Serializable {
     public UserView[] findAllUsers(int index, int size) {
        usersView.setUsers(endEntityAccessSession.findAllUsersWithLimit(administrator), caSession.getCAIdToNameMap());
        return usersView.getUsers(index,size);
-    }
-
-    /** Method to find all users in database */
-    public UserView[] filterByTokenSN(String tokensn, int index,int size) {
-    	UserView[] returnval = null;
-    	ArrayList<EndEntityInformation> userlist = new ArrayList<>();
-    	Collection<String> usernames = hardtokensession.matchHardTokenByTokenSerialNumber(tokensn);
-    	Iterator<String> iter = usernames.iterator();
-    	while (iter.hasNext()) {
-    		EndEntityInformation user = null;
-    		try {
-    			user = endEntityAccessSession.findUser(administrator, iter.next());
-    		} catch(AuthorizationDeniedException e) {}
-    		if (user!=null) {
-    			userlist.add(user);
-    		}
-    	}
-    	usersView.setUsers(userlist, caSession.getCAIdToNameMap());
-    	returnval = usersView.getUsers(index,size);
-    	return returnval;
     }
 
     /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. */
@@ -518,10 +493,6 @@ public class RAInterfaceBean implements Serializable {
         loadTokenCertificates(certificatesession.getCertificateDataByUsername(username, false, null));
     }
 
-    public void loadTokenCertificates(final String tokensn) {
-        loadTokenCertificates(hardtokensession.getCertificateDatasFromHardToken(tokensn));
-    }
-
     private void loadTokenCertificates(final List<CertificateDataWrapper> cdws) {
         if (!cdws.isEmpty()) {
             if (cdws.size() <= 50) {
@@ -536,59 +507,6 @@ public class RAInterfaceBean implements Serializable {
         } else{
             certificates = null;
         }
-    }
-
-    public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-       boolean success = true;
-       ApprovalException lastAppException = null;
-       WaitingForApprovalException lastWaitException = null;
-       AlreadyRevokedException lastRevokedException = null;
-       Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(tokensn);
-       Iterator<Certificate> i = certs.iterator();
-       // Extract and revoke collection
-       while ( i.hasNext() ) {
-    	   Certificate cert = i.next();
-           try {
-        	   endEntityManagementSession.revokeCert(administrator, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), reason);
-        	// Ignore errors if some were successful
-           } catch (ApprovalException e) {
-        	   lastAppException = e;
-           } catch (WaitingForApprovalException e) {
-        	   lastWaitException = e;
-           } catch (AlreadyRevokedException e) {
-        	   lastRevokedException = e;
-           } catch (AuthorizationDeniedException e) {
-        	   success = false;
-           } catch (NoSuchEndEntityException e) {
-        	   success = false;
-           }
-       }
-       if ( lastWaitException != null ) {
-    	   throw lastWaitException;
-       }
-       if ( lastAppException != null ) {
-    	   throw lastAppException;
-       }
-       if ( lastRevokedException != null ) {
-    	   throw lastRevokedException;
-       }
-       return success;
-    }
-
-    public boolean isAllTokenCertificatesRevoked(String tokensn, String username) {
-    	Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(tokensn);
-    	boolean allrevoked = true;
-    	if(!certs.isEmpty()){
-    		Iterator<Certificate> j = certs.iterator();
-    		while(j.hasNext()){
-    			Certificate cert = j.next();
-    			boolean isrevoked = certificatesession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-    			if (!isrevoked) {
-    				allrevoked = false;
-    			}
-    		}
-    	}
-    	return allrevoked;
     }
 
     public void loadCACertificates(CertificateView[] cacerts) {
@@ -647,22 +565,7 @@ public class RAInterfaceBean implements Serializable {
     public boolean authorizedToViewHistory(int profileid) {
     	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.VIEW_END_ENTITY_HISTORY, false);
     }
-
-    public boolean authorizedToViewHardToken(String username) throws AuthorizationDeniedException {
-    	int profileid = endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
-    	if (!endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_RIGHTS, false)) {
-    		throw new AuthorizationDeniedException();
-    	}
-    	if (!WebConfiguration.getHardTokenDiplaySensitiveInfo()) {
-    		return false;
-    	}
-    	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, false);
-    }
-
-    public boolean authorizedToViewHardToken(int profileid) {
-    	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_RIGHTS, false);
-    }
-
+    
     public boolean authorizedToRevokeCert(String username) throws AuthorizationDeniedException{
     	boolean returnval=false;
     	EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);

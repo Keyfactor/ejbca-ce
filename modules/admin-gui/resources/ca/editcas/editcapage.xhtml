@@ -231,17 +231,6 @@
 
 				<h:panelGroup
 					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
-					<h:outputLabel for="hardTokenEncrypt" value="hardTokenEncrypt" />
-				</h:panelGroup>
-				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
-					<h:outputText id="hardTokenEncrypt"
-						value="#{editCAsMBean.currentCaCryptoTokenHardTokenEncrypt}"
-						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
-				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="testKey" value="testKey" />
 				</h:panelGroup>
 				<h:panelGroup
@@ -299,19 +288,6 @@
 					<h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}">
 						<f:selectItems
 							value="#{editCAsMBean.getKeyAliasesListWithDefault('keyEncryptKey')}" />
-					</h:selectOneMenu>
-				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
-					<h:outputText value="hardTokenEncrypt" />
-				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
-					<h:selectOneMenu value="#{editCAsMBean.selectHardTokenEncrypt}">
-						<f:selectItems
-							value="#{editCAsMBean.getKeyAliasesListWithDefault('hardTokenEncrypt')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 

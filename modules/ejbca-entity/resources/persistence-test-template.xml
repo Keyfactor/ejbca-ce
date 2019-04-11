@@ -45,10 +45,6 @@
         <class>org.ejbca.core.ejb.ca.publisher.PublisherData</class>
         <class>org.ejbca.core.ejb.ca.publisher.PublisherQueueData</class>
         <class>org.ejbca.core.ejb.ca.store.CertReqHistoryData</class>
-        <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
-        <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
-        <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
-        <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
         <class>org.ejbca.core.ejb.ca.validation.BlacklistData</class>
         <class>org.ejbca.peerconnector.PeerData</class>

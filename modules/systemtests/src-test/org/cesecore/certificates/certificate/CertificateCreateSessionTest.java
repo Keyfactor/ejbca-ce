@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -103,6 +96,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests creating certificate with extended key usage.
  * 
@@ -179,7 +179,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
             EndEntityInformation user = new EndEntityInformation("extkeyusagefoo", "C=SE,O=AnaTom,CN=extkeyusagefoo", testx509ca.getCAId(), null,
-                    "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -218,7 +218,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
             EndEntityInformation user = new EndEntityInformation("extkeyusagefoo", "C=SE,O=AnaTom,CN=extkeyusagefoo", testx509ca.getCAId(), null,
-                    "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -274,7 +274,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // EJBCA standard has SN means serialnumber, surname is SURNAME. Must be kept for backwards compatibility
             EndEntityInformation user = new EndEntityInformation("dnoverride", "C=SE,O=AnaTom,SN=123456,SURNAME=surname,CN=dnoverride",
                     testx509ca.getCAId(), null, "dnoverride@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -333,7 +333,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // EJBCA standard has SN means serialnumber, surname is SURNAME. Must be kept for backwards compatibility
             EndEntityInformation user = new EndEntityInformation("dnorder", "C=SE,O=PrimeKey,SN=12345,SURNAME=surname,CN=DnOrderTest",
                     testx509ca.getCAId(), null, "dnoverride@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -557,7 +557,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         try {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
             EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=PrimeKey,CN=signalgtest", testx509ca.getCAId(), null,
-                    "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -595,7 +595,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final int certificateProfileId = certProfileSession.addCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
             final EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=PrimeKey,CN="+TEST_NAME, testx509ca.getCAId(), null,
-                    null, new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    null, new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityInformation.setPassword("foo123");
             // Test happy path. RSA 512 bit key. Defaults allowed by certificate profile.
@@ -676,7 +676,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final int certificateProfileId = certProfileSession.addCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
             final EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=PrimeKey,CN="+TEST_NAME, testx509ca.getCAId(), null,
-                    null, new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    null, new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityInformation.setPassword("foo123");
             // EC key validator
@@ -840,7 +840,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         try {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
             EndEntityInformation user = new EndEntityInformation("null\0injecttest", "C=SE,O=PrimeKey,CN=null\0inject%00test", testx509ca.getCAId(),
-                    null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -926,7 +926,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
             EndEntityInformation user = new EndEntityInformation("<script>foo</script>", "CN=<script>alert('cesecore')</script>",
                     testx509ca.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
 
@@ -955,7 +955,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             final String dn = "C=SE,O=PrimeKey,CN=pkcs10requesttest";
             final EndEntityInformation user = new EndEntityInformation("pkcs10requesttest", dn, testx509ca.getCAId(), null, "foo@anatom.se",
                     new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
 
             final KeyPair keyPair = KeyTools.genKeys("512", "RSA");
@@ -1008,7 +1008,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
         EndEntityInformation user = new EndEntityInformation("certcreateauth", "C=SE,O=AnaTom,CN=certcreateauth", testx509ca.getCAId(), null,
                 "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
 
@@ -1043,7 +1043,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         int certificateProfileId = certProfileSession.addCertificateProfile(alwaysAllowToken, profileName, profile);
         final String username = "testCreateSingleActiveCertificateConstraint";
         EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, testx509ca.getCAId(), null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         endEntity.setStatus(EndEntityConstants.STATUS_NEW);
         endEntity.setPassword("foo123");
         BigInteger toBeRevokedSerialNumber = null;
@@ -1134,7 +1134,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             caAdminSession.editCA(alwaysAllowToken, caInfo);
             final String username = "issueCertificateWithCrlPartition";
             EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, testx509ca.getCAId(), null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
             endEntity.setStatus(EndEntityConstants.STATUS_NEW);
             endEntity.setPassword("foo123");
             // When:

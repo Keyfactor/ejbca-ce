@@ -7,13 +7,12 @@
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
                  javax.ejb.CreateException, java.io.Serializable, org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation,
-                 org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,java.math.BigInteger,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,
+                 java.math.BigInteger,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,
                  org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils,org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.core.model.authorization.AccessRulesConstants,
                  org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, org.ejbca.util.HTMLTools, org.cesecore.util.CertTools" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
-<jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:useBean id="editendentitybean" scope="page" class="org.ejbca.ui.web.admin.rainterface.EditEndEntityBean" />
 <%!// Declarations
 
@@ -55,7 +54,6 @@
     static final String SELECT_SUBJECTALTNAME = "selectsubjectaltname";
     static final String SELECT_SUBJECTDIRATTR = "selectsubjectdirattr";
     static final String SELECT_EMAILDOMAIN = "selectemaildomain";
-    static final String SELECT_HARDTOKENISSUER = "selecthardtokenissuer";
     static final String SELECT_CHANGE_STATUS = "selectchangestatus";
     static final String SELECT_CA = "selectca";
     static final String SELECT_ALLOWEDREQUESTS = "selectallowedrequests";
@@ -107,9 +105,7 @@
     GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
     AccessRulesConstants.REGULAR_EDITENDENTITY);
     rabean.initialize(request, ejbcawebbean);
-    if (globalconfiguration.getIssueHardwareTokens())
-        tokenbean.initialize(request, ejbcawebbean);
-
+    
     String THIS_FILENAME = globalconfiguration.getRaPath() + "/editendentity.jsp";
     String username = null;
     EndEntityProfile profile = null;
@@ -121,7 +117,6 @@
     boolean nouserparameter = true;
     boolean notauthorized = true;
     boolean endentitysaved = false;
-    boolean usehardtokenissuers = false;
     boolean usekeyrecovery = false;
     String[] profilenames = null;
     String approvalmessage = null;
@@ -460,12 +455,7 @@
 		                    value = request.getParameter(SELECT_TOKEN);
 		                    int tokentype = Integer.parseInt(value);
 		                    newuser.setTokenType(Integer.parseInt(value));
-		                    int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
-		                    if (tokentype > SecConst.TOKEN_SOFT && request.getParameter(SELECT_HARDTOKENISSUER) != null) {
-		                        value = request.getParameter(SELECT_HARDTOKENISSUER);
-		                        hardtokenissuer = Integer.parseInt(value);
-		                    }
-		                    newuser.setHardTokenIssuerId(hardtokenissuer);
+		                    
 		                    // Issuance revocation reason, what state a newly issued certificate will have
 		                    value = request.getParameter(SELECT_ISSUANCEREVOCATIONREASON);
 		                    // If it's not modifyable don't even try to modify it
@@ -598,39 +588,11 @@
     String[] tokentexts = RAInterfaceBean.tokentexts;
     int[] tokenids = RAInterfaceBean.tokenids;
     String[] availabletokens = null;
-    String[] availablehardtokenissuers = null;
     ArrayList<Integer>[] tokenissuers = null;
 
     if (userdata != null && profile != null) {
-        if (globalconfiguration.getIssueHardwareTokens()) {
-            tokentexts = new String[RAInterfaceBean.tokentexts.length];
-		    tokenids = new int[tokentexts.length];
-		    for (int i = 0; i < RAInterfaceBean.tokentexts.length; i++) {
-		        tokentexts[i] = RAInterfaceBean.tokentexts[i];
-		        tokenids[i] = RAInterfaceBean.tokenids[i];
-		    }
-        }
-
         availabletokens = profile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
-        availablehardtokenissuers = profile.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR);
-
         usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
-        usehardtokenissuers = globalconfiguration.getIssueHardwareTokens() && profile.getUse(EndEntityProfile.AVAILTOKENISSUER, 0);
-        if (usehardtokenissuers) {
-    tokenissuers = new ArrayList[availabletokens.length];
-    for (int i = 0; i < availabletokens.length; i++) {
-        if (Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT) {
-            tokenissuers[i] = new ArrayList<Integer>();
-            for (int j = 0; j < availablehardtokenissuers.length; j++) {
-                HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(Integer
-                        .parseInt(availablehardtokenissuers[j]));
-                if (issuerdata != null) {
-                    tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
-                }
-            }
-        }
-    }
-        }
     }
 
     Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid, AccessRulesConstants.EDIT_END_ENTITY);
@@ -655,58 +617,7 @@
       var FALSE = "<%= EndEntityProfile.FALSE %>";
 
 
-   <% if(usehardtokenissuers){ %>
-
-       var TOKENID         = 0;
-       var NUMBEROFISSUERS = 1;
-       var ISSUERIDS       = 2;
-       var ISSUERNAMES     = 3;
-
-       var tokenissuers = new Array(<%=availabletokens.length%>);
-       <% for(int i=0; i < availabletokens.length; i++){
-            int numberofissuers = 0;
-            if (Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT) numberofissuers=tokenissuers[i].size();           
-           %>
-         tokenissuers[<%=i%>] = new Array(4);
-         tokenissuers[<%=i%>][TOKENID] = <%= availabletokens[i] %>;
-         tokenissuers[<%=i%>][NUMBEROFISSUERS] = <%= numberofissuers %>;
-         tokenissuers[<%=i%>][ISSUERIDS] = new Array(<%= numberofissuers %>);
-         tokenissuers[<%=i%>][ISSUERNAMES] = new Array(<%= numberofissuers %>);    
-         <%  for(int j=0; j < numberofissuers; j++){ %>
-         tokenissuers[<%=i%>][ISSUERIDS][<%=j%>]= <%= ((Integer) tokenissuers[i].get(j)).intValue() %>;
-         tokenissuers[<%=i%>][ISSUERNAMES][<%=j%>]= "<%= tokenbean.getHardTokenIssuerAlias(((Integer) tokenissuers[i].get(j)).intValue())%>";
-         <%  }
-           } %>
-       
-function setAvailableHardTokenIssuers(){
-    var seltoken = document.edituser.<%=SELECT_TOKEN%>.options.selectedIndex;
-    issuers   =  document.edituser.<%=SELECT_HARDTOKENISSUER%>;
-
-    numofissuers = issuers.length;
-    for( i=numofissuers-1; i >= 0; i-- ){
-       issuers.options[i]=null;
-    }    
-    issuers.disabled=true;
-
-    if( seltoken > -1){
-      var token = document.edituser.<%=SELECT_TOKEN%>.options[seltoken].value;
-      if(token > <%= SecConst.TOKEN_SOFT%>){
-        issuers.disabled=false;
-        var tokenindex = 0;  
-        for( i=0; i < tokenissuers.length; i++){
-          if(tokenissuers[i][TOKENID] == token)
-            tokenindex = i;
-        }
-        for( i=0; i < tokenissuers[tokenindex][NUMBEROFISSUERS] ; i++){
-          issuers.options[i]=new Option(tokenissuers[tokenindex][ISSUERNAMES][i],tokenissuers[tokenindex][ISSUERIDS][i]);
-          if(tokenissuers[tokenindex][ISSUERIDS][i] == <%=userdata.getHardTokenIssuerId()%>)
-            issuers.options.selectedIndex=i;
-        }      
-      }
-    }
-}
-
-   <% }      
+   <%      
       if(usekeyrecovery){ %>
 function isKeyRecoveryPossible(){
    var seltoken = document.edituser.<%=SELECT_TOKEN%>.options.selectedIndex; 
@@ -999,8 +910,7 @@ function checkUseInBatch(){
 </head>
 
 <body class="popup" id="editendentity"
-      onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
-                 if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
+      onload='<% if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
                  fillCAField();'>
 
   <h2><%= ejbcawebbean.getText("EDIT_ENDENTITY_HEADING") %></h2>
@@ -1521,8 +1431,7 @@ function checkUseInBatch(){
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("TOKEN") %></td>
 	 <td>
-         <select class="select-list" name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
-                                                                                             if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
+         <select class="select-list" name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
          <%
            if( availabletokens != null){
              for(int i =0; i < availabletokens.length;i++){
@@ -1545,17 +1454,6 @@ function checkUseInBatch(){
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="disabled" CHECKED></td>
        </tr>
-
-       <% if(usehardtokenissuers){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right"><%= ejbcawebbean.getText("HARDTOKENISSUER") %></td>
-	 <td>
-         <select name="<%= SELECT_HARDTOKENISSUER %>" size="1" tabindex="<%=tabindex++%>">
-         </select>
-         </td>
-	 <td>&nbsp;</td>
-       </tr>
-       <% } %>
 
 
     <!-- ---------- Other certificate data -------------------- -->

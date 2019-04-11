@@ -397,10 +397,6 @@ public class EditServiceManagedBean extends BaseManagedBean {
             certificateProfileTypes.add(CertificateConstants.CERTTYPE_SUBCA);
         }
 
-        if (getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens()) {
-            certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
-        }
-
         for (Integer certificateProfileType : certificateProfileTypes) {
             Collection<Integer> profiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfileType);
             for (Integer certificateProfile : profiles) {

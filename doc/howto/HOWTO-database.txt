@@ -375,10 +375,6 @@ CertificateData
 CertificateProfileData
 EndEntityProfileData
 GlobalConfigurationData
-HardTokenCertificateMap
-HardTokenData
-HardTokenIssuerData
-HardTokenPropertyData
 KeyRecoveryData
 LogConfigurationData
 AuditRecordData

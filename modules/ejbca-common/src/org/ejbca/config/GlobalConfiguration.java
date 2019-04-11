@@ -137,12 +137,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String LOCALKEYRECOVERY             = "localkeyrecovery";
     private static final   String LOCALKEYRECOVERYCRYPTOTOKEN  = "localkeyrecoverycryptotoken";
     private static final   String LOCALKEYRECOVERYKEYALIAS     = "localkeyrecoverykeyalias";
-    private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
 
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
 
     private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
-    private static final   String HARDTOKENENCRYPTCA           = "hardtokenencryptca";
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
     private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
     private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
@@ -201,7 +199,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
-       setIssueHardwareTokens(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableIcaoCANameChange(false);
     }
 
@@ -393,9 +390,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getLocalKeyRecoveryKeyAlias() { return (String) data.get(LOCALKEYRECOVERYKEYALIAS); }
     public void setLocalKeyRecoveryKeyAlias(final String value) { data.put(LOCALKEYRECOVERYKEYALIAS, value); }
 
-    public boolean getIssueHardwareTokens() { return getBoolean(ISSUEHARDWARETOKENS, false);}
-    public void setIssueHardwareTokens(final boolean value) { putBoolean(ISSUEHARDWARETOKENS, value);}
-
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
 
@@ -413,26 +407,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){
     	data.put(NUMBEROFAPPROVALSTOVIEWPUK, Integer.valueOf(numberOfHardTokenApprovals));
     }
-
-    /**
-     * @return the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
-     */
-     public   int getHardTokenEncryptCA(){
-     	Object num = data.get(HARDTOKENENCRYPTCA);
-         if(num == null){
-         	return 0;
-         }
-
-     	return ((Integer) num).intValue();
-     }
-
-     /**
-      * @param hardTokenEncryptCA the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
-      */
-     public void setHardTokenEncryptCA(int hardTokenEncryptCA){
-     	data.put(HARDTOKENENCRYPTCA, Integer.valueOf(hardTokenEncryptCA));
-     }
-
+    
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }

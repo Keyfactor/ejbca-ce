@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -104,6 +98,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * System tests for EndEntityCertificateAuthenticationModule
@@ -357,6 +357,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 RA3_ADMIN, role2.getRoleId(), null));
     }
     
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -957,7 +958,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, _caid, null, username + "@primekey.se", new EndEntityType(
-                EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
             endEntityManagementSession.addUser(ADMIN, user, clearpassword);

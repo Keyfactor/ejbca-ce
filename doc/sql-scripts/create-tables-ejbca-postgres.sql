@@ -198,47 +198,6 @@ CREATE TABLE GlobalConfigurationData (
     PRIMARY KEY (configurationId)
 );
 
-CREATE TABLE HardTokenCertificateMap (
-    certificateFingerprint TEXT NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    tokenSN TEXT NOT NULL,
-    PRIMARY KEY (certificateFingerprint)
-);
-
-CREATE TABLE HardTokenData (
-    tokenSN TEXT NOT NULL,
-    cTime INT8 NOT NULL,
-    data BYTEA,
-    mTime INT8 NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    significantIssuerDN TEXT,
-    tokenType INT4 NOT NULL,
-    username TEXT,
-    PRIMARY KEY (tokenSN)
-);
-
-CREATE TABLE HardTokenIssuerData (
-    id INT4 NOT NULL,
-    adminGroupId INT4 NOT NULL,
-    alias TEXT NOT NULL,
-    data BYTEA NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE HardTokenProfileData (
-    id INT4 NOT NULL,
-    data TEXT,
-    name TEXT NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    updateCounter INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE HardTokenPropertyData (
     id TEXT NOT NULL,
     property TEXT NOT NULL,
@@ -379,7 +338,6 @@ CREATE TABLE UserData (
     clearPassword TEXT,
     endEntityProfileId INT4 NOT NULL,
     extendedInformationData TEXT,
-    hardTokenIssuerId INT4 NOT NULL,
     keyStorePassword TEXT,
     passwordHash TEXT,
     rowProtection TEXT,

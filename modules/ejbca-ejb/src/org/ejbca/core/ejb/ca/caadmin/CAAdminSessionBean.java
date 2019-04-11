@@ -863,7 +863,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         return new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName, null, 0,
-                new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, extendedinfo);
+                new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, extendedinfo);
     }
 
     @Override
@@ -1700,7 +1700,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating a X509 CA (process request)");
-            ca = (CACommon) CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
+            ca = CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
         } else if (cainfo instanceof CVCCAInfo) {
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA (process request)");

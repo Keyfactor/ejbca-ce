@@ -234,7 +234,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	        debugInfo += "\nsdn=" + subjectDN + ", san=" + subjectAN + "\n";
             EndEntityInformation userData = new EndEntityInformation(username, subjectDN, caid, subjectAN, null, EndEntityConstants.STATUS_NEW,
                     new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, new Date(), new Date(),
-                    SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                    SecConst.TOKEN_SOFT_BROWSERGEN, null);
 	        String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);
 	        userData.setPassword(password);
 	        try {

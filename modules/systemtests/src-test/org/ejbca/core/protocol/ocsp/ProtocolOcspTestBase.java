@@ -13,12 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -83,6 +77,12 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -432,7 +432,7 @@ public abstract class ProtocolOcspTestBase {
         // Issue a certificate in EJBCA for the public key
         final EndEntityInformation revokedUser = new EndEntityInformation(CERTIFICATE_USERNAME, REVOKED_CERT_DN, caId, null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         revokedUser.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(invalidCertKeys.getPublic(), revokedUser.getUsername(), revokedUser.getPassword());
         

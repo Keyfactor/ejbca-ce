@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.standalone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -26,7 +19,6 @@ import java.net.URL;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
@@ -129,6 +121,13 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean
  * 
@@ -223,7 +222,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testOcspSignerIssuerRenewal() throws Exception {
         final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal", x509ca.getCAId(), null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
@@ -1250,7 +1249,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         // Issue a certificate to a test user
         final String endEntityName = "testGetOcspResponseWithIncorrectDefaultResponder";
         final EndEntityInformation user = new EndEntityInformation(endEntityName, "CN="+endEntityName, x509ca.getCAId(), null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), 1, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 1, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         final SimpleRequestMessage certreq = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
@@ -1428,7 +1427,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     /** Issue a plain end user certificate from the test CA for the provided public key */
     private X509Certificate issueOcspAuthenticationCertificate(final int caid, final String username, final PublicKey publicKey) throws Exception {
         final EndEntityInformation user = new EndEntityInformation(username, "CN="+username, caid, null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         final SimpleRequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());

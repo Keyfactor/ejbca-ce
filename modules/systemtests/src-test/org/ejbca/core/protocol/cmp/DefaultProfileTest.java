@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -92,6 +89,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * System tests for when a CMP alias is set to use specific or 'ProfileDefault' CertificateProfile and CA 
@@ -644,7 +644,7 @@ public class DefaultProfileTest extends CmpTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, _caid, null, username + "@primekey.se", new EndEntityType(
-                EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
             endEntityManagementSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username

@@ -84,7 +84,6 @@ public class FindEndEntityCommand extends BaseRaCommand {
                 getLogger().info("Token Type: " + data.getTokenType());
                 getLogger().info("End Entity Profile ID: " + data.getEndEntityProfileId());
                 getLogger().info("Certificate Profile ID: " + data.getCertificateProfileId());
-                getLogger().info("Hard Token Issuer ID: " + data.getHardTokenIssuerId());
                 getLogger().info("Created: " + data.getTimeCreated());
                 getLogger().info("Modified: " + data.getTimeModified());
                 if (data.getExtendedInformation() != null) {
@@ -116,6 +115,7 @@ public class FindEndEntityCommand extends BaseRaCommand {
         return sb.toString();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
     }

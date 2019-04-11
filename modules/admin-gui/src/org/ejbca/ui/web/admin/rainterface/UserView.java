@@ -215,15 +215,7 @@ public class UserView implements Serializable, Comparable<UserView> {
     public void setTokenType(int tokentype) {
         userdata.setTokenType(tokentype);
     }
-
-    public int getHardTokenIssuerId() {
-        return userdata.getHardTokenIssuerId();
-    }
-
-    public void setHardTokenIssuerId(int hardtokenissuerid) {
-        userdata.setHardTokenIssuerId(hardtokenissuerid);
-    }
-
+    
     public int getCAId() {
         return userdata.getCAId();
     }

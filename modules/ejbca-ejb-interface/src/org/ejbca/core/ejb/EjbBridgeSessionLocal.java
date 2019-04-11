@@ -50,8 +50,6 @@ import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -106,8 +104,6 @@ public interface EjbBridgeSessionLocal {
 	EndEntityManagementSessionLocal getEndEntityManagementSession();
 	EndEntityProfileSessionLocal getEndEntityProfileSession();
 	GlobalConfigurationSessionLocal getGlobalConfigurationSession();
-	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();
-	HardTokenSessionLocal getHardTokenSession();
     ImportCrlSessionLocal getImportCrlSession();
     InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession();
     InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession();

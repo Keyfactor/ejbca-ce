@@ -72,7 +72,6 @@ public class UserDataVO implements Serializable {
     private Date timecreated;
     private Date timemodified;
     private int tokentype;
-    private int hardtokenissuerid;
     private ExtendedInformation extendedinformation;
 
     /** Creates new empty UserDataVO */
@@ -95,11 +94,10 @@ public class UserDataVO implements Serializable {
      * @param timecreated DOCUMENT ME!
      * @param timemodified DOCUMENT ME!
      * @param tokentype DOCUMENT ME!
-     * @param hardtokenissuerid DOCUMENT ME!
 
      */
     public UserDataVO(String user, String dn, int caid, String subjectaltname, String email, int status, EndEntityType type, int endentityprofileid, int certificateprofileid,
-                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
+                         Date timecreated, Date timemodified, int tokentype, ExtendedInformation extendedinfo) {
         setUsername(user);
         setPassword(null);
         setCardNumber(null);
@@ -114,7 +112,6 @@ public class UserDataVO implements Serializable {
         setTimeCreated(timecreated);
         setTimeModified(timemodified);
         setTokenType(tokentype);
-        setHardTokenIssuerId(hardtokenissuerid);
         setExtendedinformation(extendedinfo);
         setCardNumber(null);
     }
@@ -132,11 +129,10 @@ public class UserDataVO implements Serializable {
      * @param endentityprofileid 
      * @param certificateprofileid 
      * @param tokentype 
-     * @param hardtokenissuerid 
      * @param extendedinfo
      */
     public UserDataVO(String user, String dn, int caid, String subjectaltname, String email,  EndEntityType type, int endentityprofileid, int certificateprofileid,
-                          int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
+                          int tokentype, ExtendedInformation extendedinfo) {
         setUsername(user);
         setPassword(null);
         setDN(dn);
@@ -147,7 +143,6 @@ public class UserDataVO implements Serializable {
         setEndEntityProfileId(endentityprofileid);
         setCertificateProfileId(certificateprofileid);
         setTokenType(tokentype);
-        setHardTokenIssuerId(hardtokenissuerid);
         setExtendedinformation(extendedinfo);
         setCardNumber(null);
     }
@@ -197,8 +192,6 @@ public class UserDataVO implements Serializable {
     public Date getTimeModified() {return this.timemodified;}
     public int getTokenType(){ return this.tokentype;}
     public void setTokenType(int tokentype) {this.tokentype=tokentype;}
-    public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
-    public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
 
     /**
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
@@ -343,14 +336,13 @@ public class UserDataVO implements Serializable {
         	newee.loadData(extendedinformation.saveData());    		
     	}
     	EndEntityInformation eei = new EndEntityInformation(getUsername(), getDN(), caid, getSubjectAltName(), getEmail(), type, 
-    			endentityprofileid, certificateprofileid, tokentype, hardtokenissuerid, newee);
+    			endentityprofileid, certificateprofileid, tokentype, newee);
     	eei.setPassword(getPassword());
     	eei.setCardNumber(getCardNumber());
     	eei.setStatus(status);
     	eei.setTimeCreated(timecreated);
     	eei.setTimeModified(timemodified);
     	eei.setTokenType(tokentype);
-    	eei.setHardTokenIssuerId(hardtokenissuerid);
     	return eei;
     }
 }

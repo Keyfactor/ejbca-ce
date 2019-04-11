@@ -13,10 +13,6 @@
 
 package org.ejbca.core.model.approval.approvalrequests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -38,6 +34,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class AddEditEndEntityApprovalTest  extends CaTestCase {
 
@@ -85,7 +85,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             // Add an end entity through executing an AddEndEntityApprovalRequest
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caid, null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, 0, null);
+                    SecConst.TOKEN_SOFT_P12, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid,

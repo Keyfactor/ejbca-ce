@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.PublicKey;
@@ -52,6 +49,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Test generating tokens
  * @version $Id$
@@ -79,6 +79,7 @@ public class GenerateTokenTest extends CaTestCase {
 
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -95,6 +96,7 @@ public class GenerateTokenTest extends CaTestCase {
 
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -117,8 +119,7 @@ public class GenerateTokenTest extends CaTestCase {
 
             EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random().nextLong(), caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), eeProfileId,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12,
-                    SecConst.NO_HARDTOKENISSUER, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             if (eeinfo.getExtendedInformation() == null) {
                 eeinfo.setExtendedInformation(new ExtendedInformation());

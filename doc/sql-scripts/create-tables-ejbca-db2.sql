@@ -225,57 +225,6 @@ CREATE TABLE GlobalConfigurationData (
     PRIMARY KEY (configurationId)
 );
 
-CREATE TABLE HardTokenCertificateMap (
-    certificateFingerprint VARCHAR(254) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    tokenSN VARCHAR(254) NOT NULL,
-    PRIMARY KEY (certificateFingerprint)
-);
-
-CREATE TABLE HardTokenData (
-    tokenSN VARCHAR(254) NOT NULL,
-    cTime BIGINT NOT NULL,
-    data BLOB(200K),
-    mTime BIGINT NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    significantIssuerDN VARCHAR(254),
-    tokenType INTEGER NOT NULL,
-    username VARCHAR(254),
-    PRIMARY KEY (tokenSN)
-);
-
-CREATE TABLE HardTokenIssuerData (
-    id INTEGER NOT NULL,
-    adminGroupId INTEGER NOT NULL,
-    alias VARCHAR(254) NOT NULL,
-    data BLOB(200K) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE HardTokenProfileData (
-    id INTEGER NOT NULL,
-    data CLOB,
-    name VARCHAR(254) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    updateCounter INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE HardTokenPropertyData (
-    id VARCHAR(80) NOT NULL,
-    property VARCHAR(254) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    value VARCHAR(254),
-    PRIMARY KEY (id,
-    property)
-);
-
 CREATE TABLE InternalKeyBindingData (
     id INTEGER NOT NULL,
     certificateId VARCHAR(254),
@@ -406,7 +355,6 @@ CREATE TABLE UserData (
     clearPassword VARCHAR(254),
     endEntityProfileId INTEGER NOT NULL,
     extendedInformationData CLOB,
-    hardTokenIssuerId INTEGER NOT NULL,
     keyStorePassword VARCHAR(254),
     passwordHash VARCHAR(254),
     rowProtection CLOB(10K),

@@ -13,9 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -73,6 +70,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests http servlet for certificate request
  * 
@@ -99,6 +99,7 @@ public class CertRequestHttpTest extends CaTestCase {
         
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -108,6 +109,7 @@ public class CertRequestHttpTest extends CaTestCase {
         resourceReq = "certreq";
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -549,7 +551,7 @@ public class CertRequestHttpTest extends CaTestCase {
         boolean userExists = false;
         try {
             endEntityManagementSession.addUser(admin, TEST_USERNAME, "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", clearpwd,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0, caid);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, caid);
             log.debug("created user: "+TEST_USERNAME+", foo123, C=SE, O=PrimeKey, CN=ReqTest");
         } catch (EndEntityExistsException e) {
             userExists = true; // This is what we want
@@ -557,7 +559,7 @@ public class CertRequestHttpTest extends CaTestCase {
         if (userExists) {
             log.debug("User "+TEST_USERNAME+" already exists.");
             EndEntityInformation endEntityInformation = new EndEntityInformation(TEST_USERNAME, "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, null);
             endEntityInformation.setPassword("foo123");
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(admin, endEntityInformation, false);
@@ -567,7 +569,7 @@ public class CertRequestHttpTest extends CaTestCase {
 
     private void setupUserStatus(int status) throws Exception {
         EndEntityInformation endEntityInformation = new EndEntityInformation(TEST_USERNAME, "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
         endEntityInformation.setPassword("foo123");
         endEntityInformation.setStatus(status);
         endEntityManagementSession.changeUser(admin, endEntityInformation, false);
@@ -583,6 +585,7 @@ public class CertRequestHttpTest extends CaTestCase {
         return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }

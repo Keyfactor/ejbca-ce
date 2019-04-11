@@ -390,12 +390,6 @@ function confirmrevocation(){
 				<td style='white-space: nowrap;'><div class="button-group">
 				<% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)){ %>
 					<button type='button' onclick='viewcert(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_CERTIFICATES_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW") %>' /></button>
-				<% } %>
-				<% if (globalconfiguration.getIssueHardwareTokens()
-					&& (rabean.authorizedToViewHardToken(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
-					&& ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWHARDTOKENS)){ %>
-					<button type='button' onclick='viewtoken(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_HARDTOKENS_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("HARDTOKENS_ABBR") %>' /></button>
-				<% } %>
 					</div></td>
 			</tr>
 		</table>

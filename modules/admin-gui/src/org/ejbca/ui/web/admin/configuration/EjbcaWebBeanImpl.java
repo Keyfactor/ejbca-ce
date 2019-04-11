@@ -89,13 +89,11 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -132,7 +130,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
     private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-    private final HardTokenSessionLocal hardTokenSession = ejbLocalHelper.getHardTokenSession();
     private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
     private final SecurityEventsLoggerSessionLocal auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
     private final RoleSessionLocal roleSession = ejbLocalHelper.getRoleSession();
@@ -815,13 +812,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
     }
 
-    /** @deprecated Since EJBCA 7.0.0. Use HardTokenSession.getHardTokenIssuers instead. */
-    @Override
-    @Deprecated
-    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
-        return hardTokenSession.getHardTokenIssuers(administrator);
-    }
-
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
     @Override
     @Deprecated
@@ -870,12 +860,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds;
-        if (globalconfiguration.getIssueHardwareTokens()) {
-            authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_HARDTOKEN);
-        } else {
-            authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ENDENTITY);
-        }
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ENDENTITY);
+        
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);

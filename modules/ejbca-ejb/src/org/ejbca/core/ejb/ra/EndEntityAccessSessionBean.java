@@ -56,7 +56,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -136,21 +135,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.trace("<findUserBySubjectDN(" + subjectdn + ")");
         }
         return result;
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<UserData> findNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId, int maxResults) {
-        final TypedQuery<UserData> query = entityManager
-                .createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)", UserData.class);
-        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-        query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
-        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
-        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
-        if (maxResults > 0) {
-            query.setMaxResults(maxResults);
-        }
-        return query.getResultList();
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -404,26 +388,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public long countByCertificateProfileId(int certificateProfileId) {
         final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
         query.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public long countByHardTokenIssuerId(int hardTokenIssuerId) {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId");
-        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public long countNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId) {
-        final javax.persistence.Query query = entityManager
-                .createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
-        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-        query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
-        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
-        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
         return ((Long) query.getSingleResult()).longValue(); // Always returns a result
     }
     

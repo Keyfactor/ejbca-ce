@@ -49,26 +49,7 @@ public final class SecConst {
     public static final String[] TOKENTEXTS = {"TOKENSOFTUSERGENERATED","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
 
     public static final int[]    TOKENIDS   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
-
-    /** Constant indicating a standard hard token, defined in scaper. */
-    public static final int TOKEN_HARD_DEFAULT = 101;
-
-    /** Constant indicating a eid hard token.
-     *   OBSERVE This class should only be used for backward compatibility with EJBCA 2.0
-     */
-    public static final int TOKEN_EID = 102;
-
-    /**Constant indicating a swedish eid hard token.  */
-    public static final int TOKEN_SWEDISHEID = 103;
-
-    /**Constant indicating a enhanced eid hard token.  */
-    public static final int TOKEN_ENHANCEDEID = 104;
-
-    /**Constant indicating a enhanced eid hard token.  */
-    public static final int TOKEN_TURKISHEID = 105;
-
-    public static final int NO_HARDTOKENISSUER = 0;
-
+    
     // ECA-419 Check This!
     public static final int EMPTY_VALIDATOR = 1;
 

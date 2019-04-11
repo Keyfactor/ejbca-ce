@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
@@ -43,6 +38,11 @@ import org.ejbca.util.NonEjbTestTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test the combined function for editing and requesting a keystore/certificate
@@ -76,7 +76,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         String username = "softTokenRequestTest-" + random.nextInt();
         String password = "foo123";
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, null);
         userdata.setPassword(password);
         byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, null, "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA, true);
@@ -127,7 +127,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         final  String username2 = "certificateRequestTest-user2";
         final String password = "foo123";
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
@@ -173,7 +173,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
     	final String suppliedDn = "CN=" + username + ",Name=removed,SN=removed,GIVENNAME= ,GIVENNAME=,SURNAME= ,SURNAME=,O=removed,C=SE";
     	final String expectedDn = "CN=" + username + ",Name=removed,SN=removed,O=removed,C=SE";
         EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
@@ -187,11 +187,13 @@ public class CertificateRequestSessionTest extends CaTestCase {
         }
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }

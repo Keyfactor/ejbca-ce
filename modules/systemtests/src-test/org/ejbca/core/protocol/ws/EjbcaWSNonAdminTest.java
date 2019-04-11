@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.MalformedURLException;
@@ -78,13 +74,13 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
@@ -95,6 +91,10 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * 
@@ -154,6 +154,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
     }
     
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -166,6 +167,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         configurationSession.updateProperty("jaxws.approvalprofileid", String.valueOf(approvalProfileId));
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -542,7 +544,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         caid = cainfo.getCAId();
 
         EndEntityInformation userData = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
         userData.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intadmin, userData, true);
 

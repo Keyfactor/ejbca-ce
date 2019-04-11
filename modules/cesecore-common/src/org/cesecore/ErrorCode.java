@@ -38,8 +38,6 @@ public class ErrorCode implements Serializable {
     private static final String _CA_ID_EQUALS_ZERO = "CA_ID_EQUALS_ZERO"; // CA ID can't be equal to zero.
     private static final String _EE_PROFILE_NOT_EXISTS = "EE_PROFILE_NOT_EXISTS"; // End Entity profile does not exist.
     private static final String _CERT_PROFILE_NOT_EXISTS = "CERT_PROFILE_NOT_EXISTS"; // Certificate profile does not exist.
-    private static final String _HARD_TOKEN_ISSUER_NOT_EXISTS = "HARD_TOKEN_ISSUER_NOT_EXISTS"; // Hard token issuer doens't exists.
-    private static final String _HARD_TOKEN_NOT_EXISTS = "HARD_TOKEN_NOT_EXISTS"; // Hard token does not exist.
     private static final String _UNKOWN_TOKEN_TYPE = "UNKOWN_TOKEN_TYPE"; // Unknown token type.
     private static final String _AUTH_CERT_NOT_RECEIVED = "AUTH_CERT_NOT_RECEIVED"; // Client authentication certificate not received.
     private static final String _USER_NOT_FOUND = "USER_NOT_FOUND"; // User doesn't exist.
@@ -116,10 +114,6 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode EE_PROFILE_NOT_EXISTS = new ErrorCode(_EE_PROFILE_NOT_EXISTS);
     /** Certificate profile does not exist. */
     public static final ErrorCode CERT_PROFILE_NOT_EXISTS = new ErrorCode(_CERT_PROFILE_NOT_EXISTS);
-    /** Hard token issuer doens't exists. */
-    public static final ErrorCode HARD_TOKEN_ISSUER_NOT_EXISTS = new ErrorCode(_HARD_TOKEN_ISSUER_NOT_EXISTS);
-    /** Hard token issuer exists. */
-    public static final ErrorCode HARD_TOKEN_NOT_EXISTS = new ErrorCode(_HARD_TOKEN_NOT_EXISTS);
     /** Unknown token type. */
     public static final ErrorCode UNKOWN_TOKEN_TYPE = new ErrorCode(_UNKOWN_TOKEN_TYPE);
     /** Client authentication certificate not received. */
@@ -222,6 +216,7 @@ public class ErrorCode implements Serializable {
     }
 
     /** @see java.lang.Object#equals(Object) */
+    @Override
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof ErrorCode) {
             ErrorCode other = (ErrorCode) obj;
@@ -233,10 +228,12 @@ public class ErrorCode implements Serializable {
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         return "Internal EJBCA error code: "+this.internalErrorCode;
     }
     /** @see java.lang.Object#hashCode() */
+    @Override
     public int hashCode() {
         if (internalErrorCode != null) {
             return internalErrorCode.hashCode();

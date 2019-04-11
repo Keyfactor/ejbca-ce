@@ -12,15 +12,15 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests key strings used for crypto tokens
@@ -45,8 +45,6 @@ public class PurposeMappingTest {
 		assertNull("Should return null, since we don't have it defined", key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
 		assertNull("Should return null, since we don't have it defined", key);
-		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-		assertEquals(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertEquals(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYTEST);
@@ -59,8 +57,6 @@ public class PurposeMappingTest {
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
 		assertNull(alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
-		assertNull(alias);
-		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
 		assertNull(alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertNull(alias);
@@ -95,8 +91,6 @@ public class PurposeMappingTest {
 		assertNull("Should return null, since we don't have it defined", key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
 		assertNull("Should return null, since we don't have it defined", key);
-		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-		assertEquals(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertEquals(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYTEST);
@@ -109,8 +103,6 @@ public class PurposeMappingTest {
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
 		assertNull(alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
-		assertNull(alias);
-		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
 		assertNull(alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertNull(alias);
@@ -132,7 +124,6 @@ public class PurposeMappingTest {
 		prop.put(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT, "mycertSignNextKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, "mycertSignPreviousKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, "mycrlSignKey");
-		prop.put(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, "myhardTokenEncKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, "mykeyEncKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, "mytestKey");
 		PurposeMapping ks = new PurposeMapping(prop);
@@ -157,8 +148,6 @@ public class PurposeMappingTest {
 		assertEquals(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
 		assertEquals(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, key);
-		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-		assertEquals(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertEquals(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYTEST);
@@ -172,8 +161,6 @@ public class PurposeMappingTest {
 		assertEquals("mycertSignNextKey", alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
 		assertEquals("mycertSignPreviousKey", alias);
-		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-		assertEquals("myhardTokenEncKey", alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertEquals("mykeyEncKey", alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_KEYTEST);
@@ -192,7 +179,6 @@ public class PurposeMappingTest {
 		Properties prop = new Properties();
 		prop.put(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "mycertSignKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, "mycrlSignKey");
-		prop.put(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, "myhardTokenEncKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, "mykeyEncKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, "mytestKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, "mydefaultKey");
@@ -212,8 +198,6 @@ public class PurposeMappingTest {
 		assertEquals(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
 		assertEquals(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, key);
-		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-		assertEquals(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertEquals(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, key);
 		key = ks.getPurposeProperty(CATokenConstants.CAKEYPURPOSE_KEYTEST);
@@ -231,8 +215,6 @@ public class PurposeMappingTest {
 		assertNull("Should return null, since we don't have it defined", key);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
 		assertNull("Should return null, since we don't have it defined", key);
-		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-		assertEquals("myhardTokenEncKey", alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		assertEquals("mykeyEncKey", alias);
 		alias = ks.getAlias(CATokenConstants.CAKEYPURPOSE_KEYTEST);

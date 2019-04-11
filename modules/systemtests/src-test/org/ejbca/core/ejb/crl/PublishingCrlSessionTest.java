@@ -235,7 +235,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             ei.setCustomData(EndEntityProfile.STARTTIME, "2001-04-20 01:22");
             ei.setCustomData(EndEntityProfile.ENDTIME, "2012-05-12 05:33");
             EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
-                    new EndEntityType(EndEntityTypes.ENDUSER), 0, profileId, EndEntityConstants.TOKEN_USERGEN, 0, ei);
+                    new EndEntityType(EndEntityTypes.ENDUSER), 0, profileId, EndEntityConstants.TOKEN_USERGEN, ei);
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
             X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate)resp.getCertificate();
@@ -563,7 +563,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
     private X509Certificate createCert() throws Exception {
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
         X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
         X509Certificate cert = (X509Certificate)resp.getCertificate();

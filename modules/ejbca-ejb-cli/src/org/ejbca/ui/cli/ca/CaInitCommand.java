@@ -67,7 +67,6 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -425,11 +424,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
             }
-            final String hardTokenEncAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING);
-            if (hardTokenEncAlias != null) {
-                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, hardTokenEncAlias);
-                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING);
-            }
             final String keyEncAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING);
             if (keyEncAlias != null) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyEncAlias);
@@ -553,7 +547,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 }
                 extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + dn, "",
                         extendedServiceKeySpec, keytype));
-                extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 cainfo = createX509CaInfo(dn, subjectAltName, caname, certificateProfileId, encodedValidity, signedByCAId, caToken, policies, extendedcaservices);
                 break;

@@ -64,7 +64,6 @@ public class EndEntityInformation implements Serializable {
     private Date timemodified;
     /** Type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc*/
     private int tokentype;
-    private int hardtokenissuerid;
     /** ExtendedInformation holding extra data of the End entity */
     private ExtendedInformation extendedinformation;
 
@@ -112,12 +111,10 @@ public class EndEntityInformation implements Serializable {
      * @param timecreated DOCUMENT ME!
      * @param timemodified DOCUMENT ME!
      * @param tokentype the type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc
-     * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
-
      */
     public EndEntityInformation(final String username, final String dn, final int caid, final String subjectaltname, final String email,
             final int status, final EndEntityType type, final int endentityprofileid, final int certificateprofileid, final Date timecreated,
-            final Date timemodified, final int tokentype, final int hardtokenissuerid, final ExtendedInformation extendedinfo) {
+            final Date timemodified, final int tokentype, final ExtendedInformation extendedinfo) {
         setUsername(username);
         setPassword(null);
         setCardNumber(null);
@@ -132,7 +129,6 @@ public class EndEntityInformation implements Serializable {
         setTimeCreated(timecreated);
         setTimeModified(timemodified);
         setTokenType(tokentype);
-        setHardTokenIssuerId(hardtokenissuerid);
         setExtendedInformation(extendedinfo);
         setCardNumber(null);
     }
@@ -150,12 +146,10 @@ public class EndEntityInformation implements Serializable {
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
      * @param tokentype the type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc
-     * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
      * @param extendedinfo
      */
     public EndEntityInformation(final String username, final String dn, final int caid, final String subjectaltname, final String email,
-            final EndEntityType type, final int endentityprofileid, final int certificateprofileid, final int tokentype, final int hardtokenissuerid,
-            final ExtendedInformation extendedinfo) {
+            final EndEntityType type, final int endentityprofileid, final int certificateprofileid, final int tokentype, final ExtendedInformation extendedinfo) {
         setUsername(username);
         setPassword(null);
         setDN(dn);
@@ -166,7 +160,6 @@ public class EndEntityInformation implements Serializable {
         setEndEntityProfileId(endentityprofileid);
         setCertificateProfileId(certificateprofileid);
         setTokenType(tokentype);
-        setHardTokenIssuerId(hardtokenissuerid);
         setExtendedInformation(extendedinfo);
         setCardNumber(null);
     }
@@ -225,9 +218,6 @@ public class EndEntityInformation implements Serializable {
     public Date getTimeModified() {return this.timemodified;}
     public int getTokenType(){ return this.tokentype;}
     public void setTokenType(int tokentype) {this.tokentype=tokentype;}
-    public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
-    public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
-
 
     /**
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean.
@@ -384,7 +374,6 @@ public class EndEntityInformation implements Serializable {
             extendedInformationDump.append("}");
             details.put("extendedInformation", extendedInformationDump.substring(2));
         }
-        details.put("hardtokenissuerid", Integer.toString(hardtokenissuerid));
         details.put("status", Integer.toString(status));
         details.put("subjectAltName", subjectAltName);
         details.put("subjectDN", subjectDN);

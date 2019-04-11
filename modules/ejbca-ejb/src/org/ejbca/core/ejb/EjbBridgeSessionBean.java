@@ -53,8 +53,6 @@ import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -110,8 +108,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @EJB EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
-	@EJB HardTokenBatchJobSessionLocal hardTokenBatchJobSession;
-	@EJB HardTokenSessionLocal hardTokenSession;
 	@EJB ImportCrlSessionLocal importCrlSession;
 	@EJB InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
 	@EJB InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
@@ -161,8 +157,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return endEntityManagementSession; }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
 	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
-	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
-	@Override public HardTokenSessionLocal getHardTokenSession() { return hardTokenSession; }
 	@Override public ImportCrlSessionLocal getImportCrlSession() { return importCrlSession; }
     @Override public InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession() { return internalKeyBindingDataSession; }
 	@Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return internalKeyBindingMgmtSession; }

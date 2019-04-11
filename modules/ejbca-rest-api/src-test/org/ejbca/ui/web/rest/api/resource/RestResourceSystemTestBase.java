@@ -323,7 +323,6 @@ public class RestResourceSystemTestBase {
                 1,
                 1,
                 EndEntityConstants.TOKEN_SOFT_P12,
-                0,
                 null);
         endEntityInformation.setPassword(CERTIFICATE_PASSWORD);
         return endEntityInformation;

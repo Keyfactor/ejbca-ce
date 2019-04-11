@@ -13,7 +13,6 @@
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
-<jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:useBean id="viewendentityhelper" scope="session" class="org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper" />
 <jsp:useBean id="editendentitybean" scope="page" class="org.ejbca.ui.web.admin.rainterface.EditEndEntityBean" />
 <%! // Declarations
@@ -26,8 +25,6 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
                                             rabean.initialize(request, ejbcawebbean);
                                             cabean.initialize(ejbcawebbean);
-                                            if(globalconfiguration.getIssueHardwareTokens())
-                                              tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getRaPath()  + "/viewendentity.jsp";
 
   viewendentityhelper.initialize(ejbcawebbean,rabean,cabean);
@@ -280,20 +277,6 @@
               } %>
          </td> 
        </tr>
-
-       <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENISSUER") %></td>
-         <td>   
-            <% if(viewendentityhelper.userdata.getHardTokenIssuerId() == SecConst.NO_HARDTOKENISSUER)
-                 out.write(ejbcawebbean.getText("NONE"));
-               else {%>
-                 <c:out value="<%= tokenbean.getHardTokenIssuerAlias(viewendentityhelper.userdata.getHardTokenIssuerId()) %>"/>
-               <%}
-            %>
-         </td> 
-       </tr>
-       <% } %>
 
 
     <!-- ---------- Other certificate data -------------------- -->

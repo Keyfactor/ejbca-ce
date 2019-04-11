@@ -785,7 +785,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setDN(getSubjectDn().toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
         endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
-        endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
         endEntityInformation.setTimeCreated(new Date());

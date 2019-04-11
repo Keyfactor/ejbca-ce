@@ -155,11 +155,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
                         CertificateConstants.CERTTYPE_SUBCA));
             }
-            boolean usingHardwareTokens = getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens();
-            if (usingHardwareTokens) {
-                authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
-                        CertificateConstants.CERTTYPE_HARDTOKEN));
-            }
+            
             final List<Integer> profileIdsWithMissingCA = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(getAdmin());
             final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
             final Set<Integer> existing = new HashSet<>();

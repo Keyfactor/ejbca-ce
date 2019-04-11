@@ -25,12 +25,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
-import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
-import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -41,12 +38,9 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
-import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
-import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
-import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -743,31 +737,7 @@ public interface IEjbcaWS {
     KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN)
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException;
 
-	/**
-	 * Revokes all certificates mapped to a hardtoken.
-	 *
-	 * Authorization requirements:<pre>
-	 * - /administrator
-	 * - /ra_functionality/revoke_end_entity
-	 * - /endentityprofilesrules/<end entity profile of the user owning the token>/revoke_end_entity
-	 * - /ca/&lt;ca of certificates on token&gt;
-	 * </pre>
-	 *
-	 * @param hardTokenSN of the hardTokenSN
-	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOCATION_REASON_ constants
-	 * @throws CADoesntExistsException if a referenced CA does not exist
-	 * @throws AuthorizationDeniedException if client isn't authorized.
-	 * @throws NotFoundException if token doesn't exist
-	 * @throws WaitingForApprovalException If request has been added to list of tasks to be approved. The request ID will be included as a field in this exception.
-	 * @throws ApprovalException There already exists an approval request for this task
-	 * @throws AlreadyRevokedException The token was already revoked.
-	 * @throws EjbcaException
-	 */
-	void revokeToken(String hardTokenSN, int reason)
-			throws CADoesntExistsException, AuthorizationDeniedException,
-			NotFoundException, EjbcaException, ApprovalException,
-			WaitingForApprovalException, AlreadyRevokedException;
-
+	
 	/**
 	 * Returns revocation status for given user.
 	 *
@@ -827,116 +797,7 @@ public interface IEjbcaWS {
 	List<UserDataSourceVOWS> fetchUserData(
 			List<String> userDataSourceNames, String searchString)
 			throws UserDataSourceException, EjbcaException, AuthorizationDeniedException;
-
-	/**
-	 * Adds certificates and/or data to a hardtoken.
-	 *
-	 * Authorization requirements:<pre>
-	 * If the caller is an administrator
-	 * - /administrator
-	 * - /ra_functionality/create_end_entity and/or edit_end_entity
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/create_end_entity and/or edit_end_entity
-	 * - /ra_functionality/revoke_end_entity (if overwrite flag is set)
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/revoke_end_entity (if overwrite flag is set)
-	 * - /ca_functionality/create_certificate
-	 * - /ca/&lt;ca of all requested certificates&gt;
-	 * - /hardtoken_functionality/issue_hardtokens
-	 * </pre>
-	 *
-	 * If the user isn't an administrator the request will be added to a queue for approval.
-	 *
-	 * @param userData of the user that should be generated
-	 * @param tokenRequests a list of certificate requests
-	 * @param hardTokenData data containing PIN/PUK info
-	 * @param overwriteExistingSN if the the current hardtoken should be overwritten instead of throwing HardTokenExists exception.
-	 * If a card is overwritten, all previous certificates on the card is revoked.
-	 * @param revokePreviousCards tells the service to revoke old cards issued to this user. If the present card have the label TEMPORARY_CARD
-	 * old cards is set to CERTIFICATE_ONHOLD otherwise UNSPECIFIED.
-	 * @return a List of the generated certificates.
-	 * @throws CADoesntExistsException if a referenced CA does not exist
-	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
-	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed. The request ID will be included as a field in this exception.
-	 * @throws HardTokenExistsException if the given hardtoken serial number already exists.
-	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
-	 * @throws ApprovalException  if error happened with the approval mechanisms
-	 * @throws ApprovalRequestExecutionException if the approval request was rejected
-	 * @throws UserDoesntFullfillEndEntityProfile
-	 * @throws EjbcaException
-	 */
-    List<TokenCertificateResponseWS> genTokenCertificates(
-			UserDataVOWS userData,
-			List<TokenCertificateRequestWS> tokenRequests,
-			HardTokenDataWS hardTokenData,
-			boolean overwriteExistingSN,
-			boolean revokePreviousCards) throws CADoesntExistsException, AuthorizationDeniedException,
-			WaitingForApprovalException, HardTokenExistsException,
-			UserDoesntFullfillEndEntityProfile, ApprovalException,
-			EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;
-
-	/**
-	 * Looks up if a serial number already have been generated.
-	 *
-	 * Authorization requirements: A valid certificate
-	 *
-	 * @param hardTokenSN the serial number of the token to look for.
-	 * @return true if hard token exists
-	 * @throws EjbcaException if error occurred server side
-	 */
-	boolean existsHardToken(String hardTokenSN)
-			throws EjbcaException;
-
-	/**
-	 * Fetches information about a hard token.
-	 *
-	 * If the caller is an administrator<pre>
-	 * - /administrator
-	 * - /ra_functionality/view_hardtoken
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_hardtoken
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_hardtoken/puk_data (if viewPUKData = true)
-	 * - /ca/&lt;ca of user&gt;
-	 * </pre>
-	 *
-	 * If the user isn't an administrator the request will be added to a queue for approval.
-	 *
-	 * @param hardTokenSN of the token to look for.
-	 * @param viewPUKData if PUK data of the hard token should be returned.
-	 * @param onlyValidCertificates of all revoked and expired certificates should be filtered.
-	 * @return the HardTokenData
-	 * @throws CADoesntExistsException if a referenced CA does not exist
-	 * @throws HardTokenDoesntExistsException if the hardtokensn don't exist in database.
-	 * @throws NotFoundException if user for wich the hard token is registered does not exist
-	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
-	 * @throws ApprovalException  if error happened with the approval mechanisms
-	 * @throws WaitingForApprovalException if the request haven't been processed yet.
-	 * @throws ApprovalRequestExecutionException if the approval request was rejected
-	 * @throws AuthorizationDeniedException
-	 * @throws EjbcaException if an exception occurred on server side.
-	 */
-	HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
-			throws CADoesntExistsException, AuthorizationDeniedException,
-			HardTokenDoesntExistsException, NotFoundException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException;
-
-	/**
-	 * Fetches all hard tokens for a given user.
-	 *
-	 * If the caller is an administrator<pre>
-	 * - /administrator
-	 * - /ra_functionality/view_hardtoken
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_hardtoken
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_hardtoken/puk_data (if viewPUKData = true)
-	 * </pre>
-	 *
-	 * @param username to look for.
-	 * @param viewPUKData if PUK data of the hard token should be returned.
-	 * @param onlyValidCertificates of all revoked and expired certificates should be filtered.
-	 * @return a list of the HardTokenData generated for the user never null.
-	 * @throws EjbcaException if an exception occurred on server side.
-	 * @throws CADoesntExistsException
-	 * @throws AuthorizationDeniedException
-	 */
-	List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
-			throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
-
+	
 	/**
 	 * Republishes a selected certificate.
 	 *

@@ -36,7 +36,7 @@ public class CliAuthenticationTestHelperSessionBean implements CliAuthentication
     @Override
     public void createUser(String username, String password) {
         UserData defaultCliUserData = new UserData(username, password, false, "UID="
-                + username, 0, null, null, null, 0, 0, 0, 0, 0, null);
+                + username, 0, null, null, null, 0, 0, 0, 0, null);
         entityManager.persist(defaultCliUserData);
     }
 }

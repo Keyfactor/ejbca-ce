@@ -72,7 +72,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -150,8 +149,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
@@ -441,6 +438,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @param timer timer whose expiration caused this notification.
      */
+    @Override
     @Timeout
     // Glassfish 2.1.1:
     // "Timeout method ....timeoutHandler(javax.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
@@ -646,7 +644,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
             ejbs.put(CrlStoreSessionLocal.class, crlStoreSession);
             ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
-            ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
             ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);
             ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, internalAuditSession);
             ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);

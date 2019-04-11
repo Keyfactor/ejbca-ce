@@ -132,7 +132,6 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -204,8 +203,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private RevocationSessionLocal revocationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession;
+    
     // Re-factor: Remove Cyclic module dependency.
     @EJB
     private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
@@ -939,9 +937,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             result = createPKCS7(admin, (X509Certificate) certificate, false);
         } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
             result = createPKCS7(admin, (X509Certificate) certificate, true);
-        }
-        if (hardTokenSN != null) {
-            hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, certificate);
         }
         return result;
     }

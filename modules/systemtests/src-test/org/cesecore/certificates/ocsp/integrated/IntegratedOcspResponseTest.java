@@ -12,16 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.integrated;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -121,6 +115,11 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * 
  * @version $Id$
@@ -163,7 +162,7 @@ public class IntegratedOcspResponseTest {
         testx509ca = cryptoTokenRule.createX509Ca(); 
         caCertificate = (X509Certificate) testx509ca.getCACertificate();
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com",
-                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());

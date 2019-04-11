@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -58,6 +53,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests authentication session used by signer.
  *
@@ -94,11 +94,13 @@ public class AuthenticationSessionTest extends CaTestCase {
         removeTestCA();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         createNewUser();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         if (endEntityManagementSession.existsUser(username1)) {
@@ -113,8 +115,7 @@ public class AuthenticationSessionTest extends CaTestCase {
             throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
-                null);
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, null);
         ExtendedInformation ei = new ExtendedInformation();
         ei.setMaxLoginAttempts(maxFailedLogins);
         ei.setRemainingLoginAttempts(maxFailedLogins);
@@ -133,7 +134,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         endEntityManagementSession.addUser(internalAdmin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
 
         // Make another user that we know later...
@@ -353,6 +354,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         }
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }

@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
-import static org.junit.Assert.assertEquals;
-
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -48,6 +46,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @version $Id$
@@ -97,7 +97,7 @@ public class InternalKeyBindingSetStatusCommandTest {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         EndEntityInformation endEntityInformation = new EndEntityInformation("test"+TESTCLASS_NAME, "CN=" + TESTCLASS_NAME, x509ca.getCAId(), null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         endEntityInformation.setPassword("foo123");
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         RequestMessage req = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());

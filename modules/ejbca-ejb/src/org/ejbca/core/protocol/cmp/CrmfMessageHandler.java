@@ -425,7 +425,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					}
 				}
 			}
-			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
+			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, ei);
 			userdata.setPassword(pwd);
 			// Set so we have the right params in the call to processCertReq. 
 			// Username and pwd in the EndEntityInformation and the IRequestMessage must match

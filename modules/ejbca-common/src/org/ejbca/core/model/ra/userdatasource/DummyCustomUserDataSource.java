@@ -45,7 +45,8 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.ICustomUserDataSource#init(java.util.Properties)
 	 */
-	public void init(Properties properties) {
+	@Override
+    public void init(Properties properties) {
 	  // This method sets up the communication with the publisher	
 		
 	  log.debug("Initializing DummyCustomUserDataSource");		
@@ -57,11 +58,12 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	 * 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */
-	public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {
+	@Override
+    public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {
 
 		List<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
 		if(searchstring.equalsIgnoreCase("per")){
-			EndEntityInformation endEntityInformation = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,new EndEntityType(EndEntityTypes.ENDUSER),1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
+			EndEntityInformation endEntityInformation = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,new EndEntityType(EndEntityTypes.ENDUSER),1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,null);
 			result.add(new UserDataSourceVO(endEntityInformation));
 		}
 		
@@ -71,19 +73,22 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */
-	public void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException {
+	@Override
+    public void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException {
         log.debug("DummyCustomUserDataSource, Testing connection");			
 	}
 
 	
-	protected void finalize() throws Throwable {
+	@Override
+    protected void finalize() throws Throwable {
         log.debug("DummyCustomUserDataSource, closing connection");
 		// This method closes the communication with the publisher.	
 			
 		super.finalize(); 
 	}
 
-	public boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException {
+	@Override
+    public boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException {
 		log.debug("DummyCustomUserDataSource, remove User Data  called with searchstring : " + searchstring);
 		return true;
 	}

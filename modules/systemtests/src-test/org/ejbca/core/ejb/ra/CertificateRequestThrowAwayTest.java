@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.ra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -84,6 +81,9 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test the combined function for editing and requesting a keystore/certificate in a single transaction.
@@ -278,7 +278,7 @@ public class CertificateRequestThrowAwayTest {
         int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(TESTCA_NAME);
         EndEntityInformation userData = new EndEntityInformation(username, "CN=" + username, CaTestCase.getTestCAId(TESTCA_NAME), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null, null,
-                SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userData.setPassword(password);
         return userData;
     }

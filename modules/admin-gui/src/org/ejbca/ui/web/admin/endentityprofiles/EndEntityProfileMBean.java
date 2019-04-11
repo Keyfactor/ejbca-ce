@@ -50,11 +50,9 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
@@ -96,8 +94,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private CaSessionLocal caSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession;
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
     private EndEntityProfile profiledata;
@@ -798,45 +794,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setAvailableTokenTypes(tokenTypes);
     }
 
-    public boolean isHardTokenIssuerSystemConfigured() {
-        return ejbcaWebBean.getGlobalConfiguration().getIssueHardwareTokens();
-    }
-
-    public boolean isUseHardTokenIssuer() {
-        return profiledata.isHardTokenIssuerUsed();
-    }
-
-    public void setUseHardTokenIssuer(boolean use) {
-        profiledata.setHardTokenIssuerUsed(use);
-    }
-
-    public List<SelectItem> getAllHardTokenIssuers() {
-        final TreeMap<String, HardTokenIssuerInformation> tokenIssuerMap = hardTokenSession.getHardTokenIssuers(getAdmin());
-        final List<SelectItem> hardTokenIssuersReturned = new ArrayList<>();
-        for (Entry<String, HardTokenIssuerInformation> hardTokenIssuer : tokenIssuerMap.entrySet()) {
-            final int tokenIssuerId = hardTokenIssuer.getValue().getHardTokenIssuerId();
-            hardTokenIssuersReturned.add(new SelectItem(tokenIssuerId, hardTokenIssuer.getKey()));
-        }
-        return hardTokenIssuersReturned;
-    }
-
-    public int getDefaultHardTokenIssuer() {
-        return profiledata.getDefaultHardTokenIssuer();
-    }
-
-    @SuppressWarnings("deprecation")
-    public void setDefaultHardTokenIssuer(final int defaultHardTokenIssuerId) {
-        profiledata.setDefaultHardTokenIssuer(defaultHardTokenIssuerId);
-    }
-
-    public Collection<Integer> getAvailableHardTokenIssuers() {
-        return profiledata.getAvailableHardTokenIssuers();
-    }
-
-    public void setAvailableHardTokenIssuers(final Collection<Integer> hardTokenIssuers) {
-        profiledata.setAvailableHardTokenIssuers(hardTokenIssuers);
-    }
-
     // OTHER CERTIFICATE DATA
     public boolean getUseCertSerialNumber() {
         return profiledata.isCustomSerialNumberUsed();
@@ -1255,13 +1212,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final List<Integer> availableTokenTypes = profiledata.getAvailableTokenTypes();
         if (!availableTokenTypes.contains(profiledata.getDefaultTokenType())) {
             editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLETOKENTYPE"));
-        }
-        // Hard Token Issuers
-        if (profiledata.isHardTokenIssuerUsed()) {
-            final List<Integer> availableHardTokenIssuers = profiledata.getAvailableHardTokenIssuers();
-            if (!availableHardTokenIssuers.contains(profiledata.getDefaultHardTokenIssuer())) {
-                editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLEHARDTOKENISSUER"));
-            }
         }
         // Key Recovery
         if (!ejbcaWebBean.getGlobalConfiguration().getEnableKeyRecovery()) {

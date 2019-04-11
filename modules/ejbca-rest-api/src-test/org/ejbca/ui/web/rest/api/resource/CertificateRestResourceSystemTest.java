@@ -10,12 +10,6 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
-import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
-import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -24,6 +18,8 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -65,7 +61,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -145,7 +145,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             // Create test user & generate certificate
             EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, 0, new ExtendedInformation());
+                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
@@ -236,7 +236,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             caSession.editCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
             EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, 0, new ExtendedInformation());
+                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);

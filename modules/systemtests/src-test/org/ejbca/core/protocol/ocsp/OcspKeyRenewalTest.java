@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -73,6 +68,11 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @version $Id$
@@ -164,7 +164,7 @@ public class OcspKeyRenewalTest {
         // We need an actual user for this OCSP signing certificate, so we can "renew" the certificate of this user
         EndEntityInformation user = new EndEntityInformation(OcspTestUtils.OCSP_END_USER_NAME, SIGNER_DN, x509ca.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         if (endEntityManagementSession.existsUser(OcspTestUtils.OCSP_END_USER_NAME)) {
             endEntityManagementSession.deleteUser(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME);
@@ -177,7 +177,7 @@ public class OcspKeyRenewalTest {
         // We need an actual user for this OCSP signing certificate, so we can "renew" the certificate of this user
         user = new EndEntityInformation(OCSP_ECC_END_USER_NAME, SIGNER_DN+"Ecc", x509eccca.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         if (endEntityManagementSession.existsUser(OCSP_ECC_END_USER_NAME)) {
             endEntityManagementSession.deleteUser(authenticationToken, OCSP_ECC_END_USER_NAME);

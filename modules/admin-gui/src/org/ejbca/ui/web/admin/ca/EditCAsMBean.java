@@ -567,17 +567,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.caCryptoTokenKeyEncryptKey = currentCaCryptoTokenKeyEncryptKey;
     }
 
-    public String getCurrentCaCryptoTokenHardTokenEncrypt() {
-        if(catoken != null) {
-            try {
-                return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
-            } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
-            }
-        }
-        return StringUtils.EMPTY;
-    }
-
     public String getCurrentCaCryptoTokenTestKey() {
         if(catoken != null) {
             try {
@@ -1551,7 +1540,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cryptoTokenDefaultKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
             cryptoTokenCertSignKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             selectedKeyEncryptKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-            hardTokenEncryptKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT);
             testKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
             // For renewal
             certSignKeyRequestValue = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
@@ -2210,9 +2198,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 }
                 if (cryptoTokenCertSignKey.length() > 0) {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, cryptoTokenCertSignKey);
-                }
-                if (hardTokenEncryptKey.length() > 0) {
-                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, hardTokenEncryptKey);
                 }
                 if (selectedKeyEncryptKey.length() > 0) {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, selectedKeyEncryptKey);

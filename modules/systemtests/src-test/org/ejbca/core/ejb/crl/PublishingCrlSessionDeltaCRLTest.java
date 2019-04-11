@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509CRL;
@@ -64,6 +59,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests Delta CRLs.
@@ -340,7 +340,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
 
     private X509Certificate createCert() throws Exception {
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=deltacrltest", testx509ca.getCAId(), null, "deltacrltest@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
         X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
         X509Certificate cert = (X509Certificate)resp.getCertificate();

@@ -101,7 +101,7 @@ public class ListEndEntitiesCommand extends BaseRaCommand {
                         "End Entity: " + endEntityInformation.getUsername() + ", \"" + endEntityInformation.getDN() + "\", \""
                                 + endEntityInformation.getSubjectAltName() + "\", " + endEntityInformation.getEmail() + ", "
                                 + endEntityInformation.getStatus() + ", " + endEntityInformation.getType().getHexValue() + ", "
-                                + endEntityInformation.getTokenType() + ", " + endEntityInformation.getHardTokenIssuerId());
+                                + endEntityInformation.getTokenType());
             }
         }
         return CommandResult.SUCCESS;
@@ -117,10 +117,11 @@ public class ListEndEntitiesCommand extends BaseRaCommand {
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + "\n");
-        sb.append("Outputs comma separated items: username, subjectDN, subjectAltName, email, status, type, tokenType, hardTokenIssuerId.\n");
+        sb.append("Outputs comma separated items: username, subjectDN, subjectAltName, email, status, type, tokenType.\n");
         return sb.toString();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
     }

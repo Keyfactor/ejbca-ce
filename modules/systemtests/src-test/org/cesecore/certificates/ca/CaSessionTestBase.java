@@ -154,7 +154,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
 
          /* This is pretty messed up.. we only test that the CA is working in the client VM..*/
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
-                0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                0, EndEntityConstants.TOKEN_USERGEN, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         CryptoToken cryptoToken1 = cryptoTokenManagementProxySession.getCryptoToken(ca1.getCAToken().getCryptoTokenId());
@@ -285,7 +285,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
         	PublicKey pk = cryptoTokenManagementSession.getPublicKey(roleMgmgToken, cryptoTokenId, signKeyAlias).getPublicKey();
             EndEntityInformation user = new EndEntityInformation("casessiontestca", cadn, ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
@@ -462,7 +462,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             assertEquals(0, certs.size());
 
             EndEntityInformation user = new EndEntityInformation("casessiontestca", ca.getSubjectDN(), ca.getCAId(), null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
             SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());

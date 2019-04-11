@@ -79,7 +79,6 @@
 <li>Internal log messages are localizable for different languages.</li>
 <li>Component- and plug-in based architecture for publishing certificates and CRLs to different sources.</li>
 <li>API for an external RA, restricting in-bound traffic to CA.</li>
-<li>Hard token module for integrating with hard token issuing system (smart cards).</li>
 </ul>
   </subsection>
   <subsection name="Administration Features">

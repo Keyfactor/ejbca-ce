@@ -185,7 +185,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW),
                     // From legacy JS
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWHARDTOKENS, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("AUDITOR",
@@ -222,7 +221,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWPUKS, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWAPPROVALS, Role.STATE_ALLOW),
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
                     ),
@@ -244,7 +242,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(StandardRules.VIEWROLES.resource(), Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW),
                     //new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, Role.STATE_ALLOW),
                     new AccessRule(CryptoTokenRules.VIEW.resource(), Role.STATE_ALLOW),
                     /*
                      * Note:
@@ -259,8 +256,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW)),
-            // Ignore the legacy "HARDTOKENISSUER" template since it is rarely used
-            //,new AccessRulesTemplate("HARDTOKENISSUER")
             new AccessRulesTemplate(TEMPLATE_NAME_CUSTOM)
             );
 
@@ -607,10 +602,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_DELETEENDENTITY), super.getEjbcaWebBean().getText("DELETEENDENTITYRULE")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY), super.getEjbcaWebBean().getText("VIEWHISTORYRULE"))
                     ));
-            if (isEnabledIssueHardwareTokens()) {
-                availableResourcesEe.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWHARDTOKENS), super.getEjbcaWebBean().getText("VIEWHARDTOKENRULE")));
-                availableResourcesEe.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWPUKS), super.getEjbcaWebBean().getText("VIEWPUKENDENTITYRULE")));
-            }
+            
             if (isEnabledKeyRecovery()) {
                 availableResourcesEe.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY), super.getEjbcaWebBean().getText("KEYRECOVERENDENTITYRULE")));
             }
@@ -727,9 +719,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         if (availableResourcesOther==null) {
             availableResourcesOther = new ArrayList<>();
             availableResourcesOther.add(new SelectItem(AccessRulesHelper.normalizeResource(AuditLogRules.VIEW.resource()), super.getEjbcaWebBean().getText("VIEWAUDITLOG")));
-            if (isEnabledIssueHardwareTokens()) {
-                availableResourcesOther.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS), super.getEjbcaWebBean().getText("ISSUEHARDTOKENS")));
-            }
+            
             super.sortSelectItemsByLabel(availableResourcesOther);
             // Disable the selections what it not allowed by current template
             for (final SelectItem selectItem : availableResourcesOther) {
@@ -744,11 +734,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     /** @return true if this installation is configured to use EndEntityProfileLimitations */
     private boolean isEnableEndEntityProfileLimitations() {
         return super.getEjbcaWebBean().getGlobalConfiguration().getEnableEndEntityProfileLimitations();
-    }
-
-    /** @return true if this installation is configured to issue hardware tokens */
-    private boolean isEnabledIssueHardwareTokens() {
-        return super.getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens();
     }
 
     /** @return true if this installation is configured to perform key recovery */

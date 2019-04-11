@@ -129,10 +129,9 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalConfiguration.getEnableEndEntityProfileLimitations();
-        final boolean hardTokenIssuingEnabled = ignoreLimitations || globalConfiguration.getIssueHardwareTokens();
         final boolean keyRecoveryEnabled = ignoreLimitations || globalConfiguration.getEnableKeyRecovery();
         final Map<String, Map<String,String>> categorizedAccessRules = getAllResourceAndResourceNamesByCategory(
-                endEntityProfileLimitationsEnabled, hardTokenIssuingEnabled, keyRecoveryEnabled,
+                endEntityProfileLimitationsEnabled, keyRecoveryEnabled,
                 Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
         final Map<String,String> ret = new HashMap<>();
         for (final Map<String,String> acessRuleMap : categorizedAccessRules.values()) {
@@ -150,16 +149,14 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final boolean endEntityProfileLimitationsEnabled = globalConfiguration.getEnableEndEntityProfileLimitations();
-        final boolean hardTokenIssuingEnabled = globalConfiguration.getIssueHardwareTokens();
         final boolean keyRecoveryEnabled = globalConfiguration.getEnableKeyRecovery();
         return getAllResourceAndResourceNamesByCategory(
-                endEntityProfileLimitationsEnabled, hardTokenIssuingEnabled, keyRecoveryEnabled,
-                Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
+                endEntityProfileLimitationsEnabled, keyRecoveryEnabled, Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), 
+                eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
     }
 
     private Map<String,Map<String,String>> getAllResourceAndResourceNamesByCategory(boolean endEntityProfileLimitationsEnabled,
-            boolean hardTokenIssuingEnabled, boolean keyRecoveryEnabled,
-            Collection<String> customAccessRules, Map<Integer,String> eepIdToNameMap, Map<Integer, String> userDataSourceIdToNameMap,
+            boolean keyRecoveryEnabled, Collection<String> customAccessRules, Map<Integer,String> eepIdToNameMap, Map<Integer, String> userDataSourceIdToNameMap,
             Map<Integer,String> cryptoTokenIdToNameMap, Map<Integer,String> caIdToNameMap, Map<Integer,String> kvIdToNameMap) {
         final Map<String,Map<String,String>> ret = new LinkedHashMap<>();
         // Role based access rules
@@ -172,13 +169,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         for (final String resource : AccessRulesConstants.STANDARDREGULARACCESSRULES) {
             accessRulesRegular.put(resource, resource);
         }
-        if (hardTokenIssuingEnabled) {
-            for (final String resource : AccessRulesConstants.HARDTOKENACCESSRULES) {
-                accessRulesRegular.put(resource, resource);
-            }
-            accessRulesRegular.put(AccessRulesConstants.REGULAR_VIEWHARDTOKENS, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
-            accessRulesRegular.put(AccessRulesConstants.REGULAR_VIEWPUKS, AccessRulesConstants.REGULAR_VIEWPUKS);
-        }
+        
         if (keyRecoveryEnabled) {
             accessRulesRegular.put(AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRulesConstants.REGULAR_KEYRECOVERY);
         }
@@ -229,12 +220,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                     accessRulesEepAccess.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + subResource,
                             AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + subResource);
                 }
-                if (hardTokenIssuingEnabled) {
-                    accessRulesEepAccess.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.HARDTOKEN_RIGHTS,
-                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + AccessRulesConstants.HARDTOKEN_RIGHTS);
-                    accessRulesEepAccess.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS,
-                            AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);
-                }
+                
                 if (keyRecoveryEnabled) {
                     accessRulesEepAccess.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                             AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName + AccessRulesConstants.KEYRECOVERY_RIGHTS);
@@ -306,7 +292,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                     username, role.getRoleId(), null));
             // Add CLI user end entity
             final UserData userData = new UserData(username, EjbcaConfiguration.getCliDefaultPassword(), false, "UID=" + username, 0, null, null, null, 0,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 0, 0, 0, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 0, 0, null);
             userData.setStatus(EndEntityConstants.STATUS_GENERATED);
             if (entityManager.find(UserData.class, username)==null) {
                 entityManager.persist(userData);

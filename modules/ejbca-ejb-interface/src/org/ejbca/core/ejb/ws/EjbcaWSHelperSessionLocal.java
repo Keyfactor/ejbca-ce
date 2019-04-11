@@ -36,11 +36,9 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
-import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.query.Query;
 
@@ -161,22 +159,13 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
       */
      void caCertResponse(AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd, boolean futureRollover) 
          throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException, CertificateParsingException;
-
-     void isAuthorizedToHardTokenData(AuthenticationToken admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException;
-
+     
      /**
       * Help method returning a subset of certificates containing only valid certificates
       * expiredate and revocation status is checked.
       * @throws ClassCastException 
       */
      Collection<java.security.cert.Certificate> returnOnlyValidCertificates(AuthenticationToken admin, Collection<java.security.cert.Certificate> certs);
-     
-     /**
-      * Method used to convert a HardToken data to a WS version
-      * @param data
-      * @throws EjbcaException 
-      */
-     HardTokenDataWS convertHardTokenToWS(HardTokenInformation data, Collection<java.security.cert.Certificate> certificates, boolean includePUK) throws EjbcaException;
      
      void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException;
 }

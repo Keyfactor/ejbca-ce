@@ -19,11 +19,6 @@ grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.CertificateData to '${dat
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.CertificateProfileData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.EndEntityProfileData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.GlobalConfigurationData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.HardTokenCertificateMap to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.HardTokenData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.HardTokenIssuerData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.HardTokenProfileData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.HardTokenPropertyData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.KeyRecoveryData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.LogConfigurationData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.ProtectedLogExportData to '${database.username}'@'${url.host}';

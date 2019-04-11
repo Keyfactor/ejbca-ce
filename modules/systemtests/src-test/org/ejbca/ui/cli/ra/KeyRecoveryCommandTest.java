@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ra;
 
-import static org.junit.Assert.assertTrue;
-
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -55,6 +53,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @version $Id$
@@ -111,7 +111,7 @@ public class KeyRecoveryCommandTest {
     public void setup() throws Exception {
         final EndEntityInformation userdata = new EndEntityInformation(TESTCLASS_NAME, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(authenticationToken, userdata, false);
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);

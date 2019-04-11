@@ -735,42 +735,6 @@
 	       	    	</h:panelGroup>
 				</h:panelGrid>
 				
-<!-- HARD TOKEN ISSUERS -->
-
-				&nbsp;
-				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-					<h:outputText value="#{web.text.USEHARDTOKENISSUERS}"/>
-				</h:panelGroup>
-				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-					<h:selectBooleanCheckbox 
-						id="hardTokenIssuersCheckBox" 
-						value="#{endEntityProfileMBean.useHardTokenIssuer}" 
-						disabled="#{endEntityProfileMBean.viewOnly}">
-						<f:ajax render="defaultHardTokenTokenMenu availableHardTokens"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="hardTokenIssuersCheckBox" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				&nbsp;
-				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-					<h:outputLabel for="defaultHardTokenTokenMenu"  value="#{web.text.DEFAULTHARDTOKENISSUER}"/>
-				</h:panelGroup>
-				<h:selectOneMenu id="defaultHardTokenTokenMenu" value="#{endEntityProfileMBean.defaultHardTokenIssuer}" disabled="#{not endEntityProfileMBean.useHardTokenIssuer or endEntityProfileMBean.viewOnly}" rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-						<f:ajax/>
-						<f:selectItems id="defaultHardTokensList" value="#{endEntityProfileMBean.allHardTokenIssuers}"/> 
-				</h:selectOneMenu>
-				&nbsp;
-				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-					<h:outputLabel for="availableHardTokens"  value="#{web.text.AVAILABLEHARDTOKENISSUERS}"/>
-				</h:panelGroup>
-				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-	       	    		<h:selectManyListbox id="availableHardTokens" size="7" value="#{endEntityProfileMBean.availableHardTokenIssuers}" disabled="#{not endEntityProfileMBean.useHardTokenIssuer or endEntityProfileMBean.viewOnly}">
-	       	    			<f:ajax/>
-	       	    			<f:selectItems id="availableHardTokensList" value="#{endEntityProfileMBean.allHardTokenIssuers}"/>
-	       	    			<f:converter converterId="javax.faces.Integer"/>
-	       	    		</h:selectManyListbox>
-	       	    </h:panelGroup>
-			</h:panelGrid>
-			
 <!-- OTHER CERTIFICATE DATA -->       	
 	       	
 	       	<h:panelGrid id="header_othercertificatedata" columns="3" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">

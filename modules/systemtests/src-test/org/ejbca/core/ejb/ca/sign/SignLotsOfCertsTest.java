@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.KeyPair;
@@ -51,6 +46,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /** This is a performance test:
  * - 10 threads generates 1000 certificates each with 1024 bit public key
@@ -88,6 +88,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         CryptoProviderTools.installBCProviderIfNotAvailable();	
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -98,6 +99,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         log.trace("<setUp()");
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -114,6 +116,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         deleteUser("_no10");
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -124,7 +127,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         final String username = USERNAME_PREFIX + suffix;
         final String subjectDn = "CN="+username;
         EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDn, caid, null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword("foo123");
         try {
             endEntityManagementSession.addUser(admin, endEntityInformation, true);
@@ -242,6 +245,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
         public static final int NO_CERTS = 1000;
 
+        @Override
         public void run() {
             try {
                 String username = USERNAME_PREFIX + Thread.currentThread().getName();
