@@ -91,15 +91,6 @@ public class WebConfiguration {
 	}
 	
 	/**
-	 * Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
-	 * be displayed for the administrators. If false only non-sensitive information is displayed. 
-	 */
-	public static boolean getHardTokenDiplaySensitiveInfo() {
-		String value = EjbcaConfigurationHolder.getString("hardtoken.diplaysensitiveinfo");
-		return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-	}
-	
-	/**
 	 * Show links to the EJBCA documentation.
 	 * @return "disabled", "internal" or and URL
 	 */

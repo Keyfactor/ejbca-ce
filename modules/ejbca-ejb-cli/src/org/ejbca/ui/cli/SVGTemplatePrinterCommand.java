@@ -86,7 +86,7 @@ public class SVGTemplatePrinterCommand extends EjbcaCommandBase {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             EndEntityInformation userdata = new EndEntityInformation("", data.getProperty("DN"), 0, "", data.getProperty("EMAIL"), 0,
-                    new EndEntityType(EndEntityTypes.INVALID), 0, 0, (Date) null, (Date) null, 0, 0, null);
+                    new EndEntityType(EndEntityTypes.INVALID), 0, 0, (Date) null, (Date) null, 0, null);
             String[] pins = new String[2];
             String[] puks = new String[2];
             pins[0] = data.getProperty("PIN1");

@@ -13,11 +13,6 @@
 
 package org.ejbca.core.model.approval.approvalrequests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -99,6 +94,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * 
  * @version $Id$
@@ -147,6 +147,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -156,12 +157,12 @@ public class RevocationApprovalTest extends CaTestCase {
             requestingAdminUsername = "RevocationApprovalTest_revocationTestRequestingAdmin";
             EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, 0, null);
+                    SecConst.TOKEN_SOFT_P12, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, userdata, true);
             EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null,
                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
             userdata2.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, userdata2, true);
             fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));
@@ -205,6 +206,7 @@ public class RevocationApprovalTest extends CaTestCase {
         approvalCAID = createApprovalCA(internalAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSession, caSession, catoken);
     }
 
+    @Override
     public String getRoleName() {
         return "RevocationApprovalTest";
     }
@@ -218,6 +220,7 @@ public class RevocationApprovalTest extends CaTestCase {
         return new AuthenticationSubject(principals, credentials);
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -244,7 +247,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private void createUser(AuthenticationToken admin, String username, int caID) throws Exception {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, 0, null);
+                SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(admin, userdata, true);
         fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));

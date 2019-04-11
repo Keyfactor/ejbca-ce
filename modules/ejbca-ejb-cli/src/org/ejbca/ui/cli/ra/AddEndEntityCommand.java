@@ -34,7 +34,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -87,14 +86,10 @@ public class AddEndEntityCommand extends BaseRaCommand {
     private static final String EMAIL_KEY = "--email";
     private static final String CERT_PROFILE_KEY = "--certprofile";
     private static final String EE_PROFILE_KEY = "--eeprofile";
-
-    private static final String HARDTOKEN_ISSUER_KEY = "--hardtokenissuer";
-
+    
     private final GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
             GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-
-    private final boolean usehardtokens = globalConfiguration.getIssueHardwareTokens();
-
+    
     {
         registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Username for the new end entity."));
@@ -124,13 +119,6 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 "The certificate profile, will default to End User."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The end entity profile, will default to Empty."));
-
-        if (usehardtokens) {
-            registerParameter(new Parameter(HARDTOKEN_ISSUER_KEY, "Hard Token Issuer", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
-                    ParameterMode.ARGUMENT, "A hard token issuer."));
-
-        }
-
     }
 
     @Override
@@ -163,7 +151,6 @@ public class AddEndEntityCommand extends BaseRaCommand {
         String tokenname = parameters.get(TOKEN_KEY);
 
         boolean error = false;
-        boolean usehardtokenissuer = false;
 
         int caid = 0;
         try {
@@ -201,18 +188,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             getLogger().info("Using entity profile: " + endEntityProfile + ", with id: " + endEntityProfileId);
         }
 
-        int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
-        if (usehardtokens) {
-            final String hardTokenIssuer = parameters.get(HARDTOKEN_ISSUER_KEY);
-            if (hardTokenIssuer != null) {
-                // Use certificate type, end entity profile and hardtokenissuer.
-                hardtokenissuerid = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(hardTokenIssuer);
-                usehardtokenissuer = true;
-                getLogger().info("Using hard token issuer: " + hardTokenIssuer + ", with id: " + hardtokenissuerid);
-            }
-        }
-
-        int tokenid = getTokenId(tokenname, usehardtokens, EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class));
+        int tokenid = getTokenId(tokenname);
         if (tokenid == 0) {
             getLogger().error("Invalid token id.");
             error = true;
@@ -228,17 +204,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             getLogger().error("Could not find CA '" + caname + "' in database.");
             error = true;
         }
-
-        if (usehardtokenissuer && hardtokenissuerid == SecConst.NO_HARDTOKENISSUER) {
-            getLogger().error("Could not find hard token issuer in database.");
-            error = true;
-        }
-
-        if ((tokenid > SecConst.TOKEN_SOFT) && (hardtokenissuerid == SecConst.NO_HARDTOKENISSUER)) {
-            getLogger().error("HardTokenIssuer has to be choosen when user with hard tokens is added.");
-            error = true;
-        }
-
+        
         if (email == null && type.contains(EndEntityTypes.SENDNOTIFICATION)) {
             getLogger().error("Email field cannot be null when send notification type is given.");
             error = true;
@@ -264,7 +230,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             getLogger().info("End entity profile: " + endEntityProfileId);
             try {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(), username,
-                        password, dn, subjectaltname, email, false, endEntityProfileId, certificatetypeid, type, tokenid, hardtokenissuerid, caid);
+                        password, dn, subjectaltname, email, false, endEntityProfileId, certificatetypeid, type, tokenid, caid);
                 getLogger().info("User '" + username + "' has been added.");
                 getLogger().info("Note: If batch processing should be possible, also use 'ra setclearpwd " + username + " <pwd>'.");
                 return CommandResult.SUCCESS;
@@ -292,7 +258,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
     /**
      * Returns the tokenid type of the user, returns 0 if invalid tokenname.
      */
-    private int getTokenId(String tokenname, boolean usehardtokens, HardTokenSessionRemote hardtokensession) {
+    private int getTokenId(String tokenname) {
         int returnval = 0;
         
         for (int i = 0; i < SOFT_TOKEN_NAMES.length; i++) {
@@ -340,16 +306,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             existingEeps.append((existingEeps.length() == 0 ? "" : ", ") + endentityprofileidtonamemap.get(id));
         }
         sb.append("Existing endentity profiles: " + existingEeps + "\n");
-
-        if (usehardtokens) {
-            StringBuilder existingHtis = new StringBuilder();
-            for (String alias : EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class)
-                    .getHardTokenIssuerAliases(getAuthenticationToken()).toArray(new String[0])) {
-                existingHtis.append((existingHtis.length() == 0 ? "" : ", ") + alias);
-            }
-            sb.append("Existing hard token issuers: " + existingHtis + "\n");
-        }
-
+        
         return sb.toString();
     }
 

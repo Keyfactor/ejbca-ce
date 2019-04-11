@@ -75,6 +75,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
     	final UserDataVOWS userdata = new UserDataVOWS();
@@ -132,7 +133,6 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             getPrintStream().println("Status: "+userdata.getStatus());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
-            getPrintStream().println("Hard Token Issuer Alias: "+(userdata.getHardTokenIssuerName()!=null ? userdata.getHardTokenIssuerName() :"NONE"));
             {
             	final List<ExtendedInformationWS> eil = userdata.getExtendedInformation();
             	if ( eil!=null ) {
@@ -270,7 +270,8 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 	}
 
 
-	protected void usage() {
+	@Override
+    protected void usage() {
 		getPrintStream().println("Command used to add or edit userdata and to generate the certificate for the user. This command performs these two steps in a single command, but uses two WS calls to do it, editUser and pkcs10Request.");
         getPrintStream().println("You can perform the same in a single WS call with the 'certreq' command.");
 		getPrintStream().println("Usage : generatenewuser <username> <password> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (or NONE)> <pkcs10path> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)>\n\n");

@@ -155,9 +155,6 @@ nextCertSignKey fooalias03
                 if (caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) != null) {
                     currentCaToken.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, (String)caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING));                    
                 }
-                if (caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING) != null) {
-                    currentCaToken.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, (String)caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING));                    
-                }
                 if (caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS) != null) {
                     currentCaToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, (String)caTokenProperties.get(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS));                    
                 }

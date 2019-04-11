@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -60,6 +55,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @see InternalKeyBindingMgmtSession
@@ -171,7 +171,7 @@ public class InternalKeyBindingMgmtTest {
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
                     EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             user.setPassword("foo123");
             RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());            
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
@@ -223,7 +223,7 @@ public class InternalKeyBindingMgmtTest {
             // Add a user to EJBCA for the renewal later on
             final EndEntityInformation endEntityInformation = new EndEntityInformation(endEntityId, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
                     EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             endEntityInformation.setPassword("foo123");
             // Request a CSR for the key pair
             // First make a couple of requests with different DN to see that that part works
@@ -285,7 +285,7 @@ public class InternalKeyBindingMgmtTest {
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
                     EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
-                    EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityConstants.TOKEN_USERGEN, null);
             user.setPassword("foo123");
             RequestMessage req = new PKCS10RequestMessage(csr);
             assertEquals("CN="+KEY_BINDING_NAME+",O=workflow", req.getRequestDN());

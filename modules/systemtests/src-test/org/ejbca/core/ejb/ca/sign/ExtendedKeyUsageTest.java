@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -59,6 +54,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests creating certificate with extended key usage.
  * 
@@ -88,6 +88,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
     
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -104,6 +105,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         try {
@@ -122,6 +124,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         }
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -203,7 +206,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         EndEntityInformation user = new EndEntityInformation("extkeyusagefoo", "C=SE,O=AnaTom,CN=extkeyusagefoo", rsacaid, null, "foo@anatom.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), fooEEProfile, fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), fooEEProfile, fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         try {

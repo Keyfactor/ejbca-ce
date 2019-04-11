@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
@@ -58,6 +55,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @version $Id$
@@ -105,7 +105,7 @@ public class CaImportCertDirCommandTest {
         certificateFile = File.createTempFile("test", null, tempDirectory);
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, CERTIFICATE_DN, ca.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword("foo123");
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);

@@ -86,6 +86,7 @@ public class RaMasterApiStressTest extends CaTestCase {
     private TestRaMasterApiProxySessionRemote testRaMasterApiProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -98,12 +99,14 @@ public class RaMasterApiStressTest extends CaTestCase {
         }
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
         //Role members will be deleted with the role, which happens in the superclass
     }
 
+    @Override
     public String getRoleName() {
         return "RaMasterApiStressTest"; 
     }
@@ -219,7 +222,7 @@ public class RaMasterApiStressTest extends CaTestCase {
                 String username = theadUsername + "_" + i;
                 usernames[i] = username;
                 UserDataVOWS userdata = new UserDataVOWS(username, "foo123", false, "CN=" + username, getTestCAName(), null, null,
-                        EndEntityConstants.STATUS_NEW, UserDataVOWS.TOKEN_TYPE_USERGENERATED, "EMPTY", "ENDUSER", null);
+                        EndEntityConstants.STATUS_NEW, UserDataVOWS.TOKEN_TYPE_USERGENERATED, "EMPTY", "ENDUSER");
                 // Replace the below authentication token with an always allow token to create a baseline (since auto allow doesn't require referencing the database)
                 testRaMasterApiProxySession.createCertificateWS(roleMgmgToken, userdata, requests[i], CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
                         CertificateHelper.RESPONSETYPE_CERTIFICATE);
@@ -248,7 +251,7 @@ public class RaMasterApiStressTest extends CaTestCase {
                 String username = theadUsername + "_" + i;
                 usernames[i] = username;
                 EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
                 
                 testRaMasterApiProxySession.addUser(roleMgmgToken, endEntity, false);
 

@@ -64,7 +64,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
@@ -112,8 +111,6 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
     private SignSessionLocal signSession;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession;
 
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification, final String keyAlgorithm)
@@ -161,9 +158,6 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                     keySpecification, keyAlgorithm, null, null, false, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             final String alias = keyStore.aliases().nextElement();
             final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
-            if ((hardTokenSN != null) && (certificate != null)) {
-                hardTokenSession.addHardTokenCertificateMapping(authenticationToken,hardTokenSN,certificate);
-            }
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException e) { // Is handled as EjbcaException at caller (EjbcaWS).
             throw e;

@@ -12,14 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -131,6 +123,14 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 /** JUnit test for X.509 CA
  *
  * @version $Id$
@@ -234,7 +234,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         }
 
         // Generate a client certificate and check that it was generated correctly
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         KeyPair keypair = genTestKeyPair(algName);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -356,7 +356,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN, algName, null, null);
 
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         KeyPair keypair = genTestKeyPair(algName);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
@@ -600,7 +600,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
             OperatorCreationException, CertificateExtensionException, SignatureException, IllegalKeyException, CertificateCreateException {
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        EndEntityInformation user = new EndEntityInformation("testPreCertValidation", "CN=testPreCertValidation", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("testPreCertValidation", "CN=testPreCertValidation", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         RequestMessage request = null; // publicKey will be used when this is null
         Extensions extensions = null;
         Date notBefore = null, notAfter = null;
@@ -853,7 +853,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
 
         // Generate a client certificate and check that it was generated correctly
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         KeyPair keypair = genTestKeyPair(algName);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
@@ -912,7 +912,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // test with no plus character in email
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailPlain, emailPlain,
-                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         Certificate certificate = null;
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
@@ -924,7 +924,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // test with a user with escaped plus character in email
         user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailEscaped, emailEscaped,
-                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
@@ -936,7 +936,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // test with a user with unescaped plus character in email
         user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailUnescaped, emailUnescaped,
-                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
@@ -970,7 +970,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
         final X509CA ca = createTestCA(cryptoToken, "CN=foo");
-        final EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setUseAuthorityInformationAccess(true); // enable certificate AIA
         Certificate certificate = null;
@@ -1043,7 +1043,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         notAfter.add(Calendar.SECOND, 10); // 10 seconds in the future gives us a 5 second window to generate a cert
         X509CA testCa = createTestCA(cryptoToken, "CN=foo", "SHA256WithRSA", notBefore.getTime(), notAfter.getTime());
         // Issue a certificate before PrivateKeyUsagePeriod has started to be valid
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -1087,7 +1087,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
         assertEquals("A list was returned without any values present.", 0, result.size());
         // Issue a certificate with two different basic certificate extensions
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Configure some custom basic certificate extension
         // one with a good IA5String encoding
@@ -1175,7 +1175,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Generate cert by calling generateCertificate directly
         Certificate cacert = testCa.getCACertificate(); // yeah, we just need to get a public key really fast
         final String subjectDN = "CN=cert policy extension test";
-        final EndEntityInformation subject = new EndEntityInformation("cert policy extension test", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final EndEntityInformation subject = new EndEntityInformation("cert policy extension test", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         CertificatePolicy cp1 = new CertificatePolicy("1.1.1.2", PolicyQualifierId.id_qt_cps.getId(), "https://ejbca.org/2");
         CertificatePolicy cp2 = new CertificatePolicy("1.1.1.3", PolicyQualifierId.id_qt_cps.getId(), "https://ejbca.org/3");
@@ -1266,7 +1266,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Test generation by calling generateCertificate directly
         final String subjectDN = "CN=foo subject,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
-        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);
         assertTrue("Certificate CN was not UTF-8 encoded by default.", getValueFromDN(cert, X509ObjectIdentifiers.commonName) instanceof DERUTF8String);
@@ -1303,7 +1303,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Test generation by calling generateCertificate directly
         final String subjectDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
-        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);
         princ = ((X509Certificate) cert).getSubjectX500Principal();
@@ -1341,7 +1341,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals("CN=Override,O=PrimeKey,C=SE", p10msg.getRequestDN());
 
         // Generate a client certificate and check that it was generated correctly
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -1373,7 +1373,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -1401,7 +1401,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -1429,7 +1429,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
-        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
 
         //Create CP and generate certificate
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1457,7 +1457,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
-        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
 
         // Create separate key pair that is going to be enforced over one from request message
         KeyPair keyPairEnforcedAlg = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -1496,7 +1496,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         PKCS10CertificationRequest certificationRequestEnforcedAlg = CertTools.genPKCS10CertificationRequest(algName, nameEnforcedAlg, keyPairEnforcedAlg.getPublic(), null, keyPairEnforcedAlg.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessageEnforcedAlg = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequestEnforcedAlg));
         assertEquals("CN=EnforcedAlgCn,O=PrimeKey,C=SE", requestMessageEnforcedAlg.getRequestDN());
-        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         endEntityInformation.setExtendedInformation(new ExtendedInformation());
         endEntityInformation.getExtendedInformation().setCertificateRequest(certificationRequestEnforcedAlg.getEncoded());
 

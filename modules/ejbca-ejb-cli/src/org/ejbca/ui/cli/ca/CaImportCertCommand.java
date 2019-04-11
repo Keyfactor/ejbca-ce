@@ -280,7 +280,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 try {
                 endEntityManagementSession.addUser(getAuthenticationToken(), username,
                         password, CertTools.getSubjectDN(certificate), subjectAltName, email, false, endentityprofileid, certificateprofileid,
-                        endEntityType, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, cainfo.getCAId());
+                        endEntityType, SecConst.TOKEN_SOFT_BROWSERGEN, cainfo.getCAId());
                 } catch (EndEntityExistsException e) {
                     log.error("End entity with username " + username + " already exists.");
                     return CommandResult.FUNCTIONAL_FAILURE;
@@ -302,7 +302,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 EndEntityInformation endEntityInformation = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), cainfo.getCAId(),
                         subjectAltName, email, (status == CertificateConstants.CERT_ACTIVE ? EndEntityConstants.STATUS_GENERATED
                                 : EndEntityConstants.STATUS_REVOKED), endEntityType, endentityprofileid, certificateprofileid, null, null,
-                        SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
+                        SecConst.TOKEN_SOFT_BROWSERGEN, null);
                 endEntityInformation.setPassword(password);
                 try {
                     endEntityManagementSession.changeUser(getAuthenticationToken(), endEntityInformation, false);

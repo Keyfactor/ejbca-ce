@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -59,6 +57,8 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @version $Id$
@@ -190,7 +190,7 @@ public class OcspTestUtils {
         // Issue a certificate in EJBCA for the public key
         final EndEntityInformation user = new EndEntityInformation(username, signerDN, caId, null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), 1, certificateProfileId,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword(), expirationTime);
         X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
@@ -209,7 +209,7 @@ public class OcspTestUtils {
         // Issue a certificate in EJBCA for the public key
         final EndEntityInformation user = new EndEntityInformation(CLIENTSSL_END_USER_NAME, CLIENTSSL_END_USER_DN, caId, null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
         X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
