@@ -307,17 +307,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isTypeEndEntityAvailable() { return true; }
     public boolean isTypeSubCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
     public boolean isTypeRootCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
-    public boolean isTypeHardTokenAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().getGlobalConfiguration().getIssueHardwareTokens(); }
 
     public boolean isTypeEndEntity() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ENDENTITY; }
     public boolean isTypeSubCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_SUBCA; }
     public boolean isTypeRootCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_ROOTCA; }
-    public boolean isTypeHardToken() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_HARDTOKEN; }
 
     public void setTypeEndEntity() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY); }
     public void setTypeSubCa() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_SUBCA); }
     public void setTypeRootCa() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_ROOTCA); }
-    public void setTypeHardToken() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_HARDTOKEN); }
 
     public boolean isUniqueCertificateSerialNumberIndex() {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();

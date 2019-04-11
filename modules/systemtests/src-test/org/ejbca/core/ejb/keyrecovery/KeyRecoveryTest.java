@@ -13,12 +13,6 @@
 
 package org.ejbca.core.ejb.keyrecovery;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -98,6 +92,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests the key recovery modules.
  * 
@@ -133,6 +133,7 @@ public class KeyRecoveryTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -147,6 +148,7 @@ public class KeyRecoveryTest extends CaTestCase {
                 CertTools.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN"), role.getRoleId(), null));
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -156,6 +158,7 @@ public class KeyRecoveryTest extends CaTestCase {
         }
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
@@ -177,7 +180,7 @@ public class KeyRecoveryTest extends CaTestCase {
                 if (!endEntityManagementSession.existsUser(user)) {
                     keypair1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
                     endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false,
-                            EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
+                            EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12,
                             getTestCAId());
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
                     fp1 = CertTools.getFingerprintAsString(cert1);
@@ -296,8 +299,7 @@ public class KeyRecoveryTest extends CaTestCase {
                     keypair1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
                     endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12,
-                            0, getTestCAId());
+                            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId());
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123",
                             new PublicKeyWrapper(keypair1.getPublic()));
                     fp1 = CertTools.getFingerprintAsString(cert1);
@@ -366,7 +368,7 @@ public class KeyRecoveryTest extends CaTestCase {
             EndEntityInformation eeinfo = new EndEntityInformation(testuser, "CN=TEST_KEYREC_CACHANGE" + new Random().nextLong(),
                     caId1, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
@@ -452,7 +454,7 @@ public class KeyRecoveryTest extends CaTestCase {
             EndEntityInformation eeinfo = new EndEntityInformation(username, "CN=" + username,
                     caId, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
             eeinfo.setPassword(password);
             eeinfo.setKeyRecoverable(true);
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);

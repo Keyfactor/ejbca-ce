@@ -1,9 +1,5 @@
 package org.ejbca.core.model.ra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -19,6 +15,10 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.SecConst;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /** Tests some substitution variables for user notifications
  * @version $Id$
@@ -37,7 +37,7 @@ public class UserNotificationParamGenTest {
 		                                 new EndEntityType(EndEntityTypes.ENDUSER), 
 		                                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-		                                 now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+		                                 now, null, SecConst.TOKEN_SOFT_P12, null);
 		userdata.setPassword("foo$123\\bar");
 		EndEntityInformation admindata =
 		        new EndEntityInformation("admin", "CN=Test Admin,C=NO", caid, 
@@ -46,8 +46,7 @@ public class UserNotificationParamGenTest {
 		                                 new EndEntityType(EndEntityTypes.ENDUSER), 
 		                                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-		                                 now, null, SecConst.TOKEN_SOFT_P12, 
-		                                 SecConst.NO_HARDTOKENISSUER, null);
+		                                 now, null, SecConst.TOKEN_SOFT_P12, null);
 		final String certificateSerialNumber = "1234567890";
 		final CertificateData certificateData = new CertificateData();
 		certificateData.setSerialNumber(certificateSerialNumber);

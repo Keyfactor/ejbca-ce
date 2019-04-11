@@ -60,7 +60,7 @@ public abstract class SignSessionCommon extends CaTestCase{
         // Make user that we know...
         if (!endEntityManagementSession.existsUser(username)) {
             endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,CN="+username, null, username+"@anatom.se", false, endEntityProfileId,
-                    certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caId);
+                    certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caId);
             if (log.isDebugEnabled()) {
                 log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             }
@@ -69,8 +69,7 @@ public abstract class SignSessionCommon extends CaTestCase{
             EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,CN="+username,
                     caId, null, 
                     "foo@anatom.nu", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    endEntityProfileId, certificateProfileId, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    endEntityProfileId, certificateProfileId, null, null, SecConst.TOKEN_SOFT_PEM, null);
             endEntity.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false);            
             if (log.isDebugEnabled()) {

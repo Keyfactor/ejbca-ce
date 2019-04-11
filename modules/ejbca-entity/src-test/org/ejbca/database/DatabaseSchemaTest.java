@@ -46,11 +46,6 @@ import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
-import org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap;
-import org.ejbca.core.ejb.hardtoken.HardTokenData;
-import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
-import org.ejbca.core.ejb.hardtoken.HardTokenPropertyData;
-import org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK;
 import org.ejbca.core.ejb.ra.UserData;
@@ -415,66 +410,7 @@ public class DatabaseSchemaTest {
         storeAndRemoveEntity(entity);
         LOG.trace("<testCRLData");
     }
-
-    @Test
-    public void testHardTokenCertificateMap() {
-        LOG.trace(">testHardTokenCertificateMap");
-        logMemStats();
-        HardTokenCertificateMap entity = new HardTokenCertificateMap();
-        entity.setCertificateFingerprint(VARCHAR_250B);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        entity.setTokenSN(VARCHAR_250B);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testHardTokenCertificateMap");
-    }
-
-    @Test
-    public void testHardTokenData() {
-        LOG.trace(">testHardTokenData");
-        logMemStats();
-        HardTokenData entity = new HardTokenData();
-        entity.setCtime(0L);
-        entity.setData(HASHMAP_200K);
-        entity.setMtime(0L);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        entity.setSignificantIssuerDN(VARCHAR_250B);
-        entity.setTokenSN(VARCHAR_250B);
-        entity.setUsername(VARCHAR_250B);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testHardTokenData");
-    }
-
-    @Test
-    public void testHardTokenIssuerData() {
-        LOG.trace(">testHardTokenIssuerData");
-        logMemStats();
-        HardTokenIssuerData entity = new HardTokenIssuerData();
-        entity.setAdminGroupId(0);
-        entity.setAlias(VARCHAR_250B);
-        entity.setDataUnsafe(HASHMAP_200K);
-        entity.setId(BOGUS_INTEGER);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testHardTokenIssuerData");
-    }
     
-    @Test
-    public void testHardTokenPropertyData() {
-        LOG.trace(">testHardTokenPropertyData");
-        logMemStats();
-        HardTokenPropertyData entity = new HardTokenPropertyData();
-        // Combined primary key id+property has to be less than 1000 bytes on MyISAM (UTF8: 3*(80+250) < 1000 bytes)
-        entity.setHardTokenPropertyDataPK(new HardTokenPropertyDataPK(VARCHAR_80B, VARCHAR_250B));
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        entity.setValue(VARCHAR_250B);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testHardTokenPropertyData");
-    }
-
     @Test
     public void testInternalKeyBindingData() {
         LOG.trace(">testInternalKeyBindingData");
@@ -526,7 +462,6 @@ public class DatabaseSchemaTest {
         String eiString = EndEntityInformation.extendedInformationToStringData(ei);
         assertTrue(eiString.length() > 900000);
         entity.setExtendedInformationData(eiString);
-        entity.setHardTokenIssuerId(0);
         entity.setKeyStorePassword(VARCHAR_250B);
         entity.setPasswordHash(VARCHAR_250B);
         entity.setRowProtection(CLOB_10KiB);

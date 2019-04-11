@@ -66,7 +66,6 @@ public class UserDataVOWS implements Serializable{
     private boolean keyRecoverable = false;
     private String endEntityProfileName = null;
     private String certificateProfileName = null;
-    private String hardTokenIssuerName = null;
     private String startTime = null;
     private String endTime = null;
     private BigInteger certificateSerialNumber;
@@ -89,12 +88,11 @@ public class UserDataVOWS implements Serializable{
 	 * @param subjectAltName
 	 * @param email 
 	 * @param status one of the STATUS_ constants
-	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
+	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens
 	 * @param endEntityProfileName
 	 * @param certificateProfileName
-	 * @param hardTokenIssuerName if no hardTokenIssuer should be used then use null.
 	 */
-	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName, String hardTokenIssuerName) {
+	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName) {
 		super();
 		this.username = username;
 		this.password = password;
@@ -107,7 +105,6 @@ public class UserDataVOWS implements Serializable{
 		this.tokenType = tokenType;
 		this.endEntityProfileName = endEntityProfileName;
 		this.certificateProfileName = certificateProfileName;
-		this.hardTokenIssuerName = hardTokenIssuerName;
 	}
 
     
@@ -172,15 +169,6 @@ public class UserDataVOWS implements Serializable{
 		return endEntityProfileName;
 	}
 
-
-	/**
-	 * @return Returns the hardTokenIssuerName.
-	 */
-	public String getHardTokenIssuerName() {
-		return hardTokenIssuerName;
-	}
-
-
 	/**
 	 * Observe when sending userdata to clients outside EJBCA will the password
 	 * always be null.
@@ -224,7 +212,7 @@ public class UserDataVOWS implements Serializable{
 
 
 	/**
-	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
+	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens
 	 */
 	public String getTokenType() {
 		return tokenType;
@@ -291,13 +279,6 @@ public class UserDataVOWS implements Serializable{
 	 */
 	public void setEndEntityProfileName(String endEntityProfileName) {
 		this.endEntityProfileName = endEntityProfileName;
-	}
-
-	/**
-	 * @param hardTokenIssuerName The hardTokenIssuerName to set.
-	 */
-	public void setHardTokenIssuerName(String hardTokenIssuerName) {
-		this.hardTokenIssuerName = hardTokenIssuerName;
 	}
 
 	/**

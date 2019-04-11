@@ -96,8 +96,7 @@ public interface CertificateProfileSession {
      *            should be either CertificateConstants.CERTTYPE_ENDENTITY,
      *            CertificateConstants.CERTTYPE_SUBCA,
      *            CertificateConstants.CERTTYPE_ROOTCA,
-     *            CertificateConstants.CERTTYPE_HARDTOKEN (i.e EndEntity
-     *            certificates and Hardtoken fixed profiles) or CertificateConstants.CERTTYPE_UNKNOWN for all.
+     *            or CertificateConstants.CERTTYPE_UNKNOWN for all.
      *            Retrieves certificate profile names sorted.
      * @return Collection of id:s (Integer)
      */

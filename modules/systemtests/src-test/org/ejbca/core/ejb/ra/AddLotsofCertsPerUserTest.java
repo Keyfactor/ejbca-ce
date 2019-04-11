@@ -80,6 +80,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -89,11 +90,13 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
         keys = KeyTools.genKeys("2048", "RSA");
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Override
     public String getRoleName() {
         return "AddLotsofCertsPerUserTest";
     }
@@ -132,12 +135,11 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             int token = SecConst.TOKEN_SOFT_P12;
             int profileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
             int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
-            int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
             EndEntityInformation userdata = new EndEntityInformation(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname,
-                    email, EndEntityConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, hardtokenissuerid, null);
+                    email, EndEntityConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, null);
             userdata.setPassword(password);
             if (endEntityAccessSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");

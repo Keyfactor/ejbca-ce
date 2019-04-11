@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.Serializable;
 import java.security.Principal;
@@ -73,6 +70,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
  * System tests for partitioned approval profiles 
  * 
@@ -122,17 +122,17 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
 
         EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, 0, null);
+                SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, userdata, true);
         EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, 0, null);
+                SecConst.TOKEN_SOFT_P12, null);
         userdata2.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, userdata2, true);
         EndEntityInformation reqUserData = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, 0, null);
+                SecConst.TOKEN_SOFT_P12, null);
         reqUserData.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, reqUserData, true);
         String roleName = PartitionedApprovalProfilesTest.class.getSimpleName();
