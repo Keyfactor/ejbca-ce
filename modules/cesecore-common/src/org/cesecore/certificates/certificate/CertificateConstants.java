@@ -67,9 +67,7 @@ public final class CertificateConstants {
     public static final int CERTTYPE_SUBCA      =     0x2;
     /** Certificate belongs to a root ca. */
     public static final int CERTTYPE_ROOTCA     =     0x8;
-    /** Certificate belongs on a hard token. */
-    public static final int CERTTYPE_HARDTOKEN  =     0x16;
-
+    
     // Certificate types used to create certificates
     /** Certificate used for encryption. */
     public static final int CERT_TYPE_ENCRYPTION = 0x1;

@@ -72,7 +72,6 @@ public class UserData extends ProtectedData implements Serializable {
     private int endEntityProfileId;
     private int certificateProfileId;
     private int tokenType;
-    private int hardTokenIssuerId;
     private String extendedInformationData;
     /** instantiated object of the above, used to not have to encode/decode the object all the time.
      * see PrePersist annotated method */
@@ -101,13 +100,12 @@ public class UserData extends ProtectedData implements Serializable {
      * @param eeprofileid end entity profile id, can be 0
      * @param certprofileid certificate profile id, can be 0
      * @param tokentype token type to issue to the user, i.e. SecConst.TOKEN_SOFT_BROWSERGEN
-     * @param hardtokenissuerid hard token issuer id if hard token issuing is used, 0 otherwise
      * @param extendedInformation ExtendedInformation object
      * 
      * @throws NoSuchAlgorithmException
      */
     public UserData(String username, String password, boolean clearpwd, String dn, int caid, String cardnumber, String altname, String email,
-            int type, int eeprofileid, int certprofileid, int tokentype, int hardtokenissuerid, ExtendedInformation extendedInformation) {
+            int type, int eeprofileid, int certprofileid, int tokentype, ExtendedInformation extendedInformation) {
         long time = new Date().getTime();
         setUsername(username);
         if (clearpwd) {
@@ -128,7 +126,6 @@ public class UserData extends ProtectedData implements Serializable {
         setEndEntityProfileId(eeprofileid);
         setCertificateProfileId(certprofileid);
         setTokenType(tokentype);
-        setHardTokenIssuerId(hardtokenissuerid);
         setExtendedInformation(extendedInformation);
         setCardNumber(cardnumber);
         if (log.isDebugEnabled()) {
@@ -345,21 +342,6 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /**
-     * Returns the hard token issuer id that should genererate for the users hard token.
-     */
-    // @Column
-    public int getHardTokenIssuerId() {
-        return hardTokenIssuerId;
-    }
-
-    /**
-     * Sets the hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
-     */
-    public void setHardTokenIssuerId(int hardTokenIssuerId) {
-        this.hardTokenIssuerId = hardTokenIssuerId;
-    }
-
-    /**
      * Non-searchable information about a user.
      */
     // @Column @Lob
@@ -526,6 +508,7 @@ public class UserData extends ProtectedData implements Serializable {
     // Helper functions
     //
 
+    @Override
     @Transient
     public UserData clone() {
         final UserData userData = new UserData();
@@ -535,7 +518,6 @@ public class UserData extends ProtectedData implements Serializable {
         userData.clearPassword = clearPassword;
         userData.endEntityProfileId = endEntityProfileId;
         userData.extendedInformationData = extendedInformationData;
-        userData.hardTokenIssuerId = hardTokenIssuerId;
         userData.keyStorePassword = keyStorePassword;
         userData.passwordHash = passwordHash;
         userData.rowProtection = rowProtection;
@@ -601,7 +583,6 @@ public class UserData extends ProtectedData implements Serializable {
         data.setEmail(getSubjectEmail());
         data.setEndEntityProfileId(getEndEntityProfileId());
         data.setExtendedInformation(getExtendedInformation());
-        data.setHardTokenIssuerId(getHardTokenIssuerId());
         data.setPassword(getOpenPassword());
         data.setStatus(getStatus());
         data.setSubjectAltName(getSubjectAltNameNeverNull());
@@ -667,7 +648,7 @@ public class UserData extends ProtectedData implements Serializable {
         }
         build.append(getCardNumber());
         build.append(getSubjectEmail()).append(getStatus()).append(getType()).append(getClearPassword()).append(getPasswordHash()).append(getTimeCreated()).append(getTimeModified());
-        build.append(getEndEntityProfileId()).append(getCertificateProfileId()).append(getTokenType()).append(getHardTokenIssuerId()).append(getExtendedInformationData());
+        build.append(getEndEntityProfileId()).append(getCertificateProfileId()).append(getTokenType()).append(getExtendedInformationData());
         return build.toString();
     }
 

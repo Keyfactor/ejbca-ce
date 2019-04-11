@@ -53,7 +53,6 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	private static final int ARG_STATUS             = 10;
 	private static final int ARG_ENDENTITYPROFILE   = 11;
 	private static final int ARG_CERTIFICATEPROFILE = 12;
-	private static final int ARG_ISSUERALIAS        = 13;
 	private static final int ARG_STARTTIME          = 14;
 	private static final int ARG_ENDTIME            = 15;
 
@@ -70,6 +69,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
     	
         final UserDataVOWS userdata = new UserDataVOWS();
@@ -108,12 +108,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             if(type.contains(EndEntityTypes.KEYRECOVERABLE)){
             	userdata.setKeyRecoverable(true);
             }
-
-            if(myArgs.length > ARG_ISSUERALIAS){
-            	if(!myArgs[ARG_ISSUERALIAS].equalsIgnoreCase("NULL")){                        
-            		userdata.setHardTokenIssuerName(myArgs[ARG_ISSUERALIAS]);
-            	}
-            }
+            
             if(myArgs.length > ARG_STARTTIME){
             	if(!myArgs[ARG_STARTTIME].equalsIgnoreCase("NULL")){                        
             		userdata.setStartTime(myArgs[ARG_STARTTIME]);
@@ -138,11 +133,6 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
 
-            if(userdata.getHardTokenIssuerName() == null){
-            	getPrintStream().println("Hard Token Issuer Alias: NONE");
-            }else{
-            	getPrintStream().println("Hard Token Issuer Alias: " + userdata.getHardTokenIssuerName());
-            }
             if(userdata.getStartTime() == null){
                 getPrintStream().println("Start time: NONE");
             }else{
@@ -208,7 +198,8 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		return 0;
 	}
 
-	protected void usage() {
+	@Override
+    protected void usage() {
 		getPrintStream().println("Command used to add or edit userdata, if user exist will the data be overwritten.");
 		getPrintStream().println("Usage : edituser <username> <password|null> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias or NULL (optional)> <starttime or NULL (optional)> <endtime (starttime)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");

@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.SecConst;
 
 /**
@@ -22,7 +21,7 @@ import org.ejbca.core.model.SecConst;
  */
 public class ApprovalRequestHelper { 
 
-    public static ApprovalDataText getTokenName(HardTokenSession hardTokenSession, int tokenid) {
+    public static ApprovalDataText getTokenName(int tokenid) {
         ApprovalDataText retval;
         if (tokenid <= SecConst.TOKEN_SOFT) {
             int tokenindex = 0;

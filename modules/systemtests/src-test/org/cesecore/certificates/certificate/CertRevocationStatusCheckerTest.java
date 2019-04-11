@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.CRL;
@@ -79,6 +73,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 /**
  * Tests PKIXCertRevocationStatusChecker
  * 
@@ -111,6 +111,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
     private String certprofileName;
     private int certprofileID;
 
+    @Override
     @Before
     public void setUp() throws Exception {
         
@@ -153,6 +154,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         
     }
     
+    @Override
     @After
     public void tearDown() throws Exception {
         try {
@@ -707,7 +709,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, CustomFieldException {
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword("foo123");
         log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + dn);
         try {

@@ -19,7 +19,6 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.configuration.WebLanguage;
@@ -201,12 +200,7 @@ public interface EjbcaWebBean extends Serializable {
     public void reloadCmpConfiguration();
 
     public void reloadEstConfiguration();
-
-    // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
-    /** @deprecated Since EJBCA 7.0.0. Use HardTokenSession.getHardTokenIssuers instead. */
-    @Deprecated
-    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers();
-
+    
     // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
     @Deprecated

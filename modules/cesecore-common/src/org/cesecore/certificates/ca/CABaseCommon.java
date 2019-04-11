@@ -56,7 +56,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     private static final long serialVersionUID = 1L;
     
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 24;
+    public static final float LATEST_VERSION = 25;
     
     private static Logger log = Logger.getLogger(CABaseCommon.class);
     
@@ -840,9 +840,6 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                         case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
                             implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService";
                             break;
-                        case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
-                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService";
-                            break;
                         case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
                             implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
                             break;
@@ -922,7 +919,15 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             data.put(EXTENDEDCASERVICES, externalServiceTypes);
             retval = true;
         }
+        
 
+        if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE)) {
+            //This type has been removed, so remove it from any CAs it's been added to as well.
+            externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE);
+            data.put(EXTENDEDCASERVICES, externalServiceTypes);
+            retval = true;
+        }
+        
         for (Integer type : externalServiceTypes) {
             ExtendedCAService service = getExtendedCAService(type);
             if (service != null) {

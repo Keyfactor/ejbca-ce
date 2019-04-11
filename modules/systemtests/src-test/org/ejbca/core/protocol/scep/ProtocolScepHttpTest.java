@@ -13,13 +13,6 @@
 
 package org.ejbca.core.protocol.scep;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -155,6 +148,13 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests http pages of scep
@@ -670,7 +670,7 @@ public class ProtocolScepHttpTest {
             certProf.setEncodedValidity("14d");
             final int certProfId = certificateProfileSession.addCertificateProfile(admin, "TestScepCARollover", certProf);
             final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    certProfId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    certProfId, EndEntityConstants.TOKEN_USERGEN, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
             endentity.setPassword("foo123");
             final ExtendedInformation ei = new ExtendedInformation();
@@ -874,7 +874,7 @@ public class ProtocolScepHttpTest {
     
     private EndEntityInformation getEndEntityInformation(String userName, String userDN, int caId) {
         final EndEntityInformation data = new EndEntityInformation(userName, userDN, caId, null, "sceptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
         data.setPassword("foo123");
         data.setStatus(EndEntityConstants.STATUS_NEW);
         return data;
@@ -1085,7 +1085,7 @@ public class ProtocolScepHttpTest {
             } else {
                 // We got a reply with a requested certificate
                 @SuppressWarnings("unchecked")
-                final Collection<X509CertificateHolder> certs = (Collection<X509CertificateHolder>) certstore.getMatches(null);
+                final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
                 // EJBCA returns the issued cert and the CA cert (cisco vpn
                 // client requires that the ca cert is included)
                 if (noca) {

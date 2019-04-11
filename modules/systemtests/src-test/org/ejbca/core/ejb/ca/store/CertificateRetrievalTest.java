@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ca.store;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -56,6 +51,11 @@ import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @version $Id$
@@ -308,7 +308,7 @@ public class CertificateRetrievalTest {
         assertNotNull("failed to list certs", certfps);
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 1);
-        assertTrue("Unable to find test certificate.", m_certfps.contains(CertTools.getFingerprintAsString((Certificate) certfps.iterator().next())));
+        assertTrue("Unable to find test certificate.", m_certfps.contains(CertTools.getFingerprintAsString(certfps.iterator().next())));
         log.trace("<test05CertificatesByIssuerAndSernos()");
     }
 
@@ -419,7 +419,7 @@ public class CertificateRetrievalTest {
         EndEntityInformation userdata = new EndEntityInformation(username,  dn, caid, "", null,
             EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),
             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-            new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+            new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         String fingerprint = null;
         try {

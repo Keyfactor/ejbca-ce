@@ -13,14 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.SignatureException;
@@ -103,6 +95,14 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * This test runs in CMP client mode.
@@ -576,7 +576,7 @@ public class CrmfRequestTest extends CmpTestCase {
                     null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
 //                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     this.eepDnOverrideId, this.cpDnOverrideId,
-                    SecConst.TOKEN_SOFT_PEM, 0, null);
+                    SecConst.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             try {
                 this.endEntityManagementSession.addUser(ADMIN, user, true);

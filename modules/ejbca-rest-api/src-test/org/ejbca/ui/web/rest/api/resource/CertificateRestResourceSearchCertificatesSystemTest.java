@@ -9,7 +9,22 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -57,19 +72,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -689,8 +691,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     public X509Certificate createCertificate(String username, String subjectDn, PublicKey publicKey) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDn, x509TestCa.getCAId(), null,
-                "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN,
-                0, null);
+                "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
 
@@ -703,8 +704,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     public X509Certificate createCertificate(String username, String subjectDn, Date notAfter) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDn, x509TestCa.getCAId(), null,
-                "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN,
-                0, null);
+                "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
 

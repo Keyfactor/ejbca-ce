@@ -588,7 +588,7 @@ public class RegisterReqBean {
 
         EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, subjectAltName,
                 null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
-                null,null, tokenType, 0, null);
+                null,null, tokenType, null);
         if (eeprofile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)) {
             endEntity.setSendNotification(true);
         }
