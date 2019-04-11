@@ -211,14 +211,14 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
     		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
     		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
     		certProfile.setKeyUsageCritical(true);
-            final EndEntityInformation eeInformation = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null);
+            final EndEntityInformation eeInformation = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,null);
             final Certificate certificate = ca.generateCertificate(cryptoToken, eeInformation,
             		cmskeys.getPublic(), -1, null, ca.getEncodedValidity(), certProfile, null, cceConfig);
     		certificatechain = new ArrayList<Certificate>();
     		certificatechain.add(certificate);
     		certificatechain.addAll(ca.getCertificateChain());
     		privKey = cmskeys.getPrivate(); 
-    		keystore.setKeyEntry(PRIVATESIGNKEYALIAS,cmskeys.getPrivate(),null,(Certificate[]) certificatechain.toArray(new Certificate[certificatechain.size()]));              
+    		keystore.setKeyEntry(PRIVATESIGNKEYALIAS,cmskeys.getPrivate(),null,certificatechain.toArray(new Certificate[certificatechain.size()]));              
     		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     		keystore.store(baos, keystorepass.toCharArray());
     		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));      

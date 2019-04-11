@@ -32,13 +32,12 @@ public interface EjbcaWSHelperSession {
      * @param caid CA ID
      * @param endentityprofileid End Entity Profile ID
      * @param certificateprofileid Certificate Profile ID
-     * @param hardtokenissuerid Hard Token Issuer ID, or 0 to not use.
      * @param tokenid Token type, TOKEN_TYPE_* constant
      * @param useRawSubjectDN if true ExtendedInformation in the returned EndEntityInformation will be populated with the Raw subject DN from the UserDataVOWS
      * @return New EndEntityInformation object
      * @throws EjbcaException if there are errors in the UserDataVOWS, such as incorrectly formatted validity dates.
      */
-    EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException;
+    EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException;
     
     /**
      * Method to convert between a UserDataVOWS data structure from the web service to an EndEntityInformation.
@@ -57,12 +56,11 @@ public interface EjbcaWSHelperSession {
      * @param caname Name of CA. Will be used as is to the UserDataVOWS object.
      * @param endentityprofilename Name of end entity profile. Will be used as is to the UserDataVOWS object.
      * @param certificateprofilename Name of certificate profile. Will be used as is to the UserDataVOWS object.
-     * @param hardtokenissuername Name of hard token issuer. Will be used as is to the UserDataVOWS object.
      * @param tokenname Token type name. Will be used as is to the UserDataVOWS object.
      * @return New UserDataVOWS object
      */
     UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation, final String caname, final String endentityprofilename, 
-            final String certificateprofilename, final String hardtokenissuername, final String tokenname);
+            final String certificateprofilename, final String tokenname);
     
     /**
      * Method that converts an EndEntityInformation object to a UserDataVOWS.

@@ -59,8 +59,6 @@ public class EJBCAWSRACommandFactory {
             return new RevokeCertWithMetadataCommand(args);
         } else if (args[0].equals("getpublisherqueuelength")) {
             return new GetPublisherQueueLength(args);
-        } else if (args[0].equals("revoketoken")) {
-            return new RevokeTokenCommand(args);
         } else if (args[0].equals("revokeuser")) {
             return new RevokeUserCommand(args);
         } else if (args[0].equals("checkrevokationstatus") || args[0].equals("checkrevocationstatus")) {

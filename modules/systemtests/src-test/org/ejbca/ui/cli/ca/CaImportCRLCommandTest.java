@@ -13,12 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.security.KeyStore;
@@ -52,6 +46,12 @@ import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System test class for CaImportCRLCommand
@@ -133,7 +133,7 @@ public class CaImportCRLCommandTest {
             assertTrue("Get CRL command failed, no file exists.", f.exists());
             // Now create a certificate that we can play with and run the commands
             EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=4711CRLUSER", cainfo.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             byte[] p12 = certReqSession.processSoftTokenReq(admin, userdata, null, "512", "RSA", true);

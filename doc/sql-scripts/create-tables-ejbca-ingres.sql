@@ -198,57 +198,6 @@ CREATE TABLE GlobalConfigurationData (
     PRIMARY KEY (configurationId)
 );
 
-CREATE TABLE HardTokenCertificateMap (
-    certificateFingerprint VARCHAR(256) NOT NULL,
-    rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
-    tokenSN VARCHAR(256) NOT NULL,
-    PRIMARY KEY (certificateFingerprint)
-);
-
-CREATE TABLE HardTokenData (
-    tokenSN VARCHAR(256) NOT NULL,
-    cTime INT8 NOT NULL,
-    data LONG BYTE with null,
-    mTime INT8 NOT NULL,
-    rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
-    significantIssuerDN VARCHAR(256) with null,
-    tokenType INT4 NOT NULL,
-    username VARCHAR(256) with null,
-    PRIMARY KEY (tokenSN)
-);
-
-CREATE TABLE HardTokenIssuerData (
-    id INT4 NOT NULL,
-    adminGroupId INT4 NOT NULL,
-    alias VARCHAR(256) NOT NULL,
-    data LONG BYTE NOT NULL,
-    rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE HardTokenProfileData (
-    id INT4 NOT NULL,
-    data LONG VARCHAR with null,
-    name VARCHAR(256) NOT NULL,
-    rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
-    updateCounter INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE HardTokenPropertyData (
-    id VARCHAR(256) NOT NULL,
-    property VARCHAR(256) NOT NULL,
-    rowProtection LONG VARCHAR with null,
-    rowVersion INT4 NOT NULL,
-    value VARCHAR(256) with null,
-    PRIMARY KEY (id,
-    property)
-);
-
 CREATE TABLE InternalKeyBindingData (
     id INT4 NOT NULL,
     certificateId VARCHAR(256) with null,
@@ -379,7 +328,6 @@ CREATE TABLE UserData (
     clearPassword VARCHAR(256) with null,
     endEntityProfileId INT4 NOT NULL,
     extendedInformationData LONG VARCHAR with null,
-    hardTokenIssuerId INT4 NOT NULL,
     keyStorePassword VARCHAR(256) with null,
     passwordHash VARCHAR(256) with null,
     rowProtection LONG VARCHAR with null,

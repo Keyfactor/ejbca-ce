@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra.raadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,6 +26,11 @@ import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for the EndEntityProfile class.
@@ -148,7 +148,7 @@ public class EndEntityProfileTest {
         profile.setRequired(DnComponents.COMMONNAME,0,false); 
         EndEntityInformation userdata = new EndEntityInformation("foo", "", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
             // Should pass
@@ -166,7 +166,7 @@ public class EndEntityProfileTest {
         // Test generic that required fields are required
         userdata = new EndEntityInformation("foo", "CN=foo", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
             profile.doesUserFulfillEndEntityProfile(userdata, false);
@@ -252,7 +252,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "123");
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=User,SN=134566,O=PrimeKey,C=SE", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
             // Should pass
@@ -305,7 +305,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, false);
     }
@@ -320,7 +320,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=UserDns", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, false);
     }
@@ -336,7 +336,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=wrong", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, false);
     }
@@ -357,7 +357,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=UserDns, DNSNAME=wrong", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, false);
     }
@@ -369,7 +369,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=Psd2User", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");
@@ -383,7 +383,7 @@ public class EndEntityProfileTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=Psd2User", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");

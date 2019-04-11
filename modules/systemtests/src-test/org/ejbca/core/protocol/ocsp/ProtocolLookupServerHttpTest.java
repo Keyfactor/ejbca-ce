@@ -13,11 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -88,6 +83,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * 
@@ -162,6 +162,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         unidfnrProxySessionBean.stroreUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -171,11 +172,13 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         keys = KeyTools.genKeys("512", "RSA");
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
         
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -192,7 +195,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         try {
             endEntityManagementSession.addUser(admin, TEST_USER_NAME, USER_PASS_PHRASE, TEST_USER_SUBJECTDN_GOOD_SERIAL, null,
                     TEST_USER_EMAIL, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    SecConst.TOKEN_SOFT_PEM, caid);
             log.debug("created user: unidtest, foo123, C=SE, O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+", CN=UNIDTest");
         } catch (EndEntityExistsException e) {
             userExists = true;
@@ -201,8 +204,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
             log.debug("User unidtest already exists.");
             EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_GOOD_SERIAL,
                     caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                    null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword(USER_PASS_PHRASE);
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");
@@ -246,8 +248,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Change user to a Unid that is OK
         EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_GOOD_SERIAL,
                 caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
         userData.setPassword(USER_PASS_PHRASE);
         userData.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, userData, false);
@@ -295,8 +296,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Change uses to a Unid that we don't have mapping for
         EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_BAD_SERIAL,
                 caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
         userData.setPassword(USER_PASS_PHRASE);
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
@@ -335,8 +335,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Change uses to not have any serialNumber
         EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_NO_SERIAL,
                 caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
         userData.setPassword(USER_PASS_PHRASE);
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
@@ -374,8 +373,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Change uses to a Unid that is OK
         EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_GOOD_SERIAL,
                 caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
         userData.setPassword(USER_PASS_PHRASE);
         userData.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, userData, false);
@@ -418,8 +416,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Change uses to a Unid that is OK
         EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, "C=SE,O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+",CN=UNIDTest",
                 caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-                null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
         userData.setPassword(USER_PASS_PHRASE);
         endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
@@ -572,6 +569,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     }
     
     class SimpleVerifier implements HostnameVerifier {
+        @Override
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }

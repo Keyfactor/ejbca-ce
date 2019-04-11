@@ -52,7 +52,6 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -136,11 +135,7 @@ public class ProfilesExportServlet extends HttpServlet {
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_ROOTCA);
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_SUBCA);
             }
-            GlobalConfiguration globaConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (globaConfiguration.getIssueHardwareTokens()) {
-                certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
-            }
-
+            
             Collection<Integer> certprofids = new LinkedHashSet<>();
             if(profileId == null) {
                 for (Integer certificateProfileType : certificateProfileTypes) {

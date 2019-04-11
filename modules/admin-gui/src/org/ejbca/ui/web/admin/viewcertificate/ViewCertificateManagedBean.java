@@ -374,7 +374,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             if (ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
                 userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
                 tokenSn = request.getParameter(HARDTOKENSN_PARAMETER);
-                raBean.loadTokenCertificates(tokenSn);
             }
         }
 
@@ -627,14 +626,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             }
         }
         try {
-            if (tokenSn != null) {
-                raBean.loadTokenCertificates(tokenSn);
+            if (userName != null) {
+                raBean.loadCertificates(userName);
             } else {
-                if (userName != null) {
-                    raBean.loadCertificates(userName);
-                } else {
-                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                }
+                raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
             }
         } catch (final AuthorizationDeniedException e) {
 
@@ -647,14 +642,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         // Mark certificate for key recovery.
         message = caBean.republish(certificateData);
         try {
-            if (tokenSn != null) {
-                raBean.loadTokenCertificates(tokenSn);
+            if (userName != null) {
+                raBean.loadCertificates(userName);
             } else {
-                if (userName != null) {
-                    raBean.loadCertificates(userName);
-                } else {
-                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                }
+                raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
             }
         } catch (final AuthorizationDeniedException e) {
 
@@ -677,14 +668,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             }
         }
         try {
-            if (tokenSn != null) {
-                raBean.loadTokenCertificates(tokenSn);
+            if (userName != null) {
+                raBean.loadCertificates(userName);
             } else {
-                if (userName != null) {
-                    raBean.loadCertificates(userName);
-                } else {
-                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                }
+                raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
             }
         } catch (final AuthorizationDeniedException e) {
             
@@ -708,14 +695,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         }
 
         try {
-            if (tokenSn != null) {
-                raBean.loadTokenCertificates(tokenSn);
+            if (userName != null) {
+                raBean.loadCertificates(userName);
             } else {
-                if (userName != null) {
-                    raBean.loadCertificates(userName);
-                } else {
-                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                }
+                raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
             }
         } catch (final AuthorizationDeniedException e) {
 

@@ -70,8 +70,8 @@
         <managed-bean-name>userDatasoucesMBean</managed-bean-name>
         <managed-bean-class>org.ejbca.ui.web.admin.rainterface.UserDatasoucesMBean</managed-bean-class>
         <managed-bean-scope>session</managed-bean-scope>
-    </managed-bean>
-    <managed-bean>
+  </managed-bean>
+  <managed-bean>
         <managed-bean-name>editUserDatasoucesMBean</managed-bean-name>
         <managed-bean-class>org.ejbca.ui.web.admin.rainterface.EditUserDatasoucesMBean</managed-bean-class>
         <managed-bean-scope>view</managed-bean-scope>
@@ -79,21 +79,7 @@
             <property-name>userDatasoucesMBean</property-name>
             <value>#{userDatasoucesMBean}</value>
         </managed-property>
-    </managed-bean>
-    <managed-bean>
-        <managed-bean-name>hardTokenIssuerMBean</managed-bean-name>
-        <managed-bean-class>org.ejbca.ui.web.admin.hardtokeninterface.HardTokenIssuerMBean</managed-bean-class>
-        <managed-bean-scope>session</managed-bean-scope>
-    </managed-bean>
-    <managed-bean>
-        <managed-bean-name>editHardTokenIssuerMBean</managed-bean-name>
-        <managed-bean-class>org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenIssuerMBean</managed-bean-class>
-        <managed-bean-scope>view</managed-bean-scope>
-        <managed-property>
-            <property-name>hardTokenIssuerMBean</property-name>
-            <value>#{hardTokenIssuerMBean}</value>
-        </managed-property>
-    </managed-bean>
+  </managed-bean>
   <managed-bean>
     	<managed-bean-name>internalKeyBindingMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keybind.InternalKeyBindingMBean</managed-bean-class>
@@ -327,25 +313,8 @@
             <from-outcome>done</from-outcome>
             <to-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</to-view-id>
         </navigation-case>
-    </navigation-rule>
-
-    <navigation-rule>
-        <from-view-id>/hardtoken/hardtokenissuerspage.xhtml</from-view-id>
-        <navigation-case>
-            <from-action>#{hardTokenIssuerMBean.actionEdit}</from-action>
-            <from-outcome>edit</from-outcome>
-            <to-view-id>/hardtoken/edithardtokenissuerpage.xhtml</to-view-id>
-            <redirect include-view-params="true"></redirect>
-        </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/hardtoken/edithardtokenissuerpage.xhtml</from-view-id>
-        <navigation-case>
-            <from-outcome>done</from-outcome>
-            <to-view-id>/hardtoken/hardtokenissuerspage.xhtml</to-view-id>
-        </navigation-case>
-    </navigation-rule>
-
+</navigation-rule>
+    
   <navigation-rule>
     <from-view-id>/sysconfig/systemconfiguration.xhtml</from-view-id>
     <navigation-case>

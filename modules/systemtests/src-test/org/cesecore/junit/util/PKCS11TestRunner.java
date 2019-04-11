@@ -89,7 +89,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
         PublicKey pk = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, ALIAS).getPublicKey();
         EndEntityInformation user = new EndEntityInformation(super.getName(), info.getSubjectDN(), x509ca.getCAId(), null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());

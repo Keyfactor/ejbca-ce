@@ -291,7 +291,6 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
             modifyableFieldTexts.put(getEjbcaWebBean().getText("ENDENTITYPROFILE"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_ENDENTITYPROFILE));
             modifyableFieldTexts.put(getEjbcaWebBean().getText("CERTIFICATEPROFILE"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_CERTIFICATEPROFILE));
             modifyableFieldTexts.put(getEjbcaWebBean().getText("TOKEN"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_TOKENTYPE));
-            modifyableFieldTexts.put(getEjbcaWebBean().getText("HARDTOKENISSUER"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_HARDTOKENISSUER));
 
         }
         return modifyableFieldTexts;

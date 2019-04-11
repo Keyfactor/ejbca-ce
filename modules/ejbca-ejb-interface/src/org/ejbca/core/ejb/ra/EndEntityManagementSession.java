@@ -70,8 +70,6 @@ public interface EndEntityManagementSession {
      *            sendnotification, from SecConst.USER_XX.
      * @param tokentype the type of token to be generated, one of
      *            SecConst.TOKEN constants
-     * @param hardwaretokenissuerid if token should be hard, the id of the hard
-     *            token issuer, else 0.
      * @param caid the CA the user should be issued from.
      * @throws CADoesntExistsException if the caid of the user does not exist
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
@@ -81,7 +79,7 @@ public interface EndEntityManagementSession {
      * @throws EndEntityExistsException if an end entity by the specified username already exists
      */
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
-    		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int caid)
+    		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int caid)
     		throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
     		CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException;
 

@@ -13,12 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -173,6 +167,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Helper class for CMP Junit tests. 
@@ -1237,7 +1237,7 @@ public abstract class CmpTestCase extends CaTestCase {
             CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException, CustomFieldException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
             this.endEntityManagementSession.addUser(ADMIN, user, false);
@@ -1271,7 +1271,7 @@ public abstract class CmpTestCase extends CaTestCase {
             userDN = new X500Name(dn);
         }
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN+", ");
         try {

@@ -115,7 +115,6 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
-import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -248,11 +247,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void addUser(final AuthenticationToken admin, final String username, final String password, final String subjectdn, final String subjectaltname, final String email,
-            final boolean clearpwd, final int endentityprofileid, final int certificateprofileid, final EndEntityType type, final int tokentype, final int hardwaretokenissuerid, final int caid)
+            final boolean clearpwd, final int endentityprofileid, final int certificateprofileid, final EndEntityType type, final int tokentype, final int caid)
             throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, EndEntityConstants.STATUS_NEW,
-                type, endentityprofileid, certificateprofileid, null, null, tokentype, hardwaretokenissuerid, null);
+                type, endentityprofileid, certificateprofileid, null, null, tokentype, null);
         userdata.setPassword(password);
         addUser(admin, userdata, clearpwd);
     }
@@ -389,7 +388,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         .getSubjectDirectoryAttributes() : null;
                 profile.doesUserFulfillEndEntityProfile(username, endEntity.getPassword(), dn, altName, dirattrs, email,
                         endEntity.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
-                        type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), endEntity.getHardTokenIssuerId(), caid,
+                        type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), caid,
                         endEntity.getExtendedInformation());
             } catch (EndEntityProfileValidationException e) {
                 final String msg = intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileName, dn, e.getMessage());
@@ -474,8 +473,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
                 // Probably not important in EJB3 anymore.
                 final UserData userData = new UserData(username, newpassword, clearpwd, dn, caid, endEntity.getCardNumber(), altName, email, type.getHexValue(),
-                        endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), endEntity.getHardTokenIssuerId(),
-                        endEntity.getExtendedInformation());
+                        endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), endEntity.getExtendedInformation());
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
                 if (endEntityAccessSession.findByUsername(userData.getUsername()) != null) {
@@ -661,14 +659,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isDebugEnabled()) {
             log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + keyRecoveryDatas.size() + " rows of KeyRecoveryData.");
         }
-        final List<HardTokenData> hardTokenDatas = entityManager.createQuery(
-                "SELECT a FROM HardTokenData a WHERE a.username=:username", HardTokenData.class).setParameter("username", currentUsername).getResultList();
-        for (final HardTokenData current : hardTokenDatas) {
-            current.setUsername(newUsername);
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + hardTokenDatas.size() + " rows of HardTokenData.");
-        }
         // Update CLI admins where this username is used in AdminEntityData table.
         final List<RoleMemberData> roleMemberDatas = entityManager.createQuery(
                 "SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.tokenMatchKey=:tokenMatchKey AND a.tokenMatchValueColumn=:tokenMatchValue", RoleMemberData.class)
@@ -831,11 +821,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 if (!profile.useAutoGeneratedPasswd() && StringUtils.isNotEmpty(newpassword)) {
                     profile.doesUserFulfillEndEntityProfile(username, endEntityInformation.getPassword(), dn, altName, dirattrs, endEntityInformation.getEmail(),
                             endEntityInformation.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
-                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), endEntityInformation.getHardTokenIssuerId(), caid, ei);
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caid, ei);
                 } else {
                     profile.doesUserFulfillEndEntityProfileWithoutPassword(username, dn, altName, dirattrs, endEntityInformation.getEmail(),
                             endEntityInformation.getCertificateProfileId(), type.contains(EndEntityTypes.KEYRECOVERABLE),
-                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), endEntityInformation.getHardTokenIssuerId(), caid, ei);
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caid, ei);
                 }
             } catch (EndEntityProfileValidationException e) {
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -928,7 +918,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             userData.setEndEntityProfileId(endEntityProfileId);
             userData.setCertificateProfileId(endEntityInformation.getCertificateProfileId());
             userData.setTokenType(endEntityInformation.getTokenType());
-            userData.setHardTokenIssuerId(endEntityInformation.getHardTokenIssuerId());
             userData.setCardNumber(endEntityInformation.getCardNumber());
             final int newstatus = endEntityInformation.getStatus();
             final int oldstatus = userData.getStatus();

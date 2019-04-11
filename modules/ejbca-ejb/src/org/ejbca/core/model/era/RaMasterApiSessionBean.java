@@ -76,7 +76,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -151,7 +150,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -287,8 +285,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EstOperationsSessionLocal estOperationsSessionLocal;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySessionLocal;
     @EJB
@@ -596,9 +592,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private List<ApprovalDataText> getRequestDataAsText(final AuthenticationToken authenticationToken, final ApprovalDataVO approval) {
         final ApprovalRequest approvalRequest = approval.getApprovalRequest();
         if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
+            return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession);
         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession, hardTokenSession);
+            return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession);
         } else {
             return approvalRequest.getNewRequestDataAsText(authenticationToken);
         }
@@ -2165,10 +2161,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 final Enumeration<String> en = keyStore.aliases();
                 final String alias = en.nextElement();
                 final X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-                if (cert != null) {
-                    hardTokenSession.addHardTokenCertificateMapping(authenticationToken,hardTokenSN,cert);
-                }
-
             } catch (CertificateParsingException e) {
                 throw new EjbcaException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e.getMessage());
             } catch (NoSuchAlgorithmException e) {
