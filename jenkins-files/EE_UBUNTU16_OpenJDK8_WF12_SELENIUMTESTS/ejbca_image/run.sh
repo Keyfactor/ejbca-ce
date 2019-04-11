@@ -6,7 +6,7 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
 export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
 export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
-export PATH="/usr/bin"
+export PATH="/usr/bin:$PATH"
 
 cp /opt/conf/* /app/ejbca/conf/
 cp /opt/p12/* /app/ejbca/p12/
