@@ -109,7 +109,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     }
                     if (cacrlmode) {
                         EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).republishCrl(getAuthenticationToken(), capublishers,
-                                fingerprint, cainfo.getSubjectDN());
+                                fingerprint, cainfo.getSubjectDN(), cainfo.getAllCrlPartitionIndexes());
                     }
                 } else {
                     getLogger().info("No publishers configured for the CA, no CA certificate or CRL published.");
