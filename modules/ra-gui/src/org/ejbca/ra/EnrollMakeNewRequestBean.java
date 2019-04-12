@@ -1725,6 +1725,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return authorizedCertificateProfiles;
     }
 
+    /** 
+     * Request info is rendered if any SDN or SAN fields exists
+     * @return true if request info block should be rendered
+     */
+    public boolean isRequestInfoRendered() {
+        return isSubjectDnRendered() || isSubjectAlternativeNameRendered();
+    }
+    
     /** @return the if there is at least one field in subject dn that should be rendered as determined by state of dependencies */
     public boolean isSubjectDnRendered() {
         if (getSubjectDn()!=null) {
