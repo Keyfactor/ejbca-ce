@@ -43,15 +43,6 @@ function viewcert(row){
     win_popup.focus();
 }
 
-function viewtoken(row){
-    var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
-    var username = hiddenusernamefield.value;
-    var link = "<%= VIEWTOKEN_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
-    win_popup = window.open(link, 'view_token','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
-    win_popup.focus();
-}
-
 function confirmdelete(){
   var returnval;
   returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREDELETE",true) %>");
@@ -390,6 +381,7 @@ function confirmrevocation(){
 				<td style='white-space: nowrap;'><div class="button-group">
 				<% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)){ %>
 					<button type='button' onclick='viewcert(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_CERTIFICATES_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW") %>' /></button>
+				<% } %>
 					</div></td>
 			</tr>
 		</table>
@@ -400,7 +392,6 @@ function confirmrevocation(){
      } %>
   </tbody>
 </table>
-
 
   <!-- ----- Navigation ----- -->
 

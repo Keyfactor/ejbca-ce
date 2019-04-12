@@ -136,7 +136,7 @@
   final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
   final String EDITUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/editendentity.jsp";
   final String VIEWHISTORY_LINK         = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewhistory.jsp";
-  final String VIEWTOKEN_LINK           = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
+  
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -441,7 +441,7 @@
          String tokenserialnumber = oldactionvalue;
          if(tokenserialnumber != null){
            if(!tokenserialnumber.trim().equals("")){
-             users = rabean.filterByTokenSN(tokenserialnumber.trim(),record,size);
+             
          }
        }
      }else{
@@ -580,7 +580,7 @@
                  tokenserialnumber=tokenserialnumber.trim();
                  if(!tokenserialnumber.equals("")){
                    record=0;   
-                   users = rabean.filterByTokenSN(tokenserialnumber,record,size);
+                   
                    oldaction=OLD_ACTION_FINDTOKEN;
                    oldactionvalue=tokenserialnumber;  
                  }
