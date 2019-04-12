@@ -43,6 +43,7 @@ ant clean deployear
 wait_for_deployment
 echo '=================== should be started now ========================'
 
+ant runinstall
 ant deploy-keystore
 echo '=================== deploy-keystore done ========================'
 
@@ -61,7 +62,7 @@ JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Admini
 
 # manually change the "status" of CA from external -> active
 mysql -u ejbca -pejbca -hmariadb_selenium -e 'use ejbca; update CAData set status = 1 where status = 6;'
-ls -l /.mozilla
+ls -l /home/jenkins/.mozilla
 ant ejbca:setup:selenium -Dbrowser.firefox.binary=/usr/bin/firefox -Denv.HOME=/home/jenkins
 echo '=================== import cert commands done ========================'
 
