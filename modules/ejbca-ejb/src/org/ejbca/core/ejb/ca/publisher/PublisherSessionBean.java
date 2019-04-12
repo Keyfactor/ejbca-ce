@@ -38,6 +38,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -46,6 +47,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.BaseCertificateData;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -327,10 +329,19 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn) throws AuthorizationDeniedException {
+    public boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntRange crlPartitionIndeces) throws AuthorizationDeniedException {
         boolean result = false;
-        final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
-        Integer crlPartitionIndex = certificateDataWrapper.getCertificateData().getCrlPartitionIndex();
+        if(crlPartitionIndeces != null) {
+            for (int crlPartitionIndex = crlPartitionIndeces.getMinimumInteger(); crlPartitionIndex <= crlPartitionIndeces.getMaximumInteger(); crlPartitionIndex++) {
+                result &= republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, result, crlPartitionIndex);
+            }
+        } else {
+            result = republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, result, CertificateConstants.NO_CRL_PARTITION);
+        }
+        return result;
+    }
+
+    private boolean republishCrlPartition(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, boolean result, int crlPartitionIndex) throws AuthorizationDeniedException {
         final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerDn,
                 crlPartitionIndex, false);
         // Get the CRLnumber
