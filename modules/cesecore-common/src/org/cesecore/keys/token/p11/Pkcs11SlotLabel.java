@@ -325,7 +325,7 @@ public class Pkcs11SlotLabel {
                 // is false.
                 pw.println("}");
                 pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
-                pw.println("  CKA_DERIVE = false"); //Amazon CloudHSM will not accept that CKA_DERIVE is present in private key template and will give CKR_TEMPLATE_INCONSISTENT.
+                pw.println("  CKA_DERIVE = false");
                 pw.println("  CKA_TOKEN = true"); // all created private keys should be permanent. They should not only exist during the session.
                 pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
                 pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
