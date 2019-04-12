@@ -648,7 +648,7 @@ public class DefaultProfileTest extends CmpTestCase {
         user.setPassword(password);
         try {
             endEntityManagementSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username
-                    + "@primekey.se", clearpassword, eepid, cpid, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, _caid);
+                    + "@primekey.se", clearpassword, eepid, cpid, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, _caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
