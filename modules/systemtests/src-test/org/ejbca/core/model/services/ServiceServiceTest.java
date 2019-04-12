@@ -13,9 +13,6 @@
 
 package org.ejbca.core.model.services;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +48,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests parts of the ServiceSession. The tests depends on the UserPasswordExpire functionality to have something to run with.
@@ -88,6 +88,7 @@ public class ServiceServiceTest extends CaTestCase {
         createTestCA(TESTCA3);
     }
     
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();    
@@ -256,6 +257,7 @@ public class ServiceServiceTest extends CaTestCase {
         }
     }
 
+    @Override
     @After
     public void tearDown() throws Exception{
         super.tearDown();
@@ -288,6 +290,7 @@ public class ServiceServiceTest extends CaTestCase {
         }
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -296,7 +299,7 @@ public class ServiceServiceTest extends CaTestCase {
         // Create a new user
         final String pwd = genRandomPwd();
         getEndEntityManagementSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, getTestCAId(caName));
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, getTestCAId(caName));
         log.debug("created user: " + username);
 
         // Create a new UserPasswordExpireService

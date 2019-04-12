@@ -13,9 +13,6 @@
 
 package org.ejbca.ui.cli.batch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 
 import org.apache.log4j.Logger;
@@ -38,6 +35,9 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /** Tests the batch making of soft cards.
  *
  * @version $Id$
@@ -56,6 +56,7 @@ public class BatchMakeP12CommandTest extends CaTestCase {
     private final String username1 = BatchMakeP12CommandTest.class.getSimpleName() + "1";
     private final String username2 = BatchMakeP12CommandTest.class.getSimpleName() + "2";
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -63,7 +64,7 @@ public class BatchMakeP12CommandTest extends CaTestCase {
   
         endEntityManagementSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, 0, caid);
+                SecConst.TOKEN_SOFT_P12, caid);
         endEntityManagementSession.setClearTextPassword(admin, username1, "foo123");
 
         log.debug("created " + username1 + ", pwd=foo123");
@@ -71,7 +72,7 @@ public class BatchMakeP12CommandTest extends CaTestCase {
 
         endEntityManagementSession.addUser(admin, username2, "foo123", "C=SE, O=AnaTom, CN=" + username2, "", username2 + "@anatom.se", false,
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, 0, caid);
+                SecConst.TOKEN_SOFT_P12, caid);
         endEntityManagementSession.setClearTextPassword(admin, username2, "foo123");
 
         log.debug("created " + username2 + ", pwd=foo123");
@@ -79,6 +80,7 @@ public class BatchMakeP12CommandTest extends CaTestCase {
         log.trace("<test01CreateNewUsers()");
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
