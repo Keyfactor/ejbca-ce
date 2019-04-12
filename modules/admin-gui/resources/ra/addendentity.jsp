@@ -762,8 +762,9 @@
   <% if(!noprofiles){ %>
    <!--
       var TRUE  = "<%= EndEntityProfile.TRUE %>";
-      var FALSE = "<%= EndEntityProfile.FALSE %>";
-       
+      var FALSE = "<%= EndEntityProfile.FALSE %>"; 
+
+      <%
       if(usekeyrecovery){ %>
 function isKeyRecoveryPossible(){
    var seltoken = document.adduser.<%=SELECT_TOKEN%>.options.selectedIndex; 
