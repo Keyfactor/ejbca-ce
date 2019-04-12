@@ -18,7 +18,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.Principal;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,31 +58,19 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
-import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.hardtoken.types.HardToken;
-import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
-import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
-import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -93,7 +80,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -117,13 +103,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWSNonAdminTest"));
     private AuthenticationToken reqadmin;
 
-    private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -273,13 +257,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         try {
-            revokeToken();
-            fail("should not have been allowed to revoke token");
-        } catch (AuthorizationDeniedException_Exception e) {
-            // NOPMD: this is what we want
-        }
-
-        try {
             checkRevokeStatus();
             fail("should not have been allowed to check revoke status");
         } catch (AuthorizationDeniedException_Exception e) {
@@ -301,19 +278,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         try {
-            getExistsHardToken();
-            fail("should not have been allowed to check hard tokens");
-        } catch (EjbcaException_Exception e) {
-            // NOPMD: this is what we want
-        }
-
-        try {
-            getHardTokenDatas();
-            fail("should not have been allowed to get hard token");
-        } catch (AuthorizationDeniedException_Exception e) {
-        }
-
-        try {
             customLog();
             fail("should not have been allowed to custom log");
         } catch (AuthorizationDeniedException_Exception e) {
@@ -332,98 +296,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             fail("should have been allowed to check queue length");
         }
     }
-
-    @Test
-    public void test02GetHardTokenDataWithApprovals() throws Exception {
-
-        final String serialNumber = "12344711";
-        
-        setUpNonAdmin();
-        setupApprovals();
-        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
-        
-        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, 
-                serialNumber, true, reqadmin, null, 1, 0, 0, approvalProfile);
-
-        // Setup the test
-        if (!hardTokenSessionRemote.existsHardToken(serialNumber)) {
-            /*
-             * Add an arbitrary token for the below two tests to wait for
-             * (should such a token not already exist due to sloppy cleanup).
-             */
-            hardTokenSessionRemote.addHardToken(reqadmin, serialNumber, TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, SecConst.TOKEN_SWEDISHEID,
-                    new SwedishEIDHardToken("1234", "12345678", "5678", "23456789", 1), new ArrayList<Certificate>(), null);
-
-        }
-
-        // Make sure that the ApprovalSession is clean.
-        cleanApprovalRequestFromApprovalSession(approvalRequest, reqadmin);
-
-        try {
-
-            try {
-                getHardTokenData(serialNumber, true);
-                fail("should be waiting for approval");
-            } catch (WaitingForApprovalException_Exception e) {
-                // NOPMD: desired
-            }
-
-            try {
-                getHardTokenData(serialNumber, true);
-                fail("should be waiting for approval");
-            } catch (WaitingForApprovalException_Exception e) {
-                // NOPMD: desired
-            }
-
-            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, approvalProfile
-                    .getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier());
-            try {
-                log.debug("Approval ID that we will approve: "+approvalRequest.generateApprovalId());
-                approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1);
-                // Once approved we should be able to view it
-                getHardTokenData(serialNumber, true);
-                try {
-                    getHardTokenData(serialNumber, true);
-                    fail("should be waiting for approval");
-                } catch (WaitingForApprovalException_Exception e) {
-                    // NOPMD: desired
-                }
-                approvalExecutionSession.reject(admin1, approvalRequest.generateApprovalId(), approval1);
-                try {
-                    getHardTokenData(serialNumber, true);
-                    fail("should not work");
-                } catch (ApprovalRequestExecutionException_Exception e) {
-                    // NOPMD: desired
-                }
-            } finally {
-                // Clean up approval requests.
-                cleanApprovalRequestFromApprovalSession(approvalRequest, reqadmin);
-            }
-
-        } finally {
-            // Clean up hard token.
-            hardTokenSessionRemote.removeHardToken(intadmin, serialNumber);
-            
-            removeApprovalAdmins();
-        }
-    }
-
-    /**
-     * Takes an ApprovalRequest and cleans all ApprovalRequests with the same
-     * approval id from the ApprovalSession.
-     * 
-     * @param approvalRequest
-     * @throws ApprovalException
-     */
-    private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, AuthenticationToken admin) throws ApprovalException {
-        Collection<ApprovalDataVO> collection = approvalSession.findApprovalDataVO(approvalRequest.generateApprovalId());
-        if (!collection.isEmpty()) {
-            for (ApprovalDataVO approvalDataVO : collection) {
-                approvalSession.removeApprovalRequest(admin, approvalDataVO.getId());
-            }
-        }
-    }
-
+    
     @Test
     public void test03CleanGetHardTokenDataWithApprovals() throws Exception {
         setupApprovals();
@@ -439,100 +312,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         removeApprovalAdmins();
     }
-
-    @Test
-    public void test04GenTokenCertificatesWithApprovals() throws Exception {
-        setUpNonAdmin();
-        setupApprovals();
-        
-        try {
-            genTokenCertificates(true);
-            assertTrue(false);
-        } catch (WaitingForApprovalException_Exception e) {
-        }
-
-        try {
-            genTokenCertificates(true);
-            assertTrue(false);
-        } catch (WaitingForApprovalException_Exception e) {
-        }
-
-        Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, approvalProfile
-                .getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier());
-        
-        ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
-                reqadmin, null, 0, 0, approvalProfile);
-        try {
-            approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1);
-
-            genTokenCertificates(true);
-
-            try {
-                getHardTokenData("12345678", true);
-                assertTrue(false);
-            } catch (WaitingForApprovalException_Exception e) {
-            }
-
-            try {
-                genTokenCertificates(true);
-                assertTrue(false);
-            } catch (WaitingForApprovalException_Exception e) {
-            }
-
-            approvalExecutionSession.reject(admin1, ar.generateApprovalId(), approval1);
-
-            try {
-                genTokenCertificates(true);
-                assertTrue(false);
-            } catch (ApprovalRequestExecutionException_Exception e) {
-            }
-        } finally {
-            removeApprovalAdmins();
-        }
-    }
-
-    @Test
-    public void test05CleanGenTokenCertificatesWithApprovals() throws Exception {
-        setupApprovals();
-        // TODO: FIX ME!
-       // approvalProfile.setActionsRequireApproval(new int[] {ApprovalRequest.REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE, 
-       //             ApprovalRequest.REQ_APPROVAL_VIEW_HARD_TOKEN});
-        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
-        
-        
-        ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
-                reqadmin, null, 0, 0, approvalProfile);
-
-        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
-        Iterator<ApprovalDataVO> iter = result.iterator();
-        while (iter.hasNext()) {
-            ApprovalDataVO next = iter.next();
-            approvalSession.removeApprovalRequest(admin1, next.getId());
-        }
-
-        ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 
-                0, approvalProfile);
-
-        result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
-        iter = result.iterator();
-        while (iter.hasNext()) {
-            ApprovalDataVO next = iter.next();
-            approvalSession.removeApprovalRequest(admin1, next.getId());
-        }
-
-        removeApprovalAdmins();
-        try {
-            hardTokenSessionRemote.removeHardToken(intAdmin, "12345678");
-        } catch (HardTokenDoesntExistsException e) {
-            // NOPMD: ignore that it did not exist, it means the previous test failed but we still want to do the next cleanup 
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (NoSuchEndEntityException e) {
-            // NOPMD: ignore that it did not exist, it means the previous test failed
-        }
-    }
-
+    
     //
     // private helper functions
     //

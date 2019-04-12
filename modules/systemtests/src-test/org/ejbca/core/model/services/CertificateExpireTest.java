@@ -13,9 +13,6 @@
 
 package org.ejbca.core.model.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -60,6 +57,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 /**
  * Tests the certificate expiration notifications.
  * 
@@ -103,14 +103,16 @@ public class CertificateExpireTest extends CaTestCase {
         log.debug("Removed test CA");
     }
     
+    @Override
     @Before
     public void setUp() throws Exception {
         certificatesToRemove = new ArrayList<Certificate>();
         endEntityManagementSession.addUser(admin, USERNAME, PASSWORD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, caid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, caid);
         
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {      
         for(Certificate certificate : certificatesToRemove) {
@@ -401,6 +403,7 @@ public class CertificateExpireTest extends CaTestCase {
         }
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
