@@ -44,9 +44,9 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * Worker used for downloading external CRLs and populating the local database with limited CertificateData entries,
  * that can be used to service OCSP responses and stores the CRL locally, so it could be served for example through
  * the public web.
- *
+ * <p>
  * If the freshest CRL extension is present in a full CRL, the delta CRL will be downloaded and processed as well.
- *
+ * <p>
  * The worker can be configured to not respect the nextUpdate
  *
  * @version $Id$
@@ -56,7 +56,7 @@ public class CRLDownloadWorker extends BaseWorker {
 
     public static final String PROP_IGNORE_NEXT_UPDATE = "ignoreNextUpdate";
     public static final String PROP_MAX_DOWNLOAD_SIZE = "maxDownloadSize";
-    public static final int DEFAULT_MAX_DOWNLOAD_SIZE = 1*1024*1024;
+    public static final int DEFAULT_MAX_DOWNLOAD_SIZE = 1 * 1024 * 1024;
 
     @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
@@ -90,9 +90,8 @@ public class CRLDownloadWorker extends BaseWorker {
                 }
                 final Date now = new Date();
                 IntRange crlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
-                if (crlPartitionIndexes == null) {
-                    getCrlAndUpdateIfNeeded(caInfo, caCertificate, url, CertificateConstants.NO_CRL_PARTITION, now, crlStoreSession, importCrlSession);
-                } else {
+                getCrlAndUpdateIfNeeded(caInfo, caCertificate, url, CertificateConstants.NO_CRL_PARTITION, now, crlStoreSession, importCrlSession);
+                if (crlPartitionIndexes != null) {
                     for (int i = crlPartitionIndexes.getMinimumInteger(); i <= crlPartitionIndexes.getMaximumInteger(); i++) {
                         final URL partitionUrl = NetworkTools.getValidHttpUrl(((X509CAInfo) caInfo).getCrlPartitionUrl(cdp, i));
                         getCrlAndUpdateIfNeeded(caInfo, caCertificate, partitionUrl, i, now, crlStoreSession, importCrlSession);
@@ -169,12 +168,12 @@ public class CRLDownloadWorker extends BaseWorker {
     }
 
     private X509CRL getAndProcessCrl(final URL cdpUrl, final X509Certificate caCertificate, final CAInfo caInfo,
-            final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, AuthorizationDeniedException, CrlImportException {
+                                     final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, AuthorizationDeniedException, CrlImportException {
         final int maxSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
-        if (crlBytesNew==null) {
-            log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate) + "  with url: "+ cdpUrl);
+        if (crlBytesNew == null) {
+            log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate) + "  with url: " + cdpUrl);
         } else {
             try {
                 newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
