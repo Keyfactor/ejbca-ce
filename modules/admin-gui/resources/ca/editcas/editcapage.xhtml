@@ -914,7 +914,8 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
 						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
+						binding="#{useCrlDistributiOnPointOnCrl}">
 						<f:ajax render="checkboxcrldistributionpointoncrlcritical"/>
 					</h:selectBooleanCheckbox>
 
@@ -969,16 +970,18 @@
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
 											 value="#{editCAsMBean.usePartitionedCrl}"
-											 disabled="#{not editCAsMBean.hasEditRight}" >
-						<f:ajax render=":editcapage:crlSpecificData"/>
+											 disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.UseCRLPartitionValidator"/>
+						<f:attribute name="useCrlDistributiOnPointOnCrl" value="#{useCrlDistributiOnPointOnCrl}"/>
+						<f:attribute name="defaultCRLDistPointInput" value="#{defaultCRLDistPointInput}"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="crlpartitions"
 								   value="#{web.text.USE}" />
 				</h:panelGroup>
-				<h:panelGroup rendered="#{editCAsMBean.usePartitionedCrl}">
+				<h:panelGroup>
 					<h:outputText value="#{web.text.CRLPARTITIONNUMBER}" />
 				</h:panelGroup>
-				<h:panelGroup rendered="#{editCAsMBean.usePartitionedCrl}">
+				<h:panelGroup>
 					<h:inputText id="crlpartitions"  value="#{editCAsMBean.crlPartitions}" size="2" maxlength="2" title="#{web.text.FORMAT_INTEGER}"
 								 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
 								 disabled="#{not editCAsMBean.hasEditRight}" >
@@ -987,11 +990,11 @@
 					</h:inputText>
 				</h:panelGroup>
 
-				<h:panelGroup id="retiredPartitionLabelGroup" rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+				<h:panelGroup id="retiredPartitionLabelGroup" rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRLRETIREDPARTITIONNUMBER}" />
 
 				</h:panelGroup>
-				<h:panelGroup id="retiredPartitionInputGroup" rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+				<h:panelGroup id="retiredPartitionInputGroup" rendered="#{not editCAsMBean.caExternal}">
 					<h:inputText id="crlretiredpartitions" value="#{editCAsMBean.retiredCrlPartitions}" size="2" maxlength="2" title="#{web.text.FORMAT_INTEGER}"
 								 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
 								 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
@@ -1137,12 +1140,14 @@
 						id="textfielddefaultcrldistpoint" title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.defaultCRLDistPoint}"
 						rendered="#{not editCAsMBean.caExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}"
+						binding="#{defaultCRLDistPointInput}"
+					/>
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genDefaultCrlDistPoint}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" />
+						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" resetValues="true"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1168,7 +1173,7 @@
 						action="#{editCAsMBean.genDefaultCrlIssuer}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfielddefaultcrlissuer" />
+						<f:ajax render=":editcapage:textfielddefaultcrlissuer" resetValues="true"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
