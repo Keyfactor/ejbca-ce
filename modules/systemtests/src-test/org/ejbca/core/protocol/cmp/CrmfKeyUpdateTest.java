@@ -13,12 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -133,6 +127,12 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * This will test will check performing key updates over CMP. 
@@ -1737,7 +1737,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             //--------------- create the user and issue its certificate, expired -----------------
             endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
                     RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, 0, this.caid);
+                    SecConst.TOKEN_SOFT_PEM, this.caid);
 
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,
@@ -1804,7 +1804,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //--------------- create the user and issue its certificate, expired -----------------
         endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
                 RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_PEM, 0, this.caid);
+                SecConst.TOKEN_SOFT_PEM, this.caid);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,

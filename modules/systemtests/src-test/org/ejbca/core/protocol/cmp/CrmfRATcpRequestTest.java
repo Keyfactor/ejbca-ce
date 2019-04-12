@@ -13,9 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -58,6 +55,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * You need a CMP TCP listener configured on port 5587 to run this test.
@@ -319,7 +319,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         boolean userExists = false;
         try {
             this.endEntityManagementSession.addUser(ADMIN, username, "foo123", dn, null, "cmptest@primekey.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, this.caid);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, this.caid);
             log.debug("created user: " + username + ", foo123, " + dn);
         } catch (EndEntityExistsException e) {
             userExists = true;

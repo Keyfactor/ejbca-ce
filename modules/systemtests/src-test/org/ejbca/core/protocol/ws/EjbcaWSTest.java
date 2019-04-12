@@ -158,7 +158,6 @@ import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
-import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.client.gen.UnknownProfileTypeException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
@@ -708,11 +707,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test07RevokeToken() throws Exception {
-        revokeToken();
-    }
-
-    @Test
     public void test08CheckRevokeStatus() throws Exception {
         checkRevokeStatus();
     }
@@ -736,26 +730,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test12IsAuthorized() throws Exception {
         // This is a superadmin keystore, improve in the future
         isAuthorized(true);
-    }
-
-    @Test
-    public void test13genTokenCertificates() throws Exception {
-        genTokenCertificates(false);
-    }
-
-    @Test
-    public void test14getExistsHardToken() throws Exception {
-        getExistsHardToken();
-    }
-
-    @Test
-    public void test15getHardTokenData() throws Exception {
-        getHardTokenData("12345678", false);
-    }
-
-    @Test
-    public void test16getHardTokenDatas() throws Exception {
-        getHardTokenDatas();
     }
 
     @Test
@@ -855,19 +829,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 endEntityManagementSession.deleteUser(intAdmin, username);
             }
             try {
-                // Create a hard token issued by this CA
-                assertTrue(ejbcaraws.existsHardToken(TOKENSERIALNUMBER));
-                // Revoke token
-                try {
-                    ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-                    fail(ERRORNOTSENTFORAPPROVAL);
-                } catch (WaitingForApprovalException_Exception e) {
-                }
-                try {
-                    ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-                    fail(ERRORNOTSENTFORAPPROVAL);
-                } catch (ApprovalException_Exception e) {
-                }
                 // Approve actions and verify success
                 approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
                         ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, caID,
@@ -1404,16 +1365,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertTrue("WS did not throw CADoesntExistsException as expected", false);
         } catch (CADoesntExistsException_Exception e) {
         } // Expected
-          // Untested: ejbcaraws.genTokenCertificates
-        try {
-            UserDataVOWS badUserDataWS = new UserDataVOWS();
-            badUserDataWS.setCaName(BADCANAME);
-            ejbcaraws.genTokenCertificates(badUserDataWS, new ArrayList<TokenCertificateRequestWS>(), null, false, false);
-            assertTrue("WS did not throw CADoesntExistsException as expected", false);
-        } catch (CADoesntExistsException_Exception e) {
-        } // Expected
-          // Untested: ejbcaraws.getHardTokenData
-          // Untested: ejbcaraws.getHardTokenDatas
         try {
             ejbcaraws.republishCertificate(MOCKSERIAL, "CN=" + BADCANAME);
             assertTrue("WS did not throw CADoesntExistsException as expected", false);

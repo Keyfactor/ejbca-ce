@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -156,7 +148,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
@@ -178,7 +169,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -193,18 +183,12 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ErrorCode;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
-import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
-import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
-import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
-import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
@@ -217,6 +201,13 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -1596,31 +1587,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
         assertEquals("Revocation date not the expected.", expectedRevokeDate, realRevokeDate);
     }
-
-    protected void revokeToken() throws Exception {
-
-        final P12TestUser p12TestUser = new P12TestUser();
-        final X509Certificate cert1 = p12TestUser.getCertificate("12345678");
-        final X509Certificate cert2 = p12TestUser.getCertificate("12345678");
-
-        ejbcaraws.revokeToken("12345678", RevokeStatus.REVOKATION_REASON_KEYCOMPROMISE);
-
-        String issuerdn1 = cert1.getIssuerDN().toString();
-        String serno1 = cert1.getSerialNumber().toString(16);
-
-        RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn1, serno1);
-        assertNotNull(revokestatus);
-        assertTrue(revokestatus.getReason() == RevokeStatus.REVOKATION_REASON_KEYCOMPROMISE);
-
-        String issuerdn2 = cert2.getIssuerDN().toString();
-        String serno2 = cert2.getSerialNumber().toString(16);
-
-        revokestatus = ejbcaraws.checkRevokationStatus(issuerdn2, serno2);
-        assertNotNull(revokestatus);
-        assertTrue(revokestatus.getReason() == RevokeStatus.REVOKATION_REASON_KEYCOMPROMISE);
-
-    }
-
+    
     protected class P12TestUser {
         final private List<UserDataVOWS> userdatas;
         public P12TestUser() throws Exception {
@@ -1738,197 +1705,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdatas != null);
         assertTrue(userdatas.size() == 0);
 
-    }
-
-    protected void genTokenCertificates(boolean onlyOnce) throws Exception {
-
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
-        gc.setEnableEndEntityProfileLimitations(false);
-        globalConfigurationSession.saveConfiguration(intAdmin, gc);
-        try {
-            if (certificateProfileSession.getCertificateProfileId(WSTESTPROFILE) != 0) {
-                certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
-            }
-            {
-                final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-                profile.setAllowValidityOverride(true);
-                certificateProfileSession.addCertificateProfile(intAdmin, WSTESTPROFILE, profile);
-            }
-            // first a simple test
-            UserDataVOWS tokenUser1 = new UserDataVOWS();
-            tokenUser1.setUsername("WSTESTTOKENUSER1");
-            tokenUser1.setPassword(PASSWORD);
-            tokenUser1.setClearPwd(true);
-            tokenUser1.setSubjectDN("CN=WSTESTTOKENUSER1");
-            tokenUser1.setCaName(getAdminCAName());
-            tokenUser1.setEmail(null);
-            tokenUser1.setSubjectAltName(null);
-            tokenUser1.setStatus(EndEntityConstants.STATUS_NEW);
-            tokenUser1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-            tokenUser1.setEndEntityProfileName("EMPTY");
-            tokenUser1.setCertificateProfileName("ENDUSER");
-
-            KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
-                    basickeys.getPublic(), new DERSet(), basickeys.getPrivate(), null);
-
-            ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
-            TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
-            tokenCertReqWS.setCAName(getAdminCAName());
-            tokenCertReqWS.setCertificateProfileName(WSTESTPROFILE);
-            tokenCertReqWS.setValidityIdDays("1");
-            tokenCertReqWS.setPkcs10Data(basicpkcs10.getEncoded());
-            tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
-            requests.add(tokenCertReqWS);
-            tokenCertReqWS = new TokenCertificateRequestWS();
-            tokenCertReqWS.setCAName(getAdminCAName());
-            tokenCertReqWS.setCertificateProfileName("ENDUSER");
-            tokenCertReqWS.setKeyalg("RSA");
-            tokenCertReqWS.setKeyspec("1024");
-            tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST);
-            requests.add(tokenCertReqWS);
-
-            HardTokenDataWS hardTokenDataWS = setupHardTokenDataWS("12345678");
-
-            List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true, false);
-            assertTrue(responses.size() == 2);
-
-            Iterator<TokenCertificateResponseWS> iter = responses.iterator();
-            TokenCertificateResponseWS next = iter.next();
-            assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE);
-            Certificate cert = next.getCertificate();
-            X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
-            assertNotNull(realcert);
-            assertTrue(realcert.getNotAfter().toString(), realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 * 24 * 3600 * 1000)));
-            next = iter.next();
-            assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
-            KeyStore keyStore = next.getKeyStore();
-            java.security.KeyStore realKeyStore = KeyStoreHelper.getKeyStore(keyStore.getKeystoreData(), HardTokenConstants.TOKENTYPE_PKCS12, PASSWORD);
-            assertTrue(realKeyStore.containsAlias("WSTESTTOKENUSER1"));
-            assertTrue(((X509Certificate) realKeyStore.getCertificate("WSTESTTOKENUSER1")).getNotAfter().after(
-                    new Date(System.currentTimeMillis() + 48 * 24 * 3600 * 1000)));
-
-            if (!onlyOnce) {
-                try {
-                    responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false, false);
-                    assertTrue(false);
-                } catch (HardTokenExistsException_Exception e) {
-
-                }
-            }
-
-        } finally {
-            certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
-            gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-            globalConfigurationSession.saveConfiguration(intAdmin, gc);
-        }
-
-    }
-
-    protected HardTokenDataWS setupHardTokenDataWS(int hardTokenserialNumber) {
-        return setupHardTokenDataWS(Integer.toString(hardTokenserialNumber));
-    }
-
-    protected HardTokenDataWS setupHardTokenDataWS(String hardTokenserialNumber) {
-        HardTokenDataWS hardTokenDataWS = new HardTokenDataWS();
-        hardTokenDataWS.setLabel(HardTokenConstants.LABEL_PROJECTCARD);
-        hardTokenDataWS.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
-        hardTokenDataWS.setHardTokenSN(hardTokenserialNumber);
-
-        PinDataWS basicPinDataWS = new PinDataWS();
-        basicPinDataWS.setType(HardTokenConstants.PINTYPE_BASIC);
-        basicPinDataWS.setInitialPIN("1234");
-        basicPinDataWS.setPUK("12345678");
-        PinDataWS signaturePinDataWS = new PinDataWS();
-        signaturePinDataWS.setType(HardTokenConstants.PINTYPE_SIGNATURE);
-        signaturePinDataWS.setInitialPIN("5678");
-        signaturePinDataWS.setPUK("23456789");
-
-        hardTokenDataWS.getPinDatas().add(basicPinDataWS);
-        hardTokenDataWS.getPinDatas().add(signaturePinDataWS);
-
-        return hardTokenDataWS;
-    }
-
-    protected void getExistsHardToken() throws Exception {
-
-        assertTrue(ejbcaraws.existsHardToken("12345678"));
-        assertFalse(ejbcaraws.existsHardToken("23456789"));
-    }
-
-    protected void getHardTokenData(String serialNumber, boolean onlyOnce) throws Exception {
-
-        HardTokenDataWS hardTokenDataWS = ejbcaraws.getHardTokenData(serialNumber, true, true);
-        assertNotNull(hardTokenDataWS);
-        assertTrue("" + hardTokenDataWS.getTokenType(), hardTokenDataWS.getTokenType() == HardTokenConstants.TOKENTYPE_SWEDISHEID);
-        assertTrue(hardTokenDataWS.getHardTokenSN().equals(serialNumber));
-        assertTrue(hardTokenDataWS.getCopyOfSN(), hardTokenDataWS.getCopyOfSN() == null);
-        assertTrue(hardTokenDataWS.getCopies().size() == 0);
-        // assertTrue(hardTokenDataWS.getCertificates().size() == 2);
-        assertTrue(hardTokenDataWS.getPinDatas().size() == 2);
-
-        Iterator<PinDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
-        while (iter.hasNext()) {
-            PinDataWS next = iter.next();
-            if (next.getType() == HardTokenConstants.PINTYPE_BASIC) {
-                assertTrue(next.getPUK().equals("12345678"));
-                assertTrue(next.getInitialPIN().equals("1234"));
-            }
-            if (next.getType() == HardTokenConstants.PINTYPE_SIGNATURE) {
-                assertTrue(next.getPUK(), next.getPUK().equals("23456789"));
-                assertTrue(next.getInitialPIN().equals("5678"));
-            }
-        }
-        if (!onlyOnce) {
-            hardTokenDataWS = ejbcaraws.getHardTokenData(serialNumber, false, false);
-            assertNotNull(hardTokenDataWS);
-            // assertTrue(""+ hardTokenDataWS.getCertificates().size(),
-            // hardTokenDataWS.getCertificates().size() == 2);
-            assertTrue("" + hardTokenDataWS.getPinDatas().size(), hardTokenDataWS.getPinDatas().size() == 0);
-
-            try {
-                ejbcaraws.getHardTokenData("12345679", false, false);
-                assertTrue(false);
-            } catch (HardTokenDoesntExistsException_Exception e) {
-
-            }
-        }
-
-    }
-
-    protected void getHardTokenDatas() throws Exception {
-
-        Collection<HardTokenDataWS> hardTokenDatas = ejbcaraws.getHardTokenDatas("WSTESTTOKENUSER1", true, true);
-        assertEquals("There shold be 1 hardTokenData", 1, hardTokenDatas.size());
-        HardTokenDataWS hardTokenDataWS = hardTokenDatas.iterator().next();
-        assertNotNull(hardTokenDataWS);
-        assertEquals("Hard token type should be SwedishEID but was: "+hardTokenDataWS.getTokenType(), HardTokenConstants.TOKENTYPE_SWEDISHEID, hardTokenDataWS.getTokenType());
-        assertEquals("Hard token serialNumber not what we expected", "12345678", hardTokenDataWS.getHardTokenSN());
-        assertNull("Copy of SN should be null but was: "+hardTokenDataWS.getCopyOfSN(), hardTokenDataWS.getCopyOfSN());
-        assertEquals("There should be 0 copied", 0, hardTokenDataWS.getCopies().size());
-        assertEquals("There should be 2 certificates tied to the hardToken", 2, hardTokenDataWS.getCertificates().size());
-        assertEquals("There should be 2 PINS tied to the hardToken", 2, hardTokenDataWS.getPinDatas().size());
-
-        Iterator<PinDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
-        while (iter.hasNext()) {
-            PinDataWS next = iter.next();
-            if (next.getType() == HardTokenConstants.PINTYPE_BASIC) {
-                assertTrue(next.getPUK().equals("12345678"));
-                assertTrue(next.getInitialPIN().equals("1234"));
-            }
-            if (next.getType() == HardTokenConstants.PINTYPE_SIGNATURE) {
-                assertTrue(next.getPUK(), next.getPUK().equals("23456789"));
-                assertTrue(next.getInitialPIN().equals("5678"));
-            }
-        }
-
-        try {
-            hardTokenDatas = ejbcaraws.getHardTokenDatas("WSTESTTOKENUSER2", true, true);
-            assertTrue(hardTokenDatas.size() == 0);
-        } catch (EjbcaException_Exception e) {
-
-        }
     }
 
     protected void customLog() throws Exception {
