@@ -121,7 +121,7 @@ public class AddLotsofUsersTest extends CaTestCase {
                 usernames[i] = username;
                 endEntityManagementSession.addUser(roleMgmgToken, username, "foo123", "CN=" + username, null, null, false,
                         EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                        EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, getTestCAId());
+                        EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId());
 
             }
             return usernames;
