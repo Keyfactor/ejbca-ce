@@ -128,14 +128,13 @@ public class PurposeMappingTest {
 		prop.put(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, "mytestKey");
 		PurposeMapping ks = new PurposeMapping(prop);
 		String[] strings = ks.getAliases();
-		assertEquals(7, strings.length);
+		assertEquals(6, strings.length);
 		// it's backed by a hashset so we really don't know the order, so make it into a collection instead
 		List<String> list = Arrays.asList(strings);
 		assertTrue(list.contains("mycertSignPreviousKey"));
 		assertTrue(list.contains("mytestKey"));
 		assertTrue(list.contains("mycertSignKey"));
 		assertTrue(list.contains("mykeyEncKey"));
-		assertTrue(list.contains("myhardTokenEncKey"));
 		assertTrue(list.contains("mycertSignNextKey"));
 		assertTrue(list.contains("mycrlSignKey"));
 		assertTrue(list.contains("mytestKey"));
@@ -184,13 +183,12 @@ public class PurposeMappingTest {
 		prop.put(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, "mydefaultKey");
 		PurposeMapping ks = new PurposeMapping(prop);
 		String[] strings = ks.getAliases();
-		assertEquals(6, strings.length);
+		assertEquals(5, strings.length);
 		// it's backed by a hashset so we really don't know the order, so make it into a collection instead
 		List<String> list = Arrays.asList(strings);
 		assertTrue(list.contains("mytestKey"));
 		assertTrue(list.contains("mycertSignKey"));
 		assertTrue(list.contains("mykeyEncKey"));
-		assertTrue(list.contains("myhardTokenEncKey"));
 		assertTrue(list.contains("mycrlSignKey"));
 		assertTrue(list.contains("mydefaultKey"));
 		// All keys have defined values
