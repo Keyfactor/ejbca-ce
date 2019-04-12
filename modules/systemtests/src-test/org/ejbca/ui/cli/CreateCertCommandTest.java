@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,6 +38,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @version $Id$
@@ -78,7 +78,7 @@ public class CreateCertCommandTest {
         caSession.addCA(authenticationToken, ca);
         endEntityManagementSession.addUser(authenticationToken, USERNAME, PASSWORD, "CN=" + USERNAME, null, null, false,
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, 0, ca.getCAId());
+                SecConst.TOKEN_SOFT_P12, ca.getCAId());
         byte[] rawPkcs10req = caAdminSession.makeRequest(authenticationToken, ca.getCAId(), ca.getCertificateChain(), ca.getCAToken()
                 .getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         FileOutputStream fileOutputStream = new FileOutputStream(requestFile);

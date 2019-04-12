@@ -189,7 +189,7 @@ public class IntegratedOcspResponseTest {
         final X509CA testx509caRenew = cryptoTokenRule.createX509Ca(); 
         final X509Certificate caCertificateRenew = (X509Certificate) testx509caRenew.getCACertificate();
         final EndEntityInformation user = new EndEntityInformation("testOcspSignerIssuerRenewal", "CN=testOcspSignerIssuerRenewal", testx509ca.getCAId(), null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
