@@ -37,7 +37,8 @@ public class UseCRLPartitionValidator implements Validator {
         Boolean usePartitionedCrl = (Boolean) o;
         if (usePartitionedCrl) {
             UIInput defaultCRLDistPointInput = (UIInput) component.getAttributes().get("defaultCRLDistPointInput");
-            String defaultCRLDistPoint = (String) defaultCRLDistPointInput.getValue();
+            Object submittedValue = defaultCRLDistPointInput.getSubmittedValue();
+            String defaultCRLDistPoint = submittedValue == null ? (String) defaultCRLDistPointInput.getValue() : submittedValue.toString();
             UIInput useCrlDistributiOnPointOnCrlInput = (UIInput) component.getAttributes().get("useCrlDistributiOnPointOnCrl");
             Boolean useCrlDistributiOnPointOnCrl = (Boolean) useCrlDistributiOnPointOnCrlInput.getValue();
 
