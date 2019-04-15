@@ -42,7 +42,7 @@ pipeline {
         // ...and so on for each type of scanning that should be possible to disable
     }
     environment {
-        def dockerBuildNoCache = params.FORCE_REBUILD ? '--no-cache' : ''
+        DOCKER_BUILD_NO_CACHE = params.FORCE_REBUILD ? '--no-cache' : ''
     }
     stages {
         stage('Init') {
@@ -62,7 +62,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/findbugs'
-                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
+                    additionalBuildArgs "--disable-content-trust=false --pull ${env.DOCKER_BUILD_NO_CACHE}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
@@ -92,7 +92,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/pmd'
-                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
+                    additionalBuildArgs "--disable-content-trust=false --pull ${env.DOCKER_BUILD_NO_CACHE}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
@@ -121,7 +121,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/checkstyle'
-                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
+                    additionalBuildArgs "--disable-content-trust=false --pull ${env.DOCKER_BUILD_NO_CACHE}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
