@@ -125,7 +125,7 @@ pipeline {
             steps {
                 sh '/opt/imports/bin/run-checkstyle.sh'
                 // Gather the results
-                recordIssues enabledForFailure: false, tool: checkstyle(pattern: '**/report-checkstyle.xml')
+                recordIssues enabledForFailure: false, tool: checkStyle(pattern: '**/report-checkstyle.xml')
                 // Archive artifact for import in external tool
                 archiveArtifacts artifacts: '**/report-checkstyle.xml', fingerprint: true
             }
