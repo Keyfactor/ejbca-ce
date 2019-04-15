@@ -3,3 +3,8 @@
 -- ALTER TABLE CertificateData ADD crlPartitionIndex INTEGER;
 -- ALTER TABLE NoConflictCertificateData ADD crlPartitionIndex INTEGER;
 -- ALTER TABLE CRLData ADD crlPartitionIndex INTEGER;
+
+-- DROP TABLE hardtokendata;
+-- DROP TABLE hardtokenissuerdata;
+-- DROP TABLE hardtokenprofiledata;
+-- DROP TABLE hardtokenpropertydata;

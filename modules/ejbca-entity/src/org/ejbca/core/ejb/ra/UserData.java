@@ -72,6 +72,10 @@ public class UserData extends ProtectedData implements Serializable {
     private int endEntityProfileId;
     private int certificateProfileId;
     private int tokenType;
+    
+    // Hard Tokens functionality is removed since 7.1.0 release, but we need to keep the field in database and in entity for compatibility
+    private int hardTokenIssuerId = 0;
+    
     private String extendedInformationData;
     /** instantiated object of the above, used to not have to encode/decode the object all the time.
      * see PrePersist annotated method */
@@ -339,6 +343,21 @@ public class UserData extends ProtectedData implements Serializable {
      */
     public void setTokenType(int tokenType) {
         this.tokenType = tokenType;
+    }
+    
+    /**
+     * Returns the hard token issuer id that should genererate for the users hard token.
+     */
+    // @Column
+    public int getHardTokenIssuerId() {
+        return hardTokenIssuerId;
+    }
+
+    /**
+     * Sets the hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
+     */
+    public void setHardTokenIssuerId(int hardTokenIssuerId) {
+        this.hardTokenIssuerId = hardTokenIssuerId;
     }
 
     /**
