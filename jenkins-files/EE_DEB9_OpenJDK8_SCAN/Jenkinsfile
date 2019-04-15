@@ -1,0 +1,140 @@
+pipeline {
+    agent {
+        label "docker"
+    }
+    options {
+        // Provide a few sane defaults. See https://jenkins.io/doc/book/pipeline/syntax/#options
+        timeout(time: 59, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+    parameters {
+        booleanParam(
+            name: 'DRY_RUN_LOAD_JENKINSFILE',
+            defaultValue: (params.DRY_RUN_LOAD_JENKINSFILE==null) ? true : params.DRY_RUN_LOAD_JENKINSFILE,
+            description: 'Dry run. Allows this configuration (including this parameterization) to be loaded before anything is actually executed.'
+            )
+        booleanParam(
+            name: 'ENABLE_DEBUG',
+            defaultValue: (params.ENABLE_DEBUG==null) ? false : params.ENABLE_DEBUG,
+            description: 'Enable debug logging from all stages.'
+            )
+        booleanParam(
+            name: 'SCAN_WITH_FINDBUGS',
+            defaultValue: (params.SCAN_WITH_FINDBUGS==null) ? true : params.SCAN_WITH_FINDBUGS,
+            description: 'Scan project using Findbugs.'
+            )
+        booleanParam(
+            name: 'SCAN_WITH_PMD',
+            defaultValue: (params.SCAN_WITH_PMD==null) ? true : params.SCAN_WITH_PMD,
+            description: 'Scan project using PMD.'
+            )
+        booleanParam(
+            name: 'SCAN_WITH_CHECKSTYLE',
+            defaultValue: (params.SCAN_WITH_CHECKSTYLE==null) ? true : params.SCAN_WITH_CHECKSTYLE,
+            description: 'Scan project using Checkstyle.'
+            )
+        // ...and so on for each type of scanning that should be possible to disable
+    }
+    stages {
+        stage('Init') {
+            steps {
+                // Pipeline parameterization workarounds
+                script {
+                    if (params.DRY_RUN_LOAD_JENKINSFILE) {
+                        currentBuild.result = 'ABORTED'
+                        error('Dry run completed..')
+                    }
+                }
+            }
+        }
+        stage('Findbugs') {
+            agent {
+                // Execute this stage inside the following ephemeral Docker container
+                dockerfile {
+                    reuseNode true
+                    dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/findbugs'
+                    additionalBuildArgs '--disable-content-trust=false --pull'
+                    args '--group-add root --memory="1536m" --memory-swap="1536m"'
+                }
+            }
+            environment {
+                DEBUG     = "${params.ENABLE_DEBUG}"
+                // Define sane defaults to keep RAM usage at a reasonable level for scanning
+                JAVA_OPTS = "-XX:+ExitOnOutOfMemoryError -Xms1024m -Xmx1024m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
+                ANT_OPTS  = "-XX:+ExitOnOutOfMemoryError  -Xms256m  -Xmx512m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
+            }
+            when {
+                expression { params.SCAN_WITH_FINDBUGS }
+            }
+            // Run these steps inside the running docker container
+            steps {
+                sh 'imports/bin/run-findbugs.sh'
+                // Gather the results
+                recordIssues enabledForFailure: false, tool: findBugs(pattern: '**/report-findbugs.xml')
+                // Archive artifact for import in external tool
+                archiveArtifacts artifacts: '**/report-findbugs.xml', fingerprint: true
+            }
+        }
+        stage('PMD') {
+            agent {
+                // Execute this stage inside the following ephemeral Docker container
+                dockerfile {
+                    reuseNode true
+                    dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/pmd'
+                    additionalBuildArgs '--disable-content-trust=false --pull'
+                    args '--group-add root --memory="1536m" --memory-swap="1536m"'
+                }
+            }
+            environment {
+                DEBUG         = "${params.ENABLE_DEBUG}"
+                // Define sane defaults to keep RAM usage at a reasonable level for scanning
+                PMD_JAVA_OPTS = "-XX:+ExitOnOutOfMemoryError -Xms1024m -Xmx1024m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
+            }
+            when {
+                expression { params.SCAN_WITH_PMD }
+            }
+            // Run these steps inside the running docker container
+            steps {
+                sh 'imports/bin/run-pmd.sh'
+                // Gather the results
+                recordIssues enabledForFailure: false, tool: pmd(pattern: '**/report-pmd.xml')
+                // Archive artifact for import in external tool
+                archiveArtifacts artifacts: '**/report-pmd.xml', fingerprint: true
+            }
+        }
+        stage('Checkstyle') {
+            agent {
+                // Execute this stage inside the following ephemeral Docker container
+                dockerfile {
+                    reuseNode true
+                    dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/checkstyle'
+                    additionalBuildArgs '--disable-content-trust=false --pull'
+                    args '--group-add root --memory="1536m" --memory-swap="1536m"'
+                }
+            }
+            environment {
+                DEBUG     = "${params.ENABLE_DEBUG}"
+                // Define sane defaults to keep RAM usage at a reasonable level for scanning
+                JAVA_OPTS = "-XX:+ExitOnOutOfMemoryError -Xms1024m -Xmx1024m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
+            }
+            when {
+                expression { params.SCAN_WITH_CHECKSTYLE }
+            }
+            // Run these steps inside the running docker container
+            steps {
+                sh 'imports/bin/run-checkstyle.sh'
+                // Gather the results
+                recordIssues enabledForFailure: false, tool: checkstyle(pattern: '**/report-checkstyle.xml')
+                // Archive artifact for import in external tool
+                archiveArtifacts artifacts: '**/report-checkstyle.xml', fingerprint: true
+            }
+        }
+        //stage(...
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
