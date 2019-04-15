@@ -1198,7 +1198,7 @@
 						action="#{editCAsMBean.genCaDefinedFreshestCrl}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" />
+						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" resetValues="true" />
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1225,7 +1225,7 @@
 						action="#{editCAsMBean.genDefaultOcspLocator}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfielddefaultocsplocator" />
+						<f:ajax render=":editcapage:textfielddefaultocsplocator" resetValues="true" />
 					</h:commandButton>
 
 				</h:panelGroup>
