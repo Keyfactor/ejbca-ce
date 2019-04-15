@@ -71,9 +71,11 @@ pipeline {
             steps {
                 sh '/opt/imports/bin/run-findbugs.sh'
                 // Gather the results
-                recordIssues enabledForFailure: false, tool: findBugs(pattern: '**/report-findbugs.xml')
+                recordIssues enabledForFailure: false, tool: findBugs(pattern: 'ejbca/**/report-findbugs.xml')
                 // Archive artifact for import in external tool
-                archiveArtifacts artifacts: '**/report-findbugs.xml', fingerprint: true
+                archiveArtifacts artifacts: 'ejbca/**/report-findbugs.xml', fingerprint: true
+                // Clean up
+                sh 'rm ejbca/report-findbugs.xml'
             }
         }
         stage('PMD') {
@@ -98,9 +100,11 @@ pipeline {
             steps {
                 sh '/opt/imports/bin/run-pmd.sh'
                 // Gather the results
-                recordIssues enabledForFailure: false, tool: pmd(pattern: '**/report-pmd.xml')
+                recordIssues enabledForFailure: false, tool: pmd(pattern: 'ejbca/**/report-pmd.xml')
                 // Archive artifact for import in external tool
-                archiveArtifacts artifacts: '**/report-pmd.xml', fingerprint: true
+                archiveArtifacts artifacts: 'ejbca/**/report-pmd.xml', fingerprint: true
+                // Clean up
+                sh 'rm ejbca/report-pmd.xml'
             }
         }
         stage('Checkstyle') {
@@ -125,16 +129,13 @@ pipeline {
             steps {
                 sh '/opt/imports/bin/run-checkstyle.sh'
                 // Gather the results
-                recordIssues enabledForFailure: false, tool: checkStyle(pattern: '**/report-checkstyle.xml')
+                recordIssues enabledForFailure: false, tool: checkStyle(pattern: 'ejbca/**/report-checkstyle.xml')
                 // Archive artifact for import in external tool
-                archiveArtifacts artifacts: '**/report-checkstyle.xml', fingerprint: true
+                archiveArtifacts artifacts: 'ejbca/**/report-checkstyle.xml', fingerprint: true
+                // Clean up
+                sh 'rm ejbca/report-checkstyle.xml'
             }
         }
         //stage(...
-    }
-    post {
-        always {
-            cleanWs()
-        }
     }
 }
