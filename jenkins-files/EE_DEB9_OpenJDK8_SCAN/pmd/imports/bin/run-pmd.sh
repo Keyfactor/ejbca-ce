@@ -59,4 +59,5 @@ echo "
 ### Done! ###
 "
 violations=$(grep "<violation" "$(realpath ejbca/${reportFile})" | wc -l)
-echo "Report with ${violations} violations is available in $(realpath ejbca/${reportFile})"
+reportSize="$(du -h ejbca/${reportFile} | sed 's/\t.*//')"
+echo "Report with ${violations} violations is available in $(realpath ejbca/${reportFile}) [${reportSize}]"
