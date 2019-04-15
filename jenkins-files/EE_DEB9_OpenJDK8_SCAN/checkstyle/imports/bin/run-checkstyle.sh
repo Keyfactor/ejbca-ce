@@ -50,6 +50,9 @@ cat "${styleCheckRules}" \
     | sed 's/maximum" value="0/maximum" value="99/' \
     | grep -v WhitespaceAround \
     | grep -v FinalParameters \
+    | grep -v JavadocPackage \
+    | grep -v JavadocVariable \
+    | grep -v DesignForExtension \
     > /tmp/checks.xml
 
 # --checker-threads-number=$coreLimit -> "IllegalArgumentException: Multi thread mode for Checker module is not implemented"
