@@ -4,21 +4,11 @@ pipeline {
     }
     options {
         // Provide a few sane defaults. See https://jenkins.io/doc/book/pipeline/syntax/#options
-        timeout(time: 59, unit: 'MINUTES')
+        timeout(time: 29, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
         disableConcurrentBuilds()
     }
     parameters {
-        booleanParam(
-            name: 'DRY_RUN_LOAD_JENKINSFILE',
-            defaultValue: (params.DRY_RUN_LOAD_JENKINSFILE==null) ? true : params.DRY_RUN_LOAD_JENKINSFILE,
-            description: 'Dry run. Allows this configuration (including this parameterization) to be loaded before anything is actually executed.'
-            )
-        booleanParam(
-            name: 'ENABLE_DEBUG',
-            defaultValue: (params.ENABLE_DEBUG==null) ? false : params.ENABLE_DEBUG,
-            description: 'Enable debug logging from all stages.'
-            )
         booleanParam(
             name: 'SCAN_WITH_FINDBUGS',
             defaultValue: (params.SCAN_WITH_FINDBUGS==null) ? true : params.SCAN_WITH_FINDBUGS,
@@ -34,7 +24,25 @@ pipeline {
             defaultValue: (params.SCAN_WITH_CHECKSTYLE==null) ? true : params.SCAN_WITH_CHECKSTYLE,
             description: 'Scan project using Checkstyle.'
             )
+        booleanParam(
+            name: 'DRY_RUN_LOAD_JENKINSFILE',
+            defaultValue: (params.DRY_RUN_LOAD_JENKINSFILE==null) ? true : params.DRY_RUN_LOAD_JENKINSFILE,
+            description: 'Development: Dry run. Allows this parameterization to be loaded before anything is actually executed.'
+            )
+        booleanParam(
+            name: 'FORCE_REBUILD',
+            defaultValue: (params.FORCE_REBUILD==null) ? false : params.FORCE_REBUILD,
+            description: 'Development: Force full docker container rebuild.'
+            )
+        booleanParam(
+            name: 'ENABLE_DEBUG',
+            defaultValue: (params.ENABLE_DEBUG==null) ? false : params.ENABLE_DEBUG,
+            description: 'Development: Enable debug logging from all stages.'
+            )
         // ...and so on for each type of scanning that should be possible to disable
+    }
+    environment {
+        def dockerBuildNoCache = params.FORCE_REBUILD ? '--no-cache' : ''
     }
     stages {
         stage('Init') {
@@ -54,7 +62,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/findbugs'
-                    additionalBuildArgs '--disable-content-trust=false --pull'
+                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
@@ -84,7 +92,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/pmd'
-                    additionalBuildArgs '--disable-content-trust=false --pull'
+                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
@@ -113,7 +121,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/checkstyle'
-                    additionalBuildArgs '--disable-content-trust=false --pull'
+                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
