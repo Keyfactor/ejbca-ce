@@ -29,6 +29,11 @@ public final class CATokenConstants {
 	public static final int CAKEYPURPOSE_KEYENCRYPT          = 3;
 	/** used for testing if the CA token is functioning and on-line */
 	public static final int CAKEYPURPOSE_KEYTEST             = 4;
+	
+	/** Hard Tokens were removed since release 7.1.0. Can't remove this constant though, it might be refecenced in existing customers' CA's */
+	@Deprecated
+	public static final int CAKEYPURPOSE_HARDTOKENENCRYPT    = 5;
+	
 	/** The CAs previous signing key, if any exists */
 	public static final int CAKEYPURPOSE_CERTSIGN_PREVIOUS   = 6;
 	/** The CAs next signing key, if any exists */
@@ -39,6 +44,7 @@ public final class CATokenConstants {
         CATokenConstants.CAKEYPURPOSE_CRLSIGN,
         CATokenConstants.CAKEYPURPOSE_KEYENCRYPT,
         CATokenConstants.CAKEYPURPOSE_KEYTEST,
+        CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT,
         CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
         CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT
     };
@@ -50,6 +56,10 @@ public final class CATokenConstants {
 	final static public String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
 	final static public String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
 	final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
+	
+	@Deprecated
+	final static public String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = "hardTokenEncrypt";
+	
 	final static public String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = "previousCertSignKey";
 	final static public String CAKEYPURPOSE_CERTSIGN_STRING_NEXT = "nextCertSignKey";
 

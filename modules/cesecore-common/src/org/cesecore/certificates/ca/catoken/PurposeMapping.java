@@ -83,6 +83,9 @@ public final class PurposeMapping {
     		addKey(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING,
     				CATokenConstants.CAKEYPURPOSE_KEYTEST,
     				properties);    		
+            addKey(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING,
+                    CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT,
+                    properties); 
     		addKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS,
     				CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
     				properties);    		

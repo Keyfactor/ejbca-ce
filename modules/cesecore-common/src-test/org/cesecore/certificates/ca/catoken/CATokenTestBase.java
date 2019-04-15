@@ -236,6 +236,7 @@ public abstract class CATokenTestBase {
 			String previouskeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
 			assertEquals(newkeyhash2, previouskeyhash3);
 			// Next should now return the encryption key instead, since it is the default
+			priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));
 			pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
 			KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
 			assertEquals(1024, KeyTools.getKeyLength(pub));
@@ -449,7 +450,8 @@ public abstract class CATokenTestBase {
 			}
 			// Next should now return the encryption key instead, since it is the default
 			// There exist an RSA encryption key
-			KeyTools.testKey(priv, encPub, cryptoToken.getSignProviderName());
+			priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));
+            KeyTools.testKey(priv, encPub, cryptoToken.getSignProviderName());
 			// There exist an RSA encryption key
 			pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
 			assertEquals(1024, KeyTools.getKeyLength(pub));
