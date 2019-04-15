@@ -1141,8 +1141,10 @@
 						value="#{editCAsMBean.defaultCRLDistPoint}"
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}"
-						binding="#{defaultCRLDistPointInput}"
-					/>
+								 binding="#{defaultCRLDistPointInput}">
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.UriValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_CDP_DEFAULTURI_ERROR}"/>
+					</h:inputText>
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genDefaultCrlDistPoint}"
 						value="#{web.text.GENERATE}"
