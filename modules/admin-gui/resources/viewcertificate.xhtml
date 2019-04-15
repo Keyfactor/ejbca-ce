@@ -62,13 +62,6 @@
                 <!-- Index -->
                 </ui:remove>
                 
-                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName and not empty viewCertificateMBean.tokenSn}">
-                    <h:outputLabel value="#{web.text.HARDTOKENSN}"/>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName and not empty viewCertificateMBean.tokenSn}">
-                    <h:outputLabel value="#{viewCertificateMBean.tokenSn}"/>
-                </h:panelGroup>
-                
                 <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
                     <h:outputLabel value="#{web.text.CERTIFICATENR}"/>
                 </h:panelGroup>
