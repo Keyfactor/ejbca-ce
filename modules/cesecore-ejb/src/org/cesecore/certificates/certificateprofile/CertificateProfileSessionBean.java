@@ -254,23 +254,23 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
                 final CertificateProfile profile = cpEntry.getValue();
                 // Check if all profiles available CAs exists in authorizedcaids.          
-                if (certprofiletype == 0 || certprofiletype == profile.getType() || profile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
-                boolean allexists = true;
-                for (final Integer nextcaid : profile.getAvailableCAs()) {
-                    if (nextcaid.intValue() == CertificateProfile.ANYCA) {
-                        allexists = true;
-                        break;
+                if (certprofiletype == 0 || certprofiletype == profile.getType()) {
+                    boolean allexists = true;
+                    for (final Integer nextcaid : profile.getAvailableCAs()) {
+                        if (nextcaid.intValue() == CertificateProfile.ANYCA) {
+                            allexists = true;
+                            break;
+                        }
+                        // superadmin should be able to access profiles with missing CA Ids
+                        if (!authorizedcaids.contains(nextcaid) && (!rootAccess || allcaids.contains(nextcaid))) {
+                            allexists = false;
+                            break;
+                        }
                     }
-                    // superadmin should be able to access profiles with missing CA Ids
-                    if (!authorizedcaids.contains(nextcaid) && (!rootAccess || allcaids.contains(nextcaid))) {
-                        allexists = false;
-                        break;
+                    if (allexists) {
+                        returnval.add(cpEntry.getKey());
                     }
                 }
-                if (allexists) {
-                    returnval.add(cpEntry.getKey());
-                }
-            }
         }
         return returnval;
     } 
