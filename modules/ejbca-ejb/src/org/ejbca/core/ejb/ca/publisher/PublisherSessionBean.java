@@ -329,21 +329,23 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntRange crlPartitionIndeces) throws AuthorizationDeniedException {
-        boolean result = false;
+    public boolean republishCrl(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final IntRange crlPartitionIndeces) throws AuthorizationDeniedException {
+        boolean result = true;
         if(crlPartitionIndeces != null) {
             for (int crlPartitionIndex = crlPartitionIndeces.getMinimumInteger(); crlPartitionIndex <= crlPartitionIndeces.getMaximumInteger(); crlPartitionIndex++) {
-                result &= republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, result, crlPartitionIndex);
+                result &= republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, crlPartitionIndex);
             }
+            result &=  republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, CertificateConstants.NO_CRL_PARTITION);
         } else {
-            result = republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, result, CertificateConstants.NO_CRL_PARTITION);
+            result = republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, CertificateConstants.NO_CRL_PARTITION);
         }
         return result;
     }
 
-    private boolean republishCrlPartition(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, boolean result, int crlPartitionIndex) throws AuthorizationDeniedException {
+    private boolean republishCrlPartition(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final int crlPartitionIndex) throws AuthorizationDeniedException {
         final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerDn,
                 crlPartitionIndex, false);
+        boolean result = false;
         // Get the CRLnumber
         X509CRL crl;
         try {
