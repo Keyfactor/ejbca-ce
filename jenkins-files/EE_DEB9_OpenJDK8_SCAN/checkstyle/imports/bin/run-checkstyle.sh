@@ -42,15 +42,21 @@ styleCheckRules="code-analyzer-tools/checkstyle/checks/sun_checks.xml"
 
 # Redact rules that we definitely don't care about and makes the report to large to handle
 # - LineLength: "Line is longer than 80 characters (found ...)."
-# 
+# - RegexpSinglelineCheck: "Line has trailing spaces." -> There are too many such "errors" to cope with. Allow 99..
+# - WhitespaceAround: Defacto not followed in EJBCA
+# - FinalParameters: Nice to have, but too many errors.
 cat "${styleCheckRules}" \
     | grep -v LineLength \
+    | sed 's/maximum" value="0/maximum" value="99/' \
+    | grep -v WhitespaceAround \
+    | grep -v FinalParameters \
     > /tmp/checks.xml
 
 # --checker-threads-number=$coreLimit -> "IllegalArgumentException: Multi thread mode for Checker module is not implemented"
+# --exclude=ejbca/modules/cesecore-common/src-test/org/cesecore/util/SecureXMLDecoderTest.java \
 time java ${JAVA_OPTS} -jar /opt/checkstyle.jar $debugOption \
     -c=/tmp/checks.xml -f=xml -o=ejbca/${reportFile} \
-    --exclude=ejbca/modules/cesecore-common/src-test/org/cesecore/util/SecureXMLDecoderTest.java \
+    --exclude-regexp=.+Test\.java$ \
     ejbca/modules/
 
 echo "
