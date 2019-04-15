@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
@@ -49,6 +50,7 @@ public class CaRenewCACommandTest extends CaTestCase {
 	private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaRenewCACommandTest"));
     
 	private static final String CA_NAME = "TEST";
+	private static final int lastYear = Calendar.getInstance(Locale.ROOT).get(Calendar.YEAR) - 1;
 
 	private X509Certificate orgCert;
 
@@ -132,7 +134,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         LOG.trace(">test03renewCAwithSameKeysAndCustomNotBefore()");
         
         Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, 2009);
+        cal.set(Calendar.YEAR, lastYear);
         cal.set(Calendar.MONTH, 4 - 1);
         cal.set(Calendar.DAY_OF_MONTH, 15);
         cal.set(Calendar.HOUR_OF_DAY, 8);
@@ -140,7 +142,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         cal.setTimeZone(TimeZone.getTimeZone("GMT+02:00"));
-        final String notBefore = "2009-04-15 08:55:00+02:00";
+        final String notBefore = lastYear + "-04-15 08:55:00+02:00"; // Date in last year
         
         final CaRenewCACommand command = new CaRenewCACommand();
         assertEquals(CommandResult.SUCCESS, command.execute(new String[]{CA_NAME, "foo123", "--notbefore", notBefore}));
@@ -171,7 +173,7 @@ public class CaRenewCACommandTest extends CaTestCase {
     	LOG.trace(">test04renewCAwithNewKeysAndCustomNotBefore()");
     	
         Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, 2009);
+        cal.set(Calendar.YEAR, lastYear);
         cal.set(Calendar.MONTH, 4 - 1);
         cal.set(Calendar.DAY_OF_MONTH, 15);
         cal.set(Calendar.HOUR_OF_DAY, 8);
@@ -179,7 +181,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         cal.setTimeZone(TimeZone.getTimeZone("GMT+02:00"));
-        final String notBefore = "2009-04-15 08:55:00+02:00";
+        final String notBefore = lastYear + "-04-15 08:55:00+02:00";
     	
     	final CaRenewCACommand command = new CaRenewCACommand();
         command.execute(new String[]{ CA_NAME, "foo123", "-R", "--notbefore", notBefore});
