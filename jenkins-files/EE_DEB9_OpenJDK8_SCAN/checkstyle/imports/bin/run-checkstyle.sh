@@ -40,11 +40,17 @@ fi
 
 styleCheckRules="code-analyzer-tools/checkstyle/checks/sun_checks.xml"
 
+# TODO: Instead of pulling the Sun recommendations and doing hard-coded redactions the EJBCA team
+#       should agree on a set of rules and configure such XML configartion to be used right away.
+#
 # Redact rules that we definitely don't care about and makes the report to large to handle
 # - LineLength: "Line is longer than 80 characters (found ...)."
 # - RegexpSinglelineCheck: "Line has trailing spaces." -> There are too many such "errors" to cope with. Allow 99..
 # - WhitespaceAround: Defacto not followed in EJBCA
 # - FinalParameters: Nice to have, but too many errors.
+# - JavadocPackage: Defacto not followed in EJBCA
+# - JavadocVariable: Defacto not followed in EJBCA unless motivated.
+# - DesignForExtension: Usually implicit when such extension is intended. Not everything needs to be designed for extension.
 cat "${styleCheckRules}" \
     | grep -v LineLength \
     | sed 's/maximum" value="0/maximum" value="99/' \
