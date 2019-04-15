@@ -42,17 +42,18 @@ pipeline {
         // ...and so on for each type of scanning that should be possible to disable
     }
     environment {
-        DOCKER_BUILD_NO_CACHE = params.FORCE_REBUILD ? '--no-cache' : ''
+        dockerBuildNoCache = ''
     }
     stages {
         stage('Init') {
             steps {
-                // Pipeline parameterization workarounds
                 script {
+                    // Pipeline parameterization workarounds
                     if (params.DRY_RUN_LOAD_JENKINSFILE) {
                         currentBuild.result = 'ABORTED'
                         error('Dry run completed..')
                     }
+                    dockerBuildNoCache = params.FORCE_REBUILD ? '--no-cache' : ''
                 }
             }
         }
@@ -62,7 +63,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/findbugs'
-                    additionalBuildArgs "--disable-content-trust=false --pull ${env.DOCKER_BUILD_NO_CACHE}"
+                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
@@ -92,7 +93,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/pmd'
-                    additionalBuildArgs "--disable-content-trust=false --pull ${env.DOCKER_BUILD_NO_CACHE}"
+                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
@@ -121,7 +122,7 @@ pipeline {
                 dockerfile {
                     reuseNode true
                     dir 'ejbca/jenkins-files/EE_DEB9_OpenJDK8_SCAN/checkstyle'
-                    additionalBuildArgs "--disable-content-trust=false --pull ${env.DOCKER_BUILD_NO_CACHE}"
+                    additionalBuildArgs "--disable-content-trust=false --pull ${dockerBuildNoCache}"
                     args '--group-add root --memory="1536m" --memory-swap="1536m"'
                 }
             }
