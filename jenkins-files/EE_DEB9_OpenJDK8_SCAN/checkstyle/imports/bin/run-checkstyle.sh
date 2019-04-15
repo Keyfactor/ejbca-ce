@@ -38,14 +38,23 @@ if [ "$DEBUG" == "true" ] ; then
     debugOption="--debug"
 fi
 
+styleCheckRules="code-analyzer-tools/checkstyle/checks/sun_checks.xml"
+
+# Redact rules that we definitely don't care about and makes the report to large to handle
+# - LineLength: "Line is longer than 80 characters (found ...)."
+# 
+cat "${styleCheckRules}" \
+    | grep -v LineLength \
+    > /tmp/checks.xml
+
 # --checker-threads-number=$coreLimit -> "IllegalArgumentException: Multi thread mode for Checker module is not implemented"
 time java ${JAVA_OPTS} -jar /opt/checkstyle.jar $debugOption \
-    -c=code-analyzer-tools/checkstyle/checks/sun_checks.xml -f=xml -o=ejbca/${reportFile} \
+    -c=/tmp/checks.xml -f=xml -o=ejbca/${reportFile} \
     --exclude=ejbca/modules/cesecore-common/src-test/org/cesecore/util/SecureXMLDecoderTest.java \
     ejbca/modules/
 
 echo "
 ### Done! ###
 "
-
-echo "Report is available in $(realpath ejbca/${reportFile})"
+reportSize="$(du -h ejbca/${reportFile} | sed 's/\t.*//')"
+echo "Report is available in $(realpath ejbca/${reportFile}) [${reportSize}]"
