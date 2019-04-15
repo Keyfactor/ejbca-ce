@@ -39,5 +39,5 @@ cd ../
 echo "
 ### Done! ###
 "
-
-echo "Report is available in $(realpath ejbca/${reportFile})"
+reportSize="$(du -h ejbca/${reportFile} | sed 's/\t.*//')"
+echo "Report is available in $(realpath ejbca/${reportFile}) [${reportSize}]"

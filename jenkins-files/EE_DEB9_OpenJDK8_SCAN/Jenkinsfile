@@ -138,4 +138,18 @@ pipeline {
         }
         //stage(...
     }
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Profit!'
+        }
+        unstable {
+            echo 'Unstable!'
+        }
+        failure {
+            echo 'Fail!'
+        }
+    }
 }
