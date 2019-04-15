@@ -198,16 +198,6 @@ CREATE TABLE GlobalConfigurationData (
     PRIMARY KEY (configurationId)
 );
 
-CREATE TABLE HardTokenPropertyData (
-    id TEXT NOT NULL,
-    property TEXT NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    value TEXT,
-    PRIMARY KEY (id,
-    property)
-);
-
 CREATE TABLE InternalKeyBindingData (
     id INT4 NOT NULL,
     certificateId TEXT,
