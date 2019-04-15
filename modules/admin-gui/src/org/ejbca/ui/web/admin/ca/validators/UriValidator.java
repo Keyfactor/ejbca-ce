@@ -13,38 +13,35 @@
 package org.ejbca.ui.web.admin.ca.validators;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.util.NetworkTools;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
+import java.net.URL;
 
 /**
- * Validator used in validating useCrlPartition conditions (edit ca page).
- *
+ * Input should be a valid uri
  * @version $Id$
  */
-@FacesValidator("org.ejbca.ui.web.admin.ca.validators.UseCRLPartitionValidator")
-public class UseCRLPartitionValidator implements Validator {
+@FacesValidator("org.ejbca.ui.web.admin.ca.validators.UriValidator")
+public class UriValidator implements Validator {
 
     @Override
-    public void validate(FacesContext facesContext, UIComponent component, Object o) throws ValidatorException {
-        Boolean usePartitionedCrl = (Boolean) o;
-        if (usePartitionedCrl) {
-            UIInput defaultCRLDistPointInput = (UIInput) component.getAttributes().get("defaultCRLDistPointInput");
-            Object submittedValue = defaultCRLDistPointInput.getSubmittedValue();
-            String defaultCRLDistPoint = submittedValue == null ? (String) defaultCRLDistPointInput.getValue() : submittedValue.toString();
-            UIInput useCrlDistributiOnPointOnCrlInput = (UIInput) component.getAttributes().get("useCrlDistributiOnPointOnCrl");
-            Boolean useCrlDistributiOnPointOnCrl = (Boolean) useCrlDistributiOnPointOnCrlInput.getValue();
-
-            if (!useCrlDistributiOnPointOnCrl || StringUtils.isEmpty(defaultCRLDistPoint)) {
-                FacesMessage msg = new FacesMessage("Partitioned CRLs are not allowed without 'Issuing Distribution Point' and 'Default CRL Distribution Point'.", "Use CRL partition validation failed!");
+    public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
+        String input = (String) o;
+        if (StringUtils.isNotEmpty(input)) {
+            final URL url = NetworkTools.getValidHttpUrl(input);
+            if (url == null) {
+                String errormessage = (String) uiComponent.getAttributes().get("errorMessage");
+                FacesMessage msg = new FacesMessage(errormessage, "");
                 msg.setSeverity(FacesMessage.SEVERITY_ERROR);
                 throw new ValidatorException(msg);
             }
         }
     }
+
 }
