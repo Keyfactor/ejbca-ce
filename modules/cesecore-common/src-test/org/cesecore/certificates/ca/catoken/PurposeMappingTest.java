@@ -228,9 +228,10 @@ public class PurposeMappingTest {
 		// Now define next and previous
 		prop.put(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT, "mycertSignNextKey");
 		prop.put(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, "mycertSignPreviousKey");
+		
 		ks = new PurposeMapping(prop);
 		strings = ks.getAliases();
-		assertEquals(8, strings.length);
+		assertEquals(prop.size(), strings.length);
 		// it's backed by a hashset so we really don't know the order, so make it into a collection instead
 		list = Arrays.asList(strings);
 		assertTrue(list.contains("mycertSignPreviousKey"));
@@ -238,7 +239,6 @@ public class PurposeMappingTest {
 		assertTrue(list.contains("mytestKey"));
 		assertTrue(list.contains("mycertSignKey"));
 		assertTrue(list.contains("mykeyEncKey"));
-		assertTrue(list.contains("myhardTokenEncKey"));
 		assertTrue(list.contains("mycrlSignKey"));
 		assertTrue(list.contains("mydefaultKey"));
 		
