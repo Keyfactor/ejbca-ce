@@ -65,7 +65,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         // Init helpers
         caHelper = new CaHelper(webDriver);
         cryptoTokenHelper = new CryptoTokenHelper(webDriver);
-
+        commandLineHelper.runCommand("sh cd /app/ejbca/");
+        commandLineHelper.runCommand("pwd");
     }
 
     @AfterClass
@@ -74,6 +75,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         removeCaAndCryptoToken(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
         new RemoveDir("test-statedump").deleteDirectoryStream();
         new RemoveDir("dist/statedump").deleteDirectoryStream();
+        commandLineHelper.runCommand("sh cd /app/ejbca/modules/ejbca-webtest");
+        commandLineHelper.runCommand("pwd");
         // super
         afterClass();
     }
@@ -101,7 +104,6 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         //Run the designated ant command
         
         System.out.println("The current directory is: ");
-        commandLineHelper.runCommand("pwd");
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
 
         //Verify statedump directory created
