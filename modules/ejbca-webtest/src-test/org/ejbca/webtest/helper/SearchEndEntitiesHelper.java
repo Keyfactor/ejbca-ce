@@ -1,10 +1,10 @@
 package org.ejbca.webtest.helper;
 
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -35,7 +35,6 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         static final By BUTTON_VIEW_CERTIFICATE_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View Certificates (popup window)']");
         static final By BUTTON_VIEW_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View End Entity (popup window)']");
         static final By BUTTON_EDIT_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='Edit End Entity (popup window)']");
-        static final By BUTTON_HARD_TOKEN_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View Hard Tokens (popup window)']");
 
         static final String TEXT_VIEW_MODE_SWITCH_BASIC = "Basic Mode";
         static final By BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED = By.id("viewModeSwitchBasicOrAdvanced");
@@ -163,15 +162,6 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     public void clickViewEndEntityForRow(final String cn) {
         clickForRowEntry(cn, Page.BUTTON_VIEW_END_ENTITY_FOR_ROW);
-    }
-
-    /**
-     * Clicks 'Hard Tokens' for the row containing the specified CN.
-     *
-     * @param cn Common name of the row to use.
-     */
-    public void clickHardTokensForRow(final String cn) {
-        clickForRowEntry(cn, Page.BUTTON_HARD_TOKEN_FOR_ROW);
     }
 
     /**
