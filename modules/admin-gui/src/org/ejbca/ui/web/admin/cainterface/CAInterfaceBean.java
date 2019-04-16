@@ -352,7 +352,7 @@ public class CAInterfaceBean implements Serializable {
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean usePartitionedCrl, int crlPartitions, int retiredCrlPartitions,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
-            String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
+            String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
         // This will occur if administrator has insufficient access to crypto tokens, which won't provide any
         // selectable items for Crypto Token when creating a CA.
@@ -367,7 +367,6 @@ public class CAInterfaceBean implements Serializable {
                 keyAliasDefaultKey = "defaultKey";
                 keyAliasCertSignKey = "signKey";
                 keyAliasCrlSignKey = keyAliasCertSignKey;
-                keyAliasHardTokenEncryptKey = "";
                 keyAliasKeyEncryptKey = "";
                 keyAliasKeyTestKey = "testKey";
                 // First create a new soft auto-activated CryptoToken with the same name as the CA
@@ -420,7 +419,7 @@ public class CAInterfaceBean implements Serializable {
                     usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
                     serviceCmsActive, sharedCmpRaSecret, keepExpiredCertsOnCRL, usePartitionedCrl, crlPartitions, retiredCrlPartitions,
                     buttonCreateCa, buttonMakeRequest, cryptoTokenId,
-                    keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey, keyAliasHardTokenEncryptKey,
+                    keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
                     keyAliasKeyEncryptKey, keyAliasKeyTestKey, fileBuffer);
         } catch (Exception e) {
             // If we failed during the creation we manually roll back any created soft CryptoToken
@@ -454,7 +453,7 @@ public class CAInterfaceBean implements Serializable {
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean usePartitionedCrl, int crlPartitions, int retiredCrlPartitions,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
-            String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
+            String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
 
 	    boolean illegaldnoraltname = false;
@@ -464,7 +463,7 @@ public class CAInterfaceBean implements Serializable {
 	        log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing defaultKey alias: "+keyAliasDefaultKey);
 	        throw new Exception("Invalid default key alias!");
 	    }
-	    final String[] suppliedAliases = {keyAliasCertSignKey,keyAliasCrlSignKey,keyAliasHardTokenEncryptKey,keyAliasHardTokenEncryptKey,keyAliasKeyEncryptKey,keyAliasKeyTestKey};
+	    final String[] suppliedAliases = {keyAliasCertSignKey,keyAliasCrlSignKey,keyAliasKeyEncryptKey,keyAliasKeyTestKey};
         for (final String currentSuppliedAlias : suppliedAliases) {
             if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
                 log.info(authenticationToken.toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
@@ -932,8 +931,8 @@ public class CAInterfaceBean implements Serializable {
                
                final int caSerialNumberOctetSize = (caSerialNumberOctetSizeString != null) ? Integer.parseInt(caSerialNumberOctetSizeString) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
                
-               // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
-               // is not need to update them.
+               // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
+               // is not need to update it.
                 cainfo = new X509CAInfo(caid, validityString, catoken, description, caSerialNumberOctetSize, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod,
                         crlpublishers, keyValidators, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
                         defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess, certificateAiaDefaultCaIssuerUri,
