@@ -35,13 +35,6 @@ ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 # add mariadb driver to deploy folder
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
-# Fix permissions (1001 is the jenkins user)
-RUN chown -R 1001:1001 /opt/jboss/wildfly
-USER 1001:1001
-
-# Set the working directory to EJBCA rource root folder
-WORKDIR /app/ejbca
-
 # copy p12 folder to /opt in the container for runtime-usage
 ADD p12 /opt/p12
 RUN chmod 777 /opt/p12
@@ -56,5 +49,12 @@ RUN chmod 777 /opt/ManagementCA.pem
 
 ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
+
+# Fix permissions (1001 is the jenkins user)
+RUN chown -R 1001:1001 /opt/jboss/wildfly
+USER 1001:1001
+
+# Set the working directory to EJBCA rource root folder
+WORKDIR /app/ejbca
 
 CMD ["/opt/run.sh"]
