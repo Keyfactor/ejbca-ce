@@ -17,14 +17,6 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
 export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
 
-# Function that is always run at exit
-workspacesubdir=$(pwd)
-cleanup() {
-        echo '=================== cleanup. fixing permissions ================================='
-        chown -R 1001:1001 "$workspacesubdir"
-}
-trap cleanup EXIT
-
 wait_for_deployment() {
 	DEPLOY_SUCCESSFUL=0
 	# Wait for up to 180 seconds for app to start up
