@@ -100,7 +100,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     public void stepC_buildStatedump() {
         //Run the designated ant command
         
-        System.out.println("pwd ");
+        System.out.println("The current directory is: ");
+        commandLineHelper.runCommand("pwd");
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
 
         //Verify statedump directory created
