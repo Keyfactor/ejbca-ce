@@ -41,7 +41,7 @@ import java.nio.file.Paths;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
-    private static final int TIMEOUT = 30000;
+    private static final int TIMEOUT = 60000;
     private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
