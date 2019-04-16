@@ -9,14 +9,6 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
 export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
 
-# Set an exit handler, that sets privileges for cleanup for the initial source folder
-workspacesubdir=$(pwd)
-cleanup() {
-        echo '=================== cleanup. fixing permissions ================================='
-        chown -R 1001:1001 "$workspacesubdir"
-}
-trap cleanup EXIT
-
 echo '=================== CHECKING JAVA VERSION: ================================='
 java -version
 
