@@ -99,6 +99,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     @Test(timeout=TIMEOUT)
     public void stepC_buildStatedump() {
         //Run the designated ant command
+        
+        System.out.println("pwd ");
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
 
         //Verify statedump directory created
