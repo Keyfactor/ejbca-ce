@@ -148,7 +148,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String cryptoTokenDefaultKey = StringUtils.EMPTY; // Initialize to empty
     private String cryptoTokenCertSignKey = StringUtils.EMPTY; // Initialize to empty
     private String selectedKeyEncryptKey = StringUtils.EMPTY; // Initialize to empty
-    private String hardTokenEncryptKey = StringUtils.EMPTY; // Initialize to empty
     private String testKey = StringUtils.EMPTY;// Initialize to empty;
     private String description;
     private String caSerialNumberOctetSize;
@@ -1548,7 +1547,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             // Make up defaults based on key alias names
             selectedKeyEncryptKey = "";
-            hardTokenEncryptKey = "";
             
             for (final String alias : availableCryptoTokenEncryptionAliases) {
                 if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
@@ -1587,11 +1585,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
             return resultList;    
         case "keyEncryptKey":
-        case "hardTokenEncrypt":
-            for (final String alias : availableCryptoTokenEncryptionAliases) {
-                resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
-            }
-            return resultList;    
         default:
             return Collections.emptyList();
         }
@@ -1647,16 +1640,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setSelectedKeyEncryptKey(final String selectedKeyEncryptKey) {
         if (selectedKeyEncryptKey != null) {
             this.selectedKeyEncryptKey = selectedKeyEncryptKey;
-        }
-    }
-
-    public String getSelectHardTokenEncrypt() {
-        return hardTokenEncryptKey;
-    }
-
-    public void setSelectHardTokenEncrypt(final String selectHardTokenEncrypt) {
-        if (selectHardTokenEncrypt != null) {
-            this.hardTokenEncryptKey = selectHardTokenEncrypt;
         }
     }
     
@@ -1883,7 +1866,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
                     crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl,
                     usePartitionedCrl, crlPartitions, retiredCrlPartitions, createCa,
-                    makeRequest, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey, hardTokenEncryptKey,
+                    makeRequest, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey,
                     selectedKeyEncryptKey, testKey, fileBuffer);
 
         return illegaldnoraltname;

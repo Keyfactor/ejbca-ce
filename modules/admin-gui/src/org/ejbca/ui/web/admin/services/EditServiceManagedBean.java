@@ -384,7 +384,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      * 
      * 
      * @return a {@link List} of {@link SelectItem}s containing the ID's and names of all ENDENTITY, ROOTCA and SUBCA 
-     * (and HARDTOKEN if available) certificate profiles current admin is authorized to.
+     * certificate profiles current admin is authorized to.
      */
     public Collection<SelectItem> getCertificateProfiles() {
         TreeMap<String, SelectItem> certificateProfiles = new TreeMap<>();
