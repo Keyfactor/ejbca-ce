@@ -42,6 +42,10 @@ RUN mkdir -p /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/
 ADD db2jcc4.jar /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/db2jcc4.jar
 ADD module.xml /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/module.xml
 
+# Fix permissions (1001 is the jenkins user)
+RUN chown -R 1001:1001 /opt/jboss/wildfly
+USER 1001:1001
+
 # Set the working directory to /app
 WORKDIR /app/ejbca
 

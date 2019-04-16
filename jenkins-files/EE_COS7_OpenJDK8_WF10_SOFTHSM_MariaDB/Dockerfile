@@ -50,6 +50,10 @@ ADD standalone2.xml /opt/standalone2.xml
 # add mariadb driver to deploy folder
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
+# Fix permissions (1001 is the jenkins user)
+RUN chown -R 1001:1001 /opt/jboss/wildfly
+USER 1001:1001
+
 # Set the working directory to /app
 WORKDIR /app/ejbca
 
