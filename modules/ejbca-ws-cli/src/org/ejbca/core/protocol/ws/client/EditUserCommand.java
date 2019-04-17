@@ -53,11 +53,11 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	private static final int ARG_STATUS             = 10;
 	private static final int ARG_ENDENTITYPROFILE   = 11;
 	private static final int ARG_CERTIFICATEPROFILE = 12;
-	private static final int ARG_STARTTIME          = 14;
-	private static final int ARG_ENDTIME            = 15;
+	private static final int ARG_STARTTIME          = 13;
+	private static final int ARG_ENDTIME            = 14;
 
 	private static final int NR_OF_MANDATORY_ARGS = ARG_CERTIFICATEPROFILE+1;
-	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+4;
+	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+3;
 
     public EditUserCommand(String[] args) {
         super(args);
