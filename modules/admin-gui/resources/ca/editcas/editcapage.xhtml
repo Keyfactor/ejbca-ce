@@ -971,7 +971,7 @@
 					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
 											 value="#{editCAsMBean.usePartitionedCrl}"
 											 disabled="#{not editCAsMBean.hasEditRight}">
-						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.UseCRLPartitionValidator"/>
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.UseCRLPartitionValidator" disabled="#{editCAsMBean.caExternal}"/>
 						<f:attribute name="useCrlDistributiOnPointOnCrl" value="#{useCrlDistributiOnPointOnCrl}"/>
 						<f:attribute name="defaultCRLDistPointInput" value="#{defaultCRLDistPointInput}"/>
 					</h:selectBooleanCheckbox>
