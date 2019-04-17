@@ -16,6 +16,7 @@ package org.ejbca.ui.web.protocol;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -24,6 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.SystemTestsConfiguration;
@@ -45,7 +47,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Testing of CrlStoreServlet
+ * Testing of CrlStoreServlet. This test requires the CRL store servlet to be enabled. Please set
+ * <blockquote><code>crlstore.enabled=true</code></blockquote>
+ * in the file <code>conf/crlstore.properties</code>
  * 
  * @version $Id$
  * 
@@ -108,18 +112,29 @@ public class CrlStoreServletTest extends CaTestCase {
 		return this.getClass().getSimpleName();
 	}
 	
+	/** Sends a request with the given URL and returns the response code, or 0 on connection failure */
+	private int getUrlResponse(final String url) {
+	    try {
+            return ((HttpURLConnection)new URL(url).openConnection()).getResponseCode();
+        } catch (Exception e) {
+            return 0;
+        }
+	}
+	
 	private String getBaseUrl(boolean local) {
 	    final String port = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         final String remotePort = local ? "8080" : SystemTestsConfiguration.getRemotePortHttp(port);
         final String remoteHost = local ? "127.0.0.1" : SystemTestsConfiguration.getRemoteHost("localhost");
         final String contextRoot = "/ejbca/publicweb/crls";
         String url = "http://"+remoteHost+":" + remotePort + contextRoot + "/search.cgi";
-        try {
-            if (((HttpURLConnection)new URL(url).openConnection()).getResponseCode() != 200) {
-                url = "http://localhost:8080/crls/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
-            }
-        } catch (Exception e) {
+        if (getUrlResponse(url) != 200) {
             url = "http://localhost:8080/crls/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
+        }
+        final int response = getUrlResponse(url);
+        if (response == 404 && !Boolean.valueOf(configurationSession.getProperty(WebConfiguration.CONFIG_CERTSTORE_ENABLED))) {
+            fail("Test environment not correctly configured. Please set crlstore.enabled=true in conf/crlstore.properties and redeploy EJBCA.");
+        } else if (response != 200) {
+            fail("No working CRL store URL, please check crlstore.properties");
         }
         return url;
 	}

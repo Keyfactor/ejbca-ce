@@ -36,6 +36,9 @@ public class WebConfiguration {
     public static final String CONFIG_DOCBASEURI = "web.docbaseuri";
     public static final String CONFIG_REQCERT = "web.reqcert";
 	public static final String CONFIG_REQCERTINDB = "web.reqcertindb";
+	public static final String CONFIG_CERTSTORE_ENABLED = "certstore.enabled";
+	public static final String CONFIG_CRLSTORE_ENABLED = "crlstore.enabled";
+	public static final String CONFIG_CRLSTORE_CONTEXTROOT = "crlstore.contextroot";
 	
 	/**
 	 * The configured server host name
@@ -278,17 +281,17 @@ public class WebConfiguration {
     
     /** Returns true if the CRL Store Servlet (search.cgi) is enabled. Default is false */
     public static boolean isCrlStoreEnabled() {
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("crlstore.enabled"));
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString(CONFIG_CRLSTORE_ENABLED));
     }
     
     /** Returns true if the Certificate Store Servlet (search.cgi) is enabled. Default is false */
     public static boolean isCertStoreEnabled() {
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("certstore.enabled"));
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString(CONFIG_CERTSTORE_ENABLED));
     }
     
     /** Returns the base URL path of the CRL store servlet, e.g. /ejbca/publicweb/crls */ 
     public static String getCrlStoreContextRoot() {
-        String value = EjbcaConfigurationHolder.getString("crlstore.contextroot");
+        String value = EjbcaConfigurationHolder.getString(CONFIG_CRLSTORE_CONTEXTROOT);
         if (value == null) {
             value = "/crls";
         }
