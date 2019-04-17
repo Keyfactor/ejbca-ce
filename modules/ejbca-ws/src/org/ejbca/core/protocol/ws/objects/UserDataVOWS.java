@@ -106,8 +106,15 @@ public class UserDataVOWS implements Serializable{
 		this.endEntityProfileName = endEntityProfileName;
 		this.certificateProfileName = certificateProfileName;
 	}
-
-    
+	
+	/**
+	 * HardTokens are removed from EJBCA since 7.1.0. This constructor is left in for compatibility reasons.
+	 */
+	@Deprecated
+	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName, String hardTokenIssuerName) {
+	    this(username, password, clearPwd, subjectDN, caName, subjectAltName, email, status, tokenType, endEntityProfileName, certificateProfileName);
+    }
+	
     /**
      * 
      * @return true if the user is keyrecoverable
