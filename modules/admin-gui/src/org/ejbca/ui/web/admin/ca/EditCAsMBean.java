@@ -40,6 +40,7 @@ import javax.ejb.EJBException;
 import javax.faces.FacesException;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -981,6 +982,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isUsePartitionedCrl() {
         return usePartitionedCrl;
     }
+    
+    public boolean isUsePartitionedCrlChecked() {
+        final UIInput checkbox = (UIInput) FacesContext.getCurrentInstance().getViewRoot().findComponent(":editcapage:checkboxusecrlpartitions");
+        final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
+        return submittedValue != null ? submittedValue : usePartitionedCrl;
+    }
 
     public void setUsePartitionedCrl(boolean usePartitionedCrl) {
         this.usePartitionedCrl = usePartitionedCrl;
@@ -1081,7 +1088,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrl()) {
+        if (isUsePartitionedCrlChecked()) {
             sb.append("&partition=*");
         }
         this.defaultCRLDistPoint = sb.toString();
@@ -1128,7 +1135,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrl()) {
+        if (isUsePartitionedCrlChecked()) {
             sb.append("&partition=*");
         }
         this.caDefinedFreshestCRL = sb.toString();

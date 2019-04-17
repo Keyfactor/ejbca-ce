@@ -426,9 +426,18 @@ function resetTimer(validity) {
         }
     };
 
+    /** Shows or hides all cells by class name of the element inside it (this is needed since <h:column> cannot be part of <f:ajax> updates) */
+    var hideShowCellsByClass = function(className, show) {
+        var cells = document.getElementsByClassName(className);
+        for (var i = 0; i < cells.length; i++) {
+            cells[i].parentNode.style.display = show ? 'table-cell' : 'none';
+        }
+    };
+
     // Setup name space...
     window.ejbca = window.ejbca || {};
     ejbca.adminweb = ejbca.adminweb || {};
     // ...and expose API functions under this name space.
     ejbca.adminweb.onAjaxSuccessScrollTo = onAjaxSuccessScrollTo;
+    ejbca.adminweb.hideShowCellsByClass = hideShowCellsByClass;
 }());
