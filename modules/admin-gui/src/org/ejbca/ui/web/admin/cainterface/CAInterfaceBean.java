@@ -558,7 +558,7 @@ public class CAInterfaceBean implements Serializable {
 	            if (caDefinedFreshestCrlString != null) {
 	                caDefinedFreshestCrl = caDefinedFreshestCrlString;
 	            }
-	            if (usePartitionedCrl && (retiredCrlPartitions > crlPartitions)) {
+	            if (usePartitionedCrl && (retiredCrlPartitions >= crlPartitions)) {
                     throw new ParameterException(ejbcawebbean.getText("CRLPARTITIONNUMBERINVALID"));
                 }
                 	            
@@ -927,7 +927,7 @@ public class CAInterfaceBean implements Serializable {
                    certificateAiaDefaultCaIssuerUri = new ArrayList<>( Arrays.asList(certificateAiaDefaultCaIssuerUriParam.split(LIST_SEPARATOR)));
                }
                final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
-               if (usePartitionedCrl && (retiredCrlPartitions > crlPartitions)) {
+               if (usePartitionedCrl && (retiredCrlPartitions >= crlPartitions)) {
                    throw new ParameterException(ejbcawebbean.getText("CRLPARTITIONNUMBERINVALID"));
                }
                // Create extended CA Service updatedata.
