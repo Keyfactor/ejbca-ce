@@ -510,7 +510,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     @Deprecated
-    public boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException { // still used by JSP/JSF code (viewcertificate.xhtml and viewtoken.jsp)
+    public boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException { // still used by JSP/JSF code (viewcertificate.xhtml)
         if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
             throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
         }
