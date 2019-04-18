@@ -47,7 +47,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  */
 public class UserDataVOWS implements Serializable{
 	
-	private static final long serialVersionUID = 7557071186257332026L;
+	private static final long serialVersionUID = 7557071186257302026L;
     public static final String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
 	public static final String TOKEN_TYPE_JKS           = "JKS";
 	public static final String TOKEN_TYPE_PEM           = "PEM";
