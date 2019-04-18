@@ -57,12 +57,5 @@ sleep 30
 wait_for_deployment
 echo '=================== Wildfly restarted after deploy-keystore ========================'
 
-#JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
-#JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
-
-# manually change the "status" of CA from external -> active
-
-echo '=================== import cert commands done ========================'
-
 # stay alive until UI tests finish. otherwise the container would just be closed and UI tests would not be able to use it anymore
 sleep 10000000
