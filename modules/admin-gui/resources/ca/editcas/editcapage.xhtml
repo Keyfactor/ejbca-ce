@@ -552,7 +552,7 @@
 					<h:outputLabel for="textfieldsubjectdn"
 						value="#{web.text.CERT_SUBJECTDN}" style="font-weight: bold;" />
 				</h:panelGroup>
-				<h:panelGroup>
+				<h:panelGroup id="subjectDnInputGroup">
 					<h:outputText class="dn" value="#{editCAsMBean.caSubjectDN}"
 						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}" />
 					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225"
@@ -1161,7 +1161,7 @@
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						immediate="true">
-						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" execute="@this checkboxusecrlpartitions"/>
+						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" execute="@this checkboxusecrlpartitions subjectDnInputGroup" resetValues="true"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1188,7 +1188,7 @@
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						immediate="true">
-						<f:ajax render=":editcapage:textfielddefaultcrlissuer"/>
+						<f:ajax render=":editcapage:textfielddefaultcrlissuer" resetValues="true"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1214,7 +1214,7 @@
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						immediate="true">
-						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" execute="@this checkboxusecrlpartitions"/>
+						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" execute="@this checkboxusecrlpartitions subjectDnInputGroup" resetValues="true"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1242,7 +1242,7 @@
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						immediate="true">
-						<f:ajax render=":editcapage:textfielddefaultocsplocator"/>
+						<f:ajax render=":editcapage:textfielddefaultocsplocator" resetValues="true"/>
 					</h:commandButton>
 
 				</h:panelGroup>
