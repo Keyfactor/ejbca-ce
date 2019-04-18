@@ -31,7 +31,7 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
  */
 public abstract class BaseRestResource {
 
-    private static Validator validator = null;
+    private static volatile Validator validator = null;
     private static Object mutex = new Object();
 
     private static final String RESOURCE_STATUS = "OK";
