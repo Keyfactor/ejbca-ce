@@ -25,6 +25,8 @@ RUN cd $HOME \
 # install JDK instead of JRE
 RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk
+
+# the tool that is used for automating firefox profiles' management
 RUN apt-get install -y libnss3-tools
 
 # Set the working directory to EJBCA rource root folder
