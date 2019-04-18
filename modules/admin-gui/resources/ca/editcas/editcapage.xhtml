@@ -983,14 +983,13 @@
 				</h:panelGroup>
 				<h:column>
 					<h:panelGroup id="crlNumberOfPartitionsLabelGroup" styleClass="crlPartitionCellContents">
-						<h:outputText value="#{web.text.CRLPARTITIONNUMBER}" rendered="#{editCAsMBean.usePartitionedCrlChecked}" />
+						<h:outputText value="#{web.text.CRLPARTITIONNUMBER}" />
 					</h:panelGroup>
 				</h:column>
 				<h:column>
 				    <h:panelGroup id="crlNumberOfPartitionsInputGroup" styleClass="crlPartitionCellContents">
 						<h:inputText id="crlpartitions"  value="#{editCAsMBean.crlPartitions}" size="2" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
-									 rendered="#{editCAsMBean.usePartitionedCrlChecked}"
 									 disabled="#{not editCAsMBean.hasEditRight}" >
 							<f:validateLength minimum="1"/>
 							<f:validateLongRange minimum="0"/>
@@ -999,14 +998,14 @@
 				</h:column>
 				<h:column>
 					<h:panelGroup id="retiredPartitionLabelGroup" styleClass="crlPartitionCellContents">
-						<h:outputText value="#{web.text.CRLRETIREDPARTITIONNUMBER}" rendered="#{editCAsMBean.usePartitionedCrlChecked and not editCAsMBean.caExternal}" />
+						<h:outputText value="#{web.text.CRLRETIREDPARTITIONNUMBER}" rendered="#{not editCAsMBean.caExternal}" />
 					</h:panelGroup>
 				</h:column>
 				<h:column>
 					<h:panelGroup id="retiredPartitionInputGroup" styleClass="crlPartitionCellContents">
 						<h:inputText id="crlretiredpartitions" value="#{editCAsMBean.retiredCrlPartitions}" size="2" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
-									 rendered="#{editCAsMBean.usePartitionedCrlChecked and not editCAsMBean.caExternal}"
+									 rendered="#{not editCAsMBean.caExternal}"
 									 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
 							<f:validateLength minimum="1"/>
 							<f:validateLongRange minimum="0"/>
