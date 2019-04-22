@@ -65,7 +65,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_APPROVE = By.id("manageRequestForm:commandApprove");
         static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
         static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
-        static final By INPUT_REQUEST_EDIT_FORM_CN = By.id("requestInfoForm:subjectDn:0:subjectDnField");
+        static final By INPUT_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
         static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeName:0:subjectAltNameField");
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
