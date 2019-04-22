@@ -57,5 +57,7 @@ sleep 30
 wait_for_deployment
 echo '=================== Wildfly restarted after deploy-keystore ========================'
 
+echo '=================== import cert commands done ========================'
+
 # stay alive until UI tests finish. otherwise the container would just be closed and UI tests would not be able to use it anymore
 sleep 10000000
