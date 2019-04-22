@@ -45,6 +45,11 @@ public class UseCRLPartitionValidator implements Validator {
                 msg.setSeverity(FacesMessage.SEVERITY_ERROR);
                 throw new ValidatorException(msg);
             }
+            if (!defaultCRLDistPoint.contains("*")) {
+                FacesMessage msg = new FacesMessage("'Default CRL Distribution Point' should contain asterisk (*) with Partitioned CRLs .", "Use CRL partition validation failed!");
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
         }
     }
 }
