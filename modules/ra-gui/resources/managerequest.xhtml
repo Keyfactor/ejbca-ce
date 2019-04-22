@@ -112,7 +112,7 @@
             </ui:repeat>
             
             <h:panelGroup id="editRequestDataTable" layout="block" styleClass="internal-frame" rendered="#{raManageRequestBean.editDataVisible}">
-                <component:eedetails raEndEntityDetails="#{raManageRequestBean.request.endEntityDetails}" editMode="true" approvalRequestMode="true" rendered="#{raManageRequestBean.request.endEntityDetails != null}"/>
+                <component:eedetails id="eeDetails" raEndEntityDetails="#{raManageRequestBean.request.endEntityDetails}" editMode="true" approvalRequestMode="true" rendered="#{raManageRequestBean.request.endEntityDetails != null}"/>
                 
                 <h:outputText styleClass="pure-u-lg-1 pre" value=" "/>
                 
