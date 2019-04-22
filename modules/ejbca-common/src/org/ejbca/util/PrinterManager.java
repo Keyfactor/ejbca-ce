@@ -27,7 +27,6 @@ import javax.print.attribute.PrintRequestAttributeSet;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.model.hardtoken.profiles.SVGImageManipulator;
 
 /**
  * Class managing EJBCA print functionality, such as listing printers
