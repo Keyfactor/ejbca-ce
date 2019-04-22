@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.core.model.hardtoken.profiles;
+package org.ejbca.util;
 
 
 import java.awt.image.BufferedImage;
@@ -62,7 +62,7 @@ import org.w3c.dom.svg.SVGTextElement;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id$
+ * @version $Id: SVGImageManipulator.java 32089 2019-04-09 10:14:07Z tarmo_r_helmes $
  */
 public class SVGImageManipulator {
 	/**
