@@ -34,6 +34,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.TimeAndAdmin;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
@@ -403,7 +404,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         boolean allowSelfEdit = request.getApprovalRequest().getApprovalProfile().getAllowSelfEdit();
         canApprove = nextApprovalStep != null && (!request.isEditedByMe() || allowSelfEdit) && !request.isApprovedByMe() && !request.isRequestedByMe() && authorizedToRequestType;
         // Can only edit our own requests, or requests that we could approve irrespective of who made or edited them.
-        canEdit = authorizedToRequestType && request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
+        canEdit = authorizedToRequestType && request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe()) && !(request.getApprovalRequest() instanceof KeyRecoveryApprovalRequest);
         canView = request.isVisibleToMe();
         
         previousSteps = new ArrayList<>();
