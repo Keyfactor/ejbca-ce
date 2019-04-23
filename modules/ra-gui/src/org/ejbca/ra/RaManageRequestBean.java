@@ -314,7 +314,8 @@ public class RaManageRequestBean implements Serializable {
      * @return true if the default validity specified in the certificate profile has been changed during enrollment request.
      */
     public boolean isValidityModified() {
-        if (requestInfo.getEndEntityInformation().getExtendedInformation() != null) {
+        // getEndEntityInformation() returns null in case of Key Recovery Approval Request
+        if (requestInfo.getEndEntityInformation() != null && requestInfo.getEndEntityInformation().getExtendedInformation() != null) { 
             final String specifiedEndTime = requestInfo.getEndEntityInformation().getExtendedInformation().getCertificateEndTime();
             final String defaultValidity = getCertificateProfile().getEncodedValidity();
             return specifiedEndTime != null && !defaultValidity.equals(specifiedEndTime);
