@@ -988,7 +988,7 @@
 				</h:column>
 				<h:column>
 				    <h:panelGroup id="crlNumberOfPartitionsInputGroup" styleClass="crlPartitionCellContents">
-						<h:inputText id="crlpartitions"  value="#{editCAsMBean.crlPartitions}" size="2" title="#{web.text.FORMAT_INTEGER}"
+						<h:inputText id="crlpartitions"  value="#{editCAsMBean.crlPartitions}" size="3" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
 									 disabled="#{not editCAsMBean.hasEditRight}" >
 							<f:validateLength minimum="1"/>
@@ -1003,7 +1003,7 @@
 				</h:column>
 				<h:column>
 					<h:panelGroup id="retiredPartitionInputGroup" styleClass="crlPartitionCellContents">
-						<h:inputText id="crlretiredpartitions" value="#{editCAsMBean.retiredCrlPartitions}" size="2" title="#{web.text.FORMAT_INTEGER}"
+						<h:inputText id="crlretiredpartitions" value="#{editCAsMBean.retiredCrlPartitions}" size="3" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
 									 rendered="#{not editCAsMBean.caExternal}"
 									 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
