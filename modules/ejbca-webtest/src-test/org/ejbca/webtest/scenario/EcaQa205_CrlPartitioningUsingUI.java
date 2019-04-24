@@ -45,7 +45,6 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         caHelper = new CaHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
         eeProfileHelper = new EndEntityProfileHelper(webDriver);
-        restCertificateHelper = new RestCertificateHelper(webDriver);
         caStructureHelper = new CaStructureHelper(webDriver);
         queryHelper = new QueryHelper(webDriver);
         servicesHelper = new ServicesHelper(webDriver);
