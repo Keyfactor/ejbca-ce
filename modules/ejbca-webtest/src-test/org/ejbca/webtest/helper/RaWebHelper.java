@@ -65,7 +65,8 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_APPROVE = By.id("manageRequestForm:commandApprove");
         static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
         static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
-        static final By INPUT_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
+        static final By INPUT_MAKE_REQUEST_EDIT_FORM_CN = By.id("requestInfoForm:subjectDn:0:subjectDnField");
+        static final By INPUT_MANAGE_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
         static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeName:0:subjectAltNameField");
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
@@ -330,12 +331,21 @@ public class RaWebHelper extends BaseHelper {
     }
 
     /**
-     * Fills the 'CN, Common Name' with text in request edit form.
+     * Fills the 'CN, Common Name' with text in make request edit form.
      *
      * @param cnText Common Name.
      */
-    public void fillRequestEditCommonName(final String cnText) {
-        fillInput(Page.INPUT_REQUEST_EDIT_FORM_CN, cnText);
+    public void fillMakeRequestEditCommonName(final String cnText) {
+        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_CN, cnText);
+    }
+    
+    /**
+     * Fills the 'CN, Common Name' with text in manage request edit form.
+     *
+     * @param cnText Common Name.
+     */
+    public void fillManageRequestEditCommonName(final String cnText) {
+        fillInput(Page.INPUT_MANAGE_REQUEST_EDIT_FORM_CN, cnText);
     }
 
     /**
