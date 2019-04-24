@@ -1,13 +1,11 @@
 package org.ejbca.webtest.scenario;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.*;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -56,11 +54,12 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException, IOException {
+    public static void exit() {
         // Remove generated artifacts
 
         removeCaAndCryptoToken(TestData.CA_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
+        removeEndEntityProfileByName(TestData.ENTITY_NAME);
         removeServiceByName(TestData.CRL_SERVICE);
 
         // super
@@ -120,8 +119,9 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
 
         // Set validity
         certificateProfileHelper.fillValidity("360d");
-        certificateProfileHelper.triggerX509v3ExtensionsNamesSubjectAlternativeNameCritical();
-        certificateProfileHelper.triggerX509v3ExtensionsNamesIssuerAlternativeNameCritical();
+        certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCrlDistributionPoints();
+        certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCaDefinedCrlDistributionPoint();
+
     }
 
     @Test
