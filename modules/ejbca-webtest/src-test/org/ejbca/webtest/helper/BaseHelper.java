@@ -23,12 +23,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ejbca.webtest.util.WebTestUtil;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -230,6 +226,21 @@ public class BaseHelper {
             textareaWebElement.clear();
         }
         textareaWebElement.sendKeys(inputString);
+    }
+
+    /**
+     * Asserts a given textarea exists, in Swagger, and fills a text into it.
+     *
+     * @param textareaId locator.
+     * @param inputString input text.
+     */
+    protected void fillSwaggerTextarea(final By textareaId, final String inputString, boolean doClear) {
+        final WebElement textareaWebElement = findElement(textareaId);
+        assertNotNull("Page textarea was not found", textareaWebElement);
+        if(doClear) {
+            textareaWebElement.clear();
+        }
+        textareaWebElement.sendKeys(Keys.ARROW_LEFT + inputString);
     }
 
     /**
