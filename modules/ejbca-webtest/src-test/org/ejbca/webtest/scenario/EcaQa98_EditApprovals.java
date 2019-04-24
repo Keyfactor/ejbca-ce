@@ -196,7 +196,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         raWebHelperRaAdmin.assertRequestApproveButtonExists();
         raWebHelperRaAdmin.assertRequestRejectButtonExists();
         raWebHelperRaAdmin.triggerRequestEditLink();
-        raWebHelperRaAdmin.fillRequestEditCommonName(TestData.END_ENTITY_NAME_MODIFIED);
+        raWebHelperRaAdmin.fillManageRequestEditCommonName(TestData.END_ENTITY_NAME_MODIFIED);
         raWebHelperRaAdmin.triggerRequestEditSaveForm();
         raWebHelperRaAdmin.assertSubjectDistinguishedNameHasText("CN=" + TestData.END_ENTITY_NAME_MODIFIED);
         raWebHelperRaAdmin.assertApproveMessageHasText(TestData.APPROVE_MESSAGE_CANNOT_EDIT);
