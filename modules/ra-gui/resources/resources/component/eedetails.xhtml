@@ -131,10 +131,10 @@
             </h:panelGroup>
             <h:outputLabel for="tokenTypeSelect" value="#{msg.component_eedetails_field_tokentype}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.editMode}" />
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}" />
             <h:panelGroup
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
-                rendered="#{cc.attrs.editMode}">
+                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}">
                 <h:selectOneMenu id="tokenTypeSelect" value="#{cc.attrs.raEndEntityBean.selectedTokenType}" styleClass="pure-input-1-4">
                     <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableTokenTypes}" var="selectableTokenType"
                         itemLabel="#{selectableTokenType.tokenTypeString}" itemValue="#{selectableTokenType.tokenTypeConstant}" />
