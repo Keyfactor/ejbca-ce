@@ -78,7 +78,7 @@ public class ExtentReportCreator {
             // step log
             createTest(description);
             ExtentTest failed = testCase.createNode(description.getDisplayName());
-            failed.log(Status.FAIL, "Failure trace Selenium:  " + e.toString());
+            failed.log(Status.FAIL, "Failure trace Selenium:  " +  e.toString());
             try {
                 if (!description.getDisplayName().contains("CmdLine")) {
                     failed.addScreenCaptureFromPath(snap(description));

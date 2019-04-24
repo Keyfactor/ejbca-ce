@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +43,7 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.ejbca.webtest.utils.ExtentReportCreator;
@@ -71,6 +72,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
     private static String browserBinary; // null = don't override default
     private static String browserHeadless;
     private static List<WebDriver> webDrivers = new ArrayList<>();
+    private static Map databaseConnection;
 
     /**
      * Authentication token to use.
@@ -110,9 +112,11 @@ public abstract class WebTestBase extends ExtentReportCreator {
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             firefoxProfile.setPreference("browser.download.folderList", 2);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
-            firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream");
+            firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream;application/json");
+            firefoxProfile.setPreference("browser.download.panel.shown", false);
+
             firefoxProfile.setPreference("intl.accept_languages", "en_US, en");
-            
+
             firefoxOptions.setProfile(firefoxProfile);
             firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
             firefoxOptions.setAcceptInsecureCerts(true);
@@ -154,6 +158,13 @@ public abstract class WebTestBase extends ExtentReportCreator {
         downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
         browserBinary = config.getProperty(ConfigurationConstants.BROWSER_BINARY);
         browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
+
+        //Load Database Constants
+        databaseConnection = new HashMap();
+        databaseConnection.put("host", config.getProperty(ConfigurationConstants.DATABASE_HOST));
+        databaseConnection.put("port",config.getProperty(ConfigurationConstants.DATABASE_PORT));
+        databaseConnection.put("user", config.getProperty(ConfigurationConstants.DATABASE_USERNAME));
+        databaseConnection.put("password", config.getProperty(ConfigurationConstants.DATABASE_PASSWORD));
     }
 
     public String getCaName() {
@@ -162,6 +173,14 @@ public abstract class WebTestBase extends ExtentReportCreator {
 
     public String getCaDn() {
         return config.getProperty(ConfigurationConstants.EJBCA_CADN);
+    }
+
+    public String getCrlUri() {
+        return ("http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3D");
+    }
+
+    public Map getDatabaseConnection() {
+        return databaseConnection;
     }
 
     /**
@@ -193,6 +212,14 @@ public abstract class WebTestBase extends ExtentReportCreator {
 
     public String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
+    }
+
+    public String getRestUrl() {
+        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ejbca-rest-api";
+    }
+
+    public String getSwaggerWebUrl() {
+        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/swagger-ui#/";
     }
 
     public String getDownloadDir() {
@@ -412,5 +439,15 @@ public abstract class WebTestBase extends ExtentReportCreator {
             final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
             approvalSession.removeApprovalRequest(ADMIN_TOKEN, requestId);
         }
+    }
+
+    protected static void removeServiceByName(final String ServiceName) {
+        final ServiceSessionRemote serviceSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+        try {
+            serviceSessionRemote.removeService(ADMIN_TOKEN, ServiceName);
+        } catch (Exception e) {
+            throw new IllegalStateException(e); //Should never happen with always allow token
+        }
+
     }
 }

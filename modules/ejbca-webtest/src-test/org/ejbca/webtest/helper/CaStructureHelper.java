@@ -81,7 +81,7 @@ public class CaStructureHelper extends BaseHelper {
     }
 
 
-    private int getCrlNumber(String caName) {
+    public int getCrlNumber(String caName) {
         String crlText = StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
         return Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
     }

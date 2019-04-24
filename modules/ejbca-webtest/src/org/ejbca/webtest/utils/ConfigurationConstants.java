@@ -45,4 +45,10 @@ public final class ConfigurationConstants {
     public static final String BROWSER_BINARY  = "browser.firefox.binary";
     public static final String BROWSER_DOWNLOADDIR  = "browser.downloaddir";
     public static final String BROWSER_HEADLESS = "browser.headless";
+
+    // Database Constants
+    public static final String DATABASE_HOST = "database.host";
+    public static final String DATABASE_PORT = "database.port";
+    public static final String DATABASE_USERNAME = "database.username";
+    public static final String DATABASE_PASSWORD = "database.password";
 }
