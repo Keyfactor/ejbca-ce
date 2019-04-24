@@ -184,11 +184,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
-        boolean ret = false;
+    public boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caId, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
         final Date now = new Date();
         // Get CA checks authorization to the CA
-        final CA ca = (CA) caSession.getCA(admin, caid);
+        final CA ca = (CA) caSession.getCA(admin, caId);
         final CAInfo cainfo = ca.getCAInfo();
         try {
             if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
@@ -217,69 +216,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));
                             log.info(msg);
                         } else {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
-                            }
-                            final String certSubjectDN = CertTools.getSubjectDN(cacert);
-                            int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO loop over CRL partitions here (ECA-7939)
-                            final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, crlPartitionIndex, false);
-                            if (log.isDebugEnabled()) {
-                                if (lastBaseCrlInfo == null) {
-                                    log.debug("Crlinfo was null");
-                                } else {
-                                    log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+lastBaseCrlInfo.getLastCRLNumber()+", expireDate="+lastBaseCrlInfo.getExpireDate());
+                            boolean result = createCrlForActiveCa(admin, ca, cacert, CertificateConstants.NO_CRL_PARTITION, now, addToCrlOverlapTime);
+                            final IntRange crlPartitions = cainfo.getAllCrlPartitionIndexes();
+                            if (crlPartitions != null) {
+                                for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                                    result &= createCrlForActiveCa(admin, ca, cacert, crlPartitionIndex, now, addToCrlOverlapTime);
                                 }
                             }
-                            long crlissueinterval = cainfo.getCRLIssueInterval();
-                            if (log.isDebugEnabled()) {
-                                log.debug("crlissueinterval="+crlissueinterval);
-                                log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());
-                                log.debug("addtocrloverlaptime="+addtocrloverlaptime);
-                                log.debug("now="+now.getTime());
-                            }
-                            // Overlaptime from CA configuration, and addtocrloverlaptime is the service poll time if a CRL Update Service is used
-                            // the initial value here is used as long as crlissueinterval == 0
-                            long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; 
-                            // nextScheduledUpdate is the calculated time when EJBCA should issue a new CRL, based on the settings. Normally _not_ the same as nextUpdate in the
-                            // CRL, which is the time a CRL expires. We always want to issue a CRL before the old one expires, at least "overlap" time before.
-                            // if lastBaseCrlInfo == null, there is no CRL at all and we must issue a CRL ASAP
-                            long nextScheduledUpdate = 0;
-                            if (lastBaseCrlInfo != null) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("lastCRLCreateTime="+lastBaseCrlInfo.getCreateDate().getTime());
-                                    log.debug("lastCRLExpireTime="+lastBaseCrlInfo.getExpireDate().getTime());
-                                }
-                                // CRL issueinterval from CA configuration. If this is 0, we should only issue a CRL when
-                                // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
-                                // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
-                                nextScheduledUpdate = lastBaseCrlInfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
-                                if (crlissueinterval > 0) {
-                                    long u = lastBaseCrlInfo.getCreateDate().getTime() + crlissueinterval;
-                                    // If this period for some reason (we missed to issue some?) is larger than when the CRL expires
-                                    // we need to issue one when the CRL expires, but normally we want to generate one now if crlissueinterval kicks in
-                                    if ((u + overlap) < nextScheduledUpdate) {
-                                        nextScheduledUpdate = u;
-                                        // When we issue CRLs before the real expiration date we don't use overlap, but we need to consider the
-                                        // service poll time to not miss generating some CRLs when we use a crlissueinterval and run the CRL Update Worker
-                                        overlap = addtocrloverlaptime;
-                                    }
-                                }
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Calculated nextScheduledUpdate to "+nextScheduledUpdate);
-                                }
-                            } else {
-                                // If crlinfo is null (no crl issued yet) nextUpdate will be 0 and a new CRL should be generated
-                                String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());
-                                log.info(msg);
-                            }
-                            if (now.getTime() + overlap >= nextScheduledUpdate) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Creating CRL for CA, because:"+(now.getTime()+overlap)+" >= "+nextScheduledUpdate);
-                                }
-                                if (internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null) {
-                                    ret = true;
-                                }
-                            }
+                            return result;
                         }
                     } else if (cacert != null) {
                         if (log.isDebugEnabled()) {
@@ -292,16 +236,82 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }
                 }
             }
+            return false;
         } catch (CryptoTokenOfflineException e) {
-            log.warn("Crypto token is offline for CA "+caid+" generating CRL.");
+            log.warn("Crypto token is offline for CA "+caId+" generating CRL.");
             throw e;
         }
-        return ret;
+    }
+
+    /** Creates a CRL for a CRL partition. The CA is assumed to be active (no checks are performed) */
+    private boolean createCrlForActiveCa(final AuthenticationToken admin, final CA ca, final Certificate cacert, final int crlPartitionIndex, final Date now, final long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
+        final CAInfo cainfo = ca.getCAInfo();
+        if (log.isDebugEnabled()) {
+            log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
+        }
+        final String certSubjectDN = CertTools.getSubjectDN(cacert);
+        final long crlissueinterval = cainfo.getCRLIssueInterval();
+        if (log.isDebugEnabled()) {
+            log.debug("crlissueinterval="+crlissueinterval);
+            log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());
+            log.debug("addtocrloverlaptime="+addToCrlOverlapTime);
+            log.debug("now="+now.getTime());
+        }
+        final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, crlPartitionIndex, false);
+        if (log.isDebugEnabled()) {
+            if (lastBaseCrlInfo == null) {
+                log.debug("Crlinfo was null");
+            } else {
+                log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+lastBaseCrlInfo.getLastCRLNumber()+", expireDate="+lastBaseCrlInfo.getExpireDate());
+            }
+        }
+        // Overlaptime from CA configuration, and addtocrloverlaptime is the service poll time if a CRL Update Service is used
+        // the initial value here is used as long as crlissueinterval == 0
+        long overlap = cainfo.getCRLOverlapTime() + addToCrlOverlapTime; 
+        // nextScheduledUpdate is the calculated time when EJBCA should issue a new CRL, based on the settings. Normally _not_ the same as nextUpdate in the
+        // CRL, which is the time a CRL expires. We always want to issue a CRL before the old one expires, at least "overlap" time before.
+        // if lastBaseCrlInfo == null, there is no CRL at all and we must issue a CRL ASAP
+        long nextScheduledUpdate = 0;
+        if (lastBaseCrlInfo != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("lastCRLCreateTime="+lastBaseCrlInfo.getCreateDate().getTime());
+                log.debug("lastCRLExpireTime="+lastBaseCrlInfo.getExpireDate().getTime());
+            }
+            // CRL issueinterval from CA configuration. If this is 0, we should only issue a CRL when
+            // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
+            // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
+            nextScheduledUpdate = lastBaseCrlInfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
+            if (crlissueinterval > 0) {
+                long u = lastBaseCrlInfo.getCreateDate().getTime() + crlissueinterval;
+                // If this period for some reason (we missed to issue some?) is larger than when the CRL expires
+                // we need to issue one when the CRL expires, but normally we want to generate one now if crlissueinterval kicks in
+                if ((u + overlap) < nextScheduledUpdate) {
+                    nextScheduledUpdate = u;
+                    // When we issue CRLs before the real expiration date we don't use overlap, but we need to consider the
+                    // service poll time to not miss generating some CRLs when we use a crlissueinterval and run the CRL Update Worker
+                    overlap = addToCrlOverlapTime;
+                }
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Calculated nextScheduledUpdate to "+nextScheduledUpdate);
+            }
+        } else {
+            // If crlinfo is null (no crl issued yet) nextUpdate will be 0 and a new CRL should be generated
+            String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());
+            log.info(msg);
+        }
+        if (now.getTime() + overlap >= nextScheduledUpdate) {
+            if (log.isDebugEnabled()) {
+                log.debug("Creating CRL for CA, because:"+(now.getTime()+overlap)+" >= "+nextScheduledUpdate);
+            }
+            return (internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null);
+        }
+        return false;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
         boolean ret = false;
         final Date now = new Date();
         final CA ca = (CA) caSession.getCA(admin, caid);
@@ -334,29 +344,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));
                                 log.info(msg);
                             } else {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
-                                }
-                                final String certSubjectDN = CertTools.getSubjectDN(cacert);
-                                int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO loop over CRL partitions here (ECA-7939)
-                                final CRLInfo lastDeltaCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, crlPartitionIndex, true);
-                                if (log.isDebugEnabled()) {
-                                    if (lastDeltaCrlInfo == null) {
-                                        log.debug("DeltaCrlinfo was null");
-                                    } else {
-                                        log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+lastDeltaCrlInfo.getLastCRLNumber()+", expireDate="+lastDeltaCrlInfo.getExpireDate());
+                                boolean result = createDeltaCrlForActiveCa(admin, ca, cacert, CertificateConstants.NO_CRL_PARTITION, now, addToCrlOverlapTime);
+                                final IntRange crlPartitions = cainfo.getAllCrlPartitionIndexes();
+                                if (crlPartitions != null) {
+                                    for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                                        result &= createDeltaCrlForActiveCa(admin, ca, cacert, crlPartitionIndex, now, addToCrlOverlapTime);
                                     }
                                 }
-                                if (lastDeltaCrlInfo == null || (now.getTime() + crloverlaptime) >= lastDeltaCrlInfo.getExpireDate().getTime()){
-                                    final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, crlPartitionIndex, false);
-                                    if (lastBaseCrlInfo != null) {
-                                        if (internalCreateDeltaCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null) {
-                                            ret = true;
-                                        }
-                                    } else {
-                                        log.info("No full CRL exists when trying to generate delta CRL for caid "+caid);
-                                    }
-                                }
+                                return result;
                             }
                         }
                     } else if (cacert != null) {
@@ -377,11 +372,37 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return ret;
     }
 
+    /** Creates a Delta CRL for a CRL partition. The CA is assumed to be active (no checks are performed) */
+    private boolean createDeltaCrlForActiveCa(AuthenticationToken admin, final CA ca, final Certificate cacert, final int crlPartitionIndex,
+            final Date now, final long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
+        if (log.isDebugEnabled()) {
+            log.debug("Checking to see if CA '"+ca.getName()+"' needs Delta CRL generation.");
+        }
+        final String certSubjectDN = CertTools.getSubjectDN(cacert);
+        final CRLInfo lastDeltaCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, crlPartitionIndex, true);
+        if (log.isDebugEnabled()) {
+            if (lastDeltaCrlInfo == null) {
+                log.debug("DeltaCrlinfo was null");
+            } else {
+                log.debug("Read deltacrlinfo for CA: "+ca.getName()+", lastNumber="+lastDeltaCrlInfo.getLastCRLNumber()+", expireDate="+lastDeltaCrlInfo.getExpireDate());
+            }
+        }
+        if (lastDeltaCrlInfo == null || (now.getTime() + addToCrlOverlapTime) >= lastDeltaCrlInfo.getExpireDate().getTime()){
+            final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(certSubjectDN, crlPartitionIndex, false);
+            if (lastBaseCrlInfo != null) {
+                return publishingCrlSession.internalCreateDeltaCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null;
+            } else {
+                log.info("No full CRL exists when trying to generate delta CRL for caid "+ca.getCAId());
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean forceCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         final CA ca = (CA) caSession.getCA(admin, caid);
         final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(CertTools.getSubjectDN(getCaCertificate(ca.getCAInfo())), crlPartitionIndex, false);
-        return internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null;
+        return publishingCrlSession.internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null;
     }
 
     @Override
@@ -393,7 +414,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         if (lastBaseCrlInfo != null) {
             CAInfo cainfo = ca.getCAInfo();
             if (cainfo.getDeltaCRLPeriod() > 0) {
-                byte[] crl = internalCreateDeltaCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo);
+                byte[] crl = publishingCrlSession.internalCreateDeltaCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo);
                 ret = (crl != null);
             }
         } else {
@@ -449,7 +470,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @throws AuthorizationDeniedException
      * @throws javax.ejb.EJBException if a communications- or system error occurs
      */
-    private String internalCreateCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException {
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public String internalCreateCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">internalCreateCRL()");
         }
@@ -608,7 +631,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @throws AuthorizationDeniedException
      * @throws javax.ejb.EJBException if a communications- or system error occurs
      */
-    private byte[] internalCreateDeltaCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public byte[] internalCreateDeltaCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
         if (ca == null) {
             throw new EJBException("No CA specified.");
         }
