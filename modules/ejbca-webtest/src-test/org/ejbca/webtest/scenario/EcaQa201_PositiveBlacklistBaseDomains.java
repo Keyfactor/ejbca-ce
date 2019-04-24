@@ -235,7 +235,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
 
     @Test
     public void stepU_ProvideRequestInfo() {
-        raWebHelper.fillRequestEditCommonName("cn" + Calendar.getInstance().toString());
+        raWebHelper.fillMakeRequestEditCommonName("cn" + Calendar.getInstance().toString());
         raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
     }
 
