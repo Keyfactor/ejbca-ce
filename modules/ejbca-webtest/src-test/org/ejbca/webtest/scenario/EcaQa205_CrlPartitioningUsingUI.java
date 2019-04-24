@@ -19,7 +19,6 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     private static CaHelper caHelper;
     private static CertificateProfileHelper certificateProfileHelper;
     private static EndEntityProfileHelper eeProfileHelper;
-    private static RestCertificateHelper restCertificateHelper;
     private static CaStructureHelper caStructureHelper;
     private static QueryHelper queryHelper;
     private static ServicesHelper servicesHelper;
@@ -150,8 +149,6 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         eeProfileHelper.selectAvailableCp(TestData.CERTIFICATE_PROFILE_NAME);
         eeProfileHelper.selectDefaultCp(TestData.CERTIFICATE_PROFILE_NAME);
         eeProfileHelper.selectDefaultCa(TestData.CA_NAME);
-        //Add DNS Name
-        eeProfileHelper.setSubjectAlternativeName("DNS Name");
     }
 
     @Test
