@@ -2455,8 +2455,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return crlStoreSession.getLastCRL(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCRL);
     }
 
-    // TODO Add new method for Partitioned CRL support for Web Service and REST API (ECA-7966)
-
     @Override
     public Integer getRemainingNumberOfApprovals(final AuthenticationToken authenticationToken, final int requestId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
