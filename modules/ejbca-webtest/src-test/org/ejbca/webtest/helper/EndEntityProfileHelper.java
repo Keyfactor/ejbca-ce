@@ -227,6 +227,10 @@ public class EndEntityProfileHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_DEFAULT_CP, defaultCPName);
     }
 
+    public void selectAvailableCp(String cPName) {
+        selectOptionByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, cPName);
+    }
+
     /**
      * Sets a value for default CA
      *

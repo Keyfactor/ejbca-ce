@@ -7,3 +7,9 @@ appserver.domainname = localhost
 appserver.port = 8080
 #Secure port (SSL connection)
 appserver.secureport = 8443
+
+#DATABASE CONNECTION CONFIGURATIONS
+database.host = 127.0.0.1
+database.port = 3306
+database.username = ejbca
+database.password = ejbca
