@@ -190,10 +190,20 @@ public class CertificateProfileHelper extends BaseHelper {
          * X.509v3 extensions / Usages / Certificate Policies / CPS URI
          */
         static final By INPUT_X509V3_EXTENSIONS_USAGES_CERTIFICATE_POLICIES_CPS_URI = By.xpath("//input[contains(@value, 'CPS URI') and contains(@class, 'notSelected')]");
+
+        /**
+         * X.509v3 extensions / Names / 'Subject Alternative Name' Use
+         */
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_USE = By.id("cpf:cbsubjectalternativename");
         /**
          * X.509v3 extensions / Names / 'Subject Alternative Name' Critical
          */
         static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_CRITICAL = By.id("cpf:cbsubjectalternativenamecritical");
+
+        /**
+         * X.509v3 extensions / Names / 'Issuer Alternative Name' Use
+         */
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_ISSUER_ALTERNATIVE_NAME_USE = By.id("cpf:cbissueralternativename");
         /**
          * X.509v3 extensions / Names / 'Issuer Alternative Name' Critical
          */
@@ -606,10 +616,24 @@ public class CertificateProfileHelper extends BaseHelper {
     }
 
     /**
+     * Triggers the input 'Subject Alternative Name' Use.
+     */
+    public void triggerX509v3ExtensionsNamesSubjectAlternativeNameUse() {
+        clickLink(Page.INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_USE);
+    }
+
+    /**
      * Triggers the input 'Subject Alternative Name' Critical.
      */
     public void triggerX509v3ExtensionsNamesSubjectAlternativeNameCritical() {
         clickLink(Page.INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_CRITICAL);
+    }
+
+    /**
+     * Triggers the input 'Issuer Alternative Name' Use.
+     */
+    public void triggerX509v3ExtensionsNamesIssuerAlternativeNameUse() {
+        clickLink(Page.INPUT_X509V3_EXTENSIONS_NAMES_ISSUER_ALTERNATIVE_NAME_USE);
     }
 
     /**
