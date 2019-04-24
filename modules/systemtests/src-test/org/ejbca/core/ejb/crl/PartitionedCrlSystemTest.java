@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
@@ -70,11 +71,18 @@ import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.actions.NoAction;
+import org.ejbca.core.model.services.intervals.PeriodicalInterval;
+import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -102,13 +110,16 @@ public class PartitionedCrlSystemTest {
     private static final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private static final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
 
+    private static final int MILLISECONDS_24_HOURS = 24*60*60*1000;
     private static final String TEST_CA = TEST_NAME + "_CA";
     private static final String TEST_CRL_PUBLISHER = TEST_NAME + "_CRL_PUBLISHER";
     private static final String TEST_CERTIFICATE_PUBLISHER = TEST_NAME + "_CERTIFICATE_PUBLISHER";
     private static final String TEST_ENDENTITY = TEST_NAME + "_ENDENTITY";
     private static final String TEST_CERTPROFILE = TEST_NAME + "_CP";
     private static final String TEST_EEPROFILE = TEST_NAME + "_EEP";
+    private static final String TEST_CRL_UPDATER_SERVICE = TEST_NAME + "_CRLUPDATER";
 
     private static final String CA_COMMONNAME = "TestCA with CRL Partitioning";
     private static final String CA_DN = "CN=" + CA_COMMONNAME + ",OU=QA,O=TEST,C=SE";
@@ -116,16 +127,18 @@ public class PartitionedCrlSystemTest {
 
     /** CRL Number of the first generated CRL. This will always be a Base CRL */
     private static final int FIRST_CRL_NUMBER = 1;
-    /** CRL Number of the second CRL. This will be a Delt CRL in all cases in this test */
+    /** CRL Number of the second CRL. This will be a Delta CRL in all cases in this test */
     private static final int SECOND_CRL_NUMBER = 2;
 
     private static final String CRLDP_TEMPLATE_URI = "http://crl*.example.com/TestCRL*.crl";
     private static final String CRLDP_MAIN_URI = "http://crl.example.com/TestCRL.crl";
     private static final String CRLDP_PARTITION1_URI = "http://crl1.example.com/TestCRL1.crl";
+    private static final String CRLDP_PARTITION2_URI = "http://crl2.example.com/TestCRL2.crl";
 
     private static final String DELTACRLDP_TEMPLATE_URI = "http://crl*.example.com/TestDeltaCRL*.crl";
     private static final String DELTACRLDP_MAIN_URI = "http://crl.example.com/TestDeltaCRL.crl";
     private static final String DELTACRLDP_PARTITION1_URI = "http://crl1.example.com/TestDeltaCRL1.crl";
+    private static final String DELTACRLDP_PARTITION2_URI = "http://crl2.example.com/TestDeltaCRL2.crl";
 
     private static KeyPair userKeyPair;
     private static int caId, certificateProfileId, endEntityProfileId;
@@ -280,29 +293,121 @@ public class PartitionedCrlSystemTest {
         revokeCertificate(deltaCert, new Date());
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
         // Then
-        assertEquals("Wrong CRL DP in first certificate.", CRLDP_PARTITION1_URI, CertTools.getCrlDistributionPoint(cert));
-        assertEquals("Wrong CRL DP in second certificate.", CRLDP_PARTITION1_URI, CertTools.getCrlDistributionPoint(deltaCert));
+        assertCertificatePresenceInCrl(partitionIndex, CRLDP_PARTITION1_URI, DELTACRLDP_PARTITION1_URI, true, cert, deltaCert);
+        log.trace("<generateAndPublishPartitionedCrl");
+    }
+
+    /**
+     * Checks that the last CRLs are correct, and contain the given certificate in the correct partition. 
+     * @param partitionIndex CRL Partition Index
+     * @param cert Certificate that should be on Base CRL
+     * @param deltaCert Certificate that should be on Delta CRL
+     */
+    private void assertCertificatePresenceInCrl(final int partitionIndex, final String partitionUri, final String partitionDeltaUri, final boolean checkPublisherQueue, final Certificate cert, final Certificate deltaCert) throws CRLException {
+        assertEquals("Wrong CRL DP in first certificate.", partitionUri, CertTools.getCrlDistributionPoint(cert));
+        assertEquals("Wrong CRL DP in second certificate.", partitionUri, CertTools.getCrlDistributionPoint(deltaCert));
         // Legacy CRL (partition 0), always created
         final X509CRL legacyCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, false, FIRST_CRL_NUMBER);
         final X509CRL legacyDeltaCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, true, SECOND_CRL_NUMBER);
         assertEquals("Wrong Issuing Distribution Point in CRL (partition 0).", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(legacyCrl));
         assertEquals("Wrong Freshest CRL DP in CRL (partition 0).", Collections.singletonList(DELTACRLDP_MAIN_URI), CrlExtensions.extractFreshestCrlDistributionPoints(legacyCrl));
         assertEquals("Wrong Issuing Distribution Point in Delta CRL (partition 0).", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(legacyDeltaCrl));
-        // Partition 1
+        // Partition
         final X509CRL crl = getLatestCrl(partitionIndex, false, FIRST_CRL_NUMBER);
         final X509CRL deltaCrl = getLatestCrl(partitionIndex, true, SECOND_CRL_NUMBER);
         assertEquals("Wrong Base CRL number on Delta CRL (partition 1).", BigInteger.valueOf(FIRST_CRL_NUMBER), CrlExtensions.getDeltaCRLIndicator(deltaCrl));
-        assertEquals("Wrong Issuing Distribution Point in CRL (partition 1).", Collections.singletonList(CRLDP_PARTITION1_URI), CertTools.getCrlDistributionPoints(crl));
-        assertEquals("Wrong Freshest CRL DP in CRL (partition 1).", Collections.singletonList(DELTACRLDP_PARTITION1_URI), CrlExtensions.extractFreshestCrlDistributionPoints(crl));
-        assertEquals("Wrong Issuing Distribution Point in Delta CRL (partition 1).", Collections.singletonList(CRLDP_PARTITION1_URI), CertTools.getCrlDistributionPoints(deltaCrl));
+        assertEquals("Wrong Issuing Distribution Point in CRL (partition 1).", Collections.singletonList(partitionUri), CertTools.getCrlDistributionPoints(crl));
+        assertEquals("Wrong Freshest CRL DP in CRL (partition 1).", Collections.singletonList(partitionDeltaUri), CrlExtensions.extractFreshestCrlDistributionPoints(crl));
+        assertEquals("Wrong Issuing Distribution Point in Delta CRL (partition 1).", Collections.singletonList(partitionUri), CertTools.getCrlDistributionPoints(deltaCrl));
         assertInclusionOnCrl(crl, deltaCrl, cert, deltaCert);
         assertNull("Legacy CRL (partition 0) should be empty.", legacyCrl.getRevokedCertificates());
         assertNull("Legacy Delta CRL (partition 0) should be empty.", legacyDeltaCrl.getRevokedCertificates());
         assertCorrectPartitionIndexInCertData(cert, partitionIndex);
         assertCorrectPartitionIndexInCertData(deltaCert, partitionIndex);
-        assertCrlPublisherQueueData(Arrays.asList(legacyCrl, legacyDeltaCrl, crl, deltaCrl));
-        assertCertificatePublisherQueueData(Arrays.asList(cert, deltaCert));
-        log.trace("<generateAndPublishPartitionedCrl");
+        if (checkPublisherQueue) {
+            assertCrlPublisherQueueData(Arrays.asList(legacyCrl, legacyDeltaCrl, crl, deltaCrl));
+            assertCertificatePublisherQueueData(Arrays.asList(cert, deltaCert));
+        }
+    }
+
+    /**
+     * Test CRL generation via a CRL Update Worker, and uses two partitions (one retired). Otherwise identical to {@link #generateAndPublishPartitionedCrl}
+     * <p>
+     * Testing two partitions is important to test that starting multiple new transactions works fine from the service timer call.
+     */
+    @Test
+    public void generatePartitionedCrlViaWorker() throws Exception {
+        log.trace(">generatePartitionedCrlViaWorker");
+        cleanupService();
+        // Given
+        final int partitionIndex = 2;
+        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_CA);
+        caInfo.setUsePartitionedCrl(true);
+        caInfo.setDefaultCRLDistPoint(CRLDP_TEMPLATE_URI);
+        caInfo.setCADefinedFreshestCRL(DELTACRLDP_TEMPLATE_URI);
+        caInfo.setCrlPartitions(2);
+        caInfo.setRetiredCrlPartitions(1);
+        caInfo.setCRLIssueInterval(1); // 1 ms. This should force generation immediately
+        caInfo.setCRLPeriod(MILLISECONDS_24_HOURS); // Validity of CRL
+        caInfo.setCRLOverlapTime(0);
+        caInfo.setDeltaCRLPeriod(0); // disable delta CRLs
+        caAdminSession.editCA(admin, caInfo);
+        final Certificate cert = issueCertificate();
+        final Certificate deltaCert = issueCertificate();
+        final ServiceConfiguration crlUpdater = new ServiceConfiguration();
+        crlUpdater.setActionClassPath(NoAction.class.getName());
+        crlUpdater.setActionProperties(null);
+        crlUpdater.setActive(true);
+        crlUpdater.setIntervalClassPath(PeriodicalInterval.class.getName());
+        final Properties intervalProperties = new Properties();
+        intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, "5");
+        intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_SECONDS);
+        crlUpdater.setIntervalProperties(intervalProperties);
+        crlUpdater.setWorkerClassPath(CRLUpdateWorker.class.getName());
+        final Properties workerProperties = new Properties();
+        workerProperties.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caInfo.getCAId()));
+        crlUpdater.setWorkerProperties(workerProperties);
+        // When 
+        // Base CRL generation
+        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000)); // backdate revocation by 5 minutes
+        triggerCrlUpdaterService(crlUpdater, partitionIndex, false, FIRST_CRL_NUMBER);
+        // Delta CRL generation
+        caInfo.setCRLIssueInterval(MILLISECONDS_24_HOURS);
+        caInfo.setDeltaCRLPeriod(1); // 1 ms
+        caAdminSession.editCA(admin, caInfo);
+        revokeCertificate(deltaCert, new Date());
+        triggerCrlUpdaterService(crlUpdater, partitionIndex, true, SECOND_CRL_NUMBER);
+        // Then
+        assertCertificatePresenceInCrl(partitionIndex, CRLDP_PARTITION2_URI, DELTACRLDP_PARTITION2_URI, false, cert, deltaCert);
+        log.trace("<generatePartitionedCrlViaWorker");
+    }
+    
+    private void cleanupService() {
+        try {
+            serviceSession.removeService(admin, TEST_CRL_UPDATER_SERVICE);
+        } catch (Exception e) {
+            // NOPMD Ignored
+        }
+    }
+
+    private void triggerCrlUpdaterService(ServiceConfiguration crlUpdater, final int crlPartitionIndex, final boolean deltaCrl, final int waitForCrlNumber) throws InterruptedException, ServiceExistsException {
+        try {
+            log.debug("Adding service and waiting for " + (deltaCrl ? "Delta CRL" : "Base CRL") + " number " + waitForCrlNumber);
+            serviceSession.addService(admin, TEST_CRL_UPDATER_SERVICE, crlUpdater);
+            serviceSession.activateServiceTimer(admin, TEST_CRL_UPDATER_SERVICE);
+            Thread.sleep(1000);
+            int counter = 0;
+            while (crlStoreSession.getLastCRLNumber(CA_DN, crlPartitionIndex, deltaCrl) != waitForCrlNumber) {
+                Thread.sleep(200);
+                if (++counter > 50) {
+                    log.warn("Timed out waiting for CRL update");
+                    break;
+                }
+            }
+            log.debug("Done waiting");
+        } finally {
+            cleanupService();
+        }
     }
 
     private void prepareForDownloadTestCase(final String crlUrl) throws Exception {
