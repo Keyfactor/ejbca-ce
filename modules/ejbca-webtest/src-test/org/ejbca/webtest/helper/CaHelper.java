@@ -49,6 +49,11 @@ public class CaHelper extends BaseHelper {
         static final By BUTTON_SAVE = By.id("editcapage:buttonsave");
         static final By BUTTON_SAVE_INITIALIZE = By.id("editcapage:buttoninitialize");;
 
+        //CRL Points
+        /**
+         * Generate Default CRL Distribution Point
+         */
+        static final By BUTTON_GENERATEDEFAULTCRLDISTRIBUTIONPOINT = By.xpath("//input[@id='editcapage:textfielddefaultcrldistpoint']/following-sibling::input[1]");
         /**
          * CA Life Cycle / Renew Ca
          */
@@ -108,6 +113,22 @@ public class CaHelper extends BaseHelper {
          */
         static final By INPUT_CRLOVERLAPTIME = By.id("editcapage:textfieldcrloverlaptime");
         /**
+         * Issue Distribution Point on CRL
+         */
+        static final By INPUT_CRLDISTRIBUTIONPOINT = By.id("editcapage:checkboxusecrldistributionpointoncrl");
+        /**
+         * Use CRL Partitions
+         */
+        static final By INPUT_USECRLPARTITIONS = By.id("editcapage:checkboxusecrlpartitions");
+        /**
+         * Number of Partitions
+         */
+        static final By INPUT_NUMBEROFPARTITIONS = By.id("editcapage:crlpartitions");
+        /**
+         * Number of Retired Partitions
+         */
+        static final By INPUT_NUMBEROFRETIREDPARTITIONS = By.id("editcapage:crlretiredpartitions");
+        /**
          * Key sequence
          */
         static final By INPUT_KEYSEQUENCE = By.id("editcapage:keysequence");
@@ -149,6 +170,8 @@ public class CaHelper extends BaseHelper {
          * crlSignKey
          */
         static final By TEXT_CRLSIGNKEY = By.id("editcapage:crlSignKey");
+
+        static final By TEXT_DEFAULTCRLDISTRIBUTIONPOINT = By.id("editcapage:textfielddefaultcrldistpoint");
 
         // Dynamic references
         static By getCaListElementContainingText(final String text) {
@@ -529,4 +552,59 @@ public class CaHelper extends BaseHelper {
     public void checkEnforceUniqueDN(Boolean check) {
         toggleCheckbox(Page.INPUT_CHECKBOXENFORCEUNIQUEDN, check);
     }
+
+    /**
+     * Check the Issuing Distribution Point on Crls
+     *
+     * @param check
+     */
+    public void checkIssuingDistPointOnCrls(Boolean check) {
+        toggleCheckbox(Page.INPUT_CRLDISTRIBUTIONPOINT, check);
+    }
+
+    /**
+     * Check the Use Crl Partitions checkbox
+     *
+     * @param check
+     */
+    public void checkUseCrlPartitions(Boolean check) {
+        toggleCheckbox(Page.INPUT_USECRLPARTITIONS, check);
+    }
+
+    /**
+     * Sets the number of crl partitions
+     *
+     * @param iPartitions
+     */
+    public void setNumberOfPartitions(String iPartitions) {
+            fillInput(Page.INPUT_NUMBEROFPARTITIONS, iPartitions);
+    }
+
+    /**
+     * Sets the number of retired crl partitions
+     *
+     * @param iRetired
+     */
+    public void setNumberOfRetiredPartitions(String iRetired) {
+        fillInput(Page.INPUT_NUMBEROFRETIREDPARTITIONS, iRetired);
+    }
+
+    /**
+     * Click the generate for Default CRL Distribution Point
+     *
+     */
+    public void clickGenerateDefaultCrlDistributionPoint() {
+        clickLink(Page.BUTTON_GENERATEDEFAULTCRLDISTRIBUTIONPOINT);
+    }
+
+    /**
+     * Asserts a url was generated
+     *
+     * @param sValue
+     */
+    public void assertDefaultCrlDistributionPointUri(String sValue) {
+        assertEquals(sValue, getElementValue(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT));
+    }
+
+
 }

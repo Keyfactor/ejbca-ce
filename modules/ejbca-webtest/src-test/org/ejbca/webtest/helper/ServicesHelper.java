@@ -37,6 +37,8 @@ public class ServicesHelper extends BaseHelper {
         // Service Form
         static final By TEXT_SERVICE_TITLE = By.id("serviceTitle");
         static final By SELECT_WORKER = By.id("selectWorkerForm:selectWorker");
+        static final By INPUT_PERIOD = By.id("editForm:periodicalValueTextField");
+        static final By CHECKBOX_ACITVE = By.id("editForm:activeCheckbox");
         static final By BUTTON_EDIT_SAVE = By.id("editForm:saveButton");
     }
 
@@ -109,7 +111,7 @@ public class ServicesHelper extends BaseHelper {
     public void assertWorkerHasSelectedName(final String name) {
         final List<String> selectedNames = getSelectSelectedNames(Page.SELECT_WORKER);
         assertNotNull("'Select Worker' was not found", selectedNames);
-        assertTrue("CRL Updater was not selected", selectedNames.contains(name));
+        assertTrue("CRL  Updater was not selected", selectedNames.contains(name));
     }
 
     public void assertHasErrorMessage(final String errorMessageText) {
@@ -126,6 +128,14 @@ public class ServicesHelper extends BaseHelper {
                 prefixString + serviceName,
                 serviceTitle.getText()
         );
+    }
+
+    public void setPeriod(final String period) {
+        fillInput(Page.INPUT_PERIOD, period);
+    }
+
+    public void checkActive(Boolean check) {
+        toggleCheckbox(Page.CHECKBOX_ACITVE, check);
     }
 
 }

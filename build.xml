@@ -51,6 +51,16 @@
 		 <delete dir="${dist.dir}" />
 		 <ant antfile="modules/build.xml" target="clean" inheritall="false"/>
 	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Clean Reports and Screenshots                                                           -->
+	<!-- =================================================================== -->
+	<target name="cleanReports" description="Clean up this module">
+		<delete dir="${reports.base.dir}/images"/>
+		<delete file="${reports.base.dir}/QaEjbcaTestReport.html" />
+
+	</target>
 	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
