@@ -28,6 +28,8 @@ public interface PublishingCrlSession {
      * Method that checks if there are any CRLs needed to be updated and then
      * creates their CRLs. No overlap is used. This method can be called by a
      * scheduler or a service.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      */
@@ -37,6 +39,8 @@ public interface PublishingCrlSession {
      * Method that checks if there are any delta CRLs needed to be updated and
      * then creates their delta CRLs. No overlap is used. This method can be
      * called by a scheduler or a service.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      */
@@ -48,6 +52,8 @@ public interface PublishingCrlSession {
      * expires within the crloverlaptime (milliseconds) 2. if a CRL issue
      * interval is defined (>0) a CRL is issued when this interval has passed,
      * even if the current CRL is still valid
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
@@ -66,6 +72,8 @@ public interface PublishingCrlSession {
 
     /** Method that forces generation of a CRL for a certain CA.
      * If the CA has multiple CRL partitions, then a CRL is generated for each of them.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
@@ -76,6 +84,8 @@ public interface PublishingCrlSession {
 
     /** Method that forces generation of a Delta CRL for a certain CA.
      * If the CA has multiple CRL partitions, then a Delta CRL is generated for each of them.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
