@@ -18,8 +18,10 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -35,8 +37,10 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * within the crloverlaptime (milliseconds) 2. if a crl issue interval is
      * defined (>0) a CRL is issued when this interval has passed, even if the
      * current CRL is still valid
-     * 
+     * <p>
      * This method can be called by a scheduler or a service.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caids list of CA ids (Integer) that will be checked, or null in
@@ -54,6 +58,8 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
     /**
      * Method that checks if there are any delta CRLs needed to be updated and
      * then creates them. This method can be called by a scheduler or a service.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caids list of CA ids (Integer) that will be checked, or null in
@@ -67,6 +73,8 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
     /**
      * Method that checks if the delta CRL needs to be updated and then creates
      * it.
+     * <p>
+     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
@@ -77,5 +85,13 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * @throws javax.ejb.EJBException if communication or system error occurs
      */
     boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
+
+    /** Internal method, do not use. Needs to be here for transaction management. */
+    String internalCreateCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo)
+            throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException;
+
+    /** Internal method, do not use. Needs to be here for transaction management. */
+    byte[] internalCreateDeltaCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo)
+            throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException;
 
 }
