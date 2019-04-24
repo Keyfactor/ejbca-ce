@@ -59,6 +59,37 @@
 				    		</h:commandButton>	
 				    	</h:column>
 				    </h:panelGrid>
+    				<h:panelGroup id="addProfile">	
+						<h3>
+							<h:outputText value="Add Profile"/> 
+						</h3>
+						<h:inputText 
+							id="addProfileNew" 
+							value="#{endEntityProfilesMBean.endEntityProfileName}" 
+							size="45" 
+							maxlength="255" 
+							title="web.text.NAME"/>
+						<h:commandButton 
+							id="addButton" 
+							class="buttonstyle" 
+							action="#{endEntityProfilesMBean.actionAdd}" 
+							value="Add profile"/>
+						<h:commandButton 
+							id="renameButton" 
+							class="buttonstyle" 
+							action="#{endEntityProfilesMBean.actionRename}" 
+							value="Rename selected"/>
+						<h:commandButton 
+							id="cloneButton" 
+							class="buttonstyle" 
+							action="#{endEntityProfilesMBean.actionCloneProfile}" 
+							value="Clone selected"/>
+						<h:commandButton 
+							id="exportButton" 
+							class="buttonstyle" 
+							action="#{endEntityProfilesMBean.actionExportProfile}" 
+							value="Export selected"/>
+	 				</h:panelGroup>	
 				</h:panelGroup>
 			</h:form>
 			
@@ -68,37 +99,6 @@
 				rendered="#{endEntityProfilesMBean.authorizedToEdit}">
 				<ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
                 <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
-				<h:panelGroup id="addProfile">	
-					<h3>
-						<h:outputText value="Add Profile"/> 
-					</h3>
-					<h:inputText 
-						id="addProfileNew" 
-						value="#{endEntityProfilesMBean.endEntityProfileName}" 
-						size="45" 
-						maxlength="255" 
-						title="web.text.NAME"/>
-					<h:commandButton 
-						id="addButton" 
-						class="buttonstyle" 
-						action="#{endEntityProfilesMBean.actionAdd}" 
-						value="Add profile"/>
-					<h:commandButton 
-						id="renameButton" 
-						class="buttonstyle" 
-						action="#{endEntityProfilesMBean.actionRename}" 
-						value="Rename selected"/>
-					<h:commandButton 
-						id="cloneButton" 
-						class="buttonstyle" 
-						action="#{endEntityProfilesMBean.actionCloneProfile}" 
-						value="Clone selected"/>
-					<h:commandButton 
-						id="exportButton" 
-						class="buttonstyle" 
-						action="#{endEntityProfilesMBean.actionExportProfile}" 
-						value="Export selected"/>
-	 			</h:panelGroup>	
 				<h:panelGroup id="importProfile"> 
 					<h3>
 						<h:outputText value="#{web.text.IMPORT}/" rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
