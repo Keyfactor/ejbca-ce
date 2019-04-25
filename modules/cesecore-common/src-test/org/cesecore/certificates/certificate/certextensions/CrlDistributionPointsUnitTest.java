@@ -95,7 +95,7 @@ public class CrlDistributionPointsUnitTest {
                 .setSubjectDn(TEST_SUBJECTDN)
                 .setDefaultCrlDistPoint(PARTITIONED_A_URL + ";" + PARTITIONED_B_URL)
                 .setUsePartitionedCrl(true)
-                .setRetiredCrlPartitions(1)
+                .setSuspendedCrlPartitions(1)
                 .setCrlPartitions(3)
                 .build();
         // Should get partition 2 or 3, but never partition 1, and never a mix of 2 and 3

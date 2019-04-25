@@ -192,8 +192,8 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         //Setting use partitioned crl
         caInfo.setUsePartitionedCrl(true);
         caInfo.setCrlPartitions(15);
-        //We make sure to have 11 non-retired crl partitions left in use by retiring 4 partitions 
-        caInfo.setRetiredCrlPartitions(4);
+        //We make sure to have 11 non-suspended crl partitions left in use by retiring 4 partitions 
+        caInfo.setSuspendedCrlPartitions(4);
         // When:
         //We use a template URL with the asterisk operator to generate our indexed URLs
         List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
@@ -226,7 +226,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         caInfo.setUsePartitionedCrl(false);
         //We add some partitions
         caInfo.setCrlPartitions(10);
-        caInfo.setRetiredCrlPartitions(5);
+        caInfo.setSuspendedCrlPartitions(5);
         // When:
         //We use a template URL with the asterisk operator to generate our indexed URLs
         List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
@@ -242,11 +242,12 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
     }
 
     /**
-     * Test that only one non-indexed CRL CDP URL is generated if all partitions are retired  
+     * Test that only one non-indexed CRL CDP URL is generated if all partitions are suspended
+     * (this is an incorrect configuration, not allowed by the GUI)  
      */
     @Test
-    public void shouldNotGenerateIndexedCrlPartitionUrlsIfAllRetired() throws Exception {
-        log.trace(">shouldNotGenerateIndexedCrlPartitionUrlsIfAllRetired");
+    public void shouldNotGenerateIndexedCrlPartitionUrlsIfAllSuspended() throws Exception {
+        log.trace(">shouldNotGenerateIndexedCrlPartitionUrlsIfAllSuspended");
         // Given:
         final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
         X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
@@ -256,7 +257,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         //We add some partitions
         caInfo.setCrlPartitions(10);
         //We retire all partitions
-        caInfo.setRetiredCrlPartitions(10);
+        caInfo.setSuspendedCrlPartitions(10);
         // When:
         //We use a template URL with the asterisk operator to generate our indexed URLs
         List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
@@ -268,7 +269,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
         //This URL should not have an index number, it is the base URL
         assertEquals("The URL should not contain a partition index.", "http://example.com/CA.crl", actualCdpUrl.get(0));
-        log.trace("<shouldNotGenerateIndexedCrlPartitionUrlsIfAllRetired");
+        log.trace("<shouldNotGenerateIndexedCrlPartitionUrlsIfAllSuspended");
     }
 
     /**

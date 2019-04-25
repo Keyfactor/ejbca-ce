@@ -239,7 +239,7 @@ public class PartitionedCrlSystemTest {
         caInfo.setDefaultCRLDistPoint(CRLDP_MAIN_URI);
         caInfo.setCADefinedFreshestCRL(DELTACRLDP_MAIN_URI);
         caInfo.setCrlPartitions(0);
-        caInfo.setRetiredCrlPartitions(0);
+        caInfo.setSuspendedCrlPartitions(0);
         caAdminSession.editCA(admin, caInfo);
         // When
         final Certificate cert = issueCertificate(); // should appear on CRL
@@ -283,7 +283,7 @@ public class PartitionedCrlSystemTest {
         caInfo.setDefaultCRLDistPoint(CRLDP_TEMPLATE_URI);
         caInfo.setCADefinedFreshestCRL(DELTACRLDP_TEMPLATE_URI);
         caInfo.setCrlPartitions(1);
-        caInfo.setRetiredCrlPartitions(0);
+        caInfo.setSuspendedCrlPartitions(0);
         caAdminSession.editCA(admin, caInfo);
         // When
         final Certificate cert = issueCertificate(); // should appear on CRL
@@ -331,7 +331,7 @@ public class PartitionedCrlSystemTest {
     }
 
     /**
-     * Test CRL generation via a CRL Update Worker, and uses two partitions (one retired). Otherwise identical to {@link #generateAndPublishPartitionedCrl}
+     * Test CRL generation via a CRL Update Worker, and uses two partitions (one suspended). Otherwise identical to {@link #generateAndPublishPartitionedCrl}
      * <p>
      * Testing two partitions is important to test that starting multiple new transactions works fine from the service timer call.
      */
@@ -346,7 +346,7 @@ public class PartitionedCrlSystemTest {
         caInfo.setDefaultCRLDistPoint(CRLDP_TEMPLATE_URI);
         caInfo.setCADefinedFreshestCRL(DELTACRLDP_TEMPLATE_URI);
         caInfo.setCrlPartitions(2);
-        caInfo.setRetiredCrlPartitions(1);
+        caInfo.setSuspendedCrlPartitions(1);
         caInfo.setCRLIssueInterval(1); // 1 ms. This should force generation immediately
         caInfo.setCRLPeriod(MILLISECONDS_24_HOURS); // Validity of CRL
         caInfo.setCRLOverlapTime(0);
@@ -416,7 +416,7 @@ public class PartitionedCrlSystemTest {
         caInfo.setUsePartitionedCrl(true);
         caInfo.setDefaultCRLDistPoint(crlUrl + "&partition=*");
         caInfo.setCrlPartitions(1);
-        caInfo.setRetiredCrlPartitions(0);
+        caInfo.setSuspendedCrlPartitions(0);
         caAdminSession.editCA(admin, caInfo);
         final Certificate cert = issueCertificate(); // should appear on CRL, under partition 1 after revocation
         revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000)); // backdate revocation by 5 minutes
