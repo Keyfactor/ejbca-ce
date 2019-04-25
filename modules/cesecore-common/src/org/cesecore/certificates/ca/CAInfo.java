@@ -577,7 +577,7 @@ public abstract class CAInfo implements Serializable {
 
     /**
      * Returns the CRL partitions' indexes for a given CA, or null if the CRL is not partitioned or the CA type does not support CRLs (e.g. CVC CA).
-     * This includes retired partitions that might still contain still valid certificates.
+     * This includes suspended partitions, suspended partitions will just not have new certificates assigned to them. 
      */
     public IntRange getAllCrlPartitionIndexes() {
         return null;

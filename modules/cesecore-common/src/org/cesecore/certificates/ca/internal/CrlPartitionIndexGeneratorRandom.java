@@ -50,8 +50,8 @@ public enum CrlPartitionIndexGeneratorRandom {
             throw new IllegalStateException("Cannot generate CRL Partition Index because the random generator initialization failed.", initializationFailure);
         }
         final int partitions = caInfo.getCrlPartitions();
-        final int retired = caInfo.getRetiredCrlPartitions();
-        return random.nextInt(partitions - retired) + retired + 1;
+        final int suspended = caInfo.getSuspendedCrlPartitions();
+        return random.nextInt(partitions - suspended) + suspended + 1;
     }
 
 }
