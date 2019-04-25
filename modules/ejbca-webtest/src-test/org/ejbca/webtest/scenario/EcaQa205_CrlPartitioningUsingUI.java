@@ -128,13 +128,13 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         certificateProfileHelper.saveCertificateProfile();
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void stepJ_AddEndEntityProfile() {
         eeProfileHelper.openPage(this.getAdminWebUrl());
         eeProfileHelper.addEndEntityProfile(TestData.ENTITY_NAME);
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void stepK_EditEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
         eeProfileHelper.addSubjectAttribute("dn", "O, Organization");
@@ -151,7 +151,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         eeProfileHelper.selectDefaultCa(TestData.CA_NAME);
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void stepL_SaveEntityProfile() {
         eeProfileHelper.saveEndEntityProfile(true);
     }
@@ -160,7 +160,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     //a bulk of certificates and revoke them to use with
     //the CRL partitions
 
-    @Test
+    @Test(timeout = 30000)
     public void stepM_GenerateAndRevokeCertificates() throws InterruptedException {
         //Create 500 users.
         //Integer i = 0;
