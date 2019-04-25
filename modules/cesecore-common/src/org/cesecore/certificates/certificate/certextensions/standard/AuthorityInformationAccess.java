@@ -60,6 +60,12 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
         // Get AIA by CAs default AIA section or by the certificate profiles configuration.
         if (certProfile.getUseDefaultCAIssuer()) {
             caIssuerUris = x509ca.getCertificateAiaDefaultCaIssuerUri();
+            
+            if (caIssuerUris == null) {
+                throw new CertificateExtensionException("An error occurred when creating the AIA extension. The certificate profile for '"
+                        + subject.getUsername() + "' specifies that the CA-defined AIA issuer URI should be used but the CA '" + ca.getName()
+                        + "' has no such value defined.");
+            }
         } else {
             caIssuerUris = certProfile.getCaIssuers();
         }
