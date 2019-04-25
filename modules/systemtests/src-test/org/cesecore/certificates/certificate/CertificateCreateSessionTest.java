@@ -1112,7 +1112,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     /**
-     * Issues a certificate with CRL Partitioning enabled in the CA, with two partitions: one retired (partition 1), and one active (partition 2).
+     * Issues a certificate with CRL Partitioning enabled in the CA, with two partitions: one suspended (partition 1), and one active (partition 2).
      * Checks that the certificate is assigned CRL partition 2.
      */
     @Test
@@ -1129,7 +1129,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             final X509CAInfo caInfo = (X509CAInfo) testx509ca.getCAInfo();
             caInfo.setUsePartitionedCrl(true);
             caInfo.setCrlPartitions(2);
-            caInfo.setRetiredCrlPartitions(1);
+            caInfo.setSuspendedCrlPartitions(1);
             caInfo.setDefaultCRLDistPoint("http://example.com/CA*.crl");
             caAdminSession.editCA(alwaysAllowToken, caInfo);
             final String username = "issueCertificateWithCrlPartition";
@@ -1148,7 +1148,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             assertNotNull("Certificate could not be found after issuance", certData);
             final String crlDistPoint = CertTools.getCrlDistributionPoint(responseMessage.getCertificate());
             log.debug("CRL Distribution Point: " + crlDistPoint);
-            assertEquals("Wrong CRL Partition Index.", 2, (int) certData.getCrlPartitionIndex()); // Partition 1 is retired. Partition 2 is the only one in use.
+            assertEquals("Wrong CRL Partition Index.", 2, (int) certData.getCrlPartitionIndex()); // Partition 1 is suspended. Partition 2 is the only one in use.
             assertEquals("Wrong CRL Distribution Point.", "http://example.com/CA2.crl", crlDistPoint);
         } finally {
             certProfileSession.removeCertificateProfile(alwaysAllowToken, profileName);
@@ -1156,7 +1156,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             final X509CAInfo caInfo = (X509CAInfo) testx509ca.getCAInfo();
             caInfo.setUsePartitionedCrl(false);
             caInfo.setCrlPartitions(0);
-            caInfo.setRetiredCrlPartitions(0);
+            caInfo.setSuspendedCrlPartitions(0);
             caAdminSession.editCA(alwaysAllowToken, caInfo);
             log.trace("<issueCertificateWithCrlPartition");
         }

@@ -132,9 +132,9 @@ public interface X509CA extends CA {
 
     void setCrlPartitions(int crlPartitions);
 
-    int getRetiredCrlPartitions();
+    int getSuspendedCrlPartitions();
 
-    void setRetiredCrlPartitions(int retiredCrlPartitions);
+    void setSuspendedCrlPartitions(int suspendedCrlPartitions);
 
     /**
      * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.

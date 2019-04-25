@@ -95,7 +95,7 @@ public class CrlStoreServletTest extends CaTestCase {
         caInfo.setUsePartitionedCrl(true);
         caInfo.setDefaultCRLDistPoint("http://frontend.example.com/search.cgi?abc=xyz&partition=*");
         caInfo.setCrlPartitions(1);
-        caInfo.setRetiredCrlPartitions(0);
+        caInfo.setSuspendedCrlPartitions(0);
         caAdminSession.editCA(admin, caInfo);
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, getTestCAId()));
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, getTestCAId()));
