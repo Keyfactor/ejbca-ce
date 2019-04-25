@@ -462,6 +462,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * and generating a CRL. This method also "archives" certificates when after
      * they are no longer needed in the CRL.
      * Generates the CRL and stores it in the database.
+     * <p>
+     * Runs without a transaction, since this operation cannot be rolled back, and also for performance reasons,
+     * if the CRLs are large.
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
@@ -470,7 +473,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @throws AuthorizationDeniedException
      * @throws javax.ejb.EJBException if a communications- or system error occurs
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public String internalCreateCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
