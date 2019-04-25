@@ -74,7 +74,7 @@ public class X509CAInfo extends CAInfo {
 	private int caSerialNumberOctetSize;
 	private boolean usePartitionedCrl;
 	private int crlPartitions;
-	private int retiredCrlPartitions;
+	private int suspendedCrlPartitions;
 
     /**
      * This constructor can be used when creating a CA.
@@ -137,7 +137,7 @@ public class X509CAInfo extends CAInfo {
              false, // keepExpiredCertsOnCRL
              false, // Use partitioned crls
              0, // Number of crl partitons
-             0  // Number of retired crl partitions
+             0  // Number of suspended crl partitions
             
         );
     }
@@ -202,7 +202,7 @@ public class X509CAInfo extends CAInfo {
      * @param keepExpiredCertsOnCRL
      * @param usePartitionedCrl boolean specifying partitioned crl usage
      * @param crlPartitions the number of crl partitions (if any) used currently by this ca 
-     * @param retiredCrlPartitions the number of retired crl partitions (if any) currently used for this ca
+     * @param suspendedCrlPartitions the number of suspended crl partitions (if any) currently used for this ca
      */
     private X509CAInfo(final String subjectDn, final String name, final int status, final Date updateTime, final String subjectaltname,
             final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedBy,
@@ -220,7 +220,7 @@ public class X509CAInfo extends CAInfo {
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
     		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry,
-            final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final boolean usePartitionedCrl, final int crlPartitions, final int retiredCrlPartitions) {
+            final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
         this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
         this.name = name;
@@ -294,7 +294,7 @@ public class X509CAInfo extends CAInfo {
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
         this.usePartitionedCrl = usePartitionedCrl;
         this.crlPartitions = crlPartitions;
-        this.retiredCrlPartitions = retiredCrlPartitions;
+        this.suspendedCrlPartitions = suspendedCrlPartitions;
     }
 
     /** Constructor that should be used when updating CA data. */
@@ -311,7 +311,7 @@ public class X509CAInfo extends CAInfo {
             final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName,
             final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
             final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
-            final int defaultCertprofileId, final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int retiredCrlPartitions) {
+            final int defaultCertprofileId, final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
@@ -357,7 +357,7 @@ public class X509CAInfo extends CAInfo {
         this.useNoConflictCertificateData = useNoConflictCertificateData;
         this.usePartitionedCrl = usePartitionedCrl;
         this.crlPartitions = crlPartitions;
-        this.retiredCrlPartitions = retiredCrlPartitions;
+        this.suspendedCrlPartitions = suspendedCrlPartitions;
     }
 
   public List<CertificatePolicy> getPolicies() {
@@ -394,9 +394,9 @@ public class X509CAInfo extends CAInfo {
   public List<String> getAllCrlPartitionUrls(final String crlUrl) {
       List<String> crlUrlsReturned = new ArrayList<>();
       if (getUsePartitionedCrl()) {
-          int partitionUrlsToGenerate = (getCrlPartitions() - getRetiredCrlPartitions());
+          int partitionUrlsToGenerate = (getCrlPartitions() - getSuspendedCrlPartitions());
           crlUrlsReturned.add(crlUrl.replace("*", ""));
-          Integer partitionIndex = getRetiredCrlPartitions() < 1 ? 1 : 1 + getRetiredCrlPartitions();  
+          Integer partitionIndex = getSuspendedCrlPartitions() < 1 ? 1 : 1 + getSuspendedCrlPartitions();  
           for (int generatedUrls = 0; generatedUrls < partitionUrlsToGenerate; generatedUrls++) {
               crlUrlsReturned.add(crlUrl.replace("*", partitionIndex.toString()));
               partitionIndex++;
@@ -638,7 +638,6 @@ public class X509CAInfo extends CAInfo {
     /** 
      * Partitioned crls are used by CAs with very large crls.  
      * It is CA specific configuration using multiple partitions to which certificates randomly are assigned. 
-     * When these partitions grow too large they are discontinued and set as retired partitions.
      * @return true if a partitioned crl is used 
      */
     public boolean getUsePartitionedCrl() {
@@ -647,7 +646,6 @@ public class X509CAInfo extends CAInfo {
     
     /** 
      *  Set use partitioned crl for this ca.
-     *  This implies that a set of non-retired crl partitions will be available for this ca. 
      *  @see #getUsePartitionedCrl() 
      */
     public void setUsePartitionedCrl(final boolean usePartitionedCrl) {
@@ -671,20 +669,21 @@ public class X509CAInfo extends CAInfo {
     }
     
     /** 
-     * Retired crls are discontinued crls, certificates will not be added to retired crls.  
-     * @return the number of retired crl partitions for this ca.
+     * New certificates will not be assigned to suspended partitions. This can be used to balance the partitions
+     * if the low numbered partitions have too many certificates (for example after increasing the number of partitions).  
+     * @return the number of suspended CRL partitions for this CA.
      * @see #getUsePartitionedCrl() 
      */
-    public int getRetiredCrlPartitions() {
-        return retiredCrlPartitions;
+    public int getSuspendedCrlPartitions() {
+        return suspendedCrlPartitions;
     }
     
     /** 
-     * Set the number of retired crl partitions for this ca.
+     * Set the number of suspended CRL partitions for this CA.
      * @see #getUsePartitionedCrl() 
      */
-    public void setRetiredCrlPartitions(final int retiredCrlPartitions) {
-        this.retiredCrlPartitions = retiredCrlPartitions;  
+    public void setSuspendedCrlPartitions(final int suspendedCrlPartitions) {
+        this.suspendedCrlPartitions = suspendedCrlPartitions;  
     }
     
     public static class X509CAInfoBuilder {
@@ -745,7 +744,7 @@ public class X509CAInfo extends CAInfo {
         private boolean keepExpiredCertsOnCRL = false;
         private boolean usePartitionedCrl = false;
         private int crlPartitions;
-        private int retiredCrlPartitions;
+        private int suspendedCrlPartitions;
         
         public X509CAInfoBuilder setSubjectDn(String subjectDn) {
             this.subjectDn = subjectDn;
@@ -1032,8 +1031,8 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
         
-        public X509CAInfoBuilder setRetiredCrlPartitions(int retiredCrlPartitions) {
-            this.retiredCrlPartitions = retiredCrlPartitions;
+        public X509CAInfoBuilder setSuspendedCrlPartitions(int suspendedCrlPartitions) {
+            this.suspendedCrlPartitions = suspendedCrlPartitions;
             return this;
         }
 
@@ -1051,7 +1050,7 @@ public class X509CAInfo extends CAInfo {
                     useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck,
                     doEnforceUniquePublicKeys, doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry,
-                    cmpRaAuthSecret, keepExpiredCertsOnCRL, usePartitionedCrl, crlPartitions, retiredCrlPartitions);
+                    cmpRaAuthSecret, keepExpiredCertsOnCRL, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
         }
     }
 }
