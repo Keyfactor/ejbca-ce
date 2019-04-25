@@ -974,7 +974,7 @@
 						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.UseCRLPartitionValidator" disabled="#{editCAsMBean.caExternal}"/>
 						<f:attribute name="useCrlDistributiOnPointOnCrl" value="#{useCrlDistributiOnPointOnCrl}"/>
 						<f:attribute name="defaultCRLDistPointInput" value="#{defaultCRLDistPointInput}"/>
-						<f:ajax render=":editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:retiredPartitionLabelGroup :editcapage:retiredPartitionInputGroup"
+						<f:ajax render=":editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
 							onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', ev.source.checked); } } "/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="crlpartitions"
@@ -997,13 +997,13 @@
 					</h:panelGroup>
 				</h:column>
 				<h:column>
-					<h:panelGroup id="retiredPartitionLabelGroup" styleClass="crlPartitionCellContents">
+					<h:panelGroup id="suspendedPartitionLabelGroup" styleClass="crlPartitionCellContents">
 						<h:outputText value="#{web.text.CRLSUSPENDEDPARTITIONNUMBER}" rendered="#{not editCAsMBean.caExternal}" />
 					</h:panelGroup>
 				</h:column>
 				<h:column>
-					<h:panelGroup id="retiredPartitionInputGroup" styleClass="crlPartitionCellContents">
-						<h:inputText id="crlretiredpartitions" value="#{editCAsMBean.suspendedCrlPartitions}" size="3" title="#{web.text.FORMAT_INTEGER}"
+					<h:panelGroup id="suspendedPartitionInputGroup" styleClass="crlPartitionCellContents">
+						<h:inputText id="crlsuspendedpartitions" value="#{editCAsMBean.suspendedCrlPartitions}" size="3" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
 									 rendered="#{not editCAsMBean.caExternal}"
 									 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
