@@ -49,7 +49,7 @@ public class SwaggerUIHelper extends BaseHelper {
 
 
         //pcks10enroll
-        static final By BUTTON_POST_PKCS10ENROLL = By.cssSelector("div[id$='certificate-enrollPkcs10Certificate'] > div:nth-child(1) > span:nth-child(1)");
+        static final By BUTTON_POST_PKCS10ENROLL = By.cssSelector("div[id$='certificate-enrollPkcs10Certificate'] span.opblock-summary-method");
         static final By BUTTON_TRYIT_PKCS10ENROLL = By.cssSelector("div[id$='certificate-enrollPkcs10Certificate'] div.try-out > button");
         static final By BODY_PKCS10ENROLL = By.cssSelector("div[id$='certificate-enrollPkcs10Certificate'] textarea");
         static final By BUTTON_PKCS10ENROLL = By.cssSelector("div[id$='certificate-enrollPkcs10Certificate'] button[class*='execute']");
@@ -58,7 +58,7 @@ public class SwaggerUIHelper extends BaseHelper {
         static final By TEXT_RESPONSE_CODE_PKCS10ENROLL = By.cssSelector("div[id$='certificate-enrollPkcs10Certificate'] tr[class*='response'] td[class*=\"col_status\"]");
 
         //enrollkeystore
-        static final By BUTTON_POST_ENROLLKEYSTORE = By.cssSelector("div[id$='certificate-enrollKeystore'] > div:nth-child(1) > span:nth-child(1)");
+        static final By BUTTON_POST_ENROLLKEYSTORE = By.cssSelector("div[id$=\"certificate-enrollKeystore\"] span.opblock-summary-method");
         static final By BUTTON_TRYIT_ENROLLKEYSTORE = By.cssSelector("div[id$='certificate-enrollKeystore'] div.try-out > button");
         static final By BODY_ENROLLKEYSTORE = By.cssSelector("div[id$='certificate-enrollKeystore'] textarea");
         static final By BUTTON_EXECUTE_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] button[class*='execute']");
@@ -67,7 +67,7 @@ public class SwaggerUIHelper extends BaseHelper {
         static final By TEXT_RESPONSE_CODE_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] table.responses-table:nth-child(4) tbody tr[class*='response'] td[class*=\"col_status\"]");
 
         //Revoke
-        static final By BUTTON_PUT_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] > div:nth-child(1) > span:nth-child(1)");
+        static final By BUTTON_PUT_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] span.opblock-summary-method");
         static final By BUTTON_TRYIT_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] div.try-out > button");
 
         static final By TEXT_CA_SUBJECT_DN_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] [placeholder*=\"issuer_dn\"]");
