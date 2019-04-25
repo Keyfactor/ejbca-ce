@@ -205,7 +205,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean keepExpiredOnCrl;
     private boolean usePartitionedCrl;
     private int crlPartitions;
-    private int retiredCrlPartitions;
+    private int suspendedCrlPartitions;
     private String crlCaCrlPeriod;
     private String crlCaIssueInterval;
     private String crlCaOverlapTime;
@@ -1001,12 +1001,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.crlPartitions = crlPartitions;
     }
 
-    public int getRetiredCrlPartitions() {
-        return retiredCrlPartitions;
+    public int getSuspendedCrlPartitions() {
+        return suspendedCrlPartitions;
     }
 
-    public void setRetiredCrlPartitions(int retiredCrlPartitions) {
-        this.retiredCrlPartitions = retiredCrlPartitions;
+    public void setSuspendedCrlPartitions(int suspendedCrlPartitions) {
+        this.suspendedCrlPartitions = suspendedCrlPartitions;
     }
 
     public String getCrlCaCrlPeriod() {
@@ -1872,7 +1872,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     authorityInformationAccess, certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded,
                     caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
                     crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl,
-                    usePartitionedCrl, crlPartitions, retiredCrlPartitions, createCa,
+                    usePartitionedCrl, crlPartitions, suspendedCrlPartitions, createCa,
                     makeRequest, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey,
                     selectedKeyEncryptKey, testKey, fileBuffer);
 
@@ -2166,7 +2166,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator, authorityInformationAccess,
                     certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCRL, useUtf8Policy,
                     usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical,
-                    includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, usePartitionedCrl, crlPartitions, retiredCrlPartitions);
+                    includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
             return null;
@@ -2493,7 +2493,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             keepExpiredOnCrl = x509cainfo.getKeepExpiredCertsOnCRL();
             usePartitionedCrl = x509cainfo.getUsePartitionedCrl();
             crlPartitions = x509cainfo.getCrlPartitions();
-            retiredCrlPartitions = x509cainfo.getRetiredCrlPartitions();
+            suspendedCrlPartitions = x509cainfo.getSuspendedCrlPartitions();
 
             if (isCaexternal) {
                 crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
