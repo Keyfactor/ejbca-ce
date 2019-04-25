@@ -256,7 +256,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         caInfo.setUsePartitionedCrl(true);
         //We add some partitions
         caInfo.setCrlPartitions(10);
-        //We retire all partitions
+        //We suspend all partitions
         caInfo.setSuspendedCrlPartitions(10);
         // When:
         //We use a template URL with the asterisk operator to generate our indexed URLs

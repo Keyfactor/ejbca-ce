@@ -928,7 +928,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         }
                     }
                 } catch (CADoesntExistsException e) {
-                    throw new IllegalStateException("CA was not found, in spite of ID just being retireved", e);
+                    throw new IllegalStateException("CA was not found, in spite of ID just being retrieved", e);
                 }
             }
             //Do the same for all certificate profiles (same boilerplate, repeated).

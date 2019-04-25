@@ -125,9 +125,9 @@ public class CaHelper extends BaseHelper {
          */
         static final By INPUT_NUMBEROFPARTITIONS = By.id("editcapage:crlpartitions");
         /**
-         * Number of Retired Partitions
+         * Number of Suspended Partitions
          */
-        static final By INPUT_NUMBEROFRETIREDPARTITIONS = By.id("editcapage:crlretiredpartitions");
+        static final By INPUT_NUMBEROFSUPSENDEDPARTITIONS = By.id("editcapage:crlsuspendedpartitions");
         /**
          * Key sequence
          */
@@ -581,12 +581,12 @@ public class CaHelper extends BaseHelper {
     }
 
     /**
-     * Sets the number of retired crl partitions
+     * Sets the number of suspended crl partitions
      *
-     * @param iRetired
+     * @param iSuspended
      */
-    public void setNumberOfRetiredPartitions(String iRetired) {
-        fillInput(Page.INPUT_NUMBEROFRETIREDPARTITIONS, iRetired);
+    public void setNumberOfSuspendedPartitions(String iSuspended) {
+        fillInput(Page.INPUT_NUMBEROFSUPSENDEDPARTITIONS, iSuspended);
     }
 
     /**
