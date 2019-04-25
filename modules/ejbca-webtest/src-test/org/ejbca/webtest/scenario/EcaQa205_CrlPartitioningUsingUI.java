@@ -87,7 +87,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         caHelper.checkIssuingDistPointOnCrls(true);
         caHelper.checkUseCrlPartitions(true);
         caHelper.setNumberOfPartitions("3");
-        caHelper.setNumberOfRetiredPartitions("1");
+        caHelper.setNumberOfSuspendedPartitions("1");
     }
 
     @Test
