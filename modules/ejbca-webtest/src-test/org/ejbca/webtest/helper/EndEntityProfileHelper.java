@@ -38,11 +38,11 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final String PAGE_URI = "/ejbca/adminweb/ra/editendentityprofiles/editendentityprofiles.xhtml";
         static final By PAGE_LINK = By.id("raEditendentityprofiles");
         // End Entity Profiles Form
-        static final By INPUT_NAME = By.id("uploadProfiles:addProfileNew");
-        static final By BUTTON_ADD = By.id("uploadProfiles:addButton");
+        static final By INPUT_NAME = By.id("manageEndEntityProfiles:addProfileNew");
+        static final By BUTTON_ADD = By.id("manageEndEntityProfiles:addButton");
         static final By BUTTON_EDIT = By.id("manageEndEntityProfiles:editButton");
-        static final By BUTTON_CLONE = By.id("uploadProfiles:cloneButton");
-        static final By BUTTON_RENAME = By.id("uploadProfiles:renameButton");
+        static final By BUTTON_CLONE = By.id("manageEndEntityProfiles:cloneButton");
+        static final By BUTTON_RENAME = By.id("manageEndEntityProfiles:renameButton");
         static final By BUTTON_DELETE = By.id("manageEndEntityProfiles:deleteButton");
         static final By SELECT_EE_PROFILES = By.id("manageEndEntityProfiles:profilesListBox");
         //modal block
