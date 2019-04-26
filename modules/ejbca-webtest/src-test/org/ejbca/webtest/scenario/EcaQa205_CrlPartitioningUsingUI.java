@@ -161,7 +161,8 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     //a bulk of certificates and revoke them to use with
     //the CRL partitions
 
-    @Test
+    @Ignore
+    @Test()
     public void stepM_GenerateAndRevokeCertificates() throws InterruptedException {
         //Create 500 users.
         //Integer i = 0;
