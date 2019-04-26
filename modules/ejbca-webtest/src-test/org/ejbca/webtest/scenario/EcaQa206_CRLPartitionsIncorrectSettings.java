@@ -14,6 +14,7 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -49,10 +50,17 @@ public class EcaQa206_CRLPartitionsIncorrectSettings extends WebTestBase {
         // Init helpers
         caHelper = new CaHelper(webDriver);
     }
+
     @AfterClass
     public static void exit(){
+        removeCaAndCryptoToken(TestData.CA_NAME);
         // super
         afterClass();
+    }
+
+    @After
+    public void clean(){
+        removeCaAndCryptoToken(TestData.CA_NAME);
     }
 
     @Test
