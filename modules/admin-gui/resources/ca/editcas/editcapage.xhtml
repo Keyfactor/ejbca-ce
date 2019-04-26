@@ -979,7 +979,13 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="crlpartitions"
 								   value="#{web.text.USE}" />
-					<h:outputScript target="head" rendered="${not editCAsMBean.usePartitionedCrlChecked}">document.addEventListener('DOMContentLoaded', function () { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', false); });</h:outputScript>
+					<h:outputScript rendered="${not editCAsMBean.usePartitionedCrlChecked}">
+					if (document.readyState != 'complete') {
+						document.addEventListener('DOMContentLoaded', function () { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', false); });
+					} else {
+						ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', false);
+					}
+					</h:outputScript>
 				</h:panelGroup>
 				<h:column>
 					<h:panelGroup id="crlNumberOfPartitionsLabelGroup" styleClass="crlPartitionCellContents">
