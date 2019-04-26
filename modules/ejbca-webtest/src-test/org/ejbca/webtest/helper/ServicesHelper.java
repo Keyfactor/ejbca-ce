@@ -38,6 +38,7 @@ public class ServicesHelper extends BaseHelper {
         static final By TEXT_SERVICE_TITLE = By.id("serviceTitle");
         static final By SELECT_WORKER = By.id("selectWorkerForm:selectWorker");
         static final By INPUT_PERIOD = By.id("editForm:periodicalValueTextField");
+        static final By SELECT_CAS_TO_CHECK = By.id("editForm:workerPage:crlUpdateCASelect");
         static final By CHECKBOX_ACITVE = By.id("editForm:activeCheckbox");
         static final By BUTTON_EDIT_SAVE = By.id("editForm:saveButton");
     }
@@ -128,6 +129,10 @@ public class ServicesHelper extends BaseHelper {
                 prefixString + serviceName,
                 serviceTitle.getText()
         );
+    }
+
+    public void selectCaToCheck(final String ca) {
+        selectOptionByName(Page.SELECT_CAS_TO_CHECK, ca);
     }
 
     public void setPeriod(final String period) {

@@ -88,6 +88,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         caHelper.checkUseCrlPartitions(true);
         caHelper.setNumberOfPartitions("3");
         caHelper.setNumberOfSuspendedPartitions("1");
+        caHelper.setCrlPeriod("5m");
     }
 
     @Test
@@ -294,6 +295,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         servicesHelper.openEditServicePage(TestData.CRL_SERVICE);
         servicesHelper.editService("CRL Updater");
         servicesHelper.setPeriod("1");
+        servicesHelper.selectCaToCheck(TestData.CA_NAME);
         servicesHelper.checkActive(true);
     }
 
