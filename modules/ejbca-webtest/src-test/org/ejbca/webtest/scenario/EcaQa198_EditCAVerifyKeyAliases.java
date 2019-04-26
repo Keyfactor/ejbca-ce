@@ -12,7 +12,19 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
@@ -25,10 +37,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 /**
@@ -40,6 +48,8 @@ import java.nio.file.Paths;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
+    
+    private static final Logger log = Logger.getLogger(EcaQa198_EditCAVerifyKeyAliases.class);
 
     private static final int TIMEOUT = 60000;
     private static WebDriver webDriver;
@@ -76,12 +86,35 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         // super
         afterClass();
     }
+    
+    /** Finds the name of the crypto token for the management CA. Defaults to "ManagementCA" if something goes wrong. */
+    private String getManagementCACryptoTokenName() {
+        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        for (final String caName : SystemTestsConfiguration.getClientCertificateCaNames()) {
+            try {
+                final CAInfo managementCa = caSession.getCAInfo(ADMIN_TOKEN, caName);
+                if (managementCa.getCAToken() != null) {
+                    final int cryptoTokenId = managementCa.getCAToken().getCryptoTokenId();
+                    final CryptoTokenInfo cryptoToken = cryptoTokenManagementSession.getCryptoTokenInfo(ADMIN_TOKEN, cryptoTokenId);
+                    if (cryptoToken != null) {
+                        return cryptoToken.getName();
+                    }
+                } else {
+                    log.error("CA '" + managementCa.getName() + "' exists, but has no Crypto Token");
+                }
+            } catch (AuthorizationDeniedException e) {
+                log.error("Authorization denied to CA '" + caName + "': " + e.getMessage(), e);
+            }
+        }
+        return "ManagementCA";
+    }
 
     @Test
     public void stepA_assertCryptoTokenExists() {
         //Verify a cryptotoken exists
         cryptoTokenHelper.openPage(getAdminWebUrl());
-        cryptoTokenHelper.assertTokenExists("ManagementCA");
+        cryptoTokenHelper.assertTokenExists(getManagementCACryptoTokenName());
     }
 
     @Test
