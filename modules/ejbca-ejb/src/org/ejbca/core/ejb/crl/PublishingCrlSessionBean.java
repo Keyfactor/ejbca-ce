@@ -225,14 +225,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             }
                             return result;
                         }
-                    } else if (cacert != null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
-                        }
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());
-                        }
+                    } else if (log.isDebugEnabled() && cacert != null) {
+                        log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+                    } else if (log.isDebugEnabled()) {
+                        log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());
                     }
                 }
             }
@@ -354,14 +350,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 return result;
                             }
                         }
-                    } else if (cacert != null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
-                        }
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());
-                        }
+                    } else if (log.isDebugEnabled() && cacert != null) {
+                        log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+                    } else if (log.isDebugEnabled()) {
+                        log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());
                     }
                 }
             }
