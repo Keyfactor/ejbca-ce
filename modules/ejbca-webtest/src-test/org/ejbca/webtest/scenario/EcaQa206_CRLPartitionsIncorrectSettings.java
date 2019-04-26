@@ -22,6 +22,7 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
+ * Selenium test that tests incorrect configurations related to crl partitioons in CA
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
