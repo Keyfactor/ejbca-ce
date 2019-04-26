@@ -581,6 +581,15 @@ public class CaHelper extends BaseHelper {
     }
 
     /**
+     * Sets default crl Distribution Point
+     *
+     * @param crlDistributionPoint
+     */
+    public void setDefaultCrlDistributionPoint(String crlDistributionPoint) {
+            fillInput(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT, crlDistributionPoint);
+    }
+
+    /**
      * Sets the number of suspended crl partitions
      *
      * @param iSuspended
@@ -606,5 +615,7 @@ public class CaHelper extends BaseHelper {
         assertEquals(sValue, getElementValue(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT));
     }
 
-
+    public void assertHasErrorMessage(final String errorMessageText) {
+        assertErrorMessageAppears(errorMessageText, "CA save error message was not found", "Expected CA error message was not displayed");
+    }
 }

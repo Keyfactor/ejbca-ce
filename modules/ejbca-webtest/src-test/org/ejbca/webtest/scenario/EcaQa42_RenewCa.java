@@ -33,7 +33,6 @@ import org.openqa.selenium.WebDriver;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa42_RenewCa extends WebTestBase {
 
-    private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
     private static AuditLogHelper auditLogHelper;
@@ -48,7 +47,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
     public static void init() {
         // super
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        WebDriver webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
         auditLogHelper = new AuditLogHelper(webDriver);
