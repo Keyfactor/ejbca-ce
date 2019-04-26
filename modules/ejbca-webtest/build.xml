@@ -90,7 +90,7 @@
     </target>
 
 	<target name="test" depends="compile-tests" description="Run all tests for this module">
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${webtest.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
