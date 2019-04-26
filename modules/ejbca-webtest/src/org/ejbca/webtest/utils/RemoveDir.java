@@ -7,8 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 
+import org.apache.log4j.Logger;
+
 public class RemoveDir {
-    Path path;
+
+    private static final Logger log = Logger.getLogger(RemoveDir.class);
+
+    private Path path;
 
     public RemoveDir(String sPath) {
         this.path = Paths.get(sPath);
@@ -16,13 +21,16 @@ public class RemoveDir {
 
     /**
      * Remove list of files in directory and the directory itself.
-     *
-     * @throws IOException
+     * Logs an info message, but does not throw exception, if the directory does not exist.
      */
-    public void deleteDirectoryStream() throws IOException {
-        Files.walk(this.path)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+    public void deleteDirectoryStream() {
+        try {
+            Files.walk(path)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        } catch (IOException e) {
+            log.info("Failed to remove directory " + path);
+        }
     }
 }
