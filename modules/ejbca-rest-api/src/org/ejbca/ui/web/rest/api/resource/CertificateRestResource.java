@@ -108,7 +108,7 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
  *
  * @version $Id$
  */
-@Api(tags = {"v1/certificate"}, value = "Certificate Rest Management API")
+@Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
 @SwaggerDefinition(info =
     @Info(
         title = "Certificate Management REST Interface",
