@@ -26,7 +26,7 @@ COPY $CONFIG_RSP $RUN_FILE $CHECK_DB_FILE $INSTALL_DIR/
 #ADD oracle-xe-11.2.0-1.0.x86_64.rpm.zip /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
 RUN cd /tmp \
-    && curl -k -o oracle-xe-11.2.0-1.0.x86_64.rpm.zip "https://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip" 
+    && curl -k -o oracle-xe-11.2.0-1.0.x86_64.rpm.zip "https://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2F3rdPartBin%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip" 
 
 
 RUN cd $INSTALL_DIR
