@@ -32,7 +32,7 @@ import io.swagger.annotations.ApiOperation;
  *
  * @version $Id$
  */
-@Api(tags = {"v1/cryptotoken"}, value = "Crypto Token Rest Management API")
+@Api(tags = {"v1/cryptotoken"}, value = "Crypto Token REST Management API")
 @Path("/v1/cryptotoken")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
@@ -46,7 +46,9 @@ public class CryptoTokenRestResource extends BaseRestResource {
 
     @GET
     @Path("/status")
-    @ApiOperation(value = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
+    @ApiOperation(value = "Get the status of this REST Resource", 
+                  notes = "Returns status and version of the resource.", 
+                  response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
         return super.status();

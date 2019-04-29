@@ -69,7 +69,7 @@ public class CaRestResource extends BaseRestResource {
 
     @GET
     @Path("/status")
-    @ApiOperation(value = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
+    @ApiOperation(value = "Get the status of this REST Resource", response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
         return super.status();
