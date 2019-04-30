@@ -272,7 +272,6 @@ public class AutoEnrollServletTest {
             @SuppressWarnings("unchecked")
             List<X509CertificateHolder> certCollection = (List<X509CertificateHolder>)certStore.getMatches(signer.getSID());
             X509Certificate caCert = new JcaX509CertificateConverter().getCertificate(certCollection.get(0));
-			@SuppressWarnings("unchecked")
             Iterator<X509CertificateHolder> iter2 = certStore.getMatches(null).iterator();
 			if (iter2.hasNext()) {
 				X509Certificate cert = jcaX509CertificateConverter.getCertificate(iter2.next());

@@ -25,7 +25,6 @@ import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.SystemTestsConfiguration;
