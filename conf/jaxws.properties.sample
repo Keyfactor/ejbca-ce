@@ -15,7 +15,7 @@
 #ejbcaws.enabled=true
 
 #------------------- JAXWS settings -------------
-# Setting indicating if a call to genTokenCertificates and/or viewHardToken for non-authorized users 
+# Setting indicating if a call to genTokenCertificates for non-authorized users 
 # should result in an approval request instead of an authorized denied exception (i.e. rejected 
 # right away).
 # This setting is only applicable to the calls named above. 
