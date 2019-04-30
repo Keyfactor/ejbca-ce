@@ -1,16 +1,31 @@
 package org.ejbca.webtest.utils;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import javax.net.ssl.*;
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.*;
-import java.security.cert.CertificateException;
 
 public class HttpClient {
     private final String USER_AGENT = "Mozilla/5.0";
@@ -18,14 +33,14 @@ public class HttpClient {
     private static String parameters;
 
     public HttpClient(String url, String parameters) {
-        this.url = url;
-        this.parameters = parameters;
+        HttpClient.url = url;
+        HttpClient.parameters = parameters;
     }
 
     public int sendJsonPost() {
         try {
             org.apache.http.client.HttpClient httpClient = HttpClientBuilder.create().build();
-            HttpPost request = new HttpPost(this.url);
+            HttpPost request = new HttpPost(HttpClient.url);
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-type", "application/json");
 
