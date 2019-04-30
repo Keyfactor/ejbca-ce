@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.cesecore.certificates.ocsp.cache;
 
 import static org.junit.Assert.assertNotNull;
@@ -20,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.Date;
