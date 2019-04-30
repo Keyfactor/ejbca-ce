@@ -84,7 +84,7 @@ public class WebEjbcaClearCacheTest {
             if (isEjbcaRunningExternally()) {
                 assumeTrue("Ignoring test failure since EJBCA is running externally at " + SystemTestsConfiguration.getRemoteHost(null), false);
             }
-            log.debug("Target hostname does NOT appear to be local, re-throwing exception.");
+            log.debug("Target hostname does NOT appear to be external, re-throwing exception.");
             throw e;
         }
     }
