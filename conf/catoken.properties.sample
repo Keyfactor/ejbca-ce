@@ -11,7 +11,6 @@
 #   * crlSignKey - the key to be used when signing CLSs, can be RSA or ECDSA.
 #   * keyEncryptKey - the key to be used for key encryption and decryption, this must be an RSA key.
 #   * testKey - the key to be used by HSM status checks, can be RSA or ECDSA.
-#   * hardTokenEncrypt - the key to be used for hardtoken encryption and decryption. PUK will be decrypted by this key.
 #   * defaultKey - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.
 #
 
