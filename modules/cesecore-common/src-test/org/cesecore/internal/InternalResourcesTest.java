@@ -15,7 +15,6 @@ package org.cesecore.internal;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 import java.util.Properties;
 
 import org.cesecore.config.ConfigurationHolder;

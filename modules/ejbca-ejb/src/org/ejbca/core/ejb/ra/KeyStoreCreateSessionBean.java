@@ -157,6 +157,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId,
                     keySpecification, keyAlgorithm, null, null, false, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             final String alias = keyStore.aliases().nextElement();
+            // FIXME Can we remove the line below, or does keyStore.getCertificate() have any side-effects?
             final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException e) { // Is handled as EjbcaException at caller (EjbcaWS).

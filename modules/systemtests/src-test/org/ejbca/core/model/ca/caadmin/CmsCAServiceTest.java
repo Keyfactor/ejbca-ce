@@ -176,7 +176,6 @@ public class CmsCAServiceTest extends CaTestCase {
             assertEquals("CN=TEST", issuer.toString());
         }
         Store<X509CertificateHolder> store = csd.getCertificates();
-        @SuppressWarnings("unchecked")
         Collection<X509CertificateHolder> certs = store.getMatches(null);
         assertEquals(2, certs.size());
 

@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -51,9 +50,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 @ManagedBean
 @ViewScoped
 public class EditCmpConfigMBean extends BaseManagedBean implements Serializable {
-
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(EditCmpConfigMBean.class);
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 

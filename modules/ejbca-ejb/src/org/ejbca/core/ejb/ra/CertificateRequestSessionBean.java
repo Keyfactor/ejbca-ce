@@ -321,6 +321,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     createJKS, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             String alias = keyStore.aliases().nextElement();
+            // FIXME Can we remove the line below, or does keyStore.getCertificate() have any side-effects?
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());

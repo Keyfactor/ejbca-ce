@@ -29,7 +29,6 @@ import javax.faces.context.Flash;
 import javax.faces.context.PartialViewContext;
 import javax.faces.model.SelectItem;
 
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -122,13 +121,12 @@ public abstract class BaseManagedBean implements Serializable {
      * Removes all messages added with addErrorMessage, addInfoMessage, etc.
      */
     protected void clearMessages() {
-        final List<String> clientIds = IteratorUtils.toList(FacesContext.getCurrentInstance().getClientIdsWithMessages());
-        for (final String clientId : clientIds) {
+        FacesContext.getCurrentInstance().getClientIdsWithMessages().forEachRemaining(clientId -> {
             final List<FacesMessage> messageList = FacesContext.getCurrentInstance().getMessageList(clientId);
             if (messageList != null && !messageList.isEmpty()) { // Don't try to clear Collections.EMPTY_LIST
                 messageList.clear();
             }
-        }
+        });
     }
 
 	protected AuthenticationToken getAdmin(){

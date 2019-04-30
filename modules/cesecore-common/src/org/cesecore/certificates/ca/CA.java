@@ -52,9 +52,9 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 
 /**
- * Common methods for unrestricted X509 and CVC CA implementations
+ * Common methods for unrestricted X509 and CVC CA implementations.
+ * 
  * @version $Id$
- *
  */
 public interface CA extends CACommon {
     
@@ -118,9 +118,9 @@ public interface CA extends CACommon {
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
             CertificateEncodingException, CertificateException, OperatorCreationException;
 
-    HashMap getExtendedCAServiceData(int type);
+    HashMap<?, ?> getExtendedCAServiceData(int type);
 
-    void setExtendedCAServiceData(int type, HashMap serviceData);
+    void setExtendedCAServiceData(int type, HashMap<?, ?> serviceData);
 
     void setExtendedCAService(ExtendedCAService extendedcaservice);
 

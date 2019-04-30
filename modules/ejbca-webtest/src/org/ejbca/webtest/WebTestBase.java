@@ -72,7 +72,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
     private static String browserBinary; // null = don't override default
     private static String browserHeadless;
     private static List<WebDriver> webDrivers = new ArrayList<>();
-    private static Map databaseConnection;
+    private static Map<String, String> databaseConnection;
 
     /**
      * Authentication token to use.
@@ -160,7 +160,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
         browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
 
         //Load Database Constants
-        databaseConnection = new HashMap();
+        databaseConnection = new HashMap<String, String>();
         databaseConnection.put("host", config.getProperty(ConfigurationConstants.DATABASE_HOST));
         databaseConnection.put("port",config.getProperty(ConfigurationConstants.DATABASE_PORT));
         databaseConnection.put("user", config.getProperty(ConfigurationConstants.DATABASE_USERNAME));
@@ -179,7 +179,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
         return ("http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3D");
     }
 
-    public Map getDatabaseConnection() {
+    public Map<String, String> getDatabaseConnection() {
         return databaseConnection;
     }
 
