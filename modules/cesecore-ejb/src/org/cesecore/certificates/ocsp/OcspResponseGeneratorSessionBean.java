@@ -135,7 +135,6 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
-import org.cesecore.certificates.ocsp.keys.CardKeys;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
@@ -187,8 +186,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private static final int MAX_REQUEST_SIZE = 100000;
     /** Timer identifiers */
     private static final int TIMERID_OCSPSIGNINGCACHE = 1;
-
-    private static final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
 
     private static final Logger log = Logger.getLogger(OcspResponseGeneratorSessionBean.class);
 
@@ -271,9 +268,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         cancelTimers(TIMERID_OCSPSIGNINGCACHE);
         try {      
          // Verify card key holder
-            if (log.isDebugEnabled() && (CardKeyHolder.getInstance().getCardKeys() == null)) {
-                log.debug(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
-            }
             GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             OcspSigningCache.INSTANCE.stagingStart();
             try {
@@ -2120,10 +2114,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } else {
             dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name());
         }
-        dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, (long)(OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L));
+        dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L);
         dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(OcspConfiguration.getNonExistingIsGood()));
         dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, Boolean.valueOf(OcspConfiguration.getNonExistingIsRevoked()));
-        dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, (long)(OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L));
+        dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L);
         dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(OcspConfiguration.getEnforceRequestSigning()));
         return dataMap;
     }
@@ -2219,33 +2213,3 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
 }
 
-class CardKeyHolder {
-    private static final InternalResources intres = InternalResources.getInstance();
-    private static CardKeyHolder instance = null;
-    private CardKeys cardKeys = null;
-
-    private CardKeyHolder() {
-        Logger log = Logger.getLogger(CardKeyHolder.class);
-        String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
-        try {
-            this.cardKeys = (CardKeys) OcspResponseGeneratorSessionBean.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
-            this.cardKeys.autenticate(OcspConfiguration.getCardPassword());
-        } catch (ClassNotFoundException e) {
-            log.debug(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
-        } catch (Exception e) {
-            log.info("Could not create CardKeyHolder", e);
-        }
-    }
-
-    public static synchronized CardKeyHolder getInstance() {
-        if (instance == null) {
-            instance = new CardKeyHolder();
-        }
-        return instance;
-    }
-
-    public CardKeys getCardKeys() {
-        return cardKeys;
-    }
-
-}
