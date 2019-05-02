@@ -13,27 +13,29 @@
 
 package org.ejbca.core.model.approval;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @version $Id$
@@ -136,19 +138,18 @@ public class ApprovalRequestTest {
     	assertEquals(id1, id2);
     	
         final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
-        final String TEST_NONADMIN_CN = "CN=wsnonadmintest";
-        final String serialNumber = "12344711";
         approvalProfile.setNumberOfApprovalsRequired(1);
-        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
-                TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0, approvalProfile);
-        int approvalId = approvalRequest.generateApprovalId();
-        ViewHardTokenDataApprovalRequest ar1 = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, 
-                CertTools.stringToBCDNString(TEST_NONADMIN_CN), serialNumber, true,token,null,1,123456,1, 
-                approvalProfile);
-        int approvalId1 = ar1.generateApprovalId();
-        assertEquals("Ids should be the same.", approvalId, approvalId1);
-
-
+        
+        ChangeStatusEndEntityApprovalRequest approvalRequest1 = new ChangeStatusEndEntityApprovalRequest(TEST_NONADMIN_USERNAME, 
+                1, 0, token, "111111", 1, 0, approvalProfile, new ArrayList<ValidationResult>());
+        
+        ChangeStatusEndEntityApprovalRequest approvalRequest2 = new ChangeStatusEndEntityApprovalRequest(TEST_NONADMIN_USERNAME, 
+                1, 0, token, "111111", 1, 123456, approvalProfile, new ArrayList<ValidationResult>());
+        
+        int approvalId1 = approvalRequest1.generateApprovalId();
+        int approvalId2 = approvalRequest2.generateApprovalId();
+        
+        assertEquals("Ids should be the same.", approvalId1, approvalId2);
 	}
     
     /** Tests editing (but not actually saving to the database, since this is handled in the ApprovalSessionBean class) */

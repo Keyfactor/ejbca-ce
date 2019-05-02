@@ -24,12 +24,10 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _ExistsHardTokenResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "existsHardTokenResponse");
     private final static QName _GetProfileResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getProfileResponse");
     private final static QName _RevokeCertBackdated_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCertBackdated");
     private final static QName _GetRemainingNumberOfApprovalsResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getRemainingNumberOfApprovalsResponse");
     private final static QName _GetCertificatesByExpirationTimeResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeResponse");
-    private final static QName _GetHardTokenDatas_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatas");
     private final static QName _AuthorizationDeniedException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "AuthorizationDeniedException");
     private final static QName _CaCertResponseForRollover_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseForRollover");
     private final static QName _GetAvailableCAsInProfile_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsInProfile");
@@ -64,7 +62,6 @@ public class ObjectFactory {
     private final static QName _CreateCRLResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRLResponse");
     private final static QName _PublisherException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "PublisherException");
     private final static QName _RepublishCertificateResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "republishCertificateResponse");
-    private final static QName _HardTokenDoesntExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "HardTokenDoesntExistsException");
     private final static QName _RevokeCertBackdatedResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCertBackdatedResponse");
     private final static QName _FindUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findUserResponse");
     private final static QName _ApprovalException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "ApprovalException");
@@ -73,7 +70,6 @@ public class ObjectFactory {
     private final static QName _ApprovalRequestExpiredException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "ApprovalRequestExpiredException");
     private final static QName _GetPublisherQueueLength_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getPublisherQueueLength");
     private final static QName _SpkacRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "spkacRequest");
-    private final static QName _HardTokenExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "HardTokenExistsException");
     private final static QName _GetLastCertChain_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLastCertChain");
     private final static QName _RolloverCACert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "rolloverCACert");
     private final static QName _CaCertResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponse");
@@ -96,12 +92,10 @@ public class ObjectFactory {
     private final static QName _CustomLog_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "customLog");
     private final static QName _KeyRecoverNewest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverNewest");
     private final static QName _CreateCAResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCAResponse");
-    private final static QName _GetHardTokenData_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenData");
     private final static QName _CertificateRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "certificateRequest");
     private final static QName _ImportCaCert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "importCaCert");
     private final static QName _CvcRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "cvcRequestResponse");
     private final static QName _Pkcs12ReqResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12ReqResponse");
-    private final static QName _ExistsHardToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "existsHardToken");
     private final static QName _GetRemainingNumberOfApprovals_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getRemainingNumberOfApprovals");
     private final static QName _UnknownProfileTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnknownProfileTypeException");
     private final static QName _RevokeToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeToken");
@@ -109,7 +103,6 @@ public class ObjectFactory {
     private final static QName _SoftTokenRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "softTokenRequest");
     private final static QName _CAExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CAExistsException");
     private final static QName _CrmfRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "crmfRequest");
-    private final static QName _GetHardTokenDatasResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDatasResponse");
     private final static QName _GetCertificatesByExpirationTimeAndType_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndType");
     private final static QName _UpdateCaCert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "updateCaCert");
     private final static QName _CertificateRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "certificateRequestResponse");
@@ -130,7 +123,6 @@ public class ObjectFactory {
     private final static QName _CaRenewCertRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caRenewCertRequest");
     private final static QName _IsAuthorized_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isAuthorized");
     private final static QName _GetPublisherQueueLengthResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getPublisherQueueLengthResponse");
-    private final static QName _GetHardTokenDataResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getHardTokenDataResponse");
     private final static QName _KeyRecover_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecover");
     private final static QName _GenTokenCertificates_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "genTokenCertificates");
     private final static QName _CaCertResponseForRolloverResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseForRolloverResponse");
@@ -392,21 +384,6 @@ public class ObjectFactory {
         return new AuthorizationDeniedException();
     }
 
-    /**
-     * Create an instance of {@link GetHardTokenDatas }
-     *
-     */
-    public GetHardTokenDatas createGetHardTokenDatas() {
-        return new GetHardTokenDatas();
-    }
-
-    /**
-     * Create an instance of {@link ExistsHardTokenResponse }
-     *
-     */
-    public ExistsHardTokenResponse createExistsHardTokenResponse() {
-        return new ExistsHardTokenResponse();
-    }
 
     /**
      * Create an instance of {@link RevokeCertBackdated }
@@ -520,13 +497,6 @@ public class ObjectFactory {
         return new CertificateRequest();
     }
 
-    /**
-     * Create an instance of {@link GetHardTokenData }
-     *
-     */
-    public GetHardTokenData createGetHardTokenData() {
-        return new GetHardTokenData();
-    }
 
     /**
      * Create an instance of {@link CustomLog }
@@ -608,13 +578,6 @@ public class ObjectFactory {
         return new SpkacRequest();
     }
 
-    /**
-     * Create an instance of {@link HardTokenExistsException }
-     *
-     */
-    public HardTokenExistsException createHardTokenExistsException() {
-        return new HardTokenExistsException();
-    }
 
     /**
      * Create an instance of {@link GetLastCertChain }
@@ -744,13 +707,6 @@ public class ObjectFactory {
         return new UserDoesntFullfillEndEntityProfile();
     }
 
-    /**
-     * Create an instance of {@link HardTokenDoesntExistsException }
-     *
-     */
-    public HardTokenDoesntExistsException createHardTokenDoesntExistsException() {
-        return new HardTokenDoesntExistsException();
-    }
 
     /**
      * Create an instance of {@link RevokeCertBackdatedResponse }
@@ -952,21 +908,6 @@ public class ObjectFactory {
         return new CrmfRequest();
     }
 
-    /**
-     * Create an instance of {@link GetHardTokenDatasResponse }
-     *
-     */
-    public GetHardTokenDatasResponse createGetHardTokenDatasResponse() {
-        return new GetHardTokenDatasResponse();
-    }
-
-    /**
-     * Create an instance of {@link ExistsHardToken }
-     *
-     */
-    public ExistsHardToken createExistsHardToken() {
-        return new ExistsHardToken();
-    }
 
     /**
      * Create an instance of {@link ImportCaCert }
@@ -1184,13 +1125,6 @@ public class ObjectFactory {
         return new KeyRecover();
     }
 
-    /**
-     * Create an instance of {@link GetHardTokenDataResponse }
-     *
-     */
-    public GetHardTokenDataResponse createGetHardTokenDataResponse() {
-        return new GetHardTokenDataResponse();
-    }
 
     /**
      * Create an instance of {@link GetCertificate }
@@ -1272,13 +1206,6 @@ public class ObjectFactory {
         return new Certificate();
     }
 
-    /**
-     * Create an instance of {@link HardTokenDataWS }
-     *
-     */
-    public HardTokenDataWS createHardTokenDataWS() {
-        return new HardTokenDataWS();
-    }
 
     /**
      * Create an instance of {@link TokenCertificateResponseWS }
@@ -1368,14 +1295,6 @@ public class ObjectFactory {
         return new NameAndId();
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardTokenResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "existsHardTokenResponse")
-    public JAXBElement<ExistsHardTokenResponse> createExistsHardTokenResponse(ExistsHardTokenResponse value) {
-        return new JAXBElement<ExistsHardTokenResponse>(_ExistsHardTokenResponse_QNAME, ExistsHardTokenResponse.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetProfileResponse }{@code >}}
@@ -1413,14 +1332,6 @@ public class ObjectFactory {
         return new JAXBElement<GetCertificatesByExpirationTimeResponse>(_GetCertificatesByExpirationTimeResponse_QNAME, GetCertificatesByExpirationTimeResponse.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatas }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatas")
-    public JAXBElement<GetHardTokenDatas> createGetHardTokenDatas(GetHardTokenDatas value) {
-        return new JAXBElement<GetHardTokenDatas>(_GetHardTokenDatas_QNAME, GetHardTokenDatas.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationDeniedException }{@code >}}
@@ -1728,14 +1639,6 @@ public class ObjectFactory {
         return new JAXBElement<RepublishCertificateResponse>(_RepublishCertificateResponse_QNAME, RepublishCertificateResponse.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link HardTokenDoesntExistsException }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "HardTokenDoesntExistsException")
-    public JAXBElement<HardTokenDoesntExistsException> createHardTokenDoesntExistsException(HardTokenDoesntExistsException value) {
-        return new JAXBElement<HardTokenDoesntExistsException>(_HardTokenDoesntExistsException_QNAME, HardTokenDoesntExistsException.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertBackdatedResponse }{@code >}}
@@ -1809,14 +1712,6 @@ public class ObjectFactory {
         return new JAXBElement<SpkacRequest>(_SpkacRequest_QNAME, SpkacRequest.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link HardTokenExistsException }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "HardTokenExistsException")
-    public JAXBElement<HardTokenExistsException> createHardTokenExistsException(HardTokenExistsException value) {
-        return new JAXBElement<HardTokenExistsException>(_HardTokenExistsException_QNAME, HardTokenExistsException.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLastCertChain }{@code >}}
@@ -2016,14 +1911,6 @@ public class ObjectFactory {
         return new JAXBElement<CreateCAResponse>(_CreateCAResponse_QNAME, CreateCAResponse.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenData }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenData")
-    public JAXBElement<GetHardTokenData> createGetHardTokenData(GetHardTokenData value) {
-        return new JAXBElement<GetHardTokenData>(_GetHardTokenData_QNAME, GetHardTokenData.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CertificateRequest }{@code >}}
@@ -2061,14 +1948,6 @@ public class ObjectFactory {
         return new JAXBElement<Pkcs12ReqResponse>(_Pkcs12ReqResponse_QNAME, Pkcs12ReqResponse.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardToken }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "existsHardToken")
-    public JAXBElement<ExistsHardToken> createExistsHardToken(ExistsHardToken value) {
-        return new JAXBElement<ExistsHardToken>(_ExistsHardToken_QNAME, ExistsHardToken.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetRemainingNumberOfApprovals }{@code >}}
@@ -2133,14 +2012,6 @@ public class ObjectFactory {
         return new JAXBElement<CrmfRequest>(_CrmfRequest_QNAME, CrmfRequest.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatasResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatasResponse")
-    public JAXBElement<GetHardTokenDatasResponse> createGetHardTokenDatasResponse(GetHardTokenDatasResponse value) {
-        return new JAXBElement<GetHardTokenDatasResponse>(_GetHardTokenDatasResponse_QNAME, GetHardTokenDatasResponse.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndType }{@code >}}
@@ -2322,14 +2193,6 @@ public class ObjectFactory {
         return new JAXBElement<GetPublisherQueueLengthResponse>(_GetPublisherQueueLengthResponse_QNAME, GetPublisherQueueLengthResponse.class, null, value);
     }
 
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDataResponse }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDataResponse")
-    public JAXBElement<GetHardTokenDataResponse> createGetHardTokenDataResponse(GetHardTokenDataResponse value) {
-        return new JAXBElement<GetHardTokenDataResponse>(_GetHardTokenDataResponse_QNAME, GetHardTokenDataResponse.class, null, value);
-    }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecover }{@code >}}
@@ -2580,7 +2443,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
     public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetProfileResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetProfileResponse.class, (value));
     }
 
     /**
@@ -2589,7 +2452,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
     public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, (value));
     }
 
     /**
@@ -2598,7 +2461,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
     public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, (value));
     }
 
     /**
@@ -2607,7 +2470,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = UpdateCaCert.class)
     public JAXBElement<byte[]> createUpdateCaCertArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, UpdateCaCert.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, UpdateCaCert.class, (value));
     }
 
     /**
@@ -2616,7 +2479,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponseForRollover.class)
     public JAXBElement<byte[]> createCaCertResponseForRolloverArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, CaCertResponseForRollover.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, CaCertResponseForRollover.class, (value));
     }
 
     /**
@@ -2625,7 +2488,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = ImportCaCert.class)
     public JAXBElement<byte[]> createImportCaCertArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, ImportCaCert.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, ImportCaCert.class, (value));
     }
 
     /**
@@ -2634,7 +2497,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponse.class)
     public JAXBElement<byte[]> createCaCertResponseArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, CaCertResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, CaCertResponse.class, (value));
     }
 
     /**
@@ -2697,7 +2560,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLPartitionResponse.class)
     public JAXBElement<byte[]> createGetLatestCRLPartitionResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_CrlRequestResponseReturn_QNAME, byte[].class, GetLatestCRLPartitionResponse.class, ((byte[]) value));
+        return new JAXBElement<byte[]>(_CrlRequestResponseReturn_QNAME, byte[].class, GetLatestCRLPartitionResponse.class, (value));
     }
 
     /**

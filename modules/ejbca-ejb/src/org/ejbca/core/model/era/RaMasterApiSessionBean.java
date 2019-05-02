@@ -1817,7 +1817,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntityInformation,
                     enrollcertificateRequest.getCertificateRequest(),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10,
-                    null,
                     CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
             return certificate;
         } catch (NotFoundException e) {
@@ -1880,7 +1879,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     throw new NoSuchAlgorithmException("Bad responseType:" + responseType);
                 }
             }
-            return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, hardTokenSN, responseTypeInt);
+            return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, responseTypeInt);
         } catch (NotFoundException e) {
             log.debug("EJBCA WebService error", e);
             throw e; // NFE extends EjbcaException
@@ -2413,7 +2412,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException,
             AuthStatusException, AuthLoginException {
         try {
-            return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
+            return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, responseType);
         } catch (ParseException | ConstructionException | NoSuchFieldException e) {
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
@@ -2501,7 +2500,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException {
-        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm);
+        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm);
     }
 
     @Override

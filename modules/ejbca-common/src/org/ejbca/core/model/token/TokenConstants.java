@@ -10,13 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.hardtoken;
+package org.ejbca.core.model.token;
 
 
 /**
- * @version $Id$
+ * @version $Id: TokenConstants.java 32161 2019-04-16 06:02:40Z tarmo_r_helmes $
  */
-public interface HardTokenConstants {
+public interface TokenConstants {
     
     public static final int REQUESTTYPE_PKCS10_REQUEST   = 1;
     public static final int REQUESTTYPE_KEYSTORE_REQUEST = 2;

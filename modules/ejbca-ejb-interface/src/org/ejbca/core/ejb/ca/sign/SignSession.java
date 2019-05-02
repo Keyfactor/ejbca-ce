@@ -345,7 +345,6 @@ public interface SignSession {
       * @param password the users password
       * @param req the certificate request.
       * @param reqType the request type.
-      * @param hardTokenSN the hard token SN, if available.
       * @param responseType the response type.
       * @return DER-encoded certificate as byte array.
       * @throws AuthorizationDeniedException if client isn't authorized to request.
@@ -365,8 +364,7 @@ public interface SignSession {
       * @throws AuthStatusException if the user has the wrong user status.
       * @throws AuthLoginException if the users password does not match.
       */
-     byte[] createCertificateWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
-             String hardTokenSN, String responseType)
+     byte[] createCertificateWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType, String responseType)
              throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
              CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, 
              InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, 

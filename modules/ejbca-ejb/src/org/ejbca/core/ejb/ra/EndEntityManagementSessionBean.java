@@ -1976,7 +1976,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 String[] pINs = new String[1];
                 pINs[0] = userdata.getPassword();
                 PrinterManager.print(profile.getPrinterName(), profile.getPrinterSVGFileName(), profile.getPrinterSVGData(),
-                        profile.getPrintedCopies(), 0, userdata, pINs, new String[0], "", "", "");
+                        profile.getPrintedCopies(), 0, userdata, pINs, new String[0]);
             }
         } catch (PrinterException e) {
             String msg = intres.getLocalizedMessage("ra.errorprint", userdata.getUsername(), e.getMessage());
