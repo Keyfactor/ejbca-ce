@@ -174,7 +174,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                     }
                     int length = 0;
                     while (aliases.hasMoreElements()) {
-                        alias = (String) aliases.nextElement();
+                        alias = aliases.nextElement();
                         log.info("Keystore contains alias: " + alias);
                         length++;
                     }
@@ -223,11 +223,11 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                         tokenpwd, tokenclasspath, catokenproperties);
                 return CommandResult.SUCCESS;
             } catch (CryptoTokenOfflineException e) {
-                log.error("Crypto Token was offline.");
+                log.error("Crypto Token was offline. Make sure the P11 library " + tokenclasspath + " is accessible.");
             } catch (CryptoTokenAuthenticationFailedException e) {
-                log.error("Authentication to the crypto token failed.");
+                log.error("Authentication to the crypto token failed. Make sure the authentication code is correct.");
             } catch (IllegalCryptoTokenException e) {
-                log.error("The certificate chain was incomplete.");
+                log.error("The certificate chain was incomplete." + System.lineSeparator() + e.getMessage());
             } catch (CAExistsException e) {
                 log.error("CA already exists in database.");
             } catch (CAOfflineException e) {
