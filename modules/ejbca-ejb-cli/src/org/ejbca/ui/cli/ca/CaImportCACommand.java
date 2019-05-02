@@ -21,11 +21,21 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Collection;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
@@ -47,6 +57,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaImportCACommand.class);
 
     private static final String CA_NAME_KEY = "--caname";
+    private static final String HARD_SWITCH_KEY = "--hard";
     //P12
     private static final String P12_FILE_KEY = "--p12";
     public static final String KEYSTORE_PASSWORD_KEY = "-kspassword";
@@ -59,6 +70,8 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     private static final String CA_CERTIFICATE_FILE_KEY = "--cert";
 
     {
+        registerParameter(new Parameter(HARD_SWITCH_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Set this flag if importing a hard keystore (PKCS#11), default is a soft keystore (PKCS#12)"));
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The name of the CA to import."));
         //P12 arguments        
@@ -99,87 +112,135 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     public CommandResult execute(ParameterContainer parameters) {
         CryptoProviderTools.installBCProvider();
         String caName = parameters.get(CA_NAME_KEY);
-        
-        // Import soft keystore
-        log.info("Importing soft token.");
-        String kspwd = parameters.get(KEYSTORE_PASSWORD_KEY);
-        if (kspwd == null) {
-            log.info("Enter keystore password: ");
-            // Read the password, but mask it so we don't display it on the console
-            kspwd = String.valueOf(System.console().readPassword());
-        }
-        String p12file = parameters.get(P12_FILE_KEY);
-        if(p12file == null) {
-            log.error("P12 file needs to be specified for soft keys, use "+P12_FILE_KEY+" switch.");
-            return CommandResult.CLI_FAILURE;
-        }
-        String alias = parameters.get(SIGNATURE_ALIAS_KEY);
-        String encryptionAlias = parameters.get(ENCRYPTION_ALIAS_KEY);
-        // Read old keystore file in the beginning so we know it's good
-        byte[] keystorebytes = null;
-        try {
-            keystorebytes = FileTools.readFiletoBuffer(p12file);
-            // Import CA from PKCS12 file
-            if (alias == null) {
-                // First we must find what aliases there is in the pkcs12-file
-                KeyStore ks;
-                try {
-                    ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-                } catch (KeyStoreException e) {
-                    throw new IllegalStateException("PKCS12 keystore couldn't be found in BouncyCastle provider.");
-                } catch (NoSuchProviderException e) {
-                    throw new IllegalStateException("BouncyCastle provider couldn't be found.", e);
-                }
-                FileInputStream fis = new FileInputStream(p12file);
-                try {
-                    ks.load(fis, kspwd.toCharArray());
-                } catch (NoSuchAlgorithmException e) {
-                    log.error("Keystore were created with an unknown algorithm", e);
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                } catch (CertificateException e) {
-                    log.error("Certificates in keystore could not be loaded for unknown reason");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                } catch (IOException e) {
-                    if (e.getCause() instanceof UnrecoverableKeyException) {
-                        log.error("Incorrect password to the PKCS#12 keystore inputed.");
+        boolean importHsmToken = parameters.get(HARD_SWITCH_KEY) != null;
+        if (!importHsmToken) {
+            // Import soft keystore
+            log.info("Importing soft token.");
+            String kspwd = parameters.get(KEYSTORE_PASSWORD_KEY);
+            if (kspwd == null) {
+                log.info("Enter keystore password: ");
+                // Read the password, but mask it so we don't display it on the console
+                kspwd = String.valueOf(System.console().readPassword());
+            }
+            String p12file = parameters.get(P12_FILE_KEY);
+            if(p12file == null) {
+                log.error("P12 file needs to be specified for soft keys, use "+P12_FILE_KEY+" switch.");
+                return CommandResult.CLI_FAILURE;
+            }
+            String alias = parameters.get(SIGNATURE_ALIAS_KEY);
+            String encryptionAlias = parameters.get(ENCRYPTION_ALIAS_KEY);
+            // Read old keystore file in the beginning so we know it's good
+            byte[] keystorebytes = null;
+            try {
+                keystorebytes = FileTools.readFiletoBuffer(p12file);
+                // Import CA from PKCS12 file
+                if (alias == null) {
+                    // First we must find what aliases there is in the pkcs12-file
+                    KeyStore ks;
+                    try {
+                        ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+                    } catch (KeyStoreException e) {
+                        throw new IllegalStateException("PKCS12 keystore couldn't be found in BouncyCastle provider.");
+                    } catch (NoSuchProviderException e) {
+                        throw new IllegalStateException("BouncyCastle provider couldn't be found.", e);
+                    }
+                    FileInputStream fis = new FileInputStream(p12file);
+                    try {
+                        ks.load(fis, kspwd.toCharArray());
+                    } catch (NoSuchAlgorithmException e) {
+                        log.error("Keystore were created with an unknown algorithm", e);
                         return CommandResult.FUNCTIONAL_FAILURE;
-                    } else {
+                    } catch (CertificateException e) {
+                        log.error("Certificates in keystore could not be loaded for unknown reason");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    } catch (IOException e) {
+                        if (e.getCause() instanceof UnrecoverableKeyException) {
+                            log.error("Incorrect password to the PKCS#12 keystore inputed.");
+                            return CommandResult.FUNCTIONAL_FAILURE;
+                        } else {
+                            throw new IllegalStateException("Uknown IOException was caught", e);
+                        }
+                    }
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
                         throw new IllegalStateException("Uknown IOException was caught", e);
                     }
+                    Enumeration<String> aliases;
+                    try {
+                        aliases = ks.aliases();
+                    } catch (KeyStoreException e) {
+                        throw new IllegalStateException("Keystore was not initialized", e);
+                    }
+                    int length = 0;
+                    while (aliases.hasMoreElements()) {
+                        alias = aliases.nextElement();
+                        log.info("Keystore contains alias: " + alias);
+                        length++;
+                    }
+                    if (length > 1) {
+                        log.info("Keystore contains more than one alias, alias must be provided as argument.");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    } else if (length < 1) {
+                        log.info("Keystore does not contain any aliases. It can not be used for a CA.");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    }
+                    // else alias already contains the only alias, so we can use that
                 }
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    throw new IllegalStateException("Uknown IOException was caught", e);
-                }
-                Enumeration<String> aliases;
-                try {
-                    aliases = ks.aliases();
-                } catch (KeyStoreException e) {
-                    throw new IllegalStateException("Keystore was not initialized", e);
-                }
-                int length = 0;
-                while (aliases.hasMoreElements()) {
-                    alias = aliases.nextElement();
-                    log.info("Keystore contains alias: " + alias);
-                    length++;
-                }
-                if (length > 1) {
-                    log.info("Keystore contains more than one alias, alias must be provided as argument.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                } else if (length < 1) {
-                    log.info("Keystore does not contain any aliases. It can not be used for a CA.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                }
-                // else alias already contains the only alias, so we can use that
+            } catch (FileNotFoundException e) {
+                log.error("File " + p12file + " not found.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-        } catch (FileNotFoundException e) {
-            log.error("File " + p12file + " not found.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCAFromKeyStore(getAuthenticationToken(), caName,
+                    keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+            return CommandResult.SUCCESS;
+        } else {
+            // Import HSM keystore
+            // "Usage2: CA importca <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>\n" +
+            log.info("Importing HSM token.");
+            String tokenclasspath = parameters.get(CA_TOKEN_CLASSPATH_KEY);
+            String tokenpwd = parameters.get(CA_TOKEN_PASSWORD_KEY);
+            String catokenproperties;
+            try {
+                catokenproperties = new String(FileTools.readFiletoBuffer(parameters.get(CA_TOKEN_PROPERTIES_FILE_KEY)));
+            } catch (FileNotFoundException e) {
+                log.error("No such file: " + parameters.get(CA_TOKEN_PROPERTIES_FILE_KEY));
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            Collection<Certificate> cacerts;
+            try {
+                cacerts = CertTools.getCertsFromPEM(parameters.get(CA_CERTIFICATE_FILE_KEY), Certificate.class);
+            } catch (CertificateException e) {
+                log.error("File " + parameters.get(CA_CERTIFICATE_FILE_KEY) + " was not a correctly formatted PEM file.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            } catch (FileNotFoundException e) {
+                log.error("No such file: " + parameters.get(CA_CERTIFICATE_FILE_KEY));
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            Certificate[] cacertarray = cacerts.toArray(new Certificate[cacerts.size()]);
+            try {
+                EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCAFromHSM(getAuthenticationToken(), caName, cacertarray,
+                        tokenpwd, tokenclasspath, catokenproperties);
+                return CommandResult.SUCCESS;
+            } catch (CryptoTokenOfflineException e) {
+                log.error("Crypto Token was offline. Make sure the P11 library " + tokenclasspath + " is accessible.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                log.error("Authentication to the crypto token failed. Make sure the authentication code is correct.");
+            } catch (IllegalCryptoTokenException e) {
+                log.error("The certificate chain was incomplete." + System.lineSeparator() + e.getMessage());
+            } catch (CAExistsException e) {
+                log.error("CA already exists in database.");
+            } catch (CAOfflineException e) {
+                log.error("Could not set CA to online and thus unable to publish CRL.");
+            } catch (AuthorizationDeniedException e) {
+                log.error("Imported CA was signed by a CA that current CLI user does not have authorization to.");
+            } catch (NoSuchSlotException e) {
+                log.error("Slot defined in: " + parameters.get(CA_TOKEN_PROPERTIES_FILE_KEY) + " does not exist on HSM.");
+            }
+           
         }
-        EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCAFromKeyStore(getAuthenticationToken(), caName,
-                keystorebytes, kspwd, kspwd, alias, encryptionAlias);
-        return CommandResult.SUCCESS;
+        return CommandResult.FUNCTIONAL_FAILURE;
+
     }
 
     @Override
@@ -191,10 +252,11 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     @Override
     public String getFullHelpText() {
         return getCommandDescription()
-                + " This command imports a CA from a PKCS#12 keystore.\n"
-                + "Usageis: \n" 
-                + "<CA name> <pkcs12 file> [" + KEYSTORE_PASSWORD_KEY
-                + " <password>] [<signature alias>] [<encryption alias>]\n";
+                + " This command has two modes: importing a CA from a PKCS#12 keystore (default) or importing from a CA certificate."
+                + " PKCS#12 keystore is the default option, while CA certificate can be chosen by specifying the flag " + HARD_SWITCH_KEY + "\n"
+                + "The two usages are: \n" + "<CA name> <pkcs12 file> [" + KEYSTORE_PASSWORD_KEY
+                + " <password>] [<signature alias>] [<encryption alias>]\n" + "    or:\n" + "<CA name> " + HARD_SWITCH_KEY
+                + " <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>";
     }
     
     @Override
