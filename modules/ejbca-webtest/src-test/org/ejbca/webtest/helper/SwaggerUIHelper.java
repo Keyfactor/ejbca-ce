@@ -10,15 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest.helper;
 
+/**
+ * Helper class used to make REST calls using the Swagger UI
+ *
+ * @version $Id: SwaggerUIHelper.java 32091 2019-05-02 12:59:46Z margaret_d_thomas $
+ *
+ */
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-
-import java.io.File;
-import java.io.FileReader;
-import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -28,6 +29,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Collection;
 
 public class SwaggerUIHelper extends BaseHelper {
 

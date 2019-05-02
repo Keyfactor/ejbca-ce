@@ -1,4 +1,26 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.webtest.scenario;
+
+// The ignored testcase, stepM_GenerateAndRevokeCertificates, works when executing locally but not within a build machine
+// environment.  The steps relying on the SwaggerUIHelper should be replaced with methods to call REST programmatically.
+/**
+ * This test the CRL partitioning feature which includes UI and database level modifications.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-205">ECAQA-205</a>
+ *
+ * @version $Id: EcaQa205_CrlPartitioningUsingUI.java 30836 2019-05-02 09:49:09Z margaret_d_thomas $
+ */
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.ejbca.webtest.WebTestBase;
@@ -161,7 +183,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     //a bulk of certificates and revoke them to use with
     //the CRL partitions
 
-    @Ignore
+    //@Ignore
     @Test()
     public void stepM_GenerateAndRevokeCertificates() throws InterruptedException {
         //Create 500 users.
@@ -187,8 +209,8 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
             addEndEntityHelperDefault.openPage(getAdminWebUrl());
             addEndEntityHelperDefault.setEndEntityProfile(TestData.ENTITY_NAME);
             addEndEntityHelperDefault.fillFields(INPUT_END_ENTITY_FIELDMAP);
-            addEndEntityHelperDefault.setCa(TestData.CA_NAME);
             addEndEntityHelperDefault.setCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
+            addEndEntityHelperDefault.setCa(TestData.CA_NAME);
             addEndEntityHelperDefault.setToken("JKS file");
             addEndEntityHelperDefault.addEndEntity();
 
@@ -246,7 +268,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
                         swaggerUIHelper.getErrorMessage());
 
             }
-         //   i++;
+            //i++;
         //}
     }
 
