@@ -114,8 +114,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private SessionContext sessionContext;
 
     @Override
-    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN,
-            int responseType) throws AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException,
+    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, int responseType) 
+            throws AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, CertificateException,
             EndEntityProfileValidationException, ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException {
         byte[] retval = null;
@@ -132,7 +132,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String username = userdata.getUsername();
             RequestMessage imsg = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
             if (imsg != null) {
-                retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, userdata);
+                retval = getCertResponseFromPublicKey(admin, imsg, responseType, userdata);
             }
         } catch (NotFoundException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
@@ -256,13 +256,12 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      *
      * @param admin is the requesting administrator
      * @param msg is the request message processed by the CA
-     * @param hardTokenSN is the hard token to associate this or null
      * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType
      * @throws AuthorizationDeniedException
      * @throws CertificateExtensionException if the request message contained invalid extensions
      */
-    private byte[] getCertResponseFromPublicKey(AuthenticationToken admin, RequestMessage msg, String hardTokenSN, int responseType,
+    private byte[] getCertResponseFromPublicKey(AuthenticationToken admin, RequestMessage msg, int responseType,
             EndEntityInformation userData) throws EjbcaException, CesecoreException, CertificateEncodingException, CertificateException, IOException,
             AuthorizationDeniedException, CertificateExtensionException {
         byte[] retval = null;
@@ -282,7 +281,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     }
 
     @Override
-    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
+    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String keyspec, String keyalg,
             boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             IllegalNameException, CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException, NoSuchAlgorithmException,
             InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException {

@@ -113,7 +113,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     private SignSessionLocal signSession;
 
     @Override
-    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification, final String keyAlgorithm)
+    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
         // Check if user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
