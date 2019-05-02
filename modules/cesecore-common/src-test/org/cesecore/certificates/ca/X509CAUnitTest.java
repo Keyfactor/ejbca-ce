@@ -861,6 +861,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Certificate usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertNotNull(usercert);
 
+        
         // Change CA keys, but not CA certificate, should not work to issue a certificate with this CA, when the
         // issued cert can not be verified by the CA certificate
         cryptoToken.generateKeyPair(getTestKeySpec(algName), CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -878,7 +879,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
             fail("should not work to issue this CRL");
         } catch (SignatureException e) {
-            assertEquals("Error message should be what we expect", "Error verifying CRL to be returned.", e.getMessage());
+            Certificate cacert = x509ca.getCACertificate();
+            PublicKey verifyKey = cacert.getPublicKey();
+            String expectedMsg = "Cannot verify the signature of the CRL for issuer " + "'" + CADN
+            + "' using the public key with SHA-1 fingerprint " + CertTools.createPublicKeyFingerprint(verifyKey, "SHA-1")
+            + ". The CRL signature was created with a private key stored in the token " + cryptoToken.getTokenName()
+            + ". The most likely reason for this error is that the private key stored on the token does not correspond to the public key found in the issuer certificate.";
+            assertEquals("Error message should be what we expect", expectedMsg, e.getMessage());
         }
 
         // New CA certificate to make it work again
