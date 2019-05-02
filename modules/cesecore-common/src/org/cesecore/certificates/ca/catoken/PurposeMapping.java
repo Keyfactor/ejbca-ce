@@ -27,7 +27,6 @@ import java.util.Set;
  *    certSignKey fooalias02
  *    crlSignKey fooalias02
  *    keyEncryptKey fooencalias
- *    hardTokenEncrypt fooencalias
  *    previousCertSignKey fooalias01
  *    nextCertSignKey fooalias03
  *    testKey testalias
