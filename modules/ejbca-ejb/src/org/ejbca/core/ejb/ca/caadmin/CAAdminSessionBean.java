@@ -60,6 +60,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
@@ -2717,7 +2718,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws CryptoTokenAuthenticationFailedException if authentication to crypto token failed
      * @throws IllegalCryptoTokenException if CA certificate was not self signed, and chain length > 1
      * @throws CryptoTokenOfflineException if crypto token is unavailable.
-     *
      */
     private CA importCA(AuthenticationToken admin, String caname, String keystorepass, Certificate[] signatureCertChain, CAToken catoken,
             String keyAlgorithm, String keySpecification) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException,
@@ -2737,17 +2737,34 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 certprof = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
                 description = "Imported root CA";
             } else {
-                // A less strict strategy can be to assume certificate signed
-                // by an external CA. Useful if admin user forgot to create a
-                // full certificate chain in PKCS#12 package.
+                // A less strict strategy can be to assume a certificate signed
+                // by an external CA. Useful if the admin forgot to create a
+                // full certificate chain in the PKCS#12 package.
                 log.error("Cannot import CA " + CertTools.getSubjectDN(caSignatureCertificate) + ": certificate "
                         + CertTools.getSerialNumberAsString(caSignatureCertificate) + " is not self-signed.");
                 throw new IllegalCryptoTokenException("Cannot import CA " + CertTools.getSubjectDN(caSignatureCertificate)
-                        + ": certificate is not self-signed. Check " + "certificate chain in PKCS#12");
+                        + ": Certificate is not self-signed. Check certificate chain in PKCS#12");
             }
         } else if (signatureCertChain.length > 1) {
-            // Assuming certificate chain in forward direction (from target
-            // to most-trusted CA). Multiple CA chains can contains the
+            // Ensure the root certificate is in the last position
+            final Certificate rootCertificate = signatureCertChain[signatureCertChain.length - 1];
+            if (!verifyIssuer(rootCertificate, rootCertificate)) {
+                throw new IllegalCryptoTokenException("Cannot import CA " + CertTools.getSubjectDN(caSignatureCertificate)
+                        + ": The last certificate in the certificate chain should be self-signed.");
+            }
+
+            // Verify that the certificate chain is valid, i.e. that 
+            // signatureCertChain[i].signedBy(signatureCertificateChain[i+1]) ∀i, 0 <= i < signatureCertChain.length
+            for (int i = 0; i < signatureCertChain.length - 1; i++) {
+                if (!verifyIssuer(signatureCertChain[i], signatureCertChain[i + 1])) {
+                    throw new IllegalCryptoTokenException("Invalid certificate chain: The subject " + 
+                            CertTools.getSubjectDN(signatureCertChain[i]) + " was not signed by the issuer " +
+                            CertTools.getSubjectDN(signatureCertChain[i + 1]) + ". You should look for an issuer with the subject key identifier '0x" +
+                            DatatypeConverter.printHexBinary(CertTools.getAuthorityKeyId(signatureCertChain[i])) + "'."); 
+                }
+            }
+            
+            // Multiple CA chains can contain the
             // issuer certificate; so only the chain where target certificate
             // is the issuer will be selected.
             for (int caid : caSession.getAllCaIds()) {
