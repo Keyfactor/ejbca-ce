@@ -66,11 +66,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String ENDUSERPROFILENAME = "ENDUSER";
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
-    public static final String HARDTOKENAUTHPROFILENAME = "HARDTOKEN_AUTH";
-    public static final String HARDTOKENAUTHENCPROFILENAME = "HARDTOKEN_AUTHENC";
-    public static final String HARDTOKENENCPROFILENAME = "HARDTOKEN_ENC";
-    public static final String HARDTOKENSIGNPROFILENAME = "HARDTOKEN_SIGN";
-
+    
     public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
         FIXED_PROFILENAMES.add(ROOTCAPROFILENAME);
@@ -78,10 +74,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(ENDUSERPROFILENAME);
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
-        FIXED_PROFILENAMES.add(HARDTOKENAUTHPROFILENAME);
-        FIXED_PROFILENAMES.add(HARDTOKENAUTHENCPROFILENAME);
-        FIXED_PROFILENAMES.add(HARDTOKENENCPROFILENAME);
-        FIXED_PROFILENAMES.add(HARDTOKENSIGNPROFILENAME);
     }
  
     /**
@@ -624,54 +616,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setUseExtendedKeyUsage(true);
             ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_serverAuth.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
-            setUseKeyUsage(true);
-            setKeyUsage(new boolean[9]);
-            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
-            setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
-            eku.add(KeyPurposeId.id_kp_smartcardlogon.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
-            setUseKeyUsage(true);
-            setKeyUsage(new boolean[9]);
-            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
-            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
-            setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
-            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
-            eku.add(KeyPurposeId.id_kp_smartcardlogon.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
-            setUseKeyUsage(true);
-            setKeyUsage(new boolean[9]);
-            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
-            setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
-            setUseKeyUsage(true);
-            setKeyUsage(new boolean[9]);
-            setKeyUsage(CertificateConstants.NONREPUDIATION, true);
-            setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
             setExtendedKeyUsage(eku);
             setExtendedKeyUsageCritical(false);
         }

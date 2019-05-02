@@ -1089,7 +1089,6 @@
 		    	
 				<!-- List of subcommands for ejbca.sh script that must be hidden when we are running on limited ejbca (va/ra) installation. -->
 		    	<!-- The excluded parts are listed in the ticket ECA-7904 and could be updated accordingly if needed.   -->
-				<exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/hardtoken/**/*.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/**/*.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaEditCaCommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaRenewCACommand.java" unless="running.full.ejbca"/>

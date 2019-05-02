@@ -244,12 +244,6 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_ROOTCA) {
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
         }
-        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN) {
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
-        }
         final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
                 final CertificateProfile profile = cpEntry.getValue();

@@ -650,13 +650,6 @@ public class OcspConfiguration {
     }
 
     /**
-     * The class that implements card signing of the OCSP response.
-     */
-    public static String getHardTokenClassName() {
-        return ConfigurationHolder.getString("ocsp.hardToken.className");
-    }
-
-    /**
      * @return Sun P11 configuration file name.
      */
     @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped

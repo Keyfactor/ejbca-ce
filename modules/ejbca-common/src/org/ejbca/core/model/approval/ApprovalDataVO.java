@@ -42,7 +42,6 @@ public class ApprovalDataVO implements Serializable {
 
 	// Approval types
 	public static final int APPROVALTYPE_DUMMY                       = 0;
-	public static final int APPROVALTYPE_VIEWHARDTOKENDATA           = 1;
 	public static final int APPROVALTYPE_ADDENDENTITY                = 2;
 	public static final int APPROVALTYPE_EDITENDENTITY               = 3;
 	public static final int APPROVALTYPE_CHANGESTATUSENDENTITY       = 4;
@@ -54,7 +53,7 @@ public class ApprovalDataVO implements Serializable {
 	public static final int APPROVALTYPE_ACTIVATECATOKEN             = 10;
 
 	//IMPORTANT REMEMBER TO SET THE RESOURCES IN BOTH INTERNAL AND ADMINWEB LANGUAGE FILES
-	public static final String[] APPROVALTYPENAMES = {"APDUMMY","APVIEWHARDTOKENDATA","APADDENDENTITY","APEDITENDENTITY",
+	public static final String[] APPROVALTYPENAMES = {"APDUMMY","APADDENDENTITY","APEDITENDENTITY",
 		                                              "APCHANGESTATUSENDENTITY", "APKEYRECOVERY", "APGENERATETOKEN",
 		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE",
                                                       "APPROVEACTIVATECA"};
@@ -87,7 +86,7 @@ public class ApprovalDataVO implements Serializable {
 	 * @param approvalId    Constructed from action data as actiontype, admin, username etc. It should
      *                      result in the same approvalid if the admin tries to request the same action twice.
 	 * @param approvalType  Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_
-     *                      constants ex: ApprovalDataVO.APPROVALTYPE_VIEWHARDTOKENDATA
+     *                      constants ex: ApprovalDataVO.APPROVALTYPE_ADDENDENTITY
 	 * @param endEntityProfileiId For RA specific approval requests should the related end entity profile id be specified
     *                       for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE
 	 * @param cAId          For CA specific approval requests should the related ca id be specified
@@ -152,7 +151,7 @@ public class ApprovalDataVO implements Serializable {
 
 	/**
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_
-     * constants ex: ApprovalDataVO.APPROVALTYPE_VIEWHARDTOKENDATA
+     * constants ex: ApprovalDataVO.APPROVALTYPE_ADDENDENTITY
 	 *
 	 * @return Returns the approvalType.
 	 */
