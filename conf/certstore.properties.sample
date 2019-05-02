@@ -2,8 +2,8 @@
 # These configurations are used both for EJBCA and the Validation Authority (VA).
 
 # Certificate store servlet enabled. If false there will be no servlet.
-# Default is false.
-#certstore.enabled=true
+# Default is true.
+certstore.enabled=true
 
 # Context root (the path in the URL)
 # Default is '/certificates'
