@@ -79,34 +79,6 @@ public enum EjbcaEventTypes implements EventType {
     CUSTOMLOG_INFO,
     /** Application startup. */
     EJBCA_STARTING,
-    /** Creation of a new (client) hardware token representation. */
-    HARDTOKEN_ADD,
-    /** Creation of link from a (client) hardware token representation to a certificate. */
-    HARDTOKEN_ADDCERTMAP,
-    /** Creation of a new issuer for (client) hardware tokens. */
-    HARDTOKEN_ADDISSUER,
-    /** Creation of a new template for (client) hardware tokens. */
-    HARDTOKEN_ADDPROFILE,
-    /** Modification of an existing (client) hardware token representation. */
-    HARDTOKEN_EDIT,
-    /** Modification or name change of an existing issuer for (client) hardware tokens. */
-    HARDTOKEN_EDITISSUER,
-    /** Modification or name change of an existing template for (client) hardware tokens. */
-    HARDTOKEN_EDITPROFILE,
-    /** Outcome of provisioning of a (client) hardware token reported by external card management system. */
-    HARDTOKEN_GENERATE,
-    /** Removal of an existing (client) hardware token representation. */
-    HARDTOKEN_REMOVE,
-    /** Removal of link from a (client) hardware token representation to a certificate. */
-    HARDTOKEN_REMOVECERTMAP,
-    /** Removal of an existing issuer for (client) hardware tokens. */
-    HARDTOKEN_REMOVEISSUER,
-    /** Removal of an existing template for (client) hardware tokens. */
-    HARDTOKEN_REMOVEPROFILE,
-    /** Administrator views the content of a (client) hardware token representation. */
-    HARDTOKEN_VIEWED,
-    /** Administrator views the PUK code of a (client) hardware token representation. */
-    HARDTOKEN_VIEWEDPUK,
     /** Persistence of encrypted key material and meta data that can be used for recovering a server-side generated client key pair. */
     KEYRECOVERY_ADDDATA,
     /** Modification of encrypted key material and meta data that can be used for recovering a server-side generated client key pair. */
