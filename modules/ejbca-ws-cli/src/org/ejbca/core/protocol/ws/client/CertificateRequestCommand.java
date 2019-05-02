@@ -46,8 +46,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	private static final int ARG_REQPATH                  = 7;
 	private static final int ARG_REQTYPE                  = 8;
 	private static final int ARG_ENCODING                 = 9;
-	private static final int ARG_HARDTOKENSN              = 10;
-	private static final int ARG_OUTPUTPATH               = 11;
+	private static final int ARG_OUTPUTPATH               = 10;
 	
     /**
      * Creates a new instance of CertificateRequestCommand
@@ -64,6 +63,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
  
         try {   
@@ -85,7 +85,6 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             String requestdata = getRequestData(args[ARG_REQPATH]);
             int requesttype = getRequestType (args[ARG_REQTYPE]);
             String encoding = getEncoding(args[ARG_ENCODING]);
-            String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
 
             String outputPath = null;
             if(args.length > ARG_OUTPUTPATH){
@@ -101,14 +100,13 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             getPrintStream().println("Token: "+userdata.getTokenType());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
-            getPrintStream().println("Hard token SN: "+hardtokensn);
             getPrintStream().println("Request type: "+requesttype);
             getPrintStream().println("Encoding: "+encoding);
             getPrintStream().println("Output path: "+outputPath);
 
             try{
-            	//UserDataVOWS userdata, String requestData, int requestType, String hardTokenSN, String responseType)
-            	CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata,requestdata,requesttype, hardtokensn,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            	//UserDataVOWS userdata, String requestData, int requestType, String responseType)
+            	CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata, requestdata, requesttype, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
             	
             	if(result==null){
             		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
@@ -146,18 +144,6 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             throw new ErrorAdminCommandException(e);
         }
     }
-
-
-
-	
-
-	private String getHardTokenSN(String hardtokensn) {
-		if(hardtokensn.equalsIgnoreCase("NONE")){
-		  return null;
-		}
-		
-		return hardtokensn;
-	}
 
 	private String getRequestData(String regestDataPath) {
 		String retval=null;
@@ -223,9 +209,10 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 
 
 
-	protected void usage() {
+	@Override
+    protected void usage() {
 		getPrintStream().println("Command used to generate a users certificate. If the user does not exist it will be created, and if it exists it will be edited. This command uses a single WS call, certificateRequest.");
-        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
+        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <outputpath (optional)> \n\n");       
         getPrintStream().println("outputpath : directory where certificate is written in form outputpath/username+.cer|.pem ");
    }
 

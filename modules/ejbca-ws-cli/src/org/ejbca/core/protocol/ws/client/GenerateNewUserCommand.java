@@ -59,10 +59,9 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 	private static final int ARG_ISSUERALIAS        = 13;
 	private static final int ARG_PKCS10             = 14;
 	private static final int ARG_ENCODING           = 15;
-	private static final int ARG_HARDTOKENSN        = 16;
-	private static final int ARG_OUTPUTPATH         = 17;
+	private static final int ARG_OUTPUTPATH         = 16;
 
-	private static final int NR_OF_MANDATORY_ARGS = ARG_HARDTOKENSN+1;
+	private static final int NR_OF_MANDATORY_ARGS = ARG_OUTPUTPATH;
 	private static final int MAX_NR_OF_ARGS = ARG_OUTPUTPATH+1;
 
     public GenerateNewUserCommand(String[] args) {
@@ -119,7 +118,6 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             final String password = myArgs[ARG_PASSWORD];
             final String pkcs10 = getPKCS10(myArgs[ARG_PKCS10]);
             final String encoding = getEncoding(myArgs[ARG_ENCODING]);
-            final String hardtokensn = getHardTokenSN(myArgs[ARG_HARDTOKENSN]);
             final String outputPath = myArgs.length>ARG_OUTPUTPATH ? getOutputPath(myArgs[ARG_OUTPUTPATH]) : null;
             
             getPrintStream().println("Trying to add user:");
@@ -155,7 +153,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             	getPrintStream().println("User '"+userdata.getUsername()+"' has been added/edited.");
             	getPrintStream().println();       
             	
-             	CertificateResponse result = getEjbcaRAWS().pkcs10Request(username,password,pkcs10,hardtokensn,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+             	CertificateResponse result = getEjbcaRAWS().pkcs10Request(username, password, pkcs10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
             	
             	if(result==null){
             		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
@@ -214,14 +212,6 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 		return 0;
 	}
 	
-	private String getHardTokenSN(String hardtokensn) {
-		if(hardtokensn.equalsIgnoreCase("NONE")){
-		  return null;
-		}
-		
-		return hardtokensn;
-	}
-	
 	private String getPKCS10(String pkcs10Path) {
 		String retval=null;
 		try {
@@ -274,7 +264,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
     protected void usage() {
 		getPrintStream().println("Command used to add or edit userdata and to generate the certificate for the user. This command performs these two steps in a single command, but uses two WS calls to do it, editUser and pkcs10Request.");
         getPrintStream().println("You can perform the same in a single WS call with the 'certreq' command.");
-		getPrintStream().println("Usage : generatenewuser <username> <password> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (or NONE)> <pkcs10path> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)>\n\n");
+		getPrintStream().println("Usage : generatenewuser <username> <password> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (or NONE)> <pkcs10path> <encoding (DER|PEM)> <outputpath (optional)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
         getPrintStream().println(
             "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>, directoryName=<LDAP escaped DN>,"

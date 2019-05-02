@@ -46,7 +46,6 @@ public interface LogConstants {
     public static final int EVENT_INFO_PUBLICWEBUSERCONNECTED = 21;
     public static final int EVENT_INFO_KEYRECOVERY = 27;
     public static final int EVENT_INFO_NOTIFICATION = 28;
-    public static final int EVENT_INFO_HARDTOKENVIEWED = 29;
     public static final int EVENT_INFO_CACREATED = 30;
     public static final int EVENT_INFO_CAEDITED = 31;
     public static final int EVENT_INFO_CAREVOKED = 32;
@@ -94,7 +93,6 @@ public interface LogConstants {
     public static final int EVENT_ERROR_PUBLICWEBUSERCONNECTED = 1021;
     public static final int EVENT_ERROR_KEYRECOVERY = 1027;
     public static final int EVENT_ERROR_NOTIFICATION = 1028;
-    public static final int EVENT_ERROR_HARDTOKENVIEWED = 1029;
     public static final int EVENT_ERROR_CACREATED = 1030;
     public static final int EVENT_ERROR_CAEDITED = 1031;
     public static final int EVENT_ERROR_CAREVOKED = 1032;
@@ -127,7 +125,6 @@ public interface LogConstants {
     public static final int MODULE_LOG = 2;
     public static final int MODULE_PUBLICWEB = 3;
     public static final int MODULE_ADMINWEB = 4;
-    public static final int MODULE_HARDTOKEN = 5;
     public static final int MODULE_KEYRECOVERY = 6;
     public static final int MODULE_AUTHORIZATION = 7;
     public static final int MODULE_APPROVAL = 8;
@@ -144,7 +141,7 @@ public interface LogConstants {
                                                     "EVENT_INFO_STORECERTIFICATE", "EVENT_INFO_STORECRL", "EVENT_INFO_GETLASTCRL", "EVENT_INFO_CERTPROFILE", "EVENT_INFO_DATABASE",
                                                     "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE",
                                                     "EVENT_INFO_PUBLICWEBUSERCONNECTED", "EVENT_INFO_KEYRECOVERY", "EVENT_INFO_NOTIFICATION",
-                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", 
+                                                    "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", 
                                                     "EVENT_INFO_PUBLISHERDATA", "EVENT_INFO_USERDATASOURCEDATA", "EVENT_INFO_USERDATAFETCHED", "EVENT_INFO_UNREVOKEDCERT",
                                                     "EVENT_INFO_APPROVALREQUESTED","EVENT_INFO_APPROVALAPPROVED","EVENT_INFO_APPROVALREJECTED","EVENT_INFO_SERVICESEDITED","EVENT_INFO_SERVICEEXECUTED",
                                                     "EVENT_INFO_REQUESTCERTIFICATE", "EVENT_INFO_CARENEWED", "EVENT_INFO_CAEXPORTED", "EVENT_INFO_USERDATAREMOVED", "EVENT_INFO_CUSTOMLOG",
@@ -157,7 +154,7 @@ public interface LogConstants {
                                                      "EVENT_ERROR_STORECERTIFICATE", "EVENT_ERROR_STORECRL", "EVENT_ERROR_GETLASTCRL", "EVENT_ERROR_CERTPROFILE", "EVENT_ERROR_DATABASE",
                                                      "EVENT_ERROR_CREATECERTIFICATE", "EVENT_ERROR_CREATECRL", "EVENT_ERROR_ADMINISTRATORLOGGEDIN", "EVENT_ERROR_NOTAUTHORIZEDTORESOURCE",
                                                      "EVENT_ERROR_PUBLICWEBUSERCONNECTED", "EVENT_ERROR_KEYRECOVERY", "EVENT_ERROR_NOTIFICATION",
-                                                     "EVENT_ERROR_HARDTOKENVIEWED", "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", 
+                                                     "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", 
                                                      "EVENT_ERROR_PUBLISHERDATA", "EVENT_ERROR_USERDATASOURCEDATA", "EVENT_ERROR_USERDATAFETCHED", "EVENT_ERROR_UNREVOKEDCERT",
                                                      "EVENT_ERROR_APPROVALREQUESTED","EVENT_ERROR_APPROVALAPPROVED","EVENT_ERROR_APPROVALREJECTED","EVENT_ERROR_SERVICESEDITED",
                                                      "EVENT_ERROR_SERVICEEXECUTED", "EVENT_ERROR_REQUESTCERTIFICATE", "EVENT_ERROR_CARENEWED", "EVENT_ERROR_CAEXPORTED", "EVENT_ERROR_USERDATAREMOVED", 
@@ -165,7 +162,7 @@ public interface LogConstants {
     
     public static final String[] EVENTNAMES_SYSTEM = {"EVENT_SYSTEM_INITILIZED_LOGGING", "EVENT_SYSTEM_STOPPED_LOGGING"};
 
-    public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICE","CUSTOM"};
+    public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICE","CUSTOM"};
 
     public static final String NO_AUTHENTICATION_TOKEN = "none";
 }

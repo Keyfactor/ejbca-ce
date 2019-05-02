@@ -74,6 +74,7 @@ public class UserData extends ProtectedData implements Serializable {
     private int tokenType;
     
     // Hard Tokens functionality is removed since 7.1.0 release, but we need to keep the field in database and in entity for compatibility
+    @Deprecated
     private int hardTokenIssuerId = 0;
     
     private String extendedInformationData;

@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.ws.client.gen;
 
-import org.ejbca.core.model.hardtoken.HardTokenConstants;
+import org.ejbca.core.model.token.TokenConstants;
 
 /**
  * base class that this is a certificate response
@@ -34,13 +34,13 @@ public class TokenCertificateResponseWS {
 	
 	public TokenCertificateResponseWS(Certificate certificate) {
 		super();
-		this.type = HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE;
+		this.type = TokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE;
 		this.certificate = certificate;
 	}
 
 	public TokenCertificateResponseWS(KeyStore keyStore) {
 		super();
-		this.type = HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE;
+		this.type = TokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE;
 		this.keyStore = keyStore;
 	}
 

@@ -66,7 +66,6 @@ public class UserDataVOWS implements Serializable{
     private boolean keyRecoverable = false;
     private String endEntityProfileName = null;
     private String certificateProfileName = null;
-    private String hardTokenIssuerName = null;
     private String startTime = null;
     private String endTime = null;
     private BigInteger certificateSerialNumber;
@@ -92,7 +91,6 @@ public class UserDataVOWS implements Serializable{
 	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens
 	 * @param endEntityProfileName
 	 * @param certificateProfileName
-	 * @param hardTokenIssuerName if no hardTokenIssuer should be used then use null.
 	 */
 	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName) {
 		super();
@@ -179,12 +177,6 @@ public class UserDataVOWS implements Serializable{
 	}
 
 
-	/**
-	 * @return Returns the hardTokenIssuerName.
-	 */
-	public String getHardTokenIssuerName() {
-		return hardTokenIssuerName;
-	}
 
 
 	/**
@@ -299,12 +291,6 @@ public class UserDataVOWS implements Serializable{
 		this.endEntityProfileName = endEntityProfileName;
 	}
 
-	/**
-	 * @param hardTokenIssuerName The hardTokenIssuerName to set.
-	 */
-	public void setHardTokenIssuerName(String hardTokenIssuerName) {
-		this.hardTokenIssuerName = hardTokenIssuerName;
-	}
 
 	/**
 	 * @param password The password to set.

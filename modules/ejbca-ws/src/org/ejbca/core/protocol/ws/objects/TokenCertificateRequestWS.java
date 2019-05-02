@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ws.objects;
 import java.io.IOException;
 
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.ejbca.core.model.hardtoken.HardTokenConstants;
+import org.ejbca.core.model.token.TokenConstants;
 
 /**
  * Base class this is a ITokenCertificateRequest, either
@@ -34,13 +34,13 @@ public class TokenCertificateRequestWS {
 	private String validityIdDays = null;
 	private int type = 0;
 	private byte[] pkcs10Data = null;
-	private String tokenType = HardTokenConstants.TOKENTYPE_PKCS12;
+	private String tokenType = TokenConstants.TOKENTYPE_PKCS12;
 	private String keyspec = "1024";
 	private String keyalg = "RSA";
 	
 	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays, PKCS10CertificationRequest pkcs10) throws IOException {
 		super();
-		type = HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST;
+		type = TokenConstants.REQUESTTYPE_PKCS10_REQUEST;
 		cAName = name;
 		this.validityIdDays = validityIdDays;
 		this.certificateProfileName = certificateProfileName;
@@ -48,7 +48,7 @@ public class TokenCertificateRequestWS {
 	}
 	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays,String tokenType, String keyspec, String keyalg) {
 		super();
-		type = HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;
+		type = TokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;
 		cAName = name;
 		this.validityIdDays = validityIdDays;
 		this.certificateProfileName = certificateProfileName;

@@ -77,7 +77,6 @@ import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalReq
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
@@ -526,8 +525,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     //See legacy instantiation in EndEntityManagementSessionBean
                     certificateProfile = certificateProfileSession.getCertificateProfile(
                             ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
-                } else if (approvalRequest instanceof GenerateTokenApprovalRequest) {
-                    //TODO: Handle 100% uptime for hard token requests under ECA-5078
                 } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
                     //See legacy instantiation in KeyRecoverySessionBean
                     final CertificateInfo certificateInfor = certificateStoreSession.getCertificateInfo(

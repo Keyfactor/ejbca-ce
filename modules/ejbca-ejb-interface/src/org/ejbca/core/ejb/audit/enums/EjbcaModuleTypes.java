@@ -28,8 +28,6 @@ import org.cesecore.audit.enums.ModuleType;
 public enum EjbcaModuleTypes implements ModuleType {
     /** Registration Authority module. */
     RA,
-    /** (Client) hardware token management module. */
-    HARDTOKEN,
     /** Key recovery module. */
     KEYRECOVERY,
     /** Approval module. */

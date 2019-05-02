@@ -51,13 +51,12 @@ public interface CertificateRequestSession {
 	 * @param userdata contains information about the user that is about to get a certificate
 	 * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
 	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
-	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
 	 * @throws CesecoreException 
 	 * @throws CertificateExtensionException if the request contained invalid extensions
 	 */
-    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
+    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, int responseType) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
             SignatureException, IOException, CertificateException, EndEntityProfileValidationException,
             ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException;
@@ -83,7 +82,6 @@ public interface CertificateRequestSession {
      * 
 	 * @param admin is the requesting administrator
 	 * @param userdata contains information about the user that is about to get a keystore
-	 * @param hardTokenSN is the hard token to associate this or null
      * @param keyspec name of ECDSA key or length of RSA and DSA keys  
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
@@ -103,7 +101,7 @@ public interface CertificateRequestSession {
 	 * @throws KeyStoreException 
 	 * @throws NoSuchEndEntityException if the end entity was not found
      */
-    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
+    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String keyspec, String keyalg,
             boolean createJKS) throws ApprovalException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             IllegalNameException, CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException;
 }

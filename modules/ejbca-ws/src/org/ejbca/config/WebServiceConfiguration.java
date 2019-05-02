@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils;
 public class WebServiceConfiguration {
 
 	/**
-     * Indicating if a call to genTokenCertificates and/or viewHardToken for non-authorized users should result in an
+     * Indicating if a call to genTokenCertificates for non-authorized users should result in an
      * approval request instead of an authorized denied exception.
      * @return the id of the approval profile (not the name as that can be changed), or -1 if approvals shall not be used (setting is empty)
      * @throws IllegalArgumentException if the value in jaxws.approvalprofileid is set, but not an integer

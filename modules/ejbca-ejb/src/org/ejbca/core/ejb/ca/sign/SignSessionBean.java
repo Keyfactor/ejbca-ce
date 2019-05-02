@@ -795,7 +795,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
         // Finally generate the certificate (assuming user status is NEW and the password is correct.
         try {
-            final byte[] response = createCertificateWS(authenticationToken, username, password, cvcreq, CertificateConstants.CERT_REQ_TYPE_CVC, null,
+            final byte[] response = createCertificateWS(authenticationToken, username, password, cvcreq, CertificateConstants.CERT_REQ_TYPE_CVC,
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             final CertificateResponse certificateResponse = new CertificateResponse(CertificateHelper.RESPONSETYPE_CERTIFICATE, response);
             final byte[] b64cert = certificateResponse.getData();
@@ -895,7 +895,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final String username, final String password, final String req,
-            final int reqType, final String hardTokenSN, final String responseType)
+            final int reqType, final String responseType)
             throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
             InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
             IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException {
@@ -919,14 +919,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // CertificateCreateSessionBean.createCertificate call which is called in the end
         final RequestMessage requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
         if (requestMessage != null) {
-            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, hardTokenSN, responseType);
+            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, responseType);
         }
         return result;
     }
 
     // Tbd re-factor: CertificateHelper from WS package causes cyclic module dependency.
-    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String hardTokenSN,
-            final String responseType) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
+    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String responseType) 
+            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
             CertificateExtensionException, CertificateParsingException {
         byte[] result = null;
         final ResponseMessage response = createCertificate(admin, msg, X509ResponseMessage.class, null);
