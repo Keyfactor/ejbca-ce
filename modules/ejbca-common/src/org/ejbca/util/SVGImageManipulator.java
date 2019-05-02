@@ -42,7 +42,6 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.print.PrintTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -96,10 +95,6 @@ public class SVGImageManipulator {
 	 */		
 	private static final Pattern ENDDATE   = Pattern.compile("\\$ENDDATE", Pattern.CASE_INSENSITIVE);    
     
-    private static final Pattern HARDTOKENSN = Pattern.compile("\\$HARDTOKENSN", Pattern.CASE_INSENSITIVE);
-
-	private static final Pattern HARDTOKENSNWITHOUTPREFIX = Pattern.compile("\\$HARDTOKENSNWITHOUTPREFIX", Pattern.CASE_INSENSITIVE);
-
     /**
      * Constants used for pin and puk codes.     
      */
@@ -132,7 +127,6 @@ public class SVGImageManipulator {
      * 
      * @param svgdata the xlm data to parse
      * @param validity the validity of the card i days.
-     * @param hardtokensnprefix the prefix of all hard tokens generated with this profile.
      * @param imagex x-position for image, reserved for future use
      * @param imagey y-position for image, reserved for future use
      * @param imageheight heigth of image, reserved for future use
@@ -141,11 +135,8 @@ public class SVGImageManipulator {
      * @throws IOException
      */
 	
-    public SVGImageManipulator(Reader svgdata, 
-	                    int validity, 
-						 String hardtokensnprefix) throws IOException {
-      this.validityms = ( ((long)validity) * 1000 *  3600 * 24); // Validity i ms
-      this.hardtokensnprefix = hardtokensnprefix;      
+    public SVGImageManipulator(Reader svgdata, int validity) throws IOException {
+      this.validityms = ( ((long)validity) * 1000 *  3600 * 24); // Validity i ms      
 
       String parser = XMLResourceDescriptor.getXMLParserClassName();
       SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
@@ -163,8 +154,7 @@ public class SVGImageManipulator {
      *     
      */
     public Printable print(EndEntityInformation userdata, 
-                      String[] pincodes, String[] pukcodes,
-	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
+                      String[] pincodes, String[] pukcodes) throws IOException, PrinterException {
       // Initialize
 	  DNFieldExtractor dnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
 	  // DNFieldExtractor subaltnamefields = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTALTNAME);
@@ -172,19 +162,13 @@ public class SVGImageManipulator {
 	  String startdate = DateFormat.getDateInstance(DateFormat.SHORT).format(currenttime);
 	  
 	  String enddate = DateFormat.getDateInstance(DateFormat.SHORT).format(new Date(currenttime.getTime() + (this.validityms)));
-      String hardtokensnwithoutprefix = hardtokensn.substring(this.hardtokensnprefix.length());
-      String copyoftokensnwithoutprefix = copyoftokensn.substring(this.hardtokensnprefix.length());
-
+	  
       final SVGOMDocument clone = (SVGOMDocument)svgdoc.cloneNode(true);
       // Get Text rows
       process( "text", userdata, dnfields, pincodes, pukcodes,
-	  			hardtokensn, hardtokensnwithoutprefix,
-				copyoftokensn, copyoftokensnwithoutprefix,
-				startdate, enddate, clone);
+	  			startdate, enddate, clone);
       process( "svg:text", userdata, dnfields, pincodes, pukcodes,
-	  			hardtokensn, hardtokensnwithoutprefix,
-				copyoftokensn, copyoftokensnwithoutprefix,
-				startdate, enddate, clone);
+	  			startdate, enddate, clone);
                        
       // Add Image
       /**
@@ -208,9 +192,7 @@ public class SVGImageManipulator {
 
     private void process(String tagName, EndEntityInformation userdata,
     		DNFieldExtractor dnfields, String[] pincodes, String[] pukcodes,
-    		String hardtokensn, String hardtokensnwithoutprefix,
-    		String copyoftokensn, String copyoftokensnwithoutprefix,
-    		String startdate, String enddate, SVGDocument clone){
+    		String startdate, String enddate, SVGDocument clone) {
     	Collection<Node> texts = new ArrayList<Node>();
     	NodeList list = clone.getDocumentElement().getElementsByTagName(tagName);
     	int numberofelements = list.getLength();	  
@@ -243,20 +225,14 @@ public class SVGImageManipulator {
 	  while(iter.hasNext()){
 	  	GenericText text = (GenericText) iter.next(); 
 	  	data = text.getData();
-	  	data = processString(data, userdata, dnfields, pincodes, pukcodes,
-	  			hardtokensn, hardtokensnwithoutprefix,
-				copyoftokensn, copyoftokensnwithoutprefix,
-				startdate, enddate);			  
+	  	data = processString(data, userdata, dnfields, pincodes, pukcodes, startdate, enddate);			  
 	  	text.setData(data);
 	  }
     }
     
 
     private String processString(String text, EndEntityInformation userdata, DNFieldExtractor dnfields,
-                                 String[] pincodes, String[] pukcodes, 
-                                 String hardtokensn, String hardtokensnwithoutprefix,
-                                 String copyoftokensn, String copyoftokensnwithoutprefix,
-                                 String startdate, String enddate){
+                                 String[] pincodes, String[] pukcodes, String startdate, String enddate) {
  
  
   	  text = USERNAME.matcher(text).replaceAll(userdata.getUsername());	  
@@ -274,9 +250,7 @@ public class SVGImageManipulator {
 
 	  text = STARTDATE.matcher(text).replaceAll(startdate);			
 	  text = ENDDATE.matcher(text).replaceAll(enddate);        
-	  text = HARDTOKENSN.matcher(text).replaceAll(hardtokensn);
-	  text = HARDTOKENSNWITHOUTPREFIX.matcher(text).replaceAll(hardtokensnwithoutprefix);
-
+	  
       for(int i=Math.min(PINS.length, pincodes.length)-1; i>=0; i--){
       	text = PINS[i].matcher(text).replaceAll(pincodes[i]);
       }
@@ -290,12 +264,6 @@ public class SVGImageManipulator {
       //text = CUSTOMTEXTROW3.matcher(text).replaceAll(?);
       //text = CUSTOMTEXTROW4.matcher(text).replaceAll(?);
       //text = CUSTOMTEXTROW5.matcher(text).replaceAll(?);
-      if (StringUtils.isNotEmpty(copyoftokensn) || StringUtils.isNotEmpty(copyoftokensnwithoutprefix)) {
-          log.debug("copyoftokensn: "+copyoftokensn+" and/or copyoftokensnwithoutprefix: "+copyoftokensnwithoutprefix+" is not used.");          
-      }
-      //text = COPYOFSN.matcher(text).replaceAll(copyoftokensn);
-      //text = COPYOFSNWITHOUTPREFIX.matcher(text).replaceAll(copyoftokensnwithoutprefix);
-
       	
       return text;	
     }
@@ -356,8 +324,5 @@ public class SVGImageManipulator {
 
     // Private Variables
     final private SVGOMDocument svgdoc;
-    final private long validityms;    
-    final private String hardtokensnprefix;    
-
-    
+    final private long validityms;
 }

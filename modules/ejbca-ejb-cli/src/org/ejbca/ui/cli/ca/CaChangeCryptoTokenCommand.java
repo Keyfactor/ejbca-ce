@@ -63,7 +63,6 @@ public class CaChangeCryptoTokenCommand extends BaseCaAdminCommand {
 certSignKey fooalias02
 crlSignKey fooalias02
 keyEncryptKey fooencalias
-hardTokenEncrypt fooencalias
 defaultKey defaultalias
 testKey testalias
 previousCertSignKey fooalias01

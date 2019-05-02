@@ -76,9 +76,6 @@ public interface KeyStoreCreateSession {
      * @param authenticationToken administrator performing the action.
      * @param username the unique username.
      * @param password the password sent with editUser call.
-     * @param hardTokenSN If the certificate should be connected with a hard token, it is
-     * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
-     * certificates. Use null if no hardtokenSN should be associated with the certificate.
      * @param keySpecification that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
      * @param keyAlgorithm that the generated key should have, RSA, ECDSA. Use one of the constants in {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
      * @return the generated or reused key store as byte array.
@@ -87,7 +84,7 @@ public interface KeyStoreCreateSession {
      * @throws NotFoundException if the user could not be found.
      * @throws EjbcaException any EjbcaException.
      */
-    byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN, String keySpecification, String keyAlgorithm)
+    byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken authenticationToken, String username, String password, String keySpecification, String keyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException;
     
     /**

@@ -555,8 +555,8 @@ public class EjbcaWS implements IEjbcaWS {
 
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
-	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    crmf, CertificateConstants.CERT_REQ_TYPE_CRMF, hardTokenSN, responseType, logger));
+	        byte[] processCertReq = processCertReq(username, password, crmf, CertificateConstants.CERT_REQ_TYPE_CRMF, responseType, logger);
+            return new CertificateResponse(responseType, processCertReq);
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -578,8 +578,8 @@ public class EjbcaWS implements IEjbcaWS {
 
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
-	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    spkac, CertificateConstants.CERT_REQ_TYPE_SPKAC, hardTokenSN, responseType, logger));
+	        byte[] processCertReq = processCertReq(username, password, spkac, CertificateConstants.CERT_REQ_TYPE_SPKAC, responseType, logger);
+            return new CertificateResponse(responseType, processCertReq);
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -773,7 +773,7 @@ public class EjbcaWS implements IEjbcaWS {
         log.trace("<rolloverCACert");
     } // rolloverCACert
 
-    // XXX this method should be modified
+    
     @Override
 	public CertificateResponse pkcs10Request(final String username, final String password, final String pkcs10, final String hardTokenSN, final String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, CesecoreException {
@@ -783,7 +783,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    		log.debug("PKCS10 from user '"+username+"'.");
 	    	}
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, hardTokenSN, responseType, logger));
+	                                                                    pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -799,12 +799,12 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     private byte[] processCertReq(final String username, final String password, final String req, final int reqType,
-            final String hardTokenSN, final String responseType, final IPatternLogger logger) throws EjbcaException, CesecoreException, CADoesntExistsException, AuthorizationDeniedException {
+            final String responseType, final IPatternLogger logger) throws EjbcaException, CesecoreException, CADoesntExistsException, AuthorizationDeniedException {
         byte[] result = null;
         try {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-            result = raMasterApiProxyBean.processCertificateRequest(admin, username, password, req, reqType, hardTokenSN, responseType);
+            result = raMasterApiProxyBean.processCertificateRequest(admin, username, password, req, reqType, null, responseType);
         } catch (CertificateExtensionException e) {
             throw getInternalException(e, logger);
         } catch (NotFoundException e) {
@@ -1602,7 +1602,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    	final AuthenticationToken admin = getAdmin(false);
 	    	logAdminName(admin,logger);
 	        return new CertificateResponse(responseType, raMasterApiProxyBean.createCertificateWS(admin, userdata, requestData, requestType,
-	                hardTokenSN, responseType));
+	                null, responseType));
 	    } catch( AuthorizationDeniedException t ) {
 	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
 	        throw t;
@@ -1653,7 +1653,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    	logAdminName(admin,logger);
 	        final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userdata);
 	        final boolean createJKS = userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
-	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, endEntityInformation, hardTokenSN, keyspec, keyalg, createJKS);
+	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, endEntityInformation, keyspec, keyalg, createJKS);
 	        // Convert encoded KeyStore to the proper return type
 	        final java.security.KeyStore ks;
 	        if (createJKS) {
