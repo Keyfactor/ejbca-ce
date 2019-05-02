@@ -80,11 +80,11 @@ public class PrinterManager {
 
 	
 	/**
-	 * Method performin the actual processing and
+	 * Method performing the actual processing and
 	 * printing of an SVG Template
 	 * 
 	 * Imporant the method is caching template data
-	 * so to subsekvent calls with the samt svtTemplate name
+	 * so to subsequent calls with the samt svtTemplate name
 	 * will result in the same SVG data being processed.
 	 * Avoid the same svgTemplate name for two different
 	 * SVG files
@@ -97,16 +97,12 @@ public class PrinterManager {
 	 * @param endEntityInformation the userdata
 	 * @param pINs the PINS (or password)
 	 * @param pUKs the PUKS, optional
-	 * @param hardTokenSerialPrefix the prefix of the hardtoken, optional
-	 * @param hardTokenSN optional
-	 * @param copyOfHardTokenSN optional
 	 * @throws PrinterException throws if any printer problems occur.
 	 */
 	public static void print(String printerName, String svtTemplateName, 
 			String sVGData, int copies,
 			int visualVaildity,  EndEntityInformation endEntityInformation, 
-			String[] pINs, String[] pUKs, String hardTokenSerialPrefix,
-			String hardTokenSN, String copyOfHardTokenSN) throws PrinterException{
+			String[] pINs, String[] pUKs) throws PrinterException{
 	    if (log.isTraceEnabled()) {
             log.trace(">print: "+endEntityInformation.getUsername()+", "+printerName);
 	    }
@@ -126,7 +122,7 @@ public class PrinterManager {
 		}	
 		try{
 			if(currentSVGTemplateName == null || !currentSVGTemplateName.equals(svtTemplateName)){
-				sVGImagemanipulator = new SVGImageManipulator(new StringReader(sVGData),visualVaildity,hardTokenSerialPrefix);
+				sVGImagemanipulator = new SVGImageManipulator(new StringReader(sVGData),visualVaildity);
 			}
 
 			if(currentService != null){
@@ -139,7 +135,7 @@ public class PrinterManager {
 				paper.setImageableArea(0.0,0.0,pf.getWidth(), pf.getHeight());				
 
 				pf.setPaper(paper);	   	  
-				job.setPrintable(sVGImagemanipulator.print(endEntityInformation,pINs,pUKs,hardTokenSN, copyOfHardTokenSN),pf);	   	  
+				job.setPrintable(sVGImagemanipulator.print(endEntityInformation,pINs,pUKs),pf);	   	  
                 job.setCopies(copies);
 				job.print();
 				log.info("Sent print job for end entity '"+endEntityInformation.getUsername()+"' to printer '"+currentService.getName()+"'.");

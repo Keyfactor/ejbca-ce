@@ -93,10 +93,7 @@ public class SVGTemplatePrinterCommand extends EjbcaCommandBase {
             pins[1] = data.getProperty("PIN2");
             puks[0] = data.getProperty("PUK1");
             puks[1] = data.getProperty("PUK2");
-            String copyofhardtokensn = data.getProperty("COPYOFHARDTOKENSN");
-            String hardtokensn = data.getProperty("HARDTOKENSN");
             int validity = Integer.parseInt(data.getProperty("VALIDITY"));
-            String hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
             FileInputStream fis;
             try {
                 fis = new FileInputStream(templatefilename);
@@ -109,8 +106,7 @@ public class SVGTemplatePrinterCommand extends EjbcaCommandBase {
                 fis.read(byteData);
                 String sVGData = new String(byteData, "UTF8");
                 try {
-                    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks, hardtokensnprefix, hardtokensn,
-                            copyofhardtokensn);
+                    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks);
                 } catch (PrinterException e) {
                     log.error("Printing failed, see associated stack trace.", e);
                 }
