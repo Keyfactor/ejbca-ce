@@ -140,7 +140,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
 
-    private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
     private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
     private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
@@ -173,8 +172,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String REPORTS_PATH        = "reports_path";
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
-    private static final   String HARDTOKEN_PATH      = "hardtoken_path";
-
+    
     private static final   String CTLOGS              = "ctlogs";
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
@@ -237,7 +235,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        data.put(REPORTS_PATH,tempadminpath+"reports");
        data.put(RA_PATH,tempadminpath+"ra");
        data.put(THEME_PATH,"themes");
-       data.put(HARDTOKEN_PATH,tempadminpath+"hardtoken");
 
        data.put(LANGUAGEFILENAME,"languagefile");
        data.put(IECSSFILENAMEPOSTFIX,"_ie-fixes");
@@ -364,7 +361,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public   String getReportsPath() {return (String) data.get(REPORTS_PATH);}
     public   String getRaPath() {return (String) data.get(RA_PATH);}
     public   String getThemePath() {return (String) data.get(THEME_PATH);}
-    public   String getHardTokenPath() {return (String) data.get(HARDTOKEN_PATH);}
 
     public   String getLanguageFilename(){return (String) data.get(LANGUAGEFILENAME);}
     public   String getIeCssFilenamePostfix(){return (String) data.get(IECSSFILENAMEPOSTFIX);}
@@ -392,21 +388,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-
-   /**
-    * @return the number of required approvals to access sensitive hard token data (default 0)
-    */
-    public int getNumberOfApprovalsToViewPUK(){
-    	Object num = data.get(NUMBEROFAPPROVALSTOVIEWPUK);
-        if(num == null){
-        	return 0;
-        }
-    	return ((Integer) num).intValue();
-    }
-
-    public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){
-    	data.put(NUMBEROFAPPROVALSTOVIEWPUK, Integer.valueOf(numberOfHardTokenApprovals));
-    }
     
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
@@ -579,9 +560,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-    		if(data.get(HARDTOKEN_PATH) == null){
-    			data.put(HARDTOKEN_PATH, ((String) data.get(ADMINPATH) + "hardtoken"));
-    		}
     		if(data.get(REPORTS_PATH) == null){
     			data.put(REPORTS_PATH, ((String) data.get(ADMINPATH) + "reports"));
     		}

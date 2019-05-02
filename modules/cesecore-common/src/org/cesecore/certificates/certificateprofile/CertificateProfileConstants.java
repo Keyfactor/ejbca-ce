@@ -43,11 +43,7 @@ public final class CertificateProfileConstants {
     public static final int CERTPROFILE_FIXED_SUBCA           = 2;
     public static final int CERTPROFILE_FIXED_ROOTCA          = 3;
 	public static final int CERTPROFILE_FIXED_OCSPSIGNER      = 4;
-	public static final int CERTPROFILE_FIXED_HARDTOKENAUTH   = 5;
-	public static final int CERTPROFILE_FIXED_HARDTOKENAUTHENC= 6;
-	public static final int CERTPROFILE_FIXED_HARDTOKENENC    = 7;
-	public static final int CERTPROFILE_FIXED_HARDTOKENSIGN   = 8;
-    public static final int CERTPROFILE_FIXED_SERVER          = 9;
+	public static final int CERTPROFILE_FIXED_SERVER          = 9;
 
     /**
      * Constants defining range of id's reserved for fixed certificate types. Observe fixed
@@ -59,16 +55,11 @@ public final class CertificateProfileConstants {
      * @return true is certificate profile identified by profileId is fixed
      */
     public static boolean isFixedCertificateProfile(final int profileId) {
-    	return (
-    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER ||
+    	return profileId == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA ||
-    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH ||
-    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC ||
-    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC ||
-    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER ||
-    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER );
+    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
     }
 
     /**

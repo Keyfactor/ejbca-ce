@@ -13,13 +13,6 @@
 
 package org.cesecore.certificates.certificateprofile;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -44,6 +37,13 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the CertificateProfile class.
@@ -228,10 +228,6 @@ public class CertificateProfileTest {
     	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.ENDUSERPROFILENAME));
     	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.SERVERPROFILENAME));
     	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.OCSPSIGNERPROFILENAME));
-    	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.HARDTOKENAUTHENCPROFILENAME));
-    	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.HARDTOKENAUTHPROFILENAME));
-    	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.HARDTOKENENCPROFILENAME));
-    	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.HARDTOKENSIGNPROFILENAME));
     	assertFalse(CertificateProfile.FIXED_PROFILENAMES.contains("MY_CUSTOM_PROFILE_NAME"));
 
     	CertificateProfile prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
@@ -278,38 +274,6 @@ public class CertificateProfileTest {
     	assertTrue(prof.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
     	assertFalse(prof.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
     	assertFalse(prof.getKeyUsage(CertificateConstants.NONREPUDIATION));
-    	prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC);
-    	assertFalse(prof.isTypeRootCA());
-    	assertFalse(prof.isTypeSubCA());
-    	assertTrue(prof.isTypeEndEntity());
-    	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
-    	assertTrue(prof.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
-    	assertTrue(prof.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
-    	assertFalse(prof.getKeyUsage(CertificateConstants.NONREPUDIATION));
-    	prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC);
-    	assertFalse(prof.isTypeRootCA());
-    	assertFalse(prof.isTypeSubCA());
-    	assertTrue(prof.isTypeEndEntity());
-    	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
-    	assertFalse(prof.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
-    	assertFalse(prof.getKeyUsage(CertificateConstants.NONREPUDIATION));
-    	assertTrue(prof.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
-    	prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH);
-    	assertFalse(prof.isTypeRootCA());
-    	assertFalse(prof.isTypeSubCA());
-    	assertTrue(prof.isTypeEndEntity());
-    	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
-    	assertTrue(prof.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
-    	assertFalse(prof.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
-    	assertFalse(prof.getKeyUsage(CertificateConstants.NONREPUDIATION));
-    	prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN);
-    	assertFalse(prof.isTypeRootCA());
-    	assertFalse(prof.isTypeSubCA());
-    	assertTrue(prof.isTypeEndEntity());
-    	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
-    	assertTrue(prof.getKeyUsage(CertificateConstants.NONREPUDIATION));
-    	assertFalse(prof.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
-    	assertFalse(prof.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
     }
     
     @Test
@@ -413,7 +377,7 @@ public class CertificateProfileTest {
     @Test
     public void test08Clone() throws Exception {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-        CertificateProfile clone = (CertificateProfile)profile.clone();
+        CertificateProfile clone = profile.clone();
         @SuppressWarnings("unchecked")
         HashMap<Object, Object> profmap = (HashMap<Object, Object>)profile.saveData();
         @SuppressWarnings("unchecked")
@@ -430,7 +394,7 @@ public class CertificateProfileTest {
         String clonestr = (String)clonemap.get("FOO");
         assertEquals("FAR", profstr);
         assertEquals("BAR", clonestr);
-        CertificateProfile clone2 = (CertificateProfile)clone.clone();
+        CertificateProfile clone2 = clone.clone();
         @SuppressWarnings("unchecked")
         HashMap<Object, Object> clonemap2 = (HashMap<Object, Object>)clone2.saveData();
         // Added FOO, FAR to profmap and clonemap
@@ -606,7 +570,7 @@ public class CertificateProfileTest {
         // The class name of CertificatePolicy changed from EJBCA 4 to EJBCA 5.
         List list = new ArrayList();
         list.add(new org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy("1.1.1.2", null, "abc"));
-        ep.setCertificatePolicies((List<CertificatePolicy>)list);
+        ep.setCertificatePolicies(list);
         l = ep.getCertificatePolicies();
         assertEquals(1, l.size());
         pol = l.get(0);
@@ -615,7 +579,7 @@ public class CertificateProfileTest {
         assertNull(pol.getQualifierId());
 
         list.add(new CertificatePolicy("1.1.1.3", "foo", null));
-        ep.setCertificatePolicies((List<CertificatePolicy>)list);
+        ep.setCertificatePolicies(list);
         l = ep.getCertificatePolicies();
         assertEquals(2, l.size());
         pol = l.get(0);
