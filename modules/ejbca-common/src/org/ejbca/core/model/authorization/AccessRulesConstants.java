@@ -29,9 +29,6 @@ public abstract class AccessRulesConstants {
     public static final String VIEW_END_ENTITY_HISTORY = "/view_end_entity_history";
     public static final String APPROVE_END_ENTITY = "/approve_end_entity";
 
-//    public static final String HARDTOKEN_RIGHTS                           = "/view_hardtoken";
-//    public static final String HARDTOKEN_PUKDATA_RIGHTS                   = "/view_hardtoken/puk_data";
-
     public static final String  KEYRECOVERY_RIGHTS                        = "/keyrecovery";    
     
     // Endings used in profile authorization.
@@ -79,8 +76,6 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_DELETEENDENTITY                    = REGULAR_RAFUNCTIONALITY+DELETE_END_ENTITY; // Unused, but exists as "raw" string
     public static final String REGULAR_VIEWENDENTITYHISTORY               = REGULAR_RAFUNCTIONALITY+VIEW_END_ENTITY_HISTORY; // Unused, but exists as "raw" string
     
-    //public static final String REGULAR_VIEWHARDTOKENS                     = REGULAR_RAFUNCTIONALITY + HARDTOKEN_RIGHTS;
-    //public static final String REGULAR_VIEWPUKS                           = REGULAR_RAFUNCTIONALITY + HARDTOKEN_PUKDATA_RIGHTS;
     public static final String REGULAR_KEYRECOVERY                        = REGULAR_RAFUNCTIONALITY + KEYRECOVERY_RIGHTS;
     public static final String REGULAR_VIEWAPPROVALS                      = REGULAR_RAFUNCTIONALITY+"/view_approvals";
 
