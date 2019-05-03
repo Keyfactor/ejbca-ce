@@ -80,7 +80,6 @@ public interface TestRaMasterApiProxySessionRemote {
      * @param userdata end entity information, encoded as a UserDataVOWS (web service value object). Must have been enriched by the WS setUserDataVOWS/enrichUserDataWithRawSubjectDn methods.
      * @param requestData see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @param requestType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null. 
      * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
@@ -90,7 +89,7 @@ public interface TestRaMasterApiProxySessionRemote {
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest
      */
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
-            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
+            final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
             EndEntityProfileValidationException;
     
 }

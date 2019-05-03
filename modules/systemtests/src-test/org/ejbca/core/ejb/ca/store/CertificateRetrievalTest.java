@@ -424,7 +424,7 @@ public class CertificateRetrievalTest {
         String fingerprint = null;
         try {
             endEntityMgmtSession.addUser(admin, userdata, true);
-            certReqSession.processSoftTokenReq(admin, userdata, null, "1024", "RSA", false);
+            certReqSession.processSoftTokenReq(admin, userdata, "1024", "RSA", false);
             
             // First test as usual
             List<Certificate> certfps = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));

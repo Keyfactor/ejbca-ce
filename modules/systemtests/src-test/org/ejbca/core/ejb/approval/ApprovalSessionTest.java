@@ -67,7 +67,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
@@ -371,12 +370,17 @@ public class ApprovalSessionTest extends CaTestCase {
 
         // Test approvalId generation with a "real" approval request with a requestAdmin
         approvalProfile.setNumberOfApprovalsRequired(1);
-        ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1",
-                "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0, approvalProfile);
+        
+        //final AuthenticationToken cliReqAuthToken = getCliAdmin();
+        final String username = "ApprovalEndEntityUsername";
+        
+        
+        final AddEndEntityApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfileLongExpirationPeriod, username, caid);
         log.debug("Adding approval with approvalID (hash): " + ar.generateApprovalId());
         approvalSessionRemote.addApprovalRequest(admin1, ar);
         result = approvalSessionRemote.findApprovalDataVO(ar.generateApprovalId());
         assertEquals("Should contain the approval request", 1, result.size());
+        removeApprovalIds.add(ar.generateApprovalId());
         log.trace("<testAddApprovalRequest");
     }
 
