@@ -79,3 +79,6 @@ CREATE INDEX acmeauthorizationdata_idx2 ON AcmeAuthorizationData (orderId);
 
 -- index for searching for ACME challenges by authorization id
 CREATE INDEX acmechallengedata_idx1 ON AcmeChallengeData (authorizationId);
+
+-- index for searching for Signed Certificate Timestamps by fingerprint
+CREATE INDEX sctdata_idx1 ON SctData (fingerprint);

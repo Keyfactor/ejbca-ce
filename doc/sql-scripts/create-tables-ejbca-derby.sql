@@ -428,6 +428,17 @@ CREATE TABLE AcmeAuthorizationData (
     PRIMARY KEY (authorizationId)
 );
 
+CREATE TABLE SctData (
+	pk VARCHAR(256) NOT NULL,
+    logId INTEGER NOT NULL,
+    fingerprint VARCHAR(256) NOT NULL,
+    certificateExpirationDate BIGINT NOT NULL,
+    data CLOB,
+    rowProtection CLOB(10 K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (pk) 
+);
+
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 
 alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;

@@ -432,3 +432,14 @@ CREATE TABLE AcmeAuthorizationData (
     rowVersion NUMBER(10) NOT NULL,
     PRIMARY KEY (authorizationId)
 );
+
+CREATE TABLE SctData (
+	pk VARCHAR(255 byte) NOT NULL,
+    logId NUMBER(10) NOT NULL,
+    fingerprint VARCHAR(255 byte) NOT NULL,
+    certificateExpirationDate NUMBER(19) NOT NULL,
+    data CLOB,
+    rowProtection CLOB,
+    rowVersion NUMBER(10) NOT NULL,
+    PRIMARY KEY (pk) 
+);
