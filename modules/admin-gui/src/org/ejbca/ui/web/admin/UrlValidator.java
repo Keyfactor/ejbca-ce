@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
@@ -24,7 +25,8 @@ import javax.faces.validator.ValidatorException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/** JSF validator to check that input fields are valid urls
+/**
+ * JSF validator to check that input fields are valid urls
  *
  * @version $Id: UrlValidator.java 28844 2018-05-04 08:31:02Z samuellb $
  */
@@ -33,18 +35,20 @@ public class UrlValidator implements Validator {
 
     @Override
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
-        StringBuilder url = new StringBuilder();
         String urlValue = o.toString();
-        if (log.isDebugEnabled()) {
-            log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
-        }
-
-        url.append(urlValue);
-        try {
-            new URI(url.toString());
-        } catch (URISyntaxException e) {
-            final String msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDURL");
-            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+        if (StringUtils.isNotEmpty(urlValue)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
+            }
+            try {
+                new URI(urlValue.toString());
+            } catch (URISyntaxException e) {
+                String msg = (String) uiComponent.getAttributes().get("errorMessage");
+                if (StringUtils.isEmpty(msg)) {
+                    msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDURL");
+                }
+                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            }
         }
     }
 }
