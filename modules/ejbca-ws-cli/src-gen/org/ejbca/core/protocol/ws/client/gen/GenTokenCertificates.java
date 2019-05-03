@@ -3,6 +3,7 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -35,15 +36,14 @@ import javax.xml.bind.annotation.XmlType;
     "arg0",
     "arg1",
     "arg2",
-    "arg3",
-    "arg4"
+    "arg3"
 })
 public class GenTokenCertificates {
 
     protected UserDataVOWS arg0;
     protected List<TokenCertificateRequestWS> arg1;
+    protected boolean arg2;
     protected boolean arg3;
-    protected boolean arg4;
 
     /**
      * Gets the value of the arg0 property.
@@ -99,6 +99,22 @@ public class GenTokenCertificates {
     }
 
     /**
+     * Gets the value of the arg2 property.
+     * 
+     */
+    public boolean isArg2() {
+        return arg2;
+    }
+
+    /**
+     * Sets the value of the arg2 property.
+     * 
+     */
+    public void setArg2(boolean value) {
+        this.arg2 = value;
+    }
+
+    /**
      * Gets the value of the arg3 property.
      * 
      */
@@ -112,22 +128,6 @@ public class GenTokenCertificates {
      */
     public void setArg3(boolean value) {
         this.arg3 = value;
-    }
-
-    /**
-     * Gets the value of the arg4 property.
-     * 
-     */
-    public boolean isArg4() {
-        return arg4;
-    }
-
-    /**
-     * Sets the value of the arg4 property.
-     * 
-     */
-    public void setArg4(boolean value) {
-        this.arg4 = value;
     }
 
 }
