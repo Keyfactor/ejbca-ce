@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificatetransparency;
 
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.GUIDGenerator;
 
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
@@ -27,15 +28,15 @@ import java.io.Serializable;
  * A storage of SCT (signed certificate timestamp from a CT log) data
  * @version $Id$
  */
-//@Entity
-//@Table(name = "SctData")
+@Entity
+@Table(name = "SctData")
 public class SctData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private static final int LATEST_PROTECT_VERSON = 1;
 
-    private int pk;
+    private String pk;
     private String fingerprint;
     private int logId;
     private long certificateExpirationDate;
@@ -48,19 +49,19 @@ public class SctData extends ProtectedData implements Serializable {
     public SctData() {
     }
 
-    public SctData(int pk, String fingerprint, int logId, long certificateExpirationDate, String data) {
-        this.pk = pk;
+    public SctData(String fingerprint, int logId, long certificateExpirationDate, String data) {
+        this.pk = GUIDGenerator.generateGUID(this);
         this.fingerprint = fingerprint;
         this.logId = logId;
         this.certificateExpirationDate = certificateExpirationDate;
         this.data = data;
     }
-
-    public int getPk() {
+    
+    public String getPk() {
         return pk;
     }
 
-    public void setPk(int pk) {
+    public void setPk(String pk) {
         this.pk = pk;
     }
 
