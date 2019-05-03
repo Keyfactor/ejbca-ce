@@ -898,7 +898,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(new String(nonce), new String(transId));
         
         if (implicitConfirm) {
-            // We expect implicit confirm to be present in the message
+            // We expect implicit confirm (RFC4210 section 5.1.1.1) to be present in the message
             InfoTypeAndValue[] infos = header.getGeneralInfo();
             assertNotNull("expected one InfoTypeAndValue", infos);
             assertEquals("expected one InfoTypeAndValue", 1, infos.length);
