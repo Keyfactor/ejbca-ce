@@ -107,7 +107,7 @@ public class UrlGenerator extends ClientToolBox {
     private String getCrlUrl(final List<String> argsList, final Certificate certificate) throws UnsupportedEncodingException {
         final String baseUrl = "%s://<HOSTNAME>%s/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=%s";
         final String protocol = argsList.contains("--tls") ? "https" : "http";
-        final String port = argsList.contains("--appliance") ? "" : (argsList.contains("--tls") ? ":8443" : ":8080");
+        final String port = argsList.contains("--appliance") ? "" : (argsList.contains("--tls") ? ":8442" : ":8080");
         final String subjectDn = URLEncoder.encode(CertTools.getSubjectDN(certificate), "UTF-8");
         return String.format(baseUrl, protocol, port, subjectDn);
     }
