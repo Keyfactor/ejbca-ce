@@ -429,7 +429,6 @@ public class KeyRecoveryTest extends CaTestCase {
         final String username = "testUserForPkcs12";
         final String password = "foo123";
         final String testCaName = "TESTPKCS12CA";
-        final String hardTokenSN = null;
         X509Certificate usercert = null;
         final String format = "PKCS12";
         String fingerprint = null;
@@ -466,7 +465,7 @@ public class KeyRecoveryTest extends CaTestCase {
             eeinfo = eeAccessSession.findUser(internalAdmin, username);
             assertNotNull("Could not find test user", username);
             // eeinfo.setPassword("foo123");
-            byte[] keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            byte[] keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             KeyStore keystore = KeyStore.getInstance(format, BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(keystoreBytes), password.toCharArray());
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).get(0);
@@ -480,7 +479,7 @@ public class KeyRecoveryTest extends CaTestCase {
             
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, eeProfileId, usercert));
             // Generate keystore.
-            keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             keystore = KeyStore.getInstance(format, BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(keystoreBytes), password.toCharArray());
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(username));
@@ -496,7 +495,7 @@ public class KeyRecoveryTest extends CaTestCase {
             endEntityProfileSession.changeEndEntityProfile(internalAdmin, eeProfileName, eeprofile);
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, eeProfileId, usercert));
             // Generate keystore.
-            keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             keystore = KeyStore.getInstance(format, BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(keystoreBytes), password.toCharArray());
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(username));
@@ -510,7 +509,7 @@ public class KeyRecoveryTest extends CaTestCase {
             try {
                 final String notExistingUsername = username + "_NOT_EXISTS";
                 assertFalse("This user should not exists: " + notExistingUsername, endEntityManagementSession.existsUser(notExistingUsername));
-                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username + notExistingUsername, password, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username + notExistingUsername, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 fail("Requesting a key recovery for a non existing user should throw an exception.");
             } catch (Exception e) {
                 if (log.isDebugEnabled()) {
@@ -520,7 +519,7 @@ public class KeyRecoveryTest extends CaTestCase {
             }
             // 2.2 Test wrong password.
             try {
-                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password + "_not_exists", hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password + "_not_exists", "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 fail("Requesting a key recovery for a wrong user/password combination should throw an exception.");
             } catch (Exception e) {
                 if (log.isDebugEnabled()) {
@@ -551,7 +550,7 @@ public class KeyRecoveryTest extends CaTestCase {
 //            }
             // 2.4 Test CA no authorization for CA.
             try {
-                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(admin, username, password, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(admin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 fail("Requesting a key recovery for a CA with no authorization should throw an exception.");
             } catch (Exception e) {
                 if (log.isDebugEnabled()) {

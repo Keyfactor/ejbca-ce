@@ -65,7 +65,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
@@ -300,8 +299,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Test
     public void test03CleanGetHardTokenDataWithApprovals() throws Exception {
         setupApprovals();
-        ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", 
-                true, reqadmin, null, 1, 0, 0, approvalProfile);
+        
+        ApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfile, "WSTESTTOKENUSER1", caid);
 
         Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
