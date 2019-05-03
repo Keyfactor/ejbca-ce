@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -42,6 +35,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the certificate profile entity bean.
@@ -295,12 +295,9 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
         // Also check a few standard mappings
         assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, certificateProfileSession.getCertificateProfileId(CertificateProfile.ENDUSERPROFILENAME));
         assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER, certificateProfileSession.getCertificateProfileId(CertificateProfile.SERVERPROFILENAME));
-        assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN, certificateProfileSession.getCertificateProfileId(CertificateProfile.HARDTOKENSIGNPROFILENAME));
 
         assertEquals(CertificateProfile.ENDUSERPROFILENAME, certificateProfileSession.getCertificateProfileName(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
         assertEquals(CertificateProfile.SERVERPROFILENAME, certificateProfileSession.getCertificateProfileName(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
-        assertEquals(CertificateProfile.HARDTOKENSIGNPROFILENAME, certificateProfileSession.getCertificateProfileName(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
-        assertEquals(CertificateProfile.HARDTOKENAUTHENCPROFILENAME, certificateProfileSession.getCertificateProfileName(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
 
         Map<Integer, String> map = certificateProfileSession.getCertificateProfileIdToNameMap();
         assertEquals(CertificateProfile.ENDUSERPROFILENAME, map.get(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
