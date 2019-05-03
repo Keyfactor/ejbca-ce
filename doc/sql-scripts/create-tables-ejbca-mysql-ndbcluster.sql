@@ -436,3 +436,14 @@ CREATE TABLE AcmeAuthorizationData (
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (authorizationId)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+
+CREATE TABLE SctData (
+	pk VARCHAR(250) BINARY NOT NULL,
+    logId INT(11) NOT NULL,
+    fingerprint VARCHAR(256) BINARY NOT NULL,
+    certificateExpirationDate BIGINT NOT NULL,
+    data LONGTEXT,
+    rowProtection LONG TEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (pk) 
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
