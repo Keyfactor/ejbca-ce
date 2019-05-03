@@ -78,7 +78,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, null);
         userdata.setPassword(password);
-        byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, null, "1024",
+        byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA, true);
         try {
             // Convert encoded KeyStore to the proper return type
@@ -109,7 +109,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         userdata.setPassword(password);
         assertFalse(username2 + " already exists.", endEntityManagementSession.existsUser(username2));
         try {
-            certificateRequestSession.processSoftTokenReq(admin, userdata, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA, true);
+            certificateRequestSession.processSoftTokenReq(admin, userdata, "1024", AlgorithmConstants.KEYALGORITHM_RSA, true);
             fail("Certificate creation did not fail as expected.");
         } catch (Exception e) {
             log.debug("Got an exception as expected: " + e.getMessage());
@@ -130,8 +130,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
-        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
-                CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
@@ -145,8 +144,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
             userdata.setUsername(username2); // Still the same Subject DN
             userdata.setPassword(password);
             try {
-                certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
-                        CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+                certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
                 fail("Certificate creation did not fail as expected.");
             } catch (Exception e) {
                 log.debug("Got an exception as expected: " + e.getMessage());
@@ -176,8 +174,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
-        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
-                CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
