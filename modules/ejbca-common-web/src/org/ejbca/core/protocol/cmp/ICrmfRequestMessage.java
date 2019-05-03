@@ -39,6 +39,10 @@ public interface ICrmfRequestMessage extends RequestMessage {
 
 	String getPbeKey();
 	
+	/**
+	 * RFC4210 section 5.1.1.1
+	 * @return true if the implicitConfirm OID is included in the request PKIHeader.generalInfo
+	 */
 	boolean isImplicitConfirm();
 
 	/** 
