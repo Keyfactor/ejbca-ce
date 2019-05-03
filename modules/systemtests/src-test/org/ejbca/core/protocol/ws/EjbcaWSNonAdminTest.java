@@ -22,7 +22,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -100,7 +99,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static AccumulativeApprovalProfile approvalProfile = null;
 
     private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWSNonAdminTest"));
-    private AuthenticationToken reqadmin;
 
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
@@ -338,23 +336,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream(TEST_NONADMIN_FILE), PASSWORD.toCharArray());
-        Enumeration<String> enumer = ks.aliases();
-        X509Certificate reqadmincert = null;
-        while (enumer.hasMoreElements()) {
-            String nextAlias = enumer.nextElement();
-            if (nextAlias.equals(TEST_NONADMIN_USERNAME)) {
-                reqadmincert = (X509Certificate) ks.getCertificate(nextAlias);
-            }
-        }
-
+        
         Set<Principal> principals = new HashSet<Principal>(Arrays.asList(admincert1.getSubjectX500Principal()));
         Set<X509Certificate> credentials = new HashSet<X509Certificate>(Arrays.asList(admincert1));
         admin1 = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
-
-        Set<Principal> reqprincipals = new HashSet<Principal>(Arrays.asList(reqadmincert.getSubjectX500Principal()));
-        Set<X509Certificate> reqcredentials = new HashSet<X509Certificate>(Arrays.asList(reqadmincert));
-        reqadmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(reqprincipals, reqcredentials));
-      
     }
 
     protected void removeApprovalAdmins() throws Exception {
