@@ -328,7 +328,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                             // All good, see if we should add implicitConfirm
                             if (implicitConfirm) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Adding implicitConform to CMP response message with transId: "+transactionId);
+                                    log.debug("Adding implicitConform (RFC4210 section 5.1.1.1) to CMP response message with transId: "+transactionId);
                                 }
                                 final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
                                 myPKIHeader.setGeneralInfo(genInfo);                                
