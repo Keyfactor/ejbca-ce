@@ -300,7 +300,7 @@ public class CertificateRequestThrowAwayTest {
                         rsakeys.getPrivate(), null).toASN1Structure().getEncoded();
         if (raw) {
             ret = CertTools.getCertfromByteArray(certificateRequestSession.processCertReq(admin, userData, new String(Base64.encode(rawPkcs10req)),
-                    CertificateConstants.CERT_REQ_TYPE_PKCS10, null, CertificateConstants.CERT_RES_TYPE_CERTIFICATE), X509Certificate.class);
+                    CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE), X509Certificate.class);
         } else {
             PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(rawPkcs10req);
             pkcs10req.setUsername(userData.getUsername());

@@ -58,10 +58,9 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
     }
 
     @Override
-    public byte[] createCertificateWS(AuthenticationToken authenticationToken, UserDataVOWS userdata, String requestData, int requestType,
-            String hardTokenSN, String responseType)
+    public byte[] createCertificateWS(AuthenticationToken authenticationToken, UserDataVOWS userdata, String requestData, int requestType, String responseType)
             throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException {
-        return raMasterApiProxyBean.createCertificateWS(authenticationToken, userdata, requestData, requestType, hardTokenSN, responseType);
+        return raMasterApiProxyBean.createCertificateWS(authenticationToken, userdata, requestData, requestType, null, responseType);
     }
 
     @Override

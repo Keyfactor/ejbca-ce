@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca;
 
-import static org.junit.Assert.assertEquals;
-
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.cert.Certificate;
@@ -58,6 +56,9 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -76,9 +77,12 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -86,6 +90,8 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Assert;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * This class represents an abstract class for all tests which require testing
@@ -682,4 +688,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     protected static void removeOldCa(String caName) throws AuthorizationDeniedException {
         removeOldCa(caName, "CN="+caName);
     }
+    
+    
+    protected static AddEndEntityApprovalRequest createAddEndEntityApprovalRequest(AccumulativeApprovalProfile approvalProfileLongExpirationPeriod, String userName, int caId) {
+        
+        final EndEntityInformation userdata = new EndEntityInformation(userName, "C=SE, O=AnaTom, CN=" + userName, caId, null, null,
+                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+        userdata.setPassword("foo123");
+        
+        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, internalAdmin, null, caId,
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileLongExpirationPeriod, null);
+        
+        return eeApprovalRequest;
+    }
+    
 }

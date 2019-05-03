@@ -136,7 +136,7 @@ public class CaImportCRLCommandTest {
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            byte[] p12 = certReqSession.processSoftTokenReq(admin, userdata, null, "512", "RSA", true);
+            byte[] p12 = certReqSession.processSoftTokenReq(admin, userdata, "512", "RSA", true);
             KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(new ByteArrayInputStream(p12), userdata.getPassword().toCharArray());
             assertNotNull(keyStore);

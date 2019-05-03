@@ -224,7 +224,7 @@ public class RaMasterApiStressTest extends CaTestCase {
                 UserDataVOWS userdata = new UserDataVOWS(username, "foo123", false, "CN=" + username, getTestCAName(), null, null,
                         EndEntityConstants.STATUS_NEW, UserDataVOWS.TOKEN_TYPE_USERGENERATED, "EMPTY", "ENDUSER");
                 // Replace the below authentication token with an always allow token to create a baseline (since auto allow doesn't require referencing the database)
-                testRaMasterApiProxySession.createCertificateWS(roleMgmgToken, userdata, requests[i], CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
+                testRaMasterApiProxySession.createCertificateWS(roleMgmgToken, userdata, requests[i], CertificateHelper.CERT_REQ_TYPE_PKCS10,
                         CertificateHelper.RESPONSETYPE_CERTIFICATE);
 
             }
