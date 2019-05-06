@@ -41,6 +41,7 @@ import org.cesecore.util.EJBTools;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -103,7 +104,7 @@ public class CaRestResourceUnitTest {
         // given
         final String expectedStatus = "OK";
         final String expectedVersion = "1.0";
-        final String expectedRevision = "ALPHA";
+        final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
         // when
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/status").get();
         final String actualJsonString = actualResponse.getEntity(String.class);
