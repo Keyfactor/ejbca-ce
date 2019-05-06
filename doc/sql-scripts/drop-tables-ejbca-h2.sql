@@ -34,3 +34,4 @@ drop table AcmeChallengeData if exists;
 drop table AcmeNonceData if exists;
 drop table AcmeAccountData if exists;
 drop table AcmeOrderData if exists;
+drop table SctData if exists;

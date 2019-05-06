@@ -32,3 +32,4 @@ drop table AcmeChallengeData;
 drop table AcmeNonceData;
 drop table AcmeAccountData;
 drop table AcmeOrderData;
+drop table SctData;
