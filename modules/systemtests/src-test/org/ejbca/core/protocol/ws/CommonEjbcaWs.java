@@ -213,9 +213,9 @@ import static org.junit.Assert.fail;
  *
  * @version $Id: CommonEjbcaWS.java 32243 2019-04-30 23:57:42Z bastianf $
  */
-public abstract class CommonEjbcaWsTest extends CaTestCase {
+public abstract class CommonEjbcaWs extends CaTestCase {
 
-    private static final Logger log = Logger.getLogger(CommonEjbcaWsTest.class);
+    private static final Logger log = Logger.getLogger(CommonEjbcaWs.class);
 
     protected static final String P12_FOLDER_NAME = "p12";
     protected static final String TEST_ADMIN_USERNAME = "wstest";
@@ -284,7 +284,7 @@ public abstract class CommonEjbcaWsTest extends CaTestCase {
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    public CommonEjbcaWsTest() {
+    public CommonEjbcaWs() {
         hostname = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         httpsPort = SystemTestsConfiguration.getRemotePortHttps(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS));
         log.debug("hostname="+hostname+ " httpsPort="+httpsPort);
@@ -1591,7 +1591,7 @@ public abstract class CommonEjbcaWsTest extends CaTestCase {
             usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
             usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
             usermatch.setMatchvalue(CA1_WSTESTUSER1);
-            this.userdatas = CommonEjbcaWsTest.this.ejbcaraws.findUser(usermatch);
+            this.userdatas = CommonEjbcaWs.this.ejbcaraws.findUser(usermatch);
             assertTrue(this.userdatas != null);
             assertTrue(this.userdatas.size() == 1);
             this.userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
@@ -1603,10 +1603,10 @@ public abstract class CommonEjbcaWsTest extends CaTestCase {
             this.userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
             this.userdatas.get(0).setPassword(PASSWORD);
             this.userdatas.get(0).setClearPwd(false);
-            CommonEjbcaWsTest.this.ejbcaraws.editUser(userdatas.get(0));
+            CommonEjbcaWs.this.ejbcaraws.editUser(userdatas.get(0));
             final KeyStore ksenv;
             try {
-                ksenv = CommonEjbcaWsTest.this.ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, PASSWORD, hardTokenSN, "2048", AlgorithmConstants.KEYALGORITHM_RSA);
+                ksenv = CommonEjbcaWs.this.ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, PASSWORD, hardTokenSN, "2048", AlgorithmConstants.KEYALGORITHM_RSA);
             } catch (EjbcaException_Exception e) {
                 log.info("Exception while creating PKCS12 keystore: " + e.getMessage(), e);
                 if (e.getCause() != null) {
