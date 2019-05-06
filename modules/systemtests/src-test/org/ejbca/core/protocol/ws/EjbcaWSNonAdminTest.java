@@ -85,7 +85,7 @@ import static org.junit.Assert.fail;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EjbcaWSNonAdminTest extends CommonEjbcaWsTest {
+public class EjbcaWSNonAdminTest extends CommonEjbcaWs {
 
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 

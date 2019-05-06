@@ -194,7 +194,7 @@ import static org.junit.Assume.assumeTrue;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EjbcaWSTest extends CommonEjbcaWsTest {
+public class EjbcaWSTest extends CommonEjbcaWs {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
