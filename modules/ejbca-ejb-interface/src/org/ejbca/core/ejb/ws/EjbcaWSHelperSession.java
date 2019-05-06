@@ -67,7 +67,7 @@ public interface EjbcaWSHelperSession {
      * Used in the findUser and findUserData calls.
      * @param endEntityInformation EndEntityInformation object to convert to a UserDataVOWS
      * @return New UserDataVOWS object
-     * @throws EjbcaException if any of the profiles or the hard token issuer referenced by the EndEntityInformation does not exist
+     * @throws EjbcaException if any of the profiles referenced by the EndEntityInformation does not exist
      * @throws CADoesntExistsException if the CA referenced by the EndEntityInformation does not exist
      */
     UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation) throws EjbcaException, CADoesntExistsException;

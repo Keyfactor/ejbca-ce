@@ -37,7 +37,7 @@ import org.ejbca.util.PrinterManager;
 /**
  *
  *
- * Class used as a help tool when creating hard token visual layout templates
+ * Class used as a help tool when printing SVG visual layout templates
  * @version $Id$
  */
 public class SVGTemplatePrinterCommand extends EjbcaCommandBase {
@@ -122,12 +122,12 @@ public class SVGTemplatePrinterCommand extends EjbcaCommandBase {
 
     @Override
     public String getCommandDescription() {
-        return "Tool for creating hard token visual layout templates";
+        return "Tool for printing SVG visual layout templates";
     }
 
     @Override
     public String getFullHelpText() {
-        return "Tool for creating hard token visual layout templates. User data is configured in  " + USERDATAFILENAME;
+        return "Tool for printing SVG visual layout templates. User data is configured in  " + USERDATAFILENAME;
     }
     
     @Override

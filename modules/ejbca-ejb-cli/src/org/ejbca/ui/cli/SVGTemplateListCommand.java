@@ -24,7 +24,7 @@ import org.ejbca.util.PrinterManager;
 
 /**
  *
- * Class used to list printers when creating hard token visual layout templates
+ * Class used to listing the printers
  * 
  * @version $Id$
  */
