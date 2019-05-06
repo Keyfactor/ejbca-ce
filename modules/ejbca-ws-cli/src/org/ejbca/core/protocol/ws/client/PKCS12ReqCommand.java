@@ -35,6 +35,11 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 	private static final int ARG_PASSWORD                 = 2;
 	private static final int ARG_KEYSPEC                  = 3;
 	private static final int ARG_KEYALG                   = 4;
+	
+    /**
+     * 'hardtokensn' is deprecated since 7.1.0, just use NONE here. Is kept for client compatibility for now.
+     */
+    @Deprecated
 	private static final int ARG_HARDTOKENSN              = 5;
 	private static final int ARG_OUTPUTPATH               = 6;
 	
@@ -53,6 +58,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
        
     	try {   
@@ -66,7 +72,6 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             String password = args[ARG_PASSWORD];
             String keyspec = args[ARG_KEYSPEC];
             String keyalg = args[ARG_KEYALG];
-            String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
             
             String outputPath = null;
             if (args.length == 7) {
@@ -74,7 +79,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             }
             
             try{
-            	KeyStore result = getEjbcaRAWS().pkcs12Req(username,password,hardtokensn,keyspec,keyalg);
+            	KeyStore result = getEjbcaRAWS().pkcs12Req(username, password, null, keyspec, keyalg);
             	
             	if(result==null){
             		getPrintStream().println("No keystore could be generated for user, check server logs for error.");
@@ -101,15 +106,6 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
     }
 
 
-	private String getHardTokenSN(String hardtokensn) {
-		if(hardtokensn.equalsIgnoreCase("NONE")){
-		  return null;
-		}
-		
-		return hardtokensn;
-	}
-
-
 	private String getOutputPath(String outputpath) {
 		File dir = new File(outputpath);
 		if(!dir.exists()){
@@ -131,9 +127,12 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 
 
 
-	protected void usage() {
+	@Override
+    protected void usage() {
 		getPrintStream().println("Command used to generate a users keystore");
-		getPrintStream().println("Usage : pkcs12req <username> <password>  <keyspec (1024|1536|2048|4096|8192|secp256r1|etc.)> <keyalg (RSA|ECDSA)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");                
+		getPrintStream().println("Usage : pkcs12req <username> <password>  <keyspec (1024|1536|2048|4096|8192|secp256r1|etc.)> <keyalg (RSA|ECDSA)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");
+		getPrintStream().println("\"hardtokensn\" is deprecated since 7.1.0, just use NONE here \n\n");
+		
    }
 
 
