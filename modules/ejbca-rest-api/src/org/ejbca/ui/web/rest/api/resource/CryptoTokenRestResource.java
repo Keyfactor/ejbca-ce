@@ -104,4 +104,24 @@ public class CryptoTokenRestResource extends BaseRestResource {
         return Response.status(Status.OK).build();
     }
 
+    @PUT
+    @Path("/{cryptotoken_name}/deactivate")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Deactivate a Crypto Token",
+        notes = "Deactivates Crypto Token given name",
+        code = 200)
+    public Response deactivate(
+            @Context HttpServletRequest requestContext,
+            @ApiParam(value = "Name of the token to deactivate")
+            @PathParam("cryptotoken_name") String cryptoTokenName) throws AuthorizationDeniedException, RestException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (cryptoTokenId == null) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unknown crypto token");
+        }
+        cryptoTokenManagementSession.deactivate(admin, cryptoTokenId);
+        
+        return Response.status(Status.OK).build();
+    }
+    
 }
