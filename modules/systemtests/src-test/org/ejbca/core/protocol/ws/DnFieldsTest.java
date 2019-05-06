@@ -70,7 +70,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class DnFieldsTest extends CommonEjbcaWS {
+public class DnFieldsTest extends CommonEjbcaWsTest {
 
     private static final Logger log = Logger.getLogger(DnFieldsTest.class);
     

@@ -275,9 +275,7 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param crmf the CRMF request message (only the public key is used.)
-     * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-     * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
-     * certificates. Use null if no hardtokenSN should be associated with the certificate.
+     * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param responseType indicating which type of answer that should be returned, on of the
 	 *                     {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
@@ -301,9 +299,7 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
-     * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-     * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
-     * certificates. Use null if no hardtokenSN should be associated with the certificate.
+     * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param responseType indicating which type of answer that should be returned, on of the
 	 *                     {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
@@ -472,7 +468,7 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param pkcs10 the base64 encoded PKCS10 (only the public key is used.)
-	 * @param hardTokenSN Hard Token support was dropped since 7.2.0. Use null as this parameter
+	 * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param responseType indicating which type of answer that should be returned, on of the
 	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @return the generated certificate, in either just X509Certificate or PKCS7
@@ -515,9 +511,7 @@ public interface IEjbcaWS {
      *     
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
-	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
-	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
+	 * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param keyspec that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in
 	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
@@ -723,9 +717,7 @@ public interface IEjbcaWS {
      * @param certSNinHex unique certificate serialnumber in EJBCA, hex encoded
      * @param issuerDN DN of CA, in EJBCA, that issued the certificate
      * @param password new password
-     * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-     * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
-     * certificates. Use null if no hardtokenSN should be associated with the certificate.
+     * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
      * @return the generated keystore
      * @throws AuthorizationDeniedException if the requesting administrator is unauthorized to perform this operation
      * @throws CADoesntExistsException referenced CA cannot be found in any EJBCA instance
@@ -1112,7 +1104,7 @@ public interface IEjbcaWS {
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 * @param userData the user
-	 * @param hardTokenSN Hard Token support was dropped since 7.2.0. Use null as this parameter
+	 * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param keyspec that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in
 	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
@@ -1155,9 +1147,7 @@ public interface IEjbcaWS {
 	 * @param requestData the PKCS10/CRMF/SPKAC/PUBLICKEY request in base64
 	 * @param requestType PKCS10, CRMF, SPKAC or PUBLICKEY request as specified by
 	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.CERT_REQ_TYPE_ parameters.
-	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
-	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
+	 * @param hardTokenSN Hard Token support was dropped since 7.1.0. Use null as this parameter
 	 * @param responseType indicating which type of answer that should be returned, on of the
 	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @return the generated certificate, in either just X509Certificate or PKCS7

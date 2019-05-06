@@ -444,9 +444,8 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setPassword(this.jobData.passWord);
 			int requestType = CertificateHelper.CERT_REQ_TYPE_PKCS10;
 			String responseType = CertificateHelper.RESPONSETYPE_CERTIFICATE;
-			String hardTokenSN = null; // not used
 			String requestData = new String(Base64.encode(this.pkcs10.getEncoded()));
-			final CertificateResponse certificateResponse = this.ejbcaWS.certificateRequest(this.user, requestData, requestType, hardTokenSN, responseType);
+			final CertificateResponse certificateResponse = this.ejbcaWS.certificateRequest(this.user, requestData, requestType, null, responseType);
 			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
 		}
 		@Override
