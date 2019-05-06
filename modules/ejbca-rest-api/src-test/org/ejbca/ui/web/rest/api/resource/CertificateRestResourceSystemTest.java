@@ -41,6 +41,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -129,7 +130,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // given
         final String expectedStatus = "OK";
         final String expectedVersion = "1.0";
-        final String expectedRevision = "ALPHA";
+        final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
         // when
         final ClientResponse<?> actualResponse = newRequest("/v1/certificate/status").get();
         final String actualJsonString = actualResponse.getEntity(String.class);
