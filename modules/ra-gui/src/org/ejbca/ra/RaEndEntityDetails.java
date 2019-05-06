@@ -46,7 +46,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * UI representation of a result set item from the back end.
  *
- * Bravely ignoring hard token issuer and printing of user data fields.
+ * For printing user data fields.
  *
  * @version $Id$
  */
