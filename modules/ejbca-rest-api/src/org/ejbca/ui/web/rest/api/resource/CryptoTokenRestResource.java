@@ -65,7 +65,7 @@ public class CryptoTokenRestResource extends BaseRestResource {
     @GET
     @Path("/status")
     @ApiOperation(value = "Get the status of this REST Resource", 
-                  notes = "Returns status and version of the resource.", 
+                  notes = "Returns status, API version and EJBCA version.",  
                   response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
