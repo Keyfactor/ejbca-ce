@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 
 import javax.ws.rs.core.Response.Status;
 
+import org.ejbca.config.GlobalConfiguration;
 import org.jboss.resteasy.client.ClientResponse;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -53,7 +54,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         // given
         final String expectedStatus = "OK";
         final String expectedVersion = "1.0";
-        final String expectedRevision = "ALPHA";
+        final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
         // when
         final ClientResponse<?> actualResponse = newRequest("/v1/ca/status").get();
         final String actualJsonString = actualResponse.getEntity(String.class);
