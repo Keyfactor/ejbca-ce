@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
@@ -36,18 +37,17 @@ public abstract class BaseRestResource {
 
     private static final String RESOURCE_STATUS = "OK";
     private static final String RESOURCE_VERSION = "1.0";
-    private static final String RESOURCE_REVISION = "ALPHA";
 
     /**
-     * Returns the status information of this resource as Json.
+     * Returns the status information of this resource as JSON.
      *
-     * @return response as Json.
+     * @return response as JSON.
      */
     public Response status() {
         return Response.ok(RestResourceStatusRestResponse.builder()
                 .status(RESOURCE_STATUS)
                 .version(RESOURCE_VERSION)
-                .revision(RESOURCE_REVISION)
+                .revision(GlobalConfiguration.EJBCA_VERSION)
                 .build()
         ).build();
     }
