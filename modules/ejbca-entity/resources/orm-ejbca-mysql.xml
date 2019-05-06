@@ -32,7 +32,6 @@
          Object:  LONGBLOB
 
          Exceptions:
-         - HardTokenPropertyData.id: VARCHAR(80) BINARY [UTF-8 1000 bytes combined primary key limitation on MyISAM]
          - KeyRecoveryData.certSN:   VARCHAR(80) BINARY [UTF-8 1000 bytes combined primary key limitation on MyISAM]
          
          Notes:

@@ -85,7 +85,7 @@ import static org.junit.Assert.fail;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
+public class EjbcaWSNonAdminTest extends CommonEjbcaWsTest {
 
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 
@@ -295,7 +295,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     }
     
     @Test
-    public void test03CleanGetHardTokenDataWithApprovals() throws Exception {
+    public void test03CleanAddEndEntityWithApprovals() throws Exception {
         setupApprovals();
         
         ApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfile, "WSTESTTOKENUSER1", caid);

@@ -75,7 +75,7 @@ public class EjbcaWsCommonCriteriaTest {
     }
     
     @Test
-    public void testHardTokenOpertations() throws Exception {
+    public void testRevocationApprovals() throws Exception {
         test.test19RevocationApprovals();
     }
     

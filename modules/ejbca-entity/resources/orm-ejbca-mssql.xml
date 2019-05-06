@@ -33,8 +33,6 @@
    
          Notes:
          - Not well tested.
-         - HardTokenPropertyData.id was defined as "VARCHAR(80) BINARY" in the JBoss CMP mapping in EJBCA 3.x.
-           This is illegal and was ignored. The used mapping was VARCHAR(256).
          - SQL Server 2008 have maximum VARCHAR column length of 8000 bytes. (https://msdn.microsoft.com/en-us/library/ms186981.aspx)
     -->
     

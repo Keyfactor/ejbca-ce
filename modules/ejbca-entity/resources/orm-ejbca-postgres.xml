@@ -34,8 +34,6 @@
          Exceptions:
          - Use of BYTEA with Hibernate JPA provider requires that <lob/> (or @Lob) isn't used. This affects:
              - CertificateProfileData.data
-             - HardTokenData.data
-             - HardTokenIssuerData.data
              - LogConfigurationData.logConfiguration
              - AdminPreferencesData.data
              - EndEntityProfileData.data

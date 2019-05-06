@@ -48,7 +48,7 @@ import org.junit.rules.TestRule;
  * @version $Id$
  *
  */
-public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWS {
+public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWsTest {
 
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);

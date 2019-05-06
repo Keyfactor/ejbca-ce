@@ -46,7 +46,7 @@ import static org.junit.Assert.fail;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
+public class CustomCertSerialnumberWSTest extends CommonEjbcaWsTest {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberWSTest.class);
 

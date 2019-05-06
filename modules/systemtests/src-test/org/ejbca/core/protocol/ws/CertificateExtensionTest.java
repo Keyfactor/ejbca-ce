@@ -82,7 +82,7 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class CertificateExtensionTest extends CommonEjbcaWS {
+public class CertificateExtensionTest extends CommonEjbcaWsTest {
 
     private static final Logger log = Logger.getLogger(CertificateExtensionTest.class);
     private static final String WS_ADMIN_ROLENAME = "CertificateExtensionTest";
