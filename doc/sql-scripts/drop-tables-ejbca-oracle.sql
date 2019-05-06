@@ -32,3 +32,4 @@ drop table AcmeChallengeData cascade constraints;
 drop table AcmeNonceData cascade constraints;
 drop table AcmeAccountData cascade constraints;
 drop table AcmeOrderData cascade constraints;
+drop table SctData cascade constraints;
