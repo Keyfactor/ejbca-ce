@@ -51,6 +51,7 @@ public class GetExpiredCertificatesByTypeCommand extends EJBCAWSRABaseCommand im
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
         try {   
@@ -129,11 +130,12 @@ public class GetExpiredCertificatesByTypeCommand extends EJBCAWSRABaseCommand im
         return encoding.toUpperCase();
     }
 
+    @Override
     protected void usage() {
         getPrintStream().println("Command used to find certificates that will expire within a specified number of days and are of a specific type");
         getPrintStream().println("Usage : getexpiredcertsbytype <numberOfDays> <certType> <maxNumberOfResults> <encoding (DER|PEM)> <outputpath>");
         getPrintStream().println();
-        getPrintStream().println("certType: Use 0=Unknown  1=EndEntity  2=SUBCA  8=ROOTCA  16=HardToken");
+        getPrintStream().println("certType: Use 0=Unknown  1=EndEntity  2=SUBCA  8=ROOTCA");
         getPrintStream().println("maxNumberOfResults: the maximum number of returned certificates");
         getPrintStream().println("outputpath : directory where certificates are written");
         getPrintStream().println("Note that all returned certificates are of status active or notified about expiration");
