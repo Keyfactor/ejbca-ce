@@ -165,18 +165,28 @@ public class EstAliasTest extends EstTestCase {
             }
             EstConfiguration config = (EstConfiguration) this.globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
 
+            //
+            // Requests with an unknown alias gives a http 400, bad_request
+            //
             sendEstRequest(config, "cacerts", "alias123", "alias123", 400); // "alias123" in the request causes EJBCA to use "alias123" as EST alias
             sendEstRequest(config, "cacerts", "123", "123", 400); // "123" in the request causes EJBCA to use "123" as EST alias
             sendEstRequest(config, "cacerts", "", "est", 400); // No alias in the request causes EJBCA to use "est" (the default alias) as EST alias
             sendEstRequest(config, "cacerts", null, "est", 400); // No alias in the request causes EJBCA to use "est" (the default alias) as EST alias
+            sendEstRequest(config, "cacerts", "abcdefghijklmnopqrstuvwxyz0123456789", "abcdefghijklmnopqrstuvwxyz0123456789", 400); // too long alias (>32) gives bad request
+
+            //
+            // Requests with an unknown operation gives a http 404, not_found
+            //
             sendEstRequest(config, "cacerts", "alias??&!!foo", "alias", 404); // Specifying alias with non-alphanumeric characters cause EJBCA to 
-            // strip everything after these chars, making the URL broken.as EST alias, a url of 
-            // https://localhost:8442/.well-known/est/alias??&!!foo/cacerts will on the server side be prcoessed as
+            // strip everything after these chars, making the URL broken. As EST alias, a url of 
+            // https://localhost:8442/.well-known/est/alias??&!!foo/cacerts will on the server side be processed as
             // https://localhost:8442/.well-known/est/alias hence using 'alias' as operation, which is not a supported operation
             sendEstRequest(config, "cacerts", "??##!!&", "est", 404); // same as above, will result in HTTP request https://localhost:8442/.well-known/est/
             // i.e. with no method            
-            sendEstRequest(config, "cacerts", "abcdefghijklmnopqrstuvwxyz0123456789", "abcdefghijklmnopqrstuvwxyz0123456789", 400); // too long alias (>32) gives bad request
 
+            //
+            // Requests to EST when it is disabled in protocol configuration gives a http 403, forbidden
+            //
             // Disable protocol
             protConf.setProtocolStatus("EST", false);
             this.globalConfigurationSession.saveConfiguration(ADMIN, protConf);
