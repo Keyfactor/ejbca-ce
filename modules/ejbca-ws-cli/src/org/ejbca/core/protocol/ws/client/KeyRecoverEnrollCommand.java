@@ -41,7 +41,13 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     private static final int ARG_CERTSNINHEX              = 2;
     private static final int ARG_ISSUERDN                 = 3;
     private static final int ARG_PASSWORD                 = 4;
+    
+    /**
+     * 'hardtokensn' is deprecated since 7.1.0, just use NONE here. Is kept for client compatibility for now.
+     */
+    @Deprecated
     private static final int ARG_HARDTOKENSN              = 5;
+    
     private static final int ARG_OUTPUTPATH               = 6;
     
     private static final byte PKCS12_MAGIC = (byte)48;
@@ -65,10 +71,9 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
             String certSn = args[ARG_CERTSNINHEX];
             String issuerDn = args[ARG_ISSUERDN];
             String password = args[ARG_PASSWORD];
-            String hardTokenSn = args[ARG_HARDTOKENSN];
             
             try {
-                KeyStore result = getEjbcaRAWS().keyRecoverEnroll(username, certSn, issuerDn, password, hardTokenSn);
+                KeyStore result = getEjbcaRAWS().keyRecoverEnroll(username, certSn, issuerDn, password, null);
                 
                 if(result==null) {
                     getPrintStream().println("No keystore could be generated for user, check server logs for error.");
@@ -141,6 +146,7 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     @Override
     protected void usage() {
         getPrintStream().println("Command used for key recovery and enroll");
-        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN> <password> <hardtokensn (or NONE)> <outputpath (optional)>"); 
+        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN> <password> <hardtokensn (or NONE)> <outputpath (optional)>");
+        getPrintStream().println("\"hardtokensn\" is deprecated since 7.1.0, just use NONE here");
     }
 }

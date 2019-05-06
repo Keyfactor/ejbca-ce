@@ -40,6 +40,11 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 	private static final int ARG_PASSWORD                 = 2;
 	private static final int ARG_PKCS10                   = 3;
 	private static final int ARG_ENCODING                 = 4;
+	
+    /**
+     * 'hardtokensn' is deprecated since 7.1.0, just use NONE here. Is kept for client compatibility for now.
+     */
+    @Deprecated
 	private static final int ARG_HARDTOKENSN              = 5;
 	private static final int ARG_OUTPUTPATH               = 6;
 	
@@ -58,6 +63,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
  
         try {   
@@ -71,7 +77,6 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             String password = args[ARG_PASSWORD];
             String pkcs10 = getPKCS10(args[ARG_PKCS10]);
             String encoding = getEncoding(args[ARG_ENCODING]);
-            String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
             
             String outputPath = null;
             if(args.length == 7){
@@ -79,7 +84,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             }
             
             try{
-            	CertificateResponse result = getEjbcaRAWS().pkcs10Request(username,password,pkcs10,hardtokensn,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            	CertificateResponse result = getEjbcaRAWS().pkcs10Request(username, password, pkcs10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
             	
             	if(result==null){
             		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
@@ -116,18 +121,6 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             throw new ErrorAdminCommandException(e);
         }
     }
-
-
-
-	
-
-	private String getHardTokenSN(String hardtokensn) {
-		if(hardtokensn.equalsIgnoreCase("NONE")){
-		  return null;
-		}
-		
-		return hardtokensn;
-	}
 
 	private String getPKCS10(String pkcs10Path) {
 		String retval=null;
@@ -178,10 +171,13 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 
 
 
-	protected void usage() {
+	@Override
+    protected void usage() {
 		getPrintStream().println("Command used to generate a users certificate");
 		getPrintStream().println("Usage : pkcs10req <username> <password> <pkcs10path> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
         getPrintStream().println("outputpath : directory where certificate is written in form username+.cer|.pem ");
+        getPrintStream().println("\"hardtokensn\" is deprecated since 7.1.0, just use NONE here");
+        
    }
 
 
