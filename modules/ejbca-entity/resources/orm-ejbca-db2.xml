@@ -31,8 +31,6 @@
          CLOB:    CLOB(10K) and CLOB = CLOB(1M) 
          Object:  BLOB(1M) and BLOB(200K)
 
-         Exceptions:
-         - HardTokenPropertyData.id is VARCHAR(80) for unknown historic reasons
          
          Notes:
          - VARCHAR was limited to 4000 bytes before version 7. 32672 bytes after.
