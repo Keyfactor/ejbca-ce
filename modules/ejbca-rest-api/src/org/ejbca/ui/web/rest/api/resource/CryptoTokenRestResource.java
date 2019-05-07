@@ -29,12 +29,14 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.CryptoTokenActivationRestRequest;
+import org.ejbca.ui.web.rest.api.io.response.CryptoTokenRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 import io.swagger.annotations.Api;
@@ -120,8 +122,16 @@ public class CryptoTokenRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unknown crypto token");
         }
         cryptoTokenManagementSession.deactivate(admin, cryptoTokenId);
+        CryptoTokenInfo info = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
+        String message = "The crypto token was deactivated successfully.";
+        if (info.isActive() && info.isAutoActivation()) {
+            message = "The crypto token was reactivated due to automatic reactivation being enabled.";
+        }
         
-        return Response.status(Status.OK).build();
+        return Response.ok(CryptoTokenRestResponse.builder()
+                .message(message)
+                .build()
+        ).build();
     }
     
 }
