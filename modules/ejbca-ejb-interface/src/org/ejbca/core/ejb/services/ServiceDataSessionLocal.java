@@ -19,7 +19,6 @@ import javax.ejb.Local;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
- * @author mikek
  * @version $Id$
  */
 @Local
@@ -58,5 +57,5 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
      * independent of the underlying database isolation level.
      * @return true if 1 row was updated
      */
-     public boolean updateTimestamps(Integer serviceId, long oldRunTimeStamp, long oldNextRunTimeStamp, long newRunTimeStamp, long newNextRunTimeStamp);
+     boolean updateTimestamps(Integer serviceId, long oldRunTimeStamp, long oldNextRunTimeStamp, long newRunTimeStamp, long newNextRunTimeStamp);
 }
