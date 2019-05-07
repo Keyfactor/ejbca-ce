@@ -158,6 +158,8 @@ import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests http pages of scep
+ * 
+ *  @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(CryptoTokenTestRunner.class)
