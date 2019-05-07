@@ -111,7 +111,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getEditCAButtonValue() {
-        return isAuthorized() ? getEjbcaWebBean().getText("VIECA") : getEjbcaWebBean().getText("EDITCA");
+        return isAuthorized() ? getEjbcaWebBean().getText("VIEWCA") : getEjbcaWebBean().getText("EDITCA");
     }
     
     private boolean isAuthorized() {
