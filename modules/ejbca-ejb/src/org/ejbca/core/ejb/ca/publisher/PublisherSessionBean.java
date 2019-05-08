@@ -36,6 +36,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
@@ -629,11 +631,17 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public Map<Integer, BasePublisher> getAllPublishersInternal() {
         final Map<Integer, BasePublisher> returnval = new HashMap<>();
-        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+        for (PublisherData publisherData : findAll()) {
             final BasePublisher publisher = getPublisher(publisherData);
             returnval.put(publisherData.getId(), publisher);
         }
         return returnval;
+    }
+    
+    @Override
+    public List<PublisherData> findAll() {
+        final TypedQuery<PublisherData> query = entityManager.createQuery("SELECT a FROM PublisherData a", PublisherData.class);
+        return query.getResultList();
     }
 
     @Override
@@ -641,7 +649,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         final Map<Integer, BasePublisher> returnval = new HashMap<Integer, BasePublisher>();
         final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
         BasePublisher publisher = null;
-        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+        for (PublisherData publisherData : findAll()) {
             publisher = getPublisher(publisherData);
             if (publisher != null && enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
                 returnval.put(publisherData.getId(), publisher);
@@ -656,7 +664,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
         BasePublisher publisher = null;
-        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+        for (PublisherData publisherData : findAll()) {
             publisher = getPublisher(publisherData);
             if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
                 returnval.put(publisherData.getId(), publisherData.getName());
@@ -670,7 +678,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         final HashMap<String, Integer> returnval = new HashMap<String, Integer>();
         final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
         BasePublisher publisher;
-        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+        for (PublisherData publisherData : findAll()) {
             publisher = getPublisher(publisherData);
             if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
                 returnval.put(publisherData.getName(), publisherData.getId());
@@ -746,23 +754,21 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">testAllConnections");
         }
-        String returnval = "";
-        Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
-        while (i.hasNext()) {
-            PublisherData pdl = i.next();
+        StringBuilder stringBuilder = new StringBuilder(); 
+        for(PublisherData pdl : findAll()) {
             String name = pdl.getName();
             try {
                 getPublisher(pdl).testConnection();
             } catch (PublisherConnectionException pe) {
                 String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
                 log.info(msg);
-                returnval += "\n" + msg;
+                stringBuilder.append(msg);
             }
         }
         if (log.isTraceEnabled()) {
             log.trace("<testAllConnections");
         }
-        return returnval;
+        return stringBuilder.toString();
     }
 
     private int findFreePublisherId() {
@@ -901,7 +907,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public int adhocUpgradeTo6_3_1_1() {
         int numberOfUpgradedPublishers = 0;
-        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+        for (PublisherData publisherData : findAll()) {
             // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
             // be on the classpath
             XMLDecoder decoder;
@@ -928,7 +934,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @SuppressWarnings("deprecation")
     @Override
     public boolean isOldVaPublisherPresent() {
-        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+        for (PublisherData publisherData : findAll()) {
             // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
             // be on the classpath
             XMLDecoder decoder;

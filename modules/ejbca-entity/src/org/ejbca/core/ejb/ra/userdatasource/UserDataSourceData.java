@@ -28,6 +28,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64PutHashMap;
@@ -154,13 +155,13 @@ public class UserDataSourceData extends ProtectedData implements Serializable {
     @PrePersist
     @PreUpdate
     @Override
-    protected void protectData() {
+    protected void protectData() throws DatabaseProtectionException {
         super.protectData();
     }
 
     @PostLoad
     @Override
-    protected void verifyData() {
+    protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
     }
 
