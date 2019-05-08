@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.time.TrustedTime;
@@ -99,5 +100,14 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
                 log.trace("<log");
             }
         }
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void healthCheck() throws DatabaseProtectionException {
+        if(log.isDebugEnabled()) {
+            log.debug("Performing health check on audit log device");
+        }
+        internalSecurityEventsLoggerSession.auditLogCryptoTest();
     }
 }

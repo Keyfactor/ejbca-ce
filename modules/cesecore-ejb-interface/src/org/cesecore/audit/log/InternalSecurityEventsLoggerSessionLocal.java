@@ -20,6 +20,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.time.TrustedTime;
 
 /**
@@ -50,9 +51,10 @@ public interface InternalSecurityEventsLoggerSessionLocal {
     		String customId, String searchDetail1, String searchDetail2, Map<String, Object> additionalDetails) throws AuditRecordStorageException;
 
     /**
-     * 
-     * @return true if database protection is enabled and a test of the crypto token was performed, false if database protection is disabled
+     * Performs a test signature on the audit log
+     * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
+     *  
      */
-    boolean auditLogCryptoTest(final String protectThis);
+    void auditLogCryptoTest() throws DatabaseProtectionException;
 
 }
