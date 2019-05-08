@@ -31,7 +31,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -79,6 +81,8 @@ public class HealthCheckServlet extends HttpServlet {
     private HealthCheckSessionLocal healthCheckSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -168,6 +172,7 @@ public class HealthCheckServlet extends HttpServlet {
         } catch (IOException e) {
             log.error("Error writing to Servlet Response.", e);
         }
+        
     }
     
     public String doAllHealthChecks(HttpServletRequest request) {
@@ -218,6 +223,12 @@ public class HealthCheckServlet extends HttpServlet {
                 log.debug("Checking OcspKeyBindings.");
             }
             sb.append(ocspResponseGeneratorSession.healthCheck());
+            try {
+                securityEventsLoggerSession.healthCheck();
+            } catch (DatabaseProtectionException e) {
+                sb.append("Could not perform a test signature on the audit log.");
+            }
+            
         }
         return sb.length()==0 ? null : sb.toString();
     }

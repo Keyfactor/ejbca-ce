@@ -43,6 +43,11 @@ public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagem
     }
     
     @Override
+    public int mergeCryptoToken(final CryptoToken cryptoToken) throws CryptoTokenNameInUseException {
+        return cryptoTokenSession.mergeCryptoToken(cryptoToken);
+    }
+    
+    @Override
     public PublicKeyWrapper getPublicKey(int cryptoTokenId, String alias) throws CryptoTokenOfflineException {
         CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
         return new PublicKeyWrapper(cryptoToken.getPublicKey(alias));

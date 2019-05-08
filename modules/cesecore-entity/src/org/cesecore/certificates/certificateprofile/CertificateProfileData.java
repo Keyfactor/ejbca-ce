@@ -228,13 +228,13 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @PrePersist
     @PreUpdate
     @Override
-    protected void protectData() {
+    protected void protectData() throws DatabaseProtectionException {
         super.protectData();
     }
 
     @PostLoad
     @Override
-    protected void verifyData() {
+    protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
     }
 
@@ -254,7 +254,7 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @Transient
     @Override
     @Deprecated
-    protected void onDataVerificationError(final DatabaseProtectionException possibleTamper) {
+    protected void onDataVerificationError(final DatabaseProtectionException possibleTamper) throws DatabaseProtectionException {
         try {
             // Try to verify again with a mocked CertificateProfileData object returning a "patched"
             // protect string

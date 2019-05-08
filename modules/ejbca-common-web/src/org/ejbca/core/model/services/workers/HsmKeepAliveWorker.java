@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -45,7 +46,11 @@ public class HsmKeepAliveWorker extends BaseWorker {
         }
         // 1. If we use Audit log integrity protection, make a test integrity protection calculation
         InternalSecurityEventsLoggerSessionLocal logSession = (InternalSecurityEventsLoggerSessionLocal)ejbs.get(InternalSecurityEventsLoggerSessionLocal.class);
-        logSession.auditLogCryptoTest(this.getClass().getSimpleName());
+        try {
+            logSession.auditLogCryptoTest();
+        } catch (DatabaseProtectionException e1) {
+            log.info("Could not perform a test signature on the audit log.");
+        }
 
         // 2. Call testKeyPair on all active crypto tokens that has an alias named testKey
         CryptoTokenManagementSessionLocal tokenSession = (CryptoTokenManagementSessionLocal)ejbs.get(CryptoTokenManagementSessionLocal.class);
