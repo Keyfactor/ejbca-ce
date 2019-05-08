@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Local;
@@ -99,4 +100,7 @@ public interface PublisherSessionLocal extends PublisherSession {
 
     /** @return true if the old VA publisher is still present in the database and upgrade is needed. */
     boolean isOldVaPublisherPresent();
+    
+    /** @return return the query results as a List. */
+    List<PublisherData> findAll();
 }

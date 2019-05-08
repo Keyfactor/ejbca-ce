@@ -26,32 +26,37 @@ public interface ConfigurationSessionRemote {
      * Try to backup the current configuration.
      * @return false if a backup already exists.
      */
-    public boolean backupConfiguration();
+    boolean backupConfiguration();
 
     /**
      * Restore configuration from backup.
      * @return false if no backup exists.
      */
-    public boolean restoreConfiguration();
+    boolean restoreConfiguration();
 
     /**
      * Makes sure there is a backup of the configuration and then alters the
      * active configuration with all the properties.
      */
-    public boolean updateProperties(Properties properties);
+    boolean updateProperties(Properties properties);
 
     /**
      * Makes sure there is a backup of the configuration and then alters the
      * active configuration with the property.
      */
-    public boolean updateProperty(String key, String value);
+    boolean updateProperty(String key, String value);
+    
+    boolean updateCesecoreProperty(String key, String value);
 
     /** Verifies that the property is set to the expected value. */
-    public boolean verifyProperty(String key, String value);
+    boolean verifyProperty(String key, String value);
 
     /** Returns a property from the current server configuration. */
-    public String getProperty(String key);
+    String getProperty(String key);
+    
+    /** Returns a property from the current server configuration. */
+    String getCesecoreProperty(String key);
 
     /** @return all currently used properties */
-    public Properties getAllProperties();
+    Properties getAllProperties();
 }

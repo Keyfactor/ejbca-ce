@@ -114,7 +114,6 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     	return AuditDevicesConfig.getDevice(getEjbs(), logDeviceId).verifyLogsIntegrity(token, timestamp, AuditDevicesConfig.getProperties(logDeviceId));
     }
 
-
 	@Override
 	public void prepareReset() throws AuditLogResetException {
 		LogServiceState.INSTANCE.disable();

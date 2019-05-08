@@ -12,15 +12,18 @@
  *************************************************************************/ 
 package org.cesecore.dbprotection;
 
+import javax.xml.ws.WebFault;
 
+import org.cesecore.CesecoreException;
 
 /**
  * An exception thrown when there is an error with database protection, this error is fatal and should lead to 
- * application not working, thus the use of RuntimeException.
+ * application not working
  *
  * @version $Id$
  */
-public class DatabaseProtectionException extends RuntimeException {
+@WebFault
+public class DatabaseProtectionException extends CesecoreException {
     
     private static final long serialVersionUID = -1L;
 

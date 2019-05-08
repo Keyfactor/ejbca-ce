@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
@@ -371,13 +372,13 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     @PrePersist
     @PreUpdate
     @Override
-    protected void protectData() {
+    protected void protectData() throws DatabaseProtectionException {
         super.protectData();
     }
 
     @PostLoad
     @Override
-    protected void verifyData() {
+    protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
     }
 

@@ -30,6 +30,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
@@ -681,7 +682,7 @@ public class UserData extends ProtectedData implements Serializable {
     @PrePersist
     @PreUpdate
     @Override
-    protected void protectData() {
+    protected void protectData() throws DatabaseProtectionException {
         // This is a speed optimization to avoid encoding the extendedInformation into XML data too often
         // We instead use the cached object in this class, and serialize it out to XML data only when we persist the object
         // (create or update). This means you can call getExtendedInformation as much as you want, without causing an expensive
@@ -693,7 +694,7 @@ public class UserData extends ProtectedData implements Serializable {
 
     @PostLoad
     @Override
-    protected void verifyData() {
+    protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
     }
 

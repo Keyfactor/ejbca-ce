@@ -20,6 +20,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 
 /**
  * Local interface for the SecurityEventsLogger
@@ -60,5 +61,11 @@ public interface SecurityEventsLoggerSessionLocal extends SecurityEventsLoggerSe
      */
     void log(EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken, 
             String customId, String searchDetail1, String searchDetail2, String additionalDetailsMsg) throws AuditRecordStorageException;
+    
+    /**
+     * Perform a health check on the audit log device. 
+     * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
+     */
+    void healthCheck() throws DatabaseProtectionException;
 
 }

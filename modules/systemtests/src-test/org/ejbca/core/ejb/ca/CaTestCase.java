@@ -289,6 +289,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d", signedBy, certificateChain, catoken);
         cainfo.setDescription("JUnit RSA CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
+        cainfo.setIncludeInHealthCheck(true);
         try {
             caAdminSession.createCA(internalAdmin, cainfo);
         } catch (InvalidAlgorithmException e) {

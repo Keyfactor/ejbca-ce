@@ -146,9 +146,9 @@ public abstract class ProtectedData {
     /** Overridden by extending class to be able to use @PrePersist, overriding class calls super.protectData().
      * This method creates integrity protection for the specific entity in the database.
      *
-     * @throws DatabaseProtectionException (RuntimeException) on error creating integrity protection.
+     * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
      */
-    protected void protectData() {
+    protected void protectData() throws DatabaseProtectionException {
         impl.protectData(this);
     }
 
@@ -156,8 +156,9 @@ public abstract class ProtectedData {
      * Overridden by extending class to be able to use @PostLoad, overriding class calls super.verifyData().
      * This method verifies integrity protection for the specific entity in the database. If the data verification
      * failed, it invokes {@link #onDataVerificationError(DatabaseProtectionException)}.
+     * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
      */
-    protected void verifyData() {
+    protected void verifyData() throws DatabaseProtectionException {
         try {
             impl.verifyData(this);
         } catch (final DatabaseProtectionException e) {
@@ -168,17 +169,19 @@ public abstract class ProtectedData {
     /** Method that calculates integrity protection of an entity, but does not store it anywhere. Used primarily to make test protection
      * in order to exercise the CryptoToken.
      * @return the calculated protection string
+     * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
      */
-    public String calculateProtection() {
+    public String calculateProtection() throws DatabaseProtectionException {
         return impl.calculateProtection(this);
     }
 
     /**
      * Throws DatabaseProtectionException if erroronverifyfail is enabled in databaseprotection.properties
      * and logs a "row protection failed" message on ERROR level.
+     * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
      * @throws the exception given as parameter if erroronverifyfail is enabled
      */
-    protected void onDataVerificationError(final DatabaseProtectionException e) {
+    protected void onDataVerificationError(final DatabaseProtectionException e) throws DatabaseProtectionException {
         impl.onDataVerificationError(e);
     }
 }
