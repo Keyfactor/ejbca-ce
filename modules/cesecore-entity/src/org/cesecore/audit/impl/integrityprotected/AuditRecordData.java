@@ -31,6 +31,7 @@ import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ModuleTypeHolder;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypeHolder;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
@@ -316,13 +317,13 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
 	@PrePersist
 	@PreUpdate
 	@Override
-	protected void protectData() {
+	protected void protectData() throws DatabaseProtectionException {
 		super.protectData();
 	}
 	
 	@PostLoad
 	@Override
-	protected void verifyData() {
+	protected void verifyData() throws DatabaseProtectionException {
 		super.verifyData();
 	}
 

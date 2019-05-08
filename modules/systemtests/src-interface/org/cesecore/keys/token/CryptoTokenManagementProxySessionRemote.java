@@ -38,4 +38,6 @@ public interface CryptoTokenManagementProxySessionRemote {
     String getSignProviderName(int cryptoTokenId);
     
     void flushCache();
+
+    int mergeCryptoToken(CryptoToken cryptoToken) throws CryptoTokenNameInUseException;
 }
