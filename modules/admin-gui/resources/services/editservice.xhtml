@@ -155,19 +155,7 @@
 		&#xA0;
 	</h:panelGroup>
 	<h:panelGroup>
-<script type="text/javascript">
-//<![CDATA[
-
-function enableAll(){  
-  var all=document.getElementsByTagName("*");
-  for(var i=0; i<all.length; i++){
-     all[i].disabled = false;
-  }
-} 
-
-//]]>
-</script>
-		<h:commandButton id="saveButton" action="#{editService.save}" value="#{web.text.SAVE}" onclick="enableAll()" rendered="#{editService.hasEditRights}"/>		
+		<h:commandButton id="saveButton" action="#{editService.save}" value="#{web.text.SAVE}" rendered="#{editService.hasEditRights}"/>		
 		<h:commandButton id="cancelButton" action="#{editService.cancel}" value="#{web.text.CANCEL}" style="margin-left:10px;"/>		
 	</h:panelGroup>
 	
