@@ -21,6 +21,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
@@ -51,14 +52,15 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
         if (publisherIds != null) {
             for (String id : StringUtils.split((String) publisherIds, ';')) {
                 int publisherId = Integer.valueOf(id);
-                // Get everything from the queue for this publisher id
                 BasePublisher publisher = publisherSession.getPublisher(publisherId);
                 try {
                     if (publisher != null) {
                         publisher.testConnection();
                     }
                 } catch (PublisherConnectionException e) {
-                    //Publishers cannot be contacted, delay this job. 
+                    //Can be safely ignored
+                } catch (FatalPublisherConnectionException e) {
+                  //Publishers cannot be contacted, delay this job. 
                     throw new ServiceExecutionFailedException("Publisher test connection failed, see logs for more informetion.", e);
                 }
             }
