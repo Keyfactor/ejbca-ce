@@ -46,6 +46,12 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
     private CertificateStoreSessionLocal certificateStoreSession;
     private transient List<Integer> certificateProfileIds;
 
+    
+    @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        //This service worker has no other error states than misconfiguration, so can technically always run.     
+    }
+    
     /**
      * Worker that makes a query to the Certificate Store about expiring certificates.
      * 
@@ -243,4 +249,5 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         }
         return certificateProfileIds;
     }
+
 }

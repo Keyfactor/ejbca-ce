@@ -12,9 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.util.Collection;
+import java.security.InvalidKeyException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -22,6 +21,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -40,6 +41,23 @@ public class RenewCAWorker extends BaseWorker {
 
 	/** Flag is keys should be regenerated or not */
 	public static final String PROP_RENEWKEYS           = "worker.renewkeys";
+	
+    @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));
+        final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ((CryptoTokenManagementSessionLocal) ejbs
+                .get(CryptoTokenManagementSessionLocal.class));
+
+        for (Integer caid : getCAIdsToCheck(false)) {
+            CAInfo info = caSession.getCAInfoInternal(caid.intValue());
+            try {
+                cryptoTokenManagementSession.testKeyPair(getAdmin(), info.getCAToken().getCryptoTokenId(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            } catch (InvalidKeyException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
+                throw new ServiceExecutionFailedException("Could not connect to HSM, worker is unable to run.", e);
+            }
+        }
+
+    }
 	
 	/**
 	 * Worker that makes a query to the Certificate Store about
@@ -61,13 +79,9 @@ public class RenewCAWorker extends BaseWorker {
 
 		// Renew these CAs using the CAAdminSessionBean		
 		// Check the "Generate new keys" checkbox so we can pass the correct parameter to CAAdminSessionBean
-		Collection<Integer> caids = getCAIdsToCheck(false);
-		log.debug("Checking renewal for "+caids.size()+" CAs");
-		Iterator<Integer> iter = caids.iterator();
-		while (iter.hasNext()) {
-			Integer caid = iter.next();
+		for(Integer caid : getCAIdsToCheck(false)) {
 			try {
-				CAInfo info = caSession.getCAInfo(getAdmin(), caid.intValue());
+				CAInfo info = caSession.getCAInfoInternal(caid.intValue());
 				String caname = null;
 				if (info != null) {
 					caname = info.getName();
@@ -98,4 +112,6 @@ public class RenewCAWorker extends BaseWorker {
 	protected boolean isRenewKeys() {
 		return properties.getProperty(PROP_RENEWKEYS,"FALSE").equalsIgnoreCase("TRUE");
 	}
+
+  
 }
