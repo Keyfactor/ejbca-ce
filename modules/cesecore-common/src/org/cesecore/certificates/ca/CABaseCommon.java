@@ -879,7 +879,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     }
     
     @SuppressWarnings("rawtypes")
-    public HashMap getExtendedCAServiceData(int type) {
+    public HashMap<?, ?> getExtendedCAServiceData(int type) {
         HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type);
         return serviceData;
     }
