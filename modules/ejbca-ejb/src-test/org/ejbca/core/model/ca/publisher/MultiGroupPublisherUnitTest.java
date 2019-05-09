@@ -204,9 +204,10 @@ public class MultiGroupPublisherUnitTest {
 
     /**
      * Tests happy path for testConnection.
+     * @throws FatalPublisherConnectionException 
      */
     @Test
-    public void testConnectionHappyPath() throws PublisherConnectionException {
+    public void testConnectionHappyPath() throws PublisherConnectionException, FatalPublisherConnectionException {
         // Set up
         final List<TreeSet<Integer>> publisherGroups = new ArrayList<>();
         final TreeSet<Integer> group1 = new TreeSet<>();
@@ -229,9 +230,10 @@ public class MultiGroupPublisherUnitTest {
 
     /**
      * Tests exception handling in testConnection.
+     * @throws FatalPublisherConnectionException 
      */
     @Test
-    public void testConnectionFailure() throws PublisherConnectionException {
+    public void testConnectionFailure() throws PublisherConnectionException, FatalPublisherConnectionException {
         // Set up
         final List<TreeSet<Integer>> publisherGroups = new ArrayList<>();
         final TreeSet<Integer> group1 = new TreeSet<>();

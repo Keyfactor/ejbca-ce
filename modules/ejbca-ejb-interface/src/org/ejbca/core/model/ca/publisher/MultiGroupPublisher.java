@@ -202,7 +202,7 @@ public class MultiGroupPublisher extends BasePublisher {
     }
 
     @Override
-    public void testConnection() throws PublisherConnectionException {
+    public void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException {
         Exception publisherException = null;
         List<String> failedNames = new ArrayList<>();
         log.debug("Testing all publishers in multi group publisher.");

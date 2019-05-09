@@ -227,9 +227,12 @@ public class CustomPublisherContainer extends BasePublisher {
 	}
     
 	/**
+	 * @throws PublisherConnectionException if the destination couldn't be connected to
+	 * @throws FatalPublisherConnectionException if this CA is unable to publish to to internal errors.
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public void testConnection() throws PublisherConnectionException{
+	@Override
+	public void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException{
         this.getCustomPublisher().testConnection();
 	} 
 

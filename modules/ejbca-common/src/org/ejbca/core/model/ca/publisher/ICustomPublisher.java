@@ -49,7 +49,7 @@ public interface ICustomPublisher {
     /**
      * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
      */
-    void testConnection() throws PublisherConnectionException;
+    void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException;
     
     /** Asks the publisher if the certificate with these parameters will be published. Used by the publisher queue to avoid
      * storing things that will never be published in the publisher queue.
