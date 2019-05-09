@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -269,6 +270,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a CRL
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
+        Calendar before = Calendar.getInstance();
+        before.set(Calendar.MILLISECOND, 0);
+        final Date justBefore = before.getTime(); // Round to seconds
         X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
@@ -279,6 +283,17 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(1, num.intValue());
         BigInteger deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(-1, deltanum.intValue());
+        // Check this and next update times
+        Calendar after = Calendar.getInstance();
+        after.set(Calendar.MILLISECOND, 0);
+        final Date justAfter = after.getTime();
+        Date nextUpdate = xcrl.getNextUpdate();
+        Date thisUpdate = xcrl.getThisUpdate();
+        // thisUpdate and nextUpdate is rounded to seconds
+        assertTrue("nextUpdate should be after justBefore time: " + nextUpdate + ", " + justBefore, nextUpdate.after(justBefore));
+        assertTrue("nextUpdate should be after justAfter time: " + nextUpdate + ", " + justAfter, nextUpdate.after(justAfter));
+        assertTrue("thisUpdate should be after or equal to justBefore time: " + thisUpdate.getTime() + ", " + justBefore.getTime(), thisUpdate.equals(justBefore) || thisUpdate.after(justBefore));
+        assertTrue("thisUpdate should be before or equal to justAfter time: " + thisUpdate + ", " + justAfter, thisUpdate.equals(justAfter) || thisUpdate.before(justAfter));
         // Revoke some cert
         Date revDate = new Date();
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
@@ -333,6 +348,33 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         obj = aIn.readObject();
         reason = CRLReason.getInstance(obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
+    }
+    
+    @Test
+    public void testFinalCRLDate() throws Exception {
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
+        Collection<RevokedCertInfo> revcerts = new ArrayList<>();
+        
+        // Generate a CRL with default CRL period, should now not create a CRL with max date value
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        assertNotNull(crl);
+        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
+        // Max date from RFC5280 4.1.2.5, 99991231235959Z
+        TimeZone tz = TimeZone.getTimeZone("GMT");
+        Calendar cal = Calendar.getInstance(tz);
+        cal.set(9999, 11, 31, 23, 59, 59);
+        cal.set(Calendar.MILLISECOND, 0); // round to seconds
+        assertTrue("nextUpdate of CRL should not be maxvalue from RFC5280, but it was " + xcrl.getNextUpdate(), xcrl.getNextUpdate().before(cal.getTime()));
+        
+        // Generate a CRL with 9999y as CRL period, should now create a CRL with max date value
+        // 365 days per year, 24 hours per day, 3600 seconds per hour, 1000ms per second 
+        long l = 9999L*365L*24L*3600L*1000L;
+        x509ca.setCRLPeriod(l);
+        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        assertNotNull(crl);
+        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
+        assertTrue("nextUpdate of CRL should be maxvalue from RFC5280 (" + cal.getTime() + ") but was " + xcrl.getNextUpdate(), xcrl.getNextUpdate().equals(cal.getTime()));
     }
 
     @Test
@@ -958,7 +1000,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         }
     }
 
-    /** Test implementation of Authority Information Access Extension for OCSP andd CRL according to RFC 4325 */
+    /** Test implementation of Authority Information Access Extension for OCSP and CRL according to RFC 4325 */
     @Test
     public void testAuthorityInformationAccessCertificateExtension() throws Exception {
         // test data for CA - level

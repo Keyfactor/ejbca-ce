@@ -31,6 +31,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -40,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,6 +157,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
@@ -1862,7 +1865,20 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         final Date thisUpdate = new Date();
         final Date nextUpdate = new Date();
-        nextUpdate.setTime(nextUpdate.getTime() + crlPeriod);
+        // Set standard nextUpdate time
+        long nextUpdateTime = nextUpdate.getTime() + crlPeriod;
+        nextUpdate.setTime(nextUpdateTime);
+        // Check if the time is too large, then set time to "max/final" time according to RFC5280 section 4.1.2.5, 99991231235959Z
+        TimeZone tz = TimeZone.getTimeZone("GMT");
+        Calendar cal = Calendar.getInstance(tz);
+        cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
+        if (nextUpdate.getTime() >= cal.getTimeInMillis()) {
+            nextUpdate.setTime(cal.getTimeInMillis());
+            if (log.isDebugEnabled()) {
+                log.debug("nextUpdate is larger than 9999-12-31:23.59.59 GMT, limiting value as specified in RFC5280 4.1.2.5: " + ValidityDate.formatAsUTC(nextUpdate));
+            }
+        }
+
         final X509v2CRLBuilder crlgen = new X509v2CRLBuilder(issuer, thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
         if (certs != null) {

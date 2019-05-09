@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 
@@ -90,6 +91,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -148,6 +150,9 @@ public class CrlCreateSessionTest {
             X509CRL xcrl = CertTools.getCRLfromByteArray(crl);
             PublicKey pubK = ca.getCACertificate().getPublicKey();
             xcrl.verify(pubK);
+            // Verify CRL Number
+            Set<String> oids = xcrl.getNonCriticalExtensionOIDs();
+            assertTrue(oids.contains(Extension.cRLNumber.getId()));
         } catch (Exception e) {
             log.error("Error: ", e);
             fail("Should not throw here");
