@@ -39,6 +39,11 @@ public class HsmKeepAliveWorker extends BaseWorker {
     private static final Logger log = Logger.getLogger(HsmKeepAliveWorker.class);
 
     @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        // The only available fail state is if the HSM can't be contacted, in which validating this service serves little purpose.    
+    }
+    
+    @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         // Health checking will be done in three steps: 
         if (log.isDebugEnabled()) {
@@ -94,4 +99,6 @@ public class HsmKeepAliveWorker extends BaseWorker {
         }
         
     }
+
+  
 }

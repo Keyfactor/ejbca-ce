@@ -70,4 +70,12 @@ public interface IWorker {
 	 * @return the time in seconds to next execution.
 	 */
 	long getNextInterval();
+	
+	/**
+	 * Runs a diagnostic on the worker to verify it can run or not
+	 * 
+	 * @param ejbs A map between Local EJB interface classes and their injected stub
+	 * @throws ServiceExecutionFailedException if the worker cannot run
+	 */
+	void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException;
 }

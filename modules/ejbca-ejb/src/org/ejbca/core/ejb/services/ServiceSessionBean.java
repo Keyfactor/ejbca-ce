@@ -57,6 +57,7 @@ import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -177,6 +178,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private ImportCrlSessionLocal importCrlSession;
     @EJB
     private KeyStoreCreateSessionLocal keyStoreCreateSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
 
     // The administrator that the services should be run as. Internal, allow all.
     private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
@@ -477,6 +480,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     // Unexpected error (probably database related). We need to reschedule the service with a default interval.
                     addTimer(30 * 1000, timerInfo);
                 }
+        
                 // Reschedule timer
                 IWorker worker = null;
                 if (serviceInterval != IInterval.DONT_EXECUTE) {
@@ -489,6 +493,15 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                             log.debug("Exception: ", t); // Don't spam log with stacktraces in normal production cases
                         }
                     }
+                    // Verify with the service worker that it can run - if not then this CA instance may be in a temporary (or not) fail 
+                    // state. In that case, reschedule the timer so that it skips the next loop. If this is a single node
+                    // installation then the job will be picked up again, if it's a multi node installation then this avoids this node 
+                    // preemting one of the other nodes, which may be functioning. 
+                    if(!serviceSession.canWorkerRun(worker)) {
+                      nextTrigger.cancel();  
+                      addTimer(serviceInterval * 1000 *2, timerInfo);
+                    } 
+                   
                     if (worker != null) {
                         try {
                             serviceSession.executeServiceInNoTransaction(worker, serviceName);
@@ -515,7 +528,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     }
                     if (System.currentTimeMillis() - startOfTimeOut > serviceInterval * 1000) {
                         log.warn("Service '" + serviceName + "' took longer than it's configured service interval ("+serviceInterval+")."
-                                + " This can trigger simultanious service execution on several nodes in a cluster."
+                                + " This can trigger simultaenous service executions on several nodes in a cluster."
                                 + " Increase interval or lower each invocations work load.");
                     }
                 }
@@ -526,6 +539,49 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public boolean canWorkerRun(final IWorker worker) {
+        Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
+        ejbs.put(ApprovalSessionLocal.class, approvalSession);
+        ejbs.put(ApprovalProfileSessionLocal.class, approvalProfileSession);
+        ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
+        ejbs.put(AuthorizationSessionLocal.class, authorizationSession);
+        ejbs.put(CAAdminSessionLocal.class, caAdminSession);
+        ejbs.put(CaSessionLocal.class, caSession);
+        ejbs.put(CertificateProfileSessionLocal.class, certificateProfileSession);
+        ejbs.put(CertificateStoreSessionLocal.class, certificateStoreSession);
+        ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
+        ejbs.put(CrlStoreSessionLocal.class, crlStoreSession);
+        ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
+        ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);
+        ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, internalAuditSession);
+        ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
+        ejbs.put(AdminPreferenceSessionLocal.class, raAdminSession);
+        ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
+        ejbs.put(SignSessionLocal.class, signSession);
+        ejbs.put(EndEntityManagementSessionLocal.class, endEntityManagementSession);
+        ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
+        ejbs.put(PublisherSessionLocal.class, publisherSession);
+        ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
+        ejbs.put(EndEntityAccessSessionLocal.class, endEntityAccessSession);
+        ejbs.put(WebAuthenticationProviderSessionLocal.class, webAuthenticationSession);
+        ejbs.put(PublishingCrlSessionLocal.class, publishingCrlSession);
+        ejbs.put(CryptoTokenManagementSessionLocal.class, cryptoTokenSession);
+        ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
+        ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
+        ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
+        ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
+        try {
+            worker.canWorkerRun(ejbs);         
+        } catch (ServiceExecutionFailedException e) {
+            //Worker was found to be in an error state
+            log.error("Worker execution has been postponed.", e);
+            return false;
+        }
+        return true;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout) {
@@ -801,7 +857,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private Timer addTimer(long interval, Integer id) {
         if (log.isDebugEnabled()) {
             log.debug("addTimer: " + id);
-        }
+        } 
         return timerService.createSingleActionTimer(interval, new TimerConfig(id, false));
     }
 
@@ -854,7 +910,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             } else {
                 log.info("Worker has empty classpath for service " + serviceName);
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             // Only display a real error if it is a worker that we are actually
             // using
             if (serviceConfiguration.isActive()) {
