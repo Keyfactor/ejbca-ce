@@ -59,6 +59,11 @@ public class CRLDownloadWorker extends BaseWorker {
     public static final int DEFAULT_MAX_DOWNLOAD_SIZE = 1 * 1024 * 1024;
 
     @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        //This service worker has no other error states than misconfiguration, so can technically always run.       
+    }
+    
+    @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         // Get references to all EJB's that will be used
         final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
@@ -104,7 +109,7 @@ public class CRLDownloadWorker extends BaseWorker {
     }
 
     private void getCrlAndUpdateIfNeeded(final CAInfo caInfo, final X509Certificate caCertificate, final URL url, final int crlPartitionIndex, final Date now,
-                                         final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) throws ServiceExecutionFailedException {
+                                         final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) {
         try {
             final String issuerDn = CertTools.getSubjectDN(caCertificate);
             final boolean ignoreNextUpdate = Boolean.valueOf(properties.getProperty(PROP_IGNORE_NEXT_UPDATE, Boolean.FALSE.toString()));
@@ -155,9 +160,7 @@ public class CRLDownloadWorker extends BaseWorker {
             log.error("Failed to store the downloaded CRL in the database for CA Id " + caInfo.getCAId() + ".", e);
         } catch (CrlImportException e) {
             log.error("Failed to import the downloaded CRL in the database for CA Id " + caInfo.getCAId() + ".", e);
-        } catch (AuthorizationDeniedException e) {
-            throw new ServiceExecutionFailedException("Service should always be authorized to any CA.", e);
-        }
+        } 
     }
 
     private X509CRL getCRLFromBytes(final byte[] crlBytes) throws CRLException {
@@ -168,7 +171,7 @@ public class CRLDownloadWorker extends BaseWorker {
     }
 
     private X509CRL getAndProcessCrl(final URL cdpUrl, final X509Certificate caCertificate, final CAInfo caInfo,
-                                     final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, AuthorizationDeniedException, CrlImportException {
+                                     final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, CrlImportException {
         final int maxSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
@@ -181,8 +184,13 @@ public class CRLDownloadWorker extends BaseWorker {
             } catch (CRLException e) {
                 log.warn("Unable to decode downloaded CRL for '" + caInfo.getSubjectDN() + "'.");
                 return null;
+            } catch (AuthorizationDeniedException e) {
+                log.error("Internal authentication token was deneied access to importing CRLs or revoking certificates.", e);
+                return null;
             }
         }
         return newCrl;
     }
+
+
 }

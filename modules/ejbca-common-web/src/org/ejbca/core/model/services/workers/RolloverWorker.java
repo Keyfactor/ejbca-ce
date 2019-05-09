@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
+import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -21,8 +22,11 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CACommon;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -40,6 +44,40 @@ public class RolloverWorker extends BaseWorker {
 	private static final Logger log = Logger.getLogger(RolloverWorker.class);
     /** Internal localization of logs and errors */
 
+    @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
+        final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = (CryptoTokenManagementSessionLocal) ejbs
+                .get(CryptoTokenManagementSessionLocal.class);
+        Collection<Integer> caids = getCAIdsToCheck(false);
+        if (caids.contains(SecConst.ALLCAS)) {
+            for (CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(getAdmin())) {
+                if (caInfo.getStatus() == CAConstants.CA_ACTIVE && caInfo.getIncludeInHealthCheck()) {
+                    testKey(cryptoTokenManagementSession, caInfo);
+                }
+            }
+        } else {
+            for (int caid : caids) {
+                CAInfo caInfo = caSession.getCAInfoInternal(caid);
+                testKey(cryptoTokenManagementSession, caInfo);
+            }
+        }
+
+    }
+    
+    private void testKey(CryptoTokenManagementSessionLocal cryptoTokenManagementSession, CAInfo caInfo) throws ServiceExecutionFailedException {
+        // Verify that the CA's mapped keys exist and optionally that the test-key is usable
+        if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+            final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
+            try {
+                cryptoTokenManagementSession.testKeyPair(admin, cryptoTokenId,
+                        caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            } catch (InvalidKeyException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
+                throw new ServiceExecutionFailedException("Could not establish contact with CA's crypto token.", e);
+            }
+        }
+    }
+	
     @Override
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
@@ -86,4 +124,6 @@ public class RolloverWorker extends BaseWorker {
             log.error("Error rolling over CA: ", e);
         }
 	}
+
+
 }
