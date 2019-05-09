@@ -150,6 +150,7 @@ public class RestResourceSystemTestBase {
     private static AvailableProtocolsConfiguration protocolConfigBackup;
     //
     protected static final AuthenticationToken INTERNAL_ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiTest"));
+    protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
 
     static {
         try {
