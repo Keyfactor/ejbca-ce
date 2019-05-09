@@ -500,6 +500,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     if(!serviceSession.canWorkerRun(worker)) {
                       nextTrigger.cancel();  
                       addTimer(serviceInterval * 1000 *2, timerInfo);
+                      return;
                     } 
                    
                     if (worker != null) {
