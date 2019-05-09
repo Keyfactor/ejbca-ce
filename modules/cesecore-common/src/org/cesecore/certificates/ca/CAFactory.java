@@ -33,7 +33,7 @@ public enum CAFactory {
                 caImplMap.put(ca.getCaImplType(), ca);
             }
             if (caImplMap.isEmpty()) {
-                Logger.getLogger(CAFactory.class).error("No CA implementations found by ServieLoader");
+                Logger.getLogger(CAFactory.class).error("No CA implementations found by ServiceLoader");
             } 
         } catch (Exception e) {
             Logger.getLogger(CAFactory.class).error("Could not construct CA implementations", e);

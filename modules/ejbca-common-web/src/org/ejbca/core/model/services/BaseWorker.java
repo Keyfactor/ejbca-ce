@@ -165,6 +165,8 @@ public abstract class BaseWorker implements IWorker {
      * This is due to that the feature of selecting CAs was enabled in EJBCA 3.9.1, and we want the service to keep working even after an upgrade from an earlier version.
 	 * 
 	 * @return Collection<String> of integer CA ids in String form, use Integer.valueOf to convert to int.
+	 * 
+	 * @throws ServiceExecutionFailedException if any of the given values was not an integer, which should not normally happen. 
 	 */
 	protected Collection<Integer> getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
 		if(cAIdsToCheck == null){

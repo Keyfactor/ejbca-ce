@@ -36,6 +36,11 @@ public class CRLUpdateWorker extends BaseWorker {
      */
 	private static boolean running = false;
 
+    @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+      //This service worker has no other error states than misconfiguration, so can technically always run.        
+    }
+	
 	/**
 	 * Checks if there are any CRL that needs to be updated, and then does the creation.
 	 * 
@@ -56,8 +61,7 @@ public class CRLUpdateWorker extends BaseWorker {
 			    publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000);
 			    publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
 			} catch (AuthorizationDeniedException e) {
-				log.info("Authorization denied executing service: ", e);
-				throw new ServiceExecutionFailedException(e);
+			    log.error("Internal authentication token was deneied access to importing CRLs or revoking certificates.", e);
 			} finally {
 				running = false;
 			}			
@@ -65,4 +69,6 @@ public class CRLUpdateWorker extends BaseWorker {
 			log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName()));
 		}
 	}
+
+
 }

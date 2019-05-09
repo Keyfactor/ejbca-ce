@@ -71,5 +71,13 @@ public interface ServiceSessionLocal extends ServiceSession {
 	
 	/** The timeout method */
     void timeoutHandler(final Timer timer);
+    
+    /**
+     * Performs a basic diagnostic on the worker to verify if it's runnable in the server's current state
+     * 
+     * @param worker the worker
+     * @return true if the service can run
+     */
+    boolean canWorkerRun(final IWorker worker);
 
 }

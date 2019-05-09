@@ -33,8 +33,6 @@ import org.ejbca.core.model.services.actions.MailActionInfo;
  * the status of these users to generated. Can be used for the following scenario:
  * - A user is generated and given username password to fetch the certificates
  * - If the user does not fetch his certificate within a configured amount of time the user is expired and is not allowed to fetch the certificate any more
- * 
- * @author Tomas Gustavsson based on code by Philip Vendil
  *
  * @version: $Id$
  */
@@ -42,6 +40,12 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(UserPasswordExpireWorker.class);
 
+    @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        // TODO Implement
+        
+    }
+    
     /**
      * Worker that makes a query to the Certificate Store about expiring
      * certificates.
@@ -104,5 +108,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 	protected void updateStatus(String pk, int status) {
 		// Do nothing
 	}
+
+ 
 
 }

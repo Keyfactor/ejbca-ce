@@ -21,6 +21,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
@@ -42,8 +43,31 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      */
     private static HashMap<String, Boolean> runmap = new HashMap<String, Boolean>();
 
+    @Override
+    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        final PublisherSessionLocal publisherSession = ((PublisherSessionLocal) ejbs.get(PublisherSessionLocal.class));
+        // Verify that all active publishers can be contacted.
+        Object publisherIds = properties.get(PROP_PUBLISHER_IDS);
+        if (publisherIds != null) {
+            for (String id : StringUtils.split((String) publisherIds, ';')) {
+                int publisherId = Integer.valueOf(id);
+                // Get everything from the queue for this publisher id
+                BasePublisher publisher = publisherSession.getPublisher(publisherId);
+                try {
+                    if (publisher != null) {
+                        publisher.testConnection();
+                    }
+                } catch (PublisherConnectionException e) {
+                    //Publishers cannot be contacted, delay this job. 
+                    throw new ServiceExecutionFailedException("Publisher test connection failed, see logs for more informetion.", e);
+                }
+            }
+        }
+
+    }
+    
     /**
-     * Checks if there are any publishings in the publisher queue that should be
+     * Checks if there are any publishing jobs in the publisher queue that should be
      * published.
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
@@ -104,4 +128,6 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      */
     protected void updateStatus(String pk, int status) {
     }
+
+ 
 }
