@@ -49,6 +49,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAImpl;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -195,7 +196,7 @@ public abstract class CaTestUtils {
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
-        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
+        X509CA x509ca = new X509CAImpl(cainfo);
         try {
             x509ca.setCAToken(catoken);
         } catch (InvalidAlgorithmException e) {

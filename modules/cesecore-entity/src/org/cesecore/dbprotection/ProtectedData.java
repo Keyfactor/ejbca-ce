@@ -149,7 +149,9 @@ public abstract class ProtectedData {
      * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
      */
     protected void protectData() throws DatabaseProtectionException {
-        impl.protectData(this);
+        if (impl != null) {
+            impl.protectData(this);
+        }
     }
 
     /**
