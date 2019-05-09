@@ -64,9 +64,6 @@
             <h:outputText styleClass="alert" rendered="#{empty accessRulesBean.role}" value="#{web.text.ACCESSRUlES_ERROR_UNAUTH}"/>
             
             <h:form id="accessRulesForm" rendered="#{not empty accessRulesBean.role}">
-                <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
-                <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
-
                 <h:panelGrid columns="2" styleClass="edit fullwidth" rowClasses="Row0,Row1" columnClasses="label,field" rendered="#{!accessRulesBean.advancedMode}">
                     <h:panelGroup layout="block" id="headerFiller"/>
                     <h:panelGroup/>
