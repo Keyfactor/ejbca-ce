@@ -234,7 +234,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * Method used to test the connection to a publisher.
      * 
      * @throws PublisherConnectionException if the destination couldn't be connected to
-     * @throws FatalPublisherConnectionException if this CA is unable to publish to to internal errors.
+     * @throws FatalPublisherConnectionException if this CA is unable to publish to internal errors.
      */
     public abstract void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException; // NOPMD: this is not a JUnit test
     
