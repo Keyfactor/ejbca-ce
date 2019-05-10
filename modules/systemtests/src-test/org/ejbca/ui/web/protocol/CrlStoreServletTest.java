@@ -46,9 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Testing of CrlStoreServlet. This test requires the CRL store servlet to be enabled. Please set
- * <blockquote><code>crlstore.enabled=true</code></blockquote>
- * in the file <code>conf/crlstore.properties</code>
+ * Testing of CrlStoreServlet.
  * 
  * @version $Id$
  * 
@@ -124,16 +122,14 @@ public class CrlStoreServletTest extends CaTestCase {
 	    final String port = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         final String remotePort = local ? "8080" : SystemTestsConfiguration.getRemotePortHttp(port);
         final String remoteHost = local ? "127.0.0.1" : SystemTestsConfiguration.getRemoteHost("localhost");
-        final String contextRoot = "/ejbca/publicweb/crls";
+        final String contextRoot = WebConfiguration.DEFAULT_CRLSTORE_CONTEXTROOT;
         String url = "http://"+remoteHost+":" + remotePort + contextRoot + "/search.cgi";
         if (getUrlResponse(url) != 200) {
             url = "http://localhost:8080/crls/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
         }
         final int response = getUrlResponse(url);
-        if (response == 404 && !Boolean.valueOf(configurationSession.getProperty(WebConfiguration.CONFIG_CERTSTORE_ENABLED))) {
-            fail("Test environment not correctly configured. Please set crlstore.enabled=true in conf/crlstore.properties and redeploy EJBCA.");
-        } else if (response != 200) {
-            fail("No working CRL store URL, please check crlstore.properties");
+        if (response != 200) {
+            fail("Test environment not correctly configured. Got HTTP error code " + response + " when contacting CRL store servlet on " + url);
         }
         return url;
 	}
