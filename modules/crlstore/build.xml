@@ -32,14 +32,13 @@
     <target name="clean" description="Clean up this module">
     	<delete dir="${crlstore.build.dir}" />
     </target>
-	<condition property="crlstore.enabled.if.defined"><istrue value="${crlstore.enabled}"/></condition>
 
 	<target name="ejbca-build" description="Build this module" depends="ejbca-crlstore.war"/>
-	<target name="ejbca-crlstore.war" depends="ejbca-compile" if="crlstore.enabled.if.defined">
+	<target name="ejbca-crlstore.war" depends="ejbca-compile">
 		<war destfile="${mod.crlstore.war}" webxml="${crlstore.resources.dir}/WEB-INF/web-crlstore-ejbca.xml" basedir="${crlstore.build.dir}"/>
 	</target>
 
-	<target name="ejbca-compile" if="crlstore.enabled.if.defined">
+	<target name="ejbca-compile">
     	<mkdir dir="${crlstore.build.dir}/WEB-INF/classes" />
 		<javac destdir="${crlstore.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
