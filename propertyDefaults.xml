@@ -77,8 +77,6 @@
     <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scepra.properties" />
     <property file="${ejbca.home}/conf/externalra-gui.properties" />
-    <property file="${ejbca.home}/conf/certstore.properties" />
-    <property file="${ejbca.home}/conf/crlstore.properties" />
     <property file="${ejbca.home}/conf/va.properties" />
     <property file="${ejbca.home}/conf/va-publisher.properties" />
     <property file="${ejbca.home}/conf/systemtests.properties" />
@@ -178,11 +176,11 @@
 	</condition>
 
 	<property name="ocsp.enabled" value="true" />
-	<property name="certstore.enabled" value="false" />
-	<property name="crlstore.enabled" value="false" />
-	<property name="crlstore.contextroot" value="/crls" />
-	<property name="certstore.contextroot" value="/certificates" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
+	<property name="crlstore.enabled" value="true" />
+    <property name="crlstore.contextroot" value="/ejbca/publicweb/crls" />
+	<property name="certstore.enabled" value="true" />
+	<property name="certstore.contextroot" value="/ejbca/publicweb/certificates" />	
 
 	<!-- set hibernate dialect -->
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>

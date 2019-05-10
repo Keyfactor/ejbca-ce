@@ -467,19 +467,6 @@ keys.alg=RSA
 keys.spec=2048
 EOF
 
-cat <<EOF > ejbca-custom/conf/certstore.properties
-# ------------ RFC 4387 Certificate store configuration ---------------------
-# These configurations are used both for EJBCA and the Validation Authority (VA).
-
-# Certificate store servlet enabled. If false there will be no servlet.
-# Default is false.
-certstore.enabled=true
-
-# Context root (the path in the URL)
-# Default is '/certificates'
-#certstore.contextroot=/ejbca/publicweb/certificates
-EOF
-
 cat <<EOF > ejbca-custom/conf/cesecore.properties
 # Set to true to allow dynamic re-configuration using properties files in the file 
 # system. Using this you can place a file /etc/cesecore/conf/cesecore.properties in the file system and
@@ -758,20 +745,6 @@ securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
 # which has failed to respond to a request.
 # Default: 1000 (1 second)
 #ct.fastfail.backoff=60000
-EOF
-
-
-cat <<EOF > ejbca-custom/conf/crlstore.properties
-# ------------ RFC 4387 CRL store configuration ---------------------
-# These configurations are used both for EJBCA and the Validation Authority (VA).
-
-# CRL store servlet enabled. If false there will be no servlet.
-# Default is false.
-crlstore.enabled=true
-
-# Context root (the path in the URL)
-# Default is '/crls'
-#crlstore.contextroot=/ejbca/publicweb/crls
 EOF
 
 
