@@ -29,6 +29,7 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final float LATEST_VERSION = 2f;
 
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
 
@@ -38,9 +39,9 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     public enum AvailableProtocols {
         // If you add a protocol > 6.11.0 it should be disabled by default
         ACME("ACME", "/ejbca/acme"),
-        CERT_STORE("Certstore", "/certificates"),
+        CERT_STORE("Certstore", WebConfiguration.DEFAULT_CERTSTORE_CONTEXTROOT),
         CMP("CMP", "/ejbca/publicweb/cmp"),
-        CRL_STORE("CRLstore", "/crls"),
+        CRL_STORE("CRLstore", WebConfiguration.DEFAULT_CRLSTORE_CONTEXTROOT),
         EST("EST", "/.well-known/est"),
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         PUBLIC_WEB("Public Web", "/ejbca"),
@@ -127,7 +128,19 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
 
     @Override
     public void upgrade() {
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+        final float version = getVersion();
+        if (Float.compare(1f, version) == 0) {
+            // The servlets "CRL Store" and "Cert Store" are always available as
+            // of EJBCA 7.2, and if they were previously unavailable, we need to
+            // make sure they are now disabled.
+            if (data.get(AvailableProtocols.CRL_STORE.getName()) == null) {
+                setProtocolStatus(AvailableProtocols.CRL_STORE.getName(), false);
+            }
+            if (data.get(AvailableProtocols.CERT_STORE.getName()) == null) {
+                setProtocolStatus(AvailableProtocols.CERT_STORE.getName(), false);
+            }
+        }
+        if (Float.compare(LATEST_VERSION, version) != 0) {
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
         }
     }

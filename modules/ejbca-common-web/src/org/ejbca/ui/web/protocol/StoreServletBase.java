@@ -55,7 +55,8 @@ public abstract class StoreServletBase extends HttpServlet {
 	 * @param config see {@link HttpServlet#init(ServletConfig)}
 	 * @throws ServletException
 	 */
-	public void init(ServletConfig config) throws ServletException {
+	@Override
+    public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		this.certCache = CaCertificateCache.INSTANCE;
 	}
@@ -199,7 +200,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	 */
 	private boolean performReload(HttpServletRequest req, HttpServletResponse resp) {
 		// We have a command to force reloading of the certificate cache that can only be run from localhost
-		// http://localhost:8080/crls/search.cgi?reloadcache=true
+        // http://localhost:8080/ejbca/publicweb/crls/search.cgi?reloadcache=true
 		final boolean doReload = StringUtils.equals(req.getParameter("reloadcache"), "true");
 		if ( !doReload ) {
 			return false;

@@ -38,15 +38,13 @@
     	<delete dir="${build-crlstore-va.dir}" />
     	<delete file="${mod.va.war}" />
     </target>
-	
-	<condition property="certstore.enabled.if.defined"><istrue value="${certstore.enabled}"/></condition>
 
 	<target name="ejbca-build" description="Build this module" depends="certstore.war"/>
-	<target name="certstore.war" depends="ejbca-certstore-compile" if="certstore.enabled.if.defined">
+	<target name="certstore.war" depends="ejbca-certstore-compile">
 		<war destfile="${mod.certstore.war}" webxml="${certificatestore.resources.dir}/WEB-INF/web-certstore-ejbca.xml" basedir="${certificatestore.build.dir}"/>
 	</target>
 	
-	<target name="ejbca-certstore-compile" if="certstore.enabled.if.defined">
+	<target name="ejbca-certstore-compile">
 		<mkdir dir="${certificatestore.build.dir}/WEB-INF/classes" />
 		<javac destdir="${certificatestore.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">

@@ -15,7 +15,7 @@ echo "Current user '$(whoami)' belongs to group(s): $(groups)"
 reportFile="report-pmd.xml"
 
 antCommonParameters="-q -Dappserver.home=/tmp -Dappserver.type=jboss -Dappserver.subtype=jbosseap6 -Dejbca.productionmode=false"
-antCommonParameters="$antCommonParameters -Dcertstore.enabled=true -Dcrlstore.enabled=true"
+antCommonParameters="$antCommonParameters"
 
 # Calculate the number of available cores
 cpuPeriod=$(cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)

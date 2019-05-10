@@ -73,7 +73,6 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -985,16 +984,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return protocolInfos;
     }
 
-    /** @return true if CRLStore is deployed. Determined by crlstore.properties file */
-    public boolean isCrlStoreAvailable() {
-        return WebConfiguration.isCrlStoreEnabled();
-    }
-
-    /** @return true if CRLStore is deployed. Determined by crlstore.properties file */
-    public boolean isCertStoreAvailable() {
-        return WebConfiguration.isCertStoreEnabled();
-    }
-
     /** @return true if EST is enabled. Should be false for EJBCA CE */
     public boolean isEstAvailable() {
         return getEjbcaWebBean().isRunningEnterprise();
@@ -1040,14 +1029,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
         /** @return true if service is available in the deployed instance */
         public boolean isAvailable() {
-            // This is only applicable to services/protocols which may be unavailable for some installations,
-            // such as community edition or installations where CRLStore is disabled by .properties file.
-            if (protocol.equals(AvailableProtocols.CRL_STORE.getName()) && !isCrlStoreAvailable()) {
-                available = false;
-            }
-            if (protocol.equals(AvailableProtocols.CERT_STORE.getName()) && !isCertStoreAvailable()) {
-                available = false;
-            }
             if (protocol.equals(AvailableProtocols.EST.getName()) && !isEstAvailable()) {
                 available = false;
             }
