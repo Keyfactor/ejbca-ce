@@ -500,6 +500,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     if(!serviceSession.canWorkerRun(worker)) {
                       nextTrigger.cancel();  
                       addTimer(serviceInterval * 1000 *2, timerInfo);
+                      if(log.isDebugEnabled()) {
+                            log.debug("Service was deemed unable to run on this node, so setting timer interval to " + serviceInterval * 1000 * 2
+                                    + " (double interval) in order to give another node (if present in the cluster) a chance to try.");
+                        }
                       return;
                     } 
                    
