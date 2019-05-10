@@ -15,7 +15,7 @@ echo "Current user '$(whoami)' belongs to group(s): $(groups)"
 reportFile="report-findbugs.xml"
 
 antCommonParameters="-q -Dappserver.home=/tmp -Dappserver.type=jboss -Dappserver.subtype=jbosseap6 -Dejbca.productionmode=false"
-antCommonParameters="$antCommonParameters -Dcertstore.enabled=true -Dcrlstore.enabled=true"
+antCommonParameters="$antCommonParameters"
 
 echo "
 ### Building EJBCA components to scan ###
