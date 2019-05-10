@@ -91,8 +91,7 @@ public class RaCasPageBean implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(RaCasPageBean.class);
-    private static final String RFC4387_DEFAULT_EJBCA_URL = WebConfiguration.getCrlStoreContextRoot() + "/search.cgi";
+    private static final String RFC4387_DEFAULT_EJBCA_URL = WebConfiguration.DEFAULT_CRLSTORE_CONTEXTROOT + "/search.cgi";
     private static final int NO_CAID_AVAILABLE = 0;
 
     @EJB
@@ -114,7 +113,7 @@ public class RaCasPageBean implements Serializable {
     /** @return true if at least one of the CAs available via #getCasAndCrlItems() has CRLs present on this system. */
     public boolean isAtLeastOneCrlLinkPresent() {
         getCasAndCrlItems();
-        return atLeastOneCrlLinkPresent && WebConfiguration.isCrlStoreEnabled();
+        return atLeastOneCrlLinkPresent;
     }
 
     /** @return a list of all known authorized CAs with links to CRLs (if present) */
