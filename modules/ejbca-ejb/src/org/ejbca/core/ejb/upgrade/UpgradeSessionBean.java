@@ -351,7 +351,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } else {
                 // We are on EJBCA 4.0 or 3.11 or even earlier
                 log.error(
-                        "Post-upgrade from EJBCA prior to version 5.0.0 is forbidden. It is recommended that you upgrade to the intermediate release"
+                        "Upgrade from EJBCA prior to version 5.0.0 is forbidden. It is recommended that you upgrade to the intermediate release"
                                 + " EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
                 return false;
             }
