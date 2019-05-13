@@ -52,8 +52,10 @@ public class RestApiApplication extends Application {
         resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.resource.CaRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.resource.CryptoTokenRestResource.class);
+        resources.add(org.ejbca.ui.web.rest.api.resource.CaManagementRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ExceptionHandler.class);
+        
         if (EjbcaConfiguration.getIsInProductionMode()) {
             log.debug("Swagger is not available in distribution.");
         } else {
