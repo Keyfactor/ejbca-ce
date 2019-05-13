@@ -128,19 +128,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
 
     @Override
     public void upgrade() {
-        final float version = getVersion();
-        if (Float.compare(1f, version) == 0) {
-            // The servlets "CRL Store" and "Cert Store" are always available as
-            // of EJBCA 7.2, and if they were previously unavailable, we need to
-            // make sure they are now disabled.
-            if (data.get(AvailableProtocols.CRL_STORE.getName()) == null) {
-                setProtocolStatus(AvailableProtocols.CRL_STORE.getName(), false);
-            }
-            if (data.get(AvailableProtocols.CERT_STORE.getName()) == null) {
-                setProtocolStatus(AvailableProtocols.CERT_STORE.getName(), false);
-            }
-        }
-        if (Float.compare(LATEST_VERSION, version) != 0) {
+        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
         }
     }

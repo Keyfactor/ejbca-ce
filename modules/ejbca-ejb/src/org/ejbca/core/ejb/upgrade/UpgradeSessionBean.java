@@ -103,6 +103,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.PropertyValidationException;
+import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
@@ -536,6 +538,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("6.15.0");
+        }
+        if (isLesserThan(oldVersion, "7.2.0")) {
+            upgradeSession.upgradeCrlStoreAndCertStoreConfiguration720();
+            setLastUpgradedToVersion("7.2.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1644,6 +1650,42 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final ApprovalPartition approvalPartition = newProfile.getFirstStep().getPartitions().values().iterator().next();
             newProfile.addNotificationProperties(approvalPartition, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), defaultSubject, defaultBody);
         }
+    }
+
+    /**
+     * The configuration files <code>certstore.properties</code> and <code>crlstore.properties</code> are removed as of EJBCA 7.2.
+     * <p>This method adjusts the configuration as follows:
+     * <ul>
+     *     <li>If upgrading from EJBCA 6.10 or older, the servlets will always become enabled in modular protocols configuration, regardless of whether it was available in the previous deployment or not.</li>
+     *     <li>If upgrading from EJBCA 6.11 or later and the servlet was unavailable in the previous deployment it is disabled in modular protocols configuration.</li>
+     *     <li>If upgrading from EJBCA 6.11 or later and the servlet was available in the previous deployment, the existing setting in modular protocols configuration will remain.</lI>
+     * <ul>
+     */
+    @Override
+    public void upgradeCrlStoreAndCertStoreConfiguration720() {
+        log.debug("Starting adjustment of CRL Store and Cert Store settings in modular protocols configuration...");
+        final AvailableProtocolsConfiguration protocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        log.debug("Retrieved modular protocols configuration object: " + protocolsConfiguration.getRawData());
+        if (isLesserThan(getLastUpgradedToVersion(), "6.11.0")) {
+            // If upgrading from EJBCA 6.10 or older, there is no way of determining whether the servlet was available in the
+            // previous deployment or not. If we do nothing, the servlet will be enabled by default. This is probably the best
+            // choice, since we won't magically break stuff.
+            log.info("Upgrading from EJBCA " + getLastUpgradedToVersion() + " without modular protocols configuration implemented. Assuming servlets were "
+                    + "available in the previous deployment. Please disable them manually in 'System Configuration -> Protocol Configuration' if desired.");
+        } else {
+            // Servlet was unavailable in the previous deployment if there is no configuration value set for it
+            if (protocolsConfiguration.getRawData().get(AvailableProtocols.CRL_STORE.getName()) == null) {
+                log.info("CRL Store was not available in the previous deployment, it will be disabled in modular protocols configuration.");
+                protocolsConfiguration.setProtocolStatus(AvailableProtocols.CRL_STORE.getName(), false);
+            }
+            if (protocolsConfiguration.getRawData().get(AvailableProtocols.CERT_STORE.getName()) == null) {
+                log.info("Cert Store was not available in the previous deployment, it will be disabled in modular protocols configuration.");
+                protocolsConfiguration.setProtocolStatus(AvailableProtocols.CERT_STORE.getName(), false);
+            }
+        }
+
+        log.debug("Adjustment of CRL Store and Cert Store settings in modular protocols configuration finished.");
     }
 
     /**

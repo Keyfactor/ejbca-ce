@@ -71,6 +71,8 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     void migrateDatabase6140() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase6150() throws UpgradeFailedException;
+    /** For internal user from UpgradeSessionBean only! */
+    void upgradeCrlStoreAndCertStoreConfiguration720();
 
     
     /** Persist the time when the post-upgrade starts or 0L when it is no longer running. */
@@ -85,8 +87,4 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
      * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
      */
     boolean isLesserThan(String first, String second);
-
-
-
-
 }
