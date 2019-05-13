@@ -179,7 +179,7 @@ public class HealthCheckServlet extends HttpServlet {
         if (log.isDebugEnabled()) {
             log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
         }
-        // Start by checking if we are in maintance mode
+        // Start by checking if we are in maintenance mode
         final Properties maintenanceProperties = getMaintenanceProperties();
         final String maintenancePropertyName = EjbcaConfiguration.getHealthCheckMaintenancePropertyName();
         if (maintenanceProperties != null && Boolean.valueOf(maintenanceProperties.getProperty(maintenancePropertyName))) {
