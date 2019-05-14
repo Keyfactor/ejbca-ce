@@ -13,6 +13,8 @@
 
 package org.ejbca.webtest.scenario;
 
+import java.util.HashMap;
+
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
@@ -54,5 +56,15 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     @Test
     public void stepA_AddEndEntityProfile() {
         addEndEntityHelper.openPage(getAdminWebUrl());
+        addEndEntityHelper.setEndEntityProfile("EMPTY");
+        HashMap<String, String> fields = new HashMap<String, String>(); 
+        fields.put("Username", "TestEndEnityEMPTY");
+        fields.put("Password (or Enrollment Code)", "foo123");
+        fields.put("Confirm Password", "foo123");
+        
+        addEndEntityHelper.fillFields(fields);
+        addEndEntityHelper.triggerBatchGeneration();
+        
+        addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
     }
 }
