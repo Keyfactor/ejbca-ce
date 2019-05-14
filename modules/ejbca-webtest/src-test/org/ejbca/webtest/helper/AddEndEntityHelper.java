@@ -13,14 +13,14 @@
 
 package org.ejbca.webtest.helper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Map;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * 
@@ -57,6 +57,8 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By BUTTON_RESET = By.xpath("//input[@name='Reset']");
         static final By BUTTON_KEY_RECOVERABLE = By.id("checkboxkeyrecoverable");
         static final By BUTTON_SEND_NOTIFICATIONS = By.id("checkboxsendnotification");
+        
+        static final By CHECKBOX_BATCH_GENERATION = By.id("checkboxcleartextpassword");
         
         static By getInputFieldLocatorByKey(final String key) {
             return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]");
@@ -119,6 +121,13 @@ public class AddEndEntityHelper extends BaseHelper {
      */
     public void triggerSendNotifications() {
         clickLink(Page.BUTTON_SEND_NOTIFICATIONS);
+    }
+    
+    /**
+     * Clicks the check box 'batch generation'.
+     */
+    public void triggerBatchGeneration() {
+        clickLink(Page.CHECKBOX_BATCH_GENERATION);
     }
     
     /**
