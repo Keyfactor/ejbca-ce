@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.publisher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -60,6 +55,11 @@ import org.ejbca.mock.publisher.MockedThrowAwayRevocationPublisher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests that the interaction between MultiGroupPublisher and the publisher queue works.
@@ -191,7 +191,7 @@ public class MultiGroupPublisherSystemTest {
         certiciateProfileId = certificateProfileSession.addCertificateProfile(alwaysAllowToken, CERT_PROFILE_NAME, certProf);
 
         log.debug("Creating CA");
-        final X509CA ca = CaTestUtils.createX509Ca(alwaysAllowToken, CA_NAME, CA_NAME, CA_DN);
+        final X509CA ca = CaTestUtils.createActiveX509Ca(alwaysAllowToken, CA_NAME, CA_NAME, CA_DN);
         final CAInfo cainfo = ca.getCAInfo();
         cainfo.setCertificateProfileId(certiciateProfileId);
         caSession.editCA(alwaysAllowToken, cainfo);
