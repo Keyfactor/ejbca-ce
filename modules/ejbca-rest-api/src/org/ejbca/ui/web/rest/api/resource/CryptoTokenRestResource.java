@@ -149,8 +149,7 @@ public class CryptoTokenRestResource extends BaseRestResource {
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Name of the token to generate keys for")
             @PathParam("cryptotoken_name") String cryptoTokenName,
-            CryptoTokenKeyGenerationRestRequest request) throws AuthorizationDeniedException, RestException, CryptoTokenOfflineException, 
-    InvalidKeyException, InvalidAlgorithmParameterException {
+            CryptoTokenKeyGenerationRestRequest request) throws AuthorizationDeniedException, RestException, CryptoTokenOfflineException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final String keyPairAlias = request.getKeyPairAlias();
         final String keyAlg = request.getKeyAlg();
