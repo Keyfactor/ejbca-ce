@@ -29,7 +29,6 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.web.rest.api.resource.RestResourceSystemTestBase;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -41,7 +40,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @version $Id$
  */
-public class CryptoTokenTestUtils extends RestResourceSystemTestBase {
+public class CryptoTokenTestUtils {
 
     private static final Logger log = Logger.getLogger(CryptoTokenTestUtils.class);
 
@@ -168,17 +167,6 @@ public class CryptoTokenTestUtils extends RestResourceSystemTestBase {
                 SOFT_TOKEN_PIN);
     }
     
-    public static int createTestSoftCryptoToken(final String cryptoTokenName, final boolean activate) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, 
-            CryptoTokenNameInUseException, AuthorizationDeniedException, NoSuchSlotException {
-        final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
-        final int cryptoTokenId = cryptoTokenSession.createCryptoToken(INTERNAL_ADMIN_TOKEN, cryptoTokenName, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, "foo123".toCharArray());
-        if (!activate) {
-            cryptoTokenSession.deactivate(INTERNAL_ADMIN_TOKEN, cryptoTokenId);
-        }
-        return cryptoTokenId;
-    }
-
     public static int createPKCS11Token(AuthenticationToken authenticationToken, String cryptoTokenName, boolean useAutoActivationPin)
             throws NoSuchSlotException, AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException {
