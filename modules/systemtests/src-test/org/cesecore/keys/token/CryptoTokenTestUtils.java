@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -31,6 +29,9 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.web.rest.api.resource.RestResourceSystemTestBase;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
@@ -40,7 +41,7 @@ import org.cesecore.util.EjbRemoteHelper;
  *
  * @version $Id$
  */
-public class CryptoTokenTestUtils {
+public class CryptoTokenTestUtils extends RestResourceSystemTestBase {
 
     private static final Logger log = Logger.getLogger(CryptoTokenTestUtils.class);
 
@@ -165,6 +166,17 @@ public class CryptoTokenTestUtils {
         props.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
         return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), props, null,
                 SOFT_TOKEN_PIN);
+    }
+    
+    public static int createTestSoftCryptoToken(final String cryptoTokenName, final boolean activate) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, 
+            CryptoTokenNameInUseException, AuthorizationDeniedException, NoSuchSlotException {
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
+        final int cryptoTokenId = cryptoTokenSession.createCryptoToken(INTERNAL_ADMIN_TOKEN, cryptoTokenName, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, "foo123".toCharArray());
+        if (!activate) {
+            cryptoTokenSession.deactivate(INTERNAL_ADMIN_TOKEN, cryptoTokenId);
+        }
+        return cryptoTokenId;
     }
 
     public static int createPKCS11Token(AuthenticationToken authenticationToken, String cryptoTokenName, boolean useAutoActivationPin)
