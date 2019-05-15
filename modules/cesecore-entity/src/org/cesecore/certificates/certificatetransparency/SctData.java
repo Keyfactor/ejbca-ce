@@ -164,12 +164,12 @@ public class SctData extends ProtectedData implements Serializable {
     //
 
     @Transient
-    public void setScts(byte[] ctLogs) {
+    public void setSct(byte[] ctLogs) {
        this.data = new String(Base64.encode(ctLogs, true));
     }
 
     @Transient
-    public byte[] getScts() {
+    public byte[] getSct() {
         return Base64.decode(data.getBytes());
     }
 }

@@ -18,5 +18,8 @@ import javax.ejb.Local;
  * @version $Id$
  */
 @Local
-public interface SctDataSessionLocal extends SctDataSession{
+public interface SctDataSessionLocal extends SctDataSession {
+
+
+    public void addSctData(SctData sctData);
 }

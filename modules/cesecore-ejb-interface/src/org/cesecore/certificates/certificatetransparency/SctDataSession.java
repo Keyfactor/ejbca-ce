@@ -12,13 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.certificatetransparency;
 
+import java.util.List;
+
 /**
  * SctData session
+ *
  * @version $Id$
  */
 public interface SctDataSession {
 
-    public void addSctData(SctData sctData);
-
-    public SctData findSctData(String fingerprint);
+    public List<SctData> findSctData(String fingerprint);
 }
