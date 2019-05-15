@@ -122,7 +122,7 @@ public class CrlCreateSessionTest {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        CaTestUtils.createX509Ca(authenticationToken, className, className, "CN="+className);
+        CaTestUtils.createActiveX509Ca(authenticationToken, className, className, "CN="+className);
     }
 
     @AfterClass

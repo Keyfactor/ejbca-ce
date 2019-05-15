@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -80,6 +77,9 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Common class for test classes which need to create a CA.
  *
@@ -91,14 +91,29 @@ public abstract class CaTestUtils {
     private static final Logger log = Logger.getLogger(CaTestUtils.class);
 
     /**
-     * Creates and stores a simple X509 Root CA
+     * Creates and stores a simple X509 Root CA with an ACTIVE state
      *
      * @param authenticationToken Authentication token (usually an always allow token)
      * @param cryptoTokenName Name of new Crypto Token
      * @param caName Name of new CA
      * @param cadn Subject DN of new CA
      */
-    public static X509CA createX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn)
+    public static X509CA createActiveX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn)
+            throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
+            AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
+            IllegalStateException, OperatorCreationException, CAExistsException {
+        return createX509Ca(authenticationToken, cryptoTokenName, caName, cadn, CAConstants.CA_ACTIVE);
+    }
+    
+	/**
+     * Creates and stores a simple X509 Root CA (allows the caller to say with which state the CA should be created - CAConstants.CA_ACTIVE, etc)
+     *
+     * @param authenticationToken Authentication token (usually an always allow token)
+     * @param cryptoTokenName Name of new Crypto Token
+     * @param caName Name of new CA
+     * @param cadn Subject DN of new CA
+     */
+    public static X509CA createX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn, int caStatus)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
             IllegalStateException, OperatorCreationException, CAExistsException {
@@ -107,17 +122,17 @@ public abstract class CaTestUtils {
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
-        final X509CA x509Ca = createX509Ca(cryptoToken, caName, cadn);
+        final X509CA x509Ca = createX509Ca(cryptoToken, caName, cadn, caStatus);
         caSession.addCA(authenticationToken, x509Ca);
         // Now our CA should be operational
         return x509Ca;
     }
 
-    private static X509CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn) throws CertificateException,
+    private static X509CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn, int caStatus) throws CertificateException,
             CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
         CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // No extended services
-        X509CAInfo cainfo = new X509CAInfo(cadn, caName, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = new X509CAInfo(cadn, caName, caStatus,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
         X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);

@@ -28,8 +28,8 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
@@ -87,19 +87,19 @@ public class CaManagementRestResource extends BaseRestResource {
             @PathParam("ca_name") String caName) throws AuthorizationDeniedException, RestException, ApprovalException, CADoesntExistsException, WaitingForApprovalException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         
-        final CAData caData = caSession.findByName(caName);
-        if (caData == null || caData.getCaId() == null) {
+        final CAInfo caInfo = caSession.getCAInfo(admin, caName);
+        if (caInfo == null) {
             String message = "Unknown CA name";
             log.info(message);
-            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), message);
         }
         
         try {
-            caAdminSession.activateCAService(admin, caData.getCaId());
+            caAdminSession.activateCAService(admin, caInfo.getCAId());
         } catch (Exception e) {
             String message = e.getMessage();
             log.info(message);
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), message);
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
         }
         
         return Response.status(Status.OK).build();

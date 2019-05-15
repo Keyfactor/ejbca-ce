@@ -148,9 +148,12 @@ public class RestResourceSystemTestBase {
     private static final String SUPER_ADMINISTRATOR_ROLE_NAME = "Super Administrator Role";
     private static final RoleMember ROLE_MEMBER;
     private static AvailableProtocolsConfiguration protocolConfigBackup;
-    //
+    
     protected static final AuthenticationToken INTERNAL_ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiTest"));
+    
     protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
+    protected static final int HTTP_STATUS_CODE_BAD_REQUEST = 400;    
+    protected static final int HTTP_STATUS_CODE_OK = 200;
 
     static {
         try {
