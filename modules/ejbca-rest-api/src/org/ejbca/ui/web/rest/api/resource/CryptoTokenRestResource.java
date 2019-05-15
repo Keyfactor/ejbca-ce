@@ -171,6 +171,11 @@ public class CryptoTokenRestResource extends BaseRestResource {
                     ") by administrator " + admin.toString() + " failed. Alias is in use, key length is invalid or testing the key pair fails.";
             log.info(errorMessage);
             throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, errorMessage);
+        } catch (InvalidAlgorithmParameterException e) {
+            String errorMessage = "Key generation for CryptoToken '" + cryptoTokenName + "' (" + cryptoTokenId +
+                    ") by administrator " + admin.toString() + " failed. Invalid algorithm parameter(s). Is the chosen key algorithm correct?";
+            log.info(errorMessage);
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, errorMessage);            
         }
         
         return Response.status(Status.OK).build();
