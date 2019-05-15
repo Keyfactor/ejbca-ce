@@ -1683,14 +1683,14 @@ SHA-256 checksum: ${cesecorebinSHA256}
     </target>
 
 	<!-- Setup Firefox profiles for Selenium UI Tests -->
-	<target name="ejbca:setup:selenium">
+	<target name="ejbca:setup:selenium" description="Sets the general EJBCA settings required by some Selenium tests.">
 		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
 		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
 	</target>
-	<target name="ejbca:setup:selenium-certificates">
+	<target name="ejbca:setup:selenium-certificates" description="Sets the certificates settings required by Selenium tests.">
 		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-certificates" />
 	</target>
-	<target name="ejbca:setup:selenium-firefox-profiles">
+	<target name="ejbca:setup:selenium-firefox-profiles" description="Sets the firefox profiles settings required by Selenium tests.">
 		<ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:setup:selenium-firefox-profiles" />
 	</target>
 
