@@ -569,7 +569,7 @@ public class ExceptionHandlerUnitTest {
     public void shouldFormProperErrorResponseOnCryptoTokenOfflineException() throws Exception {
         // given
         final long expectedCode = Status.SERVICE_UNAVAILABLE.getStatusCode();
-        final String expectedMessage = "CryptoTokenOfflineException error message";
+        final String expectedMessage = "Device was unavailable.";
         expect(dummyMock.throwException(anyInt())).andThrow(new CryptoTokenOfflineException(expectedMessage));
         replay(dummyMock);
         // when
