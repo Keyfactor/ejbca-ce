@@ -71,18 +71,16 @@ public class HsmKeepAliveWorker extends BaseWorker {
                     List<String> aliases = token.getAliases();
                     boolean tested = false;
                     for(final String alias : aliases) {
-                        if ("testKey".equals(alias)) {
+                        if (StringUtils.containsIgnoreCase(alias, "testKey")) {
                             if (log.isDebugEnabled()) {
                                 log.debug("Keepalive testing crypto token '"+info.getName()+"' with id "+info.getCryptoTokenId());
                             }
-                            token.testKeyPair("testKey");
+                            token.testKeyPair(alias);
                             tested = true;
                         }
                     }
                     if (!tested) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("No testKey on crypto token '"+info.getName()+"' with id "+info.getCryptoTokenId());
-                        }                        
+                        log.warn("No testKey on crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
                     }
                 } catch (InvalidKeyException e) {
                     log.info("Error testing crypto token that suppposedly was active: ", e);
