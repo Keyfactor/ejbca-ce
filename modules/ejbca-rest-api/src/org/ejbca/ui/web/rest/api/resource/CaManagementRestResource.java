@@ -104,4 +104,34 @@ public class CaManagementRestResource extends BaseRestResource {
         
         return Response.status(Status.OK).build();
     }
+    
+    @PUT
+    @Path("/{ca_name}/deactivate")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Deactivate a CA",
+        notes = "Deactivates CA with given name",
+        code = 200)
+    public Response deactivate(
+            @Context HttpServletRequest requestContext,
+            @ApiParam(value = "Name of the CA to deactivate")
+            @PathParam("ca_name") String caName) throws AuthorizationDeniedException, RestException, ApprovalException, CADoesntExistsException, WaitingForApprovalException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        
+        final CAInfo caInfo = caSession.getCAInfo(admin, caName);
+        if (caInfo == null) {
+            String message = "Unknown CA name";
+            log.info(message);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), message);
+        }
+        
+        try {
+            caAdminSession.deactivateCAService(admin, caInfo.getCAId());
+        } catch (Exception e) {
+            String message = e.getMessage();
+            log.info(message);
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
+        }
+        
+        return Response.status(Status.OK).build();
+    }
 }
