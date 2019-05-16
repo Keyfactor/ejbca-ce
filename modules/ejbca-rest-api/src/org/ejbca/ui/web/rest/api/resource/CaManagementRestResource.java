@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * JAX-RS resource handling CA management related requests.
  *
- * @version $Id: CaManagementRestResource.java 32299 2019-05-10 13:23:48Z tarmo_helmes $
+ * @version $Id$
  */
 @Api(tags = {"v1/ca_management"}, value = "CA Management API")
 @Path("/v1/ca_management")
