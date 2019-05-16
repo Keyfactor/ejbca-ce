@@ -208,6 +208,10 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 503
             case CAOfflineException:
             case CryptoTokenOfflineException:
+                return ExceptionErrorRestResponse.builder()
+                        .errorCode(Status.SERVICE_UNAVAILABLE.getStatusCode())
+                        .errorMessage("Device was unavailable.")
+                        .build();
             case CTLogException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.SERVICE_UNAVAILABLE.getStatusCode())
