@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
