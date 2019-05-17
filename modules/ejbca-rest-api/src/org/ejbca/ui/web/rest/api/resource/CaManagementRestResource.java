@@ -11,6 +11,7 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -84,19 +85,19 @@ public class CaManagementRestResource extends BaseRestResource {
     public Response activate(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Name of the CA to activate")
-            @PathParam("ca_name") String caName) throws AuthorizationDeniedException, RestException, ApprovalException, CADoesntExistsException, WaitingForApprovalException {
+            @PathParam("ca_name") String caName) throws RestException, AuthorizationDeniedException, ApprovalException, CADoesntExistsException, WaitingForApprovalException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         
         final CAInfo caInfo = caSession.getCAInfo(admin, caName);
         if (caInfo == null) {
             String message = "Unknown CA name";
             log.info(message);
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), message);
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
         }
         
         try {
-            caAdminSession.activateCAService(admin, caInfo.getCAId());
-        } catch (Exception e) {
+            caAdminSession.activateCAService (admin, caInfo.getCAId());
+        } catch (EJBException e) {
             String message = e.getMessage();
             log.info(message);
             throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
@@ -121,12 +122,12 @@ public class CaManagementRestResource extends BaseRestResource {
         if (caInfo == null) {
             String message = "Unknown CA name";
             log.info(message);
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), message);
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
         }
         
         try {
             caAdminSession.deactivateCAService(admin, caInfo.getCAId());
-        } catch (Exception e) {
+        } catch (EJBException e) {
             String message = e.getMessage();
             log.info(message);
             throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, message);
