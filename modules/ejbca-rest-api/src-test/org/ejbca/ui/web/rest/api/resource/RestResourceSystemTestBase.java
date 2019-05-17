@@ -154,6 +154,7 @@ public class RestResourceSystemTestBase {
     protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
     protected static final int HTTP_STATUS_CODE_BAD_REQUEST = 400;    
     protected static final int HTTP_STATUS_CODE_OK = 200;
+    protected static final int HTTP_STATUS_CODE_ACCEPTED = 202;
 
     static {
         try {
