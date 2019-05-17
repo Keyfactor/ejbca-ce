@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import java.sql.ResultSet;
+import java.util.Map;
+
 /**
  * Helper class used to database level verifications
  *
@@ -21,9 +24,6 @@ package org.ejbca.webtest.helper;
 import org.ejbca.webtest.utils.DBConnection;
 import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
-
-import java.sql.ResultSet;
-import java.util.Map;
 
 public class QueryHelper extends BaseHelper {
 
@@ -39,7 +39,7 @@ public class QueryHelper extends BaseHelper {
      * @param dbName
      * @param caName
      */
-    public void assertCrlNumberIncreased(Map db, String dbName, final String caName) {
+    public void assertCrlNumberIncreased(Map<?, ?> db, String dbName, final String caName) {
         int crlNumberDB = 0;
         try {
             DBConnection conn = DBConnection.setupDB(db.get("host") + ":"
@@ -68,7 +68,7 @@ public class QueryHelper extends BaseHelper {
      * @param tblName
      * @param whereCriteria
      */
-    public void removeDatabaseRowsByColumnCriteria(Map db, String dbName, String tblName, String whereCriteria) {
+    public void removeDatabaseRowsByColumnCriteria(Map<?, ?> db, String dbName, String tblName, String whereCriteria) {
         try {
             DBConnection conn = DBConnection.setupDB(db.get("host") + ":"
                             + db.get("port"),
@@ -92,7 +92,7 @@ public class QueryHelper extends BaseHelper {
      * @param username
      * @return
      */
-    public String getCertificateSerialNumberByUsername(Map db, String dbName, String username) {
+    public String getCertificateSerialNumberByUsername(Map<?, ?> db, String dbName, String username) {
         try {
             DBConnection conn = DBConnection.setupDB(db.get("host") + ":"
                             + db.get("port"),
