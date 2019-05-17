@@ -78,13 +78,13 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # The value of 'ocsp.nonexistingisgood=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=false' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:
-#ocsp.nonexistingisgood.uri.1=.*/thisEndingIsGood$
+#ocsp.nonexistingisgood.uri.1=.*?thisEndingIsGood$
 #ocsp.nonexistingisgood.uri.2=^http://good.myhost.nu:8080/.*
 
 # The value of 'ocsp.nonexistingisgood=true' may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=true' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:
-#ocsp.nonexistingisbad.uri.1=.*/thisEndingIsBad$
+#ocsp.nonexistingisbad.uri.1=.*?thisEndingIsBad$
 #ocsp.nonexistingisbad.uri.2=^http://bad.myhost.nu:8080/.*
 
 # If true a certificate that does not exist in the database, but is issued by a CA the responder handles,
@@ -100,7 +100,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # The value of 'ocsp.nonexistingisrevoked=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisrevoked=false' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:
-#ocsp.nonexistingisrevoked.uri.1=.*/thisEndingIsRevoked$
+#ocsp.nonexistingisrevoked.uri.1=.*?thisEndingIsRevoked$
 #ocsp.nonexistingisrevoked.uri.2=^http://revoked.myhost.nu:8080/.*
 
 # An OCSP responder MAY choose to retain revocation information beyond a certificate's expiration.  The date obtained by subtracting this
