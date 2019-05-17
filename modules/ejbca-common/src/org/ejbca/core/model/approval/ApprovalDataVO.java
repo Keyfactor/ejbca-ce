@@ -15,6 +15,8 @@ package org.ejbca.core.model.approval;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.SecConst;
@@ -42,7 +44,6 @@ public class ApprovalDataVO implements Serializable {
 
 	// Approval types
 	public static final int APPROVALTYPE_DUMMY                       = 0;
-	public static final int APPROVALTYPE_VIEWHARDTOKENDATA_DUMMY     = 1; // This is the removed type for HardToken approval. Hard tokens got removed in 7.1.0.
 	public static final int APPROVALTYPE_ADDENDENTITY                = 2;
 	public static final int APPROVALTYPE_EDITENDENTITY               = 3;
 	public static final int APPROVALTYPE_CHANGESTATUSENDENTITY       = 4;
@@ -54,10 +55,20 @@ public class ApprovalDataVO implements Serializable {
 	public static final int APPROVALTYPE_ACTIVATECATOKEN             = 10;
 
 	//IMPORTANT REMEMBER TO SET THE RESOURCES IN BOTH INTERNAL AND ADMINWEB LANGUAGE FILES
-	public static final String[] APPROVALTYPENAMES = {"APDUMMY", "APPROVALTYPE_VIEWHARDTOKENDATA_DUMMY", "APADDENDENTITY","APEDITENDENTITY",
-		                                              "APCHANGESTATUSENDENTITY", "APKEYRECOVERY", "APGENERATETOKEN",
-		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE",
-                                                      "APPROVEACTIVATECA"};
+	
+	public static final Map<Integer, String> APPROVALTYPENAMES = new HashMap<>();
+	static {
+	    APPROVALTYPENAMES.put(0, "APDUMMY");
+        APPROVALTYPENAMES.put(2, "APADDENDENTITY");
+        APPROVALTYPENAMES.put(3, "APEDITENDENTITY");
+        APPROVALTYPENAMES.put(4, "APCHANGESTATUSENDENTITY"); 
+        APPROVALTYPENAMES.put(5, "APKEYRECOVERY");
+        APPROVALTYPENAMES.put(6, "APGENERATETOKEN");
+        APPROVALTYPENAMES.put(7, "APREVOKEENDENTITY"); 
+        APPROVALTYPENAMES.put(8, "APREVOKEDELETEENDENTITY"); 
+        APPROVALTYPENAMES.put(9, "APREVOKECERTIFICATE");
+        APPROVALTYPENAMES.put(10, "APPROVEACTIVATECA");
+	}
 
 	/** Used to indicate that the approval is applicable to any ca. */
 	public static final int ANY_CA = SecConst.ALLCAS;

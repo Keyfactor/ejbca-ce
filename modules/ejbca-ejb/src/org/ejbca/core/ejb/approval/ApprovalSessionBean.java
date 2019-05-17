@@ -657,7 +657,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         } else {
             partitionName = null;
         }
-        final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
+        final String approvalType = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES.get(approvalRequest.getApprovalType()));
         final String workflowState = intres.getLocalizedMessage("APPROVAL_WFSTATE_" + approvalPartitionWorkflowState.name());
         final String requestor = approvalRequest.getRequestAdmin().toString();
         final String lastApprovedBy;
