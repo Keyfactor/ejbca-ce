@@ -119,7 +119,7 @@ public class ApprovalDataVOView implements Serializable {
 
     public String getApproveActionName() {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean()
-                .getText(ApprovalDataVO.APPROVALTYPENAMES[data.getApprovalRequest().getApprovalType()], true);
+                .getText(ApprovalDataVO.APPROVALTYPENAMES.get(data.getApprovalRequest().getApprovalType()), true);
     }
 
     public String getRequestAdminName() {

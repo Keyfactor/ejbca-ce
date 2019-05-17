@@ -104,7 +104,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 
 	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovalAdmin)
 	        throws ApprovalRequestExecutionException {
-		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[approvalType] + " (" + approvalType + ").");
+		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES.get(approvalType) + " (" + approvalType + ").");
 		try {
 			switch (approvalType) {
 				case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
