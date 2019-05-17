@@ -2972,19 +2972,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Get CA also check authorization for this specific CA
         final CAInfo cainfo = caSession.getCAInfo(admin, caid);
-        if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+        
+        if (cainfo.getStatus() == CAConstants.CA_ACTIVE) {
+            return;
+        } else if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
             log.info(intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid)));
             return;
-        }
-        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-        ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ACTIVATECA, cainfo, certProfile);
-        final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, caid,
-                ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile, cainfo.getCertificateProfileId());
-        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
-            int requestId = approvalSession.addApprovalRequest(admin, ar);
-            throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"), requestId);
-        }
-        if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
+        } else if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
+            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ACTIVATECA, cainfo, certProfile);
+            final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, caid,
+                    ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile, cainfo.getCertificateProfileId());
+            if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
+                int requestId = approvalSession.addApprovalRequest(admin, ar);
+                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"), requestId);
+            }
+            
             final String detailsMsg = intres.getLocalizedMessage("caadmin.activated", caid);
             auditSession.log(EventTypes.CA_SERVICEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
@@ -3012,8 +3015,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     String.valueOf(caid), null, null, detailsMsg);
             throw new AuthorizationDeniedException(detailsMsg);
         }
+        
         final CACommon ca = caSession.getCAForEdit(admin, caid);
-        if (ca.getStatus() == CAConstants.CA_ACTIVE) {
+        
+        if (ca.getStatus() == CAConstants.CA_OFFLINE) {
+            return;
+        } else if (ca.getStatus() == CAConstants.CA_ACTIVE) {
             ca.setStatus(CAConstants.CA_OFFLINE);
             caSession.editCA(admin, ca, false);
             final String detailsMsg = intres.getLocalizedMessage("caadmin.deactivated", caid);
@@ -3024,7 +3031,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             auditSession.log(EventTypes.CA_SERVICEDEACTIVATE, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
             throw new RuntimeException(detailsMsg);
-
         }
     }
 
