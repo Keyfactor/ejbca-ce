@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,8 +37,10 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
@@ -66,6 +69,8 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ui.PropertyValidationException;
+import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.cvc.AccessRightEnum;
@@ -128,6 +133,23 @@ public abstract class CaTestUtils {
         return x509Ca;
     }
 
+    public static X509CA createX509CaWithApprovals(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn, 
+            int caStatus, Map<ApprovalRequestType, Integer> approvals) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
+                AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
+                IllegalStateException, OperatorCreationException, CAExistsException, PropertyValidationException, ApprovalProfileExistsException, CADoesntExistsException {
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
+        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
+        final X509CA x509Ca = createX509Ca(cryptoToken, caName, cadn, caStatus);
+        x509Ca.setApprovals(approvals);
+        
+        caSession.addCA(authenticationToken, x509Ca);
+
+        return x509Ca;
+    }
+    
     private static X509CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn, int caStatus) throws CertificateException,
             CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
         CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
@@ -166,6 +188,17 @@ public abstract class CaTestUtils {
         }
     }
 
+    public static int getCaIdByName(AuthenticationToken authenticationToken, String caName) throws CADoesntExistsException, AuthorizationDeniedException {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CAInfo caInfo = caSession.getCAInfo(authenticationToken, caName);
+        if (caInfo != null) {
+            int caId = caInfo.getCAId();
+            return caId;
+        } else {
+            throw new CADoesntExistsException();
+        }
+    }
+    
     /**
      * Removes a CA, and it's associated certificate and Crypto Token.
      * See {@link #removeCa(AuthenticationToken, String, String)}, which is more robust, in case the test got aborted for some reason.
