@@ -81,7 +81,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * is supposed to try this action again.
 	 */
 	public void execute(CAAdminSession caAdminSession) throws ApprovalRequestExecutionException {
-		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[getApprovalType()] + " (" + getApprovalType() + ").");
+		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES.get(getApprovalType()) + " (" + getApprovalType() + ").");
 		try {
 			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
 		    caAdminSession.activateCAService(getRequestAdmin(), getCAId());
