@@ -826,7 +826,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privateKey.getAlgorithm());
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
             try {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -890,7 +890,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privateKey.getAlgorithm());
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
             try {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -1518,6 +1518,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     Extension ext = exts.getExtension(Extension.authorityKeyIdentifier);
                     if (ext != null) {
                         // Create a new authorityKeyIdentifier for the fake key
+                        // SHA1 used here, but it's not security relevant here as this is the RFC5280 Key Identifier
                         JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                         AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg));
                         certbuilder.replaceExtension(Extension.authorityKeyIdentifier, ext.isCritical(), aki.getEncoded());
@@ -1902,6 +1903,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(caSkid);
                 crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
             } else {
+                // SHA1 used here, but it's not security relevant here as this is the RFC5280 Key Identifier
                 JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                 AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(
                         CATokenConstants.CAKEYPURPOSE_CRLSIGN)));

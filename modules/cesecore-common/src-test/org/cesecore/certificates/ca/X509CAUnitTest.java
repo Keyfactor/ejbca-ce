@@ -79,6 +79,7 @@ import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -184,6 +185,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Store<X509CertificateHolder> certstore = s.getCertificates();
         Collection<X509CertificateHolder> certs = certstore.getMatches(null);
         assertEquals(2, certs.size());
+        assertEquals("PKCS#7 signature algorithm should use SHA256 hash algorithm", CMSSignedGenerator.DIGEST_SHA256, s.getSignerInfos().getSigners().iterator().next().getDigestAlgOID());
         p7 = x509ca.createPKCS7(cryptoToken, cacert, false);
         assertNotNull(p7);
         s = new CMSSignedData(p7);
