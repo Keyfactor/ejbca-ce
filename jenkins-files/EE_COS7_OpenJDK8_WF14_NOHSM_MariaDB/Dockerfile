@@ -22,7 +22,7 @@ RUN cd $HOME \
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 
 #Setting environment variables
-ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
+ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=2048m -Djava.net.preferIPv4Stack=true"
 
 #Setting Ant Params
 ENV ANT_OPTS="-Xms256M -Xmx512M"
