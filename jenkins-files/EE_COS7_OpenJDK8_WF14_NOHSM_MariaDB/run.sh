@@ -66,7 +66,8 @@ wait_for_deployment() {
 		sleep 2
 	done
     if [ "$DEPLOY_SUCCESSFUL" -ne 1 ]; then
-        echo "EJBCA deploy timed out." 
+        echo "EJBCA deploy timed out."
+        cat /opt/jboss/wildfly/standalone/log/server.log 
         exit 1;
     fi
 }
@@ -138,17 +139,8 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:rel
 sleep 10
 wait_for_deployment
 
-
-
-# load the final version of Wildfly conf and restart wildfly
-#cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
-#JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
-
-# wait for reload to kick in and start undeploying and drop ejbca.ear.deployed file (otherwise we'd detect ejbca.ear.deployed file immediately again)
-#sleep 10
-
-#wait_for_deployment
-
 echo '=================== starting system tests ================================='
 ant test:runsys -Dtests.jvmargs="$TEST_OPTS"
+
+
 
