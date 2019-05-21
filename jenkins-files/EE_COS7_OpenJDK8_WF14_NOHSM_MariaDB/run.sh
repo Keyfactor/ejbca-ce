@@ -39,9 +39,10 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:rel
 
 sleep 10
 echo '=================== Configuring logging ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /subsystem=logging/logger=org.ejbca:add(level=INFO)
-/subsystem=logging/logger=org.cesecore:add(level=INFO)'
+/subsystem=logging/logger=org.cesecore:add(level=INFO)
+EOF
 
 echo '=================== Deploying ================================='
 ant -q clean deployear
@@ -80,53 +81,58 @@ ant -q deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
 echo '=================== Removing existing TLS and HTTP configuration ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh <<EOF
 /subsystem=undertow/server=default-server/http-listener=default:remove()
 /subsystem=undertow/server=default-server/https-listener=https:remove()
 /socket-binding-group=standard-sockets/socket-binding=http:remove()
-/socket-binding-group=standard-sockets/socket-binding=https:remove()'
+/socket-binding-group=standard-sockets/socket-binding=https:remove()
+EOF
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 sleep 10
 wait_for_deployment
 
 echo '=================== Adding new interfaces and sockets ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /interface=http:add(inet-address="0.0.0.0")
 /interface=httpspub:add(inet-address="0.0.0.0")
 /interface=httpspriv:add(inet-address="0.0.0.0")
 /socket-binding-group=standard-sockets/socket-binding=http:add(port="8080",interface="http")
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442",interface="httpspub")
-/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")'
+/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
+EOF
 
 echo '=================== Configuring TLS ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /subsystem=elytron/key-store=httpsKS:add(path="keystore/keystore.jks",relative-to=jboss.server.config.dir,credential-reference={clear-text="serverpwd"},type=JKS)
 /subsystem=elytron/key-store=httpsTS:add(path="keystore/truststore.jks",relative-to=jboss.server.config.dir,credential-reference={clear-text="changeit"},type=JKS)
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,algorithm="SunX509",credential-reference={clear-text="serverpwd"})
 /subsystem=elytron/trust-manager=httpsTM:add(key-store=httpsTS)
 /subsystem=elytron/server-ssl-context=httpspub:add(key-manager=httpsKM,protocols=["TLSv1.2"])
-/subsystem=elytron/server-ssl-context=httpspriv:add(key-manager=httpsKM,protocols=["TLSv1.2"],trust-manager=httpsTM,need-client-auth=true,authentication-optional=false,want-client-auth=true'
+/subsystem=elytron/server-ssl-context=httpspriv:add(key-manager=httpsKM,protocols=["TLSv1.2"],trust-manager=httpsTM,need-client-auth=true,authentication-optional=false,want-client-auth=true
+EOF
 
 echo '=================== Adding HTTP(S) listeners ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /subsystem=undertow/server=default-server/http-listener=http:add(socket-binding="http", redirect-socket="httpspriv")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding="httpspub", ssl-context="httpspub", max-parameters=2048)
-/subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding="httpspriv", ssl-context="httpspriv", max-parameters=2048)'
+/subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding="httpspriv", ssl-context="httpspriv", max-parameters=2048)
+EOF
 
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 sleep 10
 wait_for_deployment
 
 echo '=================== Configuring HTTP Protocol Behavior ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
 /system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
 /system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
 /system-property=org.apache.tomcat.util.http.Parameters.MAX_COUNT:add(value=2048)
 /system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
 /subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)
-/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)'
+/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
+EOF
 
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 sleep 10
