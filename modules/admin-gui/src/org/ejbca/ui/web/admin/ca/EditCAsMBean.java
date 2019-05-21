@@ -740,6 +740,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return StringUtils.EMPTY;
     }
     
+    public int getSignedByStringValue() {
+        if (signedByString != null) {
+            return Integer.valueOf(signedByString);
+        }
+        return 0;
+    }
+    
     public void setSignedByString(final String signedByString) {
         this.signedByString = signedByString;
     }
