@@ -25,7 +25,7 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:rel
 
 sleep 10
 echo '=================== Configuring Remote Interfaces ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=connector-ref,value=remoting)
 /socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447,interface=management)
 /subsystem=undertow/server=default-server/http-listener=remoting:add(socket-binding=remoting,enable-http2=true)
@@ -33,7 +33,8 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=infinispan/cache-container=server:remove()
 /subsystem=infinispan/cache-container=web:remove()
 /subsystem=ejb3/cache=distributable:remove()
-/subsystem=ejb3/passivation-store=infinispan:remove()'
+/subsystem=ejb3/passivation-store=infinispan:remove()
+EOF
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 sleep 10
