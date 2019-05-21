@@ -227,7 +227,12 @@ public class OCSPServlet extends HttpServlet {
     private void processOcspRequest(HttpServletRequest request, HttpServletResponse response, final HttpMethod httpMethod) throws ServletException {
         final String remoteAddress = request.getRemoteAddr();
         final String xForwardedFor = StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For"));
-        final StringBuffer requestUrl = request.getRequestURL().append("?" + request.getQueryString());
+        StringBuffer requestUrl = request.getRequestURL();
+        
+        if (request.getQueryString() != null) {
+            requestUrl = requestUrl.append("?" + request.getQueryString());
+        }
+
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
