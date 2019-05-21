@@ -172,7 +172,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             }
         }
         final String fingerprint = certificateData.getFingerprint();
-        final List<Object> publisherResults = publisherQueueSession.storeCertificateNonTransactionalInternal(publishersToTryDirect, admin,
+        final List<Object> publisherResults = publisherQueueSession.publishCertificateNonTransactionalInternal(publishersToTryDirect, admin,
                 certWrapper, password, userDN, extendedinformation);
         final String certSerno = certificateData.getSerialNumberHex();
         for (int i = 0; i < publishersToTryDirect.size(); i++) {
@@ -269,7 +269,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 if (!publ.getOnlyUseQueue()) {
                     try {
                         try {
-                            if (publisherQueueSession.storeCRLNonTransactional(publ, admin, incrl, cafp, number, issuerDn)) {
+                            if (publisherQueueSession.publishCRLNonTransactional(publ, admin, incrl, cafp, number, issuerDn)) {
                                 publishStatus = PublisherConst.STATUS_SUCCESS;
                             }
                         } catch (EJBException e) {

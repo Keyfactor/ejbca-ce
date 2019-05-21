@@ -19,24 +19,66 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Properties;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBTransactionRolledbackException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
+import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -63,8 +105,20 @@ public class PublisherQueueTest {
 
     private static final Logger log = Logger.getLogger(PublisherQueueTest.class);
 
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
+    private SignSessionRemote signSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    
+    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken("PublisherQueueTest");
+    
+    @BeforeClass
+    public static void beforeClass() throws Exception{
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+    
     @Test
     public void shouldFindNoPendingEntriesWhenNoneIsInserted() {
         final int publisherId = 11110;
@@ -402,6 +456,146 @@ public class PublisherQueueTest {
 
         assertEquals(1, actual.length);
         assertEquals(2, actual[0]); // (~, ~) s = 2
+    }
+    
+    /**
+     * Test return codes from a single publishing job that succeeds
+     */
+    @Test
+    public void testPublisherReturnCodeTrue() throws ReferencesToItemExistException, AuthorizationDeniedException, PublisherExistsException,
+            CreateException, CADoesntExistsException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, CustomCertificateSerialNumberException,
+            AuthStatusException, AuthLoginException, NoSuchEndEntityException, InvalidAlgorithmParameterException, EndEntityExistsException,
+            CustomFieldException, ApprovalException, EndEntityProfileValidationException, WaitingForApprovalException, CouldNotRemoveEndEntityException {
+        final String testCaName = "testPublisherReturnCodeTrueCa";
+        final String testCertificateUsername = "testPublisherReturnCodeTrueUser";
+        CaTestCase.createTestCA(testCaName);
+        //Add a mock publisher.
+        final String publisherName = "testPublisherReturnCodeTrue";
+        //Publisher is set to allow one call to succeed
+        Properties properties = new Properties();
+        properties.put(MockPublisher.PROPERTYKEY_LIMIT, "1");
+        MockPublisher mockPublisher = new MockPublisher(properties);
+        int caId = CaTestCase.getTestCAId(testCaName);     
+        endEntityManagementSession.addUser(authenticationToken, testCertificateUsername, "foo123", "CN="+testCertificateUsername,
+                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
+        Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
+        String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
+        int publisherId = publisherSession.addPublisher(authenticationToken, publisherName, mockPublisher);
+        //Add some queue data for the publisher to work on.
+        final PublisherQueueVolatileInformation publisherQueueInfo = new PublisherQueueVolatileInformation();
+        publisherQueueInfo.setUsername(testCertificateUsername);
+        publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
+        try {
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, publisherId,
+                    mockPublisher);
+            assertEquals("Wrong number of successes was reported.", 1, result.getSuccesses());
+            assertEquals("Wrong number of failures was reported.", 0, result.getFailures());
+        } finally {
+            //Remove the junk
+            internalCertificateStoreSession.removeCertificate(certificateFingerprint);
+            endEntityManagementSession.revokeAndDeleteUser(authenticationToken, testCertificateUsername, 0);
+            publisherSession.removePublisher(authenticationToken, publisherName);
+            CaTestCase.removeTestCA(testCaName);
+            publisherQueueSession.removePublisherQueueEntries(publisherName);
+        }
+    }
+    
+    /**
+     * Test return codes from a single publishing job that fails
+     */
+    @Test
+    public void testPublisherReturnCodeFalse() throws ReferencesToItemExistException, AuthorizationDeniedException, PublisherExistsException,
+            CreateException, CADoesntExistsException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, CustomCertificateSerialNumberException,
+            AuthStatusException, AuthLoginException, NoSuchEndEntityException, InvalidAlgorithmParameterException, EndEntityExistsException,
+            CustomFieldException, ApprovalException, EndEntityProfileValidationException, WaitingForApprovalException, CouldNotRemoveEndEntityException {
+        final String testCaName = "testPublisherReturnCodeFalseCa";
+        final String testCertificateUsername = "testPublisherReturnCodeFalse";
+        CaTestCase.createTestCA(testCaName);
+        //Add a mock publisher.
+        final String publisherName = "testPublisherReturnCodeFalse";
+        //Publisher is set to allow no jobs to pass.
+        Properties properties = new Properties();
+        properties.put(MockPublisher.PROPERTYKEY_LIMIT, "0");
+        MockPublisher mockPublisher = new MockPublisher(properties);
+        int caId = CaTestCase.getTestCAId(testCaName);     
+        endEntityManagementSession.addUser(authenticationToken, testCertificateUsername, "foo123", "CN="+testCertificateUsername,
+                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
+        Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
+        String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
+        int publisherId = publisherSession.addPublisher(authenticationToken, publisherName, mockPublisher);
+        //Add some queue data for the publisher to work on.
+        final PublisherQueueVolatileInformation publisherQueueInfo = new PublisherQueueVolatileInformation();
+        publisherQueueInfo.setUsername(testCertificateUsername);
+        publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
+        try {
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, publisherId,
+                    mockPublisher);
+            assertEquals("Wrong number of successes was reported.", 0, result.getSuccesses());
+            assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
+        } finally {
+            //Remove the junk
+            internalCertificateStoreSession.removeCertificate(certificateFingerprint);
+            endEntityManagementSession.revokeAndDeleteUser(authenticationToken, testCertificateUsername, 0);
+            publisherSession.removePublisher(authenticationToken, publisherName);
+            publisherQueueSession.removePublisherQueueEntries(publisherName);
+            CaTestCase.removeTestCA(testCaName);
+        }
+    }
+    
+    /**
+     * Test return codes from two publishing jobs: one will succeed and one will fail
+     */
+    @Test
+    public void testPublisherReturnCodeMixed() throws ReferencesToItemExistException, AuthorizationDeniedException, PublisherExistsException,
+            CreateException, CADoesntExistsException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, CustomCertificateSerialNumberException,
+            AuthStatusException, AuthLoginException, NoSuchEndEntityException, InvalidAlgorithmParameterException, EndEntityExistsException,
+            CustomFieldException, ApprovalException, EndEntityProfileValidationException, WaitingForApprovalException, CouldNotRemoveEndEntityException {
+        final String testCaName = "testPublisherReturnCodeMixedCa";
+        final String testCertificateUsername = "testPublisherReturnCodeMixedUser";
+        CaTestCase.createTestCA(testCaName);
+        //Add a mock publisher.
+        final String publisherName = "testPublisherReturnCodeMixed";
+        //Publisher is set to allow one call to succeed
+        Properties properties = new Properties();
+        properties.put(MockPublisher.PROPERTYKEY_LIMIT, "1");
+        MockPublisher mockPublisher = new MockPublisher(properties);
+        int caId = CaTestCase.getTestCAId(testCaName);     
+        endEntityManagementSession.addUser(authenticationToken, testCertificateUsername, "foo123", "CN="+testCertificateUsername,
+                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
+        Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
+        String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
+        int publisherId = publisherSession.addPublisher(authenticationToken, publisherName, mockPublisher);
+        //Add some queue data for the publisher to work on.
+        final PublisherQueueVolatileInformation publisherQueueInfo = new PublisherQueueVolatileInformation();
+        publisherQueueInfo.setUsername(testCertificateUsername);
+        //Add two jobs. The mock publisher should allow the first to succeed and the second to fail
+        publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
+        publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
+        try {
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, publisherId,
+                    mockPublisher);
+            assertEquals("Wrong number of successes was reported.", 1, result.getSuccesses());
+            assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
+        } finally {
+            //Remove the junk
+            internalCertificateStoreSession.removeCertificate(certificateFingerprint);
+            endEntityManagementSession.revokeAndDeleteUser(authenticationToken, testCertificateUsername, 0);
+            publisherSession.removePublisher(authenticationToken, publisherName);
+            CaTestCase.removeTestCA(testCaName);
+            publisherQueueSession.removePublisherQueueEntries(publisherName);
+        }
     }
 
     @After

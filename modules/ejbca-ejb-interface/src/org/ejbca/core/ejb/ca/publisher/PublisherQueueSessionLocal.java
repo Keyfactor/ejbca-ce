@@ -109,11 +109,11 @@ public interface PublisherQueueSessionLocal {
      * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
      * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
      */
-    void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
+    PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 
     
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
-	boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper cert,
+	boolean publishCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper cert,
 	        String password, String userDN, ExtendedInformation extendedinformation) throws PublisherException;
 
     /** Publishers do not run as part of regular transactions and expect to run in auto-commit mode. 
@@ -127,7 +127,7 @@ public interface PublisherQueueSessionLocal {
      * @return true if storage (to publisher or queue) was successful.
      * @throws PublisherException if a communication or other error occurs (storing in the queue due to publisher downtime is not an error).
 	 */
-	boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
+	boolean publishCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
 
     /**
      * Publishers do not run as part of regular transactions and expect to run in auto-commit mode.
@@ -136,9 +136,9 @@ public interface PublisherQueueSessionLocal {
      * The implementing method returns the result in the same order as the publishers are provided.
      * Each result Object is either a PublisherException (if the publishing failed) or a Boolean.TRUE (if the publishing succeeded).
      */
-    List<Object> storeCertificateNonTransactionalInternal(List<BasePublisher> publishers, AuthenticationToken admin, CertificateDataWrapper certWrapper,
+    List<Object> publishCertificateNonTransactionalInternal(List<BasePublisher> publishers, AuthenticationToken admin, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation);
 	
     /** Publishers digest queues in transaction-based "chunks". */
-	int doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher);
+    PublishingResult doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 }
