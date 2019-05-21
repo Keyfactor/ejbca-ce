@@ -15,15 +15,16 @@ java -version
 
 cp /opt/conf/* /app/ejbca/conf/
 
+echo '=================== Starting Application Server ================================='
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
 sleep 15
-
+echo '=================== Adding Datasource ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://mariadb_wf14_1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 sleep 15
-
+echo '=================== Configuring Remote Interfaces ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=connector-ref,value=remoting)
 /socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447,interface=management)
@@ -36,16 +37,17 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 sleep 15
-
+echo '=================== Configuring logging ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
 /subsystem=logging/logger=org.ejbca:add(level=INFO)
 /subsystem=logging/logger=org.cesecore:add(level=INFO)"
 
+echo '=================== Deploying ================================='
 ant -q clean deployear
 
-echo '=================== Waiting for deploy ================================='
 
 wait_for_deployment() {
+	echo '=================== Waiting for deploy ================================='
     DEPLOY_SUCCESSFUL=0
 	# Wait for up to 180 seconds for app to start up
 	for i in {1..90} ; do
@@ -76,6 +78,7 @@ echo '=================== ant runinstall done! =================================
 ant -q deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
+echo '=================== Removing existing TLS and HTTP configuration ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
 /subsystem=undertow/server=default-server/http-listener=default:remove()
 /subsystem=undertow/server=default-server/https-listener=https:remove()
@@ -86,6 +89,7 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:rel
 sleep 10
 wait_for_deployment
 
+echo '=================== Adding new interfaces and sockets ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /interface=http:add(inet-address="0.0.0.0")
 /interface=httpspub:add(inet-address="0.0.0.0")
@@ -94,6 +98,7 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442",interface="httpspub")
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")'
 
+echo '=================== Configuring TLS ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=elytron/key-store=httpsKS:add(path="keystore/keystore.jks",relative-to=jboss.server.config.dir,credential-reference={clear-text="serverpwd"},type=JKS)
 /subsystem=elytron/key-store=httpsTS:add(path="keystore/truststore.jks",relative-to=jboss.server.config.dir,credential-reference={clear-text="changeit"},type=JKS)
@@ -102,6 +107,7 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=elytron/server-ssl-context=httpspub:add(key-manager=httpsKM,protocols=["TLSv1.2"])
 /subsystem=elytron/server-ssl-context=httpspriv:add(key-manager=httpsKM,protocols=["TLSv1.2"],trust-manager=httpsTM,need-client-auth=true,authentication-optional=false,want-client-auth=true'
 
+echo '=================== Adding HTTP(S) listeners ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=undertow/server=default-server/http-listener=http:add(socket-binding="http", redirect-socket="httpspriv")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding="httpspub", ssl-context="httpspub", max-parameters=2048)
@@ -111,6 +117,7 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:rel
 sleep 10
 wait_for_deployment
 
+echo '=================== Configuring HTTP Protocol Behavior ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")
 /system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)
