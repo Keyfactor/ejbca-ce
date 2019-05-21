@@ -70,6 +70,7 @@ public class CRLData extends ProtectedData implements Serializable {
      *            the (X509)CRL to be stored in the database.
      * @param number
      *            monotonically increasing CRL number
+     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
      * @param deltaCRLIndicator
      *            -1 for a normal CRL and 1 for a deltaCRL
      */
@@ -113,7 +114,9 @@ public class CRLData extends ProtectedData implements Serializable {
         this.deltaCRLIndicator = deltaCRLIndicator;
     }
 
-    /** @since EJBCA 7.1.0 */
+    /** @since EJBCA 7.1.0 
+     * CRL partition index, or 0 if not using CRL partitioning.
+     */
     // @Column
     public int getCrlPartitionIndex() {
         return crlPartitionIndex != null ? crlPartitionIndex : 0;
@@ -272,9 +275,10 @@ public class CRLData extends ProtectedData implements Serializable {
     }
 
     /**
+     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
+     * @return the found entity instance or null if the entity does not exist
      * @throws javax.persistence.NonUniqueResultException
      *             if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
      */
     public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlPartitionIndex, int crlNumber) {
         StringBuilder builder = new StringBuilder("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND ");
@@ -302,6 +306,7 @@ public class CRLData extends ProtectedData implements Serializable {
     }
 
     /**
+     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
      * @return the highest CRL number or null if no CRL for the specified issuer exists.
      */
     public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
