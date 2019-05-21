@@ -18,14 +18,14 @@ cp /opt/conf/* /app/ejbca/conf/
 echo '=================== Starting Application Server ================================='
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
-sleep 15
+sleep 10
 echo '=================== Adding Datasource ================================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://mariadb_wf14_1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"'
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
-sleep 15
+sleep 10
 echo '=================== Configuring Remote Interfaces ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=connector-ref,value=remoting)
 /socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447,interface=management)
 /subsystem=undertow/server=default-server/http-listener=remoting:add(socket-binding=remoting,enable-http2=true)
@@ -33,14 +33,14 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
 /subsystem=infinispan/cache-container=server:remove()
 /subsystem=infinispan/cache-container=web:remove()
 /subsystem=ejb3/cache=distributable:remove()
-/subsystem=ejb3/passivation-store=infinispan:remove()"
+/subsystem=ejb3/passivation-store=infinispan:remove()'
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
-sleep 15
+sleep 10
 echo '=================== Configuring logging ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=logging/logger=org.ejbca:add(level=INFO)
-/subsystem=logging/logger=org.cesecore:add(level=INFO)"
+/subsystem=logging/logger=org.cesecore:add(level=INFO)'
 
 echo '=================== Deploying ================================='
 ant -q clean deployear
@@ -79,11 +79,11 @@ ant -q deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
 echo '=================== Removing existing TLS and HTTP configuration ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command="
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='
 /subsystem=undertow/server=default-server/http-listener=default:remove()
 /subsystem=undertow/server=default-server/https-listener=https:remove()
 /socket-binding-group=standard-sockets/socket-binding=http:remove()
-/socket-binding-group=standard-sockets/socket-binding=https:remove()"
+/socket-binding-group=standard-sockets/socket-binding=https:remove()'
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 sleep 10
