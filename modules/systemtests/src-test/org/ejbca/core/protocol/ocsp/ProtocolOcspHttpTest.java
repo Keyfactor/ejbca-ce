@@ -975,6 +975,45 @@ Content-Type: text/html; charset=iso-8859-1
         }
     }
     
+    @Test
+    public void testBase64EncodeInURINonExistingGood() throws Exception {
+        log.trace(">testBase64EncodeInURINonExistingGood");
+        loadUserCert(this.caid);
+        // An OCSP request for an unknown certificate (not exist in db)
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        final String bad = "MEkwRzBFMEMwQTAJBgUrDgMCGgUABBS6ZiRTm9v22WVorgRHAGsMV3lC+wQUvf1XLZAVhuTwzI8T7SzebIRvwzkCCAIBkFE4Z1MJ";
+        {
+            final Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
+            map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*\\?"+bad+"$");
+            this.helper.alterConfig(map);
+        }
+        this.helper.reloadKeys();
+        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(bad);
+        log.trace("<testBase64EncodeInURINonExistingGood");
+    }
+    
+    @Test
+    public void testBase64EncodeInURINonExistingBad() throws Exception {
+        log.trace(">testBase64EncodeInURINonExistingBad");
+        loadUserCert(this.caid);
+        // An OCSP request for an unknown certificate (not exist in db)
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        final String bad = "MEkwRzBFMEMwQTAJBgUrDgMCGgUABBS6ZiRTm9v22WVorgRHAGsMV3lC+wQUvf1XLZAVhuTwzI8T7SzebIRvwzkCCAIBkFE4Z1MJ";
+        {
+            final Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
+            map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*\\?"+bad+"$");
+            this.helper.alterConfig(map);
+        }
+        this.helper.reloadKeys();
+        this.helper.verifyStatusUnknown(this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(bad);
+        log.trace("<testBase64EncodeInURINonExistingBad");
+    }
+    
+    
     /**
      * Tests ocsp message
      *
