@@ -274,33 +274,32 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
-        int successcount = 0;
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
+        PublishingResult result = new PublishingResult();
         // Repeat this process as long as we actually manage to publish something
         // this is because when publishing starts to work we want to publish everything in one go, if possible.
         // However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
         int totalcount = 0;
         do {
-            successcount = publisherQueueSession.doChunk(admin, publisherId, publisher);
-            totalcount += successcount;
-        } while ((successcount > 0) && (totalcount < 20000));
+            result.append(publisherQueueSession.doChunk(admin, publisherId, publisher));
+            totalcount += result.getSuccesses();
+        } while ((result.getSuccesses() > 0) && (totalcount < 20000));
+        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public int doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
+    public PublishingResult doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
         final Collection<PublisherQueueData> c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
         return doPublish(admin, publisherId, publisher, c);
     }
 
-    /** @return how many publishes that succeeded */
-    private int doPublish(AuthenticationToken admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
+    /** @return how many publishing operations that succeeded and failed */
+    private PublishingResult doPublish(AuthenticationToken admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
         if (log.isDebugEnabled()) {
             log.debug("Found " + c.size() + " certificates to republish for publisher " + publisherId);
         }
-        int successcount = 0;
-        int failcount = 0;
-
+        PublishingResult result = new PublishingResult();
         for (PublisherQueueData pqd : c) {
 
             String fingerprint = pqd.getFingerprint();
@@ -326,16 +325,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         log.debug("Publishing Certificate");
                     }
                     if (publisher != null) {
-                        // Read the actual certificate and try to publish it
-                        // again
-                        // TODO: we might need change fetch-type for all but the
-                        // actual cert or a native query w SqlResultSetMapping..
+                        // Read the actual certificate and try to publish it again
+                        // TODO: we might need change fetch-type for all but the actual cert or a native query w SqlResultSetMapping..
                         final CertificateDataWrapper certificateDataWrapper = noConflictCertificateStoreSession.getCertificateData(fingerprint);
                         if (certificateDataWrapper==null) {
                             throw new FinderException();
                         }
                         try {
-                            published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, certificateDataWrapper, password, userDataDN, ei);
+                            published = publisherQueueSession.publishCertificateNonTransactional(publisher, admin, certificateDataWrapper, password, userDataDN, ei);
                         } catch (EJBException e) {
                             final Throwable t = e.getCause();
                             if (t instanceof PublisherException) {
@@ -359,7 +356,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         throw new FinderException();
                     }
                     try {
-                        published = publisherQueueSession.storeCRLNonTransactional(publisher, admin, crlData.getCRLBytes(),
+                        published = publisherQueueSession.publishCRLNonTransactional(publisher, admin, crlData.getCRLBytes(),
                                 crlData.getCaFingerprint(), crlData.getCrlNumber(), userDataDN);
                     } catch (EJBException e) {
                         final Throwable t = e.getCause();
@@ -380,12 +377,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log
                 log.debug(e.getMessage());
-                // We failed to publish, update failcount so we can break early
-                // if nothing succeeds but everything fails.
-                failcount++;
+                // We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
+                result.addFailure(fingerprint);
             }
             if (published) {
-
                 if (publisher.getKeepPublishedInQueue()) {
                     // Update with information that publishing was successful
                     updateData(pqd.getPk(), PublisherConst.STATUS_SUCCESS, pqd.getTryCounter());
@@ -393,17 +388,17 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                     // We are done with this one.. nuke it!
                     removeQueueData(pqd.getPk());
                 }
-
-                successcount++; // jipeee update success counter
+                result.addSuccess(fingerprint); // jipeee update success counter
             } else {
                 // Update with new tryCounter, but same status as before
                 int tryCount = pqd.getTryCounter() + 1;
                 updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);
+                result.addFailure(fingerprint);
             }
             // If we don't manage to publish anything, but fails on all the
             // first ten ones we expect that this publisher is dead for now. We
             // don't have to try with every record.
-            if ((successcount == 0) && (failcount > 10)) {
+            if (result.shouldBreakPublishingOperation()) {
                 if (log.isDebugEnabled()) {
                     log.debug("Breaking out of publisher loop because everything seems to fail (at least the first 10 entries)");
                 }
@@ -412,14 +407,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Returning from publisher with " + successcount + " entries published successfully.");
+            log.debug("Returning from publisher with " + result.getSuccesses() + " entries published successfully.");
         }
-        return successcount;
+        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper,
+    public boolean publishCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws PublisherException {
         if (publisher.isFullEntityPublishingSupported()) {
             return publisher.storeCertificate(admin, certWrapper.getCertificateDataOrCopy(), certWrapper.getBase64CertData(), password, userDN, extendedinformation);
@@ -442,14 +437,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN)
+    public boolean publishCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN)
             throws PublisherException {
         return publisher.storeCRL(admin, incrl, cafp, number, userDN);
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public List<Object> storeCertificateNonTransactionalInternal(final List<BasePublisher> publishers, final AuthenticationToken admin,
+    public List<Object> publishCertificateNonTransactionalInternal(final List<BasePublisher> publishers, final AuthenticationToken admin,
             final CertificateDataWrapper certWrapper, final String password, final String userDN, final ExtendedInformation extendedinformation) {
         final List<Object> publisherResults = new ArrayList<Object>();
         final boolean parallel = EjbcaConfiguration.isPublishParallelEnabled();
@@ -466,7 +461,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                     final Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            if (!storeCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
+                            if (!publishCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
                                 throw new PublisherException("Return code from publisher is false.");
                             }
                             return Boolean.TRUE;
@@ -480,7 +475,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             // Execute the first publishing in the calling thread
             Object publisherResultFirst;
             try {
-                if (!storeCertificateNonTransactional(publisherFirst, admin, certWrapper, password, userDN, extendedinformation)) {
+                if (!publishCertificateNonTransactional(publisherFirst, admin, certWrapper, password, userDN, extendedinformation)) {
                     throw new PublisherException("Return code from publisher is false.");
                 }
                 publisherResultFirst = Boolean.TRUE;
@@ -503,7 +498,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             // Perform publishing sequentially (old fall back behavior)
             for (final BasePublisher publisher : publishers) {
                 try {
-                    if (!storeCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
+                    if (!publishCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
                         throw new PublisherException("Return code from publisher is false.");
                     }
                     publisherResults.add(Boolean.TRUE);
