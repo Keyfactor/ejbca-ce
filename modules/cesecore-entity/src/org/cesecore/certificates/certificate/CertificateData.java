@@ -110,6 +110,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like org.cesecore.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
      * @param status status of the certificate, active, revoked etcc, i.e. CertificateConstants.CERT_ACTIVE etc
      * @param type the user type the certificate belongs to, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param certprofileid certificate profile id, can be 0 for "no profile"
