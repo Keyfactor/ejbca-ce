@@ -81,7 +81,7 @@ ant -q deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
 echo '=================== Removing existing TLS and HTTP configuration ================================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh <<EOF
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /subsystem=undertow/server=default-server/http-listener=default:remove()
 /subsystem=undertow/server=default-server/https-listener=https:remove()
 /socket-binding-group=standard-sockets/socket-binding=http:remove()
