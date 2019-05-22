@@ -180,6 +180,8 @@ public class SVGImageManipulatorUnitTest {
             "</svg>";
     private static final int SVG_WIDTH = 856; // width of SVG with 10^2 pixels per mm^2
     private static final int SVG_HEIGHT = 540;
+    private static final double SVG_WIDTH_POINTS = 3.370*72; // width in 1/72 of an inch
+    private static final double SVG_HEIGHT_POINTS = 2.125*72;
 
     private static final String[] PINCODES = new String[] { "1234" };
     private static final String[] PUKCODES = new String[] { "8877665544332211" };
@@ -188,7 +190,7 @@ public class SVGImageManipulatorUnitTest {
     private static final int TEST_CAID = 0; // not used
     private static final String TEST_SAN = null; // not used
 
-    @Test
+    @Test(timeout=30_000) // this timeout is just in case the Java printing or fonts code would get stuck
     public void printableFromSvgTemplate() throws IOException, PrinterException {
         log.trace(">generateSvgFromTemplate");
         final SVGImageManipulator svgImgMan = new SVGImageManipulator(new StringReader(TEST_SVG), 0);
@@ -196,19 +198,23 @@ public class SVGImageManipulatorUnitTest {
         final Printable result = svgImgMan.print(eei, PINCODES, PUKCODES);
         assertNotNull("null was returned from print method.", result);
         // Now dump the image, so we can check it (needs to be done manually, because the output may vary slightly between systems)
-        final BufferedImage img = new BufferedImage(SVG_WIDTH, SVG_HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
-        final Graphics graphics = img.createGraphics();
-        final PageFormat pageFormat = new PageFormat();
-        final Paper paper = pageFormat.getPaper();
-        paper.setImageableArea(0, 0, 3.370*72, 2.125*72);
-        paper.setSize(3.370*72, 2.125*72);
-        pageFormat.setPaper(paper);
-        graphics.setColor(Color.WHITE);
-        graphics.fillRect(0, 0, SVG_WIDTH, SVG_HEIGHT);
-        assertEquals("Simulated printing failed", Printable.PAGE_EXISTS, result.print(graphics, pageFormat, 0));
-        final byte[] rawImage = (byte[]) img.getRaster().getDataElements(0, 0, SVG_WIDTH, SVG_HEIGHT, null);
-        log.trace("Resulting raw image is:\n" + Base64.encodeBase64String(rawImage));
-        log.trace("After base64 decoding, the output can be opened as \"raw image data\" of size 856 x 540 in \"Gray 8\" format, for example with GIMP.");
+        try {
+            final BufferedImage img = new BufferedImage(SVG_WIDTH, SVG_HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
+            final Graphics graphics = img.createGraphics();
+            final PageFormat pageFormat = new PageFormat();
+            final Paper paper = pageFormat.getPaper();
+            paper.setImageableArea(0, 0, SVG_WIDTH_POINTS, SVG_HEIGHT_POINTS);
+            paper.setSize(SVG_WIDTH_POINTS, SVG_HEIGHT_POINTS);
+            pageFormat.setPaper(paper);
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, SVG_WIDTH, SVG_HEIGHT);
+            assertEquals("Simulated printing failed", Printable.PAGE_EXISTS, result.print(graphics, pageFormat, 0));
+            final byte[] rawImage = (byte[]) img.getRaster().getDataElements(0, 0, SVG_WIDTH, SVG_HEIGHT, null);
+            log.trace("Resulting raw image is:\n" + Base64.encodeBase64String(rawImage));
+            log.trace("After base64 decoding, the output can be opened as \"raw image data\" of size 856 x 540 in \"Gray 8\" format, for example with GIMP.");
+        } catch (Exception e) {
+            log.warn("Simulated printing caused an exception. This is expected on headless systems due to missing font configuration etc.", e);
+        }
         log.trace("<generateSvgFromTemplate");
     }
 
