@@ -274,14 +274,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher) {
         PublishingResult result = new PublishingResult();
         // Repeat this process as long as we actually manage to publish something
         // this is because when publishing starts to work we want to publish everything in one go, if possible.
         // However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
         int totalcount = 0;
         do {
-            result.append(publisherQueueSession.doChunk(admin, publisherId, publisher));
+            result.append(publisherQueueSession.doChunk(admin, publisher));
             totalcount += result.getSuccesses();
         } while ((result.getSuccesses() > 0) && (totalcount < 20000));
         return result;
@@ -289,18 +289,24 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public PublishingResult doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
-        final Collection<PublisherQueueData> c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
-        return doPublish(admin, publisherId, publisher, c);
+    public PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher) {
+        final Collection<PublisherQueueData> publisherQueueDatas = getPendingEntriesForPublisherWithLimit(publisher.getPublisherId(), 100, 60, "order by timeCreated");
+        return doPublish(admin, publisher, publisherQueueDatas);
     }
 
-    /** @return how many publishing operations that succeeded and failed */
-    private PublishingResult doPublish(AuthenticationToken admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
+    /** 
+     * @param admin
+     * @param publisherId
+     * @param publisher
+     *  
+     * @return how many publishing operations that succeeded and failed */
+    private PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, Collection<PublisherQueueData> publisherQueueData) {
+        int publisherId = publisher.getPublisherId();
         if (log.isDebugEnabled()) {
-            log.debug("Found " + c.size() + " certificates to republish for publisher " + publisherId);
+            log.debug("Found " + publisherQueueData.size() + " certificates to republish for publisher " + publisherId);
         }
         PublishingResult result = new PublishingResult();
-        for (PublisherQueueData pqd : c) {
+        for (PublisherQueueData pqd : publisherQueueData) {
 
             String fingerprint = pqd.getFingerprint();
             int publishType = pqd.getPublishType();
@@ -373,6 +379,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             } catch (FinderException e) {
                 final String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint) + e.getMessage();
                 log.info(msg);
+                result.addFailure(fingerprint);
             } catch (PublisherException e) {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log
