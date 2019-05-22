@@ -212,7 +212,7 @@ public class SVGImageManipulatorUnitTest {
             final byte[] rawImage = (byte[]) img.getRaster().getDataElements(0, 0, SVG_WIDTH, SVG_HEIGHT, null);
             log.trace("Resulting raw image is:\n" + Base64.encodeBase64String(rawImage));
             log.trace("After base64 decoding, the output can be opened as \"raw image data\" of size 856 x 540 in \"Gray 8\" format, for example with GIMP.");
-        } catch (Exception e) {
+        } catch (Exception | ExceptionInInitializerError e) {
             log.warn("Simulated printing caused an exception. This is expected on headless systems due to missing font configuration etc.", e);
         }
         log.trace("<generateSvgFromTemplate");
