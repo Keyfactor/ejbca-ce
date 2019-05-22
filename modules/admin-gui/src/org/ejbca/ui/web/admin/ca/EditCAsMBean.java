@@ -222,6 +222,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String sharedCmpRaSecret = StringUtils.EMPTY;
     private boolean includeInHealthCheck;
     private String signedByString;
+    private int signedByStringValue;
     private boolean hideValidity = false;
     private String caEncodedValidity;
     private String caSubjectAltName;
@@ -740,15 +741,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return StringUtils.EMPTY;
     }
     
-    public int getSignedByStringValue() {
-        if (signedByString != null) {
-            return Integer.valueOf(signedByString);
-        }
-        return 0;
-    }
-    
     public void setSignedByString(final String signedByString) {
         this.signedByString = signedByString;
+    }
+
+    public int getSignedByStringValue() {
+        return this.signedByStringValue;
+    }
+    
+    public void setSignedByStringValue(final int signedByString) {
+        this.signedByStringValue = signedByString;
     }
     
     public List<SelectItem> getSignedByListUninitialized() {
@@ -2164,6 +2166,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         final String keySequenceFormatParam = getKeySequenceFormatParam();
 
+        //External CAs do not require a validity to be set
+        if (signedByString.equals(String.valueOf(CAInfo.SIGNEDBYEXTERNALCA))) {
+            caEncodedValidity = null;
+        }
+
         try {
             cainfo = caBean.createCaInfo(caid, editCaName, getSubjectDn(), catype, keySequenceFormatParam, keySequence, signedByString, description, 
                     caSerialNumberOctetSize, caEncodedValidity, getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
@@ -2437,12 +2444,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER) {
             if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
                 this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
+                this.signedByStringValue = CAInfo.SELFSIGNED;
             }
             if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
                 this.signedByString = String.valueOf(CAInfo.SIGNEDBYEXTERNALCA);
+                this.signedByStringValue = CAInfo.SIGNEDBYEXTERNALCA;
             }
         } else {
             this.signedByString = String.valueOf(cainfo.getSignedBy());
+            this.signedByStringValue = cainfo.getSignedBy();
         }
 
         caEncodedValidity = cainfo.getEncodedValidity();
