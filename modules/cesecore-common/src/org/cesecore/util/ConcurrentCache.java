@@ -62,7 +62,7 @@ public final class ConcurrentCache<K,V> {
      * 
      * All methods are thread safe, but only one thread should operate on an Entry object.
      */
-    public final class Entry {
+    public final class Entry implements Closeable {
         private final K key;
         private InternalEntry<V> entry;
         /** If non-null, then other threads are waiting on this semaphore for data on the same key in the cache. */
