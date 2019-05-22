@@ -64,7 +64,7 @@ public class HsmKeepAliveWorker extends BaseWorker {
             log.debug("Performing keepalive on all active crypto tokens ("+infos.size()+"), but skipping soft tokens.");
         }
         for (CryptoTokenInfo info : infos) {
-            // Only test active, PKCS11, crypto tokens. o need to do keepalive on soft tokens, they will not time out
+            // Only test active, PKCS11, crypto tokens. no need to do keepalive on soft tokens, they will not time out
             if (info.isActive() && StringUtils.isNotEmpty(info.getP11Library())) {
                 CryptoToken token = tokenSession.getCryptoToken(info.getCryptoTokenId());
                 try {
