@@ -18,7 +18,8 @@ import java.util.Set;
 
 /**
  * Represents a return type for publishing operations. Successes and failures are stored in sets containing the fingerprints of what's being stored
- * due to the fact that the publisher 
+ * due to the fact that the publisher will by default retry 20,000 times on a failed attempt, so the "failures" will be per attempted certificate 
+ * and not all attempts.
  * 
  * @version $Id$
  *
