@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -44,39 +45,39 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
 
-        Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken());
+        final Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaIds(getAuthenticationToken());
         for (Integer caId : caIds) {
-            CAInfo cainfo;
+            CAInfo caInfo;
             try {
-                cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caId);
+                caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caId);
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("CLI user was not authorized to retrieved CA.", e);
             } 
-            final StringBuilder sb = new StringBuilder();
-            sb.append("\"").append(cainfo.getName()).append("\" \"").append(cainfo.getSubjectDN()).append("\"");
-            // TODO Handle partitioned CRLs here (ECA-7961)
-            final CRLInfo crlInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(),
-                    CertificateConstants.NO_CRL_PARTITION, false);
-            if (crlInfo != null) {
-                sb.append(" CRL# ").append(crlInfo.getLastCRLNumber());
-                sb.append(" issued ").append(ValidityDate.formatAsUTC(crlInfo.getCreateDate()));
-                sb.append(" expires ").append(ValidityDate.formatAsUTC(crlInfo.getExpireDate()));
-            } else {
-                sb.append(" NO_CRL_ISSUED");
+            final StringBuilder stringBuilder = new StringBuilder();
+            final IntRange allCrlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
+            final CrlStoreSessionRemote crlStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+            if(allCrlPartitionIndexes == null) {
+                outputCrlHeader(stringBuilder, caInfo);
+                final CRLInfo crlInfo = crlStoreSessionRemote.getLastCRLInfo(caInfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+                outputCrlInfo(stringBuilder, crlInfo, null,false);
+                final CRLInfo deltaCrlInfo = crlStoreSessionRemote.getLastCRLInfo(caInfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+                outputCrlInfo(stringBuilder, deltaCrlInfo, null,true);
             }
-            final CRLInfo deltaCrlInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(),
-                    CertificateConstants.NO_CRL_PARTITION, true);
-            if (deltaCrlInfo != null) {
-                sb.append(" DELTACRL# ").append(deltaCrlInfo.getLastCRLNumber());
-                sb.append(" issued ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getCreateDate()));
-                sb.append(" expires ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getExpireDate()));
-            } else {
-                sb.append(" NO_DELTACRL_ISSUED");
+            else {
+                for (int crlPartitionIndex = allCrlPartitionIndexes.getMinimumInteger(); crlPartitionIndex <= allCrlPartitionIndexes.getMaximumInteger(); crlPartitionIndex++) {
+                    outputCrlHeader(stringBuilder, caInfo);
+                    final CRLInfo crlInfo = crlStoreSessionRemote.getLastCRLInfo(caInfo.getSubjectDN(), crlPartitionIndex, false);
+                    outputCrlInfo(stringBuilder, crlInfo, crlPartitionIndex, false);
+                    final CRLInfo deltaCrlInfo = crlStoreSessionRemote.getLastCRLInfo(caInfo.getSubjectDN(), crlPartitionIndex, true);
+                    outputCrlInfo(stringBuilder, deltaCrlInfo, crlPartitionIndex,true);
+                    if(crlPartitionIndex < allCrlPartitionIndexes.getMaximumInteger()) {
+                        stringBuilder.append(System.getProperty("line.separator"));
+                    }
+                }
             }
-            log.info(sb.toString());
+            log.info(stringBuilder.toString());
         }
         return CommandResult.SUCCESS;
-
     }
 
     @Override
@@ -93,5 +94,19 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    private void outputCrlHeader(final StringBuilder stringBuilder, final CAInfo caInfo) {
+        stringBuilder.append("\"").append(caInfo.getName()).append("\" \"").append(caInfo.getSubjectDN()).append("\"");
+    }
+
+    private void outputCrlInfo(final StringBuilder stringBuilder, final CRLInfo crlInfo, final Integer crlPartitionIndex, final boolean isDeltaCrl) {
+        if (crlInfo != null) {
+            stringBuilder.append( ( isDeltaCrl ? " DELTACRL# " : " CRL# ") ).append(crlInfo.getLastCRLNumber()).append( (crlPartitionIndex == null ? "" : " Partition# " + crlPartitionIndex) );
+            stringBuilder.append(" issued ").append(ValidityDate.formatAsUTC(crlInfo.getCreateDate()));
+            stringBuilder.append(" expires ").append(ValidityDate.formatAsUTC(crlInfo.getExpireDate()));
+        } else {
+            stringBuilder.append( ( isDeltaCrl ? " NO_DELTACRL_ISSUED" : " NO_CRL_ISSUED" ) );
+        }
     }
 }

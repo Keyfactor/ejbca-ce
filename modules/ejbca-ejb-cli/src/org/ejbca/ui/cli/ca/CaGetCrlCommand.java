@@ -18,9 +18,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.util.CertTools;
@@ -47,6 +48,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
     private static final String PEM_KEY = "-pem";
     private static final String FILE_KEY = "-f";
     private static final String CRLNUMBER_KEY = "-crlnumber";
+    private static final String CRLPARTITION_KEY = "-crlpartition";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -59,6 +61,8 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
                 "Use PEM encoding. Default is DER encoding."));
         registerParameter(new Parameter(CRLNUMBER_KEY, "CRL Number", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Get CRL with the specified CRL number, instead of the latest. Used to read historical CRLs."));
+        registerParameter(new Parameter(CRLPARTITION_KEY, "CRL Partition Number", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Get CRL with the specified CRL partition numbers. Default is 0."));
     }
 
     @Override
@@ -72,55 +76,65 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
         boolean pem = parameters.get(PEM_KEY) != null;
         CryptoProviderTools.installBCProvider();
         // Perform CRL fetch
-        String caname = parameters.get(CA_NAME_KEY);
-        String outfile = parameters.get(FILE_KEY);
-        String crlnumber = parameters.get(CRLNUMBER_KEY);
-        // TODO Add partitioned CRL support (ECA-7961)
-        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION;
-        if (crlnumber != null) {
-            if ( !StringUtils.isNumeric(crlnumber) || (Integer.valueOf(crlnumber) < 0) ) {
+        final String caName = parameters.get(CA_NAME_KEY);
+        final String outFile = parameters.get(FILE_KEY);
+        final String crlNumber = parameters.get(CRLNUMBER_KEY);
+        final String crlPartitionNumber = parameters.get(CRLPARTITION_KEY);
+
+        if (crlNumber != null) {
+            if ( !StringUtils.isNumeric(crlNumber) || (Integer.valueOf(crlNumber) < 0) ) {
                 log.error("CRL Number must be a positive number");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
         }
-        try {
-            String issuerdn = getIssuerDN(getAuthenticationToken(), caname);
-            final byte[] crl;
-            if (crlnumber != null) {
-                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getCRL(issuerdn, crlPartitionIndex, Integer.valueOf(crlnumber));
-            } else {
-                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, crlPartitionIndex, deltaSelector);
+        if(crlPartitionNumber != null) {
+            if ( !StringUtils.isNumeric(crlPartitionNumber) || (Integer.valueOf(crlPartitionNumber) < 0) ) {
+                log.error("CRL Partition Number must be a positive number");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-            if (crl != null) {
-                FileOutputStream fos = new FileOutputStream(outfile);
-                if (pem) {
-                    fos.write(CertTools.getPEMFromCrl(crl));
-                } else {
-                    fos.write(crl);
+        }
+        try {
+            final CAInfo caInfo = getCAInfo(getAuthenticationToken(), caName);
+            if(caInfo == null) {
+                throw new CADoesntExistsException();
+            }
+            final String issuerDN = caInfo.getSubjectDN();
+            final IntRange allCrlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
+            int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION;
+            String crlPartitionOutputString = "";
+            if(allCrlPartitionIndexes == null) {
+                if (crlPartitionNumber != null) {
+                    log.error("This CA '" + caName + "' does not support CRL Partitions.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 }
-                fos.close();
-                log.info("Wrote "+(crlnumber == null ? "latest" : ("crlNumber "+crlnumber)) + (deltaSelector ? "delta" : "") + " CRL to " + outfile + " using " + (pem ? "PEM" : "DER") + " format");
+            }
+            else {
+                crlPartitionIndex = ( crlPartitionNumber == null ? CertificateConstants.NO_CRL_PARTITION : Integer.valueOf(crlPartitionNumber));
+                crlPartitionOutputString = " with crl partition " + crlPartitionIndex;
+            }
+            final byte[] crl = getCrlBytes(issuerDN, crlNumber, crlPartitionIndex, deltaSelector);
+            final String deltaOutputString = (deltaSelector ? " delta" : "");
+            if (crl != null) {
+                writeCrlBytesToFile(outFile, crl, pem);
+                log.info("Wrote " + (crlNumber == null ? "latest" : ("crlNumber " + crlNumber)) + deltaOutputString + crlPartitionOutputString + " CRL to " + outFile + " using " + (pem ? "PEM" : "DER") + " format");
             } else {
-                log.info("No " + (deltaSelector ? "delta " : "") + "CRL " + (crlnumber == null ? "" : ("with crlNumber "+crlnumber+" ")) + "exists for CA " + caname + ".");
+                final String crlNumberOutputString = " CRL " + (crlNumber == null ? "" : ("with crlNumber " + crlNumber));
+                log.info("No" + deltaOutputString + crlNumberOutputString + crlPartitionOutputString + " exists for CA " + caName + ".");
             }
             return CommandResult.SUCCESS;
-        } catch (AuthorizationDeniedException e) {
-            log.error("CLI User was not authorized to CA " + caname);
         } catch (CADoesntExistsException e) {
-            log.info("CA '" + caname + "' does not exist.");
+            log.info("CA '" + caName + "' does not exist.");
         } catch (FileNotFoundException e) {
             log.error("Could not create export file", e);
         } catch (IOException e) {
             throw new IllegalStateException("Could not write to file for unknown reason", e);
         }
         return CommandResult.FUNCTIONAL_FAILURE;
-
     }
 
     @Override
     public String getCommandDescription() {
         return "Retrieves a CRL from a CA. Either the latest CRL or a CRL with a specified CRL number.";
-
     }
 
     @Override
@@ -131,5 +145,23 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    private byte[] getCrlBytes(final String issuerDN, final String crlNumber, final int crlPartitionIndex, final boolean isDeltaCrl) {
+        final CrlStoreSessionRemote crlStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+        if(crlNumber != null) {
+            return crlStoreSessionRemote.getCRL(issuerDN, crlPartitionIndex, Integer.valueOf(crlNumber));
+        }
+        return crlStoreSessionRemote.getLastCRL(issuerDN, crlPartitionIndex, isDeltaCrl);
+    }
+
+    private void writeCrlBytesToFile(final String outFile, final byte[] crlBytes, final boolean isPemFormat) throws IOException {
+        final FileOutputStream fos = new FileOutputStream(outFile);
+        if (isPemFormat) {
+            fos.write(CertTools.getPEMFromCrl(crlBytes));
+        } else {
+            fos.write(crlBytes);
+        }
+        fos.close();
     }
 }

@@ -163,20 +163,15 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         log.trace(">createCRL()");
     }
 
-    protected String getIssuerDN(AuthenticationToken authenticationToken, String caname) throws CADoesntExistsException, AuthorizationDeniedException {
-        CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
-        return cainfo != null ? cainfo.getSubjectDN() : null;
-    }
-
-    protected CAInfo getCAInfo(AuthenticationToken authenticationToken, String caname) {
+    protected CAInfo getCAInfo(final AuthenticationToken authenticationToken, final String caName) {
         CAInfo result = null;
         try {
-            result = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
+            result = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caName);
         }  catch (AuthorizationDeniedException e) {
             log.error("Authorization denied", e);
         }
         if (result == null) {
-            log.debug("CA " + caname + " not found.");
+            log.debug("CA " + caName + " not found.");
         }
         return result;
     }
