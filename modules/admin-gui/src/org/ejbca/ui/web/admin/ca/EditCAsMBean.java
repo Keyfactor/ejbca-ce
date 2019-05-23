@@ -759,12 +759,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         signedByList.add(new SelectItem(CAInfo.SELFSIGNED, getEjbcaWebBean().getText("SELFSIGNED"), ""));
         signedByList.add(new SelectItem(CAInfo.SIGNEDBYEXTERNALCA, getEjbcaWebBean().getText("EXTERNALCA"), ""));
 
-        for (final Object nameOfCa : casigners.keySet()) {
-            final int entryId = casigners.get(nameOfCa.toString());
+        for (final String nameOfCa : casigners.keySet()) {
+            final int entryId = casigners.get(nameOfCa);
             if (entryId == cainfo.getCAId()) {
                 continue;
             }
-            signedByList.add(new SelectItem(entryId, nameOfCa.toString(), ""));
+            signedByList.add(new SelectItem(entryId, nameOfCa, ""));
         }
         return signedByList;
     }
