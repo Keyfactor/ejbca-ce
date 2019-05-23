@@ -1055,21 +1055,21 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
             endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
             assertEquals("Publisher should not have been called.", -123, publisherTestSession.getLastMockedThrowAwayRevocationReason());
-            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher.getPublisherId(), publisher);
+            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher);
             assertEquals("Publisher should have been called with 'on hold' revocation reason.",
                     RevocationReasons.CERTIFICATEHOLD.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
             // Activate again
             publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
             assertEquals("Publisher should not have been called.", -123, publisherTestSession.getLastMockedThrowAwayRevocationReason());
             endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
-            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher.getPublisherId(), publisher);
+            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher);
             assertEquals("Publisher should have been called THROW_AWAY_CERT_SERIAL 'not revoked' revocation reason.",
                     RevocationReasons.NOT_REVOKED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
             // Revoke permanently
             publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
             assertEquals("Publisher should not have been called.", -123, publisherTestSession.getLastMockedThrowAwayRevocationReason());
             endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
-            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher.getPublisherId(), publisher);
+            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher);
             assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
                     RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
         } finally {
