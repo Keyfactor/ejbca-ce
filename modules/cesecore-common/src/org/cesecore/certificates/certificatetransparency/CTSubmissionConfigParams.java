@@ -54,5 +54,24 @@ public final class CTSubmissionConfigParams implements Serializable {
     public void setValidityPolicy(final GoogleCtPolicy validityPolicy) {
         this.validityPolicy = validityPolicy;
     }
-    
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof CTSubmissionConfigParams)) {
+            return false;
+        }
+        final CTSubmissionConfigParams other = (CTSubmissionConfigParams) obj;
+        return configuredCTLogs.equals(other.configuredCTLogs) &&
+                validityPolicy.equals(other.validityPolicy);
+    }
+
+    @Override
+    public int hashCode() {
+        return configuredCTLogs.hashCode() + 27*validityPolicy.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "CTSubmissionConfigParams{logs=" + configuredCTLogs + ", validity=" + validityPolicy + "}";
+    }
 }
