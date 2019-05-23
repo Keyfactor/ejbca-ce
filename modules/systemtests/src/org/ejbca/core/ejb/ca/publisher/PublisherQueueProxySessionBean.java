@@ -83,8 +83,8 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
     }
     
     @Override
-    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
-        return queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisherId, publisher);
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher) {
+        return queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher);
     }
 
     @Override
