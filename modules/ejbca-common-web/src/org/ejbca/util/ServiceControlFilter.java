@@ -15,7 +15,6 @@ package org.ejbca.util;
 
 import java.io.IOException;
 
-import javax.ejb.EJB;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -28,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * <p>This filter is responsible for disabling access to parts of EJBCA based
@@ -51,17 +51,18 @@ public class ServiceControlFilter implements Filter {
     
     private String serviceName;
 
-    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
     public void destroy() {
-
     }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         serviceName = filterConfig.getInitParameter("serviceName");
+        // Since this filter is used in cmpHttpProxy module, to make that module deploy-able in JEE servers we initialize 
+        // the globalConfigurationSession bean here instead of using the EJB annotation.
+        globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
         if (log.isDebugEnabled()) {
             log.debug("Initialized service control filter for '" + serviceName + "'.");
         }
