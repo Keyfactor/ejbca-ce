@@ -109,7 +109,7 @@ public interface PublisherQueueSessionLocal {
      * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
      * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
      */
-    PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
+    PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher);
 
     
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
@@ -140,5 +140,5 @@ public interface PublisherQueueSessionLocal {
             String password, String userDN, ExtendedInformation extendedinformation);
 	
     /** Publishers digest queues in transaction-based "chunks". */
-    PublishingResult doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher);
+    PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher);
 }
