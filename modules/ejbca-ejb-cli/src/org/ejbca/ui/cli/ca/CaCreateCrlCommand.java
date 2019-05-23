@@ -14,8 +14,8 @@
 package org.ejbca.ui.cli.ca;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -53,20 +53,20 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
         String caName = parameters.get(CA_NAME_KEY);
         boolean deltaCrl = parameters.get(DELTA_KEY) != null;
         if (caName == null) {
-            createCRL((String) null, deltaCrl);
+            createCRL(null, deltaCrl);
         } else {
             CryptoProviderTools.installBCProvider();
             // createCRL prints info about crl generation
             try {
-                String issuerDn = getIssuerDN(getAuthenticationToken(), caName);
-                createCRL(issuerDn, deltaCrl);
+                final CAInfo caInfo = getCAInfo(getAuthenticationToken(), caName);
+                if(caInfo == null) {
+                    throw new CADoesntExistsException();
+                }
+                createCRL(caInfo.getSubjectDN(), deltaCrl);
             } catch (CADoesntExistsException e) {
                 log.error("No CA named " + caName + " exists.");
                 return CommandResult.FUNCTIONAL_FAILURE;
-            } catch (AuthorizationDeniedException e) {
-                log.error("CLI user is not authorized to CA " + caName);
-                return CommandResult.AUTHORIZATION_FAILURE;
-            }      
+            }
         }
         return CommandResult.SUCCESS;
     }
