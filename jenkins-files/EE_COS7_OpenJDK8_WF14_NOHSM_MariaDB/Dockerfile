@@ -35,10 +35,6 @@ RUN chmod +x /opt/run.sh
 ADD conf /opt/conf
 RUN chmod 777 /opt/conf
 
-#copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
-#ADD standalone1.xml /opt/standalone1.xml
-#ADD standalone2.xml /opt/standalone2.xml
-
 # add mariadb driver to deploy folder
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
