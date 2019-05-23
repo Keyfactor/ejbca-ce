@@ -460,10 +460,10 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public void validateCertificateProfileIds(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         @SuppressWarnings("unchecked")
-        final List<String> selectedIds = (List<String>) value;
+        final List<Integer> selectedIds = (List<Integer>) value;
         final List<Integer> ids = new ArrayList<>(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
-        for (String id : selectedIds) {
-            if (!ids.contains(Integer.parseInt(id))) {
+        for (int id : selectedIds) {
+            if (!ids.contains(id)) {
                 final String message = "Key validator certificate profile id must be on of " + ids;
                 throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
             }
@@ -540,12 +540,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * Sets the BaseKeyValidator certificateProfileIds field.
      * @param ids the list of certificate profile IDs.
      */
-    public void setCertificateProfileIds(List<String> ids) {
-        final List<Integer> list = new ArrayList<>();
-        for (String id : ids) {
-            list.add(Integer.parseInt(id));
-        }
-        getValidator().setCertificateProfileIds(list);
+    public void setCertificateProfileIds(List<Integer> ids) {
+        getValidator().setCertificateProfileIds(ids);
     }
 
     /**
