@@ -14,13 +14,14 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * This class contains Google's CT policy as specified in "Certificate Transparency in Chrome" from May 2016.
  * The policy document can be found here: https://goo.gl/cZZqLw
  * @version $Id$
  */
-public class GoogleCtPolicy implements Serializable {
+public final class GoogleCtPolicy implements Serializable {
     private static final long serialVersionUID = 1337L;
 
     /* Constants representing rows from Table 1 */
@@ -147,5 +148,41 @@ public class GoogleCtPolicy implements Serializable {
      */
     public int getNumberOfBreakpoints() {
         return minScts.length;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof GoogleCtPolicy)) {
+            return false;
+        }
+        final GoogleCtPolicy other = (GoogleCtPolicy) obj;
+        return Arrays.equals(minScts, other.minScts) && Arrays.equals(lessThanMonths, other.lessThanMonths);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(minScts) + 311*Arrays.hashCode(lessThanMonths); 
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GoogleCtPolicy{");
+        for (int i = 0; i < minScts.length; i++) {
+            if (i != 0) {
+                sb.append(',');
+            }
+            // Validity
+            if (lessThanMonths[i] != Integer.MAX_VALUE) {
+                sb.append(lessThanMonths[i]);
+                sb.append("mo");
+            } else {
+                sb.append("longer");
+            }
+            // 
+            sb.append('=');
+                sb.append(minScts[i]);
+        }
+        sb.append('}');
+        return sb.toString();
     }
 }
