@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
  * Add End Entity helper class for EJBCA Web Tests.
  * 
  * @version $Id$
- *
+
  */
 public class AddEndEntityHelper extends BaseHelper {
 
@@ -59,7 +59,8 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By BUTTON_SEND_NOTIFICATIONS = By.id("checkboxsendnotification");
         
         static final By CHECKBOX_BATCH_GENERATION = By.id("checkboxcleartextpassword");
-        
+        static final By CHECKBOX_EMAIL_ADDRESS = By.id("checkboxsubjectdn14");
+
         static By getInputFieldLocatorByKey(final String key) {
             return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]");
         }
@@ -128,6 +129,13 @@ public class AddEndEntityHelper extends BaseHelper {
      */
     public void triggerBatchGeneration() {
         clickLink(Page.CHECKBOX_BATCH_GENERATION);
+    }
+
+    /**
+     * Clicks the check box 'batch generation'.
+     */
+    public void triggerEmailAddress() {
+        clickLink(Page.CHECKBOX_EMAIL_ADDRESS);
     }
     
     /**

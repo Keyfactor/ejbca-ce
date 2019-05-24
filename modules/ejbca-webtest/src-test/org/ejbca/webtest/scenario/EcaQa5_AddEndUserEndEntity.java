@@ -50,7 +50,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         removeCaAndCryptoToken(TestData.ROOTCA_NAME);
         removeCaByName(TestData.SUBCA_NAME);
         // super
-        afterClass();
+        // afterClass();
     }
 
     @Test
@@ -61,8 +61,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Username", "TestEndEnityEMPTY");
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
-        
-        
         fields.put("ST, State or Province", "Germany");
         fields.put("OU, Organizational Unit", "QA");
         fields.put("L, Locality", "Europe");
@@ -80,10 +78,13 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("postalCode", "12345");
         fields.put("O, Organization", "QA");
         fields.put("pseudonym", "tester");
+        fields.put("DC, Domain Component", "primekey");
                 
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
-        
+        addEndEntityHelper.triggerEmailAddress(); //?
+
+
         addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
         
     }
