@@ -79,7 +79,18 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("O, Organization", "QA");
         fields.put("pseudonym", "tester");
         fields.put("DC, Domain Component", "primekey");
-                
+        fields.put("surname, Surname (last name)", "Raudsep");
+        fields.put("serialNumber, Serial number (in DN)", "123456780");
+        fields.put("C, Country (ISO 3166)", "DE");
+        fields.put("initials, First name abbreviation", "JS");
+        fields.put("streetAddress", "The street");
+        fields.put("dnQualifier, DN Qualifier", "aDnQualifier");
+        fields.put("givenName, Given name (first name)",  "John");
+        fields.put("Jurisdiction Country (ISO 3166) [EV Certificate]", "DE");
+        fields.put("telephoneNumber", "123456789");
+        fields.put("title, Title", "Prof.");
+        // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, invesigating how to input value for the second one :)
+
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
         addEndEntityHelper.triggerEmailAddress(); //?
