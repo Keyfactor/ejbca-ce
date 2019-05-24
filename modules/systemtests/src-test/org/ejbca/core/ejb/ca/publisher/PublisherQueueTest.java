@@ -535,7 +535,7 @@ public class PublisherQueueTest {
         publisherQueueInfo.setUsername(testCertificateUsername);
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         try {
-            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, publisherId,
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken,
                     mockPublisher);
             assertEquals("Wrong number of successes was reported.", 0, result.getSuccesses());
             assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
@@ -583,7 +583,7 @@ public class PublisherQueueTest {
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         try {
-            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, publisherId,
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken,
                     mockPublisher);
             assertEquals("Wrong number of successes was reported.", 1, result.getSuccesses());
             assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
