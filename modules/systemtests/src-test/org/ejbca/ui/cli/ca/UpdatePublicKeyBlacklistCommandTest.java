@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -46,6 +43,9 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @version $Id$
@@ -179,7 +179,6 @@ public class UpdatePublicKeyBlacklistCommandTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void test02AddAndRemoveCommandModeByFingerprint() throws CertificateException, IOException {
         log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
 
@@ -299,7 +298,6 @@ public class UpdatePublicKeyBlacklistCommandTest {
      * @throws IOException any IO exception.
      * @throws FileNotFoundException if a file could not be found.
      */
-    @SuppressWarnings("unchecked")
     private static final void removePublicKeyFingerprintsFromBlacklist(final String resource)
             throws IllegalArgumentException, IOException, FileNotFoundException {
         final URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(resource);
