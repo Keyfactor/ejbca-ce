@@ -214,7 +214,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
         endEntityProfileSession.addEndEntityProfile(intAdmin, TEST_END_ENTITY_PROFILE, endEntityprofile);
         final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
                 getAdminCAName(), "DNSName=(top.secret).domain.se", "foo@anatom.se", EndEntityConstants.STATUS_NEW,
-                UserDataVOWS.TOKEN_TYPE_USERGENERATED, TEST_END_ENTITY_PROFILE, TEST_CERTIFICATE_PROFILE, null);
+                UserDataVOWS.TOKEN_TYPE_USERGENERATED, TEST_END_ENTITY_PROFILE, TEST_CERTIFICATE_PROFILE);
         ejbcaraws.editUser(userData);
 
         final X509Certificate cert = getMyCertificate();
@@ -423,7 +423,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
             WaitingForApprovalException_Exception {
         final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
             getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
-            UserDataVOWS.TOKEN_TYPE_USERGENERATED, TEST_END_ENTITY_PROFILE, TEST_CERTIFICATE_PROFILE, null);
+            UserDataVOWS.TOKEN_TYPE_USERGENERATED, TEST_END_ENTITY_PROFILE, TEST_CERTIFICATE_PROFILE);
         userData.setExtendedInformation(extendedInformationWS);
         ejbcaraws.editUser(userData);
     }

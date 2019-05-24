@@ -154,7 +154,7 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
                 /*createLinkCertificates=*/true, newSubjectDN2);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName2);
         X509Certificate caCertificateAfterRenewal2 = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
-        X509Certificate linkCertificateAfterRenewal2 = (X509Certificate) CertTools.getCertfromByteArray(caAdminSession.getLatestLinkCertificate(newinfo2.getCAId()));
+        X509Certificate linkCertificateAfterRenewal2 = (X509Certificate) CertTools.getCertfromByteArray(caAdminSession.getLatestLinkCertificate(newinfo2.getCAId()), X509Certificate.class);
 
         assertFalse("Issuer DN and Subject DN are equal of CA link certificate after CA name-change renewal with new keys",
                 CertTools.getIssuerDN(linkCertificateAfterRenewal2).equals(CertTools.getSubjectDN(linkCertificateAfterRenewal2)));
