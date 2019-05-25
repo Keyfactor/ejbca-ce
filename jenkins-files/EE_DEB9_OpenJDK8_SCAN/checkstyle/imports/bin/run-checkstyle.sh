@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$DEBUG" == "true" ] ; then
+if [ "$DEBUG" = "true" ]; then
     set -x
 fi
 
@@ -25,7 +25,7 @@ else
 fi
 echo "Detected $coreLimit available cores."
 
-if [ "$DEBUG" == "true" ] ; then
+if [ "$DEBUG" = "true" ]; then
     echo "
 ### Show PMD help (to help with future improvements of this scan) ###
 "
@@ -34,7 +34,7 @@ fi
 echo "
 ### Running checkstyle ###
 "
-if [ "$DEBUG" == "true" ] ; then
+if [ "$DEBUG" = "true" ]; then
     debugOption="--debug"
 fi
 
@@ -68,6 +68,12 @@ cat "${styleCheckRules}" \
     | grep -vE '(AvoidNestedBlocksCheck|ConstantNameCheck|EmptyBlockCheck|InnerAssignmentCheck|InterfaceIsTypeCheck|LeftCurlyCheck)̈́' \
     | grep -vE '(MethodNameCheck|MissingSwitchDefaultCheck|NoWhitespaceAfterCheck|OperatorWrapCheck|RegexpSinglelineCheck|TodoCommentCheck|TypeNameCheck)' \
     > /tmp/checks.xml
+
+if [ "$DEBUG" = "true" ]; then
+    echo
+    echo "Here is the checks.xml file:"
+    cat /tmp/checks.xml
+fi
 
 # --checker-threads-number=$coreLimit -> "IllegalArgumentException: Multi thread mode for Checker module is not implemented"
 # --exclude=ejbca/modules/cesecore-common/src-test/org/cesecore/util/SecureXMLDecoderTest.java \
