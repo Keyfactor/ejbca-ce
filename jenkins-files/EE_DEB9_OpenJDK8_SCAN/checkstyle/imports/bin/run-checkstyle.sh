@@ -69,6 +69,8 @@ styleCheckRules="code-analyzer-tools/checkstyle/checks/sun_checks.xml"
 # - UniqueProperties: Checks for duplicate properties. This can happen in language files for example.
 # Changed some checks to low severity:
 # - WhitespaceAfter|ParenPad|JavadocStyle|FileTabCharacter|MethodParamPad|NoWhitespaceBefore|NewlineAtEndOfFile|RightCurly|GenericWhitespace|TypecastParenPad - All are about whitespace or pure cosmetics
+# Changed s ome checks to medium severity:
+# - JavadocParagraph|RedundantModifier|ModifierOrder|ArrayStyle|ParameterName|MemberName|StaticVariableName|LocalFinalVariableName|LocalVariableName|RedundantImport - Redundant code, naming conventions, javadoc layout, etc.
 cat "${styleCheckRules}" \
     | sed 's/maximum" value="0/maximum" value="99/' \
     | sed -r 's/(<module name="RegexpSingleline">)/\1\n<property name="severity" value="ignore"\/>/' \
@@ -79,6 +81,7 @@ cat "${styleCheckRules}" \
     | sed -r 's/(<module +name *= *"TreeWalker" *>)/\1\n<module name="JavadocParagraph"\/><module name="NoFinalizer"\/><module name="StringLiteralEquality"\/><module name="NestedIfDepth"><property name="max" value="3"\/><\/module>/' \
     | sed -r 's/(<module +name *= *"Checker" *>)/\1\n<module name="UniqueProperties"\/>/' \
     | sed -r 's/<module name="(WhitespaceAfter|ParenPad|JavadocStyle|FileTabCharacter|MethodParamPad|NoWhitespaceBefore|NewlineAtEndOfFile|RightCurly|GenericWhitespace|TypecastParenPad)"\/>/<module name="\1"><property name="severity" value="info"\/><\/module>/' \
+    | sed -r 's/<module name="(JavadocParagraph|RedundantModifier|ModifierOrder|ArrayStyle|ParameterName|MemberName|StaticVariableName|LocalFinalVariableName|LocalVariableName|RedundantImport)"\/>/<module name="\1"><property name="severity" value="warning"\/><\/module>/' \
     > /tmp/checks.xml
 
 if [ "$DEBUG" = "true" ]; then
