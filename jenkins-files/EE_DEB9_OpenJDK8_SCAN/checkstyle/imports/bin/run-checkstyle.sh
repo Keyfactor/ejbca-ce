@@ -64,9 +64,9 @@ styleCheckRules="code-analyzer-tools/checkstyle/checks/sun_checks.xml"
 # - TypeNameCheck: False positives with WS method names.
 cat "${styleCheckRules}" \
     | sed 's/maximum" value="0/maximum" value="99/' \
-    | grep -vE '(LineLength|WhitespaceAround|FinalParameters|JavadocPackage|JavadocVariable|DesignForExtension|AvoidInlineConditionalsCheck)' \
-    | grep -vE '(AvoidNestedBlocksCheck|ConstantNameCheck|EmptyBlockCheck|InnerAssignmentCheck|InterfaceIsTypeCheck|LeftCurlyCheck)̈́' \
-    | grep -vE '(MethodNameCheck|MissingSwitchDefaultCheck|NoWhitespaceAfterCheck|OperatorWrapCheck|RegexpSinglelineCheck|TodoCommentCheck|TypeNameCheck)' \
+    | grep -vE 'LineLength|WhitespaceAround|FinalParameters|JavadocPackage|JavadocVariable|DesignForExtension|AvoidInlineConditionalsCheck' \
+    | grep -vE 'AvoidNestedBlocksCheck|ConstantNameCheck|EmptyBlockCheck|InnerAssignmentCheck|InterfaceIsTypeCheck|LeftCurlyCheck' \
+    | grep -vE 'MethodNameCheck|MissingSwitchDefaultCheck|NoWhitespaceAfterCheck|OperatorWrapCheck|RegexpSinglelineCheck|TodoCommentCheck|TypeNameCheck' \
     > /tmp/checks.xml
 
 if [ "$DEBUG" = "true" ]; then
