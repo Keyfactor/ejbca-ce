@@ -2,8 +2,8 @@
     "swagger": "2.0",
     "info": {
         "description": "API reference documentation.",
-        "version": "1.0.0",
-        "title": "Certificate Management REST Interface"
+        "version": "1.0",
+        "title": "EJBCA REST Interface"
     },
     "basePath": "/ejbca/ejbca-rest-api",
     "tags": [{

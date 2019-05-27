@@ -111,8 +111,8 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
 @Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
 @SwaggerDefinition(info =
     @Info(
-        title = "Certificate Management REST Interface",
-        version = "1.0.0",
+        title = "EJBCA REST Interface",
+        version = BaseRestResource.RESOURCE_VERSION,
         description = "API reference documentation."
         ),
     basePath="/ejbca/ejbca-rest-api",
