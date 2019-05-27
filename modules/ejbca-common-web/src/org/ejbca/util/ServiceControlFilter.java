@@ -60,7 +60,8 @@ public class ServiceControlFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         serviceName = filterConfig.getInitParameter("serviceName");
-        // Since this filter is used in cmpHttpProxy module, to make that module deploy-able in JEE servers we initialize 
+        // Since this filter is referenced in cmpHttpProxy module (via ejbca-common-web dependency), 
+        // to make that module deploy-able in JEE servers we initialize 
         // the globalConfigurationSession bean here instead of using the EJB annotation.
         globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
         if (log.isDebugEnabled()) {
