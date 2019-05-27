@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -3327,6 +3328,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.debug("CaTokenSignTest: " + caTokenSignTest);
         }
         final HashMap<Integer, CryptoToken> cryptoTokenMap = new HashMap<Integer, CryptoToken>();
+        final Set<Integer> testedKeys = new HashSet<>();
         for (final Integer caid : caSession.getAllCaIds()) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caid.intValue());
             if (cainfo.getStatus() == CAConstants.CA_ACTIVE && cainfo.getIncludeInHealthCheck()) {
@@ -3340,10 +3342,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         cryptoTokenMap.put(Integer.valueOf(cryptoTokenId), cryptoToken);
                     }
                 }
-                final int tokenstatus = cainfo.getCAToken().getTokenStatus(caTokenSignTest, cryptoToken);
+                final int caTestKeyHashCode = getCaTestKeyHashCode(cainfo);
+                final boolean caTokenSignTestShouldBePerformed = caTokenSignTest && !testedKeys.contains(caTestKeyHashCode);
+                final int tokenstatus = cainfo.getCAToken().getTokenStatus(caTokenSignTestShouldBePerformed, cryptoToken);
                 if (tokenstatus == CryptoToken.STATUS_OFFLINE) {
                     sb.append("\nCA: Error CA Token is disconnected, CA Name : ").append(cainfo.getName());
                     log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
+                } else {
+                    if (caTestKeyHashCode != 0) {
+                        testedKeys.add(caTestKeyHashCode);
+                    }
                 }
             }
         }
@@ -3394,6 +3402,23 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             return true;
         } catch (java.security.GeneralSecurityException e) {
             return false;
+        }
+    }
+
+    /**
+     * Get a hash code for the test key of a CA. If the token of the CA cannot be read, the
+     * hash code <code>0</code> is returned.
+     * 
+     * @param caInfo an object containing information about the CA.
+     * @return a hash code derived from the crypto token ID and the test key alias.
+     */
+    private int getCaTestKeyHashCode(final CAInfo caInfo) {
+        try {
+            final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
+            final String keyAlias = caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
+            return Objects.hash(cryptoTokenId, keyAlias);
+        } catch (CryptoTokenOfflineException e) {
+            return 0;
         }
     }
 
