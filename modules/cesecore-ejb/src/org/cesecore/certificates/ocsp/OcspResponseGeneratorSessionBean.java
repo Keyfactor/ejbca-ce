@@ -1353,8 +1353,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                     respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if (addArchiveCutoff) {
-                        addArchiveCutoff(respItem);
                         producedAt = new Date();
+                        addArchiveCutoff(respItem, producedAt);
                     }
                 }
  
@@ -1555,12 +1555,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return false;
     }
     
-    private void addArchiveCutoff(OCSPResponseItem respItem) {
+    private void addArchiveCutoff(OCSPResponseItem respItem, Date producedAt) {
         long archPeriod = OcspConfiguration.getExpiredArchiveCutoff();
         if (archPeriod == -1) {
             return;
         }
-        long res = System.currentTimeMillis() - archPeriod;
+        long res = producedAt.getTime() - archPeriod;
         ASN1OctetString archiveCutoffValue;
         try {
             archiveCutoffValue = new DEROctetString(new ASN1GeneralizedTime(new Date(res)));
