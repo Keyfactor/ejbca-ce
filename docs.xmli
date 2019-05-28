@@ -43,6 +43,7 @@
     <property name="confluence.port"  value="-1" />
 	<path id="jdoc.classpath">
         <path location="lib/jee/javaee-api-7.0-1.jar"/>
+        <path location="lib/jee/jaxb-api-2.3.1.jar"/>
 		<path location="dist/ejbca-common.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
         <path location="modules/dist/cesecore-common.jar"/>
