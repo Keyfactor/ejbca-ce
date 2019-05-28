@@ -45,6 +45,8 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By INPUT_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldemaildomain']");
         static final By INPUT_MSUPN_EMAIL_NAME = By.xpath("//input[@name='textfieldupnname3']");
         static final By INPUT_MSUPN_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldsubjectaltname3']");
+        static final By CERTIFICATE_SERIAL_NUMBER_IN_HEX = By.name("textfieldcertsn");
+
 
         // Select drop downs
         static final By SELECT_EEP = By.xpath("//select[@name='selectendentityprofile']");
@@ -173,7 +175,6 @@ public class AddEndEntityHelper extends BaseHelper {
     }
 
 
-
      /**
      * Fills in the text field email and email domain for MS UPN
      * @param emailName e.g. 'john'
@@ -182,6 +183,14 @@ public class AddEndEntityHelper extends BaseHelper {
     public void fillMsUpnEmail(final String emailName, final String emailDomain) {
         fillInput(Page.INPUT_MSUPN_EMAIL_NAME, emailName);
         fillInput(Page.INPUT_MSUPN_EMAIL_DOMAIN, emailDomain);
+    }
+
+    /**
+     * Fills in the text field certificate serial number in hex
+     * @param hexSerialNumber e.g. '1234567890ABCDEF'
+     */
+    public void fillCertificateSerialNumberInHexl(final String hexSerialNumber) {
+        fillInput(Page.CERTIFICATE_SERIAL_NUMBER_IN_HEX, hexSerialNumber);
     }
 
     /**
