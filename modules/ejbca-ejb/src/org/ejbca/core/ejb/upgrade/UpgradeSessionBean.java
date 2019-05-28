@@ -112,6 +112,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
+import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -1697,7 +1698,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean checkColumnExists500() {
 		// Try to find out if caID exists in AdminGroupData, which it did prior to EJBCA 5
         // If it does exist, a post-upgrade has to be done
-		final Connection connection = JDBCUtil.getDBConnection();
+		Connection connection;
+        try {
+            connection = JDBCUtil.getDBConnection();
+        } catch (ServiceLocatorException e) {
+            throw new IllegalStateException("Could not establish connection to database.", e);
+        }
 		boolean exists = false;
 		try {
 			final PreparedStatement stmt = connection.prepareStatement("select cAId from AdminGroupData where pk='0'");
