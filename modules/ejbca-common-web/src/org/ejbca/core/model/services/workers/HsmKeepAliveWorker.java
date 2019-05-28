@@ -14,6 +14,7 @@ package org.ejbca.core.model.services.workers;
 
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
 /**
  * Worker that keeps HSM sessions active.
@@ -42,15 +45,16 @@ public class HsmKeepAliveWorker extends BaseWorker {
     public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         // The only available fail state is if the HSM can't be contacted, in which validating this service serves little purpose.    
     }
-    
+
     @Override
-    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
         // Health checking will be done in three steps: 
         if (log.isDebugEnabled()) {
             log.debug("Performing HSM Keepalive operation.");
         }
         // 1. If we use Audit log integrity protection, make a test integrity protection calculation
-        InternalSecurityEventsLoggerSessionLocal logSession = (InternalSecurityEventsLoggerSessionLocal)ejbs.get(InternalSecurityEventsLoggerSessionLocal.class);
+        InternalSecurityEventsLoggerSessionLocal logSession = (InternalSecurityEventsLoggerSessionLocal) ejbs
+                .get(InternalSecurityEventsLoggerSessionLocal.class);
         try {
             logSession.auditLogCryptoTest();
         } catch (DatabaseProtectionException e1) {
@@ -58,13 +62,18 @@ public class HsmKeepAliveWorker extends BaseWorker {
         }
 
         // 2. Call testKeyPair on all active crypto tokens that has an alias named testKey
-        CryptoTokenManagementSessionLocal tokenSession = (CryptoTokenManagementSessionLocal)ejbs.get(CryptoTokenManagementSessionLocal.class);
+        CryptoTokenManagementSessionLocal tokenSession = (CryptoTokenManagementSessionLocal) ejbs.get(CryptoTokenManagementSessionLocal.class);
         List<CryptoTokenInfo> infos = tokenSession.getCryptoTokenInfos(admin);
         if (log.isDebugEnabled()) {
-            log.debug("Performing keepalive on all active crypto tokens ("+infos.size()+"), but skipping soft tokens.");
+            log.debug("Performing keepalive on all active crypto tokens (" + infos.size() + "), but skipping soft tokens.");
         }
-        for (CryptoTokenInfo info : infos) {
-            // Only test active, PKCS11, crypto tokens. no need to do keepalive on soft tokens, they will not time out
+        if (infos.isEmpty()) {
+            return new ServiceExecutionResult(Result.NO_ACTION, "No active crypto tokens were found.");
+        } else {
+            List<String> failedCryptoTokens = new ArrayList<>();
+            List<String> successfulCryptoTokens = new ArrayList<>();
+            for (CryptoTokenInfo info : infos) {
+                // Only test active, PKCS11, crypto tokens. no need to do keepalive on soft tokens, they will not time out
             if (info.isActive() && StringUtils.isNotEmpty(info.getP11Library())) {
                 CryptoToken token = tokenSession.getCryptoToken(info.getCryptoTokenId());
                 try {
@@ -72,31 +81,43 @@ public class HsmKeepAliveWorker extends BaseWorker {
                     boolean tested = false;
                     for(final String alias : aliases) {
                         if (StringUtils.containsIgnoreCase(alias, "testKey")) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Keepalive testing crypto token '"+info.getName()+"' with id "+info.getCryptoTokenId());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Keepalive testing crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
+                                }
+                                token.testKeyPair("testKey");
+                                tested = true;
                             }
-                            token.testKeyPair(alias);
-                            tested = true;
                         }
+                        if (!tested) {
+                           log.warn("No testKey on crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
+                        } else {
+                            successfulCryptoTokens.add(token.getTokenName());
+                        }
+                    } catch (InvalidKeyException | CryptoTokenOfflineException | KeyStoreException e) {
+                        log.info("Error testing crypto token " + token.getTokenName() + "  that suppposedly was active: ", e);
+                        failedCryptoTokens.add(token.getTokenName());
                     }
-                    if (!tested) {
-                        log.warn("No testKey on crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Not testing inactive, or soft, crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
                     }
-                } catch (InvalidKeyException e) {
-                    log.info("Error testing crypto token that suppposedly was active: ", e);
-                } catch (CryptoTokenOfflineException e) {
-                    log.info("Error testing crypto token that suppposedly was active: ", e);
-                } catch (KeyStoreException e) {
-                    log.info("Error testing crypto token that suppposedly was active: ", e);
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Not testing inactive, or soft, crypto token '"+info.getName()+"' with id "+info.getCryptoTokenId());
                 }
             }
+            if (failedCryptoTokens.isEmpty()) {
+                if (successfulCryptoTokens.isEmpty()) {
+                    return new ServiceExecutionResult(Result.NO_ACTION,
+                            "HSM Keepalive Worker executed, but no active PKCS#11 crypto tokens were found.");
+                } else {
+                    return new ServiceExecutionResult(Result.SUCCESS,
+                            "Performed succesful health check on " + successfulCryptoTokens.size() + " crypto tokens.");
+                }
+                
+            } else {              
+                return new ServiceExecutionResult(Result.FAILURE, "Performed succesful health check on " + successfulCryptoTokens.size()
+                        + " crypto tokens, but the followning failed: " + constructNameList(failedCryptoTokens));
+            }
         }
-        
+
     }
 
-  
 }

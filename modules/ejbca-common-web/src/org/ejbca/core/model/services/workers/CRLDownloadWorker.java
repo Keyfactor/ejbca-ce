@@ -16,6 +16,7 @@ import java.net.URL;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,8 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
 /**
  * Worker used for downloading external CRLs and populating the local database with limited CertificateData entries,
@@ -64,17 +67,27 @@ public class CRLDownloadWorker extends BaseWorker {
     }
     
     @Override
-    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
         // Get references to all EJB's that will be used
         final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
         final CrlStoreSessionLocal crlStoreSession = (CrlStoreSessionLocal) ejbs.get(CrlStoreSessionLocal.class);
         final ImportCrlSessionLocal importCrlSession = (ImportCrlSessionLocal) ejbs.get(ImportCrlSessionLocal.class);
         // Parse worker configuration
-        Collection<Integer> caIdsToCheck = getCAIdsToCheck(true);
+        Collection<Integer> caIdsToCheck;
+        try {
+            caIdsToCheck = getCAIdsToCheck(true);
+        } catch (ServiceExecutionFailedException e) {
+            throw new IllegalStateException(e);
+        }
         if (caIdsToCheck != null && caIdsToCheck.contains(CAConstants.ALLCAS)) {
             caIdsToCheck = caSession.getAllCaIds();
         }
+        if(caIdsToCheck.isEmpty()) {
+            return new ServiceExecutionResult(Result.NO_ACTION, "CRL Download Worker " + serviceName + " ran, but has no CAs configured.");
+        }
         // Process all the configured CAs
+        List<String> failedCas = new ArrayList<>();
+        List<String> checkedCas = new ArrayList<>();
         for (final int caId : caIdsToCheck) {
             if (log.isTraceEnabled()) {
                 log.trace("Processing CA with Id " + caId);
@@ -95,21 +108,46 @@ public class CRLDownloadWorker extends BaseWorker {
                 }
                 final Date now = new Date();
                 IntRange crlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
-                getCrlAndUpdateIfNeeded(caInfo, caCertificate, url, CertificateConstants.NO_CRL_PARTITION, now, crlStoreSession, importCrlSession);
+                try {
+                    getCrlAndUpdateIfNeeded(caInfo, caCertificate, url, CertificateConstants.NO_CRL_PARTITION, now, crlStoreSession,
+                            importCrlSession);
+                    checkedCas.add(caInfo.getName());
+                } catch (ServiceExecutionFailedException e) {
+                    failedCas.add(caInfo.getName());
+                }
                 if (crlPartitionIndexes != null) {
                     for (int i = crlPartitionIndexes.getMinimumInteger(); i <= crlPartitionIndexes.getMaximumInteger(); i++) {
                         final URL partitionUrl = NetworkTools.getValidHttpUrl(((X509CAInfo) caInfo).getCrlPartitionUrl(cdp, i));
-                        getCrlAndUpdateIfNeeded(caInfo, caCertificate, partitionUrl, i, now, crlStoreSession, importCrlSession);
+                        try {
+                            getCrlAndUpdateIfNeeded(caInfo, caCertificate, partitionUrl, i, now, crlStoreSession, importCrlSession);
+                        } catch (ServiceExecutionFailedException e) {
+                            failedCas.add(caInfo.getName());
+                        }
                     }
                 }
+               
             } else {
                 log.info("'" + (caInfo != null ? caInfo.getName() : caId) + "' is not an external X509 CA. Ignoring.");
             }
         }
+        if (checkedCas.isEmpty()) {
+            return new ServiceExecutionResult(Result.NO_ACTION, "CRL Download Worker " + serviceName + " ran, but has no external CAs exist.");
+        } else {
+            if (failedCas.isEmpty()) {
+                return new ServiceExecutionResult(Result.SUCCESS, "All external CA's were sucessfully checked for updated CRLs by CRL Download Worker " + serviceName);
+            } else {
+                return new ServiceExecutionResult(Result.FAILURE,
+                        "CRL Download Worker " + serviceName + " ran. All external CA's were checked for updated CRLs, but the following CA's CDPs were unreachable: "
+                                + constructNameList(failedCas));
+            }
+        }
     }
 
+    /**
+     * @throws ServiceExecutionFailedException if the CRL failed to download
+     */
     private void getCrlAndUpdateIfNeeded(final CAInfo caInfo, final X509Certificate caCertificate, final URL url, final int crlPartitionIndex, final Date now,
-                                         final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) {
+                                         final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) throws ServiceExecutionFailedException {
         try {
             final String issuerDn = CertTools.getSubjectDN(caCertificate);
             final boolean ignoreNextUpdate = Boolean.valueOf(properties.getProperty(PROP_IGNORE_NEXT_UPDATE, Boolean.FALSE.toString()));
@@ -171,19 +209,22 @@ public class CRLDownloadWorker extends BaseWorker {
     }
 
     private X509CRL getAndProcessCrl(final URL cdpUrl, final X509Certificate caCertificate, final CAInfo caInfo,
-                                     final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, CrlImportException {
+                                     final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, CrlImportException, ServiceExecutionFailedException {
         final int maxSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
         if (crlBytesNew == null) {
-            log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate) + "  with url: " + cdpUrl);
+            String msg = "Unable to download CRL for " + CertTools.getSubjectDN(caCertificate) + "  with url: " + cdpUrl;
+            log.warn(msg);
+            throw new ServiceExecutionFailedException(msg);
         } else {
             try {
                 newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
                 importCrlSession.importCrl(admin, caInfo, crlBytesNew, crlPartitionIndex);
             } catch (CRLException e) {
-                log.warn("Unable to decode downloaded CRL for '" + caInfo.getSubjectDN() + "'.");
-                return null;
+                String msg = "Unable to decode downloaded CRL for '" + caInfo.getSubjectDN() + "'.";
+                log.warn(msg, e);
+                throw new ServiceExecutionFailedException(msg, e);
             } catch (AuthorizationDeniedException e) {
                 log.error("Internal authentication token was deneied access to importing CRLs or revoking certificates.", e);
                 return null;
