@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -381,9 +382,21 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         
         // Set up audit logging of CT pre-certificate
         addCTLoggingCallback(certGenParams, admin.toString());
-        certGenParams.setSctDataCallback((fingerprint, logId, certificateExpirationDate, data) -> {
-            SctData sctData = new SctData(fingerprint, logId, certificateExpirationDate, data);
-            sctDataSession.addSctData(sctData);
+        certGenParams.setSctDataCallback(new SctDataCallback() {
+            @Override
+            public void saveSctData(String fingerprint, int logId, long certificateExpirationDate, String data) {
+                SctData sctData = new SctData(fingerprint, logId, certificateExpirationDate, data);
+                sctDataSession.addSctData(sctData);
+            }
+
+            @Override
+            public byte[] findSctData(String fingerprint, int logId) {
+                SctData sctData = sctDataSession.findSctData(fingerprint, logId);
+                if (sctData != null) {
+                    return Hex.decode(sctData.getData());
+                }
+                return null;
+            }
         });
 
         try {
