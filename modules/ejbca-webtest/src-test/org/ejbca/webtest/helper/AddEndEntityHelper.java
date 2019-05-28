@@ -62,6 +62,7 @@ public class AddEndEntityHelper extends BaseHelper {
         
         static final By CHECKBOX_BATCH_GENERATION = By.id("checkboxcleartextpassword");
         static final By CHECKBOX_EMAIL_ADDRESS = By.id("checkboxsubjectdn14");
+        static final By CHECKBOX_RFC_822 = By.id("checkboxsubjectaltname9");
 
         static By getInputFieldLocatorByKey(final String key) {
             return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]");
@@ -139,7 +140,14 @@ public class AddEndEntityHelper extends BaseHelper {
     public void triggerEmailAddress() {
         clickLink(Page.CHECKBOX_EMAIL_ADDRESS);
     }
-    
+
+    /**
+     * Clicks the check box 'Use data from E-mail address field'.
+     */
+    public void clickCheckBoxRfc822() {
+        clickLink(Page.CHECKBOX_RFC_822);
+    }
+
     /**
      * Sets fields when adding an End Entity.
      * 
@@ -163,8 +171,7 @@ public class AddEndEntityHelper extends BaseHelper {
         fillInput(Page.INPUT_EMAIL_NAME, emailName);
         fillInput(Page.INPUT_EMAIL_DOMAIN, emailDomain);
     }
-    
-    /**
+
 
 
      /**

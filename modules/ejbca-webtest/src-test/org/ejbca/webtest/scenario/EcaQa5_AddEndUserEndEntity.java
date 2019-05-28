@@ -94,9 +94,8 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
-        addEndEntityHelper.triggerEmailAddress(); //?
-
-
+        addEndEntityHelper.triggerEmailAddress();
+        addEndEntityHelper.clickCheckBoxRfc822();
         addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
         
     }
