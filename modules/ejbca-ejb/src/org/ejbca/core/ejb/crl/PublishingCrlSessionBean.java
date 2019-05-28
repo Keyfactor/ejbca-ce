@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -115,31 +116,31 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    public int createCRLs(AuthenticationToken admin) throws AuthorizationDeniedException {
+    public Set<Integer> createCRLs(AuthenticationToken admin) throws AuthorizationDeniedException {
         return createCRLs(admin, null, 0);
     }
 
     @Override
-    public int createDeltaCRLs(AuthenticationToken admin) throws AuthorizationDeniedException {
+    public Set<Integer> createDeltaCRLs(AuthenticationToken admin) throws AuthorizationDeniedException {
         return createDeltaCRLs(admin, null, 0);
     }
 
     @Override
-    public int createCRLs(final AuthenticationToken admin, final Collection<Integer> caids, final long addtocrloverlaptime) throws AuthorizationDeniedException {
+    public Set<Integer> createCRLs(final AuthenticationToken admin, final Collection<Integer> caids, final long addtocrloverlaptime) throws AuthorizationDeniedException {
         final Collection<Integer> caIdsToProcess;
         if (caids==null || caids.contains(Integer.valueOf(CAConstants.ALLCAS))) {
             caIdsToProcess = caSession.getAllCaIds();
         } else {
             caIdsToProcess = caids;
         }
-        int createdcrls = 0;
+        Set<Integer> createdcrls = new HashSet<>();
         for (final int caid : caIdsToProcess) {
             if (log.isDebugEnabled()) {
                 log.debug("createCRLs for caid: " + caid);
             }
             try {
                 if (publishingCrlSession.createCRLNewTransactionConditioned(admin, caid, addtocrloverlaptime)) {
-                    createdcrls++;
+                    createdcrls.add(caid);
                 }
             } catch (CryptoTokenOfflineException | CAOfflineException | CADoesntExistsException e) {
                 // Don't fail all generation just because one of the CAs had token offline or similar.
@@ -153,21 +154,21 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    public int createDeltaCRLs(final AuthenticationToken admin, final Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
+    public Set<Integer> createDeltaCRLs(final AuthenticationToken admin, final Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
         final Collection<Integer> caIdsToProcess;
         if (caids==null || caids.contains(Integer.valueOf(CAConstants.ALLCAS))) {
             caIdsToProcess = caSession.getAllCaIds();
         } else {
             caIdsToProcess = caids;
         }
-        int createddeltacrls = 0;
+        Set<Integer> createddeltacrls = new HashSet<>();
         for (final int caid : caIdsToProcess) {
             if (log.isDebugEnabled()) {
                 log.debug("createDeltaCRLs for caid: " + caid);
             }
             try {
                 if (publishingCrlSession.createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime)) {
-                    createddeltacrls++;
+                    createddeltacrls.add(caid);
                 }
             } catch (CesecoreException e) {
                 // Don't fail all generation just because one of the CAs had token offline or similar.
