@@ -20,6 +20,5 @@ import javax.ejb.Local;
 @Local
 public interface SctDataSessionLocal extends SctDataSession {
 
-
     public void addSctData(SctData sctData);
 }

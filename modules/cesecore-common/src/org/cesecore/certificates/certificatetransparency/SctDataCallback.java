@@ -16,7 +16,5 @@ package org.cesecore.certificates.certificatetransparency;
  * @version $Id$
  */
 public interface SctDataCallback {
-
-    void setCertificateExpirationDate(long certificateExpirationDate);
-    void saveSctData(String fingerprint, int logId, String data);
+    void saveSctData(String fingerprint, int logId, long certificateExpirationDate, String data);
 }
