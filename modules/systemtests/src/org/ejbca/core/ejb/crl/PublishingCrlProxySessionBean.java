@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.crl;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,12 +39,12 @@ public class PublishingCrlProxySessionBean implements PublishingCrlProxySessionR
     private PublishingCrlSessionLocal publishingCrlSession;
     
     @Override
-    public int createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
+    public Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
         return publishingCrlSession.createCRLs(admin, caids, addtocrloverlaptime);
     }
 
     @Override
-    public int createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
+    public Set<Integer> createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
         return publishingCrlSession.createDeltaCRLs(admin, caids, crloverlaptime);
     }
 

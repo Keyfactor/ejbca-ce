@@ -14,6 +14,7 @@ package org.ejbca.core.model.services.workers;
 
 import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +34,8 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
 /**
  * Replaces CA certificate chains with a pending new rollover certificate chain once the new certificate chain becomes valid.
@@ -79,7 +82,7 @@ public class RolloverWorker extends BaseWorker {
     }
 	
     @Override
-    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
         final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));
         // Find CAs that have a roll over certificate chain that has became valid.
@@ -90,19 +93,30 @@ public class RolloverWorker extends BaseWorker {
         if (log.isDebugEnabled()) {
             log.debug("Checking " + caids.size() + " CAs for rollover");
         }
+        List<String> rolledOverCas = new ArrayList<>();
         if (caids.contains(SecConst.ALLCAS)) {
             for (CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(getAdmin())) {
-                attemptToPerformRollover(ejbs, caInfo.getCAId(), now);
+                if (attemptToPerformRollover(ejbs, caInfo.getCAId(), now)) {
+                    rolledOverCas.add(caInfo.getName());
+                }
             }
         } else {
+            Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
             for (int caid : caids) {
-                attemptToPerformRollover(ejbs, caid, now);
+                if (attemptToPerformRollover(ejbs, caid, now)) {
+                    rolledOverCas.add(caIdToNameMap.get(caid));
+                }
             }
         }
         log.trace("<Worker ended");
+        if(rolledOverCas.isEmpty()) {
+            return new ServiceExecutionResult(Result.NO_ACTION, "RolloverWorker ran, but no CA's were found for rollover.");
+        } else {
+            return new ServiceExecutionResult(Result.SUCCESS, "The following CAs were rolled over: " + constructNameList(rolledOverCas));
+        }
     }
 	
-	private void attemptToPerformRollover(Map<Class<?>, Object> ejbs, int caid, Date now) {
+	private boolean attemptToPerformRollover(Map<Class<?>, Object> ejbs, int caid, Date now) {
         final CaSessionLocal caSession = ((CaSessionLocal)ejbs.get(CaSessionLocal.class));
         final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
 	    try {
@@ -116,6 +130,7 @@ public class RolloverWorker extends BaseWorker {
                         log.debug("New certificate of CA "+caid+" is now valid, switching certificate.");
                     }
                     caAdminSession.rolloverCA(getAdmin(), ca.getCAId());
+                    return true;
                 }
             }
         }  catch (AuthorizationDeniedException e) {
@@ -123,6 +138,7 @@ public class RolloverWorker extends BaseWorker {
         } catch (CryptoTokenOfflineException e) {
             log.error("Error rolling over CA: ", e);
         }
+	    return false;
 	}
 
 
