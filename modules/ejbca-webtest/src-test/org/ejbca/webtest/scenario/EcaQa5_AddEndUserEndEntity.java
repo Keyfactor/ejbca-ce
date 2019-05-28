@@ -89,8 +89,9 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Jurisdiction Country (ISO 3166) [EV Certificate]", "DE");
         fields.put("telephoneNumber", "123456789");
         fields.put("title, Title", "Prof.");
-        // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, invesigating how to input value for the second one :)
 
+        // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
+        addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
         addEndEntityHelper.triggerEmailAddress(); //?
