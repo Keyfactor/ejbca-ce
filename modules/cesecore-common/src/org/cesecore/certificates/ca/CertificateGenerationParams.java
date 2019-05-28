@@ -17,6 +17,7 @@ import java.io.Serializable;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
+import org.cesecore.certificates.certificatetransparency.SctDataCallback;
 import org.cesecore.keys.validation.CertificateValidationDomainService;
 
 /**
@@ -44,6 +45,7 @@ public final class CertificateGenerationParams implements Serializable {
 
     private CTSubmissionConfigParams ctSubmissionConfigParams;
     private CTAuditLogCallback ctAuditLogCallback;
+    private SctDataCallback sctDataCallback;
     
     private AuthenticationToken authenticationToken;
     private CertificateValidationDomainService certificateValidationDomainService;
@@ -71,6 +73,14 @@ public final class CertificateGenerationParams implements Serializable {
 
     CTAuditLogCallback getCTAuditLogCallback() {
         return ctAuditLogCallback;
+    }
+
+    public SctDataCallback getSctDataCallback() {
+        return sctDataCallback;
+    }
+
+    public void setSctDataCallback(SctDataCallback sctDataCallback) {
+        this.sctDataCallback = sctDataCallback;
     }
 
     /**

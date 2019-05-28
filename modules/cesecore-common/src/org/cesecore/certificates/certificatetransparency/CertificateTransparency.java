@@ -52,9 +52,9 @@ public interface CertificateTransparency {
      * Overloaded method with usageMode = UsageMode.CERTIFICATE.
      *
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
-     * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, CTSubmissionConfigParams, UsageMode)
+     * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, CTSubmissionConfigParams, SctDataCallback)
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, SctDataCallback sctDataCallback) throws CTLogException;
 
     /**
      * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).
@@ -67,7 +67,7 @@ public interface CertificateTransparency {
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured.
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, UsageMode usageMode) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, UsageMode usageMode, SctDataCallback sctDataCallback) throws CTLogException;
 
     /**
      * Adds a critical extension to prevent the certificate from being used
