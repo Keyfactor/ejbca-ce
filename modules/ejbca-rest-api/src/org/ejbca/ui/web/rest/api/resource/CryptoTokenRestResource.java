@@ -144,7 +144,7 @@ public class CryptoTokenRestResource extends BaseRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Generate keys",
         notes = "Generates a key pair given crypto token name, key pair alias, key algorithm and key specification",
-        code = 200)
+        code = 201)
     public Response generateKeys(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Name of the token to generate keys for")
@@ -177,7 +177,39 @@ public class CryptoTokenRestResource extends BaseRestResource {
             throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, errorMessage);            
         }
         
-        return Response.status(Status.OK).build();
+        return Response.status(Status.CREATED).build();
     }
     
+    @POST
+    @Path("/{cryptotoken_name}/{key_pair_alias}/removekeys")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Remove keys",
+        notes = "Remove a key pair given crypto token name and key pair alias to be removed.",
+        code = 200)
+    public Response removeKeys(
+            @Context HttpServletRequest requestContext,
+            @ApiParam(value = "Name of the token to remove keys for.") 
+            @PathParam("cryptotoken_name") String cryptoTokenName,
+            @ApiParam(value = "Alias for the key to be removed from the crypto token.") 
+            @PathParam("key_pair_alias") String keyPairAlias) throws AuthorizationDeniedException, RestException, CryptoTokenOfflineException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (cryptoTokenId == null) {
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, "Unknown crypto token");
+        }
+        try {
+            cryptoTokenManagementSession.removeKeyPair(admin, cryptoTokenId, keyPairAlias);
+        } catch (CryptoTokenOfflineException e) {
+            String errorMessage = "Key generation for CryptoToken '" + cryptoTokenName + "' (" + cryptoTokenId +
+                    ") by administrator " + admin.toString() + " failed. Device was unavailable.";
+            log.info(errorMessage);
+            throw e;
+        } catch (InvalidKeyException e) {
+            String errorMessage = "Key generation for CryptoToken '" + cryptoTokenName + "' (" + cryptoTokenId +
+                    ") by administrator " + admin.toString() + " failed. Alias is in use, key length is invalid or testing the key pair fails.";
+            log.info(errorMessage);
+            throw new RestException(HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY, errorMessage);
+        }
+        return Response.status(Status.OK).build();
+    }
 }
