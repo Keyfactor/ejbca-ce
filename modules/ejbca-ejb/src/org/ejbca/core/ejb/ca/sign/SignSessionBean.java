@@ -810,7 +810,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);
-        } catch (ServiceLocatorException | NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
+        } catch ( NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
                 | InvalidKeyException | CertificateException // | CertificateEncodingException
                 | CertificateExtensionException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
                 | IOException e) {

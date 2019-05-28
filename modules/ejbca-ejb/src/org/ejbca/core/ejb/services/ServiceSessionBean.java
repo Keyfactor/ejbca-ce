@@ -87,6 +87,7 @@ import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
@@ -690,6 +691,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public void executeServiceInNoTransaction(IWorker worker, String serviceName) {
+        log.info("Attempting to run service: " + serviceName);
         try {
             // Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since
             // we have circular dependencies!
@@ -722,8 +724,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
             ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
-            worker.work(ejbs);
-            final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
+            ServiceExecutionResult result = worker.work(ejbs);
+            final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
             log.info(msg);
         } catch (ServiceExecutionFailedException e) {
             final String msg = intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName);
