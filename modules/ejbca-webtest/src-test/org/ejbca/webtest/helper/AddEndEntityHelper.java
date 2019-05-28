@@ -43,7 +43,9 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By INPUT_CERT_EXTENSION_DATA = By.xpath("//textarea[@name='textareaextensiondata']");
         static final By INPUT_EMAIL_NAME = By.xpath("//input[@name='textfieldemail']");
         static final By INPUT_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldemaildomain']");
-        
+        static final By INPUT_MSUPN_EMAIL_NAME = By.xpath("//input[@name='textfieldupnname3']");
+        static final By INPUT_MSUPN_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldsubjectaltname3']");
+
         // Select drop downs
         static final By SELECT_EEP = By.xpath("//select[@name='selectendentityprofile']");
         static final By SELECT_CP = By.xpath("//select[@name='selectcertificateprofile']");
@@ -162,6 +164,19 @@ public class AddEndEntityHelper extends BaseHelper {
         fillInput(Page.INPUT_EMAIL_DOMAIN, emailDomain);
     }
     
+    /**
+
+
+     /**
+     * Fills in the text field email and email domain for MS UPN
+     * @param emailName e.g. 'john'
+     * @param emailDomain e.g. 'company.com'
+     */
+    public void fillMsUpnEmail(final String emailName, final String emailDomain) {
+        fillInput(Page.INPUT_MSUPN_EMAIL_NAME, emailName);
+        fillInput(Page.INPUT_MSUPN_EMAIL_DOMAIN, emailDomain);
+    }
+
     /**
      * Fills in the text area 'NameConstraintsPermitted'.
      * @param domains new line separated domains.
