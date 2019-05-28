@@ -49,7 +49,7 @@ find modules/ -name *.java | tr '\n' ',' > all-java-files.txt
 
 # Run analysis
 time /opt/pmd/bin/run.sh pmd $debugOption -t $coreLimit -no-cache -f xml -encoding UTF-8 -reportfile "${reportFile}" -filelist all-java-files.txt \
-    -language java -rulesets $(pwd)/../code-analyzer-tools/pmd/rulesets/ruleset.xml --failOnViolation false -minimumpriority 5
+    -language java -rulesets $(pwd)/../code-analyzer-tools/pmd/rulesets/ruleset.xml --failOnViolation false -minimumpriority 4
 
 # Remove temporary list of sources
 rm ./all-java-files.txt
