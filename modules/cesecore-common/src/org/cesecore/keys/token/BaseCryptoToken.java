@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -34,6 +32,7 @@ import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,6 +42,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
 /**
@@ -124,6 +124,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      *
      * @return false if the key must not be extractable
      */
+    @Override
     public boolean doPermitExtractablePrivateKey() {
         return getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY) &&
                Boolean.parseBoolean(getProperties().getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
@@ -147,11 +148,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
     @Override
     public void testKeyPair(final String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException { // NOPMD:this is not a junit test
         if (log.isDebugEnabled()) {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final PrintStream ps = new PrintStream(baos);
-            KeyTools.printPublicKeyInfo(publicKey, ps);
-            ps.flush();
-            log.debug("Testing key of type " + baos.toString());
+            log.debug("Testing key '" + alias + "' (SHA1: "
+                    + DatatypeConverter.printHexBinary(CertTools.generateSHA1Fingerprint(publicKey.getEncoded())) + ").");
+            log.debug("The key '" + alias + "' will be tested using the provider '" + getSignProviderName() + "'.");
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
             String msg = intres.getLocalizedMessage("token.extractablekey", CesecoreConfiguration.isPermitExtractablePrivateKeys());
