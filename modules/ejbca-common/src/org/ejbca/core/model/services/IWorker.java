@@ -62,8 +62,9 @@ public interface IWorker {
 	 * The main method that is called by the TimeSessionBean each time
 	 * it is time to activate this service
 	 * @param ejbs A map between Local EJB interface classes and their injected stub
+	 * @return a ServiceExecutionResult if the operation could not perform due to internal errors. 
 	 */
-	void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException;
+	ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException;
 	
 	/**
 	 * 

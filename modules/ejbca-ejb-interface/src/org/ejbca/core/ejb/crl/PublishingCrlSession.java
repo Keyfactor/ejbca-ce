@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
+import java.util.Set;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -32,8 +34,10 @@ public interface PublishingCrlSession {
      * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
+     * 
+     * @return a set of all CAs that had CRLs created.
      */
-    int createCRLs(AuthenticationToken admin) throws AuthorizationDeniedException;
+    Set<Integer> createCRLs(AuthenticationToken admin) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if there are any delta CRLs needed to be updated and
@@ -43,8 +47,10 @@ public interface PublishingCrlSession {
      * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
+     * 
+     * @return a set of all CAs that had CRLs created.
      */
-    int createDeltaCRLs(AuthenticationToken admin) throws AuthorizationDeniedException;
+     Set<Integer> createDeltaCRLs(AuthenticationToken admin) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if the CRL is needed to be updated for the CA and

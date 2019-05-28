@@ -13,8 +13,8 @@
 
 package org.ejbca.core.model.services.workers;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -22,7 +22,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
-import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 
 /**
  * @version $Id$
@@ -67,7 +66,7 @@ public abstract class EmailSendingWorker extends BaseWorker {
 	 */
 	protected abstract void updateStatus(String pk, int status);
 	
-	protected void sendEmails(ArrayList<EmailCertData> queue, Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+	protected void sendEmails(List<EmailCertData> queue, Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
 		Iterator<EmailCertData> iter = queue.iterator();
 		while(iter.hasNext()){			
 			try{

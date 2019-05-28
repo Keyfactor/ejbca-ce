@@ -14,6 +14,7 @@ package org.ejbca.core.model.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -180,7 +181,7 @@ public abstract class BaseWorker implements IWorker {
 				for(int i=0;i<caids.length;i++ ){
 					try {
 						Integer.valueOf(caids[i]);
-					} catch (Exception e) {
+					} catch (NumberFormatException e) {
 						String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, PROP_CAIDSTOCHECK);
 						throw new ServiceExecutionFailedException(msg, e);						
 					}
@@ -191,5 +192,13 @@ public abstract class BaseWorker implements IWorker {
 			}
 		}
 		return cAIdsToCheck;
+	}
+	
+	protected static String constructNameList(List<String> names) {
+	    StringBuilder result = new StringBuilder();
+        for (String name : names) {
+            result.append(name + ", ");
+        }
+        return result.substring(0, result.length() - 2);
 	}
 }

@@ -618,10 +618,7 @@ public class EjbcaWS implements IEjbcaWS {
             // Have this first, if processReq throws an EjbcaException we want to reset status
             ejbcaWSHelperSession.resetUserPasswordAndStatus(admin, username, olduserStatus);
             throw e;
-        } catch (ServiceLocatorException e) {
-            ejbcaWSHelperSession.resetUserPasswordAndStatus(admin, username, olduserStatus);
-            throw getInternalException(e, logger);
-        } catch (NoSuchEndEntityException e) {
+        }  catch (NoSuchEndEntityException e) {
             ejbcaWSHelperSession.resetUserPasswordAndStatus(admin, username, olduserStatus);
             throw getInternalException(e, logger);
         }

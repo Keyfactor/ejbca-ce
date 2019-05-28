@@ -13,7 +13,9 @@
 package org.ejbca.core.model.services.workers;
 
 import java.security.InvalidKeyException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -28,6 +30,8 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
 /**
  * Worker renewing CA that is about to expire.
@@ -66,7 +70,7 @@ public class RenewCAWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
     @Override
-	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+	public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
 		log.trace(">Worker started");
         final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
         final CaSessionLocal caSession = ((CaSessionLocal)ejbs.get(CaSessionLocal.class));
@@ -79,6 +83,7 @@ public class RenewCAWorker extends BaseWorker {
 
 		// Renew these CAs using the CAAdminSessionBean		
 		// Check the "Generate new keys" checkbox so we can pass the correct parameter to CAAdminSessionBean
+		List<String> renewedCas = new ArrayList<>();
 		for(Integer caid : getCAIdsToCheck(false)) {
 			try {
 				CAInfo info = caSession.getCAInfoInternal(caid.intValue());
@@ -93,6 +98,7 @@ public class RenewCAWorker extends BaseWorker {
 					    try {
 					        final boolean createLinkCertificate = isRenewKeys();   // We want link certs for new key..
 					        caAdminSession.renewCA(getAdmin(), info.getCAId(), isRenewKeys(), null, createLinkCertificate);
+					        renewedCas.add(caname);
 					    } catch (CryptoTokenOfflineException e) {
 					        log.info("Not trying to renew CA because CA and token status are not on-line.");
 					    }
@@ -103,10 +109,16 @@ public class RenewCAWorker extends BaseWorker {
 			} catch (CADoesntExistsException e) {
 				log.error("Error renewing CA: ", e);
 			} catch (AuthorizationDeniedException e) {
-				log.error("Error renewing CA: ", e);
+				throw new IllegalStateException("Internal admin was denied access.", e);
 			}				
 		}
+		
 		log.trace("<Worker ended");
+		if(renewedCas.isEmpty()) {
+		    return new ServiceExecutionResult(Result.NO_ACTION, "Renew CA worker ran, but no CAs required renewal.");
+		} else {
+		    return new ServiceExecutionResult(Result.SUCCESS, "The following CAs were renewed by the Renew CA Worker: " + constructNameList(renewedCas));
+		}
 	}
 	
 	protected boolean isRenewKeys() {

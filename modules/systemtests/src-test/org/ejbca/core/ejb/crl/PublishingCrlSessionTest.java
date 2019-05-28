@@ -494,11 +494,11 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // Now wait and test again
             Thread.sleep(1000);
             final X509CRL x509crl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
-            assertTrue(publishingCrlSessionRemote.createCRLs(roleMgmgToken) > 0);
+            assertTrue(publishingCrlSessionRemote.createCRLs(roleMgmgToken).size() > 0);
             final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
             assertTrue("Did not generate a newer CRL.", x509crlAfter.getThisUpdate().after(x509crl.getThisUpdate()));
             final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), true));
-            assertTrue(publishingCrlSessionRemote.createDeltaCRLs(roleMgmgToken) > 0);
+            assertTrue(publishingCrlSessionRemote.createDeltaCRLs(roleMgmgToken).size() > 0);
             final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), true));
             assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
             // Try a similar thing when we specify which CA IDs to generate CRLs for

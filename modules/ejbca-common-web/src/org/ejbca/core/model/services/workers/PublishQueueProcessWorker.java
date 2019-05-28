@@ -19,11 +19,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublishingResult;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
 /**
  * Class processing the publisher queue. Can only run on instance in one VM on
@@ -58,10 +61,11 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                         publisher.testConnection();
                     }
                 } catch (PublisherConnectionException e) {
-                    //Can be safely ignored
+                    // Could not connect to publisher - log
+                    log.error("Could not connect to publisher destination.", e);
                 } catch (FatalPublisherConnectionException e) {
                   //Publishers cannot be contacted, delay this job. 
-                    throw new ServiceExecutionFailedException("Publisher test connection failed, see logs for more informetion.", e);
+                  throw new ServiceExecutionFailedException("Publisher test connection failed, see logs for more informetion.", e);
                 }
             }
         }
@@ -75,7 +79,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * @see org.ejbca.core.model.services.IWorker#work()
      */
     @Override
-    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
         log.trace(">work");
         final PublisherSessionLocal publisherSession = ((PublisherSessionLocal)ejbs.get(PublisherSessionLocal.class));
         final PublisherQueueSessionLocal publisherQueueSession = ((PublisherQueueSessionLocal)ejbs.get(PublisherQueueSessionLocal.class));
@@ -87,6 +91,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 running = b.booleanValue();
             }
         }
+        PublishingResult publishingResult = new PublishingResult();
         if (!running) {
             try {
                 synchronized (runmap) {
@@ -99,6 +104,9 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     // Loop through all handled publisher ids and process
                     // anything in the queue
                     String[] ids = StringUtils.split(idstr, ';');
+                    if(ids.length == 0) {
+                        return new ServiceExecutionResult(Result.NO_ACTION, "Publishing Queue Service " + serviceName + " ran with no active publishers.");
+                    }
                     for (int i = 0; i < ids.length; i++) {
                         int publisherId = Integer.valueOf(ids[i]);
                         // Get everything from the queue for this publisher id
@@ -117,6 +125,20 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
             log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName()));
         }
         log.trace("<work");
+        if (publishingResult.getSuccesses() == 0 && publishingResult.getFailures() == 0) {
+            return new ServiceExecutionResult(Result.NO_ACTION,
+                    "Publishing Queue Service " + serviceName + " ran, but the publishing queue was either empty or the publisher(s) could not connect.");
+        } else {
+            if (publishingResult.getFailures() != 0) {
+                return new ServiceExecutionResult(Result.FAILURE,
+                        "Publishing Queue Service " + serviceName + " ran with " + publishingResult.getFailures() + " failed publishing operations"
+                                + (publishingResult.getSuccesses() == 0 ? "."
+                                        : " and " + publishingResult.getSuccesses() + " successful publishing operations."));
+            } else {
+                return new ServiceExecutionResult(Result.SUCCESS, "Publishing Queue Service " + serviceName + " ran with "
+                        + publishingResult.getSuccesses() + " successful publishing operations.");
+            }
+        }
     }
 
     /**

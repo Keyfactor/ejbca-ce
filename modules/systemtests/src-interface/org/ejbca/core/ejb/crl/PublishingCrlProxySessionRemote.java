@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.crl;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.ejb.Remote;
 
@@ -51,7 +52,7 @@ public interface PublishingCrlProxySessionRemote {
      *            used CRL overlap time will be (crloverlaptime +
      *            addtocrloverlaptime)
      */
-    int createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException;
+    Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if there are any delta CRLs needed to be updated and
@@ -64,7 +65,7 @@ public interface PublishingCrlProxySessionRemote {
      *            A new delta CRL is created if the current one expires within
      *            the crloverlaptime given in milliseconds
      */
-    int createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException;
+    Set<Integer> createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException;
     
     /**
      * Method that checks if the delta CRL needs to be updated and then creates

@@ -18,12 +18,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 import org.ejbca.core.model.services.actions.MailActionInfo;
 
 /**
@@ -53,7 +64,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
      * @see org.ejbca.core.model.services.IWorker#work()
      */
     @Override
-    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
         final EndEntityManagementSessionLocal endEntityManagementSession = ((EndEntityManagementSessionLocal)ejbs.get(EndEntityManagementSessionLocal.class));
 
@@ -63,7 +74,10 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
         long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
         List<EndEntityInformation> userDataList = endEntityManagementSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, EndEntityConstants.STATUS_NEW);
-
+        if(userDataList.isEmpty()) {
+            return new ServiceExecutionResult(Result.NO_ACTION, "No end entities required password expiration.");
+        }
+        
         for (EndEntityInformation endEntityInformation : userDataList) {
             endEntityInformation.setStatus(EndEntityConstants.STATUS_GENERATED);
             endEntityInformation.setPassword(null);
@@ -85,8 +99,9 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
                 	MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
                 	adminEmailQueue.add(new EmailCertData(endEntityInformation.getUsername(), mailActionInfo));
                 }
-            } catch (Exception e) {
-                log.error("Error running service work: ", e);
+            } catch (IllegalNameException | CADoesntExistsException | ApprovalException | CertificateSerialNumberException | NoSuchEndEntityException
+                    | CustomFieldException | AuthorizationDeniedException | EndEntityProfileValidationException | WaitingForApprovalException e) {
+                log.error("Error running User Password Expire Worker: ", e);
                 throw new ServiceExecutionFailedException(e);
             }
         }
@@ -98,6 +113,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
             sendEmails(adminEmailQueue, ejbs);
         }
         log.trace("<Worker ended");
+        return new ServiceExecutionResult(Result.SUCCESS, userDataList.size() + " end entity passwords were marked as expired.");
     }
 	
 	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 
