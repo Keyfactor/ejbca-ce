@@ -54,7 +54,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
 
     @Test
-    public void stepA_AddEndEntityProfile() {
+    public void stepA_AddEndEntityProfile() throws InterruptedException {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
         HashMap<String, String> fields = new HashMap<String, String>(); 
@@ -101,8 +101,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Place of birth", "Germany");
         fields.put("Date of birth (YYYYMMDD)", "19710101");
         fields.put("Gender (M/F)", "F");
-      //  fields.put(" Certificate serial number in hex (e.g. : 1234567890ABCDEF)", "1234567890ABCDEF");
-        // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
+       // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
@@ -112,5 +111,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.setCertificateProfile("ENDUSER");
         addEndEntityHelper.setCa("ManagementCA");
         addEndEntityHelper.setToken("User Generated");
+        addEndEntityHelper.fillCertificateSerialNumberInHexl("1234567890ABCDEF");
+
     }
 }
