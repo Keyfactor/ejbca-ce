@@ -252,11 +252,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             throw new CertificateCreateException(ErrorCode.BAD_REQUEST_SIGNATURE, e);
         } catch (NoSuchProviderException e) {
             throw new CertificateCreateException(ErrorCode.INTERNAL_ERROR, e);
-        } catch(CertificateEncodingException e) {
+        } catch(CertificateEncodingException | CRLException e) {
             throw new CertificateCreateException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e);
-        } catch (CRLException e) {
-            throw new CertificateCreateException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e);
-        } 
+        }
 
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage, CA)");
@@ -428,7 +426,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
                 if (!certProfile.getAllowCertSerialNumberOverride()) {
                     final String msg = intres
-                            .getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override", Integer.valueOf(certProfileId));
+                            .getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override", certProfileId);
                     log.info(msg);
                     throw new CustomCertificateSerialNumberException(msg);
                 }
@@ -588,51 +586,20 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             return result;
             // We need to catch and re-throw all of these exception just because we need to audit log all failures
-        } catch (CustomCertificateSerialNumberException e) {
+        } catch (CustomCertificateSerialNumberException | AuthorizationDeniedException | CertificateCreateException e) {
             log.info(e.getMessage());
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            throw e;
-        }  catch (AuthorizationDeniedException e) {
-            log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            throw e;
-        } catch (CertificateCreateException e) {
-            log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            // Rollback
             throw e;
         } catch(CryptoTokenOfflineException e) {
             final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
             log.info(msg);
             auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
-        } catch (CAOfflineException e) {
+        } catch (CAOfflineException | InvalidAlgorithmException | IllegalValidityException e) {
             log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
-        } catch (InvalidAlgorithmException e) {
-            log.error("Error creating certificate", e);
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            throw e;
-        } catch (IllegalValidityException e) {
-            log.error("Error creating certificate", e);
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            throw e;
-        } catch (OperatorCreationException e) {
-            log.error("Error creating certificate", e);
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            // Rollback
-            throw new CertificateCreateException(e);
-        } catch (SignatureException e) {
-            log.error("Error creating certificate", e);
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            // Rollback
-            throw new CertificateCreateException(e);
-        } catch (CertificateExtensionException e) {
-            log.error("Error creating certificate", e);
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-            throw e;
-        } catch (IOException e) {
+        } catch (OperatorCreationException | IOException | SignatureException | CertificateExtensionException e) {
             log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             // Rollback
@@ -768,7 +735,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         // What if certProfile == null?
         if (certProfile == null) {
-            final String msg = intres.getLocalizedMessage("createcert.errorcertprofilenotfound", Integer.valueOf(certProfileId));
+            final String msg = intres.getLocalizedMessage("createcert.errorcertprofilenotfound", certProfileId);
             throw new AuthorizationDeniedException(msg);
         }
         if (log.isDebugEnabled()) {
@@ -778,15 +745,15 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Check that CAid is among available CAs
         boolean caauthorized = false;
         for (final Integer nextInt : certProfile.getAvailableCAs()) {
-            final int next = nextInt.intValue();
+            final int next = nextInt;
             if (next == caid || next == CertificateProfile.ANYCA) {
                 caauthorized = true;
                 break;
             }
         }
         if (!caauthorized) {
-            final String msg = intres.getLocalizedMessage("createcert.errorcertprofilenotauthorized", Integer.valueOf(caid),
-                    Integer.valueOf(certProfileId));
+            final String msg = intres.getLocalizedMessage("createcert.errorcertprofilenotauthorized", caid,
+                    certProfileId);
             throw new AuthorizationDeniedException(msg);
         }
         return certProfile;
