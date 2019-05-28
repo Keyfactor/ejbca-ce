@@ -1,5 +1,7 @@
 package org.ejbca.core.ejb;
 
+import javax.xml.ws.WebFault;
+
 /**
  * Exception related to resource localization.
  *
@@ -11,7 +13,8 @@ package org.ejbca.core.ejb;
  * 
  * @version $Id$
  */
-public class ServiceLocatorException extends RuntimeException {
+@WebFault
+public class ServiceLocatorException extends Exception {
 
     private static final long serialVersionUID = -4079132608707751216L;
 
