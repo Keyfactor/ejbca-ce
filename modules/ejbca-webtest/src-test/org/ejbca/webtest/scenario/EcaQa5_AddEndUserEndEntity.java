@@ -101,8 +101,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Place of birth", "Germany");
         fields.put("Date of birth (YYYYMMDD)", "19710101");
         fields.put("Gender (M/F)", "F");
-
-
+      //  fields.put(" Certificate serial number in hex (e.g. : 1234567890ABCDEF)", "1234567890ABCDEF");
         // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
@@ -110,6 +109,8 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.triggerEmailAddress();
         addEndEntityHelper.clickCheckBoxRfc822();
         addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
-        
+        addEndEntityHelper.setCertificateProfile("ENDUSER");
+        addEndEntityHelper.setCa("ManagementCA");
+        addEndEntityHelper.setToken("User Generated");
     }
 }
