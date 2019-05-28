@@ -1587,7 +1587,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     final List<Certificate> chain = new ArrayList<>();
                     chain.add(cert);
                     chain.addAll(getCertificateChain());
-                    certGenParams.getSctDataCallback().setCertificateExpirationDate(getExpireTime().getTime());
                     // Submit to logs and get signed timestamps
                     byte[] sctlist = null;
                     try {
