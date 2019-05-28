@@ -494,21 +494,22 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                             log.debug("Exception: ", t); // Don't spam log with stacktraces in normal production cases
                         }
                     }
-                    // Verify with the service worker that it can run - if not then this CA instance may be in a temporary (or not) fail 
-                    // state. In that case, reschedule the timer so that it skips the next loop. If this is a single node
-                    // installation then the job will be picked up again, if it's a multi node installation then this avoids this node 
-                    // preemting one of the other nodes, which may be functioning. 
-                    if(!serviceSession.canWorkerRun(worker)) {
-                      nextTrigger.cancel();  
-                      addTimer(serviceInterval * 1000 *2, timerInfo);
-                      if(log.isDebugEnabled()) {
-                            log.debug("Service was deemed unable to run on this node, so setting timer interval to " + serviceInterval * 1000 * 2
-                                    + " (double interval) in order to give another node (if present in the cluster) a chance to try.");
-                        }
-                      return;
-                    } 
-                   
                     if (worker != null) {
+                        // Verify with the service worker that it can run - if not then this CA instance may be in a temporary (or not) fail 
+                        // state. In that case, reschedule the timer so that it skips the next loop. If this is a single node
+                        // installation then the job will be picked up again, if it's a multi node installation then this avoids this node 
+                        // preemting one of the other nodes, which may be functioning. 
+                        if (!serviceSession.canWorkerRun(worker)) {
+                            nextTrigger.cancel();
+                            addTimer(serviceInterval * 1000 * 2, timerInfo);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Service was deemed unable to run on this node, so setting timer interval to " + serviceInterval * 1000 * 2
+                                        + " (double interval) in order to give another node (if present in the cluster) a chance to try.");
+                            }
+                            return;
+                        }
+                   
+                   
                         try {
                             serviceSession.executeServiceInNoTransaction(worker, serviceName);
                         } catch (RuntimeException e) {

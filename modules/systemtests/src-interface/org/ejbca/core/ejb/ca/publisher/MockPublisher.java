@@ -19,7 +19,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
@@ -47,7 +49,10 @@ public class MockPublisher extends CustomPublisherContainer implements ICustomPu
     }
     
     public MockPublisher(Properties properties) {
+        super();
+        setClassPath(this.getClass().getName());
         init(properties);
+        setPropertyData(properties.toString());
     }
 
     @Override
@@ -65,7 +70,11 @@ public class MockPublisher extends CustomPublisherContainer implements ICustomPu
     
     @Override
     public void init(Properties properties) {
-        successLimit = Integer.parseInt(properties.getProperty(PROPERTYKEY_LIMIT));
+        if (properties.containsKey(PROPERTYKEY_LIMIT)) {
+            successLimit = Integer.parseInt(properties.getProperty(PROPERTYKEY_LIMIT));
+        } else {
+            successLimit = 0;
+        }
         data.put(PROPERTYKEY_LIMIT, successLimit);
         if(!data.containsKey(PROPERTYKEY_SUCCESSES)) {
             data.put(PROPERTYKEY_SUCCESSES, 0);
@@ -73,8 +82,18 @@ public class MockPublisher extends CustomPublisherContainer implements ICustomPu
     }
 
     @Override
+    public boolean isFullEntityPublishingSupported() {
+        return true;
+    }
+    
+    @Override
     public boolean isReadOnly() {
         return false;
+    }
+    
+    @Override
+    public void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException {
+        
     }
 
 
