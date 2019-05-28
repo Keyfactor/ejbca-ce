@@ -177,6 +177,9 @@ public class CAToken extends UpgradeableDataHashMap {
                             // Check that that the testkey is usable by doing a test signature.
                             try {
                                 if (caTokenSignTest) {
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Testing key '" + alias + "' residing in crypto token '" + cryptoToken.getTokenName() + "'.");
+                                    }
                                     cryptoToken.testKeyPair(alias, publicKey, privateKey);
                                 }
                                 // If we can test the testkey, we are finally active!
