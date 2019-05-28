@@ -17,4 +17,5 @@ package org.cesecore.certificates.certificatetransparency;
  */
 public interface SctDataCallback {
     void saveSctData(String fingerprint, int logId, long certificateExpirationDate, String data);
+    byte[] findSctData(String fingerprint, int logId);
 }

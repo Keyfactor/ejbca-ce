@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificatetransparency;
 
-import java.util.List;
 
 /**
  * SctData session
@@ -21,5 +20,5 @@ import java.util.List;
  */
 public interface SctDataSession {
 
-    public List<SctData> findSctData(String fingerprint);
+    public SctData findSctData(String fingerprint, int logId);
 }
