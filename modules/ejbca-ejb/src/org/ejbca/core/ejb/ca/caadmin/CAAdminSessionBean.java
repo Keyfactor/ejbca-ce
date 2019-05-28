@@ -3342,7 +3342,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         cryptoTokenMap.put(Integer.valueOf(cryptoTokenId), cryptoToken);
                     }
                 }
-                final int caTestKeyHashCode = getCaTestKeyHashCode(cainfo);
+                final int caTestKeyHashCode = getCaTestKeyHashCode(cainfo.getCAToken());
                 final boolean caTokenSignTestShouldBePerformed = caTokenSignTest && !testedKeys.contains(caTestKeyHashCode);
                 final int tokenstatus = cainfo.getCAToken().getTokenStatus(caTokenSignTestShouldBePerformed, cryptoToken);
                 if (tokenstatus == CryptoToken.STATUS_OFFLINE) {
@@ -3350,6 +3350,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
                 } else {
                     if (caTestKeyHashCode != 0) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Caching test key for CA '" + cainfo.getName() + "'.");
+                        }
                         testedKeys.add(caTestKeyHashCode);
                     }
                 }
@@ -3412,10 +3415,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param caInfo an object containing information about the CA.
      * @return a hash code derived from the crypto token ID and the test key alias.
      */
-    private int getCaTestKeyHashCode(final CAInfo caInfo) {
+    private int getCaTestKeyHashCode(final CAToken caToken) {
         try {
-            final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
-            final String keyAlias = caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
+            final int cryptoTokenId = caToken.getCryptoTokenId();
+            final String keyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
             return Objects.hash(cryptoTokenId, keyAlias);
         } catch (CryptoTokenOfflineException e) {
             return 0;
