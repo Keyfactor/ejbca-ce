@@ -32,6 +32,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     public static class TestData {
         private static final String ROOTCA_NAME = "ECAQA3";
         private static final String SUBCA_NAME = "subCA ECAQA3";
+        private static final String END_ENTITY_NAME = "TestEndEnityEMPTY";
     }
 
 
@@ -49,8 +50,9 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         // Remove generated artifacts
         removeCaAndCryptoToken(TestData.ROOTCA_NAME);
         removeCaByName(TestData.SUBCA_NAME);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME);
         // super
-        // afterClass();
+        // afterClass(); // put it back in later
     }
 
     @Test
@@ -58,7 +60,8 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
         HashMap<String, String> fields = new HashMap<String, String>(); 
-        fields.put("Username", "TestEndEnityEMPTY");
+        
+        fields.put("Username", TestData.END_ENTITY_NAME);
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
         fields.put("ST, State or Province", "Germany");
@@ -74,7 +77,9 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("CIF, Tax ID code, for companies (Spain)", "5678");
         fields.put("unstructuredAddress, IP address", "127.0.0.1");
         fields.put("businessCategory, Organization type",  "QA");
-        fields.put("CN, Common name", "TestEndEnityEMPTY");
+        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
+        
+        /*
         fields.put("postalCode", "12345");
         fields.put("O, Organization", "QA");
         fields.put("pseudonym", "tester");
@@ -101,7 +106,10 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Place of birth", "Germany");
         fields.put("Date of birth (YYYYMMDD)", "19710101");
         fields.put("Gender (M/F)", "F");
-       // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
+        */
+        
+        //fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
+        
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
@@ -112,6 +120,10 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.setCa("ManagementCA");
         addEndEntityHelper.setToken("User Generated");
         addEndEntityHelper.fillCertificateSerialNumberInHexl("1234567890ABCDEF");
-
+        
+        addEndEntityHelper.addEndEntity();
+        
+        // TODO: verify that success message appeared
+        
     }
 }
