@@ -772,15 +772,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("keyAlias", alias);
         try {
             cryptoToken.deleteEntry(alias);
-        } catch (KeyStoreException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
             throw new InvalidKeyException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new InvalidKeyException(e);
-        } catch (CertificateException e) {
-            throw new InvalidKeyException(e);
-        } catch (IOException e) {
-            throw new InvalidKeyException(e);
-        }
+        } 
+        
         assertAliasNotInUse(cryptoToken, alias);
         log.debug("cryptoTokenSession.mergeCryptoToken");
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
