@@ -29,6 +29,7 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.log4j.Logger;
 import org.ejbca.config.MailConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ServiceLocatorException;
 
 /**
  * Simple wrapper for JavaMail.
@@ -73,7 +74,12 @@ public class MailSender {
 	 * @return true if the message was successfully handed over to JavaMail
 	 */
 	public static boolean sendMail(String fromAddress, List<String> toList, List<String> ccList, String subject, String content, List<MailAttachment> attachments) {
-        Session mailSession = ServiceLocator.getInstance().getMailSession(MailConfiguration.getMailJndiName());
+        Session mailSession;
+        try {
+            mailSession = ServiceLocator.getInstance().getMailSession(MailConfiguration.getMailJndiName());
+        } catch (ServiceLocatorException e) {
+            throw new IllegalStateException(e);
+        }
         // It would be good if we could set mail session properties, but it seems not possible
         // See https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html
         // mail.smtp.timeout

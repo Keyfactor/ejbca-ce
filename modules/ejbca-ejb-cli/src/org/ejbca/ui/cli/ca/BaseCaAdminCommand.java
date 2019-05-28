@@ -151,10 +151,10 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
                     log.info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).createCRLs(getAuthenticationToken());
+                int createdcrls = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).createCRLs(getAuthenticationToken()).size();
                 log.info("  " + createdcrls + " CRLs have been created.");
                 int createddeltacrls = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).createDeltaCRLs(
-                        getAuthenticationToken());
+                        getAuthenticationToken()).size();
                 log.info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {

@@ -485,6 +485,7 @@ public class PublisherQueueTest {
         Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
         String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
         int publisherId = publisherSession.addPublisher(authenticationToken, publisherName, mockPublisher);
+        mockPublisher.setPublisherId(publisherId);
         //Add some queue data for the publisher to work on.
         final PublisherQueueVolatileInformation publisherQueueInfo = new PublisherQueueVolatileInformation();
         publisherQueueInfo.setUsername(testCertificateUsername);
@@ -530,6 +531,7 @@ public class PublisherQueueTest {
         Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
         String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
         int publisherId = publisherSession.addPublisher(authenticationToken, publisherName, mockPublisher);
+        mockPublisher.setPublisherId(publisherId);
         //Add some queue data for the publisher to work on.
         final PublisherQueueVolatileInformation publisherQueueInfo = new PublisherQueueVolatileInformation();
         publisherQueueInfo.setUsername(testCertificateUsername);
@@ -576,6 +578,7 @@ public class PublisherQueueTest {
         Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
         String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
         int publisherId = publisherSession.addPublisher(authenticationToken, publisherName, mockPublisher);
+        mockPublisher.setPublisherId(publisherId);
         //Add some queue data for the publisher to work on.
         final PublisherQueueVolatileInformation publisherQueueInfo = new PublisherQueueVolatileInformation();
         publisherQueueInfo.setUsername(testCertificateUsername);
@@ -583,8 +586,7 @@ public class PublisherQueueTest {
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, certificateFingerprint, publisherQueueInfo, PublisherConst.STATUS_PENDING);
         try {
-            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken,
-                    mockPublisher);
+            PublishingResult result = publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(authenticationToken, mockPublisher);
             assertEquals("Wrong number of successes was reported.", 1, result.getSuccesses());
             assertEquals("Wrong number of failures was reported.", 1, result.getFailures());
         } finally {
