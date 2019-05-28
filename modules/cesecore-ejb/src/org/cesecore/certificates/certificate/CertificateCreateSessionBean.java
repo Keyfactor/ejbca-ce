@@ -381,19 +381,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         
         // Set up audit logging of CT pre-certificate
         addCTLoggingCallback(certGenParams, admin.toString());
-        //TODO ECA-8135 set certificate expiration date
-        certGenParams.setSctDataCallback(new SctDataCallback() {
-            private long certificateExpirationDate;
-            @Override
-            public void setCertificateExpirationDate(long certificateExpirationDate) {
-                this.certificateExpirationDate = certificateExpirationDate;
-            }
-
-            @Override
-            public void saveSctData(String fingerprint, int logId, String data) {
-                SctData sctData = new SctData(fingerprint, logId, certificateExpirationDate, data);
-                sctDataSession.addSctData(sctData);
-            }
+        certGenParams.setSctDataCallback((fingerprint, logId, certificateExpirationDate, data) -> {
+            SctData sctData = new SctData(fingerprint, logId, certificateExpirationDate, data);
+            sctDataSession.addSctData(sctData);
         });
 
         try {
