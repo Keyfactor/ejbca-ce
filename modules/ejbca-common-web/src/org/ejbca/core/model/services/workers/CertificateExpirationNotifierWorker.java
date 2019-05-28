@@ -31,6 +31,8 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 import org.ejbca.core.model.services.actions.MailActionInfo;
 
 /**
@@ -58,14 +60,14 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      * @see org.ejbca.core.model.services.IWorker#work()
      */
     @Override
-    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">CertificateExpirationNotifierWorker.work started");
         final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));
         certificateStoreSession = ((CertificateStoreSessionLocal) ejbs.get(CertificateStoreSessionLocal.class));
         final EndEntityAccessSessionLocal endEntityAccessSession = ((EndEntityAccessSessionLocal) ejbs.get(EndEntityAccessSessionLocal.class));
 
-        ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
-        ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
+        List<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
+        List<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
 
         // Build Query
         Collection<String> cas = new ArrayList<String>();
@@ -148,7 +150,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         String fingerprint = (String) next[0];
                         String username = (String) next[1];
                         // Get the certificate through a session bean
-                        log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
+                        if(log.isDebugEnabled()) {
+                            log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
+                        }
                         Certificate cert = certificateStoreSession.findCertificateByFingerprint(fingerprint);
                         EndEntityInformation userData = endEntityAccessSession.findUser(getAdmin(), username);
                         if (userData != null) {
@@ -157,7 +161,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                                     log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoemail", username));
                                 } else {
                                     // Populate end user message
-                                    log.debug("Adding to email queue for user: " + userData.getEmail());
+                                    if(log.isDebugEnabled()) {
+                                        log.debug("Adding to email queue for user: " + userData.getEmail());
+                                    }
                                     final UserNotificationParamGen userNotificationParamGen = new UserNotificationParamGen(userData, cert);
                                     final String message = userNotificationParamGen.interpolate(getEndUserMessage());
                                     final String subject = userNotificationParamGen.interpolate(getEndUserSubject());
@@ -166,8 +172,10 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                                 }
                             }
                         } else {
-                            log.debug("Trying to send notification to user, but no UserData can be found for user '" + username
+                            if(log.isDebugEnabled()) {
+                                log.debug("Trying to send notification to user, but no UserData can be found for user '" + username
                                     + "', will only send to admin if admin notifications are defined.");
+                            }
                         }
                         if (isSendToAdmins()) {
                             // If we did not have any user for this, we will simply use empty values for substitution
@@ -176,7 +184,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                                 userData.setUsername(username);
                             }
                             // Populate admin message
-                            log.debug("Adding to email queue for admin");
+                            if(log.isDebugEnabled()) {
+                                log.debug("Adding to email queue for admin");
+                            }
                             final UserNotificationParamGen userNotificationParamGen = new UserNotificationParamGen(userData, cert);
                             final String message = userNotificationParamGen.interpolate(getAdminMessage());
                             final String subject = userNotificationParamGen.interpolate(getAdminSubject());
@@ -185,17 +195,21 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         }
                         if (!isSendToEndUsers() && !isSendToAdmins()) {
                             // a little bit of a kludge to make JUnit testing feasible...
-                            log.debug("nobody to notify for cert with fp:" + fingerprint);
+                            if(log.isDebugEnabled()) {
+                                log.debug("nobody to notify for cert with fp:" + fingerprint);
+                            }
                             updateStatus(fingerprint, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
                         }
                     }
                     if (count == 0) {
-                        log.debug("No certificates found for notification.");
+                        if(log.isDebugEnabled()) {
+                            log.debug("No certificates found for notification.");
+                        }
                     }
 
-                } catch (Exception fe) {
+                } catch (AuthorizationDeniedException fe) {
                     log.error("Error running service work: ", fe);
-                    throw new ServiceExecutionFailedException(fe);
+                    throw new IllegalStateException("Internal admin was denied access.", fe);
                 }
                 if (isSendToEndUsers()) {
                     sendEmails(userEmailQueue, ejbs);
@@ -208,8 +222,16 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             }
         } else {
             log.debug("No CAs to check");
+            
         }
         log.trace("<CertificateExpirationNotifierWorker.work ended");
+        if (userEmailQueue.isEmpty() && adminEmailQueue.isEmpty()) {
+            return new ServiceExecutionResult(Result.NO_ACTION, "Certificate Expiration Worker ran, but no notifications were needed to be sent out.");
+        } else {
+            return new ServiceExecutionResult(Result.SUCCESS, "Notifications were sent out to "
+                    + (userEmailQueue.isEmpty() ? "" : userEmailQueue.size() + " users")
+                    + (userEmailQueue.isEmpty() ? "" : " and" + (adminEmailQueue.isEmpty() ? "" : adminEmailQueue.size() + " administators") + "."));
+        }
     }
 
     /**

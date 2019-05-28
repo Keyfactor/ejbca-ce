@@ -42,12 +42,20 @@ public class JDBCUtil {
     private static final Logger log = Logger.getLogger(JDBCUtil.class);
     
     public interface Preparer {
-    	void prepare(PreparedStatement ps) throws Exception;
+        /**
+         * Modifies the argument according to the implementing class' requirements
+         * 
+         * @param ps the SQL statement to prepare
+         * @throws SQLException if the statement couldn't be prepared. 
+         */
+    	void prepare(PreparedStatement ps) throws SQLException;
     	String getInfoString();
     }
     
-    /** @return the current result as an update count; -1 if the current result is a ResultSet object or there are no more results */
-    public static int execute(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
+    /** @return the current result as an update count; -1 if the current result is a ResultSet object or there are no more results 
+     * @throws ServiceLocatorException if a connection to the database couldn't be established
+     * @throws SQLException */
+    public static int execute(String sqlCommandTemplate, Preparer preparer, String dataSource) throws SQLException, ServiceLocatorException {
         if ( sqlCommandTemplate!=null ) {
             Connection connection = null;
             PreparedStatement ps = null;
@@ -124,9 +132,9 @@ public class JDBCUtil {
     /**
      * return a requested database connection
      *
-     * @param dsName the name of the datasource
+     * @param dsName the name of the data source
      * @return a database connection
-     * @throws ServiceLocatorException if it cannot get the datasource connection
+     * @throws ServiceLocatorException if it cannot get the data source connection
      * @see #getDataSource(java.lang.String)
      */
     public static Connection getDBConnection() throws ServiceLocatorException {
