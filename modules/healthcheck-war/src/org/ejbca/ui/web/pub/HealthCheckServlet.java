@@ -71,7 +71,6 @@ public class HealthCheckServlet extends HttpServlet {
     private boolean anyIpAuthorized = false;
 
     private final long minfreememory = EjbcaConfiguration.getHealthCheckAmountFreeMem();
-    private boolean checkPublishers = EjbcaConfiguration.getHealthCheckPublisherConnections();
 
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -213,7 +212,7 @@ public class HealthCheckServlet extends HttpServlet {
                 log.debug("Checking CAs.");
             }
             sb.append(caAdminSession.healthCheck());
-            if (checkPublishers) {
+            if (EjbcaConfiguration.getHealthCheckPublisherConnections()) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking publishers.");
                 }

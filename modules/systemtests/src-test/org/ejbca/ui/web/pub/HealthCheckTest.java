@@ -171,6 +171,9 @@ public class HealthCheckTest {
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, null);
 
+        //Disable publisher checks just to be sure
+        String originalPublisherValue = configurationSession.getProperty("healthcheck.publisherconnections");
+        configurationSession.updateProperty("healthcheck.publisherconnections", "false");
         //Make sure that database protection is enabled 
         final String shouldProtectAuditLog = configurationSession.getCesecoreProperty("databaseprotection.enablesign.AuditRecordData");
         if (shouldProtectAuditLog == null || !shouldProtectAuditLog.equals("true")) {
@@ -190,6 +193,7 @@ public class HealthCheckTest {
             //Restore values
             configurationSession.updateCesecoreProperty("databaseprotection.enablesign.AuditRecordData", shouldProtectAuditLog);
             configurationSession.updateCesecoreProperty("ddatabaseprotection.keyid.AuditRecordData", auditLogKeyId);
+            configurationSession.updateProperty("healthcheck.publisherconnections", originalPublisherValue);
             cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);
         }
 
