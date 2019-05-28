@@ -8,6 +8,11 @@
 # default: EjbcaDS
 #datasource.jndi-name=EjbcaDS
 
+#
+# For building and installing EJBCA on an application server only database.name needs to be set. 
+# The database connections are configured in the applications server.
+#
+
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added
 # See the document doc/howto/HOWTO-database.txt for database specifics and tips and tricks.
@@ -23,6 +28,11 @@
 #database.name=derby
 #database.name=db2
 #database.name=ingres
+
+#
+# The below settings are needed to build and run tools the interact directly with the database
+# For example ejbca-db-cli
+#
 
 # Database connection URL.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
