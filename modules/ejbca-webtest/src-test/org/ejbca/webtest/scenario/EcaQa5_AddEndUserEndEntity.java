@@ -89,6 +89,19 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Jurisdiction Country (ISO 3166) [EV Certificate]", "DE");
         fields.put("telephoneNumber", "123456789");
         fields.put("title, Title", "Prof.");
+        fields.put("Uniform Resource Identifier (URI)", "/contact-us/");
+        fields.put("Kerberos KPN, Kerberos 5 Principal Name", "primary/instance@REALM");
+        fields.put("MS GUID, Globally Unique Identifier",  "21EC20203AEA4069A2DD08002B30309D");
+        fields.put("DNS Name", "primekey.se");
+        fields.put("Permanent Identifier", "123456789");
+        fields.put("Directory Name (Distinguished Name)", "CN=aDirectoryName");
+        fields.put("IP Address",  "127.0.0.1");
+        fields.put("Country of residence (ISO 3166)", "DE");
+        fields.put("Country of citizenship (ISO 3166)", "DE");
+        fields.put("Place of birth", "Germany");
+        fields.put("Date of birth (YYYYMMDD)", "19710101");
+        fields.put("Gender (M/F)", "F");
+
 
         // fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
