@@ -199,14 +199,15 @@ public class StartupSingletonBean {
         log.info(iMsg);
 
         // Reinstall BC-provider to help re-deploys to work
-        log.trace(">init re-installing BC-provider");
+        log.debug(">startup re-installing BC-provider");
         CryptoProviderTools.removeBCProvider();
         CryptoProviderTools.installBCProvider();
 
         // Run java seed collector, that can take a little time the first time it is run
-        log.trace(">init initializing random seed");
+        log.debug(">startup initializing random seed, can take a little time...");
         SecureRandom rand = new SecureRandom();
         rand.nextInt();
+        log.debug(">startup finished initializing random seed");
         
         //
         // Start services that requires calling other beans or components
@@ -226,7 +227,7 @@ public class StartupSingletonBean {
             }
         }
         // Verify that the classloader uses "our" BC version
-        log.trace(">init checking classloader of BouncyCastle provider");
+        log.debug(">startup checking classloader of BouncyCastle provider");
         try {
             final CertificateFactory cf = CertTools.getCertificateFactory();
             final X509Certificate testcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(testcertbytes));
@@ -243,12 +244,12 @@ public class StartupSingletonBean {
         log.info("Registered AuthenticationTokens " + AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes().toString());
         // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
         
-        log.trace(">init CryptoTokenFactory just to load those classes that are available");
+        log.debug(">startup CryptoTokenFactory just to load those classes that are available");
         CryptoTokenFactory.instance();
         
         authorizationSession.scheduleBackgroundRefresh();
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
-        log.trace(">init loading CAs into cache");
+        log.debug(">startup loading CAs into cache");
         try {
             caAdminSession.initializeAndUpgradeCAs();
         } catch (Exception e) {
@@ -261,7 +262,7 @@ public class StartupSingletonBean {
         logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, getHostName(), null, details);               
 
         // Log the type of security audit configuration that we have enabled.
-        log.trace(">init security audit device configuration");
+        log.debug(">startup security audit device configuration");
         final Set<String> loggerIds = AuditDevicesConfig.getAllDeviceIds();
         if (loggerIds.isEmpty()) {
             final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservices.noauditdevices");
@@ -277,10 +278,10 @@ public class StartupSingletonBean {
         }
 
         // Initialize authorization system, if not done already
-        log.trace(">init AuthorizationSystemSession to check for initial root role");
+        log.debug(">startup AuthorizationSystemSession to check for initial root role");
         final boolean isFreshInstallation = authorizationSystemSession.initializeAuthorizationModule();
 
-        log.trace(">init calling ServiceSession.load");
+        log.debug(">startup calling ServiceSession.load");
         try {
             serviceSession.load();
         } catch (Exception e) {
@@ -288,7 +289,7 @@ public class StartupSingletonBean {
         }
         
         // Load Certificate profiles at startup to upgrade them if needed
-        log.trace(">init loading CertificateProfile to check for upgrades");
+        log.debug(">startup loading CertificateProfile to check for upgrades");
         try {
             certificateProfileSession.initializeAndUpgradeProfiles();
         } catch (Exception e) {
@@ -297,7 +298,7 @@ public class StartupSingletonBean {
         
         // Load EndEntity profiles at startup to upgrade them if needed
         // And add this node to list of nodes
-        log.trace(">init loading EndEntityProfile to check for upgrades");
+        log.debug(">startup loading EndEntityProfile to check for upgrades");
         try {
             endEntityProfileSession.initializeAndUpgradeProfiles();         
         } catch (Exception e) {
@@ -305,7 +306,7 @@ public class StartupSingletonBean {
         }
         
         // Add this node's hostname to list of nodes
-        log.trace(">init checking if this node is in the list of nodes");
+        log.debug(">startup checking if this node is in the list of nodes");
         try {
             // Requires a transaction in order to create the initial global configuration
             final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -321,10 +322,11 @@ public class StartupSingletonBean {
             log.error("Error adding host to node list in global configuration: ", e);
         } 
 
-        log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
+        log.debug(">startup checking for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
         final Boolean unique = DatabaseIndexUtil.isIndexPresentOverColumns(JDBCUtil.getDataSourceOrNull(), "CertificateData", Arrays.asList("serialNumber", "issuerDN"), true);
+        log.debug(">startup checking for unique issuerDN,serialNumber index returned: " + unique);
         if (unique==null) {
             log.info("Unable to read the index meta data from the database. Will detect presence of unique index using conflicting inserts to CertificateData.");
             // Fall-back to testing for a unique index on CertificateData using conflicting INSERTs
@@ -332,16 +334,22 @@ public class StartupSingletonBean {
         } else {
             certificateStoreSession.setUniqueCertificateSerialNumberIndex(unique);
         }
+        
+        log.debug(">startup performing (automatic) upgrades, if needed"); 
         // Perform (automatic) upgrades, if needed
         upgradeSession.performPreUpgrade(isFreshInstallation);
         upgradeSession.performUpgrade();
         // Start key reload timer
+        log.debug(">startup start OCSP key reload timer");
         ocspResponseGeneratorSession.initTimers();
         // Start CA certificate cache reload
+        log.debug(">startup start CA certificate cache reload");
         certificateStoreSession.initTimers();
         // Start legacy background service for renewal of OCSP signers via EJBCA WS calls to CA
+        log.debug(">startup start OCSP renewal background service");
         ocspKeyRenewalSession.startTimer();
         // Verify that the EJB CLI user (if present) cannot be used to generate certificates
+        log.debug(">startup verifying that EJBCA CLI user can not be used to generate a certificate");
         final String cliUsername = EjbcaConfiguration.getCliDefaultUser();
         try {
             final EndEntityInformation defaultCliUser = endEntityAccessSession.findUser(authenticationToken, cliUsername);
@@ -359,6 +367,7 @@ public class StartupSingletonBean {
         } catch (AuthorizationDeniedException e) {
             log.warn("Unable to check if the EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please check and correct the status manually. Failed with: " + e.getMessage());
         }
+        log.debug(">startup completed");
     }
     
 
