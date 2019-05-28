@@ -58,8 +58,8 @@ public abstract class StoreServletBase extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		this.certCache = CaCertificateCache.INSTANCE;
-        // Since this servlet is referenced in cmpHttpProxy module (via ejbca-common-web dependency), 
-        // to make that module deploy-able in JEE servers we initialize 
+        // Since this servlet is referenced in ejbca-common-web module and that module is referenced 
+        // by cmpHttpProxy module, to make cmpHttpProxy module deploy-able in JEE servers we initialize 
         // the certificateStoreSession bean here instead of using the EJB annotation.
         certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
 	}
