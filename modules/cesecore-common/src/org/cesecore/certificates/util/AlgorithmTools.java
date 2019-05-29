@@ -420,8 +420,8 @@ public abstract class AlgorithmTools {
         try {
             for (Provider ecProvider : providers) {
                 //This will list something like: SunPKCS11-NSS, BC, SunPKCS11-<library>-slot<slotnumber>
-                if (log.isDebugEnabled()) {
-                    log.debug("Found EC capable provider named: " + ecProvider.getName());
+                if (log.isTraceEnabled()) {
+                    log.trace("Found EC capable provider named: " + ecProvider.getName());
                 }
                 if (ecProvider.getName().startsWith("SunPKCS11-") && !ecProvider.getName().startsWith("SunPKCS11-NSS") ) {
                     // Sometimes the P11 provider will not even know about EC, skip these providers. As an example the SunP11
@@ -442,8 +442,8 @@ public abstract class AlgorithmTools {
             kpg.initialize(new ECGenParameterSpec(getEcKeySpecOidFromBcName(ecNamedCurveBc)));
             return true;
         } catch (InvalidAlgorithmParameterException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(ecNamedCurveBc + " is not available in provider " + providerName);
+            if (log.isTraceEnabled()) {
+                log.trace(ecNamedCurveBc + " is not available in provider " + providerName);
             }
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("EC capable provider " + providerName + " could no longer handle elliptic curve algorithm.." ,e);
