@@ -43,16 +43,13 @@ public class MockPublisher extends CustomPublisherContainer implements ICustomPu
     
     public MockPublisher() {
         super();
-        setClassPath(this.getClass().getName());
         data.put(PROPERTYKEY_SUCCESSES, 0);
         
     }
     
     public MockPublisher(Properties properties) {
         super();
-        setClassPath(this.getClass().getName());
         init(properties);
-        setPropertyData(properties.toString());
     }
 
     @Override
@@ -83,7 +80,7 @@ public class MockPublisher extends CustomPublisherContainer implements ICustomPu
 
     @Override
     public boolean isFullEntityPublishingSupported() {
-        return true;
+        return false;
     }
     
     @Override
