@@ -101,7 +101,6 @@ import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -168,6 +167,7 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
@@ -1081,7 +1081,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         if (auditLogger.isEnabled()) {
             auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
-            auditLogger.paramPut(AuditLogger.OCSPREQUEST, new String(Hex.encode(request)));
+            auditLogger.paramPut(AuditLogger.OCSPREQUEST, StringTools.hex(request));
         }
         OCSPReq req;
         long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
@@ -1137,11 +1137,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                 }
-                byte[] hashbytes = certId.getIssuerNameHash();
-                String hash = null;
-                if (hashbytes != null) {
-                    hash = new String(Hex.encode(hashbytes));
-                }
+                final String hash = StringTools.hex(certId.getIssuerNameHash());
                 if (xForwardedFor==null) {
                     log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash, remoteAddress));
                 } else {
@@ -1171,8 +1167,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // We could not find certificate for this request so get certificate for default responder
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
                     if (ocspSigningCacheEntry != null) {
-                        String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault",
-                                new String(Hex.encode(certId.getIssuerNameHash())));
+                        String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()));
                         log.info(errMsg);
                         // If we can not find the CA, answer UnknowStatus
                         responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), nextUpdate));
@@ -1184,7 +1179,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
                         String defaultResponder = ocspConfiguration.getOcspDefaultResponderReference();
-                        String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", new String(Hex.encode(certId.getIssuerNameHash())),
+                        String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", StringTools.hex(certId.getIssuerNameHash()),
                                 defaultResponder);
                         log.error(errMsg);
                         // If we are responding to multiple requests, the last found ocspSigningCacheEntry will be used in the end
@@ -1504,7 +1499,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             respBytes = ocspResponse.getEncoded();
             if (auditLogger.isEnabled()) {
-                auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String(Hex.encode(respBytes)));
+                auditLogger.paramPut(AuditLogger.OCSPRESPONSE, StringTools.hex(respBytes));
                 auditLogger.writeln();
                 auditLogger.flush();
             }

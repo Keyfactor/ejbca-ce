@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -211,13 +212,22 @@ public enum OcspSigningCache {
         }
     }
 
+    private static BigInteger bigIntFromBytes(final byte[] bytes) {
+        if (ArrayUtils.isEmpty(bytes)) {
+            return BigInteger.valueOf(0);
+        }
+        return new BigInteger(bytes);
+    }
+
     /** @return a cache identifier based on the provided CertificateID. */
     public static int getCacheIdFromCertificateID(final CertificateID certID) {
         // Use bitwise XOR of the hashcodes for IssuerNameHash and IssuerKeyHash to produce the integer.
-        int result = new BigInteger(certID.getIssuerNameHash()).hashCode() ^ new BigInteger(certID.getIssuerKeyHash()).hashCode();
+        final BigInteger issuerNameHash = bigIntFromBytes(certID.getIssuerNameHash());
+        final BigInteger issuerKeyHash = bigIntFromBytes(certID.getIssuerKeyHash());
+        int result = issuerNameHash.hashCode() ^ issuerKeyHash.hashCode();
         if (log.isDebugEnabled()) {
-            log.debug("Using getIssuerNameHash " + new BigInteger(certID.getIssuerNameHash()).toString(16) + " and getIssuerKeyHash "
-                    + new BigInteger(certID.getIssuerKeyHash()).toString(16) + " to produce id " + result);
+            log.debug("Using getIssuerNameHash " + issuerNameHash.toString(16) + " and getIssuerKeyHash "
+                    + issuerKeyHash.toString(16) + " to produce id " + result);
         }
         return result;
     }

@@ -1233,4 +1233,16 @@ public final class StringTools {
         return normalizeNewlines(s).split("\n");
     }
 
+    /**
+     * Converts a byte array to hex. Null safe.
+     * @param data Input byte array
+     * @return Hex encoded string, or null if the input byte array was null.
+     */
+    public static String hex(final byte[] data) {
+        if (data == null) {
+            return null;
+        }
+        return Hex.toHexString(data);
+    }
+
 }
