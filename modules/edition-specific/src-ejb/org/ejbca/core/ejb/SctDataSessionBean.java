@@ -19,6 +19,7 @@ import org.cesecore.jndi.JndiConstants;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import java.util.List;
 
 /**
  * @version $Id$
@@ -27,7 +28,7 @@ import javax.ejb.TransactionAttributeType;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SctDataSessionBean  implements SctDataSessionLocal {
     @Override
-    public SctData findSctData(String fingerprint, int logId) {
+    public List<SctData> findSctData(String fingerprint) {
         throw new UnsupportedOperationException("SCT calls are only supported in EJBCA Enterprise");
     }
 
