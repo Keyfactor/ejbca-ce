@@ -450,10 +450,10 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                 try {
                     Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class);
                     if (cert != null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Adding CA certificate from CERTIFICATECHAIN to certificatechain:");
-                            log.debug("Cert subjectDN: " + CertTools.getSubjectDN(cert));
-                            log.debug("Cert issuerDN: " + CertTools.getIssuerDN(cert));
+                        if (log.isTraceEnabled()) {
+                            log.trace("Adding CA certificate from CERTIFICATECHAIN to certificatechain of CA '" + getName() + "':");
+                            log.trace("Cert subjectDN: " + CertTools.getSubjectDN(cert));
+                            log.trace("Cert issuerDN: " + CertTools.getIssuerDN(cert));
                         }
                         this.certificatechain.add(cert);
                     } else {
