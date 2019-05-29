@@ -32,9 +32,9 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
 
     public static class TestData {
-        private static final String ROOTCA_NAME = "ECAQA3";
-        private static final String SUBCA_NAME = "subCA ECAQA3";
-        private static final String END_ENTITY_NAME = "TestEndEnityEMPTY";
+        private static final String ROOTCA_NAME = "ECAQA5";
+        private static final String SUBCA_NAME = "subCA ECAQA5";
+        private static final String END_ENTITY_NAME = "TestEndEntityEMPTY_1";
     }
 
     @BeforeClass
@@ -60,9 +60,13 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.setEndEntityProfile("EMPTY");
         HashMap<String, String> fields = new HashMap<String, String>(); 
         
+        
+        // 1 of 3
         fields.put("Username", TestData.END_ENTITY_NAME);
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
+        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
+        
         fields.put("ST, State or Province", "Germany");
         fields.put("OU, Organizational Unit", "QA");
         fields.put("L, Locality", "Europe");
@@ -75,11 +79,16 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("NIF, Tax ID number, for individuals (Spain)", "1234");
         fields.put("CIF, Tax ID code, for companies (Spain)", "5678");
         fields.put("unstructuredAddress, IP address", "127.0.0.1");
-        fields.put("businessCategory, Organization type",  "QA");
-        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
         
         
         /*
+        // 2 of 3
+        fields.put("Username", TestData.END_ENTITY_NAME);
+        fields.put("Password (or Enrollment Code)", "foo123");
+        fields.put("Confirm Password", "foo123");
+        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
+        
+        fields.put("businessCategory, Organization type",  "QA");
         fields.put("postalCode", "12345");
         fields.put("O, Organization", "QA");
         fields.put("pseudonym", "tester");
@@ -94,6 +103,15 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Jurisdiction Country (ISO 3166) [EV Certificate]", "DE");
         fields.put("telephoneNumber", "123456789");
         fields.put("title, Title", "Prof.");
+        */
+        
+        /*
+        // 3 of 3
+        fields.put("Username", TestData.END_ENTITY_NAME);
+        fields.put("Password (or Enrollment Code)", "foo123");
+        fields.put("Confirm Password", "foo123");
+        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
+        
         fields.put("Uniform Resource Identifier (URI)", "/contact-us/");
         fields.put("Kerberos KPN, Kerberos 5 Principal Name", "primary/instance@REALM");
         fields.put("MS GUID, Globally Unique Identifier",  "21EC20203AEA4069A2DD08002B30309D");
@@ -107,8 +125,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Date of birth (YYYYMMDD)", "19710101");
         fields.put("Gender (M/F)", "F");
         */
-        
-        //fields.put("DC, Domain Component", "primekey_1"); duplicate fields, investigating how to input value for the second one :)
         
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
@@ -126,7 +142,8 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.assertEndEntityAddedMessageDisplayed(TestData.END_ENTITY_NAME);
     }
     
-    /*
+    
+    
     @Test
     public void stepB_AddEndEntitySubjectDn2of3() throws InterruptedException {
         
@@ -136,6 +153,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     public void stepC_AddEndEntitySubjectDn3of3() throws InterruptedException {
         
     }
+    
     
     @Test
     public void stepD_SearchEndEntitySubjectDn1of3() {
@@ -149,13 +167,12 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
     
     @Test
-    public void stepE_SearchEndEntitySubjectDn1of3() {
+    public void stepE_SearchEndEntitySubjectDn2of3() {
         
     }
     
     @Test
-    public void stepF_SearchEndEntitySubjectDn1of3() {
+    public void stepF_SearchEndEntitySubjectDn3of3() {
         
     }
-    */
 }
