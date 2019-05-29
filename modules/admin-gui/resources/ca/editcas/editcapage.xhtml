@@ -470,12 +470,16 @@
 					<h:selectBooleanCheckbox id="checkboxusecertificatestorage"
 						value="#{editCAsMBean.useCertificateStorage}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render="@form" immediate="true" />
+						<f:ajax render="nonExistingCertRevokeSection" immediate="true" event="change"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxusecertificatestorage"
 						value="#{editCAsMBean.checkboxUseCertificateStorageText}" />
 				</h:panelGroup>
+	        </h:panelGrid>
 
+            <h:panelGrid id="nonExistingCertRevokeSection" columns="2" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+				columnClasses="editColumn1,editColumn2">
 				<h:panelGroup
 					rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}">
 					<h:outputLabel
@@ -532,9 +536,8 @@
 					<h:outputLabel for="checkboxuseappendonlytable"
 						value="#{web.text.USE}" />
 				</h:panelGroup>
-
-
-			</h:panelGrid>
+            </h:panelGrid>	
+		
 			<!-- ==================================================================== Directives =================================================================================== -->
 
 			<!-- ==================================================================== CA certificate data ========================================================================== -->
