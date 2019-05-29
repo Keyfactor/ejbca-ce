@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -390,12 +391,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
 
             @Override
-            public byte[] findSctData(String fingerprint, int logId) {
-                SctData sctData = sctDataSession.findSctData(fingerprint, logId);
-                if (sctData != null) {
-                    return Hex.decode(sctData.getData());
+            public Map<Integer, byte[]> findSctData(String fingerprint) {
+                List<SctData> sctDataList = sctDataSession.findSctData(fingerprint);
+                Map<Integer, byte[]> result = new HashMap<>();
+                for(SctData sctData : sctDataList){
+                    result.put(sctData.getLogId(), Hex.decode(sctData.getData()));
                 }
-                return null;
+                return result;
             }
         });
 
