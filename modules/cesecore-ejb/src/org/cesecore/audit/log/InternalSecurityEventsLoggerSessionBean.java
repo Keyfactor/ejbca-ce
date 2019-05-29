@@ -109,7 +109,10 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Audit log integrity protection test completed successfully.");
             }
+        } else {
+            LOG.debug("Audit log integrity protection not tested as database integrity protection is not enabled.");
         }
+        
     }
   
 }
