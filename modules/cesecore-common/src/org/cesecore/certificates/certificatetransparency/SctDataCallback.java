@@ -12,10 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.certificatetransparency;
 
+import java.util.Map;
+
 /**
  * @version $Id$
  */
 public interface SctDataCallback {
     void saveSctData(String fingerprint, int logId, long certificateExpirationDate, String data);
-    byte[] findSctData(String fingerprint, int logId);
+
+    Map<Integer, byte[]> findSctData(String fingerprint);
 }
