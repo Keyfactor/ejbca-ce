@@ -223,6 +223,9 @@ public class HealthCheckServlet extends HttpServlet {
             }
             sb.append(ocspResponseGeneratorSession.healthCheck());
             try {
+                if(log.isDebugEnabled()) {
+                    log.debug("Perfoming health check on audit logs.");
+                }
                 securityEventsLoggerSession.healthCheck();
             } catch (DatabaseProtectionException e) {
                 sb.append("Could not perform a test signature on the audit log.");
