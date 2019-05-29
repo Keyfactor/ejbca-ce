@@ -7,6 +7,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -110,6 +111,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
             fail("Cannot find search result rows.");
         }
         assertEquals("Unexpected number of End Entity results on search", numberOfResults, searchResultsWebElement.size());
+        assertSearchResultIsNOTNoEntriesFound();
     }
 
     /**
@@ -191,6 +193,14 @@ public class SearchEndEntitiesHelper extends BaseHelper {
                 "No end entities found.",
                 noResultsWebElement.getText()
         );
+    }
+    
+    /**
+     * Asserts the search resulting table DOES NOT CONTAIN the 'No end entities found' row.
+     */
+    public void assertSearchResultIsNOTNoEntriesFound() {
+        final WebElement noResultsWebElement = findElementWithoutWait(Page.TEXT_NO_RESULTS);
+        assertNull("'No end entities found' message was found, but it must not be present.", noResultsWebElement);
     }
 
     /**
