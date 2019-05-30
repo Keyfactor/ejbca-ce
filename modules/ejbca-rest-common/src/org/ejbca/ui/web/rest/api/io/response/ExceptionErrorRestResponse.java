@@ -12,7 +12,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 /**
  * A class representing the information about an exceptional event triggered by REST resource failure.
  *
- * @version $Id$
+ * @version $Id: ExceptionErrorRestResponse.java 29294 2018-06-21 07:10:35Z tarmo_r_helmes $
  */
 public class ExceptionErrorRestResponse {
 

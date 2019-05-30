@@ -172,6 +172,8 @@
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
     <property name="mod.webtest.path" location="${mod.path}/ejbca-webtest"/>
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
+    <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
+    <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
     <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
     <property name="swagger-ui.war" location="${ejbca.home}/lib/swagger/swagger-ui.war" />
 	
@@ -510,6 +512,10 @@
         <available file="${mod.ejbca-rest-api.path}/build.xml"/>
     </condition>
 	
+    <condition property="mod.ejbca-rest-common.exists">
+        <available file="${mod.ejbca-rest-common.path}/build.xml"/>
+    </condition>
+    
     <condition property="mod.statedump.exists">
         <available file="${mod.statedump.path}/build.xml" />
     </condition>

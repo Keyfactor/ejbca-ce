@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 /**
  * JSON input representation of key store enrollment
- * @version $Id$
+ * @version $Id: KeyStoreRestRequest.java 29481 2018-07-09 08:06:14Z henriks $
  *
  */
 public class KeyStoreRestRequest {

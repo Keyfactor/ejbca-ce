@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * JSON output holder for certificate revocation status
- * @version $Id$
+ * @version $Id: RevokeStatusRestResponse.java 29405 2018-06-28 15:39:53Z bastianf $
  *
  */
 public class RevokeStatusRestResponse {

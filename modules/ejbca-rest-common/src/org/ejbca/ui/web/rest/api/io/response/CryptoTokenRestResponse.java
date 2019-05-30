@@ -12,7 +12,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 /**
  * A class representing information about a crypto token. Is used for REST services' responses.
  *
- * @version $Id$
+ * @version $Id: CryptoTokenRestResponse.java 32295 2019-05-07 13:00:44Z lauri_k_helmes $
  */
 public class CryptoTokenRestResponse {
 

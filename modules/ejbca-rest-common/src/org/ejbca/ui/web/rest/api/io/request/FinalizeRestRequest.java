@@ -11,7 +11,7 @@ package org.ejbca.ui.web.rest.api.io.request;
 
 /**
  * JSON input representation of finalize enrollment
- * @version $Id$
+ * @version $Id: FinalizeRestRequest.java 29317 2018-06-25 08:14:47Z henriks $
  *
  */
 public class FinalizeRestRequest {
