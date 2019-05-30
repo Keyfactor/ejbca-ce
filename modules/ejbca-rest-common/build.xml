@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-rest-common" default="build">
+    <description>
+            Build files for the EJBCA rest common module
+    </description>
+
+	<dirname property="ejbca-rest-common.dir" file="${ant.file.ejbca-rest-common}"/>
+
+    <import file="${ejbca-rest-common.dir}/../build-helpers.xml"/>
+
+	<property name="ejbca-rest-common.build.dir" location="${ejbca-rest-common.dir}/build"/>
+	<property name="ejbca-rest-common.build-test.dir" location="${ejbca-rest-common.dir}/build-test"/>
+	<property name="ejbca-rest-common.src.dir" location="${ejbca-rest-common.dir}/src"/>
+	<property name="ejbca-rest-common.src-test.dir" location="${ejbca-rest-common.dir}/src-test"/>
+	<property name="ejbca-rest-common.resources.dir" location="${ejbca-rest-common.dir}/resources"/>
+
+	<path id="compile.classpath">
+		<path refid="lib.ejbca-common-web.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jsf.classpath"/>
+		<path refid="lib.jsp.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-fileupload.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.commons-codec.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+        <path refid="lib.hc.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.tomahawk.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
+        <path refid="lib.json-smart.classpath"/>
+        <path refid="lib.ninbus-jose-jwt.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+		<path refid="lib.swagger.classpath"/>
+		<path refid="lib.jackson2.classpath"/>
+		<path location="${mod.ejbca-entity.lib}"/>
+        <path location="${mod.cesecore-entity.lib}"/>
+        <path location="${mod.cesecore-common.lib}"/>
+        <path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ws.lib}"/>
+		<path refid="lib.hibernate-validator.classpath"/>
+		<path refid="lib.jboss-logging.classpath"/>
+	</path>
+
+	<path id="compile-test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path location="${ejbca-rest-common.build.dir}/WEB-INF/classes"/>
+		<path location="${ejbca-rest-common.dir}/../dist/systemtests-interfaces.jar"/>
+		<path location="${ejbca-rest-common.dir}/../dist/systemtests-common.jar"/>
+		<path location="${ejbca-rest-common.dir}/../dist/systemtests-ejb.jar"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.test.classpath"/>
+        <path refid="lib.resteasy-jaxrs.classpath"/>
+		<path location="${mod.cesecore-x509ca.lib}"/>
+        <path location="${mod.cesecore-cvcca.lib}"/>
+	</path>
+
+	<path id="test.classpath">
+        <path refid="compile-test.classpath"/>
+		<path location="${ejbca-rest-common.build-test.dir}"/>
+		<pathelement path="${clover.jar}"/>
+        <path refid="lib.jee-client.classpath"/>
+	</path>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${ejbca-rest-common.build.dir}"/>
+		<delete dir="${ejbca-rest-common.build-test.dir}"/>
+    	<delete file="${mod.ejbca-rest-common.jar}"/>
+    </target>
+
+    <target name="build" description="Build this module" depends="compile">
+    	<!--
+    	<copy file="${ejbca-rest-common.resources.dir}/WEB-INF/web.xml" tofile="${ejbca-rest-common.build.dir}/WEB-INF/web.xml"/>
+    	-->
+		<copy file="${ejbca-rest-common.resources.dir}/WEB-INF/ValidationMessages.properties" tofile="${ejbca-rest-common.build.dir}/WEB-INF/classes/ValidationMessages.properties"/>
+		<copy file="${ejbca-rest-common.resources.dir}/META-INF/validation.xml" tofile="${ejbca-rest-common.build.dir}/META-INF/validation.xml"/>
+		<copy file="${ejbca-rest-common.resources.dir}/META-INF/validation-mapping.xml" tofile="${ejbca-rest-common.build.dir}/META-INF/validation-mapping.xml"/>
+    	
+        <jar destfile="${mod.ejbca-rest-common.lib}" basedir="${ejbca-rest-common.build.dir}" includes="**/*.class **/*.xml" />
+    </target>
+
+	<target name="compile" depends="with.clover, setup">
+        <javac srcdir="${ejbca-rest-common.src.dir}" destdir="${ejbca-rest-common.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+        	classpathref="compile.classpath"/>
+    </target>
+
+	<target name="setup">
+		<mkdir dir="${ejbca-rest-common.build.dir}/WEB-INF/classes"/>
+	</target>
+
+	<target name="compile-tests" depends="build, with.clover">
+		<mkdir dir="${ejbca-rest-common.build-test.dir}" />
+		<copy file="${log4j.test.file}" tofile="${ejbca-rest-common.build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy file="${jndi.properties.file}" tofile="${ejbca-rest-common.build-test.dir}/jndi.properties" failonerror="true"/>
+		<copy file="${jboss-ejb-client.properties}" todir="${ejbca-rest-common.build-test.dir}" failonerror="true"/>
+		<javac srcdir="${ejbca-rest-common.src-test.dir}" destdir="${ejbca-rest-common.build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath">
+			<sourcepath location="${mod.systemtests.path}/src-test/"/>
+			<sourcepath location="${mod.systemtests.path}/src-interface/"/>
+		</javac>
+		<copy file="${internal.properties.file}" todir="${ejbca-rest-common.build-test.dir}" failonerror="true"/>
+	</target>
+
+	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<condition property="remoteDebugJvmArgs"
+				value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-rest-common.dir}" fork="true" forkmode="once">
+			<classpath>
+				<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${ejbca-rest-common.build-test.dir}" includes="**/*UnitTest.class"/>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="test:system" depends="compile-tests" description="Run system tests for this module">
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<condition property="remoteDebugJvmArgs"
+				value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-rest-common.dir}" fork="true">
+			<classpath>
+				<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${ejbca-rest-common.build-test.dir}" includes="**/*SystemTest.class"/>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=SomeTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+			<classpath>
+        		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${ejbca-rest-common.build-test.dir}" includes="**/${test.runone}.class"/>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+		</junit>
+	</target>
+</project>
