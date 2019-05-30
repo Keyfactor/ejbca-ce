@@ -12,7 +12,7 @@ package org.ejbca.ui.web.rest.api.io.request;
 
 /**
  * JSON input representation of crypto token key generation request through REST API.
- * @version $Id$
+ * @version $Id: CryptoTokenKeyGenerationRestRequest.java 32299 2019-05-08 13:23:48Z lauri_k_helmes $
  *
  */
 public class CryptoTokenKeyGenerationRestRequest {
