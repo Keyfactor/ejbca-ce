@@ -53,7 +53,7 @@
 	
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
-        webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean"/>
+        webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -173,6 +173,11 @@
     <target name="ejbca-rest-api-clean" if="${mod.ejbca-rest-api.exists}">
         <ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
+    
+    <target name="ejbca-rest-common-clean" if="${mod.ejbca-rest-common.exists}">
+        <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+    
         	
 	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
@@ -435,7 +440,7 @@
 		<ant antfile="${mod.acme.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="ejbca-rest-common"  description="Build EJBCA rest common">
+    <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" description="Build EJBCA rest common">
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
     
