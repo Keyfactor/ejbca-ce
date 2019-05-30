@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -40,7 +39,6 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -189,9 +187,9 @@ public class ScepServlet extends HttpServlet {
         log.trace("<SCEP doGet()");
     }
 
-    private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
-        String alias = getAlias(pathInfo);
-        String caname = getCAName(message);
+    private void service(final String operation, final String message, final String remoteAddr, final HttpServletResponse response,
+            final String pathInfo) throws IOException {
+        final String alias = getAlias(pathInfo);
         if(alias == null) {
             log.info("Wrong URL format. The SCEP URL should look like: " +
             		"'http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe' " +
@@ -248,7 +246,7 @@ public class ScepServlet extends HttpServlet {
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
         			log.info(iMsg);
                 } else {
-            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "GetCACert", message);
+                    String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "GetCACert", message);
                     log.info(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA certificates found.");
                 }
@@ -267,19 +265,19 @@ public class ScepServlet extends HttpServlet {
                 } else {
             		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "GetCACertChain", message);
                     log.info(errMsg);
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND,"No CA certificates found.");
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA certificates found.");
                 }
             } else if (operation.equals("GetNextCACert")) {
                 // Like GetCACert, but returns the next certificate during certificate rollover
-                    if (dispatchResponse != null) {
-                        RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-x509-next-ca-cert", null);
-                        iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
-                        log.info(iMsg);
-                    } else {
-                        String errMsg = intres.getLocalizedMessage("scep.errornorollovercert", caname);
-                        log.info(errMsg);
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "No rollover certificate found for this CA.");
-                    }
+                if (dispatchResponse != null) {
+                    RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-x509-next-ca-cert", null);
+                    iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
+                    log.info(iMsg);
+                } else {
+                    String errMsg = intres.getLocalizedMessage("scep.errornorollovercert", message);
+                    log.info(errMsg);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "No rollover certificate found for this CA.");
+                }
             } else if (operation.equals("GetCACaps")) {
                 // The response for GetCACaps is a <lf> separated list of capabilities
 
@@ -364,19 +362,6 @@ public class ScepServlet extends HttpServlet {
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
-    }
-    
-    /** Later SCEP draft say that for GetCACert message is optional. If message is there, it is the CA name
-     * but if message is not provided by the client, some default CA should be used.
-     * @param message the message part for the SCEP get request, can be null or empty string
-     * @return the message parameter or the default CA from ALIAS.defaultca property if message is null or empty.
-     */
-    private String getCAName(final String message) {
-        // If message is a string, return it, but if message is empty return default CA
-        if (StringUtils.isEmpty(message)) {
-            return EjbcaConfiguration.getScepDefaultCA();
-        }
-        return message;
     }
     
     public static String getAlias(String pathInfo) {
