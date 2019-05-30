@@ -12,7 +12,7 @@ package org.ejbca.ui.web.rest.api.io.request;
 
 /**
  * JSON input representation of crypto token activation request through REST API.
- * @version $Id$
+ * @version $Id: CryptoTokenActivationRestRequest.java 32242 2019-04-30 15:30:51Z henriks $
  *
  */
 public class CryptoTokenActivationRestRequest {

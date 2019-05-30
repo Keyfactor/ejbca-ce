@@ -657,6 +657,7 @@
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />
 				<include name="acme-common.jar" />
+        		<include name="ejbca-rest-common.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
