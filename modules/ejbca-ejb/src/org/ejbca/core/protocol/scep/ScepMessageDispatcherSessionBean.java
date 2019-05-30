@@ -59,8 +59,6 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
-import org.ejbca.core.protocol.scep.ScepOperationPlugin;
-import org.ejbca.core.protocol.scep.ScepResponsePlugin;
 
 /**
  * 
@@ -138,7 +136,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             return scepCertRequest(authenticationToken, scepmsg, scepConfigurationAlias, scepConfig);
         } else if (operation.equals("GetCACert")) {
             // CA_IDENT is the message for this request to indicate which CA we are talking about
-            final String caname = getCAName(message);
+            final String caname = getCAName(message, scepConfig, scepConfigurationAlias);
             if (log.isDebugEnabled()) {
                 log.debug("Got SCEP cert request for CA '" + caname + "'");
             }
@@ -159,7 +157,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
         } else if (operation.equals("GetCACertChain")) {
             // CA_IDENT is the message for this request to indicate which CA we are talking about
-            final String caname = getCAName(message);
+            final String caname = getCAName(message, scepConfig, scepConfigurationAlias);
             log.debug("Got SCEP pkcs7 request for CA '" + caname + "'. Old client using SCEP draft 18?");
 
             CAInfo cainfo = caSession.getCAInfo(authenticationToken, caname);
@@ -170,7 +168,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 return null;
             }
         } else if (operation.equals("GetNextCACert")) {
-            final String caname = getCAName(message);
+            final String caname = getCAName(message, scepConfig, scepConfigurationAlias);
             if (log.isDebugEnabled()) {
                 log.debug("Got SCEP next cert request for CA '" + caname + "'");
             }
@@ -191,7 +189,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 }
             }
         } else if (operation.equals("GetCACaps")) {
-            final String caname = getCAName(message);
+            final String caname = getCAName(message, scepConfig, scepConfigurationAlias);
             final CAInfo cainfo = caSession.getCAInfoInternal(-1, caname, true);
             if (cainfo != null) {
                 final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
@@ -211,17 +209,49 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         return null;
     }
     
-    /** Later SCEP draft say that for GetCACert message is optional. If message is there, it is the CA name
-     * but if message is not provided by the client, some default CA should be used.
-     * @param message the message part for the SCEP get request, can be null or empty string
-     * @return the message parameter or the default CA from ALIAS.defaultca property if message is null or empty.
+    /**
+     * Fetches the name of the CA to use for the SCEP response, as defined by the alias, the message provided in the
+     * SCEP request and default CA defined by the property <code>scep.defaultca</code> in <code>ejbca.properties</code>.
+     * 
+     * <p>This function implements the requirements specified in section 5.2.1 of draft-nourse-scep-23.
+     * 
+     * <p>
+     * <code>
+     *   The OPERATION MUST be set to "GetCACert".<br>
+     *   The MESSAGE MAY be omitted, or it MAY be a string that represents the<br>
+     *   certification authority issuer identifier.  A CA Administrator<br>
+     *   defined string allows for multiple CAs supported by one SCEP server.<br>
+     * </code>
+     * 
+     * <p>The function returns the CA name specified in the message. If the message is empty and the alias is operating 
+     * in RA mode, it returns the CA name specified by the alias. If the alias is operating in CA mode, it returns the
+     * name of the default SCEP CA defined by the property <code>scep.defaultca</code>. If no such property is defined
+     * an exception is thrown with a user-friendly error message.
+     * 
+     * @param message the message provided by the SCEP client, or an empty string if no message was provided
+     * @param scepConfiguration the SCEP configuration of this EJBCA instance
+     * @param alias the alias being used by the SCEP client
+     * @return the name of the CA which should be used to serve this request, never null
+     * @throws CADoesntExistsException if CA mode if being used for the alias, no message is provided and the default SCEP CA is undefined.
      */
-    private String getCAName(final String message) {
-        // If message is a string, return it, but if message is empty return default CA
-        if (StringUtils.isEmpty(message)) {
-            return EjbcaConfiguration.getScepDefaultCA();
+    private String getCAName(final String message, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
+        if (!StringUtils.isEmpty(message)) {
+            // Use the CA defined by the message if present
+            return message;
         }
-        return message;
+        if (scepConfiguration.getRAMode(alias)) {
+            // When in RA mode, use the CA defined by the alias
+            return scepConfiguration.getRADefaultCA(alias);
+        }
+        // Use the CA defined by the property scep.defaultca in CA mode. If not defined, throw an error.
+        final String defaultCa = EjbcaConfiguration.getScepDefaultCA();
+        if (StringUtils.isEmpty(defaultCa)) {
+            throw new CADoesntExistsException("The SCEP alias " + alias
+                    + " is in CA mode, the message parameter in the GET request is empty, and no default "
+                    + "CA has been defined for SCEP. Either switch to RA mode, provide the name of the CA "
+                    + "in the message, or specify the default CA using the scep.defaultca property.");
+        }
+        return defaultCa;
     }
     
     /**
