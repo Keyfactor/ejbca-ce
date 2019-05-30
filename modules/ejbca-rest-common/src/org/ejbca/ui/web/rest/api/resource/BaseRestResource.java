@@ -28,7 +28,7 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 /**
  * Base class for common methods used across all REST resources.
  *
- * @version $Id$
+ * @version $Id: BaseRestResource.java 32422 2019-05-27 12:58:04Z tarmo_r_helmes $
  */
 public abstract class BaseRestResource {
 
