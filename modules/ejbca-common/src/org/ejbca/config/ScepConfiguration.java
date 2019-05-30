@@ -209,7 +209,13 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         setValue(key, Boolean.toString(allowClientCertificateRenewalWithOldKey), alias);
     }
     
-    /** Method used by the Admin GUI. */
+    /**
+     * Get a boolean indicating whether the SCEP alias given as parameter is operating in
+     * RA mode or CA mode.
+     * 
+     * @param alias the alias.
+     * @return true if the alias is operating in RA mode, or false if the alias is operating in CA mode.
+     */
     public boolean getRAMode(String alias) {
         String key = alias + "." + SCEP_OPERATIONMODE;
         String value = getValue(key, alias);
@@ -510,12 +516,14 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
      
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
+    @Override
     public void upgrade(){
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
