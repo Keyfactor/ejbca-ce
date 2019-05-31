@@ -9,8 +9,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -20,10 +18,12 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import org.apache.log4j.Logger;
+import org.ejbca.ui.web.rest.api.builder.SearchCertificatesRestRequestTestBuilder;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestBuilder;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * A unit test class for annotation @ValidSearchCertificateCriteriaRestRequestList and its validator.
@@ -41,7 +41,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
     public void validationShouldFailOnNullValue() {
         // given
         final String expectedMessage = "Invalid criteria value, cannot be null.";
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(null)
                 .build();
         // when
@@ -55,7 +55,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
     public void validationShouldFailOnEmptyValue() {
         // given
         final String expectedMessage = "Invalid criteria value, cannot be empty.";
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(new ArrayList<SearchCertificateCriteriaRestRequest>())
                 .build();
         // when
@@ -68,7 +68,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
     @Test
     public void validationShouldPassOnNormalValue() {
         // given
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().build();
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults().build();
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
@@ -81,7 +81,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, multiple 'QUERY' properties are not allowed.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("QUERY").value("TEST").operation("EQUAL").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("QUERY").value("TEST").operation("EQUAL").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
         // when
@@ -108,7 +108,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest10 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest11 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest12 = SearchCertificateCriteriaRestRequest.builder().property("STATUS").value("CERT_ACTIVE").operation("EQUAL").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(
                         Arrays.asList(
                                 querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1, querySearchCertificateCriteriaRestRequest2,
@@ -133,7 +133,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, overlapping properties 'ISSUED_DATE' with 'BEFORE' operation.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("ISSUED_DATE").operation("BEFORE").value("2018-06-15T14:07:09Z").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("ISSUED_DATE").operation("BEFORE").value("2018-06-15T14:07:09Z").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
         // when
@@ -149,7 +149,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, overlapping properties 'ISSUED_DATE' with 'AFTER' operation.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("ISSUED_DATE").operation("AFTER").value("2018-06-15T14:07:09Z").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("ISSUED_DATE").operation("AFTER").value("2018-06-15T14:07:09Z").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
 
@@ -166,7 +166,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, overlapping properties 'EXPIRE_DATE' with 'BEFORE' operation.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("EXPIRE_DATE").operation("BEFORE").value("2018-06-15T14:07:09Z").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("EXPIRE_DATE").operation("BEFORE").value("2018-06-15T14:07:09Z").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
         // when
@@ -182,7 +182,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, overlapping properties 'EXPIRE_DATE' with 'AFTER' operation.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("EXPIRE_DATE").operation("AFTER").value("2018-06-15T14:07:09Z").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("EXPIRE_DATE").operation("AFTER").value("2018-06-15T14:07:09Z").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
         // when
@@ -198,7 +198,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, overlapping properties 'REVOCATION_DATE' with 'BEFORE' operation.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("REVOCATION_DATE").operation("BEFORE").value("2018-06-15T14:07:09Z").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("REVOCATION_DATE").operation("BEFORE").value("2018-06-15T14:07:09Z").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
         // when
@@ -214,7 +214,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         final String expectedMessage = "Invalid criteria value, overlapping properties 'REVOCATION_DATE' with 'AFTER' operation.";
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("REVOCATION_DATE").operation("AFTER").value("2018-06-15T14:07:09Z").build();
         final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("REVOCATION_DATE").operation("AFTER").value("2018-06-15T14:07:09Z").build();
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
                 .build();
         // when

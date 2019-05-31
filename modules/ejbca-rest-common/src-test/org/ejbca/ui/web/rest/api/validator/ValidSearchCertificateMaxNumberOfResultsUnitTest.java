@@ -9,14 +9,15 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestBuilder;
-import org.junit.Test;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.util.Set;
+
+import org.ejbca.ui.web.rest.api.builder.SearchCertificatesRestRequestTestBuilder;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,7 +36,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnNullValue() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be null.";
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
                 .maxNumberOfResults(null)
                 .build();
         // when
@@ -49,7 +50,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnNegativeValue() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be less or equal to zero.";
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(-1).build();
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults().maxNumberOfResults(-1).build();
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
@@ -61,7 +62,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnZeroValue() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be less or equal to zero.";
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(0).build();
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults().maxNumberOfResults(0).build();
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
@@ -73,7 +74,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnValueAboveMaximum() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be more than 400.";
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(401).build();
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults().maxNumberOfResults(401).build();
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
@@ -84,7 +85,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldPassOnNormalValue() {
         // given
-        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(201).build();
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults().maxNumberOfResults(201).build();
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
