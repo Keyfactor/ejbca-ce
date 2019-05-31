@@ -208,11 +208,23 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     
     @Test
     public void stepE_SearchEndEntitySubjectDn2of3() {
-        
+        searchEndEntitiesHelper.openPage(getAdminWebUrl());
+
+        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic(); //Note: the search panel needs to be in "basic mode" for 'fillSearchCriteria' method to work properly.
+        searchEndEntitiesHelper.fillSearchCriteria(TestData.END_ENTITY_NAME_2, null, null, null);
+
+        searchEndEntitiesHelper.clickSearchByUsernameButton();
+        searchEndEntitiesHelper.assertNumberOfSearchResults(1);
     }
     
     @Test
     public void stepF_SearchEndEntitySubjectDn3of3() {
-        
+        searchEndEntitiesHelper.openPage(getAdminWebUrl());
+
+        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic(); //Note: the search panel needs to be in "basic mode" for 'fillSearchCriteria' method to work properly.
+        searchEndEntitiesHelper.fillSearchCriteria(TestData.END_ENTITY_NAME_3, null, null, null);
+
+        searchEndEntitiesHelper.clickSearchByUsernameButton();
+        searchEndEntitiesHelper.assertNumberOfSearchResults(1);
     }
 }
