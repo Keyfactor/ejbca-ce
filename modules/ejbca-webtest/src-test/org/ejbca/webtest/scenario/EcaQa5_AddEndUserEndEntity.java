@@ -61,7 +61,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_3);
 
-        //afterClass(); // TODO: put it back in later
+        afterClass();
     }
 
     @Test
