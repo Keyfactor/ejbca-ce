@@ -21,10 +21,14 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
+
     private static WebDriver webDriver;
 
     // Helpers
@@ -36,6 +40,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         private static final String SUBCA_NAME = "subCA ECAQA5";
         private static final String END_ENTITY_NAME_1 = "TestEndEntityEMPTY_1";
         private static final String END_ENTITY_NAME_2 = "TestEndEntityEMPTY_2";
+        private static final String END_ENTITY_NAME_3 = "TestEndEntityEMPTY_3";
 
     }
 
@@ -54,6 +59,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         removeCaByName(TestData.SUBCA_NAME);
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_1);
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME_3);
 
         //afterClass(); // TODO: put it back in later
     }
@@ -84,35 +90,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("CIF, Tax ID code, for companies (Spain)", "5678");
         fields.put("unstructuredAddress, IP address", "127.0.0.1");
 
-
-
-
-
-
-
-
-
-        
-        /*
-        // 3 of 3
-        fields.put("Username", TestData.END_ENTITY_NAME);
-        fields.put("Password (or Enrollment Code)", "foo123");
-        fields.put("Confirm Password", "foo123");
-        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
-        
-        fields.put("Uniform Resource Identifier (URI)", "/contact-us/");
-        fields.put("Kerberos KPN, Kerberos 5 Principal Name", "primary/instance@REALM");
-        fields.put("MS GUID, Globally Unique Identifier",  "21EC20203AEA4069A2DD08002B30309D");
-        fields.put("DNS Name", "primekey.se");
-        fields.put("Permanent Identifier", "123456789");
-        fields.put("Directory Name (Distinguished Name)", "CN=aDirectoryName");
-        fields.put("IP Address",  "127.0.0.1");
-        fields.put("Country of residence (ISO 3166)", "DE");
-        fields.put("Country of citizenship (ISO 3166)", "DE");
-        fields.put("Place of birth", "Germany");
-        fields.put("Date of birth (YYYYMMDD)", "19710101");
-        fields.put("Gender (M/F)", "F");
-        */
         
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
@@ -178,7 +155,43 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     
     @Test
     public void stepC_AddEndEntitySubjectDn3of3() throws InterruptedException {
-        
+        addEndEntityHelper.openPage(getAdminWebUrl());
+        addEndEntityHelper.setEndEntityProfile("EMPTY");
+        HashMap<String, String> fields = new HashMap<String, String>();
+
+        fields.put("Username", TestData.END_ENTITY_NAME_3);
+        fields.put("Password (or Enrollment Code)", "foo123");
+        fields.put("Confirm Password", "foo123");
+        fields.put("CN, Common name", TestData.END_ENTITY_NAME_3);
+
+        fields.put("Uniform Resource Identifier (URI)", "/contact-us/");
+        fields.put("Kerberos KPN, Kerberos 5 Principal Name", "primary/instance@REALM");
+        fields.put("MS GUID, Globally Unique Identifier",  "21EC20203AEA4069A2DD08002B30309D");
+        fields.put("DNS Name", "primekey.se");
+        fields.put("Permanent Identifier", "123456789");
+        fields.put("Directory Name (Distinguished Name)", "CN=aDirectoryName");
+        fields.put("IP Address",  "127.0.0.1");
+        fields.put("Country of residence (ISO 3166)", "DE");
+        fields.put("Country of citizenship (ISO 3166)", "DE");
+        fields.put("Place of birth", "Germany");
+        fields.put("Date of birth (YYYYMMDD)", "19710101");
+        fields.put("Gender (M/F)", "F");
+
+        addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
+        addEndEntityHelper.fillFields(fields);
+        addEndEntityHelper.triggerBatchGeneration();
+        addEndEntityHelper.triggerEmailAddress();
+        addEndEntityHelper.clickCheckBoxRfc822();
+        addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
+        addEndEntityHelper.setCertificateProfile("ENDUSER");
+        addEndEntityHelper.setCa("ManagementCA");
+        addEndEntityHelper.setToken("User Generated");
+        addEndEntityHelper.fillCertificateSerialNumberInHexl("1234567890ABCDEF");
+        addEndEntityHelper.addEndEntity();
+
+        // verify that success message appeared
+        addEndEntityHelper.assertEndEntityAddedMessageDisplayed(TestData.END_ENTITY_NAME_3);
+
     }
     
     
