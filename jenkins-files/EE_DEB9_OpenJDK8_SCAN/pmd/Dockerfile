@@ -10,10 +10,10 @@ RUN \
     apt-get -qq autoclean #&& rm -rf /var/lib/apt/lists/*
 
 RUN \
-    wget -q https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.13.0/pmd-bin-6.13.0.zip -O pmd-bin-6.13.0.zip && \
-    sha256sum pmd-bin-6.13.0.zip | grep 2ccb17a3b9845679e310a68a7f1d328feabc12668e774b0496e0f8ef0ab8df7d && \
-    unzip pmd-bin-6.13.0.zip && \
-    mv pmd-bin-6.13.0 /opt/pmd  && \
+    wget -q https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.15.0/pmd-bin-6.15.0.zip -O pmd-bin-6.15.0.zip && \
+    sha256sum pmd-bin-6.15.0.zip | grep af294bec4629892121d88daa72785a6a12b48c7f51c759cb764ae598414d7f97 && \
+    unzip pmd-bin-6.15.0.zip && \
+    mv pmd-bin-6.15.0 /opt/pmd  && \
     chmod +x     /opt/pmd/bin/*.sh && \
     chgrp -R 0   /opt/pmd && \
     chmod -R g=u /opt/pmd
