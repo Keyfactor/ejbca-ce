@@ -181,7 +181,7 @@ public class HealthCheckTest {
         }
         final String auditLogKeyId = configurationSession.getCesecoreProperty("databaseprotection.keyid.AuditRecordData");
         if (auditLogKeyId == null || !auditLogKeyId.equals("true")) {
-            configurationSession.updateCesecoreProperty("databaseprotection.keyid.AuditRecordData", "123");
+            configurationSession.updateCesecoreProperty("databaseprotection.keyid.AuditRecordData", "999");
         }
         try {
             HttpURLConnection response = performHealthCheck();
