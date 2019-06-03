@@ -382,16 +382,16 @@ CREATE TABLE NoConflictCertificateData (
 );
 
 CREATE TABLE AcmeNonceData (
-    nonce TEXT BINARY NOT NULL,
-    timeExpires INT(8) NOT NULL,
+    nonce TEXT NOT NULL,
+    timeExpires INT8 NOT NULL,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (nonce)
 );
 
 CREATE TABLE AcmeAccountData (
-    accountId TEXT BINARY NOT NULL,
-    currentKeyId TEXT BINARY NOT NULL,
+    accountId TEXT NOT NULL,
+    currentKeyId TEXT NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
@@ -399,10 +399,10 @@ CREATE TABLE AcmeAccountData (
 );
 
 CREATE TABLE AcmeOrderData (
-    orderId TEXT BINARY NOT NULL,
-    accountId TEXT BINARY NOT NULL,
-    fingerprint TEXT BINARY,
-    status TEXT BINARY NOT NULL,
+    orderId TEXT NOT NULL,
+    accountId TEXT NOT NULL,
+    fingerprint TEXT,
+    status TEXT NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
@@ -410,9 +410,9 @@ CREATE TABLE AcmeOrderData (
 );
 
 CREATE TABLE AcmeChallengeData (
-    challengeId TEXT BINARY NOT NULL,
-    authorizationId TEXT BINARY NOT NULL,
-    type TEXT BINARY NOT NULL,
+    challengeId TEXT NOT NULL,
+    authorizationId TEXT NOT NULL,
+    type TEXT NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
@@ -420,9 +420,9 @@ CREATE TABLE AcmeChallengeData (
 );
 
 CREATE TABLE AcmeAuthorizationData (
-    authorizationId TEXT BINARY NOT NULL,
-    orderId TEXT BINARY,
-    accountId TEXT BINARY NOT NULL,
+    authorizationId TEXT NOT NULL,
+    orderId TEXT,
+    accountId TEXT NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
@@ -430,9 +430,9 @@ CREATE TABLE AcmeAuthorizationData (
 );
 
 CREATE TABLE SctData (
-	pk TEXT BINARY NOT NULL,
+	pk TEXT NOT NULL,
     logId INT4 NOT NULL,
-    fingerprint TEXT BINARY NOT NULL,
+    fingerprint TEXT NOT NULL,
     certificateExpirationDate INT8 NOT NULL,
     data TEXT,
     rowProtection TEXT,
