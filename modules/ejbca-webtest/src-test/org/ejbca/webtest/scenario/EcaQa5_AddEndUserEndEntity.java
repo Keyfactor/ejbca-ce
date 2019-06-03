@@ -76,7 +76,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
         fields.put("CN, Common name", TestData.END_ENTITY_NAME_1);
-        
         fields.put("ST, State or Province", "Germany");
         fields.put("OU, Organizational Unit", "QA");
         fields.put("L, Locality", "Europe");
@@ -90,7 +89,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("CIF, Tax ID code, for companies (Spain)", "5678");
         fields.put("unstructuredAddress, IP address", "127.0.0.1");
 
-        
         addEndEntityHelper.fillMsUpnEmail("QA", "Primekey.com");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.triggerBatchGeneration();
@@ -106,21 +104,16 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         // verify that success message appeared
         addEndEntityHelper.assertEndEntityAddedMessageDisplayed(TestData.END_ENTITY_NAME_1);
     }
-    
-    
-    
-    @Test
 
+    @Test
     public void stepB_AddEndEntitySubjectDn2of3() throws InterruptedException {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
         HashMap<String, String> fields = new HashMap<String, String>();
-
         fields.put("Username", TestData.END_ENTITY_NAME_2);
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
         fields.put("CN, Common name", TestData.END_ENTITY_NAME_2);
-
         fields.put("businessCategory, Organization type",  "QA");
         fields.put("postalCode", "12345");
         fields.put("O, Organization", "QA");
@@ -163,7 +156,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
         fields.put("CN, Common name", TestData.END_ENTITY_NAME_3);
-
         fields.put("Uniform Resource Identifier (URI)", "/contact-us/");
         fields.put("Kerberos KPN, Kerberos 5 Principal Name", "primary/instance@REALM");
         fields.put("MS GUID, Globally Unique Identifier",  "21EC20203AEA4069A2DD08002B30309D");
@@ -193,7 +185,6 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.assertEndEntityAddedMessageDisplayed(TestData.END_ENTITY_NAME_3);
 
     }
-    
     
     @Test
     public void stepD_SearchEndEntitySubjectDn1of3() {
