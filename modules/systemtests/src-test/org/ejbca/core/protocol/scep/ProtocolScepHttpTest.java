@@ -480,9 +480,9 @@ public class ProtocolScepHttpTest {
             // Check that we got the right cert back
             assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         }
-        
+
         // 
-        // Test the same message but without message component, it should use a default CA
+        // Test the same message but without message component, it should use a default CA, if one is set
         {
             // Try with a non extisting CA first, should respond with a 404
             updatePropertyOnServer("scep.defaultca", "NonExistingCAForSCEPTest");
@@ -519,6 +519,54 @@ public class ProtocolScepHttpTest {
             X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
             // Check that we got the right cert back
             assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+
+            // Try with no default CA last, should respond with a 404
+            updatePropertyOnServer("scep.defaultca", "");
+            reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert";
+            url = new URL(reqUrl);
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 404 (not found)", 404, con.getResponseCode());
+            
+            // Now set the CA as default CA in the alias instead, it should pick up that, if we are in RA mode
+            scepConfiguration.setRADefaultCA(scepAlias, x509ca.getName());
+            scepConfiguration.setRAMode(scepAlias, false);
+            globalConfigSession.saveConfiguration(admin, scepConfiguration);
+            assertFalse("We should be in CA mode in this part of the test", scepConfiguration.getRAMode(scepAlias));
+            url = new URL(reqUrl);
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 404 (not found)", 404, con.getResponseCode());
+            scepConfiguration.setRAMode(scepAlias, true);
+            globalConfigSession.saveConfiguration(admin, scepConfiguration);
+            assertTrue("We should be in RA mode now", scepConfiguration.getRAMode(scepAlias));
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
+            assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
+            baos = new ByteArrayOutputStream();
+            // This works for small requests, and SCEP requests are small enough
+            in = con.getInputStream();
+            b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            respBytes = baos.toByteArray();
+            assertNotNull("Response can not be null.", respBytes);
+            assertTrue(respBytes.length > 0);
+            cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
+            // Check that we got the right cert back
+            assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+
         }
         
         //
