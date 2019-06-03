@@ -228,16 +228,16 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * name of the default SCEP CA defined by the property <code>scep.defaultca</code>. If no such property is defined
      * an exception is thrown with a user-friendly error message.
      * 
-     * @param message the message provided by the SCEP client, or an empty string if no message was provided
+     * @param caName the name of the CA as indicated by the message sent by the SCEP client.
      * @param scepConfiguration the SCEP configuration of this EJBCA instance
      * @param alias the alias being used by the SCEP client
      * @return the name of the CA which should be used to serve this request, never null
      * @throws CADoesntExistsException if CA mode if being used for the alias, no message is provided and the default SCEP CA is undefined.
      */
-    private String getCAName(final String message, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
-        if (!StringUtils.isEmpty(message)) {
+    private String getCAName(final String caName, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
+        if (!StringUtils.isEmpty(caName)) {
             // Use the CA defined by the message if present
-            return message;
+            return caName;
         }
         if (scepConfiguration.getRAMode(alias)) {
             // When in RA mode, use the CA defined by the alias
