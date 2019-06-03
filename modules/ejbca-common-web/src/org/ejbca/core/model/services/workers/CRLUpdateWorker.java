@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -22,14 +21,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -51,22 +45,7 @@ public class CRLUpdateWorker extends BaseWorker {
 
     @Override
     public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
-        final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));
-        final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ((CryptoTokenManagementSessionLocal) ejbs
-                .get(CryptoTokenManagementSessionLocal.class));
-        Collection<Integer> caIdsToCheck = getCAIdsToCheck(true);
-        if(caIdsToCheck.contains(SecConst.ALLCAS)) {
-            caIdsToCheck = caSession.getAllCaIds();
-        }
-        
-        for (Integer caid : caIdsToCheck) {
-            CAInfo info = caSession.getCAInfoInternal(caid.intValue());
-            try {
-                cryptoTokenManagementSession.testKeyPair(getAdmin(), info.getCAToken().getCryptoTokenId(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
-            } catch (InvalidKeyException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
-                throw new ServiceExecutionFailedException("Could not connect to HSM, worker is unable to run.", e);
-            }
-        }
+        //Nothing to check here. 
     }
 	
 	/**
