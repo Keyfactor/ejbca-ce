@@ -130,21 +130,21 @@ public class AddEndEntityHelper extends BaseHelper {
     }
     
     /**
-     * Clicks the check box 'batch generation'.
+     * Clicks the check box 'Use' for 'Batch generation (clear text pwd storage)'.
      */
     public void triggerBatchGeneration() {
         clickLink(Page.CHECKBOX_BATCH_GENERATION);
     }
 
     /**
-     * Clicks the check box 'batch generation'.
+     * Clicks the check box 'Use data from E-mail address field' for 'emailAddress, E-mail address in DN'.
      */
     public void triggerEmailAddress() {
         clickLink(Page.CHECKBOX_EMAIL_ADDRESS);
     }
 
     /**
-     * Clicks the check box 'Use data from E-mail address field'.
+     * Clicks the check box 'Use data from E-mail address field' for 'RFC 822 Name (e-mail address)'.
      */
     public void clickCheckBoxRfc822() {
         clickLink(Page.CHECKBOX_RFC_822);
