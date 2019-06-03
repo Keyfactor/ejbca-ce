@@ -4,6 +4,9 @@ if [ "$DEBUG" = "true" ]; then
     set -x
 fi
 
+# Set up locale (C is the default locale, compare with Locale.ROOT in Java)
+export LANG=C.UTF-8
+
 # Setup the UID the container runs as to be named 'jenkins' (purely for niceness)
 if ! whoami &> /dev/null; then
   if [ -w /etc/passwd ]; then
