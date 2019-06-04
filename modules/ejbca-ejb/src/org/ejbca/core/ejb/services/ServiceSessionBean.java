@@ -580,7 +580,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
         ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
         try {
-            worker.canWorkerRun(ejbs);         
+            if (worker != null) {
+                worker.canWorkerRun(ejbs);
+            }
         } catch (ServiceExecutionFailedException e) {
             //Worker was found to be in an error state
             log.error("Worker execution has been postponed.", e);
