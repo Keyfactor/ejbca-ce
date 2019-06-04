@@ -68,8 +68,8 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     public void stepA_AddEndEntitySubjectDn1of3() throws InterruptedException {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
-        HashMap<String, String> fields = new HashMap<String, String>();
-        
+        HashMap<String, String> fields = new HashMap<>();
+
         
         // 1 of 3
         fields.put("Username", TestData.END_ENTITY_NAME_1);
