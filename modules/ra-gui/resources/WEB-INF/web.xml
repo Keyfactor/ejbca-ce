@@ -104,6 +104,7 @@
     <session-config>
         <!-- This timeout of 30 minutes will be used for non-JavaScript users that can't do background polling. -->
         <session-timeout>30</session-timeout>
+        <tracking-mode>COOKIE</tracking-mode>
         <cookie-config>
             <http-only>true</http-only>
             <secure>true</secure>
