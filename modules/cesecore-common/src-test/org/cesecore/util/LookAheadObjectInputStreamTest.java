@@ -393,14 +393,15 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject((long) 3);
             o.writeObject((float) 4);
             o.writeObject((double) 5);
-            o.writeObject(new Byte((byte) 6));
-            o.writeObject(new Short((short) 7));
-            o.writeObject(new Integer((int) 8));
-            o.writeObject(new Long((long) 9));
-            o.writeObject(new Float((float) 10));
-            o.writeObject(new Double((double) 11));
+            // These should be exactly the same as above, due to auto-boxing 
+            o.writeObject(Byte.valueOf((byte) 6));
+            o.writeObject(Short.valueOf((short) 7));
+            o.writeObject(Integer.valueOf((int) 8));
+            o.writeObject(Long.valueOf((long) 9));
+            o.writeObject(Float.valueOf((float) 10));
+            o.writeObject(Double.valueOf((double) 11));
             o.writeObject(false);
-            o.writeObject(new Boolean(true));
+            o.writeObject(Boolean.valueOf(true));
             o.writeObject('c');
             o.writeObject("String");
             o.writeObject(new byte[1]);

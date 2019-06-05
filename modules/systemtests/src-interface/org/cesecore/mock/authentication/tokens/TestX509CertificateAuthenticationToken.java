@@ -118,6 +118,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
                     switch (accessUser.getMatchTypeAsType()) {
                     case TYPE_EQUALCASE:
                         returnvalue = value.equals(CertTools.getSubjectDN(certificate));
+                        break;
                     case TYPE_EQUALCASEINS:
                         returnvalue = value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
                         break;
