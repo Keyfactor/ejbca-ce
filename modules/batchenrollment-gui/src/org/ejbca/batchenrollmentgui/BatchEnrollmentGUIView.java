@@ -776,7 +776,6 @@ public class BatchEnrollmentGUIView extends FrameView {
     }//GEN-LAST:event_settingsMenuItemActionPerformed
 
     private void jTable1Changed(TableModelEvent e) { // NOPMD
-        System.out.println("tableChanged");
         boolean enable = false;
         for (Request request : requests) {
             if (!request.isDone()) {
