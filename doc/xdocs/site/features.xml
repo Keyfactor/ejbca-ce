@@ -14,16 +14,15 @@
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Unlimited number of Root CAs and SubCAs. Request cross certificates and bridge certificates from other CAs and Bridge CAs. Issue cross certificates to other CAs.</li>
 <li>Support all common <a href="docs/PKI_Architecture.html">PKI Architectures</a>, as well as many uncommon.</li>
-<li>Get your own CA signed by public recognized CAs such as <a href="https://www.globalsign.com/">GlobalSign</a>, <a href="http://www.t-systems.com/">T-Systems</a> or <a href="https://www.quovadisglobal.com/">QuoVadis</a>.</li>
 <li>Follows X509 and PKIX (RFC5280) standards where applicable.</li>
 <li>Supports RSA key algorithm up to 8192 bits.</li>
 <li>Supports DSA key algorithm with 1024 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
-<li>Support multiple hash algorithms for signatures, SHA-1, SHA-2.</li>
+<li>Support multiple hash algorithms for signatures, SHA-1, SHA-2, SHA-3.</li>
 <li>Compliant with NSA SUITE B algorithms and certificates.</li>
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110) used by EU <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports%20(EJBCA%20Enterprise%20only)">EAC ePassports</a> and eIDs.</li>
 <li>Supports short and long lived certificates. From infinite validity down to minutes or even seconds.</li> 
-<li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
+<li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign, Bull Trustway, Nitrokey, YubiHSM and other HSMs with a good PKCS#11 library.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Issues SSL/TLS certificates that work with all common servers.</li>
 <li><a href="docs/End_Entities.html">Admin registration</a> and <a href="docs/Self_Registration.html">self-registration</a> work-flows out of the box. Supports virtually any work-flow with <a href="docs/Customizing_EJBCA.html">plug-ins</a> and integration.</li>
@@ -43,7 +42,7 @@
 <li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.</li>
 <li>Support for RFC4683, Subject Identification Method (SIM).</li>
 <li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li>
-<li>Supports the German <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.</li> 
+<li>Supports the German <a href="https://www.2b-advice.com/T7-en/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.</li> 
 <li>Key recovery to store private keys for recovery for selected users and certificates.</li>
 <li>Standard integration protocols and APIs. SCEP, CMP, EST, ACME, REST and SOAP WS (see Integration Features).</li>
 <li>Validators for standard key quality measures, and calling external scripts (for example linters).</li>
@@ -54,7 +53,7 @@
 <li>Support for BAC PKI, Country Signing CA (CSCA) and Document Signer (DS) certificates.</li>
 <li>Integration with <a href="https://www.signserver.org" target="signserver">SignServer</a> as Document Signer creating Security Objects (SOD).</li>
 <li>Support for EAC PKI (EJBCA Enterprise only).</li>
-<li>Integration with PrimeKey SPOC for a Single Point of Contact between countries.</li>
+<li>Integration with <a href="https://www.primekey.com/products/software/primekey-npkd/">PrimeKey NPKD</a> for a National PKD.</li>
 <li>Publisher for ICAO PKD, publishing DS certificates and CSCA CRLs to ICAO PKD LDAP directory.</li>
 <li>Support ISO 18013 Amendment 2 eDL (Driver License).</li> 
 </ul>
@@ -66,16 +65,16 @@
 <li>Run standalone or integrated in any JEE application.</li>
 <li><a href="docs/Web_Service_Interface.html">Web service</a> (WS) interface for remote administration and integration.</li>
 <li>Supports the Simple Certificate Enrollment Protocol (<a href="docs/SCEP.html">SCEP</a>).</li>
-<li>Supports <a href="docs/CMP.html">CMP</a> (RFC4210 and RFC4211).</li>
-<li>Supports <a href="docs/EST.html">EST</a> (RFC7030, Enterprise only).</li>
-<li>Supports <a href="docs/ACME.html">ACME</a> (Enterprise only).</li>
+<li>Supports <a href="docs/CMP.html">CMP</a> (Relevant parts of RFC4210 and RFC4211).</li>
+<li>Supports <a href="docs/EST.html">EST</a> (Relevant parts of RFC7030, Enterprise only).</li>
+<li>Supports <a href="docs/ACME.html">ACME</a> (Relevant parts of RFC8555, Enterprise only).</li>
 <li><a href="docs/Certificate_Management_REST_Interface.html">REST Certificate Management API</a> (Enterprise only).</li>
 <li>External Validation Authority and OCSP responder also works with any other CA than EJBCA and support large scale OCSP deployments.</li>
 <li>Validation Authority and OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>Simple OCSP client in pure java.</li>
-<li><a href="docs/Customizing_EJBCA.html">Plug-in functionality</a> allowing you to enhance with your own functionality and work flows.</li>
+<li><a href="docs/Modifying_EJBCA.html">Plug-in functionality</a> allowing you to enhance with your own functionality and work flows.</li>
 <li>Command line interface for scripts etc.</li>
-<li>Administration GUI localizable and available in several languages - Japaneese, English, French, German, Italian, Portuguese, Spanish, Chinese, ...</li>
+<li>Administration GUI localizable and available in several languages (whole or in part) - Japaneese, English, French, German, Italian, Portuguese, Spanish, Chinese, ...</li>
 <li>Internal log messages are localizable for different languages.</li>
 <li>Component- and plug-in based architecture for publishing certificates and CRLs to different sources.</li>
 <li>API for an external RA, restricting in-bound traffic to CA.</li>
@@ -93,10 +92,10 @@
 <li>Multiple levels of administrators with specified privileges and roles.</li>
 <li>Authentication of local CLI users enabling role separation also for local CLI.</li>
 <li>Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
-<li>OCSP transaction logging suitable for statistics and billing.</li>
+<li>OCSP and WS transaction logging suitable for statistics and billing.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP or legacy databases. Several flexible standard publishers exist to meet different demands.</li>
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
-<li>Optional approval mechanism so several admins are required to perform an action, a.k.a. dual-authentication.</li>
+<li>Optional approval mechanism so several admins are required to perform an action, a.k.a. dual-authentication or 4-eyes principle.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Simple stand-alone <a href="docs/EJBCA_Batch_Enrollment_GUI.html">batch enrollment GUI</a> for CSRs (webservice RA).</li>
 <li>Possibility for autoenrollment, using scripts and APIs.</li>
@@ -113,8 +112,7 @@
 <li>Possible to integrate into large java applications for optimal integration into business process.</li>
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check monitoring service to support efficient clustering and monitoring.</li>
-<li>Supports multiple application servers: JBoss and Glassfish</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, MS SQL Server, Derby, Sybase, Informix.</li>
+<li>Supports multiple databases: MySQL, PostgreSQL, H2, Oracle, DB2, MS SQL, ...</li>
 <li>Unique possibility to configure either as fully audited CA or as high speed <a href="docs/Maximizing_Performance.html">certificate factory</a>, with the same level of management features.</li>
 </ul>
   </subsection>
@@ -132,8 +130,8 @@
 <li>Validation tool for conformance checking of certificates and OCSP responders.</li>
 <li>EAC PKI (EAC 1.11 and 2.10) for ePassports and eIDs, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
-<li>Support for EST protocol, <a href="https://tools.ietf.org/html/rfc7030">RFC7030</a>, Enrollment over Secure Transport.</li>
-<li>Support for ACME protocol, <a href="https://datatracker.ietf.org/doc/draft-ietf-acme-acme/">IETF Draft</a>.</li>
+<li>Support for EST protocol, <a href="https://tools.ietf.org/html/rfc7030">RFC7030</a> (relevant parts), Enrollment over Secure Transport.</li>
+<li>Support for ACME protocol, <a href="https://datatracker.ietf.org/doc/draft-ietf-acme-acme/">IETF Draft</a>, <a href="https://tools.ietf.org/html/rfc8555">RFC8555</a> (relevant parts).</li>
 <li><a href="docs/Certificate_Management_REST_Interface.html">REST Certificate Management API</a></li>
 <li>Support for Native <a href="https://www.primekey.com/products/software/ejbca-enterprise/#additionals">Autoenrollment in Windows environment</a> with add-on autoenrollment proxy module.</li>
 <li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/CMP.html">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
@@ -152,7 +150,7 @@
 <li>Additional algorithms using HSMs through PKCS#11, <a href="docs/Hardware_Security_Modules_(HSM).html">RSASSA-PSS (SHA256WithRSAAndMGF1)</a>. Available through patches for Java.</li>
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 <li>Penetration tested with improved security.</li>
-<li>Validation of <a href="https://tools.ietf.org/html/rfc6844">CAA records</a> during certificate issuance.</li>
+<li>Validation of <a href="https://tools.ietf.org/html/rfc6844">CAA records</a> (RFC6844) during certificate issuance.</li>
 <li>GDPR features, configurable to not publish PII from CA to VA.</li>
 </ul>
   </subsection>
