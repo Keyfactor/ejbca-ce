@@ -28,11 +28,6 @@
 				</div>				
 				<div id="news">
 			    <div>  
-                    <p>
-                        <strong>EJBCA can be configured to generate certificate serial numbers (positive integers) from 4 to 20 octets.</strong>
-                         <br />
-                         <span class="date"> Posted: 2019-03-13</span>
-                    </p>
                 <p>
                 <a href="https://www.primekey.com/products/cloud/ejbca-enterprise-cloud/"><img src="images/cloud-banner-for-org.jpg"/></a>
                 </p>
