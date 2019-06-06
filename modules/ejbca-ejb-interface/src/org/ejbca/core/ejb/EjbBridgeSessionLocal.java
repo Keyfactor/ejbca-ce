@@ -22,6 +22,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.SctDataSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -126,4 +127,5 @@ public interface EjbBridgeSessionLocal {
     UpgradeSessionLocal getUpgradeSession();
     UserDataSourceSessionLocal getUserDataSourceSession();
     WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
+	SctDataSessionLocal getSctDataSession();
 }
