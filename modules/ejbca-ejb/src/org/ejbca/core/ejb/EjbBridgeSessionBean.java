@@ -25,6 +25,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.SctDataSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -130,6 +131,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB UpgradeSessionLocal upgradeSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+	@EJB
+	SctDataSessionLocal sctDataSession;
 
     @Override public AdminPreferenceSessionLocal getAdminPreferenceSession() { return adminPreferenceSession; }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
@@ -179,4 +182,9 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public UpgradeSessionLocal getUpgradeSession() { return upgradeSession; }
     @Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
     @Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
+
+	@Override
+	public SctDataSessionLocal getSctDataSession() {
+		return sctDataSession;
+	}
 }

@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.SctDataSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -181,7 +182,12 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public ImportCrlSessionLocal getImportCrlSession() { return getEjbLocal().getImportCrlSession(); }
     @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return getEjbLocal().getRaMasterApiSession(); }
 
-    /** 
+	@Override
+	public SctDataSessionLocal getSctDataSession() {
+		return getEjbLocal().getSctDataSession();
+	}
+
+	/**
      * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
      * and in this case this is properly handled  by returning null.
      * 
