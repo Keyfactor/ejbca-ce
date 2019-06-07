@@ -135,7 +135,7 @@ public class CACertServlet extends HttpServlet {
                 }
                 Certificate cacert = chain[level];
                 byte[] enccert = cacert.getEncoded();
-                // Se if we can name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
+                // Try to name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
                 // and if that does not exist, use the fixed string CertificateAuthority. 
                 String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "CertificateAuthority");
                 // We must remove cache headers for IE
