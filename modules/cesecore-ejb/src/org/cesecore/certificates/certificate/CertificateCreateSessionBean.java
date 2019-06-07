@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -86,7 +87,8 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
-import org.cesecore.certificates.certificatetransparency.SctDataCallbackImpl;
+import org.cesecore.certificates.certificatetransparency.SctData;
+import org.cesecore.certificates.certificatetransparency.SctDataCallback;
 import org.cesecore.certificates.certificatetransparency.SctDataSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -381,7 +383,23 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         
         // Set up audit logging of CT pre-certificate
         addCTLoggingCallback(certGenParams, admin.toString());
-        certGenParams.setSctDataCallback(new SctDataCallbackImpl(sctDataSession));
+        certGenParams.setSctDataCallback(new SctDataCallback() {
+            @Override
+            public void saveSctData(String fingerprint, int logId, long certificateExpirationDate, String data) {
+                SctData sctData = new SctData(fingerprint, logId, certificateExpirationDate, data);
+                sctDataSession.addSctData(sctData);
+            }
+
+            @Override
+            public Map<Integer, byte[]> findSctData(String fingerprint) {
+                List<SctData> sctDataList = sctDataSession.findSctData(fingerprint);
+                Map<Integer, byte[]> result = new HashMap<>();
+                for (SctData sctData : sctDataList) {
+                    result.put(sctData.getLogId(), Hex.decode(sctData.getData()));
+                }
+                return result;
+            }
+        });
 
         try {
             CertificateDataWrapper result = null;
