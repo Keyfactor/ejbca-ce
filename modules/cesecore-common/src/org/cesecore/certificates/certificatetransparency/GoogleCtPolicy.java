@@ -161,6 +161,7 @@ public final class GoogleCtPolicy implements Serializable {
 
     @Override
     public int hashCode() {
+        // We use a sum of the fields hashcodes. The second hashcode is multiplied by some prime number. This is common practice in Java (see String.hashCode)
         return Arrays.hashCode(minScts) + 311*Arrays.hashCode(lessThanMonths); 
     }
     

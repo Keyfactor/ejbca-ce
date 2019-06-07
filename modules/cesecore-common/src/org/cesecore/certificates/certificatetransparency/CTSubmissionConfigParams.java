@@ -67,7 +67,8 @@ public final class CTSubmissionConfigParams implements Serializable {
 
     @Override
     public int hashCode() {
-        return configuredCTLogs.hashCode() + 27*validityPolicy.hashCode();
+        // We use a sum of the fields hashcodes. The second hashcode is multiplied by some prime number. This is common practice in Java (see String.hashCode)
+        return configuredCTLogs.hashCode() + 29*validityPolicy.hashCode();
     }
 
     @Override
