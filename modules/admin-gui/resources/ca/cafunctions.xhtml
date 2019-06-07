@@ -76,7 +76,7 @@
 									 value="#{web.text.VIEW_INFORMATION}"
 									 title="#{web.text.VIEW_CAINFORMATION_TITLE} #{web.text.POPUP_WINDOW}"/>
 				</h5>
-				<h:dataTable value="#{caGuiInfo.certificatechain}" var="certificatechain"  binding="#{table}"
+				<h:dataTable value="#{caGuiInfo.certificatechain}" var="certificatechain" binding="#{table}"
 							 styleClass="outline-buttons-table" rowClasses="Row0">
 					<h:column>
 						<h:panelGroup rendered="#{table.rowIndex == 0}">
@@ -87,19 +87,19 @@
 							<h:panelGrid columns="5">
 								<h:outputText/>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowIndex}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.subjectdn}">
 									<h:outputText value="#{web.text.DOWNLOADIE}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowIndex}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.subjectdn}">
 									<h:outputText value="#{web.text.DOWNLOADNS}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowIndex}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.subjectdn}">
 									<h:outputText value="#{web.text.DOWNLOADPEM}"/>
 								</h:outputLink>
 								<h:form>
-									<h:commandLink action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, table.rowIndex)}"
+									<h:commandLink action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, (table.rowCount - table.rowIndex - 1))}"
 												   value="#{web.text.DOWNLOADJKS}"/>
 								</h:form>
 							</h:panelGrid>
@@ -112,19 +112,19 @@
 							<h:panelGrid columns="5" >
 								<h:outputText />
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowIndex}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.subjectdn}">
 									<h:outputText value="#{web.text.DOWNLOADIE}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowIndex}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.subjectdn}">
 									<h:outputText value="#{web.text.DOWNLOADNS}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowIndex}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.subjectdn}">
 									<h:outputText value="#{web.text.DOWNLOADPEM}"/>
 								</h:outputLink>
 								<h:form>
-									<h:commandLink action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, table.rowIndex)}"
+									<h:commandLink action="#{cAFunctionsMBean.showJksDownloadForm(caGuiInfo, (table.rowCount - table.rowIndex -1))}"
 												   value="#{web.text.DOWNLOADJKS}"/>
 								</h:form>
 							</h:panelGrid>
