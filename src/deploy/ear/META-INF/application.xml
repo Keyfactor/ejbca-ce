@@ -94,6 +94,7 @@
        <!--@est.war@-->
        <!--@unidfnr-ejb.jar@-->
        <!--@ejbca-rest-api.war@-->
+       <!--@ejbca-rest-camanagement.war@-->
        <!--@swagger-ui.war@-->
        
 </application>
