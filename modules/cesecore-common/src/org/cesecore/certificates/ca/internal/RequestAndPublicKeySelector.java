@@ -37,7 +37,8 @@ public class RequestAndPublicKeySelector {
     
     private PublicKey publicKey;
     private RequestMessage requestMessage;
-    /** Constructor taking input needed to make decision on which public key and requets message to use. After construction caller can use the methods
+    
+    /** Constructor taking input needed to make decision on which public key and request message to use. After construction caller can use the methods
      * {@link #getPublicKey()} and {@link #getRequestMessage()} to retrieve the selected objects.
      * 
      * @param providedRequestMessage
