@@ -35,14 +35,14 @@ public class RestApiApplication extends Application {
         if (!EjbcaConfiguration.getIsInProductionMode()) {
             ModelConverters.getInstance().addConverter(new SnakeCaseConverter());
         }
-        /*
+        
         // Configure what can't be configured with annotations using a BeanConfig
-        final io.swagger.jaxrs.config.BeanConfig beanConfig = new io.swagger.jaxrs.config.BeanConfig();
-        beanConfig.setPrettyPrint(true);
-        beanConfig.setBasePath("/ejbca/ejbca-rest-api");
-        beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api");
-        beanConfig.setScan(true);
-        */
+        //final io.swagger.jaxrs.config.BeanConfig beanConfig = new io.swagger.jaxrs.config.BeanConfig();
+        //beanConfig.setPrettyPrint(true);
+        //beanConfig.setBasePath("/ejbca/ejbca-rest-api");
+        //beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api");
+        //beanConfig.setScan(true);
+        
     }
 
     /* In order to use swagger which requires manual registration, we also need to manually register out @Provider annotated classes now. */
@@ -51,10 +51,10 @@ public class RestApiApplication extends Application {
         final Set<Class<?>> resources = new HashSet<>();
         resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.resource.CaRestResource.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.CryptoTokenRestResource.class);
-        resources.add(org.ejbca.ui.web.rest.api.resource.CaManagementRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ExceptionHandler.class);
+        
+        resources.add(org.ejbca.ui.web.rest.api.resource.CryptoTokenRestResource.class); // TODO - make work
         
         if (EjbcaConfiguration.getIsInProductionMode()) {
             log.debug("Swagger is not available in distribution.");
