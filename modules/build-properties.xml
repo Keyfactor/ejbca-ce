@@ -175,7 +175,6 @@
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
     <property name="mod.ejbca-rest-cryptotoken.path" location="${mod.path}/ejbca-rest-cryptotoken" />
-    <!--<property name="mod.ejbca-rest-cryptotoken.war" location="${mod.dist.path}/ejbca-rest-cryptotoken.war" />-->
     <property name="mod.ejbca-rest-cryptotoken.lib" location="${mod.dist.path}/ejbca-rest-cryptotoken.jar" />
     <property name="mod.ejbca-rest-camanagement.path" location="${mod.path}/ejbca-rest-camanagement" />
     <property name="mod.ejbca-rest-camanagement.war" location="${mod.dist.path}/ejbca-rest-camanagement.war" />
