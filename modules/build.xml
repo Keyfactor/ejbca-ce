@@ -53,7 +53,8 @@
 	
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
-        webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean"/>
+        webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, plugins-ee-clean, clover.clean, 
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -177,7 +178,14 @@
     <target name="ejbca-rest-common-clean" if="${mod.ejbca-rest-common.exists}">
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
-    
+	
+    <target name="ejbca-rest-cryptotoken-clean" if="${mod.ejbca-rest-cryptotoken.exists}">
+        <ant antfile="${mod.ejbca-rest-cryptotoken.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+	
+    <target name="ejbca-rest-camanagement-clean" if="${mod.ejbca-rest-camanagement.exists}">
+        <ant antfile="${mod.ejbca-rest-camanagement.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>    
         	
 	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
@@ -443,8 +451,16 @@
     <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" description="Build EJBCA rest common">
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
+	
+    <target name="ejbca-rest-cryptotoken" if="${mod.ejbca-rest-cryptotoken.exists}" depends="ejbca-rest-common" description="Build EJBCA REST Crypto Token module">
+        <ant antfile="${mod.ejbca-rest-cryptotoken.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+    </target>
+	
+    <target name="ejbca-rest-camanagement" if="${mod.ejbca-rest-camanagement.exists}" depends="ejbca-rest-common" description="Build EJBCA REST CA Management module">
+        <ant antfile="${mod.ejbca-rest-camanagement.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+    </target>
     
-	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common" description="Build EJBCA rest api">
+	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-cryptotoken" description="Build EJBCA rest api">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	
@@ -519,7 +535,8 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
-					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca">
+					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-cryptotoken, ejbca-rest-camanagement, 
+					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
@@ -590,6 +607,16 @@
 
     <target name="ejbca-rest-api-war" if="${mod.ejbca-rest-api.exists}" depends="ejbca-common-web, ejbca-rest-common" description="Build the Ejbca rest api WAR">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+    <target name="ejbca-rest-cryptotoken-war" if="${mod.ejbca-rest-cryptotoken.exists}" depends="ejbca-common-web, ejbca-rest-common" 
+    	description="Build the EJBCA Crypto Token REST API WAR">
+		<ant antfile="${mod.ejbca-rest-cryptotoken.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+    <target name="ejbca-rest-camanagement-war" if="${mod.ejbca-rest-camanagement.exists}" depends="ejbca-common-web, ejbca-rest-common" 
+    	description="Build the EJBCA CA Management REST API WAR">
+		<ant antfile="${mod.ejbca-rest-camanagement.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<!-- Helper to execute the EJBCA EJB CLI -->

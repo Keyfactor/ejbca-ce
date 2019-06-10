@@ -43,6 +43,7 @@
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
+        <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
 		<path refid="lib.hibernate-validator.classpath"/>
 		<path refid="lib.jboss-logging.classpath"/>
 	</path>
