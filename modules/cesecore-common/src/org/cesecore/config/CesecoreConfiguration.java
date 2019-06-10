@@ -42,6 +42,7 @@ public final class CesecoreConfiguration {
     }
 
     private static final String TRUE = "true";
+    private static final String FALSE = "false";
 
     /**
      * Cesecore Datasource name
@@ -486,7 +487,7 @@ public final class CesecoreConfiguration {
     /** Whether caching of SCTs should be enabled. The default is true. */
     public static boolean getCTCacheEnabled() {
         final String value = ConfigurationHolder.getString("ct.cache.enabled");
-        return value == null || !value.trim().equalsIgnoreCase("false");
+        return value == null || !value.trim().equalsIgnoreCase(FALSE);
     }
 
     /**
@@ -496,7 +497,7 @@ public final class CesecoreConfiguration {
      */
     public static boolean getCTFastFailEnabled() {
         final String value = ConfigurationHolder.getString("ct.fastfail.enabled");
-        return value != null && value.trim().equalsIgnoreCase(TRUE);
+        return value == null || !value.trim().equalsIgnoreCase(FALSE);
     }
 
     /**
