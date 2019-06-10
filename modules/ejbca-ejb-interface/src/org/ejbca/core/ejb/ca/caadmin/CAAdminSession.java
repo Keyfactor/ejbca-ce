@@ -362,7 +362,7 @@ public interface CAAdminSession {
      * 
      * @param caname The name the new CA will have
      * @param keystorepass The keystore password the CA will have
-     * @param signatureCertChain The CA certificate(s)
+     * @param signatureCertChain The CA certificate(s) with the CAs certificate is first in chain and up to root after that
      * @param p12PublicSignatureKey CA public signature key
      * @param p12PrivateSignatureKey CA private signature key
      * @param p12PrivateEncryptionKey
