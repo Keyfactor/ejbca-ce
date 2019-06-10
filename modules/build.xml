@@ -609,11 +609,6 @@
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-    <target name="ejbca-rest-cryptotoken-war" if="${mod.ejbca-rest-cryptotoken.exists}" depends="ejbca-common-web, ejbca-rest-common" 
-    	description="Build the EJBCA Crypto Token REST API WAR">
-		<ant antfile="${mod.ejbca-rest-cryptotoken.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-	
     <target name="ejbca-rest-camanagement-war" if="${mod.ejbca-rest-camanagement.exists}" depends="ejbca-common-web, ejbca-rest-common" 
     	description="Build the EJBCA CA Management REST API WAR">
 		<ant antfile="${mod.ejbca-rest-camanagement.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
