@@ -20,8 +20,6 @@
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
     <property name="docs.dest.rest" location="tmp/htdocs/docs/rest"/>
-    <property name="docs.dest.rest.cryptotoken" location="tmp/htdocs/docs/rest-cryptotoken"/>
-    <property name="docs.dest.rest.camanagement" location="tmp/htdocs/docs/rest-camanagement"/>
     <property name="docs.dest.acme" location="tmp/htdocs/docs/acme"/>
     <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
     <property name="site.src"     location="doc/xdocs/site"/>
@@ -179,7 +177,7 @@
         </copy>
     </target>
         
-    <target name="doc" depends="prepare, doc-build-tool, doc-external-deps, site, doc-confluence, doc-rest, doc-rest-cryptotoken, doc-rest-camanagement, doc-acme" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
+    <target name="doc" depends="prepare, doc-build-tool, doc-external-deps, site, doc-confluence, doc-rest, doc-acme" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
         <echo message="WS=${ws.objects.dir}"/>
         <mkdir dir="${jdocs.ws.tmp}"/>
         <mkdir dir="${docs.dest.ws}"/>
@@ -253,22 +251,6 @@
         </java>
     </target>
     
-    <target name="doc-rest-cryptotoken" if="${mod.rest-cryptotoken.exists}">
-        <mkdir dir="${docs.dest.rest.cryptotoken}"/>
-        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.3.1.jar" fork="true">
-            <arg line="generate -i ${mod.ejbca-rest-cryptotoken.path}/resources/swagger.json -l html2 -o ${docs.dest.rest.cryptotoken}
-            -t ${ejbca.home}/modules/ejbca-rest-api/htmlDocsTemplate"/>
-        </java>
-    </target>
-    
-    <target name="doc-rest-camanagement" if="${mod.rest-camanagement.exists}">
-        <mkdir dir="${docs.dest.rest.camanagement}"/>
-        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.3.1.jar" fork="true">
-            <arg line="generate -i ${mod.ejbca-rest-camanagement.path}/resources/swagger.json -l html2 -o ${docs.dest.rest.camanagement}
-            -t ${ejbca.home}/modules/ejbca-rest-api/htmlDocsTemplate"/>
-        </java>
-    </target>
-
     <target name="doc-acme" if="${mod.acme.exists}">
         <mkdir dir="${docs.dest.acme}"/>
         <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.3.1.jar" fork="true">
