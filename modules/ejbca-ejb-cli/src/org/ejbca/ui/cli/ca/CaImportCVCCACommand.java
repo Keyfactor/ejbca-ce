@@ -31,6 +31,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -132,14 +133,24 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
             try {
                 keyfact = KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
             } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("RSA was not a recognized algorithm");
-            } // Doesn't matter if we say RSA here, it will fix an EC key as well
+                throw new IllegalStateException("RSA was not a recognized algorithm in the BC provider (should not happen)", e);
+            }
             PrivateKey privKey;
             try {
                 privKey = keyfact.generatePrivate(spec);
             } catch (InvalidKeySpecException e) {
-                log.error("Contents of key file were invalid: " + e.getMessage());
-                return CommandResult.FUNCTIONAL_FAILURE;
+                log.debug("Contents of key file was not an RSA key: " + e.getMessage());
+                try {
+                    keyfact = KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME);
+                } catch (NoSuchAlgorithmException e1) {
+                    throw new IllegalStateException("EC was not a recognized algorithm in the BC provider (should not happen)", e);
+                }
+                try {
+                    privKey = keyfact.generatePrivate(spec);
+                } catch (InvalidKeySpecException e2) {
+                    log.error("Contents of key file was neither an RSA key nor an EC key: " + e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
             }
 
             byte[] certbytes;
@@ -150,10 +161,18 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             Certificate cert = null;
+            Certificate cacert = null;
+
+            Collection<Certificate> certs = null;
             try {
                 // First check if it was a PEM formatted certificate
-                Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
-                cert = certs.iterator().next();
+                certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
+                final Iterator<Certificate> iter = certs.iterator(); 
+                cert = iter.next();
+                if (certs.size() > 1) {
+                    // If we have ore than one certificate, assume that the second one is the CA certificate (cert is then DVCA and cacert is CVCA)
+                    cacert = iter.next();
+                }
             } catch (CertificateException e) {
                 // This was not a PEM certificate, I hope it's binary...
                 try {
@@ -168,8 +187,6 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
             log.info("Testing keys with algorithm: " + pubKey.getAlgorithm());
             KeyTools.testKey(privKey, pubKey, null);
 
-            Certificate cacert = null;
-
             String dn = parameters.get(DN_KEY);
             String sigAlg = parameters.get(SIG_ALG_KEY);
             Integer valdays = null;
@@ -179,10 +196,10 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
             try {
                 if (dn != null || sigAlg != null || valdays != null) {
                     if (dn == null || sigAlg == null || valdays == null) {
-                        log.error("DN, Signature Algorithm and Validity all have to be set to import a CA with a self signed certificate.");
+                        log.error("DN, Signature Algorithm and Validity all have to be set to import a CA generating a self signed certificate.");
                     }
                     // Create a self signed CVCA cert from the DN
-                    log.info("Generating new self signed certificate.");
+                    log.info("Generating new self signed CVCA certificate.");
                     String country = CertTools.getPartFromDN(dn, "C");
                     String mnemonic = CertTools.getPartFromDN(dn, "CN");
                     String seq = CertTools.getPartFromDN(dn, "SERIALNUMBER");
@@ -207,15 +224,20 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
                     } catch (IOException e) {
                         throw new IllegalStateException("Unknown IOException was encountered.", e);
                     }
-                    cacert = new CardVerifiableCertificate(cvc);
-                } else {
+                    cert = new CardVerifiableCertificate(cvc);
+                } else  if (cacert == null) {
                     log.info("Using passed in self signed certificate.");
-                    cacert = cert;
+                } else {
+                    log.info("Using second cert in passed in chain as CVCA certificate, first one as DVCA certificate");
                 }
                 try {
-                    cacert.verify(pubKey);
+                    if (cacert != null) {
+                        cert.verify(cacert.getPublicKey());
+                    } else {
+                        cert.verify(pubKey);
+                    }
                 } catch (SignatureException e) {
-                    throw new IllegalStateException("Can not verify self signed certificate.", e);
+                    throw new IllegalStateException("Can not verify certificate.", e);
                 } catch (CertificateException e) {
                     throw new IllegalStateException("An encoding error was encountered.", e);
                 }
@@ -223,8 +245,11 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
                 log.error("Algorithm " + sigAlg + " was not recognized.");
             }
 
-            Certificate[] chain = new Certificate[1];
-            chain[0] = cacert;
+            Certificate[] chain = new Certificate[certs == null ? 1 : certs.size()];
+            chain[0] = cert;
+            if (chain.length > 1) {
+                chain[1] = cacert;
+            }
             try {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCAFromKeys(getAuthenticationToken(), caName, "foo123",
                         chain, pubKey, privKey, null, null);
@@ -236,7 +261,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
             } catch (IllegalCryptoTokenException e) {
                 log.error(e.getMessage());
             } catch (CAExistsException e) {
-                log.error("CA already exists.");
+                log.error("CA already exists: " + caName);
             } catch (CAOfflineException e) {
                 log.error(e.getMessage());
             } catch (AuthorizationDeniedException e) {
@@ -263,7 +288,9 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
         sb.append("This command either:\n"
                 + "    * Imports a private key and a self signed CVCA certificate and creates a CVCA (if only the mandatory arguments are defined)\n"
                 + "or\n"
-                + "    * Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA (if ALL of the optional arguments are defined as well).\n");
+                + "    * Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA (if ALL of the optional arguments are defined as well).\n"
+                + "or\n"
+                + "    * Imports a private key and chain with first certificate a DVCA and the second one a CVCA certificate, creating a DVCA assuming the CVCA (certificate) has already been imported.\n");
         return sb.toString();
     }
     
