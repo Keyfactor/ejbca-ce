@@ -277,7 +277,7 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #   2. Make sure the certificate profiles are restrictive and do not allow
 #      uncommon certificate fields etc., that could cause a parse error
 #      in the CT log, which would also trigger fast fail.
-# Default: false (fast fail disabled)
+# Default: true (fast fail enabled)
 #ct.fastfail.enabled=true
 #
 # How long time (in milliseconds) EJBCA should wait until trying to use a log
