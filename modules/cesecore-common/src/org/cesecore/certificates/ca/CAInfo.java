@@ -227,6 +227,8 @@ public abstract class CAInfo implements Serializable {
 
     /** Retrieves the certificate chain for the CA. The returned certificate chain MUST have the
      * RootCA certificate in the last position and the CAs certificate in the first.
+     * 
+     * @return List of certificates, or null if no certificate chain exists for this CA
      */
     public List<Certificate> getCertificateChain() {
         if (certificatechain == null) {
