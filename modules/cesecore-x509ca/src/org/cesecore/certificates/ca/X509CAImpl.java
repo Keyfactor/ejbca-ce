@@ -62,9 +62,11 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
@@ -79,6 +81,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -1251,6 +1254,55 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
 
         SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+        final AlgorithmIdentifier keyAlgId = pkinfo.getAlgorithm();
+        // Check if we have AlgorithmIdentifier parameters for RSA keys. According to RFC 3279 it must be DERNull, and not missing
+        // The params are not used but must be ASN.1 encoded correctly in order to comply with RFC5280/RFC3279. 
+        // Some client software has been known to generate CSRs where the parameters are missing (which is not invalid ASN.1 encoding, but violates RFCs).
+        //        SubjectPublicKeyInfo ::= SEQUENCE {
+        //          algorithm AlgorithmIdentifier,
+        //          subjectPublicKey BIT STRING }
+        //          
+        //        AlgorithmIdentifier ::= SEQUENCE {
+        //          algorithm OBJECT IDENTIFIER,
+        //          parameters ANY DEFINED BY algorithm OPTIONAL }
+        //
+        // RFC3279 section 2.3.1 (null is not ok):
+        // The rsaEncryption OID is intended to be used in the algorithm field
+        // of a value of type AlgorithmIdentifier.  The parameters field MUST
+        // have ASN.1 type NULL for this algorithm identifier.
+        //
+        // RFC3279 section 2.3.2 (null is ok):
+        // The id-dsa algorithm syntax includes optional domain parameters.
+        // These parameters are commonly referred to as p, q, and g.  When
+        // omitted, the parameters component MUST be omitted entirely.  That is,
+        // the AlgorithmIdentifier MUST be a SEQUENCE of one component: the
+        // OBJECT IDENTIFIER id-dsa.
+        //
+        // RFC3279 section 2.3.5 (null is not ok):
+        // EcpkParameters ::= CHOICE {
+        //    ecParameters  ECParameters,
+        //    namedCurve    OBJECT IDENTIFIER,
+        //    implicitlyCA  NULL }
+        // When the parameters are inherited, the parameters field SHALL contain
+        // implictlyCA, which is the ASN.1 value NULL.
+        if (keyAlgId == null) {
+            throw new IllegalKeyException("Public key must have an AlgorithmIdentifier, but it is missing. The public key is invalid.");
+        } else if (keyAlgId.getAlgorithm() == null) {
+            throw new IllegalKeyException("Public key must have an AlgorithmIdentifier.algorithm OID, but it is missing. The public key is invalid.");        	
+        }
+        if (keyAlgId.getParameters() == null) {
+            if (keyAlgId.getAlgorithm().equals(PKCSObjectIdentifiers.rsaEncryption)) {
+                log.debug("Public key is an RSA key, but algorithmID parameters are null, where it should be DERNull according to RFC3279, modifying parameters to DERNull");
+                final AlgorithmIdentifier newAlgId = new AlgorithmIdentifier(keyAlgId.getAlgorithm(), DERNull.INSTANCE);
+                try {
+                    pkinfo = new SubjectPublicKeyInfo(newAlgId, pkinfo.parsePublicKey());
+                } catch (IOException e) {
+                    throw new IllegalKeyException("RSA public key with invalid AlgorithmIdentifier parameters detected, and we are unable to modify it: ", e);
+                }                        
+            } else if (keyAlgId.getAlgorithm().equals(X9ObjectIdentifiers.id_ecPublicKey)) {
+                throw new IllegalKeyException("EC public key without AlgorithmIdentifier parameters, invalid public key.");                
+            }
+        }
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
 
         // Only created and used if Certificate Transparency is enabled

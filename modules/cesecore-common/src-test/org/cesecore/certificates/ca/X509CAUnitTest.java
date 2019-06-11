@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -27,6 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -53,6 +55,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -62,6 +65,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
@@ -73,6 +77,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CRLHolder;
@@ -1491,6 +1496,61 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
+    }
+
+    /**
+     * Testing that we fill in AlgorithmIdentifier parameters for RSA keys where this is missing. According to RFC 3279 we need to add DERNull
+     * instead of just leaving out the AlgorithmID parameters. The params are not used but must be ASN.1 encoded correctly in order to comply with
+     * RFC5280. Some client software has been known to generate CSRs where the parameters are missing (which is not invalid ASN.1 encoding, but violates RFC5280/RFC3279).
+     * 
+     * SubjectPublicKeyInfo ::= SEQUENCE {
+     *   algorithm AlgorithmIdentifier,
+     *   subjectPublicKey BIT STRING }
+     *   
+     * AlgorithmIdentifier ::= SEQUENCE {
+     *   algorithm OBJECT IDENTIFIER,
+     *   parameters ANY DEFINED BY algorithm OPTIONAL }
+     */
+    @Test
+    public void testGeneratingCertificateWithPublicKeyWithoutAlgIDParams() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+        
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        // before starting to crap it up, double check that what we have is a compliant publicKey
+        {
+            SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+            assertEquals("Public key should be RSA, this is what we generated", PKCSObjectIdentifiers.rsaEncryption.getId(), pkinfo.getAlgorithm().getAlgorithm().getId());
+            ASN1Encodable params = pkinfo.getAlgorithm().getParameters();
+            assertNotNull("AlgorithmID parameters should not be null in a properly generated RSA Public Key", params);
+            assertEquals("Params should be DERNull", DERNull.INSTANCE, params);
+        }
+        // meddle with the public key to remove algorithmID parameters
+        SubjectPublicKeyInfo keyinfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+        AlgorithmIdentifier id = new AlgorithmIdentifier(keyinfo.getAlgorithm().getAlgorithm(), null);
+        SubjectPublicKeyInfo keyinfoFinal = new SubjectPublicKeyInfo(id, keyinfo.parsePublicKey());        
+        X509EncodedKeySpec xspec = new X509EncodedKeySpec(keyinfoFinal.getEncoded());
+        KeyFactory kFact = KeyFactory.getInstance("RSA", "BC");
+        PublicKey pubKeyFinal = kFact.generatePublic(xspec);
+        // Ok, this was cumbersome, double check that we got what we wanted, a non-compliant publicKey
+        {
+            SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(pubKeyFinal.getEncoded());
+            assertEquals("Public key should be RSA, this is what we generated", PKCSObjectIdentifiers.rsaEncryption.getId(), pkinfo.getAlgorithm().getAlgorithm().getId());
+            ASN1Encodable params = pkinfo.getAlgorithm().getParameters();
+            assertNull("AlgorithmID parameters should be null that is what we tried to make sure", params);
+        }
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, user, null, pubKeyFinal, 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(usercert.getPublicKey().getEncoded());
+        assertEquals("Public key should be RSA, this is what we sent in to the request", PKCSObjectIdentifiers.rsaEncryption.getId(), pkinfo.getAlgorithm().getAlgorithm().getId());
+        ASN1Encodable params = pkinfo.getAlgorithm().getParameters();
+        assertNotNull("AlgorithmID parameters must not be null for an RSA public key, see RFC3279", params);
     }
 
     /**
