@@ -109,12 +109,13 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
  * @version $Id$
  */
 @Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
-@SwaggerDefinition(info =
-    @Info(
+@SwaggerDefinition(
+    /* @Info annotation seems to work properly only when it is configured only once. Must not specify it on any other RestResources in this module! */
+    info = @Info(
         title = "EJBCA REST Interface",
         version = BaseRestResource.RESOURCE_VERSION,
         description = "API reference documentation."
-        ),
+    ),
     basePath="/ejbca/ejbca-rest-api",
     schemes={Scheme.HTTPS}
 )
