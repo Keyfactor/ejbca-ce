@@ -177,7 +177,7 @@
     <property name="mod.ejbca-rest-cryptotoken.path" location="${mod.path}/ejbca-rest-cryptotoken" />
     <property name="mod.ejbca-rest-cryptotoken.lib" location="${mod.dist.path}/ejbca-rest-cryptotoken.jar" />
     <property name="mod.ejbca-rest-camanagement.path" location="${mod.path}/ejbca-rest-camanagement" />
-    <property name="mod.ejbca-rest-camanagement.war" location="${mod.dist.path}/ejbca-rest-camanagement.war" />
+    <property name="mod.ejbca-rest-camanagement.lib" location="${mod.dist.path}/ejbca-rest-camanagement.jar" />
     <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
     <property name="swagger-ui.war" location="${ejbca.home}/lib/swagger/swagger-ui.war" />
 	
