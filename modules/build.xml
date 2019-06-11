@@ -609,11 +609,6 @@
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-    <target name="ejbca-rest-camanagement-war" if="${mod.ejbca-rest-camanagement.exists}" depends="ejbca-common-web, ejbca-rest-common" 
-    	description="Build the EJBCA CA Management REST API WAR">
-		<ant antfile="${mod.ejbca-rest-camanagement.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-	
 	<!-- Helper to execute the EJBCA EJB CLI -->
 	<target name="ejbca-cli" depends="ejbca-ejb-cli">
 		<fail message="ejbca-cli.arg is not set." unless="ejbca-cli.arg" />
