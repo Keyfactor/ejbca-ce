@@ -460,7 +460,7 @@
         <ant antfile="${mod.ejbca-rest-camanagement.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
     
-	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-cryptotoken" description="Build EJBCA rest api">
+	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-cryptotoken,ejbca-rest-camanagement" description="Build EJBCA rest api">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	

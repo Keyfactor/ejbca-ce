@@ -519,14 +519,6 @@
 				replacement-context-root="/ejbca/ejbca-rest-api"
 		/>
 		
-		
-		<war-replacement-in-module
-				replacement-tag="!--@ejbca-rest-camanagement.war@-->"
-				replacement-file="${eardd.src}/META-INF/application.xml"
-			    replacement-enabled="${mod.ejbca-rest-camanagement.exists}"
-				replacement-web-uri="ejbca-rest-camanagement.war"
-				replacement-context-root="/ejbca/ejbca-rest-camanagement"
-		/>
 		<war-replacement-in-module
                 replacement-tag="!--@swagger-ui.war@-->"
                 replacement-file="${eardd.src}/META-INF/application.xml"
@@ -627,7 +619,6 @@
                 <include name="unidfnr-ejb.jar" />
                 <include name="ra-gui.war" />
                 <include name="ejbca-rest-api.war"/>
-            	<include name="ejbca-rest-camanagement.war"/>
             	<include name="acme.war" />
             </fileset>
         	
@@ -669,6 +660,7 @@
 				<include name="acme-common.jar" />
         		<include name="ejbca-rest-common.jar" />
         		<include name="ejbca-rest-cryptotoken.jar" />
+        		<include name="ejbca-rest-camanagement.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -1509,10 +1501,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 
     <target name="ejbca-rest-api.war">
     	<ant dir="modules" target="ejbca-rest-api-war" />
-    </target>
-		
-    <target name="ejbca-rest-camanagement.war">
-    	<ant dir="modules" target="ejbca-rest-camanagement-war" />
     </target>
     	
     <target name="status.war">
