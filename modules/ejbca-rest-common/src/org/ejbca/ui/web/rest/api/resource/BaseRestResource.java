@@ -36,7 +36,7 @@ public abstract class BaseRestResource {
     private static Object mutex = new Object();
 
     private static final String RESOURCE_STATUS = "OK";
-    public static final String RESOURCE_VERSION = "1.0";
+    protected static final String RESOURCE_VERSION = "1.0";
     
     // Some status codes (including 422) are missing from the JAX-RS Response.Status enum
     protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
