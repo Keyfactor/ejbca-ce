@@ -47,7 +47,9 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
         RA_WEB("RA Web", "/ejbca/ra"),
-        REST("REST Certificate Management", "/ejbca/ejbca-rest-api"),
+        REST_CA_MANAGEMENT("REST CA Management", "/ejbca/ejbca-rest-api/v1/ca_management"),
+        REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/ca<br/>/ejbca/ejbca-rest-api/v1/certificate"),
+        REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
@@ -101,7 +103,9 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         if (ret == null && (
                 protocol.equals(AvailableProtocols.ACME.getName())  ||
                 protocol.equals(AvailableProtocols.EST.getName())   || 
-                protocol.equals(AvailableProtocols.REST.getName()))) {
+                protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) || 
+                protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
+                protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
         }

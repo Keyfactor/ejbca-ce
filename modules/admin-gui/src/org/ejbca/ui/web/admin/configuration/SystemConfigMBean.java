@@ -1032,7 +1032,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.EST.getName()) && !isEstAvailable()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRestAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) && !isRestAvailable()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {
