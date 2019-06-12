@@ -1521,8 +1521,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
-        cp.setUseCertificatePolicies(true);
         // before starting to crap it up, double check that what we have is a compliant publicKey
         {
             SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
