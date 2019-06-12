@@ -61,9 +61,7 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-cryptotoken/src"/>
-	<classpathentry kind="src" path="modules/ejbca-rest-cryptotoken/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-camanagement/src"/>
-	<classpathentry kind="src" path="modules/ejbca-rest-camanagement/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webtest/src-test"/>
