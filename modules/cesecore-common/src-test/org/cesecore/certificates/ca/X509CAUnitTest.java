@@ -1549,6 +1549,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals("Public key should be RSA, this is what we sent in to the request", PKCSObjectIdentifiers.rsaEncryption.getId(), pkinfo.getAlgorithm().getAlgorithm().getId());
         ASN1Encodable params = pkinfo.getAlgorithm().getParameters();
         assertNotNull("AlgorithmID parameters must not be null for an RSA public key, see RFC3279", params);
+        assertEquals("Params should be DERNull", DERNull.INSTANCE, params);
     }
 
     /**
