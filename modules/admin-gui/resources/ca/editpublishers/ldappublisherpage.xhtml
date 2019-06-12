@@ -263,7 +263,7 @@
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:selectManyListbox value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10" 
-								required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}">
+								required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}" converter="javax.faces.Integer">
 				<f:selectItems value="#{editPublisher.ldapPublisherMBData.ldapPublisherLocationFieldsFromCertificateDN}" />
 			</h:selectManyListbox>
 			<br />
