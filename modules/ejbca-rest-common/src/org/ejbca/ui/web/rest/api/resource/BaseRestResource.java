@@ -62,7 +62,8 @@ public abstract class BaseRestResource {
      * @return AuthenticationToken for the requesting administrator
      * @throws AuthorizationDeniedException
      */
-    protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException, RestException {
+    protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins, String accessRuleType) 
+            throws AuthorizationDeniedException, RestException {
         if (requestContext == null) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Missing request context");
         }
@@ -70,7 +71,7 @@ public abstract class BaseRestResource {
         if (certs == null || certs[0] == null) {
             throw new AuthorizationDeniedException("Error no client certificate received for authentication.");
         }
-        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certs[0]);
+        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certs[0], accessRuleType);
     }
 
     // TODO ECA-7119 Due to limited validation exception handling support in JAX-RS 1.1, we validate the object programmatically to handle the response properly.
