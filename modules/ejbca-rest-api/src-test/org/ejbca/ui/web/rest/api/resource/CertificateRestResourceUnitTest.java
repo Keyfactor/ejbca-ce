@@ -73,7 +73,7 @@ public class CertificateRestResourceUnitTest {
     // Extend class to test without security
     private static class CertificateRestResourceWithoutSecurity extends CertificateRestResource {
         @Override
-        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) {
+        protected AuthenticationToken getAdmin(final HttpServletRequest requestContext, final boolean allowNonAdmins, final String accessRuleType) {
             return authenticationToken;
         }
     }
