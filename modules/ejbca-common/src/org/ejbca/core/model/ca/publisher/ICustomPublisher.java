@@ -29,13 +29,15 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 public interface ICustomPublisher {
 
     /**
-     *  Method called to all newly created ICustomPublishers to set it up with
-     *  saved configuration.
+     * Method called to all newly created ICustomPublishers to set it up with
+     * saved configuration.
+     * 
+     * @param properties The properties to load.
      */
     void init(Properties properties);
 
     /**
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate
+     * @see org.ejbca.core.model.ca.publisher.FullEntityPublisher#storeCertificate
      */
     boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status,
             int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
