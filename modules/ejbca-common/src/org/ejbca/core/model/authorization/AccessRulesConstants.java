@@ -94,6 +94,9 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_PEERPROTOCOL_CMP                   = "/protocol/cmp";  // org.ejbca.peerconnector.PeerProtocolAccessRules.CMP
     public static final String REGULAR_PEERPROTOCOL_EST                   = "/protocol/est";  // org.ejbca.peerconnector.PeerProtocolAccessRules.EST
     public static final String REGULAR_PEERPROTOCOL_REST                  = "/protocol/rest"; // org.ejbca.peerconnector.PeerProtocolAccessRules.REST
+    public static final String REGULAR_PEERPROTOCOL_REST_CA_MANAGEMENT    = "/protocol/rest_ca_management"; // org.ejbca.peerconnector.PeerProtocolAccessRules.REST_CA_MANAGEMENT
+    public static final String REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT = "/protocol/rest_certificate_management"; // org.ejbca.peerconnector.PeerProtocolAccessRules.REST_CERTIFICATE_MANAGEMENT
+    public static final String REGULAR_PEERPROTOCOL_REST_CRYPTOTOKEN_MANAGEMENT = "/protocol/rest_cryptotoken_management"; // org.ejbca.peerconnector.PeerProtocolAccessRules.REST_CRYPTOTOKEN_MANAGEMENT
     public static final String REGULAR_PEERPROTOCOL_SCEP                  = "/protocol/scep"; // org.ejbca.peerconnector.PeerProtocolAccessRules.SCEP
     public static final String REGULAR_PEERPROTOCOL_WS                    = "/protocol/web_services"; // org.ejbca.peerconnector.PeerProtocolAccessRules.WS
     

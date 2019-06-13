@@ -74,6 +74,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
@@ -154,7 +155,7 @@ public class CertificateRestResource extends BaseRestResource {
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
         try {
-            AuthenticationToken authenticationToken = getAdmin(requestContext, false);
+            AuthenticationToken authenticationToken = getAdmin(requestContext, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
             byte[] certificate = raMasterApi.createCertificateRest(
                     authenticationToken,
                     EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
@@ -180,7 +181,7 @@ public class CertificateRestResource extends BaseRestResource {
             KeyStoreRestRequest keyStoreRestRequest)
                     throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
                         NoSuchAlgorithmException, CertificateException, IOException, RestException {
-        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final AuthenticationToken admin = getAdmin(requestContext, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, keyStoreRestRequest.getUsername());
         if (endEntityInformation == null) {
             throw new NotFoundException("The end entity '" + keyStoreRestRequest.getUsername() + "' does not exist");
@@ -217,7 +218,7 @@ public class CertificateRestResource extends BaseRestResource {
             @PathParam("issuer_dn") String issuerDn,
             @ApiParam(value = "hex serial number (without prefix, e.g. '00')") 
             @PathParam("certificate_serial_number") String serialNumber) throws AuthorizationDeniedException, RestException, CADoesntExistsException, NotFoundException {
-        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final AuthenticationToken admin = getAdmin(requestContext, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         final BigInteger serialNr;
         final CertificateStatus status;
         try {
@@ -268,7 +269,7 @@ public class CertificateRestResource extends BaseRestResource {
             @QueryParam("date") String date)
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException, CADoesntExistsException, AlreadyRevokedException,
             NoSuchEndEntityException, WaitingForApprovalException {
-        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final AuthenticationToken admin = getAdmin(requestContext, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         RevocationReasons reasons = RevocationReasons.getFromCliValue(reason);
         // TODO Replace with @ValidRevocationReason
         if (reasons == null) {
@@ -330,7 +331,7 @@ public class CertificateRestResource extends BaseRestResource {
             @QueryParam("offset") int offset,
             @ApiParam(value = "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results")
             @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
-        final AuthenticationToken admin = getAdmin(requestContext, true);
+        final AuthenticationToken admin = getAdmin(requestContext, true, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
         final Collection<Certificate> expiringCertificates = EJBTools
                 .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset));
@@ -358,7 +359,7 @@ public class CertificateRestResource extends BaseRestResource {
             @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestRequest request)
                     throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException,
                         KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
-        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final AuthenticationToken admin = getAdmin(requestContext, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
         final String password = request.getPassword();
         final String responseFormat = request.getResponseFormat();
@@ -463,7 +464,7 @@ public class CertificateRestResource extends BaseRestResource {
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Maximum number of results and collection of search criterias.") final SearchCertificatesRestRequest searchCertificatesRestRequest
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
-        final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
+        final AuthenticationToken authenticationToken = getAdmin(requestContext, true, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         validateObject(searchCertificatesRestRequest);
         authorizeSearchCertificatesRestRequestReferences(authenticationToken, searchCertificatesRestRequest);
         final SearchCertificatesRestResponse searchCertificatesRestResponse = searchCertificates(authenticationToken, searchCertificatesRestRequest);

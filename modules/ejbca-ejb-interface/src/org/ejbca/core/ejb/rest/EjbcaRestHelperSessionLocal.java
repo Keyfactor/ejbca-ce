@@ -37,10 +37,11 @@ public interface EjbcaRestHelperSessionLocal extends EjbcaRestHelperSession {
     /**
      * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @param cert X509 certificate
+     * @param accessRuleType Access rule type to differentiate between the different REST modules
      * @return AuthenticationToken object based on the SSL client certificate
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins = false and the certificate does not belong to an administrator
      */
-    AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert) throws AuthorizationDeniedException;
+    AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert, String accessRuleType) throws AuthorizationDeniedException;
 
     /**
      * Compose EndEntityInformation object based on EnrollPkcs10CertificateRequest input

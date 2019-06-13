@@ -37,6 +37,7 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -88,7 +89,7 @@ public class CaRestResource extends BaseRestResource {
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
                                         @ApiParam(value = "CAs subject DN", required = true) @PathParam("subject_dn") String subjectDn)
             throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
-        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final AuthenticationToken admin = getAdmin(requestContext, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         subjectDn = CertTools.stringToBCDNString(subjectDn);
         Collection<Certificate> certificateChain = EJBTools.unwrapCertCollection(raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode()));
 
@@ -111,7 +112,7 @@ public class CaRestResource extends BaseRestResource {
         notes = "Returns the Response containing the list of CAs with general information per CA as Json",
         response = CaInfosRestResponse.class)
     public Response listCas(@Context final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
-        final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
+        final AuthenticationToken adminToken = getAdmin(httpServletRequest, false, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken));
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(caInfoRestResponseList)
@@ -130,7 +131,7 @@ public class CaRestResource extends BaseRestResource {
                                  @ApiParam(value = "the CRL partition index", required = false, defaultValue = "0")
                                  @QueryParam("crlPartitionIndex") int crlPartitionIndex
     ) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
-        final AuthenticationToken adminToken = getAdmin(httpServletRequest, true);
+        final AuthenticationToken adminToken = getAdmin(httpServletRequest, true, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT);
         RaCrlSearchRequest request = new RaCrlSearchRequest();
         request.setIssuerDn(issuerDn);
         request.setCrlPartitionIndex(crlPartitionIndex);
