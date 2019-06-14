@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -149,7 +148,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     public void testKeyPair(final String alias, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException { // NOPMD:this is not a junit test
         if (log.isDebugEnabled()) {
             log.debug("Testing key '" + alias + "' (SHA1: "
-                    + DatatypeConverter.printHexBinary(CertTools.generateSHA1Fingerprint(publicKey.getEncoded())) + ").");
+                    + CertTools.getFingerprintAsString(publicKey.getEncoded()) + ").");
             log.debug("The key '" + alias + "' will be tested using the provider '" + getSignProviderName() + "'.");
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
