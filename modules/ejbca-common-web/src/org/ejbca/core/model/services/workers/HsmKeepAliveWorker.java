@@ -74,17 +74,17 @@ public class HsmKeepAliveWorker extends BaseWorker {
             List<String> successfulCryptoTokens = new ArrayList<>();
             for (CryptoTokenInfo info : infos) {
                 // Only test active, PKCS11, crypto tokens. no need to do keepalive on soft tokens, they will not time out
-            if (info.isActive() && StringUtils.isNotEmpty(info.getP11Library())) {
-                CryptoToken token = tokenSession.getCryptoToken(info.getCryptoTokenId());
-                try {
-                    List<String> aliases = token.getAliases();
-                    boolean tested = false;
-                    for(final String alias : aliases) {
-                        if (StringUtils.containsIgnoreCase(alias, "testKey")) {
+                if (info.isActive() && StringUtils.isNotEmpty(info.getP11Library())) {
+                    CryptoToken token = tokenSession.getCryptoToken(info.getCryptoTokenId());
+                    try {
+                        List<String> aliases = token.getAliases();
+                        boolean tested = false;
+                        for (final String alias : aliases) {
+                            if (StringUtils.containsIgnoreCase(alias, "testKey")) {
                                 if (log.isDebugEnabled()) {
                                     log.debug("Keepalive testing crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
                                 }
-                                token.testKeyPair("testKey");
+                                token.testKeyPair(alias);
                                 tested = true;
                             }
                         }
