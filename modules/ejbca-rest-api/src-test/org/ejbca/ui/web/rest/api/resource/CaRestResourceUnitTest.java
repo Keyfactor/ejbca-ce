@@ -76,7 +76,7 @@ public class CaRestResourceUnitTest {
     // Extend class to test without security
     private static class CaRestResourceWithoutSecurity extends CaRestResource {
         @Override
-        protected AuthenticationToken getAdmin(final HttpServletRequest requestContext, final boolean allowNonAdmins, final String accessRuleType) {
+        protected AuthenticationToken getAdmin(final HttpServletRequest requestContext, final boolean allowNonAdmins) {
             return authenticationToken;
         }
     }
