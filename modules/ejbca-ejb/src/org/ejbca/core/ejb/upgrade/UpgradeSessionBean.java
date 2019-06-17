@@ -542,11 +542,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         if (isLesserThan(oldVersion, "7.2.0")) {
             upgradeSession.upgradeCrlStoreAndCertStoreConfiguration720();
-            try {
-                upgradeSession.upgradeAccessRules720();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
             setLastUpgradedToVersion("7.2.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -1692,28 +1687,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
 
         log.debug("Adjustment of CRL Store and Cert Store settings in modular protocols configuration finished.");
-    }
-    
-    /**
-     * Upgrade to EJBCA 7.2.0 
-     * Provides all current Peer connector roles with the new rules, controlling access to REST on remote RA instances. 
-     * Should be allowed by default to not cause any regressions. 
-     * These rules are only relevant for RA Peer connector roles.
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public void upgradeAccessRules720() throws UpgradeFailedException {
-        log.debug("upgradeAccessRules720: Migrating rules for REST protocol access on remote RA instances.");
-        List<Role> allRoles = roleDataSession.getAllRoles();
-        for (Role role : allRoles) {
-            boolean isRestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST);
-            if (isRestRole) {
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CA_MANAGEMENT), Role.STATE_DENY);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CERTIFICATE_MANAGEMENT), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST_CRYPTOTOKEN_MANAGEMENT), Role.STATE_DENY);
-                roleDataSession.persistRole(role);
-            }
-        }
     }
 
     /**
