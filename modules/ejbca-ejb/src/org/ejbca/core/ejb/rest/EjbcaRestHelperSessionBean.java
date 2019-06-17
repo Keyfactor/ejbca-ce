@@ -86,14 +86,14 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String accessRuleType) throws AuthorizationDeniedException {
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
         final Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(cert);
         final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         final AuthenticationToken admin = authenticationSession.authenticate(subject);
         
-        if (!raMasterApiProxyBean.isAuthorizedNoLogging(raRestAuthCheckToken, accessRuleType)) {
-            throw new AuthorizationDeniedException("These REST resources are not authorized for this Peer connection");
+        if (!raMasterApiProxyBean.isAuthorizedNoLogging(raRestAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST)) {
+            throw new AuthorizationDeniedException("REST resources is not authorized for this Peer connection");
         }
         if ((admin != null) && (!allowNonAdmins)) {
             if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
