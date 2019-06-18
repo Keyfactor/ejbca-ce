@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -47,7 +48,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -608,15 +608,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 x500Name = CertTools.stringToBcX500Name("CN="+internalKeyBinding.getName());                
             }
         }
-        final String providerName = cryptoToken.getSignProviderName();
         try {
-            return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, x500Name, publicKey, new DERSet(), privateKey, providerName)
-                    .getEncoded();
-        } catch (OperatorCreationException|IOException e) {
+            return internalKeyBinding.generateCsrForNextKeyPair(cryptoToken.getSignProviderName(), new KeyPair(publicKey, privateKey),
+                    signatureAlgorithm, x500Name);
+        } catch (OperatorCreationException | IOException e) {
             log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
                     + keyPairAlias + ". " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     @Override

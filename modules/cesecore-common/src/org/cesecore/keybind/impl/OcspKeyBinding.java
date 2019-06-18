@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
+import java.io.IOException;
+import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -20,7 +22,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
@@ -237,5 +251,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         } catch (CertificateParsingException e) {
             throw new CertificateImportException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public byte[] generateCsrForNextKeyPair(final String providerName, final KeyPair keyPair, final String signatureAlgorithm,
+            final X500Name subjectDn) throws IOException, OperatorCreationException {
+        final KeyPurposeId[] ocspKeyPurposeId = new KeyPurposeId[] { KeyPurposeId.id_kp_OCSPSigning };
+        final ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+        extensionsGenerator.addExtension(Extension.keyUsage, /* critical */ true, new KeyUsage(KeyUsage.digitalSignature));
+        extensionsGenerator.addExtension(Extension.extendedKeyUsage, /* critical */ false, new ExtendedKeyUsage(ocspKeyPurposeId));
+        final PKCS10CertificationRequestBuilder pkcs10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(subjectDn,
+                keyPair.getPublic()).addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensionsGenerator.generate());
+        final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).setProvider(providerName).build(keyPair.getPrivate());
+        final PKCS10CertificationRequest csr = pkcs10CertificationRequestBuilder.build(contentSigner);
+        return csr.getEncoded();
     }
 }
