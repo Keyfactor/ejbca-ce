@@ -12,13 +12,18 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
+import java.io.IOException;
+import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.CertificateImportException;
@@ -136,5 +141,13 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
+            throws IOException, OperatorCreationException {
+        return CertTools
+                .genPKCS10CertificationRequest(signatureAlgorithm, subjectDn, keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), providerName)
+                .getEncoded();
     }
 }
