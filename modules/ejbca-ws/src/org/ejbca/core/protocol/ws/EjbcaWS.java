@@ -99,7 +99,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionWSBridgeSessionLocal;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -123,6 +122,7 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -153,6 +153,7 @@ import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
+import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -168,8 +169,11 @@ import org.ejbca.util.query.IllegalQueryException;
 /**
  * Implementor of the IEjbcaWS interface.
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
- *
+ * <p>
  * The WebService name below is important because it determines the webservice URL on JBoss 7.1.
+ * <p>
+ * Do not ever remove (or change) a method in the web service interface, it will cause clients
+ * built using older versions to break, even if they do not use the removed method.
  *
  * @version $Id$
  */
@@ -1821,5 +1825,48 @@ public class EjbcaWS implements IEjbcaWS {
             result.add(new Certificate(certificate));
         }
         return result;
+    }
+
+    @Deprecated
+    @Override
+    public void revokeToken(String hardTokenSN, int reason) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
+            EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+        throw makeHardTokenSupportRemovedException("revokeToken");
+        
+    }
+
+    @Deprecated
+    @Override
+    public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userData, List<org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS> tokenRequests,
+            org.ejbca.core.protocol.ws.objects.HardTokenDataWS hardTokenData, boolean overwriteExistingSN, boolean revokePreviousCards) throws CADoesntExistsException,
+            AuthorizationDeniedException, WaitingForApprovalException, org.ejbca.core.model.hardtoken.HardTokenExistsException, UserDoesntFullfillEndEntityProfile,
+            ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
+        throw makeHardTokenSupportRemovedException("genTokenCertificates");
+    }
+
+    @Deprecated
+    @Override
+    public boolean existsHardToken(String hardTokenSN) throws EjbcaException {
+        throw makeHardTokenSupportRemovedException("existsHardToken");
+    }
+
+    @Deprecated
+    @Override
+    public org.ejbca.core.protocol.ws.objects.HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException, NotFoundException, ApprovalException,
+            ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException {
+        throw makeHardTokenSupportRemovedException("getHardTokenData");
+    }
+
+    @Deprecated
+    @Override
+    public List<org.ejbca.core.protocol.ws.objects.HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
+        throw makeHardTokenSupportRemovedException("getHardTokenDatas");
+    }
+
+    private EjbcaException makeHardTokenSupportRemovedException(final String methodName) {
+        log.info("Method " + methodName + " was called, which is no longer supported since EJBCA 7.1.0. Returning EjbcaException with ErrorCode.INTERNAL_ERROR.");
+        return new EjbcaException(ErrorCode.INTERNAL_ERROR, "Hard Token support has been removed since EJBCA 7.1.0. Method " + methodName + " is no longer supported.");
     }
 }
