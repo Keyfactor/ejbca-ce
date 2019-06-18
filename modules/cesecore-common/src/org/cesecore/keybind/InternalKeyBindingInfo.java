@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.Map;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -210,6 +214,12 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setOcspExtensions(List<String> ocspExtensions) {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    @Override
+    public byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
+            throws IOException, OperatorCreationException {
         throw new RuntimeException(new OperationNotSupportedException());
     }
 }
