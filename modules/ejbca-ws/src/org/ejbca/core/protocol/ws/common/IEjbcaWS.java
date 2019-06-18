@@ -25,9 +25,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
+import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -38,9 +41,12 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
+import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
+import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
+import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -50,8 +56,7 @@ import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Primary interface to the EJBCA RA WebService.
- *
- *
+ * <p>
  * Observe: All methods have to be called using client authenticated https
  * otherwise an AuthorizationDenied exception will be thrown.
  *
@@ -727,6 +732,26 @@ public interface IEjbcaWS {
     KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN)
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException;
 
+    /**
+     * Placeholder for removed method. Removed in EJBCA 7.1.0, when Hard Token support was dropped.
+     *
+     * @param hardTokenSN
+     * @param reason
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws NotFoundException
+     * @throws EjbcaException Always thrown with error code set to ErrorCode.INTERNAL_ERROR
+     * @throws ApprovalException
+     * @throws WaitingForApprovalException
+     * @throws AlreadyRevokedException
+     * @deprecated Removed in EJBCA 7.1.0
+     */
+    @Deprecated
+    void revokeToken(String hardTokenSN, int reason)
+            throws CADoesntExistsException, AuthorizationDeniedException,
+            NotFoundException, EjbcaException, ApprovalException,
+            WaitingForApprovalException, AlreadyRevokedException;
+    
 	
 	/**
 	 * Returns revocation status for given user.
@@ -787,7 +812,89 @@ public interface IEjbcaWS {
 	List<UserDataSourceVOWS> fetchUserData(
 			List<String> userDataSourceNames, String searchString)
 			throws UserDataSourceException, EjbcaException, AuthorizationDeniedException;
-	
+
+	/**
+     * Placeholder for removed method. Removed in EJBCA 7.1.0, when Hard Token support was dropped.
+     *
+	 * @param userData
+	 * @param tokenRequests
+	 * @param hardTokenData
+	 * @param overwriteExistingSN
+	 * @param revokePreviousCards
+	 * @return Hard Tokens are no longer supported. Always throws EjbcaException 
+	 * @throws CADoesntExistsException
+	 * @throws AuthorizationDeniedException
+	 * @throws WaitingForApprovalException
+	 * @throws HardTokenExistsException
+	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws ApprovalException
+	 * @throws EjbcaException Always thrown with error code set to ErrorCode.INTERNAL_ERROR
+	 * @throws ApprovalRequestExpiredException
+	 * @throws ApprovalRequestExecutionException
+	 * @deprecated Removed in EJBCA 7.1.0
+	 */
+    @Deprecated
+	List<TokenCertificateResponseWS> genTokenCertificates(
+            UserDataVOWS userData,
+            List<TokenCertificateRequestWS> tokenRequests,
+            HardTokenDataWS hardTokenData,
+            boolean overwriteExistingSN,
+            boolean revokePreviousCards) throws CADoesntExistsException, AuthorizationDeniedException,
+            WaitingForApprovalException, HardTokenExistsException,
+            UserDoesntFullfillEndEntityProfile, ApprovalException,
+            EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;
+
+    /**
+     * Placeholder for removed method. Removed in EJBCA 7.1.0, when Hard Token support was dropped.
+     *
+     * @param hardTokenSN
+     * @return Hard Tokens are no longer supported. Always throws EjbcaException
+     * @throws EjbcaException Always thrown with error code set to ErrorCode.INTERNAL_ERROR
+     * @deprecated Removed in EJBCA 7.1.0
+     */
+    @Deprecated
+	boolean existsHardToken(String hardTokenSN)
+            throws EjbcaException;
+
+    /**
+     * Placeholder for removed method. Removed in EJBCA 7.1.0, when Hard Token support was dropped.
+     *
+     * @param hardTokenSN
+     * @param viewPUKData
+     * @param onlyValidCertificates
+     * @return Hard Tokens are no longer supported. Always throws EjbcaException
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws HardTokenDoesntExistsException
+     * @throws NotFoundException
+     * @throws ApprovalException
+     * @throws ApprovalRequestExpiredException
+     * @throws WaitingForApprovalException
+     * @throws ApprovalRequestExecutionException
+     * @throws EjbcaException Always thrown with error code set to ErrorCode.INTERNAL_ERROR
+     * @deprecated Removed in EJBCA 7.1.0
+     */
+    @Deprecated
+	HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
+            throws CADoesntExistsException, AuthorizationDeniedException,
+            HardTokenDoesntExistsException, NotFoundException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException;
+
+    /**
+     * Placeholder for removed method. Removed in EJBCA 7.1.0, when Hard Token support was dropped.
+     *
+     * @param username
+     * @param viewPUKData
+     * @param onlyValidCertificates
+     * @return Hard Tokens are no longer supported. Always throws EjbcaException
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException Always thrown with error code set to ErrorCode.INTERNAL_ERROR
+     * @deprecated Removed in EJBCA 7.1.0
+     */
+    @Deprecated
+	List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
+            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
+
 	/**
 	 * Republishes a selected certificate.
 	 *
