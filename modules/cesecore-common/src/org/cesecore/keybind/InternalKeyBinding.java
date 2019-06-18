@@ -12,12 +12,16 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -124,4 +128,17 @@ public interface InternalKeyBinding extends Serializable {
     
     void setOcspExtensions(List<String> ocspExtensions);
 
+    /**
+     * Create a certificate signing request for the next keypair to use.
+     * 
+     * @param providerName the name of the provider to use for signing.
+     * @param keyPair a keypair containing the public key which will appear in the certificate, and a private key used to sign the CSR.
+     * @param signatureAlgorithm the signature algorithm to use when signing the CSR.
+     * @param subjectDn the subjectDn that will appear in the CSR.
+     * @return a DER encoded CSR for the next keypair.
+     * @throws IOException if an error occurred when encoding the CSR.
+     * @throws OperatorCreationException if the provider cannot be found.
+     */
+    byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
+            throws IOException, OperatorCreationException;
 }
