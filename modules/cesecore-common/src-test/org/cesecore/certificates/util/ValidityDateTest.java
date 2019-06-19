@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.util.ValidityDate;
@@ -196,5 +197,14 @@ public class ValidityDateTest {
         final Date defaultIsoDate = ValidityDate.parseCaLatestValidDateTime("COFFEE");
         assertEquals("Default value not returned when invalid date-time specified!", new Date(Long.MAX_VALUE).toString(), defaultIsoDate.toString());
         LOG.trace("<testParseCaLatestValidDateTime");
+    }
+
+    /** Tests stripSecondsFromIso8601UtcDate with relative and absolute dates */
+    @Test
+    public void stripSecondsFromIso8601UtcDate() {
+        assertEquals("Relative date should not be touched.", "1:2:3", ValidityDate.stripSecondsFromIso8601UtcDate("1:2:3"));
+        assertEquals("Old US locale date should not be touched.", "May 31, 2019, 12:07 PM", ValidityDate.stripSecondsFromIso8601UtcDate("May 31, 2019, 12:07 PM"));
+        assertEquals("Date without seconds should not be touched.", "2019-12-31 23:45", ValidityDate.stripSecondsFromIso8601UtcDate("2019-12-31 23:45"));
+        assertEquals("Date with seconds should have seconds removed.", "2019-12-31 23:45", ValidityDate.stripSecondsFromIso8601UtcDate("2019-12-31 23:45:56"));
     }
 }

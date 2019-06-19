@@ -99,6 +99,7 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.RFC4683Tools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -114,6 +115,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -468,12 +470,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Store a new UserData in the database, if this CA is configured to do so.
         if (caInfo.isUseUserStorage()) {
             try {
+                final ExtendedInformation extendedInformation = endEntity.getExtendedInformation();
+                ensureOldClusterNodeCompatibility(extendedInformation);
                 // Create the user in one go with all parameters at once. This was important in EJB2.1 so the persistence layer only creates *one*
                 // single
                 // insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
                 // Probably not important in EJB3 anymore.
                 final UserData userData = new UserData(username, newpassword, clearpwd, dn, caid, endEntity.getCardNumber(), altName, email, type.getHexValue(),
-                        endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), endEntity.getExtendedInformation());
+                        endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), extendedInformation);
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
                 if (endEntityAccessSession.findByUsername(userData.getUsername()) != null) {
@@ -951,6 +955,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     }
                 }
             }
+            ensureOldClusterNodeCompatibility(ei);
             userData.setExtendedInformation(ei);
             userData.setStatus(newstatus);
             if (StringUtils.isNotEmpty(newpassword)) {
@@ -2222,5 +2227,25 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace("<resetRequestCounter(" + username + ", " + onlyRemoveNoUpdate + "): "+ret);
         }
         return ret;
+    }
+    
+    /**
+     * Checks the post-upgrade version, and reverts any incompatible changes.
+     * This ensures compatibility with old EJBCA nodes running in a cluster.
+     * @param extendedInformation ExtendedInformation object to modify.
+     */
+    private void ensureOldClusterNodeCompatibility(final ExtendedInformation extendedInformation) {
+        final GlobalUpgradeConfiguration upgradeConfig = (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        if (!upgradeConfig.isCustomCertificateValidityWithSecondsGranularity()) {
+            // Downgrade to not use seconds granularity, for compatibility with versions prior to 7.2.0
+            final String startTime = extendedInformation.getCertificateStartTime();
+            if (startTime != null) {
+                extendedInformation.setCertificateStartTime(ValidityDate.stripSecondsFromIso8601UtcDate(startTime));
+            }
+            final String endTime = extendedInformation.getCertificateEndTime();
+            if (endTime != null) {
+                extendedInformation.setCertificateEndTime(ValidityDate.stripSecondsFromIso8601UtcDate(endTime));
+            }
+        }
     }
 }

@@ -50,6 +50,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
@@ -59,6 +60,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
@@ -86,9 +91,14 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -102,8 +112,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -116,10 +128,16 @@ public class UpgradeSessionBeanTest {
 
     private static final Logger log = Logger.getLogger(UpgradeSessionBeanTest.class);
     private static final String TESTCLASS = UpgradeSessionBeanTest.class.getSimpleName();
+    private static final String TEST_ENDENTITY1 = UpgradeSessionBeanTest.class.getSimpleName() + "1";
+    private static final String TEST_ENDENTITY2 = UpgradeSessionBeanTest.class.getSimpleName() + "2";
+    private static final String TESTCA = UpgradeSessionBeanTest.class.getSimpleName() + "CA";
     
     private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
@@ -132,15 +150,27 @@ public class UpgradeSessionBeanTest {
     private InternalKeyBindingMgmtSessionRemote internalKeyBindingSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
 
 
-    private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
+    private static AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
     private GlobalUpgradeConfiguration gucBackup;
     private GlobalConfiguration gcBackup;
-    
+    /** Dummy CA to use where a CA reference is required */
+    private static CAInfo testCaInfo;
+
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        // Add dummy CA
+        CaTestUtils.removeCa(alwaysAllowtoken, TESTCA, TESTCA);
+        final X509CA ca = CaTestUtils.createTestX509CA("CN=" + TESTCA, "foo123".toCharArray(), false);
+        caAdminSession.createCA(alwaysAllowtoken, ca.getCAInfo());
+        testCaInfo = caSession.getCAInfo(alwaysAllowtoken, TESTCA);
+    }
+    
+    @AfterClass
+    public static void afterClass() throws AuthorizationDeniedException {
+        CaTestUtils.removeCa(alwaysAllowtoken, testCaInfo); 
     }
     
     @Before
@@ -1063,8 +1093,76 @@ public class UpgradeSessionBeanTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, gc);
         }
     }
+
+    @Test
+    public void testSecondsGranularityInUserDataBeforePostUpgrade() throws Exception {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setPostUpgradedToVersion("7.1.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        try {
+            // End Entities created before post upgrade should not have seconds granularity in start/end time fields
+            endEntityManagementSession.addUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY1, "2019-02-03 04:05:06", "2019-12-31 23:59:59"), false);
+            endEntityManagementSession.addUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY2, null, null), false);
+            endEntityManagementSession.changeUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY2, "2019-11-13 14:15:16", "2019-12-31 23:59:59"), false);
+            ExtendedInformation addedInfo = endEntityAccessSession.findUser(alwaysAllowtoken, TEST_ENDENTITY1).getExtendedInformation();
+            ExtendedInformation changedInfo = endEntityAccessSession.findUser(alwaysAllowtoken, TEST_ENDENTITY2).getExtendedInformation();
+            assertEquals("User added before post-upgrade should NOT have seconds in start time.", "2019-02-03 04:05", addedInfo.getCertificateStartTime());
+            assertEquals("User added before post-upgrade should NOT have seconds in end time.", "2019-12-31 23:59", addedInfo.getCertificateEndTime());
+            assertEquals("User changed before post-upgrade should NOT have seconds in start time.", "2019-11-13 14:15", changedInfo.getCertificateStartTime());
+            assertEquals("User changed before post-upgrade should NOT have seconds in end time.", "2019-12-31 23:59", changedInfo.getCertificateEndTime());
+        } finally {
+            deleteEndEntity(TEST_ENDENTITY1);
+            deleteEndEntity(TEST_ENDENTITY2);
+        }
+    }
+
+    @Ignore("ECA-8280 is a work in progress, test is currently skipped") // TODO ECA-8280
+    @Test
+    public void testSecondsGranularityInUserDataAfterPostUpgrade() throws Exception {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setPostUpgradedToVersion("7.1.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        upgradeSession.upgrade(null, "7.2.0", true);
+        try {
+            // End Entities created before post upgrade should not have seconds granularity in start/end time fields
+            endEntityManagementSession.addUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY1, "2019-02-03 04:05:06", "2019-12-31 23:59:59"), false);
+            endEntityManagementSession.addUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY2, null, null), false);
+            endEntityManagementSession.changeUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY2, "2019-11-13 14:15:16", "2019-12-31 23:59:59"), false);
+            ExtendedInformation addedInfo = endEntityAccessSession.findUser(alwaysAllowtoken, TEST_ENDENTITY1).getExtendedInformation();
+            ExtendedInformation changedInfo = endEntityAccessSession.findUser(alwaysAllowtoken, TEST_ENDENTITY2).getExtendedInformation();
+            assertEquals("User added after post-upgrade SHOULD HAVE seconds in start time.", "2019-02-03 04:05:06", addedInfo.getCertificateStartTime());
+            assertEquals("User added after post-upgrade SHOULD HAVE seconds in end time.", "2019-12-31 23:59:59", addedInfo.getCertificateEndTime());
+            assertEquals("User changed after post-upgrade SHOULD HAVE seconds in start time.", "2019-11-13 14:15:16", changedInfo.getCertificateStartTime());
+            assertEquals("User changed after post-upgrade SHOULD HAVE seconds in end time.", "2019-12-31 23:59:59", changedInfo.getCertificateEndTime());
+        } finally {
+            deleteEndEntity(TEST_ENDENTITY1);
+            deleteEndEntity(TEST_ENDENTITY2);
+        }
+    }
+
+    private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
+        final ExtendedInformation extInfo = new ExtendedInformation();
+        if (startTime != null) {
+            extInfo.setCertificateStartTime(startTime);
+            extInfo.setCertificateEndTime(endTime);
+        }
+        final EndEntityInformation endEntityInfo = new EndEntityInformation(username, "CN=" + username, testCaInfo.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityConstants.TOKEN_USERGEN, extInfo);
+        endEntityInfo.setPassword("foo123");
+        return endEntityInfo;
+    }
     
-    
+    private void deleteEndEntity(final String username) {
+        try {
+            endEntityManagementSession.deleteUser(alwaysAllowtoken, username);
+        } catch (NoSuchEndEntityException e) {
+            // Did not exist
+        } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private void deleteRole(final String nameSpace, final String roleName) {
         try {
             final Role role = roleSession.getRole(alwaysAllowtoken, null, roleName);
