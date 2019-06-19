@@ -13,10 +13,13 @@
 package org.ejbca.core.ejb.ws;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.time.FastDateFormat;
@@ -99,6 +102,12 @@ public class EjbcaWSHelperSessionUnitTest {
     @Test
     public void explicitOldFormatDateInConvertUserDataVOWSInternal() throws EjbcaException {
         log.trace(">explicitOldFormatDateInConvertUserDataVOWSInternal");
+        try {
+            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse("May 31, 2019, 12:07 PM");
+        } catch (ParseException e) {
+            log.debug("Failed to parse US style date", e);
+            assumeTrue("Java cannot parse US style date, perhaps the US locale is not installed?", false);
+        }
         // Given
         givenUserData.setStartTime("May 31, 2019, 12:07 PM"); // system timezone
         givenUserData.setEndTime("Jun 19, 2019, 12:59 AM");
