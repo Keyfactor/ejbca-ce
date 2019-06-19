@@ -611,7 +611,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         try {
             return internalKeyBinding.generateCsrForNextKeyPair(cryptoToken.getSignProviderName(), new KeyPair(publicKey, privateKey),
                     signatureAlgorithm, x500Name);
-        } catch (OperatorCreationException | IOException e) {
+        } catch (OperatorCreationException | IOException | NoSuchAlgorithmException e) {
             log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
                     + keyPairAlias + ". " + e.getMessage());
             return null;
