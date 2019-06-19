@@ -190,7 +190,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             return;
         }
         // Store it in the database in base64 encoded format, without CSR headers or linebreaks (or null)
-        final String str = certificateRequest == null ? null : new String(Base64.encode(certificateRequest), StandardCharsets.UTF_8);
+        final String str = new String(Base64.encode(certificateRequest), StandardCharsets.UTF_8);
         data.put(CERTIFICATE_REQUEST, str);
     }
 
@@ -237,12 +237,23 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * @return The certificate validity end time or null if not specified.
      */
+    public String getCertificateStartTime() {
+        return getCustomData(CUSTOM_STARTTIME);
+    }
+
+    /**
+     * Set the certificate validity end time to a user-defined value.
+     * @param value The certificate validity
+     */
+    public void setCertificateStartTime(final String value) {
+        setCustomData(CUSTOM_STARTTIME, value);
+    }
+
+    /**
+     * @return The certificate validity end time or null if not specified.
+     */
     public String getCertificateEndTime() {
-        final Object o = data.get(CUSTOMDATA + CUSTOM_ENDTIME);
-        if (o == null) {
-            return null;
-        }
-        return o.toString();
+        return getCustomData(CUSTOM_ENDTIME);
     }
 
     /**
@@ -250,7 +261,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @param value The certificate validity
      */
     public void setCertificateEndTime(final String value) {
-        data.put(CUSTOMDATA + CUSTOM_ENDTIME, value);
+        setCustomData(CUSTOM_ENDTIME, value);
     }
 
     /**
@@ -321,7 +332,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         if (value == null || value.isEmpty()) {
             return null;
         }
-        return new ArrayList<String>(Arrays.asList(value.split(";")));
+        return new ArrayList<>(Arrays.asList(value.split(";")));
     }
 
     public void setNameConstraintsPermitted(List<String> encodedNames) {
@@ -338,7 +349,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         if (value == null || value.isEmpty()) {
             return null;
         }
-        return new ArrayList<String>(Arrays.asList(value.split(";")));
+        return new ArrayList<>(Arrays.asList(value.split(";")));
     }
 
     public void setNameConstraintsExcluded(List<String> encodedNames) {
@@ -453,8 +464,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @returns The data or null if no such data have been set for the user
      */
     public String getCustomData(String key) {
-        String retval = (String) data.get(CUSTOMDATA + key);
-        return retval;
+        return (String) data.get(CUSTOMDATA + key);
     }
 
     /**
@@ -525,7 +535,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            String msg = intres.getLocalizedMessage("endentity.extendedinfoupgrade", new Float(getVersion()));
+            String msg = intres.getLocalizedMessage("endentity.extendedinfoupgrade", getVersion());
             log.info(msg);
 
             if (data.get(SUBJECTDIRATTRIBUTES) == null) {
@@ -653,13 +663,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         if(ids != null) {
             return ids;
         }
-        return new ArrayList<Integer>();
+        return new ArrayList<>();
     }
 
     public void addEditEndEntityApprovalRequestId(Integer requestId) {
         Object obj = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
         @SuppressWarnings("unchecked")
-        ArrayList<Integer> ids = obj==null? new ArrayList<Integer>() : (ArrayList<Integer>) obj;
+        ArrayList<Integer> ids = obj==null? new ArrayList<>() : (ArrayList<Integer>) obj;
         ids.add(requestId);
         data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
     }
@@ -670,13 +680,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         if(ids != null) {
             return ids;
         }
-        return new ArrayList<Integer>();
+        return new ArrayList<>();
     }
 
     public void addRevokeEndEntityApprovalRequestId(Integer requestId) {
         @SuppressWarnings("unchecked")
         List<Integer> obj = (List<Integer>) data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
-        List<Integer> ids = obj==null? new ArrayList<Integer>() : obj;
+        List<Integer> ids = obj==null? new ArrayList<>() : obj;
         ids.add(requestId);
         data.put(REVOKE_EE_APPROVAL_REQUEST_IDS, ids);
     }
