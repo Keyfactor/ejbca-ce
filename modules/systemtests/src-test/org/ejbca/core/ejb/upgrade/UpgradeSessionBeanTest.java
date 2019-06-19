@@ -115,7 +115,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -1097,6 +1096,7 @@ public class UpgradeSessionBeanTest {
     @Test
     public void testSecondsGranularityInUserDataBeforePostUpgrade() throws Exception {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.1.0");
         guc.setPostUpgradedToVersion("7.1.0");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
@@ -1116,13 +1116,13 @@ public class UpgradeSessionBeanTest {
         }
     }
 
-    @Ignore("ECA-8280 is a work in progress, test is currently skipped") // TODO ECA-8280
     @Test
     public void testSecondsGranularityInUserDataAfterPostUpgrade() throws Exception {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.1.0");
         guc.setPostUpgradedToVersion("7.1.0");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        upgradeSession.upgrade(null, "7.2.0", true);
+        upgradeSession.upgrade(null, "7.1.0", true);
         try {
             // End Entities created before post upgrade should not have seconds granularity in start/end time fields
             endEntityManagementSession.addUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY1, "2019-02-03 04:05:06", "2019-12-31 23:59:59"), false);
