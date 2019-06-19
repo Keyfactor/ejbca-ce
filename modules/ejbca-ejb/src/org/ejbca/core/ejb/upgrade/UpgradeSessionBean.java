@@ -292,10 +292,17 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         guc.setEndEntityProfileInCertificateData(value);
         setGlobalUpgradeConfiguration(guc);
     }
-
+    
+    private void setCustomCertificateValidityWithSecondsGranularity(final boolean value) {
+        final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
+        guc.setCustomCertificateWithSecondsGranularity(value);
+        setGlobalUpgradeConfiguration(guc);
+    }
+    
     private GlobalUpgradeConfiguration getGlobalUpgradeConfiguration() {
         return (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
     }
+    
     private void setGlobalUpgradeConfiguration(final GlobalUpgradeConfiguration globalUpgradeConfiguration) {
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalUpgradeConfiguration);
@@ -315,9 +322,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 globalConfig.setStatedumpLockedDown(false);
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
                 setEndEntityProfileInCertificateData(true);
+                setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("6.10.1");
+                setLastPostUpgradedToVersion("7.2.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -573,6 +581,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("6.10.1");
         }
+        if (isLesserThan(oldVersion, "7.2.0")) {
+            if (!postMigrateDatabase720()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.2.0");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -581,7 +595,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "6.10.1");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.2.0");
     }
 
     /**
@@ -1553,6 +1567,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.info("Could not edit key binding: " + ikbToEdit.getName() + ". Name already in use");
             }
         }
+    }
+    
+    private boolean postMigrateDatabase720() {
+        log.info("Starting post upgrade to 7.2.0");
+        setCustomCertificateValidityWithSecondsGranularity(true);
+        log.info("Post upgrade to 7.2.0 complete.");
+        return true;  
     }
     
     private boolean postMigrateDatabase6101() {
