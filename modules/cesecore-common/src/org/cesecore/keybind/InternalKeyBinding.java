@@ -15,6 +15,7 @@ package org.cesecore.keybind;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -140,5 +141,5 @@ public interface InternalKeyBinding extends Serializable {
      * @throws OperatorCreationException if the provider cannot be found.
      */
     byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
-            throws IOException, OperatorCreationException;
+            throws IOException, OperatorCreationException, NoSuchAlgorithmException;
 }
