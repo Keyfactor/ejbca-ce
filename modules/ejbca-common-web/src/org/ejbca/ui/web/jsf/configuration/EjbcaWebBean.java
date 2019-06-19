@@ -145,6 +145,7 @@ public interface EjbcaWebBean extends Serializable {
     public String formatAsISO8601(final Date date);
 
     /** Parse a Date and reformat it as vailidation. */
+    // TODO seems to be unused. Remove this and implementation?
     public String validateDateFormat(final String value) throws ParseException;
 
     /** Check if the argument is a relative date/time in the form days:min:seconds. */
