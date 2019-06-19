@@ -32,6 +32,9 @@ public class ValidityDateTest {
     private static final String RELATIVE = "relative";
     private static final String ABSOLUTE = "absolute";
     
+    public static final String ISO8601_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
+
+    
     /** Since the test will run in different time zones we will test combined operations. */
     @Test
     public void testParseFormat() throws ParseException {
@@ -79,6 +82,20 @@ public class ValidityDateTest {
         assertEquals("Test of " + type + " date " + subject + " failed.", result, ValidityDate.encodeBeforeVersion661(subject));
     }
 
+    @Test
+    public void testValidityGranularityParsing() throws ParseException {
+        String minutesGranularity = "2019-06-19 20:30";
+        String secondsGranularity = "2019-06-19 20:30:12";
+        // View end entity page uses these
+        ValidityDate.getISO8601FromImpliedUTC(minutesGranularity, TimeZone.getDefault());
+        ValidityDate.getISO8601FromImpliedUTC(secondsGranularity, TimeZone.getDefault());
+        // View/edit EEP uses...
+        String result = ValidityDate.getImpliedUTCFromISO8601(minutesGranularity);
+        System.out.println("####" + result);
+        ValidityDate.getImpliedUTCFromISO8601(secondsGranularity);
+        
+    }
+    
     @Test
     @Deprecated
     public void testGetStringBeforeVersion661() throws ParseException {

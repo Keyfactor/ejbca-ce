@@ -1674,7 +1674,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
     		log.debug("endTime is: "+endTime);
     	}
-    	final String[] datePatterns = {"yyyy-MM-dd HH:mm"};
     	final Date now = new Date();
     	Date startTimeDate = null;
     	if( getUse(STARTTIME, 0) && startTime != null && !startTime.equals("") ) {
@@ -1688,7 +1687,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			startTimeDate = new Date(now.getTime() + relative);
     		} else {
     			try {
-    				startTimeDate = DateUtils.parseDate(startTime, datePatterns);
+    				startTimeDate = ValidityDate.parseAsUTC(startTime);
     			} catch (ParseException e) {
     			}
     		}
@@ -1711,7 +1710,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			endTimeDate = new Date(start.getTime() + relative);
     		} else {
     			try {
-    				endTimeDate = DateUtils.parseDate(endTime, datePatterns);
+    			    endTimeDate = ValidityDate.parseAsUTC(endTime);
     			} catch (ParseException e) {
     			}
     		}
