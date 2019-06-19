@@ -12,6 +12,8 @@
  *************************************************************************/ 
 package org.cesecore.certificates.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
@@ -19,7 +21,6 @@ import java.util.TimeZone;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.util.ValidityDate;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -36,9 +37,9 @@ public class ValidityDateTest {
     public void testParseFormat() throws ParseException {
         LOG.trace(">testParseFormat");
         final Date nowWithOutMillis = new Date((new Date().getTime()/1000)*1000);   // We will loose the millis in the conversion
-        Assert.assertEquals(nowWithOutMillis, ValidityDate.parseAsIso8601(ValidityDate.formatAsISO8601(nowWithOutMillis, ValidityDate.TIMEZONE_SERVER)));
+        assertEquals(nowWithOutMillis, ValidityDate.parseAsIso8601(ValidityDate.formatAsISO8601(nowWithOutMillis, ValidityDate.TIMEZONE_SERVER)));
         final Date zero = new Date(0);
-        Assert.assertEquals(zero, ValidityDate.parseAsIso8601(ValidityDate.formatAsISO8601(zero, ValidityDate.TIMEZONE_SERVER)));
+        assertEquals(zero, ValidityDate.parseAsIso8601(ValidityDate.formatAsISO8601(zero, ValidityDate.TIMEZONE_SERVER)));
         LOG.trace("<testParseFormat");
     }
     
@@ -75,7 +76,7 @@ public class ValidityDateTest {
     
     @Deprecated
     private void encodeBeforePostUpdateOfVersion661(final String type, final String subject, final long result) {
-        Assert.assertEquals("Test of " + type + " date " + subject + " failed.", result, ValidityDate.encodeBeforeVersion661(subject));
+        assertEquals("Test of " + type + " date " + subject + " failed.", result, ValidityDate.encodeBeforeVersion661(subject));
     }
 
     @Test
@@ -95,12 +96,12 @@ public class ValidityDateTest {
 
     @Deprecated
     private void getStringInternalRelBeforeVersion661(final long subject, final String result) {
-        Assert.assertEquals("Failed to fetch relative time for " + subject, result, ValidityDate.getStringBeforeVersion661(subject));
+        assertEquals("Failed to fetch relative time for " + subject, result, ValidityDate.getStringBeforeVersion661(subject));
     }
 
     @Deprecated
     private void getStringInternalAbsBeforeVersion661(final long subject, final String result) throws ParseException {
-        Assert.assertEquals("Failed to fetch absolute time for " + subject, ValidityDate.parseAsIso8601(result), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(subject)));
+        assertEquals("Failed to fetch absolute time for " + subject, ValidityDate.parseAsIso8601(result), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(subject)));
     }
     
     @Test
@@ -123,7 +124,7 @@ public class ValidityDateTest {
 
     @Deprecated
     private void getDateInternalBeforeVersion661(final long subjectLEncoded, final Date subjectFromDate, final Date result) {
-        Assert.assertEquals("Failed to fetch date for " + subjectLEncoded + " and " + subjectFromDate, result, ValidityDate.getDateBeforeVersion661(subjectLEncoded, subjectFromDate));
+        assertEquals("Failed to fetch date for " + subjectLEncoded + " and " + subjectFromDate, result, ValidityDate.getDateBeforeVersion661(subjectLEncoded, subjectFromDate));
     }
 
     @Test
@@ -131,11 +132,11 @@ public class ValidityDateTest {
     public void testGetEncodeBeforeVersion661() {
         LOG.trace(">testGetEncodeBeforeVersion661");
         // Test relative times (<Integer.MAX_VALUE)
-        Assert.assertEquals("", -1L, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(0)));
-        Assert.assertEquals("", 1L, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(1)));
+        assertEquals("", -1L, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(0)));
+        assertEquals("", 1L, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(1)));
         // Test absolute times (>Integer.MAX_VALUE)
         final long nowWithOutSeconds = (new Date().getTime()/60000)*60000;
-        Assert.assertEquals("", nowWithOutSeconds, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(nowWithOutSeconds)));
+        assertEquals("", nowWithOutSeconds, ValidityDate.encodeBeforeVersion661(ValidityDate.getStringBeforeVersion661(nowWithOutSeconds)));
         LOG.trace("<testGetEncodeBeforeVersion661");
     }
 
@@ -143,12 +144,12 @@ public class ValidityDateTest {
     @Deprecated
     public void testEncodeGetBeforeVersion661() throws ParseException {
         LOG.trace(">testEncodeGetBeforeVersion661");
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58:00+00:00"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("1970-01-25 20:32:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("1970-01-25 20:32:00+00:00"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:12"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58:12"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2012-02-29"))));
-        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29").getTime(), ValidityDate.encodeBeforeVersion661("2012-02-29 00:00:00+00:00"));
+        assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58:00+00:00"))));
+        assertEquals("", ValidityDate.parseAsIso8601("1970-01-25 20:32:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("1970-01-25 20:32:00+00:00"))));
+        assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:12"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58:12"))));
+        assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2011-05-09 16:58"))));
+        assertEquals("", ValidityDate.parseAsIso8601("2012-02-29"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2012-02-29"))));
+        assertEquals("", ValidityDate.parseAsIso8601("2012-02-29").getTime(), ValidityDate.encodeBeforeVersion661("2012-02-29 00:00:00+00:00"));
         LOG.trace("<testEncodeGetBeforeVersion661");
     }
 
@@ -164,7 +165,7 @@ public class ValidityDateTest {
         LOG.info("bug2038HexDate: " + bug2038HexDate);
         final Date bug2038IsoDate = ValidityDate.parseCaLatestValidDateTime(bug2038Iso);
         LOG.info("bug2038IsoDate: " + bug2038IsoDate);
-        Assert.assertEquals("The two date formats should yield the same Date!", bug2038HexDate, bug2038IsoDate);
+        assertEquals("The two date formats should yield the same Date!", bug2038HexDate, bug2038IsoDate);
         // Test now also
         final Date now = new Date();
         LOG.info("now:        " + now);
@@ -173,10 +174,10 @@ public class ValidityDateTest {
         final Date nowIsoDate = ValidityDate.parseCaLatestValidDateTime(nowIso);
         LOG.info("nowIsoDate: " + nowIsoDate);
         // Compare as strings since we will loose milliseconds in the conversion to ISO8601 format
-        Assert.assertEquals("Unable to parse current time correctly!", now.toString(), nowIsoDate.toString());
+        assertEquals("Unable to parse current time correctly!", now.toString(), nowIsoDate.toString());
         // Test unhappy path (return of default value)
         final Date defaultIsoDate = ValidityDate.parseCaLatestValidDateTime("COFFEE");
-        Assert.assertEquals("Default value not returned when invalid date-time specified!", new Date(Long.MAX_VALUE).toString(), defaultIsoDate.toString());
+        assertEquals("Default value not returned when invalid date-time specified!", new Date(Long.MAX_VALUE).toString(), defaultIsoDate.toString());
         LOG.trace("<testParseCaLatestValidDateTime");
     }
 }
