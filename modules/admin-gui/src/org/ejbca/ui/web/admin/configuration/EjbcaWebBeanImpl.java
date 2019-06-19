@@ -691,6 +691,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /** Parse a Date and reformat it as vailidation. */
+    // TODO appears to be unused. Remove?
     @Override
     public String validateDateFormat(final String value) throws ParseException {
         return ValidityDate.formatAsUTC(ValidityDate.parseAsUTC(value));
