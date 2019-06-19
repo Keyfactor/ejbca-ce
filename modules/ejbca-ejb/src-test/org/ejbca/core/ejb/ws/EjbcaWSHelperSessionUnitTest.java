@@ -28,7 +28,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -65,7 +64,6 @@ public class EjbcaWSHelperSessionUnitTest {
     }
 
     /** Tests converting an incoming UserDataVOWS object with dates in the absolute date format */
-    @Ignore("TODO enable this test once ECA-8280 is done") // TODO ECA-8280
     @Test
     public void explicitAbsoluteDateInConvertUserDataVOWSInternal() throws EjbcaException {
         log.trace(">explicitAbsoluteDateInConvertUserDataVOWSInternal");
@@ -98,7 +96,6 @@ public class EjbcaWSHelperSessionUnitTest {
     }
 
     /** Tests converting an incoming UserDataVOWS object with dates in the old legacy WS date format */
-    @Ignore("TODO enable this test once ECA-8280 is done") // TODO ECA-8280
     @Test
     public void explicitOldFormatDateInConvertUserDataVOWSInternal() throws EjbcaException {
         log.trace(">explicitOldFormatDateInConvertUserDataVOWSInternal");
@@ -133,7 +130,6 @@ public class EjbcaWSHelperSessionUnitTest {
     }
 
     /** Tests conversion of an EndEntityInformation object with the new date format with seconds since 7.2.0 */
-    @Ignore("TODO enable this test once ECA-8280 is done") // TODO ECA-8280
     @Test
     public void convertToUserDataWithSeconds() {
         log.trace(">convertToUserDataWithSeconds");
