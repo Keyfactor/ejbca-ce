@@ -37,8 +37,8 @@ public class ValidityDate {
 
 	private static final Logger log = Logger.getLogger(ValidityDate.class);
 	// Time format for storage where implied timezone is UTC
-	private static final String[] IMPLIED_UTC_PATTERN = {"yyyy-MM-dd HH:mm"};
-	private static final String[] IMPLIED_UTC_PATTERN_TZ = {"yyyy-MM-dd HH:mmZZ"};
+	private static final String[] IMPLIED_UTC_PATTERN = {"yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss"};
+	private static final String[] IMPLIED_UTC_PATTERN_TZ = {"yyyy-MM-dd HH:mmZZ", "yyyy-MM-dd HH:mm:ssZZ"};
 	// Time format for human interactions
 	private static final String[] ISO8601_PATTERNS = {
 	   // These must have timezone on date-only format also, since it has a time also (which is 00:00).
@@ -88,6 +88,11 @@ public class ValidityDate {
 	public static String formatAsUTC(final Date date) {
 		return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[0], TIMEZONE_UTC).format(date);
 	}
+
+	/** Convert a Date to the format "yyyy-MM-dd HH:mm:ss" with implied TimeZone UTC. */
+	public static String formatAsUTCSecondsGranularity(final Date date) {
+	    return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(date);
+	}
 	
 	/** Convert a absolute number of milliseconds to the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
 	public static String formatAsUTC(final long millis) {
@@ -103,10 +108,10 @@ public class ValidityDate {
 	public static String formatAsISO8601ServerTZ(final long millis, final TimeZone timeZone) {
 		return FastDateFormat.getInstance(ISO8601_PATTERNS[0], TIMEZONE_SERVER).format(millis);
 	}
-
+	
 	/** Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
 	public static String getImpliedUTCFromISO8601(final String dateString) throws ParseException {
-		return formatAsUTC(parseAsIso8601(dateString));
+		return formatAsUTCSecondsGranularity(parseAsIso8601(dateString));
 	}
 	
 	/** Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to "yyyy-MM-dd HH:mm:ssZZ". */
