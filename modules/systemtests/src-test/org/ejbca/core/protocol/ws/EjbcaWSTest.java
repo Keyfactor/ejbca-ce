@@ -1393,7 +1393,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         log.trace(">testTimeFormatConversionFromUs()");
         final Date nowWithOutSeconds = new Date((new Date().getTime() / 60000) * 60000); // To avoid false negatives.. we will loose precision when we convert back and forth..
         final String oldTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(nowWithOutSeconds);
-        final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
+        final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
         final String newTimeFormatRequest = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("CEST"))
                 .format(nowWithOutSeconds);
         final String newTimeFormatResponse = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("UTC"))
@@ -1421,7 +1421,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void testTimeFormatConversionFromStandard() throws EjbcaException {
         final Date nowWithOutSeconds = new Date((new Date().getTime() / 60000) * 60000); // To avoid false negatives.. we will loose precision when we convert back and forth..
-        final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
+        final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
         final String newTimeFormatRequest = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("CEST"))
                 .format(nowWithOutSeconds);
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username",
