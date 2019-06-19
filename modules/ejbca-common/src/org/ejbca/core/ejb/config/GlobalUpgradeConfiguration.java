@@ -69,7 +69,7 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
     }
     
     public void setCustomCertificateWithSecondsGranularity(final boolean value) {
-        data.put(VALIDITY_WITH_SECONDS_GRANULARITY, value);
+        data.put(VALIDITY_WITH_SECONDS_GRANULARITY, Boolean.valueOf(value).toString());
     }
     
     @Override
