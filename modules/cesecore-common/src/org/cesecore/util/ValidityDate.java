@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -45,7 +46,10 @@ public class ValidityDate {
 	   // If the timezone is omitted then the string "+00:00" is appended to the date before parsing
 	   ISO8601_DATE_FORMAT, "yyyy-MM-dd HH:mmZZ", "yyyy-MM-ddZZ"
     };
-    
+	
+	/** Pattern used to separate seconds (in $2 reference) and everything else (in $1)*/
+	private static final Pattern SECONDS_MATCHER = Pattern.compile("(\\d{4,4}-\\d\\d-\\d\\d \\d\\d:\\d\\d)(:\\d\\d)");
+
     // Can't be instantiated
     private ValidityDate() {
     }
@@ -225,13 +229,11 @@ public class ValidityDate {
         		log.debug("tooLateExpireDate could not be parsed as an ISO8601 date: " + e.getMessage());
     		}
     		// Second, try to parse it as a hexadecimal value (without markers of any kind.. just a raw value).
-            if (tooLateExpireDate == null) {
-            	try {
-            		tooLateExpireDate = new Date(Long.parseLong(sDate, 16)*1000);
-            	} catch (NumberFormatException e) {
-            		log.debug("tooLateExpireDate could not be parsed as a hex value: " + e.getMessage());
-            	}
-            }
+        	try {
+        		tooLateExpireDate = new Date(Long.parseLong(sDate, 16)*1000);
+        	} catch (NumberFormatException e) {
+        		log.debug("tooLateExpireDate could not be parsed as a hex value: " + e.getMessage());
+        	}
         }
         if (tooLateExpireDate == null) {
         	log.debug("Using default value for ca.toolateexpiredate.");
@@ -283,5 +285,10 @@ public class ValidityDate {
             return calendar.getTime();
         }
         return date;
+	}
+
+	/** Strips the seconds part of a date string on the form yyyy-MM-dd hh:mm */
+	public static String stripSecondsFromIso8601UtcDate(final String dateString) {
+	    return SECONDS_MATCHER.matcher(dateString).replaceFirst("$1");
 	}
 }
