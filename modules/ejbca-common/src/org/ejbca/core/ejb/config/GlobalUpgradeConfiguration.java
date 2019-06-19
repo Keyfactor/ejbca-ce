@@ -32,6 +32,7 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
     private static final String EEP_IN_CERTIFICATE_DATA = "endEntityProfileInCertificateData";
     private static final String POST_UPGRADE_STARTED = "postUpgradeStarted";
     private static final String UPGRADED_FROM        = "upgradedFromVersion";
+    private static final String VALIDITY_WITH_SECONDS_GRANULARITY = "validityWithSecondsGranularity";
     
     public String getUpgradedToVersion() {
         return (String) data.get(UPGRADED_TO_VERSION);
@@ -62,6 +63,15 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
         data.put(EEP_IN_CERTIFICATE_DATA, Boolean.valueOf(value).toString());
     }
 
+    /** @return true if Certificate Validity Start Time / End Time allows parsing of seconds (Added in 7.2.0) */
+    public boolean isCustomCertificateValidityWithSecondsGranularity() {
+        return Boolean.parseBoolean((String) data.get(VALIDITY_WITH_SECONDS_GRANULARITY));
+    }
+    
+    public void setCustomCertificateWithSecondsGranularity(final boolean value) {
+        data.put(VALIDITY_WITH_SECONDS_GRANULARITY, value);
+    }
+    
     @Override
     public void upgrade() {
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
