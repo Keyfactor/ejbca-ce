@@ -1098,6 +1098,7 @@ public class UpgradeSessionBeanTest {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         guc.setUpgradedToVersion("7.1.0");
         guc.setPostUpgradedToVersion("7.1.0");
+        guc.setCustomCertificateWithSecondsGranularity(false);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             // End Entities created before post upgrade should not have seconds granularity in start/end time fields
@@ -1121,8 +1122,11 @@ public class UpgradeSessionBeanTest {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         guc.setUpgradedToVersion("7.1.0");
         guc.setPostUpgradedToVersion("7.1.0");
+        guc.setCustomCertificateWithSecondsGranularity(false);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         upgradeSession.upgrade(null, "7.1.0", true);
+        guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        assertTrue("isCustomCertificateValidityWithSecondsGranularity should be true after post-upgrade", guc.isCustomCertificateValidityWithSecondsGranularity());
         try {
             // End Entities created before post upgrade should not have seconds granularity in start/end time fields
             endEntityManagementSession.addUser(alwaysAllowtoken, makeEndEntityInfo(TEST_ENDENTITY1, "2019-02-03 04:05:06", "2019-12-31 23:59:59"), false);
