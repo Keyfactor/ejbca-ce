@@ -2232,9 +2232,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     /**
      * Checks the post-upgrade version, and reverts any incompatible changes.
      * This ensures compatibility with old EJBCA nodes running in a cluster.
-     * @param extendedInformation ExtendedInformation object to modify.
+     * @param extendedInformation ExtendedInformation object to modify, may be null.
      */
     private void ensureOldClusterNodeCompatibility(final ExtendedInformation extendedInformation) {
+        if (extendedInformation == null) {
+            return; // Noting to do
+        }
         final GlobalUpgradeConfiguration upgradeConfig = (GlobalUpgradeConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         if (!upgradeConfig.isCustomCertificateValidityWithSecondsGranularity()) {
             // Downgrade to not use seconds granularity, for compatibility with versions prior to 7.2.0
