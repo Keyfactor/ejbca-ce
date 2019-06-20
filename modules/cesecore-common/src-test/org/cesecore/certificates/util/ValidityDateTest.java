@@ -91,8 +91,7 @@ public class ValidityDateTest {
         ValidityDate.getISO8601FromImpliedUTC(minutesGranularity, TimeZone.getDefault());
         ValidityDate.getISO8601FromImpliedUTC(secondsGranularity, TimeZone.getDefault());
         // View/edit EEP uses...
-        String result = ValidityDate.getImpliedUTCFromISO8601(minutesGranularity);
-        System.out.println("####" + result);
+        ValidityDate.getImpliedUTCFromISO8601(minutesGranularity);
         ValidityDate.getImpliedUTCFromISO8601(secondsGranularity);
         
     }
