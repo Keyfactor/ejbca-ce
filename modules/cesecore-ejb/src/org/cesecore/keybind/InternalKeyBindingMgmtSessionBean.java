@@ -614,6 +614,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } catch (OperatorCreationException | IOException | NoSuchAlgorithmException e) {
             log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
                     + keyPairAlias + ". " + e.getMessage());
+            log.debug("CSR generation stack trace", e);
             return null;
         }
     }
