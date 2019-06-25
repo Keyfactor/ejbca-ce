@@ -1,0 +1,21 @@
+def modules = [:]
+pipeline {
+	agent {
+	    node {
+		    label "docker"
+        }
+    }
+    stages {
+        stage('run unit tests') {
+            prepareScripts {
+                def rootDir = pwd()
+                println("Current Directory: " + rootDir)
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
