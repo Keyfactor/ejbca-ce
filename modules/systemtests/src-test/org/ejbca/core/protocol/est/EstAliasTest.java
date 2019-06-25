@@ -44,10 +44,9 @@ import static org.junit.Assume.assumeTrue;
 
 /**
  * 
- * @version $Id: CmpAliasTest.java 22450 2015-12-15 14:06:34Z mikekushner $
+ * @version $Id$
  *
  */
-
 public class EstAliasTest extends EstTestCase {
 
     private static final Logger log = Logger.getLogger(EstAliasTest.class);
