@@ -658,6 +658,7 @@ public class CAInterfaceBean implements Serializable {
                                 .setCertificateChain(null)
                                 .setCaToken(caToken)
                                 .setDescription(description)
+                                .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
                                 .setPolicies(policies)
                                 .setCrlPeriod(crlPeriod)
                                 .setCrlIssueInterval(crlIssueInterval)
