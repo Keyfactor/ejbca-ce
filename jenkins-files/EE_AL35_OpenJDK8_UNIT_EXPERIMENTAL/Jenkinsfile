@@ -8,8 +8,6 @@ pipeline {
     stages {
         stage('run unit tests') {
             agent {
-                def rootDir = pwd()
-                println("Current Directory1: " + rootDir)
                 // build and run (later also cleanup) the Docker container
                 dockerfile {
                     reuseNode true
@@ -21,14 +19,13 @@ pipeline {
                 }
             }
             environment {
-                def rootDir = pwd()
-                println("Current Directory2: " + rootDir)
                 ANT_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1024m"
                 TEST_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx256m"
             }
             steps {
+                println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
                 def rootDir = pwd()
-                println("Current Directory3: " + rootDir)
+                println("Current Directory: " + rootDir)
                 // Run these steps inside the running docker container
                 dir ('ejbca') {
                     sh "cp /opt/conf/* conf/"
