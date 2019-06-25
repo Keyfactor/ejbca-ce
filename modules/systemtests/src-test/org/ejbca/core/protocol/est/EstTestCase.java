@@ -67,7 +67,7 @@ import static org.junit.Assert.fail;
  * You can run this test against a EST Proxy instead of direct to the CA by setting the system property httpEstProxyURL, 
  * for example to "https://ra-host:8442/.well-known/est"
  * 
- * @version $Id: CmpTestCase.java 32112 2019-04-11 10:36:33Z tarmo_r_helmes $
+ * @version $Id$
  */
 public abstract class EstTestCase extends CaTestCase {
 
