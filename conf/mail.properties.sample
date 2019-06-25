@@ -1,8 +1,9 @@
 # ------------ Mail configuration ---------------------
 
-# Used to send notification email from the RA.
-# See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
-# It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
+# Properties used when sending notification email from the RA.
+
+# NOTE: only mail.jndi-name and mail.contentencoding are used from within the EJBCA
+# application. The rest of the settings are configured in the application server.
 
 # The JNDI-name used to send email notifications from EJBCA.
 # Not that this differs between different application servers, see installation for 
@@ -10,6 +11,15 @@
 #
 # Default: java:/EjbcaMail
 #mail.jndi-name=java:/EjbcaMail
+
+# Content encoding for the email message body.
+# Default: UTF-8
+#mail.contentencoding=UTF-8
+
+#
+# The rest of these settings were used previously, but are now deprecated.
+# These does not have to be set since EJBCA 6.15.
+#
 
 # user/password to connect to server for sending email notifications from EJBCA.
 # Default: ejbca_user, primekey
@@ -39,7 +49,3 @@
 # JavaMail debug info.
 # Default: false
 #mail.debug=false
-
-# Content encoding for the email message body.
-# Default: UTF-8
-#mail.contentencoding=UTF-8
