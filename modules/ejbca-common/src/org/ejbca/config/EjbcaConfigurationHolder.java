@@ -195,8 +195,7 @@ public final class EjbcaConfigurationHolder {
 
 	/**
 	 * @param property the property to look for
-	 * @param defaultValue default value to use if property is not found
-	 * @return String configured for property, or default value, if defaultValue is null and property is not found null is returned.
+	 * @return String configured for property, or null if property is not found.
 	 */
 	public static String getString(final String property) {
 		// Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
