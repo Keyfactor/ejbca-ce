@@ -50,4 +50,5 @@ def load_common() {
     println("pwd(): " + pwd())
     def common = load "ejbca/jenkins-files/common_jenkins/Jenkinsfile.groovy"
     println("common(): " + common)
+    return common
 }
