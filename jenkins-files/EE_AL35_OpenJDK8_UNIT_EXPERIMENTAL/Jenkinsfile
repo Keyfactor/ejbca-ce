@@ -1,9 +1,8 @@
-def modules = [:]
-def rootDir = pwd()
 pipeline {
 	agent {
 	    node {
 		    label "docker"
+		    def rootDir = pwd()
         }
     }
     stages {
@@ -22,10 +21,12 @@ pipeline {
             environment {
                 ANT_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1024m"
                 TEST_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx256m"
+                first_path = get_first()
             }
             steps {
                 println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
-                println("Current Directory: " + rootDir)
+                println("Current Directory: " + $rootDir)
+                println("get_first: " + $first_path)
                 sh "ls -la $rootDir"
                 // Run these steps inside the running docker container
                 dir ('ejbca') {
@@ -41,5 +42,12 @@ pipeline {
         always {
             cleanWs()
         }
+    }
+}
+
+def get_first() {
+    node('master') {
+        println("get_first(): ")
+        return env.PATH.split(':')[0]
     }
 }
