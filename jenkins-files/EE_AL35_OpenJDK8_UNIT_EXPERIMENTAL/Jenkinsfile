@@ -29,8 +29,8 @@ pipeline {
                 }
                 println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
                 // println("Current Directory1: " + $rootDir)
-                println("get_first: " + $first_path)
-                sh "ls -la $rootDir"
+                println("get_first: " + env.first_path)
+                //sh "ls -la $rootDir"
                 // Run these steps inside the running docker container
                 dir ('ejbca') {
                     sh "cp /opt/conf/* conf/"
