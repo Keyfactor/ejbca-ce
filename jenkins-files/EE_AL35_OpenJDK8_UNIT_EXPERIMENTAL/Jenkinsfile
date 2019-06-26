@@ -1,4 +1,5 @@
 def modules = [:]
+def rootDir = pwd()
 pipeline {
 	agent {
 	    node {
@@ -23,12 +24,9 @@ pipeline {
                 TEST_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx256m"
             }
             steps {
-                script {
-                    def rootDir = pwd()
-                    println("Current Directory1: " + rootDir)
-                }
                 println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
-                println("Current Directory2: " + rootDir)
+                println("Current Directory: " + rootDir)
+                sh "ls -la $rootDir"
                 // Run these steps inside the running docker container
                 dir ('ejbca') {
                     sh "cp /opt/conf/* conf/"
