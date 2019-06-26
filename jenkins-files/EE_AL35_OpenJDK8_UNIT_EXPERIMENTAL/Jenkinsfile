@@ -46,7 +46,8 @@ pipeline {
 }
 
 def load_common() {
-    println("load_common(): ")
+    println("load_common():")
     println("pwd(): " + pwd())
-    return load "../common_jenkins/Jenkinsfile.groovy"
+    def common = load "../common_jenkins/Jenkinsfile.groovy"
+    println("common(): " + common)
 }
