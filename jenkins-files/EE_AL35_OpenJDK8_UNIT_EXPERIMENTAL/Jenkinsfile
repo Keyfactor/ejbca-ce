@@ -2,7 +2,6 @@ pipeline {
 	agent {
 	    node {
 		    label "docker"
-		    def rootDir = pwd()
         }
     }
     stages {
@@ -24,6 +23,9 @@ pipeline {
                 first_path = get_first()
             }
             steps {
+                script {
+                    def browsers = pwd()
+                }
                 println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
                 println("Current Directory: " + $rootDir)
                 println("get_first: " + $first_path)
