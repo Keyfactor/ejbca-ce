@@ -24,10 +24,11 @@ pipeline {
             }
             steps {
                 script {
-                    def browsers = pwd()
+                    def $rootDir = pwd()
+                    println("Current Directory0: " + $rootDir)
                 }
                 println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
-                println("Current Directory: " + $rootDir)
+                println("Current Directory1: " + $rootDir)
                 println("get_first: " + $first_path)
                 sh "ls -la $rootDir"
                 // Run these steps inside the running docker container
@@ -48,8 +49,5 @@ pipeline {
 }
 
 def get_first() {
-    node('master') {
-        println("get_first(): ")
-        return env.PATH.split(':')[0]
-    }
+    println("get_first(): ")
 }
