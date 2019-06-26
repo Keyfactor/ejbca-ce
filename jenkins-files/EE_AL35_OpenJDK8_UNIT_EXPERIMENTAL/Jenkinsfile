@@ -28,7 +28,7 @@ pipeline {
                     println("Current Directory0: " + $rootDir)
                 }
                 println("JOB_BASE_NAME: " + env.JOB_BASE_NAME)
-                println("Current Directory1: " + $rootDir)
+                // println("Current Directory1: " + $rootDir)
                 println("get_first: " + $first_path)
                 sh "ls -la $rootDir"
                 // Run these steps inside the running docker container
@@ -50,4 +50,7 @@ pipeline {
 
 def get_first() {
     println("get_first(): ")
+    node('master') {
+        return env.PATH.split(':')[0]
+    }
 }
