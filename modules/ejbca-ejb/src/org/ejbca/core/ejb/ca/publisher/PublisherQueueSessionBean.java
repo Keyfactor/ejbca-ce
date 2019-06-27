@@ -301,13 +301,17 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
      *  
      * @return how many publishing operations that succeeded and failed */
     private PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, Collection<PublisherQueueData> publisherQueueData) {
-        int publisherId = publisher.getPublisherId();
+        final int publisherId;
+        if (publisher != null) {
+            publisherId = publisher.getPublisherId();
+        } else {
+            publisherId = -1;
+        }
         if (log.isDebugEnabled()) {
             log.debug("Found " + publisherQueueData.size() + " certificates to republish for publisher " + publisherId);
         }
         PublishingResult result = new PublishingResult();
         for (PublisherQueueData pqd : publisherQueueData) {
-
             String fingerprint = pqd.getFingerprint();
             int publishType = pqd.getPublishType();
             if (log.isDebugEnabled()) {
