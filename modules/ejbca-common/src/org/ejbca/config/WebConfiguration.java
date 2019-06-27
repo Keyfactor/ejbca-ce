@@ -166,7 +166,6 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
     }
     
-        
     /**
      * Whether the remote IP address should be logged during administrator login.
      * This works as expected when using an Apache AJP proxy, but if a reverse proxy
@@ -280,6 +279,11 @@ public class WebConfiguration {
             availableP11AttributeFiles = ret;
         }
         return availableP11AttributeFiles;
+    }
+
+    /** @return true if we have Azure Crypto Token enabled in the Admin GUI. */
+    public static boolean isAzureKeyVaultEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("keyvault.cryptotoken.enabled"));
     }
 
     public static String getStatedumpTemplatesBasedir() {

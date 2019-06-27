@@ -599,10 +599,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             AuthorizationDeniedException {
         assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
-        if (!getKeyPairAliasesInternal(cryptoToken).contains(alias)) {
+        final PublicKey publicKey = cryptoToken.getPublicKey(alias);
+        // the quickest way to find out if an alias exists is to try to get the public key
+        // if we get null, the alias did not exist. No need to list all aliases on the crypto token
+        if (publicKey == null) {
             return null;
         }
-        final PublicKey publicKey = cryptoToken.getPublicKey(alias);
         final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
         final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
@@ -660,7 +662,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     }
                 } catch (CryptoTokenOfflineException ignored) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Ignord key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
+                        log.debug("Ignored key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
                     }
                 }
             }

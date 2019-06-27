@@ -112,7 +112,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # notifications has been moved to cesecore.properties from EJBCA 5.
 
 # Show links to the EJBCA documentation. The links can either point to internally deployed
-# documentation on the server or any exteral location like ejbca.org.
+# documentation on the server or any external location like ejbca.org.
 # Default = internal
 #web.docbaseuri=disabled
 #web.docbaseuri=internal
@@ -297,3 +297,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #...
 #cryptotoken.p11.attr.255.name=
 #cryptotoken.p11.attr.255.file=
+
+#
+# Enable usage of Azure Key Vault Crypto Token in the Admin UI
+# Default: false (not enabled)
+#keyvault.cryptotoken.enabled=true
