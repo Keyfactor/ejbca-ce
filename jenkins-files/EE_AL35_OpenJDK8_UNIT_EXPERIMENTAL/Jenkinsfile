@@ -5,11 +5,16 @@ pipeline {
         }
     }
     environment {
+        // Build parameters defaults
+        ANT_VERSION = '1.9.8'
+        THIS_JOB_NAME = env.JOB_BASE_NAME
         // Load Jenkinsfile.groovy containing common functions/settings
         common = load_common()
-        // env.JOB_BASE_NAME - this job name in Jenkins, eg. 'EE_AL35_OpenJDK8_UNIT_EXPERIMENTAL'
         ANT_OPTS = common.get_ANT_OPTS()
         TEST_OPTS = common.get_TEST_OPTS()
+    }
+    parameters {
+        string(name: 'ANT_VERSION', defaultValue: env.ANT_VERSION, description: 'Apache ant version to use, eg. \'1.9.8\'.')
     }
     stages {
         stage('run unit tests') {
@@ -19,7 +24,7 @@ pipeline {
                     reuseNode true
                     dir "ejbca/jenkins-files/$env.JOB_BASE_NAME"
                     filename 'Dockerfile'
-                    additionalBuildArgs  '--disable-content-trust=false --pull'
+                    additionalBuildArgs  "--disable-content-trust=false --pull --build-arg ANT_VERSION=$env.ANT_VERSION"
                     // 1001 = jenkins user's UID/GID
                     args '--user 1001:1001 --group-add root --group-add 1001'
                 }
@@ -33,8 +38,6 @@ pipeline {
                     sh "ls -la"
                     sh "ls -la conf/"
                     sh "ls -la jenkins-files/"
-//                    sh "$env.common.copy_cesecore()"
-//                    sh "cp /opt/conf/* conf/"
                     sh "ant -q -Dappserver.home=/tmp -Dappserver.type=jboss -Dejbca.productionmode=false clean build test:runsa -Dtests.jvmargs=\"\$env.TEST_OPTS\""
                 }
                 // gather the results
