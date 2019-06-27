@@ -48,6 +48,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.AvailableCryptoToken;
+import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -131,12 +132,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return EjbcaJSFHelper.getBean().getText().get(CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX + cryptoTokenInfo.getP11SlotLabelType());
         }
         public String getP11LibraryAlias() { return p11LibraryAlias; }
+        public String getKeyVaultType() { return cryptoTokenInfo.getKeyVaultType(); }
+        public String getKeyVaultName() { return cryptoTokenInfo.getKeyVaultName(); }
+        public String getKeyVaultClientID() { return cryptoTokenInfo.getKeyVaultClientID(); }
         public String getAuthenticationCode() { return authenticationCode; }
         public void setAuthenticationCode(String authenticationCode) { this.authenticationCode = authenticationCode; }
         public boolean isAllowedActivation() { return allowedActivation; }
         public boolean isAllowedDeactivation() { return allowedDeactivation; }
         public boolean isReferenced() { return referenced; }
         public boolean isP11SlotType() { return PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()); }
+        public boolean isAzureType() { return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()); }
     }
 
     /** GUI edit/view representation of a CryptoToken that can be interacted with. */
@@ -157,6 +162,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean allowExplicitParameters = false;
         private boolean canGenerateKey= true;
         private String canGenerateKeyMsg = null;
+        private String keyVaultType = "premium";
+        private String keyVaultName = "ejbca-keyvault";
+        private String keyVaultClientID = "";
         
         private CurrentCryptoTokenGuiInfo() {}
         
@@ -185,6 +193,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         public String getP11AttributeFile() { return p11AttributeFile; }
         public void setP11AttributeFile(String p11AttributeFile) { this.p11AttributeFile = p11AttributeFile; }
+        public void setKeyVaultType(String keyVaultType) { this.keyVaultType = keyVaultType; }
+        public void setKeyVaultName(String keyVaultName) { this.keyVaultName = keyVaultName; }
+        public void setKeyVaultClientID(String keyVaultClientID) { this.keyVaultClientID = keyVaultClientID; }
         public boolean isActive() { return active; }
         public void setActive(boolean active) { this.active = active; }
         public boolean isReferenced() { return referenced; }
@@ -214,13 +225,21 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
-        public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }
+        public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }        
+        public String getKeyVaultType() { return keyVaultType; }
+        public String getKeyVaultName() { return keyVaultName; }
+        public String getKeyVaultClientID() { return keyVaultClientID; }
+
         public boolean isShowSoftCryptoToken() {
             return SoftCryptoToken.class.getSimpleName().equals(getType());
         }
 
         public boolean isShowP11CryptoToken() {
             return PKCS11CryptoToken.class.getSimpleName().equals(getType());
+        }
+
+        public boolean isShowAzureCryptoToken() {
+            return AzureCryptoToken.class.getSimpleName().equals(getType());
         }
 
         public boolean isSlotOfTokenLabelType() {
@@ -489,6 +508,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             } else if (SoftCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = SoftCryptoToken.class.getName();
                 properties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
+            } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) { // TODO see note above to avoid this conditional.
+                className = AzureCryptoToken.class.getName();
+                String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
+                String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
+                String vaultClientID = getCurrentCryptoToken().getKeyVaultClientID().trim();
+                properties.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, vaultType);
+                properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
+                properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
             }
             if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                 properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
@@ -668,6 +695,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     continue;
                 }
             }
+            if (availableCryptoToken.getClassPath().equals(AzureCryptoToken.class.getName())) {
+                // Special case: Never expose the AzureCryptoToken when creating new tokens if it is not enabled in web.properties
+                if (!WebConfiguration.isAzureKeyVaultEnabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Azure Key Vault Crypto Token support is not enabled in GUI. See web.properties for enabling Azure Key Vault.");
+                    }
+                    continue;
+                }
+            }
             // Use one the class's simpleName
             final String fullClassName = availableCryptoToken.getClassPath();
             ret.add(new SelectItem(fullClassName.substring(fullClassName.lastIndexOf('.')+1), availableCryptoToken.getName()));
@@ -737,6 +773,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                             currentCryptoToken.setCanGenerateKeyMsg(libinfo.getCanGenerateKeyMsg());
                         }
                     }
+                    if (cryptoTokenInfo.getType().equals(AzureCryptoToken.class.getSimpleName())) {
+                        currentCryptoToken.setKeyVaultType(cryptoTokenInfo.getKeyVaultType());
+                        currentCryptoToken.setKeyVaultName(cryptoTokenInfo.getKeyVaultName());
+                        currentCryptoToken.setKeyVaultClientID(cryptoTokenInfo.getKeyVaultClientID());
+                    }
                     currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                     currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(Integer.valueOf(cryptoTokenId)));
                 }
@@ -778,7 +819,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA+size, AlgorithmConstants.KEYALGORITHM_DSA+" "+size));
         }
         try {
-            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()));
+            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) || AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()));
             final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
             Arrays.sort(keys);
             for (final String name : keys) {
@@ -849,6 +890,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())) {
                         ret.add(new KeyPairGuiInfo(keyPairInfo));
                     }
+                    keyPairGuiListError = null; // if we had an error last time we loaded but it has been fixed.
                 } catch (CryptoTokenOfflineException ctoe) {
                     keyPairGuiListError = "Failed to load key pairs from CryptoToken: "+ctoe.getMessage();
                 }
