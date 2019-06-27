@@ -3,13 +3,13 @@ ARG ANT_VERSION
 
 RUN apk --no-cache add curl
 
-RUN bash -c "echo -e PWD is: $PWD"
+RUN echo "PWD is: $PWD"
 
-RUN bash -c "echo -e ANT_VERSION is: $ANT_VERSION"
+RUN echo "ANT_VERSION is: $ANT_VERSION"
 
-RUN bash -c 'echo -e ${ls -la}'
+RUN echo "${ls -la}"
 
-RUN bash -c "echo -e ANT_HOME ${ANT_HOME}"
+RUN echo "ANT_HOME ${ANT_HOME}"
 
 # Install JDK 1.8
 RUN apk --update add openjdk8
