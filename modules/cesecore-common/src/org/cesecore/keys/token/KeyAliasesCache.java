@@ -19,7 +19,7 @@ import org.cesecore.internal.CommonCacheBase;
 /**
  * Cache for Key aliases (used in Azure Crypto Token, but is generic). Caches a public key, with alias as key
  * 
- * @version $Id: InternalKeyBindingCache.java 28332 2018-02-20 14:40:52Z anatom $
+ * @version $Id$
  */
 public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
 
