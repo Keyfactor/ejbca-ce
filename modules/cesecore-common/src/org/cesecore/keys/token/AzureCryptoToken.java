@@ -123,17 +123,14 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private KeyAliasesCache aliasCache = new KeyAliasesCache();
     
-    /** a dummy key to add in initial stage of caching, because we can not put anything empty in the cache, because putting null means remove...
+    /** @return a dummy key (hardcoded prime256v1) to add in initial stage of caching, because we can not put anything empty in the cache, because putting null means remove...
      */
-    public static PublicKey dummyCacheKey = null;
-    static {
-        try {
-            dummyCacheKey = KeyTools.genKeys("P-224", "EC").getPublic(); // P-224 takes little space and is fast to generate
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new RuntimeException(e);
-        }        
+    private static final PublicKey getDummyCacheKey() {
+        final byte[] ecPublicKey = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
+                "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
+        return KeyTools.getPublicKeyFromBytes(ecPublicKey);
     }
-    
+
     /** get the keyVaultName, set during init of crypto token */
     private String getKeyVaultName() {
         return getProperties().getProperty(AzureCryptoToken.KEY_VAULT_NAME);
@@ -241,7 +238,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                                 final String alias = kid.substring(kid.lastIndexOf("/") + 1);
                                 log.debug("Adding alias to cache: '"+alias);
                                 // Add a dummy public key
-                                aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, dummyCacheKey);
+                                aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
                             }
                         }                    
                     } else {
@@ -665,7 +662,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
     @Override
     public PublicKey getPublicKey(String alias) throws CryptoTokenOfflineException {
         PublicKey publicKey = null;
-        if (aliasCache.shouldCheckForUpdates(alias.hashCode()) || aliasCache.getEntry(alias.hashCode()).equals(dummyCacheKey) ) {
+        if (aliasCache.shouldCheckForUpdates(alias.hashCode()) || aliasCache.getEntry(alias.hashCode()).equals(AzureCryptoToken.getDummyCacheKey()) ) {
             if (log.isDebugEnabled()) {
                 log.debug("Looking for public key with alias " + alias + ", and cache is expired or filled with dummyCacheKey. Will try to read it form Key Vault.");
             }

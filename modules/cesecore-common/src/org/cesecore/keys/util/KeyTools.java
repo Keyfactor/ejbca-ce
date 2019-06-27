@@ -1293,8 +1293,7 @@ public final class KeyTools {
      */
     public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
         try {
-            final SubjectPublicKeyInfo keyInfo;
-            keyInfo = SubjectPublicKeyInfo.getInstance(asn1EncodedPublicKey);
+            final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(asn1EncodedPublicKey);
             final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
             final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
