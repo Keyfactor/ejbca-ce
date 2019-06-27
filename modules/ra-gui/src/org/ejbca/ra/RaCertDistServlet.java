@@ -135,9 +135,10 @@ public class RaCertDistServlet extends HttpServlet {
                                     alias = CertTools.getPartFromDN(subjectDn, "O");
                                 }
                                 if (alias == null) {
-                                    alias = "cacert"+i;
+                                    alias = "cacert" + i;
                                 }
-                                alias.replaceAll(" ", "_").substring(0, Math.min(15, alias.length()));
+                                // max 15 characters length, with no spaces
+                                alias = alias.replaceAll(" ", "_").substring(0, Math.min(15, alias.length()));
                                 keyStore.setCertificateEntry(alias, chain.get(i));
                             }
                             try (ByteArrayOutputStream out = new ByteArrayOutputStream();) {
