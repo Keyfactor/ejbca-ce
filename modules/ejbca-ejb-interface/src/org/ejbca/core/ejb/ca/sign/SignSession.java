@@ -444,18 +444,5 @@ public interface SignSession {
      */
     CertificateGenerationParams fetchCertGenParams();
     
-    /**
-     * Signs the provided payload using the given CA's signing keys. 
-     * 
-     * @param authenticationToken an authentication token representing the current admin 
-     * @param data a byte array of the data to be signed
-     * @param signingCaName the name of the CA 
-     * @return an encoded CMSSignedData of the original payload
-     * @throws AuthorizationDeniedException if the authentication token was not authorized to the given CA
-     * @throws CryptoTokenOfflineException if the crypto token was offline 
-     * @throws CADoesntExistsException if a CA by the given name doesn't exist.
-     * @throws SignRequestSignatureException if an error occurred during the signature process. 
-     */
-    byte[] signPayload(final AuthenticationToken authenticationToken, byte[] data, final int signingCaId)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
+
 }

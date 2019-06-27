@@ -68,6 +68,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
@@ -126,7 +127,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -1365,12 +1365,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] signPayload(final AuthenticationToken authenticationToken, final byte[] data, final int signingCaId)
+    public byte[] signPayload(final byte[] data, final int signingCaId)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException {
         if (log.isDebugEnabled()) {
-            log.debug("Attempting to sign payload from CA with ID " + signingCaId + " with authentication token " + authenticationToken);
+            log.debug("Attempting to sign payload from CA with ID " + signingCaId);
         }
-        CA ca = (CA) caSession.getCA(authenticationToken, signingCaId);
+        CA ca = (CA) caSession.getCA(new AlwaysAllowLocalAuthenticationToken("Called from SignSessionBean.signPayload"), signingCaId);
         if (ca == null) {
             log.debug("CA with ID " + signingCaId + " does not exist.");
             throw new CADoesntExistsException("CA with ID " + signingCaId + " does not exist.");

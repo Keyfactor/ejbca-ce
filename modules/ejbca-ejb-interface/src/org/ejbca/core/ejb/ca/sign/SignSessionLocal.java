@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -219,5 +220,18 @@ public interface SignSessionLocal extends SignSession {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchEndEntityException;
 
+     /**
+      * Signs the provided payload using the given CA's signing keys. 
+      * 
+      * @param data a byte array of the data to be signed
+      * @param signingCaName the name of the CA 
+      * @return an encoded CMSSignedData of the original payload
+      * @throws AuthorizationDeniedException if the authentication token was not authorized to the given CA
+      * @throws CryptoTokenOfflineException if the crypto token was offline 
+      * @throws CADoesntExistsException if a CA by the given name doesn't exist.
+      * @throws SignRequestSignatureException if an error occurred during the signature process. 
+      */
+     byte[] signPayload(byte[] data, final int signingCaId)
+             throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
 
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="modules/acme/src"/>
+	<classpathentry kind="src" path="conf"/>
 	<classpathentry kind="src" path="modules/acme/src-common"/>
 	<classpathentry kind="src" path="modules/acme/src-test"/>
 	<classpathentry kind="src" path="modules/acme/src-common-test"/>
@@ -160,7 +161,6 @@
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
-	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
@@ -182,7 +182,6 @@
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-impl-2.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
