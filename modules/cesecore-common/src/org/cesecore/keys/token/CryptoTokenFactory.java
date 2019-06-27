@@ -46,7 +46,6 @@ public class CryptoTokenFactory {
         if (instance == null) {
             instance = new CryptoTokenFactory();
             /** Can't use class.getName() here because this class is not always available */
-            // TODO change it to work with ServiceLoader and maybe return the name from the implementation itself.
             instance.addAvailableCryptoToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
             instance.addAvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", false, true);
             instance.addAvailableCryptoToken(AzureCryptoToken.class.getName(), "Azure Key Vault", false, true);
