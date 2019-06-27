@@ -183,6 +183,7 @@
 	<classpathentry kind="lib" path="lib/jee/myfaces-impl-2.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
+    <classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-1.1.1.jar"/>
