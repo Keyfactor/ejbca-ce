@@ -304,7 +304,27 @@ public abstract class AlgorithmTools {
             if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
                 return SIG_ALGS_DSTU4145;
             }
-            return SIG_ALGS_ECDSA;
+            // Make things work faster by making the "best suitable" signature algorithm be first in the list
+            // This is a must for example for Azure Key Vault where a P-384 key can not be used together with SHA256WithECDSA.
+            List<String> ecSigAlgs = new ArrayList<String>(SIG_ALGS_ECDSA);
+            switch (AlgorithmTools.getNamedEcCurveBitLength(getKeySpecification(publickey))) {
+            case 256:
+                ecSigAlgs.remove(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+                ecSigAlgs.add(0, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+                break;
+            case 384:
+                ecSigAlgs.remove(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+                ecSigAlgs.add(0, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+                break;
+            case 521:
+                ecSigAlgs.remove(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
+                ecSigAlgs.add(0, AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
+                break;
+            default:
+                break;
+            }
+            log.info("Returning ecAlgs: "+ecSigAlgs);
+            return ecSigAlgs;
         }
         return Collections.emptyList();
     }

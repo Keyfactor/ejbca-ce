@@ -78,6 +78,14 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
         return result;
     }
 
+    public Set<String> getAllNames() {
+        Set<String> result = new HashSet<String>();
+        for(CacheEntry cacheEntry : cache.values()) {
+            result.add(cacheEntry.name);
+        }
+        return result;
+    }
+
     @Override
     public boolean shouldCheckForUpdates(final int id) {
         final long now = System.currentTimeMillis();

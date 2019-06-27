@@ -99,6 +99,15 @@ public class CryptoTokenInfo implements Serializable {
         return cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, "");
     }
 
+    public String getKeyVaultType() {
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE);        
+    }
+    public String getKeyVaultName() {
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_NAME);        
+    }
+    public String getKeyVaultClientID() {
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);        
+    }
     public Properties getCryptoTokenProperties() {
         return cryptoTokenProperties;
     }

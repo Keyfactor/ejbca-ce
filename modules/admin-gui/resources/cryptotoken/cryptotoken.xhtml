@@ -261,6 +261,68 @@
 						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
 				</h:panelGroup>
 
+                <h:panelGroup id="currentCryptoTokenKeyVaultTypePanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <h:outputLabel id="currentCryptoTokenKeyVaultTypeLabel"
+                        for="currentCryptoTokenKeyVaultType"
+                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_TYPE} " />
+                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+
+                    <h:selectOneMenu
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultType}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}">
+                        <f:selectItem
+                            itemValue="standard"
+                            itemLabel="Standard"/>
+                        <f:selectItem
+                            itemValue="premium"
+                            itemLabel="Premium"/>
+                    </h:selectOneMenu>
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultType}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+
+                <h:panelGroup id="currentCryptoTokenKeyVaultNamePanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <h:outputLabel id="currentCryptoTokenKeyVaultNameLabel"
+                        for="currentCryptoTokenKeyVaultName"
+                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_NAME} " />
+                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <h:inputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+
+                <h:panelGroup id="currentCryptoTokenKeyVaultClientIDPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <h:outputLabel id="currentCryptoTokenKeyVaultClientIDLabel"
+                        for="currentCryptoTokenKeyVaultClientID"
+                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_CLIENTID} " />
+                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <h:inputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+
 				<h:panelGroup />
 				<h:panelGroup styleClass="margin-top">
 					<h:commandButton
