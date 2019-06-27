@@ -24,7 +24,6 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -32,7 +31,6 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.junit.After;
@@ -53,9 +51,7 @@ public class SignSessionSigningTest {
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
     
-    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-
-    private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken("SignSessionSigningTest");
+    private final SignProxySessionRemote signProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
@@ -80,7 +76,7 @@ public class SignSessionSigningTest {
         byte[] payload = new byte[]{1, 2, 3, 4};
         X509Certificate cacert =  (X509Certificate) x509ca.getCACertificate();
         //Have the data signed using the CA's signing keys
-        CMSSignedData signedData = new CMSSignedData(signSession.signPayload(internalAdmin, payload, x509ca.getCAId()));
+        CMSSignedData signedData = new CMSSignedData(signProxySession.signPayload(payload, x509ca.getCAId()));
         //Construct a signer in order to verify the change
         SignerInformation signer = (SignerInformation) signedData.getSignerInfos().getSigners().iterator().next();
         JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
