@@ -3,11 +3,11 @@ ARG ANT_VERSION
 
 RUN apk --no-cache add curl
 
-RUN echo "PWD is: $PWD"
+RUN pwd
 
 RUN echo "ANT_VERSION is: $ANT_VERSION"
 
-RUN echo "${ls -la}"
+RUN ls -la
 
 RUN echo "ANT_HOME ${ANT_HOME}"
 
