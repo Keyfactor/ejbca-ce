@@ -7,7 +7,7 @@ pipeline {
     environment {
         // Build parameters defaults
         ANT_VERSION = '1.9.8'
-        THIS_JOB_NAME = env.JOB_BASE_NAME
+        THIS_JOB_NAME = $env.JOB_BASE_NAME
         // Load Jenkinsfile.groovy containing common functions/settings
         common = load_common()
         ANT_OPTS = common.get_ANT_OPTS()
