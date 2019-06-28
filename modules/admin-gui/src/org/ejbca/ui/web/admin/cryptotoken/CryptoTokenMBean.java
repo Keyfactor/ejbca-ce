@@ -140,7 +140,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isAllowedActivation() { return allowedActivation; }
         public boolean isAllowedDeactivation() { return allowedDeactivation; }
         public boolean isReferenced() { return referenced; }
-        public boolean isP11SlotType() { return PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()); }
+        public boolean isP11SlotType() { 
+            return PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()) ||
+                   CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType()); 
+        }
         public boolean isAzureType() { return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()); }
     }
 
@@ -235,7 +238,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isShowP11CryptoToken() {
-            return PKCS11CryptoToken.class.getSimpleName().equals(getType());
+            return PKCS11CryptoToken.class.getSimpleName().equals(getType()) || 
+                   CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
         }
 
         public boolean isShowAzureCryptoToken() {
@@ -451,8 +455,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             final String name = getCurrentCryptoToken().getName();
             final Properties properties = new Properties();
             String className = null;
-            if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
-                className = PKCS11CryptoToken.class.getName();
+            if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) ||
+                    CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
+                className = getCurrentCryptoToken().getType().equals("PKCS11CryptoToken") ? PKCS11CryptoToken.class.getName() : CryptoTokenFactory.JACKNJI_NAME;
                 String library = getCurrentCryptoToken().getP11Library();
                 properties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, library);
                 String slotTextValue = getCurrentCryptoToken().getP11Slot().trim();
@@ -761,7 +766,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setKeyPlaceholders(cryptoTokenInfo.getCryptoTokenProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, ""));
                     currentCryptoToken.setAllowExplicitParameters(cryptoTokenInfo.isAllowExplicitParameters());
 
-                    if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
+                    if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) ||
+                            cryptoTokenInfo.getType().equals(CryptoTokenFactory.JACKNJI_SIMPLE_NAME)) {
                         currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
                         currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
                         currentCryptoToken.setP11Slot(cryptoTokenInfo.getP11Slot());
