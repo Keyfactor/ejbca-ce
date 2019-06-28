@@ -123,12 +123,20 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private KeyAliasesCache aliasCache = new KeyAliasesCache();
     
+    private static PublicKey ecPublicDummyKey = null;
+    private static final byte[] ecPublicKeyBytes = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
+            "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
     /** @return a dummy key (hardcoded prime256v1) to add in initial stage of caching, because we can not put anything empty in the cache, because putting null means remove...
      */
     private static final PublicKey getDummyCacheKey() {
-        final byte[] ecPublicKey = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
-                "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
-        return KeyTools.getPublicKeyFromBytes(ecPublicKey);
+        if (ecPublicDummyKey == null) {
+            synchronized (ecPublicDummyKey) {
+                if (ecPublicDummyKey == null) {
+                    ecPublicDummyKey = KeyTools.getPublicKeyFromBytes(ecPublicKeyBytes);
+                }
+            }
+        }
+        return ecPublicDummyKey;
     }
 
     /** get the keyVaultName, set during init of crypto token */
