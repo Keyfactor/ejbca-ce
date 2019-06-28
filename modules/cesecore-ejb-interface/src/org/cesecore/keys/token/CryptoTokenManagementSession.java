@@ -207,10 +207,21 @@ public interface CryptoTokenManagementSession {
     /** @throws InvalidKeyException if the key alias placeholder didn't exist. */
     void removeKeyPairPlaceholder(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, InvalidKeyException;
 
-    /** @return list of information about all key pairs in the specified CryptoToken, but no references to the actual keys. */
+    /** @return list of information about all key pairs in the specified CryptoToken, but no references to the actual keys.
+     * @throws CryptoTokenOfflineException if crypto token is off-line and we can not list aliases
+     * @throws AuthorizationDeniedException if admin is not authorized to crypto token 
+     */
     List<KeyPairInfo> getKeyPairInfos(AuthenticationToken admin, int cryptoTokenId) throws CryptoTokenOfflineException, AuthorizationDeniedException;
 
-    /** @return information about a key pair with the the specified alias in the CryptoToken, but no references to the actual keys. null if alias does not exist. */
+    /**
+     * 
+     * @param authenticationToken the admin performing the action
+     * @param cryptoTokenId the crypto token where alias exists
+     * @param alias the alias for which we want to get key pari info
+     * @return information about a key pair with the the specified alias in the CryptoToken, but no references to the actual keys. null if alias does not exist.
+     * @throws CryptoTokenOfflineException if crypto token is off-line and key can not be accessed
+     * @throws AuthorizationDeniedException if admin is not authorized to crypto token 
+     */
     KeyPairInfo getKeyPairInfo(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /** @return the public key of the key pair with the the specified alias in the CryptoToken. */
