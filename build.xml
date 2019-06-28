@@ -566,7 +566,7 @@
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
 				<include name="json-smart-*.jar"/>
-				 <include name="httpclient-*.jar" />
+				<include name="httpclient-*.jar" />
                 <include name="httpcore-*.jar" />
                 <include name="httpmime-*.jar" />
                 <include name="json-simple-*.jar" />
@@ -574,6 +574,7 @@
             	<include name="dns*.jar" />
                 <include name="guava-*.jar" />
             	<include name="jsch-*.jar" />
+            	<include name="jna-*.jar"/>
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
@@ -668,6 +669,8 @@
             </zipfileset>
         	<!-- Include HttpClient for the use from the peerconnector.rar -->
         	<zipfileset prefix="lib" dir="${lib}/ext" includes="commons-httpclient-*.jar"/>
+        	<!-- Include JackNji11 for use from P11NG (cesecore-common) -->
+        	<zipfileset prefix="lib" dir="${lib}/ext" includes="jacknji11-*.jar"/>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
         		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
         		     There are classpath issues using the ejbca-ws-cli.jar though, since this jar contain class-patch in META-INF/MANIFEST 
