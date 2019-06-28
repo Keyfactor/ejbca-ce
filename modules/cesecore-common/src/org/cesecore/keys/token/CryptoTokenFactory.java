@@ -31,6 +31,12 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 public class CryptoTokenFactory {
 	
     private static transient Logger log = Logger.getLogger(CryptoTokenFactory.class);
+    
+    // Used for references where EE version may not be available
+    public static final String JACKNJI_SIMPLE_NAME = "JackNJI11CryptoToken";
+    public static final String JACKNJI_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken";
+    public static final String PRIME_CA_TOKEN_SIMPLE_NAME = "PrimeCAToken";
+    public static final String PRIME_CA_TOKEN_NAME = "se.primeKey.caToken.card.PrimeCAToken";
 
     /** Registry of available hard ca token classes that can be instantiated. */
     private Map<String, AvailableCryptoToken> availabletokens = new HashMap<String, AvailableCryptoToken>(4);
@@ -46,11 +52,13 @@ public class CryptoTokenFactory {
         if (instance == null) {
             instance = new CryptoTokenFactory();
             /** Can't use class.getName() here because this class is not always available */
-            instance.addAvailableCryptoToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
+            instance.addAvailableCryptoToken(PRIME_CA_TOKEN_NAME, PRIME_CA_TOKEN_SIMPLE_NAME, false, true);
             instance.addAvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", false, true);
             instance.addAvailableCryptoToken(AzureCryptoToken.class.getName(), "Azure Key Vault", false, true);
             instance.addAvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
             instance.addAvailableCryptoToken(NullCryptoToken.class.getName(), "Null", false, false);
+            // Enterprise only. May not be available don't reference class.
+            instance.addAvailableCryptoToken(JACKNJI_NAME, "PKCS#11 CP5", false, true); 
         }
         return instance;
     }
