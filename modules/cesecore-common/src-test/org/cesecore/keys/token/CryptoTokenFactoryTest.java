@@ -31,7 +31,7 @@ public class CryptoTokenFactoryTest {
 	public void testAvailableCryptoToken() throws Exception {
 		CryptoTokenFactory mgr = CryptoTokenFactory.instance();
 		Collection<AvailableCryptoToken> tokens = mgr.getAvailableCryptoTokens();
-		assertEquals(4, tokens.size());
+		assertEquals(5, tokens.size());
 		AvailableCryptoToken token1 = new AvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
 		AvailableCryptoToken token2 = new AvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", true, true);
 		AvailableCryptoToken token3 = new AvailableCryptoToken(NullCryptoToken.class.getName(), "Null", true, true);
@@ -52,7 +52,7 @@ public class CryptoTokenFactoryTest {
 		// The one with non existing classpath should not be added
 		mgr.addAvailableCryptoToken("foo.bar.CryptoToken", "FOO", true, true);
 		tokens = mgr.getAvailableCryptoTokens();
-		assertEquals(5, tokens.size());
+		assertEquals(6, tokens.size());
 		assertTrue(tokens.contains(token1));
 		assertTrue(tokens.contains(token2));
 		assertTrue(tokens.contains(token3));
