@@ -219,7 +219,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @PostConstruct
     public void init() {
-        if (OcspConfiguration.getLogSafer() == true) {
+        if (OcspConfiguration.getLogSafer()) {
             SaferDailyRollingFileAppender.addSubscriber(this);
             log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
         }
@@ -276,7 +276,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 for (final Integer caId : caSession.getAllCaIds()) {
                     final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
 
-                    final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue());
+                    final CAInfo caInfo = caSession.getCAInfoInternal(caId);
                     if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC) {
                         // Bravely ignore OCSP for CVC CAs
                         continue;
@@ -904,10 +904,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     log.info(intres.getLocalizedMessage("ocsp.infosigner.certexpired", CertTools.getSubjectDN(signerca), CertTools.getIssuerDN(signerca), e.getMessage()));
                                     verifyOK = false;
                                 }
-                            } catch (SignatureException e) {
-                                log.info(intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", signerSubjectDn, CertTools.getIssuerDN(signercert), e.getMessage()));
-                                verifyOK = false;
-                            } catch (InvalidKeyException e) {
+                            } catch (SignatureException | InvalidKeyException e) {
                                 log.info(intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", signerSubjectDn, CertTools.getIssuerDN(signercert), e.getMessage()));
                                 verifyOK = false;
                             }
@@ -1006,7 +1003,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         final Collection<Timer> timers = timerService.getTimers();
         for (final Timer timer : timers) {
-            final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+            final int currentTimerId = (Integer) timer.getInfo();
             if (currentTimerId==id) {
                 timer.cancel();
             }
@@ -1023,7 +1020,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         int count = 0;
         final Collection<Timer> timers = timerService.getTimers();
         for (final Timer timer : timers) {
-            final int currentTimerId = ((Integer)timer.getInfo()).intValue();
+            final int currentTimerId = (Integer) timer.getInfo();
             if (currentTimerId==id) {
                 count++;
             }
@@ -1392,7 +1389,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     }
                                 } else {
                                         log.error(intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
-                                                Integer.valueOf(extObj.getLastErrorCode())));
+                                                extObj.getLastErrorCode()));
                                 }
                             }
                         }
@@ -1489,11 +1486,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
             }
-        } catch (NoSuchAlgorithmException e) {
-            ocspResponse = processDefaultError(responseGenerator, transactionLogger, auditLogger, e);
-        } catch (CertificateException e) {
-            ocspResponse = processDefaultError(responseGenerator, transactionLogger, auditLogger, e);
-        } catch (CryptoTokenOfflineException e) {
+        } catch (NoSuchAlgorithmException | CertificateException | CryptoTokenOfflineException e) {
             ocspResponse = processDefaultError(responseGenerator, transactionLogger, auditLogger, e);
         }
         try {
@@ -1667,10 +1660,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } else {
                 throw new OcspFailureException("Response was not validly signed.");
             }
-        } catch (OCSPException ocspe) {
+        } catch (OCSPException | NoSuchProviderException ocspe) {
             throw new OcspFailureException(ocspe);
-        } catch (NoSuchProviderException nspe) {
-            throw new OcspFailureException(nspe);
         } catch (IllegalArgumentException e) {
             log.error("IllegalArgumentException: ", e);
             throw new OcspFailureException(e);
@@ -2086,11 +2077,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, null));
                                 }
                             }
-                        } catch (CertificateException e) {
+                        } catch (CertificateException | FileNotFoundException e) {
                             log.warn(e.getMessage());
-                        } catch (FileNotFoundException e) {
-                            log.warn(e.getMessage());
-                        } 
+                        }
                     }
                 }
             }
@@ -2103,17 +2092,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
         // Use global config as defaults for each new OcspKeyBinding
         final Map<String, Serializable> dataMap = new HashMap<String, Serializable>();
-        dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, Boolean.valueOf(OcspConfiguration.getIncludeCertChain()));
+        dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, OcspConfiguration.getIncludeCertChain());
         if (OcspConfiguration.getResponderIdType()==OcspConfiguration.RESPONDERIDTYPE_NAME) {
             dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.NAME.name());
         } else {
             dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name());
         }
         dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L);
-        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(OcspConfiguration.getNonExistingIsGood()));
-        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, Boolean.valueOf(OcspConfiguration.getNonExistingIsRevoked()));
+        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, OcspConfiguration.getNonExistingIsGood());
+        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, OcspConfiguration.getNonExistingIsRevoked());
         dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L);
-        dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(OcspConfiguration.getEnforceRequestSigning()));
+        dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, OcspConfiguration.getEnforceRequestSigning());
         return dataMap;
     }
     
