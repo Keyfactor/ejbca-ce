@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.junit.Before;
@@ -35,39 +36,67 @@ public class OcspConfigurationTest {
 	}
 
 	@Test
-	public void testMaxAgeNextUpdate() throws Exception {
+	public void testMaxAgeNextUpdateDefaults() {
 		long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 		long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 		assertEquals(30000, maxAge);
 		assertEquals(0, nextUpdate);
-		
-		// Create some values in a temp file and add to the configuration
-		File f = File.createTempFile("testocspconf", "properties");
-		f.deleteOnExit();
-		FileWriter fos = new FileWriter(f);
-		fos.write("ocsp.maxAge=60\nocsp.untilNextUpdate=70\nocsp.999.maxAge=70\nocsp.999.untilNextUpdate=80\nocsp.888.maxAge=75\nocsp.888.untilNextUpdate=85\n");
-		fos.close();
-		ConfigurationHolder.addConfigurationFile(f.getAbsolutePath());
-		
-		// New defaults
-		maxAge = OcspConfiguration.getMaxAge(0);
-		nextUpdate = OcspConfiguration.getUntilNextUpdate(0);
-		assertEquals(60000, maxAge);
-		assertEquals(70000, nextUpdate);
-		// Our specified values
-		maxAge = OcspConfiguration.getMaxAge(999);
-		nextUpdate = OcspConfiguration.getUntilNextUpdate(999);
-		assertEquals(70000, maxAge);
-		assertEquals(80000, nextUpdate);
-		maxAge = OcspConfiguration.getMaxAge(888);
-		nextUpdate = OcspConfiguration.getUntilNextUpdate(888);
-		assertEquals(75000, maxAge);
-		assertEquals(85000, nextUpdate);
-		// A profile that does not exist should use defaults
-		maxAge = OcspConfiguration.getMaxAge(111);
-		nextUpdate = OcspConfiguration.getUntilNextUpdate(111);
-		assertEquals(60000, maxAge);
-		assertEquals(70000, nextUpdate);
 	}
+
+    @Test
+    public void testMaxAgeNextUpdateProfileDoesNotExist() throws Exception {
+        // A profile that does not exist should use defaults
+        long maxAge = OcspConfiguration.getMaxAge(111);
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate(111);
+        assertEquals(30000, maxAge);
+        assertEquals(0, nextUpdate);
+    }
+
+	@Test
+	public void testMaxAgeNextUpdateCustomConfigurationsOverwriteDefaults() throws Exception {
+        createCustonOcspConfigurations("ocsp.maxAge=60\nocsp.untilNextUpdate=70\n");
+
+		// New defaults
+		long maxAge = OcspConfiguration.getMaxAge(0);
+		long nextUpdate = OcspConfiguration.getUntilNextUpdate(0);
+		assertEquals(60000, maxAge);
+		assertEquals(70000, nextUpdate);
+
+	}
+
+	@Test
+	public void testMaxAgeNextUpdateCustomConfigurations() throws Exception {
+        // Create some values in a temp file and add to the configuration
+        createCustonOcspConfigurations("ocsp.999.maxAge=70\nocsp.999.untilNextUpdate=80\nocsp.888.maxAge=75\nocsp.888.untilNextUpdate=85\n");
+        // Our specified values
+        long maxAge = OcspConfiguration.getMaxAge(999);
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate(999);
+        assertEquals(70000, maxAge);
+        assertEquals(80000, nextUpdate);
+        maxAge = OcspConfiguration.getMaxAge(888);
+        nextUpdate = OcspConfiguration.getUntilNextUpdate(888);
+        assertEquals(75000, maxAge);
+        assertEquals(85000, nextUpdate);
+	}
+
+    @Test
+    public void testNextUpdateFinalNextUpdate() throws Exception {
+        createCustonOcspConfigurations("ocsp.27.untilNextUpdate=99999999999\nocsp.27.revoked.untilNextUpdate=99999999999\n");
+        // Our specified values
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate(27);
+        long revokedUntilNextUpdate = OcspConfiguration.getRevokedUntilNextUpdate(27);
+        assertEquals(99991231235959l, nextUpdate);
+        assertEquals(99991231235959l, revokedUntilNextUpdate);
+    }
+
+    private void createCustonOcspConfigurations(String configurations) throws IOException {
+        File f = File.createTempFile("testocspconf", "properties");
+        f.deleteOnExit();
+        FileWriter fos = new FileWriter(f);
+        fos.write(configurations);
+        fos.close();
+        ConfigurationHolder.addConfigurationFile(f.getAbsolutePath());
+    }
+
 	
 }
