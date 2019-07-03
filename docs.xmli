@@ -139,8 +139,13 @@
 			username="${confluence.username}"
 			password="${confluence.password}"
 			/>
-		<unzip src="${docs.dest}/export.zip" dest="${docs.dest}"/>
-		<delete file="${docs.dest}/export.zip"/>		
+		<unzip src="${docs.dest}/export.zip" dest="${docs.dest}">
+		    <patternset>
+        		<exclude name="**/jquery.min.js"/>
+    		</patternset>
+		</unzip>
+		<delete file="${docs.dest}/export.zip"/>
+		<copy file="${docs.dist}/assets/js/jquery.min.js/" todir="${docs.dest}/assets/js"/>
 	</target>
 	
 	<target name="doc-confluence-copy-local" unless="${update.from.confluence}">
