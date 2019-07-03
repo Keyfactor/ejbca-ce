@@ -61,6 +61,7 @@ public class OcspConfiguration {
     public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
+    private static final long MAX_NEXT_UPDATE_TIME = 99991231235959l;
     
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
@@ -493,7 +494,6 @@ public class OcspConfiguration {
         return value;
     }
     
-    
     /**
      * The default number of milliseconds a response is valid, or 0 to disable. See RFC5019.
      */
@@ -508,6 +508,9 @@ public class OcspConfiguration {
             value = (config.getLong(key, value) * 1000);
         } catch (ConversionException e) {
             log.warn("\"ocsp.untilNextUpdate\" is not a decimal integer. Using default value: " + value);
+        }
+        if (value > MAX_NEXT_UPDATE_TIME) {
+            value = MAX_NEXT_UPDATE_TIME;
         }
         return value;
     }
@@ -535,6 +538,9 @@ public class OcspConfiguration {
             value = (config.getLong(key, value) * 1000);
         } catch (ConversionException e) {
             log.warn("\"ocsp.revoked.untilNextUpdate\" is not a decimal integer. Using default value: " + value);
+        }
+        if (value > MAX_NEXT_UPDATE_TIME) {
+            value = MAX_NEXT_UPDATE_TIME;
         }
         return value;
     }
