@@ -1886,7 +1886,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (cryptoTokenName != null && cryptoTokenManagementSession.getIdFromName(cryptoTokenName) == null) {
                     if (!globalDoNotStorePasswordsInMemory) {
                         log.info(" Auto-activation will be used.");
-                        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(p11password), true);
+                        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, p11password, true);
                     } else {
                         log.info(" Auto-activation will not be used.");
                     }
@@ -1961,7 +1961,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             final Properties cryptoTokenProperties = new Properties();
             if (!doNotStorePasswordsInMemory) {
                 log.info(" Auto-activation will be used.");
-                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(softKeyPassword), true);
+                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, softKeyPassword, true);
             } else {
                 log.info(" Auto-activation will not be used.");
             }
