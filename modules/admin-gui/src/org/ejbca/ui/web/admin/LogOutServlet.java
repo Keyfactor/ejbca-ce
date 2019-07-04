@@ -71,7 +71,7 @@ public class LogOutServlet extends HttpServlet {
             response.sendRedirect("/logout");
         } else {
         	// Redirect user to public RA Web pages to avoid initializing a new AdminGUI session.
-            response.sendRedirect(globalConfiguration.getBaseUrl() + "ra/logout.xhtml");
+            response.sendRedirect(globalConfiguration.getRelativeUri() + "ra/logout.xhtml");
         }
     }
 }

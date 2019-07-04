@@ -28,6 +28,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
+import org.ejbca.util.URIUtil;
 
 
 /**
@@ -245,29 +246,51 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
                 ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
     }
 
-    /** Checks if global datauration have been initialized. */
+    /** Checks if global data configuration have been initialized. */
     public boolean isInitialized(){
       return data.get(AVAILABLELANGUAGES)!=null;
     }
 
-    /** @return The base URL of the application using the supplied values. */
-    public String getBaseUrl(final String scheme, final String requestServerName, final int port) {
-        return scheme + "://" + requestServerName + ":" + port + "/" + InternalConfiguration.getAppNameLower() + "/";
+    /**
+     * Returns the application URI of the application as 'URI = scheme:[//authority]path/', where authority = [userinfo@]host[:port] and path = [application name].
+     *
+     * @param scheme A connection scheme, eg. http, https.
+     * @param host A host, consisting of either a registered name (including but not limited to a hostname), or an IP address.
+     *             IPv4 addresses must be in dot-decimal notation, and IPv6 addresses might be enclosed in brackets ([]).
+     * @param port A port number, eg. 80, 443, 8080, 8443.
+     *
+     * @return The application URI of the application using the supplied values.
+     *
+     * @see org.ejbca.util.URIUtil#getApplicationUri(String, String, int, String)
+     */
+    public String getBaseUrl(final String scheme, final String host, final int port) {
+        return URIUtil.getApplicationUri(scheme, host, port, InternalConfiguration.getAppNameLower());
     }
 
-    /** @return The base path (and not the URL as the name suggests). The name was kept to enable a smaller patch between EJBCA 6.15 and 7.0. */
-    public String getBaseUrl() {
+    /**
+     * Returns the relative URI of the application as 'URI = /path/', where path = [application name].
+     *
+     * @return The relative URI of the application.
+     */
+    public String getRelativeUri() {
         return "/" + InternalConfiguration.getAppNameLower() + "/";
     }
 
     /** @return The base path derived values in configuration files */
     public String getBaseUrlFromConfig() {
-        return getBaseUrl((String) data.get(GlobalConfiguration.PRIVATEPROTOCOL), WebConfiguration.getHostName(),
-                Integer.parseInt((String) data.get(GlobalConfiguration.PRIVATEPORT)));
+        return getBaseUrl(
+                (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL),
+                WebConfiguration.getHostName(),
+                Integer.parseInt((String) data.get(GlobalConfiguration.PRIVATEPORT))
+        );
     }
 
     public String getBaseUrlPublic() {
-        return getBaseUrl((String) data.get(PUBLICPROTOCOL), WebConfiguration.getHostName(), Integer.parseInt((String) data.get(PUBLICPORT)));
+        return getBaseUrl(
+                (String) data.get(PUBLICPROTOCOL),
+                WebConfiguration.getHostName(),
+                Integer.parseInt((String) data.get(PUBLICPORT))
+        );
     }
     
     public String getAdminWebPath() {
@@ -300,18 +323,19 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
      /** Checks the themes path for css files and returns an array of filenames
      *  without the ".css" ending. */
-    public   String[] getAvailableThemes() {
-       String[] availablethemes;
-       availablethemes =  getAvailableThemesAsString().split(",");
-       if(availablethemes != null){
-         for(int i = 0; i <  availablethemes.length; i++){
-           availablethemes[i] = availablethemes[i].trim();
-           if(availablethemes[i].endsWith(".css")){
-             availablethemes[i] = availablethemes[i].substring(0,availablethemes[i].length()-4);
-           }
-         }
-       }
-       return availablethemes;
+    public String[] getAvailableThemes() {
+        final String availableThemesAsString = getAvailableThemesAsString();
+        if(availableThemesAsString != null) {
+            final String[] availableThemes = availableThemesAsString.split(",");
+            for (int i = 0; i < availableThemes.length; i++) {
+                availableThemes[i] = availableThemes[i].trim();
+                if (availableThemes[i].endsWith(".css")) {
+                    availableThemes[i] = availableThemes[i].substring(0, availableThemes[i].length() - 4);
+                }
+            }
+            return availableThemes;
+        }
+        return new String[0];
     }
 
     /** Returns the default available theme used by administrator preferences. */

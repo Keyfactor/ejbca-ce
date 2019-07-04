@@ -1531,11 +1531,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 limitedCertificateData.setIssuer(issuerDn);
                 limitedCertificateData.setSubjectDN(subjectDn);
                 limitedCertificateData.setUsername(username);
-                limitedCertificateData.setCertificateProfileId(new Integer(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                limitedCertificateData.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
                 limitedCertificateData.setStatus(status);
                 limitedCertificateData.setRevocationReason(reasonCode);
                 limitedCertificateData.setRevocationDate(revocationDate);
-                limitedCertificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
+                limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                 limitedCertificateData.setCaFingerprint(caFingerprint);
                 log.info("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                 entityManager.persist(limitedCertificateData);
@@ -1551,7 +1551,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
                     limitedCertificateData.setRevocationReason(reasonCode);
                     limitedCertificateData.setRevocationDate(revocationDate);
-                    limitedCertificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
+                    limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                     entityManager.merge(limitedCertificateData);
         	    } else {
         	        if (log.isDebugEnabled()) {
