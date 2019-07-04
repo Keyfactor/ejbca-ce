@@ -12,16 +12,12 @@
  *************************************************************************/
 package org.ejbca.util;
 
-import org.apache.log4j.Logger;
-
 /**
  * This class contains URI manipulation methods.
  *
  * @version $Id$
  */
 public class URIUtil {
-
-    private static final Logger log = Logger.getLogger(URIUtil.class);
 
     /**
      * Returns the base URI of the application as 'URI = scheme:[//authority]path/', where authority = [userinfo@]host[:port].
@@ -63,7 +59,6 @@ public class URIUtil {
     // Reference: https://tools.ietf.org/html/rfc3986#section-3.2.2
     private static String getIPv6HostIp(final String host) {
         if(host != null && !host.startsWith("[") && !host.endsWith("]")) {
-            log.debug("### Enclosing the host with brackets.");
             return "[" + host + "]";
         }
         return host;
