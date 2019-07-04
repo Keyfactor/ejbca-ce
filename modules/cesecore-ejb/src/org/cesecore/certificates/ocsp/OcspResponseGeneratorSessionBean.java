@@ -1680,20 +1680,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         BasicOCSPRespBuilder basicRes = new BasicOCSPRespBuilder(ocspSigningCacheEntry.getRespId());
         if (responses != null) {
             for (OCSPResponseItem item : responses) {
-                Date nextUpdate = item.getNextUpdate();
-                TimeZone tz = TimeZone.getTimeZone("GMT");
-                Calendar cal = Calendar.getInstance(tz);
-                cal.setTime(nextUpdate);
-                if (cal.get(Calendar.YEAR) > 9999) {
-                    cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
-                    nextUpdate.setTime(cal.getTimeInMillis());
-                    if (log.isDebugEnabled()) {
-                        log.debug("nextUpdate is larger than 9999-12-31:23.59.59 GMT, limiting value as specified in RFC5280 4.1.2.5: " + ValidityDate.formatAsUTC(nextUpdate));
-                    }
-                } else if (signerCert != null && signerCert.getNotAfter().before(nextUpdate)) {
-                    // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
-                    nextUpdate = signerCert.getNotAfter();
-                }
+                Date nextUpdate = verifyNextUpdateDate(signerCert, item.getNextUpdate());
                 basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), nextUpdate, item.buildExtensions());
             }
         }
@@ -1756,6 +1743,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         }
         return returnval;
+    }
+
+    private Date verifyNextUpdateDate(X509Certificate signerCert, Date nextUpdate) {
+        if (nextUpdate != null) {
+            TimeZone tz = TimeZone.getTimeZone("GMT");
+            Calendar cal = Calendar.getInstance(tz);
+            cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
+            if (nextUpdate.getTime() >= cal.getTimeInMillis()) {
+                nextUpdate.setTime(cal.getTimeInMillis());
+                if (log.isDebugEnabled()) {
+                    log.debug("nextUpdate is larger than 9999-12-31:23.59.59 GMT, limiting value as specified in RFC5280 4.1.2.5: " + ValidityDate.formatAsUTC(nextUpdate));
+                }
+            } else if (signerCert != null && signerCert.getNotAfter().before(nextUpdate)) {
+                // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
+                nextUpdate = signerCert.getNotAfter();
+            }
+        }
+        return nextUpdate;
     }
 
     /**
