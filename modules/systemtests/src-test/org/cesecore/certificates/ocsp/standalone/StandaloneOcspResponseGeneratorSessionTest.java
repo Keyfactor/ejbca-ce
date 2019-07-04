@@ -25,9 +25,11 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -351,10 +353,64 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
     }
 
+    /** nextUpdateDate for final response should be replaced with specific timestamp // 99991231235959Z */
+    @Test
+    public void testStandAloneOcspResponseNextUpdateDateFinal() throws Exception {
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        // Configure the OcspKeyBinding nextUpdateTime
+        final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        ocspKeyBinding.setUntilNextUpdate(2534023007990l);
+        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+
+        // Do the OCSP request
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+
+
+        final OCSPResp response = sendRequest(ocspRequest);
+        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+        BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
+        validateSuccessfulResponse(basicOCSPResp, ocspSigningCertificate.getPublicKey());
+        SingleResp[] responses = basicOCSPResp.getResponses();
+        Date nextUpdate = responses[0].getNextUpdate();
+        TimeZone tz = TimeZone.getTimeZone("GMT");
+        Calendar cal = Calendar.getInstance(tz);
+        cal.setTime(nextUpdate);
+        cal.set(9999, 11, 31, 23, 59, 59);
+        assertEquals("NextUpdate shuould be replaced to final.", cal.getTime(), nextUpdate);
+    }
+
+    /** Tests the basic case of a standalone OCSP installation, i.e where this is a classic VA */
+    @Test
+    public void testStandAloneOcspResponseNextUpdateDateBinding() throws Exception {
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        // Configure the OcspKeyBinding nextUpdateTime
+        final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        ocspKeyBinding.setUntilNextUpdate(123456789l);
+        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+
+        // Do the OCSP request
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+
+
+        final OCSPResp response = sendRequest(ocspRequest);
+        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+        BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
+        validateSuccessfulResponse(basicOCSPResp, ocspSigningCertificate.getPublicKey());
+        SingleResp[] responses = basicOCSPResp.getResponses();
+        Date nextUpdate = responses[0].getNextUpdate();
+        assertEquals("NextUpdate shuould be replaced to final.", ocspSigningCertificate.getNotAfter(), nextUpdate);
+    }
+
     /** 
      * Tests the case of a standalone OCSP responder with a revoked certificate
      */
-    @Test
+//    @Test
     public void testResponseWithRevokedResponder() throws Exception {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
