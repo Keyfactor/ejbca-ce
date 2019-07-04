@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.util.SlotList;
+import org.ejbca.util.URIUtil;
 
 /**
  * This file handles configuration from web.properties
@@ -48,10 +49,12 @@ public class WebConfiguration {
     public static final String DEFAULT_CERTSTORE_CONTEXTROOT = "/ejbca/publicweb/certificates";
 	
 	/**
-	 * The configured server host name
+	 * The configured server host name.
+     *
+     * @see org.ejbca.util.URIUtil#getIPv6CompatibleHostIp(String)
 	 */
 	public static String getHostName() {
-		return EjbcaConfigurationHolder.getExpandedString(CONFIG_HTTPSSERVERHOSTNAME);
+	    return URIUtil.getIPv6CompatibleHostIp(EjbcaConfigurationHolder.getExpandedString(CONFIG_HTTPSSERVERHOSTNAME));
 	}
 	
 	/**
@@ -146,7 +149,7 @@ public class WebConfiguration {
 
     public static boolean doShowStackTraceOnErrorPage(){
         final String s=EjbcaConfigurationHolder.getString ("web.errorpage.stacktrace");
-        return s==null || s.toLowerCase().indexOf("true")>=0;
+        return s==null || s.toLowerCase().contains("true");
 	}
 
     public static String notification(String sDefault){        
@@ -180,7 +183,7 @@ public class WebConfiguration {
      * should be logged. This information can only be trusted if the request
      * is known to come from a trusted proxy server.
      * 
-     * @see getAdminLogRemoteAddress()
+     * @see #getAdminLogRemoteAddress()
      */
     public static boolean getAdminLogForwardedFor() {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.log.adminforwardedip"));
@@ -223,7 +226,7 @@ public class WebConfiguration {
     /** @return a (cached) mapping between the PKCS#11 libraries and their display names */
     public static Map<String,P11LibraryInfo> getAvailableP11LibraryToAliasMap() {
         if (availableP11LibraryToAliasMap==null) {
-            final Map<String,P11LibraryInfo> ret = new HashMap<String,P11LibraryInfo>();
+            final Map<String,P11LibraryInfo> ret = new HashMap<>();
             for (int i=0; i<256; i++) {
                 String fileName = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".file");
                 if (fileName!=null) {
@@ -261,7 +264,7 @@ public class WebConfiguration {
     /** @return a (cached) mapping between the PKCS#11 attribute files and their display names */
     public static Map<String,String> getAvailableP11AttributeFiles() {
         if (availableP11AttributeFiles==null) {
-            final Map<String,String> ret = new HashMap<String,String>();
+            final Map<String,String> ret = new HashMap<>();
             for (int i=0; i<256; i++) {
                 String fileName = EjbcaConfigurationHolder.getString("cryptotoken.p11.attr." + i + ".file");
                 if (fileName!=null) {
