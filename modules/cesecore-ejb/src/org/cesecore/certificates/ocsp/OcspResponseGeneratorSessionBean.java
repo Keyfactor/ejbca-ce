@@ -38,6 +38,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -168,6 +170,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
@@ -1678,8 +1681,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (responses != null) {
             for (OCSPResponseItem item : responses) {
                 Date nextUpdate = item.getNextUpdate();
-                // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
-                if (signerCert != null && nextUpdate != null && signerCert.getNotAfter().before(nextUpdate)) {
+                TimeZone tz = TimeZone.getTimeZone("GMT");
+                Calendar cal = Calendar.getInstance(tz);
+                cal.setTime(nextUpdate);
+                if (cal.get(Calendar.YEAR) > 9999) {
+                    cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
+                    nextUpdate.setTime(cal.getTimeInMillis());
+                    if (log.isDebugEnabled()) {
+                        log.debug("nextUpdate is larger than 9999-12-31:23.59.59 GMT, limiting value as specified in RFC5280 4.1.2.5: " + ValidityDate.formatAsUTC(nextUpdate));
+                    }
+                } else if (signerCert != null && signerCert.getNotAfter().before(nextUpdate)) {
+                    // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
                     nextUpdate = signerCert.getNotAfter();
                 }
                 basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), nextUpdate, item.buildExtensions());
