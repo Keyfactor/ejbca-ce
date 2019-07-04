@@ -79,16 +79,6 @@ public class OcspConfigurationTest {
         assertEquals(85000, nextUpdate);
 	}
 
-    @Test
-    public void testNextUpdateFinalNextUpdate() throws Exception {
-        createCustonOcspConfigurations("ocsp.27.untilNextUpdate=99999999999\nocsp.27.revoked.untilNextUpdate=99999999999\n");
-        // Our specified values
-        long nextUpdate = OcspConfiguration.getUntilNextUpdate(27);
-        long revokedUntilNextUpdate = OcspConfiguration.getRevokedUntilNextUpdate(27);
-        assertEquals(99991231235959l, nextUpdate);
-        assertEquals(99991231235959l, revokedUntilNextUpdate);
-    }
-
     private void createCustonOcspConfigurations(String configurations) throws IOException {
         File f = File.createTempFile("testocspconf", "properties");
         f.deleteOnExit();
