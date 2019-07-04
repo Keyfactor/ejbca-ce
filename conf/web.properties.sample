@@ -48,6 +48,7 @@ superadmin.batch=true
 httpsserver.password=serverpwd
 
 # The CA servers DNS host name, must exist on client using the admin GUI.
+# Or using IPv6 IP: [::1] or﻿::1
 httpsserver.hostname=localhost
 
 # The Distinguished Name of the SSL server certificate used by the administrative web GUI.
