@@ -101,7 +101,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         
     }
     @Test
-    public void stepC_addEndEntity() {
+    public void stepC_addEndEntity_sven() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("ShortValidity");
         HashMap <String, String> fields = new HashMap<>();
@@ -112,7 +112,20 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         fields.put("C, Country (ISO 3166)", "SE");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.addEndEntity();
+    }
 
+    @Test
+    public void stepD_addEndEntity_otto() {
+        addEndEntityHelper.openPage(getAdminWebUrl());
+        addEndEntityHelper.setEndEntityProfile("ShortValidity");
+        HashMap <String, String> fields = new HashMap<>();
+        fields.put("Username", "otto");
+        fields.put("Password (or Enrollment Code)", "foo123");
+        fields.put("Confirm Password", "foo123");
+        fields.put("CN, Common name", "Otto");
+        fields.put("C, Country (ISO 3166)", "DE");
+        addEndEntityHelper.fillFields(fields);
+        addEndEntityHelper.addEndEntity();
     }
 
 }
