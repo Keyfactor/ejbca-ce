@@ -128,4 +128,13 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         addEndEntityHelper.addEndEntity();
     }
 
+    @Test
+    public void stepE_searchEndEntity_otto() {
+        searchEndEntitiesHelper.openPage(getAdminWebUrl());
+        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
+        searchEndEntitiesHelper.fillSearchCriteria("otto",null,null,null);
+        searchEndEntitiesHelper.clickSearchByUsernameButton();
+        searchEndEntitiesHelper.assertNumberOfSearchResults(1);
+    }
+
 }

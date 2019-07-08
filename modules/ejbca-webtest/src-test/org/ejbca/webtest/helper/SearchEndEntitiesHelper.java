@@ -38,6 +38,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         static final By BUTTON_EDIT_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='Edit End Entity (popup window)']");
 
         static final String TEXT_VIEW_MODE_SWITCH_BASIC = "Basic Mode";
+        static final String TEXT_VIEW_MODE_SWITCH_ADVANCED = "Advanced Mode";
         static final By BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED = By.id("viewModeSwitchBasicOrAdvanced");
         // Select drop downs
         static final By SELECT_SEARCH_STATUS = By.xpath("//select[@name='selectliststatus']");
@@ -211,5 +212,16 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         if (Page.TEXT_VIEW_MODE_SWITCH_BASIC.equals(getElementText(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED))) {
             clickLink(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED);
         }
+    }
+
+    /**
+     * Switches the view to 'Advanced Mode' if the link with proper text exists.
+     *
+     */
+    public void switchViewModeFromBasicToAdvanced() {
+        if (Page.TEXT_VIEW_MODE_SWITCH_ADVANCED.equals(getElementText(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED))) {
+            clickLink(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED);
+        }
+
     }
 }
