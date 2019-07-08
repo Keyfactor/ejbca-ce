@@ -14,6 +14,7 @@
 package org.ejbca.webtest.scenario;
 
 import java.util.Collections;
+import java.util.HashMap;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
@@ -99,24 +100,19 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         endEntityProfileHelper.saveEndEntityProfile();
         
     }
-    
-    
-    
-//    @Test
-//    public void stepA_AddEndEntitySubjectDn1of3() throws InterruptedException {
-//        
-//    }
-    
-    /*
     @Test
-    public void stepF_SearchEndEntitySubjectDn3of3() {
-        searchEndEntitiesHelper.openPage(getAdminWebUrl());
+    public void stepC_addEndEntity() {
+        addEndEntityHelper.openPage(getAdminWebUrl());
+        addEndEntityHelper.setEndEntityProfile("ShortValidity");
+        HashMap <String, String> fields = new HashMap<>();
+        fields.put("Username", "sven");
+        fields.put("Password (or Enrollment Code)", "foo123");
+        fields.put("Confirm Password", "foo123");
+        fields.put("CN, Common name", "Sven");
+        fields.put("C, Country (ISO 3166)", "SE");
+        addEndEntityHelper.fillFields(fields);
+        addEndEntityHelper.addEndEntity();
 
-        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic(); //Note: the search panel needs to be in "basic mode" for 'fillSearchCriteria' method to work properly.
-        searchEndEntitiesHelper.fillSearchCriteria(TestData.END_ENTITY_NAME_3, null, null, null);
-
-        searchEndEntitiesHelper.clickSearchByUsernameButton();
-        searchEndEntitiesHelper.assertNumberOfSearchResults(1);
     }
-    */
+
 }
