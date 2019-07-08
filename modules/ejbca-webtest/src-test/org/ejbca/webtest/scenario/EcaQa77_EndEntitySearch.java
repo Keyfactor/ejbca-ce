@@ -13,10 +13,13 @@
 
 package org.ejbca.webtest.scenario;
 
+import java.util.Collections;
+
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -31,8 +34,8 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     private static WebDriver webDriver;
 
     // Helpers
-    //private static EndEntityProfileHelper endEntityProfileHelper;
     private static CertificateProfileHelper certificateProfileHelper;
+    private static EndEntityProfileHelper endEntityProfileHelper;
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
     
@@ -42,7 +45,9 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         private static final String SUBCA_NAME = "subCA ECAQA5";
         private static final String END_ENTITY_NAME_1 = "TestEndEntityEMPTY_1";
         private static final String END_ENTITY_NAME_2 = "TestEndEntityEMPTY_2";
-        private static final String CERTIFICATE_PROFILE_NAME = "ShortValidity";
+        private static final String SHORTVALIDITY_CERTIFICATE_PROFILE_NAME = "ShortValidity";
+        private static final String SHORTVALIDITY_ENDENTITY_PROFILE_NAME = "ShortValidity";
+        private static final String CA_NAME = "ManagementCA";
     }
 
     @BeforeClass
@@ -51,7 +56,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         webDriver = getWebDriver();
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
-        //endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
     }
 
@@ -68,13 +73,34 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     }
 
     @Test
-    public void stepA_addEndEntityProfile() {
+    public void stepA_addCertificateProfile() {
         certificateProfileHelper.openPage(getAdminWebUrl());
-        certificateProfileHelper.cloneCertificateProfile("SERVER", TestData.CERTIFICATE_PROFILE_NAME);
-        certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.cloneCertificateProfile("SERVER", TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.openEditCertificateProfilePage(TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME);
         certificateProfileHelper.editCertificateProfile(null, null, null, null, "2d");
         certificateProfileHelper.saveCertificateProfile();
     }
+    
+    @Test
+    public void stepB_addEndEntityProfile() {
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.addEndEntityProfile(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        // Set Certificate Profile in EEP
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        endEntityProfileHelper.editEndEntityProfile(
+                TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME,
+                Collections.singletonList(TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME),
+                TestData.CA_NAME,
+                Collections.singletonList(getCaName())
+        );
+        
+        endEntityProfileHelper.addSubjectAttribute("dn", "C, Country (ISO 3166)");
+        
+        endEntityProfileHelper.saveEndEntityProfile();
+        
+    }
+    
+    
     
 //    @Test
 //    public void stepA_AddEndEntitySubjectDn1of3() throws InterruptedException {
