@@ -412,6 +412,15 @@ public class RaWebHelper extends BaseHelper {
         fillInput(Page.INPUT_ENROLLMENTCODE_CONFIRM, enrollmentCode);
     }
     
+    /**
+     * Fills the username 
+     * 
+     * @param username
+     */
+    public void fillUsername(final String username) {
+        fillInput(Page.INPUT_USERNAME, username);
+    }
+    
     
     /**
      * Triggers the link 'Save data' in request review form.
@@ -452,6 +461,4 @@ public class RaWebHelper extends BaseHelper {
     public void assertApproveMessageDoesNotExist() {
                 assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
     }
-
-
 }

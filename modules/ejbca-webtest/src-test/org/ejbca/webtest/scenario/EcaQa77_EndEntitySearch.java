@@ -16,6 +16,7 @@ package org.ejbca.webtest.scenario;
 import java.util.Collections;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
@@ -33,8 +34,6 @@ import org.openqa.selenium.WebDriver;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa77_EndEntitySearch extends WebTestBase {
 
-    private static WebDriver webDriver;
-
     // Helpers
     private static CertificateProfileHelper certificateProfileHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
@@ -44,19 +43,33 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     
 
     public static class TestData {
-        private static final String ROOTCA_NAME = "ECAQA5";
-        private static final String SUBCA_NAME = "subCA ECAQA5";
-        private static final String END_ENTITY_NAME_1 = "TestEndEntityEMPTY_1";
-        private static final String END_ENTITY_NAME_2 = "TestEndEntityEMPTY_2";
         private static final String SHORTVALIDITY_CERTIFICATE_PROFILE_NAME = "ShortValidity";
         private static final String SHORTVALIDITY_ENDENTITY_PROFILE_NAME = "ShortValidity";
         private static final String CA_NAME = "ManagementCA";
+        
+        static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
+                "-----BEGIN CERTIFICATE REQUEST-----", 
+                "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w", 
+                "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG", 
+                "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM", 
+                "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7", 
+                "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB", 
+                "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+", 
+                "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr", 
+                "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs", 
+                "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9", 
+                "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM", 
+                "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq", 
+                "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt", 
+                "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==", 
+                "-----END CERTIFICATE REQUEST-----"
+        };
     }
 
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        WebDriver webDriver = getWebDriver();
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
@@ -67,8 +80,8 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-//        removeEndEntityByUsername(TestData.END_ENTITY_NAME_1);
-//        removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
+        // removeEndEntityByUsername(TestData.END_ENTITY_NAME_1);
+        // removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
         // TODO remove cert profile
         // TODO remove EE profile
         //afterClass(); // TODO put this back
@@ -101,6 +114,10 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         endEntityProfileHelper.saveEndEntityProfile();
         
     }
+    
+    
+    // replaced by stepE
+    /*
     @Test
     public void stepC_addEndEntity_sven() {
         addEndEntityHelper.openPage(getAdminWebUrl());
@@ -114,6 +131,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.addEndEntity();
     }
+*/
 
     @Test
     public void stepD_addEndEntity_otto() {
@@ -128,29 +146,54 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.addEndEntity();
     }
+
     
+    // For whatever reason the actions for creating an EndEntity need to be in separate steps. Otherwise, when you press 'Download PEM', you'll get a JSF parsingexception
     @Test
-    public void stepX_testCreateAndEnrollViaRaWeb() {
-        raWebHelper.openPage(getRaWebUrl());
+    public void stepE1_CreateSven() {
+        raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateTypeByEndEntityName(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
-        raWebHelper.selectKeyPairGenerationOnServer();
-        
-        raWebHelper.selectKeyAlgorithm("RSA 1024 bits");
-        
-        raWebHelper.fillDnAttribute0("sven");
-        raWebHelper.fillDnAttribute1("SWE");
-        raWebHelper.fillCredentials("sven", "foo123");
-        raWebHelper.clickDownloadKeystorePem();
     }
 
     @Test
-    public void stepE_searchEndEntity_otto() {
+    public void stepE2_CreateSven() {
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        raWebHelper.selectKeyPairGenerationProvided();
+    }
+
+    @Test
+    public void stepE3_CreateSven() {
+        raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
+    }
+
+    @Test
+    public void stepE4_CreateSven() {
+        raWebHelper.clickUploadCsrButton();
+    }
+
+    @Test
+    public void stepE5_CreateSven() {
+        raWebHelper.fillMakeRequestEditCommonName("sven");
+    }
+
+    @Test
+    public void stepE6_CreateSven() {
+        raWebHelper.fillUsername("sven");
+    }
+    
+    @Test
+    public void stepE7_CreateSven() {
+        raWebHelper.clickDownloadPem();
+    }
+
+    
+    @Test
+    public void stepF_searchEndEntity_otto() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
         searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
         searchEndEntitiesHelper.fillSearchCriteria("otto",null,null,null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.assertNumberOfSearchResults(1);
     }
-
+    
 }
