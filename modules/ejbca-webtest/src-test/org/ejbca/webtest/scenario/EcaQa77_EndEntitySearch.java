@@ -21,6 +21,7 @@ import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
+import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,6 +40,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
+    private static RaWebHelper raWebHelper;
     
 
     public static class TestData {
@@ -59,6 +61,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
+        raWebHelper = new RaWebHelper(webDriver);
     }
 
     @AfterClass
@@ -126,6 +129,21 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         fields.put("C, Country (ISO 3166)", "DE");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.addEndEntity();
+    }
+    
+    @Test
+    public void stepX_testCreateAndEnrollViaRaWeb() {
+        raWebHelper.openPage(getRaWebUrl());
+        raWebHelper.makeNewCertificateRequest();
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        raWebHelper.selectKeyPairGenerationOnServer();
+        
+        raWebHelper.selectKeyAlgorithm("RSA 1024 bits");
+        
+        raWebHelper.fillDnAttribute0("sven");
+        raWebHelper.fillDnAttribute1("SWE");
+        raWebHelper.fillCredentials("sven", "foo123");
+        raWebHelper.clickDownloadKeystorePem();
     }
 
     @Test
