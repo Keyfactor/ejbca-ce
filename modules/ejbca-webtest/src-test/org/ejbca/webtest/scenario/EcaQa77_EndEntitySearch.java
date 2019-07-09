@@ -67,13 +67,11 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-//        removeCaAndCryptoToken(TestData.ROOTCA_NAME);
-//        removeCaByName(TestData.SUBCA_NAME);
 //        removeEndEntityByUsername(TestData.END_ENTITY_NAME_1);
 //        removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
-//        removeEndEntityByUsername(TestData.END_ENTITY_NAME_3);
-
-        //afterClass();
+        // TODO remove cert profile
+        // TODO remove EE profile
+        //afterClass(); // TODO put this back
     }
 
     @Test
