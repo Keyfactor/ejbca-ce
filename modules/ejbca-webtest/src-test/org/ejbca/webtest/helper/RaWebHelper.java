@@ -12,13 +12,16 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.List;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 // TODO JavaDoc
 /**
@@ -57,7 +60,8 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
         static final By BUTTON_TAB_APPROVE_REQUESTS = By.id("manageRequestsForm:tabApproveRequests");
         static final By BUTTON_TAB_PENDING_REQUESTS = By.id("manageRequestsForm:tabPendingRequests");
-        static final By BUTTON_DOWNLOAD_PEM = By.id("requestInfoForm:generatePem");
+        static final By BUTTON_DOWNLOAD_PEM = By.id("requestInfoForm:generatePem"); 
+        static final By BUTTON_DOWNLOAD_KEYSTORE_PEM = By.id("requestInfoForm:generateKeyStorePem");
         static final By TABLE_REQUESTS = By.id("manageRequestsForm:manageRequestTable");
         static final By TABLE_REQUEST_ROWS = By.xpath("//tbody/tr");
         static final By TABLE_REQUEST_ROW_CELLS = By.xpath(".//td");
@@ -65,12 +69,16 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_APPROVE = By.id("manageRequestForm:commandApprove");
         static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
         static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
-        static final By INPUT_MAKE_REQUEST_EDIT_FORM_CN = By.id("requestInfoForm:subjectDn:0:subjectDnField");
+        static final By INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0 = By.id("requestInfoForm:subjectDn:0:subjectDnField");
+        static final By INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE1 = By.id("requestInfoForm:subjectDn:1:subjectDnField");
         static final By INPUT_MANAGE_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
         static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeName:0:subjectAltNameField");
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
         static final By TEXT_REQUEST_FORM_APPROVE_MESSAGE = By.id("manageRequestForm:requestApproveMessage");
+        static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
+        static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
+        static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
     }
 
     /**
@@ -119,10 +127,15 @@ public class RaWebHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_CA_TYPE, ca);
     }
 
+    public void selectKeyAlgorithm(final String keyAlgorithm) {
+        selectOptionByName(Page.SELECT_KEY_ALGORITHM, keyAlgorithm);
+    }
+    
     public void selectKeyPairGenerationOnServer() {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_ON_SERVER);
     }
 
+    
     public void selectKeyPairGenerationProvided() {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_PROVIDED);
     }
@@ -166,10 +179,6 @@ public class RaWebHelper extends BaseHelper {
         assertEquals("Key Algorithm selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, keyAlgorithmSelectionWebElement.isEnabled());
     }
 
-    public void fillClearCsrText(final String csr) {
-        fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr, true);
-    }
-
     /**
      * Click to upload Csr
      */
@@ -185,6 +194,13 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.BUTTON_DOWNLOAD_PEM);
     }
 
+    /**
+     * Click to "Download PEM" button in requestInfoForm form.
+     */
+    public void clickDownloadKeystorePem() {
+        clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
+    }
+    
     public void assertCsrUploadError() {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
         assertNotNull("No/wrong error message displayed when uploading forbidden CSR.", errorMessageWebElement);
@@ -330,13 +346,21 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.BUTTON_REQUEST_EDIT);
     }
 
+    public void fillClearCsrText(final String csr) {
+        fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr, true);
+    }
+    
     /**
      * Fills the 'CN, Common Name' with text in make request edit form.
-     *
+     * 
+     * NB: This requires the certificate profile to be created in a way, that "common name" appears as the 0th element in the list!
+     * (Otherwise you are unable to find it by 'INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0' selector)
+     * Suggestion: use fillDnAttributeX methods instead! 
+     *  
      * @param cnText Common Name.
      */
     public void fillMakeRequestEditCommonName(final String cnText) {
-        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_CN, cnText);
+        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0, cnText);
     }
     
     /**
@@ -356,7 +380,39 @@ public class RaWebHelper extends BaseHelper {
     public void fillDnsName(final String cnDnsName) {
         fillInput(Page.INPUT_DNS_NAME, cnDnsName);
     }
+    
+    /**
+     * The "Subject DN Attributes" in the "Provide request info" section are identified like follows:
+     * requestInfoForm:subjectDn:0:subjectDnField
+     * requestInfoForm:subjectDn:1:subjectDnField
+     * ...
+     * 
+     * This method fills the 0th element with the value provided by 'attributeValue' input param.
+     *
+     * @param attributeValue
+     */
+    public void fillDnAttribute0(final String attributeValue) {
+        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0, attributeValue);
+    }
 
+    public void fillDnAttribute1(final String attributeValue) {
+        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE1, attributeValue);
+    }
+    
+    /**
+     * Fills the "User Credentials" section with username and enrollment code. 
+     * Also fills the enrollment code confirmation box with the same enrollment code value
+     * 
+     * @param username
+     * @param enrollmentCode
+     */
+    public void fillCredentials(final String username, final String enrollmentCode) {
+        fillInput(Page.INPUT_USERNAME, username);
+        fillInput(Page.INPUT_ENROLLMENTCODE, enrollmentCode);
+        fillInput(Page.INPUT_ENROLLMENTCODE_CONFIRM, enrollmentCode);
+    }
+    
+    
     /**
      * Triggers the link 'Save data' in request review form.
      */
