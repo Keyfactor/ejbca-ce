@@ -466,7 +466,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @throws AuthorizationDeniedException
      * @throws javax.ejb.EJBException if a communications- or system error occurs
      */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public String internalCreateCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -630,7 +629,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @throws AuthorizationDeniedException
      * @throws javax.ejb.EJBException if a communications- or system error occurs
      */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public byte[] internalCreateDeltaCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
         if (ca == null) {
