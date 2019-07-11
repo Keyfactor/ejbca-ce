@@ -456,8 +456,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * they are no longer needed in the CRL.
      * Generates the CRL and stores it in the database.
      * <p>
-     * Runs without a transaction, since this operation cannot be rolled back, and also for performance reasons,
-     * if the CRLs are large.
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
@@ -612,8 +610,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * this method will try to query the database for the last complete CRL.
      * Generates the CRL and stores it in the database.
      * <p>
-     * Runs without a transaction, since this operation cannot be rolled back, and also for performance reasons,
-     * if the CRLs are large.
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
