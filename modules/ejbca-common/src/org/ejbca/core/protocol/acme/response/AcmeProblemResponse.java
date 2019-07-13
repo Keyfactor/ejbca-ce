@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.XmlElement;
 /**
  * ACME Problem object JSON mapping.
  *
- * https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-6.6
+ * https://tools.ietf.org/html/rfc8555#section-6.7
  *
  * (The problem response object in ACME does not strictly follow
  * https://tools.ietf.org/html/rfc7807 "Problem Details for HTTP APIs".)
