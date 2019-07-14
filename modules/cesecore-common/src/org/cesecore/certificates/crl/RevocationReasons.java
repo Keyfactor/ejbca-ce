@@ -12,8 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * An enum for revocation reasons, with a numerical database value and a String value for CLI applications.
@@ -22,6 +26,7 @@ import java.util.Map;
  * 
  * @version $Id$
  */
+@SuppressWarnings("unchecked")
 public enum RevocationReasons {
     NOT_REVOKED(-1, "NOT_REVOKED", "The Certificate Is Not Revoked"),
     UNSPECIFIED(0, "UNSPECIFIED", "Unspecified"),
@@ -41,13 +46,21 @@ public enum RevocationReasons {
 
     private static final Map<Integer, RevocationReasons> databaseLookupMap = new HashMap<Integer, RevocationReasons>();
     private static final Map<String, RevocationReasons> cliLookupMap = new HashMap<String, RevocationReasons>();
-
+    private static final Collection<Integer> reasonableRevocationReasons;
     
     static {
         for(RevocationReasons reason : RevocationReasons.values()) {
             databaseLookupMap.put(reason.getDatabaseValue(), reason);
             cliLookupMap.put(reason.getStringValue(), reason);
         }
+        Collection<Integer> reason = new ArrayList<>();
+        reason.add(RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue());
+        reason.add(RevocationReasons.CESSATIONOFOPERATION.getDatabaseValue());
+        reason.add(RevocationReasons.KEYCOMPROMISE.getDatabaseValue());
+        reason.add(RevocationReasons.PRIVILEGESWITHDRAWN.getDatabaseValue());
+        reason.add(RevocationReasons.SUPERSEDED.getDatabaseValue());
+        reason.add(RevocationReasons.UNSPECIFIED.getDatabaseValue());
+        reasonableRevocationReasons = (Collection<Integer>) CollectionUtils.unmodifiableCollection(reason);
     }
 
     private RevocationReasons(final int databaseValue, final String stringValue, String humanReadable) {
@@ -87,5 +100,17 @@ public enum RevocationReasons {
             return null;
         }
         return cliLookupMap.get(cliValue);
+    }
+    
+    /**
+     * Returns the collection of reasonable revocation reason codes.
+     * 
+     * Verify that the revocation reason code is allowed (see https://tools.ietf.org/html/rfc8555#section-7.6)
+     * ACME server MAY disallow a subset may of reasonCodes ... defined in RFC5820 ...
+     *  
+     * @return the collection of revocation reason codes.
+     */
+    public static Collection<Integer> getReasonableRevocationReasonCodes() {
+        return reasonableRevocationReasons;
     }
 }

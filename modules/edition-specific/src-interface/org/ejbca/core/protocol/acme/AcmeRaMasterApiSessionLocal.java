@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.acme;
 
+import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -26,9 +28,12 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * Proxy for identifying all calls that are needed in the RaMasterApi to fully support ACME.
@@ -39,10 +44,11 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 @Local
 public interface AcmeRaMasterApiSessionLocal {
 
-    /** @see org.ejbca.core.model.era.RaMasterApi#changeCertificateStatus(AuthenticationToken, String, int, int) */
-    boolean changeCertificateStatus(AuthenticationToken authenticationToken, String fingerprint, int newStatus, int revocationReason)
-            throws ApprovalException, WaitingForApprovalException;
-
+    /** @see org.ejbca.core.model.era.RaMasterApi#revokeCert(AuthenticationToken, java.math.BigInteger, java.util.Date, String, int, boolean) */
+    void revokeCert(AuthenticationToken authenticationToken, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
+    
     /** @see org.ejbca.core.model.era.RaMasterApi#searchForCertificate(AuthenticationToken, String) */
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
 
