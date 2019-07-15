@@ -164,7 +164,7 @@ public class AdminRolesHelper extends BaseHelper {
         // Click 'Access Rules' of the role
         clickLink(Page.getMemebersButtonFromRolesTableRowContainingText(roleName));
         // Assert correct edit page
-        assertRoleTitleExists( "Administrator Role : ", roleName);
+        assertRoleTitleExists( "Role : ", roleName);
         // Set context
         viewContext = ViewMode.VIEW_MODE_MEMBERS;
     }
@@ -178,7 +178,7 @@ public class AdminRolesHelper extends BaseHelper {
         // Click 'Access Rules' of the role
         clickLink(Page.getAccessRulesButtonFromRolesTableRowContainingText(roleName));
         // Assert correct edit page
-        assertRoleTitleExists( "Administrator Role : ", roleName);
+        assertRoleTitleExists( "Role : ", roleName);
         // Set context
         viewContext = ViewMode.VIEW_MODE_BASIC;
     }
