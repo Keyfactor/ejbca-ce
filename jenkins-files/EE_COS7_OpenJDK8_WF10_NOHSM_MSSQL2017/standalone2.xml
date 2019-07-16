@@ -171,32 +171,8 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-
-		        <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads" enabled="true" use-ccm="true">
-                    <connection-url>jdbc:db2://db_ee_cos7_openjdk8_wf10_nohsm_db2:50000/ejbca</connection-url>
-                    <driver>db2</driver>
-                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
-                    <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>150</max-pool-size>
-                        <prefill>true</prefill>
-                    </pool>
-                    <security>
-                        <user-name>db2inst1</user-name>
-                        <password>db2inst1</password>
-                    </security>
-                    <validation>
-                        <check-valid-connection-sql>select 1 from sysibm.sysdummy1</check-valid-connection-sql>
-                        <validate-on-match>true</validate-on-match>
-                        <background-validation>false</background-validation>
-                    </validation>
-                    <statement>
-                        <prepared-statement-cache-size>50</prepared-statement-cache-size>
-                        <share-prepared-statements>true</share-prepared-statements>
-                    </statement>
-                </datasource>
                 <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads">
-                    <connection-url>jdbc:sqlserver://net_ee_cos7_openjdk8_wf10_nohsm_mssql2017:1433;databaseName=ejbca</connection-url>
+                    <connection-url>jdbc:sqlserver://db_ee_cos7_openjdk8_wf10_nohsm_mssql2017:1433;databaseName=ejbca</connection-url>
                     <driver>mssql</driver>
                     <pool>
                         <min-pool-size>5</min-pool-size>
