@@ -1956,8 +1956,7 @@ function checkallfields(){
 function viewuser(row){
     var hiddenusernamefield = eval("document.adduser.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
+    var link = '<%= VIEWUSER_LINK %>' + encodeURI('?<%= USER_PARAMETER %>=' + username);
     win_popup = window.open(link, 'view_user','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
@@ -1965,12 +1964,10 @@ function viewuser(row){
 function edituser(row){
     var hiddenusernamefield = eval("document.adduser.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
+    var link = '<%= EDITUSER_LINK %>' + encodeURI('?<%= USER_PARAMETER %>=' + username);
     win_popup = window.open(link, 'edit_user','height=750,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
-
 -->
 </script>
 
