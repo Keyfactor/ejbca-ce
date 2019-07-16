@@ -7,49 +7,38 @@ pipeline {
 		DOCKER_NAME_BASE = 'ee_cos7_openjdk8_wf10_nohsm_mssql2017'
 		DOCKER_NAME_NET = 'net_ee_cos7_openjdk8_wf10_nohsm_mssql2017'
 		DOCKER_NAME_DB = 'db_ee_cos7_openjdk8_wf10_nohsm_mssql2017'
-		DB_VERSION = '2017-latest'
-		DB_PORTS = '1433:1433'
-		DB_PASSWORD = 'MyEjbcaPass'
-	}
-	parameters {
-		string(name: 'JENKINS_JOB_FOLDER', defaultValue: env.JENKINS_JOB_FOLDER, description: 'The name of the folder containing the jenkins job\'s artifacts.')
-		string(name: 'DOCKER_NAME_BASE', defaultValue: env.DOCKER_NAME_BASE, description: 'The name of the base docker describing the environment setup.')
-		string(name: 'DOCKER_NAME_NET', defaultValue: env.DOCKER_NAME_NET, description: 'The name of the network for these dockers.')
-		string(name: 'DOCKER_NAME_DB', defaultValue: env.DOCKER_NAME_DB, description: 'The name of the database docker.')
-		string(name: 'DB_VERSION', defaultValue: env.DB_VERSION, description: 'Database Docker version.')
-		string(name: 'DB_PORTS', defaultValue: env.DB_PORTS, description: 'Database Internal:External ports.')
-		string(name: 'DB_PASSWORD', defaultValue: env.DB_PASSWORD, description: 'Database password.')
+		DB_PASSWORD = 'MyEjbcaPass1100'
 	}
 	stages {
 		stage('verify that space is clean') {
 			steps {
-				sh "docker container rm ${params.DOCKER_NAME_DB} -f || true"
-				sh "docker container rm ${params.DOCKER_NAME_BASE} -f || true"
-				sh "docker network rm ${params.DOCKER_NAME_NET} || true"
+				sh "docker container rm ${env.DOCKER_NAME_DB} -f || true"
+				sh "docker container rm ${env.DOCKER_NAME_BASE} -f || true"
+				sh "docker network rm ${env.DOCKER_NAME_NET} || true"
 				sh "rm -rf ear"
 			}
 		}
 		stage('network') {
 			steps {
-				sh "docker network create --driver bridge ${params.DOCKER_NAME_NET} || true"
+				sh "docker network create --driver bridge ${env.DOCKER_NAME_NET} || true"
 			}
 		}
 		stage('database') {
 			steps {
-			    dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}/mssql") {
-			        sh "docker build -t ${params.DOCKER_NAME_DB} -m 3GB . "
-			        sh "docker run --name ${params.DOCKER_NAME_DB} --net=${params.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${params.DOCKER_NAME_DB}"
+			    dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}/mssql") {
+			        sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
+			        sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_DB}"
 			    }
 				sh "sleep 5"
-				sh "docker exec -it ${params.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -U sa -P '${params.DB_PASSWORD}' -Q 'CREATE DATABASE ejbca'"
+				sh "docker exec -it ${env.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -U sa -P '${env.DB_PASSWORD}' -Q 'CREATE DATABASE ejbca'"
 			}
 		}
 		stage('deploy and run system tests') {
 			steps {
 				sh "mkdir ear || true"
-				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
-					sh "docker build -t ${params.DOCKER_NAME_BASE} -m 3GB ."
-					sh "docker run --name ${params.DOCKER_NAME_BASE} --net=${params.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${params.DOCKER_NAME_BASE}"
+				dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}") {
+					sh "docker build -t ${env.DOCKER_NAME_BASE} -m 3GB ."
+					sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
 				}
 			}
 		}
@@ -61,11 +50,11 @@ pipeline {
 	}
 	post {
 		always {
-			sh "docker stop --time=1 ${params.DOCKER_NAME_BASE} || true"
-			sh "docker rm -f ${params.DOCKER_NAME_BASE} || true"
-			sh "docker stop --time=1 ${params.DOCKER_NAME_DB} || true"
-			sh "docker rm -f ${params.DOCKER_NAME_DB} || true"
-			sh "docker network rm ${params.DOCKER_NAME_NET} || true"
+			sh "docker stop --time=1 ${env.DOCKER_NAME_BASE} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_BASE} || true"
+			sh "docker stop --time=1 ${env.DOCKER_NAME_DB} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_DB} || true"
+			sh "docker network rm ${env.DOCKER_NAME_NET} || true"
 			cleanWs()
 		}
 	}
