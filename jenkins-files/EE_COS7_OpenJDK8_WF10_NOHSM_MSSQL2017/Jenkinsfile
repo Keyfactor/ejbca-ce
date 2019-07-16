@@ -36,8 +36,6 @@ pipeline {
 		}
 		stage('deploy and run system tests') {
 			steps {
-			    sh "ping -c 4 ${env.DOCKER_NAME_DB}"
-			    sh "ping -c 4 ${env.DOCKER_NAME_NET}"
 				sh "mkdir ear || true"
 				dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}") {
 					sh "docker build -t ${env.DOCKER_NAME_BASE} -m 3GB ."
