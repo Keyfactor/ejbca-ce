@@ -10,8 +10,7 @@
 function viewuser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
+    var link = '<%= VIEWUSER_LINK %>' + encodeURI('?<%= USER_PARAMETER %>=' + username);
     win_popup = window.open(link, 'view_user','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
@@ -19,8 +18,7 @@ function viewuser(row){
 function edituser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
+    var link = '<%= EDITUSER_LINK %>' + encodeURI('?<%= USER_PARAMETER %>=' + username);
     win_popup = window.open(link, 'edit_user','height=750,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
@@ -28,8 +26,7 @@ function edituser(row){
 function viewhistory(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var link = "<%= VIEWHISTORY_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
+    var link = '<%= VIEWHISTORY_LINK %>' + encodeURI('?<%= USER_PARAMETER %>=' + username);
     win_popup = window.open(link, 'view_history','height=750,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
@@ -37,8 +34,7 @@ function viewhistory(row){
 function viewcert(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
     var username = hiddenusernamefield.value;
-    var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>="+username;
-    link = encodeURI(link);
+    var link = '<%= VIEWCERT_LINK %>' + encodeURI('?<%= USER_PARAMETER %>=' + username);
     win_popup = window.open(link, 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
