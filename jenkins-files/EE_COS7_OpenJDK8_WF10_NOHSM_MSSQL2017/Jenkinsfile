@@ -38,10 +38,7 @@ pipeline {
 			steps {
 				sh "docker run --name ${params.DOCKER_NAME_DB} --net=${params.DOCKER_NAME_NET} -p ${params.DB_PORTS} -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=${params.DB_PASSWORD}' -d mcr.microsoft.com/mssql/server:${params.DB_VERSION}"
 				sh "sleep 5"
-				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
-					sh "chmod +x init_mssql_ejbca.sh"
-					sh "./init_mssql_ejbca.sh"
-				}
+				sh "docker exec -i ${params.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -S ${params.DOCKER_NAME_NET} -U sa -P '${params.DB_PASSWORD}' -Q 'CREATE DATABASE ejbca'"
 			}
 		}
 		stage('deploy and run system tests') {
