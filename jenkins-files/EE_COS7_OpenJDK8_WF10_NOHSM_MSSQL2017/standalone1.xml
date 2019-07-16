@@ -160,7 +160,7 @@
                     </pool>
                     <security>
                         <user-name>sa</user-name>
-                        <password>MyEjbcaPass</password>
+                        <password>MyEjbcaPass1100</password>
                     </security>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mssql.MSSQLValidConnectionChecker"/>
