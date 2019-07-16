@@ -7,8 +7,7 @@ pipeline {
 		DOCKER_NAME_BASE = 'ee_cos7_openjdk8_wf10_nohsm_mssql2017'
 		DOCKER_NAME_NET = 'net_ee_cos7_openjdk8_wf10_nohsm_mssql2017'
 		DOCKER_NAME_DB = 'db_ee_cos7_openjdk8_wf10_nohsm_mssql2017'
-		DB_PASSWORD = "'MyEjbcaPass1100'"
-		DB_CREATE_SQL = "''"
+		DB_PASSWORD = 'MyEjbcaPass1100'
 	}
 	stages {
 		stage('verify that space is clean') {
@@ -36,6 +35,8 @@ pipeline {
 		}
 		stage('deploy and run system tests') {
 			steps {
+			    sh "ping -c 4 ${env.DOCKER_NAME_DB}"
+			    sh "ping -c 4 ${env.DOCKER_NAME_NET}"
 				sh "mkdir ear || true"
 				dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}") {
 					sh "docker build -t ${env.DOCKER_NAME_BASE} -m 3GB ."

@@ -149,7 +149,7 @@
                     </security>
                 </datasource>
                 <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads">
-                    <connection-url>jdbc:sqlserver://net_ee_cos7_openjdk8_wf10_nohsm_mssql2017:1433;databaseName=ejbca</connection-url>
+                    <connection-url>jdbc:sqlserver://db_ee_cos7_openjdk8_wf10_nohsm_mssql2017:1433;databaseName=ejbca</connection-url>
                     <driver>mssql</driver>
                     <pool>
                         <min-pool-size>5</min-pool-size>
