@@ -20,6 +20,7 @@ package org.ejbca.webtest.helper;
  */
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -82,6 +83,7 @@ public class SwaggerUIHelper extends BaseHelper {
 
         static final By BUTTON_DOWNLOAD_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] div.download-contents");
         static final By TEXT_RESPONSE_CODE_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] table.responses-table:nth-child(4) tbody tr[class*='response'] td[class*=\"col_status\"]");
+        static final By TEXT_RESPONSE_BODY = By.cssSelector("div[id$=certificate-enrollKeystore] table.responses-table:nth-child(4) tbody tr[class*='response'] pre[class*=\" microlight\"]");
 
         //Revoke
         static final By BUTTON_PUT_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] span.opblock-summary-method");
@@ -254,9 +256,10 @@ public class SwaggerUIHelper extends BaseHelper {
      */
     public String assertEnrollKeystoreSuccess() {
         String responseCode = getElementText(Page.TEXT_RESPONSE_CODE_ENROLLKEYSTORE);
-        assertThat("Unsuccessful certificate enrollment by enroll keystore",
-                getElementText(Page.TEXT_RESPONSE_CODE_ENROLLKEYSTORE),
-                CoreMatchers.containsString("201"));
+        String responseBody = getElementText(Page.TEXT_RESPONSE_BODY);
+        System.out.println(responseBody);
+        assertTrue("Unsuccessful certificate enrollment by enroll keystore",
+                getElementText(Page.TEXT_RESPONSE_CODE_ENROLLKEYSTORE).contains("201"));
         return responseCode;
     }
 
