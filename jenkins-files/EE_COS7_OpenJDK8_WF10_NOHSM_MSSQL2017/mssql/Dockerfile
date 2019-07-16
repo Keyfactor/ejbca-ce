@@ -1,4 +1,4 @@
-FROM microsoft/mssql-server-linux:2017-latest-ubuntu
+FROM microsoft/mssql-server-linux:2017-latest
 
 LABEL description="microsoft/mssql-server-linux"
 
