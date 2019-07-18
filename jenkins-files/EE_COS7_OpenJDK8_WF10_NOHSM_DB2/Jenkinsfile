@@ -11,45 +11,35 @@ pipeline {
 		DB2_PORTS = '50000:50000'
 		DB2_PASSWORD = 'db2inst1'
 	}
-	parameters {
-		string(name: 'JENKINS_JOB_FOLDER', defaultValue: env.JENKINS_JOB_FOLDER, description: 'The name of the folder containing the jenkins job\'s artifacts.')
-		string(name: 'DOCKER_NAME_BASE', defaultValue: env.DOCKER_NAME_BASE, description: 'The name of the base docker describing the environment setup.')
-		string(name: 'DOCKER_NAME_NET', defaultValue: env.DOCKER_NAME_NET, description: 'The name of the network for these dockers.')
-		string(name: 'DOCKER_NAME_DB', defaultValue: env.DOCKER_NAME_DB, description: 'The name of the database docker.')
-		string(name: 'DB2_VERSION', defaultValue: env.DB2_VERSION, description: 'IBM DB2 Database Docker version.')
-		string(name: 'DB2_PORTS', defaultValue: env.DB2_PORTS, description: 'IBM DB2 Database Internal/External ports.')
-		string(name: 'DB2_PASSWORD', defaultValue: env.DB2_PASSWORD, description: 'IBM DB2 Database password.')
-	}
 	stages {
 		stage('verify that space is clean') {
 			steps {
-				sh "docker container rm ${params.DOCKER_NAME_DB} -f || true"
-				sh "docker container rm ${params.DOCKER_NAME_BASE} -f || true"
-				sh "docker network rm ${params.DOCKER_NAME_NET} || true"
+				sh "docker container rm ${env.DOCKER_NAME_DB} -f || true"
+				sh "docker container rm ${env.DOCKER_NAME_BASE} -f || true"
+				sh "docker network rm ${env.DOCKER_NAME_NET} || true"
 				sh "rm -rf ear"
 			}
 		}
 		stage('network') {
 			steps {
-				sh "docker network create --driver bridge ${params.DOCKER_NAME_NET} || true"
+				sh "docker network create --driver bridge ${env.DOCKER_NAME_NET} || true"
 			}
 		}
 		stage('database') {
 			steps {
-				sh "docker run -id --name ${params.DOCKER_NAME_DB} --net=${params.DOCKER_NAME_NET} --privileged=true -p ${params.DB2_PORTS} -e LICENSE=accept -e DB2INST1_PASSWORD=${params.DB2_PASSWORD} -e DBNAME=ejbca -v ${env.WORKSPACE}:/database ibmcom/db2:${params.DB2_VERSION}"
-				sh "sleep 5"
-				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
-					sh "chmod +x init_db2_ejbca.sh"
-					sh "./init_db2_ejbca.sh"
-				}
-			}
+                dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}/db2") {
+                    sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
+                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} --privileged=true -p ${env.DB_PORTS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
+                    sh "sleep 120"
+                }
+            }
 		}
 		stage('deploy and run system tests') {
 			steps {
 				sh "mkdir ear || true"
-				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
-					sh "docker build -t ${params.DOCKER_NAME_BASE} -m 3GB ."
-					sh "docker run --name ${params.DOCKER_NAME_BASE} --net=${params.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${params.DOCKER_NAME_BASE}"
+				dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}") {
+					sh "docker build -t ${env.DOCKER_NAME_BASE} -m 3GB ."
+					sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
 				}
 			}
 		}
@@ -61,11 +51,11 @@ pipeline {
 	}
 	post {
 		always {
-			sh "docker stop --time=1 ${params.DOCKER_NAME_BASE} || true"
-			sh "docker rm -f ${params.DOCKER_NAME_BASE} || true"
-			sh "docker stop --time=1 ${params.DOCKER_NAME_DB} || true"
-			sh "docker rm -f ${params.DOCKER_NAME_DB} || true"
-			sh "docker network rm ${params.DOCKER_NAME_NET} || true"
+			sh "docker stop --time=1 ${env.DOCKER_NAME_BASE} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_BASE} || true"
+			sh "docker stop --time=1 ${env.DOCKER_NAME_DB} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_DB} || true"
+			sh "docker network rm ${env.DOCKER_NAME_NET} || true"
 			cleanWs()
 		}
 	}
