@@ -29,7 +29,7 @@ pipeline {
 			    dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}/mssql") {
 			        sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
 			        sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} -p ${env.DB_PORTS} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_DB}"
-			        sh "sleep 10"
+			        sh "sleep 120"
 			        sh "docker exec -i ${env.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -U sa -P '${env.DB_PASSWORD}' -Q 'CREATE DATABASE ejbca'"
 			    }
 			}
