@@ -7,7 +7,7 @@ pipeline {
 		DOCKER_NAME_BASE = 'ee_cos7_openjdk8_wf10_nohsm_db2'
 		DOCKER_NAME_NET = 'net_ee_cos7_openjdk8_wf10_nohsm_db2'
 		DOCKER_NAME_DB = 'db_ee_cos7_openjdk8_wf10_nohsm_db2'
-		DB2_VERSION = '11.5.0.0'
+		DB2_VERSION = '11.5.0.0a'
 		DB2_PORTS = '50000:50000'
 		DB2_PASSWORD = 'db2inst1'
 	}
