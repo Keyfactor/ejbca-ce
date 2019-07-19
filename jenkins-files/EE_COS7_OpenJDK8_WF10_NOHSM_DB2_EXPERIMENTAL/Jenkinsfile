@@ -1,0 +1,77 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+	environment {
+	    // Use a Jenkins job name as unique identifier for related resources
+        THIS_JOB_NAME = "$env.JOB_BASE_NAME"
+        // This folder
+        JENKINS_JOB_FOLDER = 'EE_COS7_OpenJDK8_WF10_NOHSM_DB2'
+        // Folders
+        BUILD_FOLDER = "${env.WORKSPACE}/${env.THIS_JOB_NAME}"
+        BUILD_FOLDER_CONF = "${env.BUILD_FOLDER}/conf"
+        BUILD_FOLDER_DB = "${env.BUILD_FOLDER}/database"
+        // Docker containers
+        DOCKER_NAME_NET  = 'net_' + THIS_JOB_NAME
+        DOCKER_NAME_DB = 'db_' + THIS_JOB_NAME
+        DOCKER_NAME_BASE = 'ee_' + THIS_JOB_NAME
+        // Environment
+        JDK_VERSION = '8'
+        ANT_VERSION = '1.9.8'
+        DB_FAMILY = 'db2'
+        DB_VERSION = '11.5.0.0a'
+        SERVER_FAMILY = 'wildfly'
+        SERVER_VERSION = '10.1.0.Final'
+	}
+	stages {
+		stage('Verify that space is clean') {
+			steps {
+				sh "docker container rm ${env.DOCKER_NAME_DB} -f || true"
+				sh "docker container rm ${env.DOCKER_NAME_BASE} -f || true"
+				sh "docker network rm ${env.DOCKER_NAME_NET} || true"
+				sh "rm -rf ${env.BUILD_FOLDER} || true"
+			}
+		}
+		stage('Prepare the environment') {
+            steps {
+                sh "echo Creating a network..."
+                sh "docker network create --driver bridge ${env.DOCKER_NAME_NET} || true"
+                sh "echo Creating environment setup folders..."
+                sh "mkdir ${env.BUILD_FOLDER}"
+                sh "mkdir ${env.BUILD_FOLDER_CONF}"
+                sh "mkdir ${env.BUILD_FOLDER_DB}"
+                // Copy database container
+                sh "echo Setting up the database container..."
+                // Copy server container
+                sh "echo Setting up the application server..."
+                // Copy configuration
+                sh "echo Setting up configuration..."
+                sh "../common/scripts/copyConfigurationProperties.sh ${env.BUILD_FOLDER_CONF} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+                sh "cat ${env.BUILD_FOLDER_CONF}/database.properties"
+            }
+        }
+		stage('Start the database container') {
+			steps {
+                dir ("${env.WORKSPACE}/${env.THIS_JOB_NAME}/database") {
+                    sh "echo Starting database container..."
+                    sh "ls -la"
+                }
+            }
+		}
+		stage('Install, deploy and run system tests') {
+			steps {
+			    sh "echo Starting installation..."
+			}
+		}
+	}
+	post {
+		always {
+			sh "docker stop --time=1 ${env.DOCKER_NAME_BASE} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_BASE} || true"
+			sh "docker stop --time=1 ${env.DOCKER_NAME_DB} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_DB} || true"
+			sh "docker network rm ${env.DOCKER_NAME_NET} || true"
+			cleanWs()
+		}
+	}
+}
