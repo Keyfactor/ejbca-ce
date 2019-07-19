@@ -40,6 +40,9 @@ pipeline {
                 sh "mkdir ${env.BUILD_FOLDER}"
                 sh "mkdir ${env.BUILD_FOLDER_CONF}"
                 sh "mkdir ${env.BUILD_FOLDER_DB}"
+                sh "ls -la ."
+                sh "ls -la ./jenkins-files/"
+                sh "ls -la ./jenkins-files/common"
                 // Copy database container
                 sh "echo Setting up the database container..."
                 // Copy server container
