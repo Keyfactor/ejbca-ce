@@ -40,6 +40,7 @@ pipeline {
                 sh "mkdir ${env.BUILD_FOLDER}"
                 sh "mkdir ${env.BUILD_FOLDER_CONF}"
                 sh "mkdir ${env.BUILD_FOLDER_DB}"
+                sh "${pwd}"
                 sh "ls -la ."
                 sh "ls -la ./ejbca/"
                 sh "ls -la ./ejbca/jenkins-files/common"
@@ -49,7 +50,7 @@ pipeline {
                 sh "echo Setting up the application server..."
                 // Copy configuration
                 sh "echo Setting up configuration..."
-                sh "./ejbca/jenkins-files/common/scripts/copyConfigurationProperties.sh ${env.BUILD_FOLDER_CONF} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+                sh "./ejbca/jenkins-files/common/scripts/copyConfigurationProperties.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/conf ${env.BUILD_FOLDER_CONF} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
                 sh "cat ${env.BUILD_FOLDER_CONF}/database.properties"
             }
         }
