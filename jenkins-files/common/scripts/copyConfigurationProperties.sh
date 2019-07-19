@@ -56,28 +56,32 @@ echo "Copying cmptcp.properties (without filtering)..."
 cp $1/cmptcp.properties $2/
 
 echo "Copying database.properties (with filtering)..."
-if [ $5 == "db2" ]; then
+if [ $5 = "db2" ]
+then
     echo "Using DB2 pattern..."
     DATABASE_NAME="db2"
     DATABASE_URL="jdbc:db2://${3}:50000/ejbca"
     DATABASE_DRIVER="com.ibm.db2.jcc.DB2Driver"
     DATABASE_USERNAME="db2inst1"
     DATABASE_PASSWORD="db2inst1"
-elif [ $5 == "mariadb" ]; then
+elif [ $5 = "mariadb" ]
+then
     echo "Using MariaDB pattern..."
     DATABASE_NAME="mysql"
     DATABASE_URL="jdbc:mysql://${3}:3306/ejbca"
     DATABASE_DRIVER="org.mariadb.jdbc.Driver"
     DATABASE_USERNAME="ejbca"
     DATABASE_PASSWORD="ejbca"
-elif [ $5 == "mssql" ]; then
+elif [ $5 = "mssql" ]
+then
     echo "Using MS SQL pattern..."
     DATABASE_NAME="mssql"
     DATABASE_URL="jdbc:sqlserver://${3}:1433;databaseName=ejbca"
     DATABASE_DRIVER="com.microsoft.sqlserver.jdbc.SQLServerDriver"
     DATABASE_USERNAME="sa"
     DATABASE_PASSWORD="MyEjbcaPass1100"
-elif [ $5 == "oracle" ]; then
+elif [ $5 = "oracle" ]
+then
     echo "Using Oracle DB pattern..."
     DATABASE_NAME="oracle"
     DATABASE_URL="jdbc:oracle:${3}:@oracledb:1521:XE"
@@ -90,4 +94,4 @@ else
 fi
 
 cp $1/database.properties $2/
-sed -e "s/\${DATABASE_NAME}/${DATABASE_NAME}/" -e "s/\${DATABASE_URL}/${DATABASE_URL}/" $2/database.properties
+sed -e "s/\${DATASOURCE_JNDI_NAME}/${DATASOURCE_JNDI_NAME}/" -e "s/\${DATABASE_NAME}/${DATABASE_NAME}/" -e "s/\${DATABASE_URL}/${DATABASE_URL}/" -e "s/\${DATABASE_DRIVER}/${DATABASE_DRIVER}/" -e "s/\${DATABASE_USERNAME}/${DATABASE_USERNAME}/"  -e "s/\${DATABASE_PASSWORD}/${DATABASE_PASSWORD}/" $2/database.properties
