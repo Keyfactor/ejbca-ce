@@ -15,39 +15,19 @@ echo "SERVER_VERSION: $8"
 # database.properties variables
 ########################################################################################################################
 DATASOURCE_JNDI_NAME="EjbcaDS"
-# db2
-# mysql
-# mssql
-# oracle
 DATABASE_NAME=""
-# jdbc:db2://db_ee_cos7_openjdk8_wf10_nohsm_db2:50000/ejbca
-# jdbc:mysql://mariadb_1:3306/ejbca
-# jdbc:sqlserver://db_ee_cos7_openjdk8_wf10_nohsm_mssql2017:1433;databaseName=ejbca
-# jdbc:oracle:thin:@oracledb:1521:XE
 DATABASE_URL=""
-# com.ibm.db2.jcc.DB2Driver
-# org.mariadb.jdbc.Driver
-# com.microsoft.sqlserver.jdbc.SQLServerDriver
-# oracle.jdbc.driver.OracleDriver
 DATABASE_DRIVER=""
-# db2inst1
-# ejbca
-# sa
-# ejbca
 DATABASE_USERNAME=""
-# db2inst1
-# ejbca
-# MyEjbcaPass1100
-# ejbca
 DATABASE_PASSWORD=""
 
 ########################################################################################################################
 # ejbca.properties variables
 ########################################################################################################################
-# /opt/jboss/wildfly
 APPSERVER_HOME=""
-# jboss
 APPSERVER_TYPE=""
+
+# Copy resources in alphabetical order
 
 echo "Copying cesecore.properties (without filtering)..."
 cp $1/cesecore.properties $2/
@@ -94,4 +74,31 @@ else
 fi
 
 cp $1/database.properties $2/
-sed -e "s/\${DATASOURCE_JNDI_NAME}/${DATASOURCE_JNDI_NAME}/" -e "s/\${DATABASE_NAME}/${DATABASE_NAME}/" -e "s/\${DATABASE_URL}/${DATABASE_URL}/" -e "s/\${DATABASE_DRIVER}/${DATABASE_DRIVER}/" -e "s/\${DATABASE_USERNAME}/${DATABASE_USERNAME}/"  -e "s/\${DATABASE_PASSWORD}/${DATABASE_PASSWORD}/" $2/database.properties
+sed -e "s/\#DATASOURCE_JNDI_NAME/$DATASOURCE_JNDI_NAME/" \
+    -e "s/\#DATABASE_NAME/$DATABASE_NAME/" \
+    -e "s/\#DATABASE_URL/$DATABASE_URL/" \
+    -e "s/\#DATABASE_DRIVER/$DATABASE_DRIVER/" \
+    -e "s/\#DATABASE_USERNAME/$DATABASE_USERNAME/" \
+    -e "s/\#DATABASE_PASSWORD/$DATABASE_PASSWORD/" \
+    $2/database.properties
+
+echo "Copying databaseprotection.properties (without filtering)..."
+cp $1/databaseprotection.properties $2/
+
+echo "Copying ejbca.properties (with filtering)..."
+if [ $7 = "wildfly" ]
+then
+    echo "Using WildFly pattern..."
+    APPSERVER_HOME="/opt/jboss/wildfly"
+    APPSERVER_TYPE="jboss"
+else
+  echo "Error: Cannot map the application server family"
+  exit 1
+fi
+cp $1/ejbca.properties $2/
+sed -e "s/\#APPSERVER_HOME/$APPSERVER_HOME/" \
+    -e "s/\#APPSERVER_TYPE/$APPSERVER_TYPE/" \
+    $2/ejbca.properties
+
+echo "Copying install.properties (without filtering)..."
+cp $1/install.properties $2/
