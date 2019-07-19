@@ -74,12 +74,12 @@ else
 fi
 
 cp $1/database.properties $2/
-sed -e "s/\#DATASOURCE_JNDI_NAME/$DATASOURCE_JNDI_NAME/" \
-    -e "s/\#DATABASE_NAME/$DATABASE_NAME/" \
-    -e "s/\#DATABASE_URL/$DATABASE_URL/" \
-    -e "s/\#DATABASE_DRIVER/$DATABASE_DRIVER/" \
-    -e "s/\#DATABASE_USERNAME/$DATABASE_USERNAME/" \
-    -e "s/\#DATABASE_PASSWORD/$DATABASE_PASSWORD/" \
+sed -e "s/DATASOURCE_JNDI_NAME/$DATASOURCE_JNDI_NAME/" \
+    -e "s/DATABASE_NAME/$DATABASE_NAME/" \
+    -e "s/DATABASE_URL/$DATABASE_URL/" \
+    -e "s/DATABASE_DRIVER/$DATABASE_DRIVER/" \
+    -e "s/DATABASE_USERNAME/$DATABASE_USERNAME/" \
+    -e "s/DATABASE_PASSWORD/$DATABASE_PASSWORD/" \
     $2/database.properties
 
 echo "Copying databaseprotection.properties (without filtering)..."
@@ -96,8 +96,8 @@ else
   exit 1
 fi
 cp $1/ejbca.properties $2/
-sed -e "s/\#APPSERVER_HOME/$APPSERVER_HOME/" \
-    -e "s/\#APPSERVER_TYPE/$APPSERVER_TYPE/" \
+sed -e "s/APPSERVER_HOME/$APPSERVER_HOME/" \
+    -e "s/APPSERVER_TYPE/$APPSERVER_TYPE/" \
     $2/ejbca.properties
 
 echo "Copying install.properties (without filtering)..."
