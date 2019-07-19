@@ -1,14 +1,15 @@
 #!/bin/sh
 
-# copyConfigurationProperties.sh TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#                                [1]         [2]          [3] [4]       [5]        [6]           [7]
-echo "TARGET_PATH: $1"
-echo "DB_HOST: $2"
-echo "JDK: $3"
-echo "DB_FAMILY: $4"
-echo "DB_VERSION: $5"
-echo "SERVER_FAMILY: $6"
-echo "SERVER_VERSION: $7"
+# copyConfigurationProperties.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#                                [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
+echo "SRC_PATH: $1"
+echo "TARGET_PATH: $2"
+echo "DB_HOST: $3"
+echo "JDK: $4"
+echo "DB_FAMILY: $5"
+echo "DB_VERSION: $6"
+echo "SERVER_FAMILY: $7"
+echo "SERVER_VERSION: $8"
 
 ########################################################################################################################
 # database.properties variables
@@ -49,33 +50,33 @@ APPSERVER_HOME=""
 APPSERVER_TYPE=""
 
 echo "Copying cesecore.properties (without filtering)..."
-cp ../conf/cesecore.properties $1/
+cp $1/cesecore.properties $2/
 
 echo "Copying cmptcp.properties (without filtering)..."
-cp ../conf/cmptcp.properties $1/
+cp $1/cmptcp.properties $2/
 
 echo "Copying database.properties (with filtering)..."
-if   [[ $4 == "db2" ]]; then
+if   [ $5 == "db2" ]; then
     DATABASE_NAME= "db2"
-    DATABASE_URL="jdbc:db2://${2}:50000/ejbca"
+    DATABASE_URL="jdbc:db2://${3}:50000/ejbca"
     DATABASE_DRIVER="com.ibm.db2.jcc.DB2Driver"
     DATABASE_USERNAME="db2inst1"
     DATABASE_PASSWORD="db2inst1"
-elif [[ $4 == "mariadb" ]]; then
+elif [ $5 == "mariadb" ]; then
     DATABASE_NAME= "mysql"
-    DATABASE_URL="jdbc:mysql://${2}:3306/ejbca"
+    DATABASE_URL="jdbc:mysql://${3}:3306/ejbca"
     DATABASE_DRIVER="org.mariadb.jdbc.Driver"
     DATABASE_USERNAME="ejbca"
     DATABASE_PASSWORD="ejbca"
-elif [[ $4 == "mssql" ]]; then
+elif [ $5 == "mssql" ]; then
     DATABASE_NAME= "mssql"
-    DATABASE_URL="jdbc:sqlserver://${2}:1433;databaseName=ejbca"
+    DATABASE_URL="jdbc:sqlserver://${3}:1433;databaseName=ejbca"
     DATABASE_DRIVER="com.microsoft.sqlserver.jdbc.SQLServerDriver"
     DATABASE_USERNAME="sa"
     DATABASE_PASSWORD="MyEjbcaPass1100"
-elif [[ $4 == "oracle" ]]; then
+elif [ $5 == "oracle" ]; then
     DATABASE_NAME= "oracle"
-    DATABASE_URL="jdbc:oracle:${2}:@oracledb:1521:XE"
+    DATABASE_URL="jdbc:oracle:${3}:@oracledb:1521:XE"
     DATABASE_DRIVER="oracle.jdbc.driver.OracleDriver"
     DATABASE_USERNAME="ejbca"
     DATABASE_PASSWORD="ejbca"
@@ -84,5 +85,5 @@ else
   exit 1
 fi
 
-cp ../conf/database.properties $1/
-sed -e "s/\${DATABASE_NAME}/${DATABASE_NAME}/" -e "s/\${DATABASE_URL}/${DATABASE_URL}/" $1/database.properties
+cp $1/database.properties $2/
+sed -e "s/\${DATABASE_NAME}/${DATABASE_NAME}/" -e "s/\${DATABASE_URL}/${DATABASE_URL}/" $2/database.properties
