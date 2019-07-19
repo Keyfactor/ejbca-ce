@@ -72,15 +72,13 @@ else
   echo "Error: Cannot map the datbase family"
   exit 1
 fi
-
-cp $1/database.properties $2/
 sed -e "s#DATASOURCE_JNDI_NAME#$DATASOURCE_JNDI_NAME#" \
     -e "s#DATABASE_NAME#$DATABASE_NAME#" \
     -e "s#DATABASE_URL#$DATABASE_URL#" \
     -e "s#DATABASE_DRIVER#$DATABASE_DRIVER#" \
     -e "s#DATABASE_USERNAME#$DATABASE_USERNAME#" \
     -e "s#DATABASE_PASSWORD#$DATABASE_PASSWORD#" \
-    $2/database.properties
+    $1/database.properties > $2/database.properties
 
 echo "Copying databaseprotection.properties (without filtering)..."
 cp $1/databaseprotection.properties $2/
@@ -95,10 +93,9 @@ else
   echo "Error: Cannot map the application server family"
   exit 1
 fi
-cp $1/ejbca.properties $2/
 sed -e "s#APPSERVER_HOME#$APPSERVER_HOME#" \
     -e "s#APPSERVER_TYPE#$APPSERVER_TYPE#" \
-    $2/ejbca.properties
+    $1/ejbca.properties > $2/ejbca.properties
 
 echo "Copying install.properties (without filtering)..."
 cp $1/install.properties $2/
