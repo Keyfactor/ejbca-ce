@@ -40,7 +40,6 @@ pipeline {
                 sh "mkdir ${env.BUILD_FOLDER}"
                 sh "mkdir ${env.BUILD_FOLDER_CONF}"
                 sh "mkdir ${env.BUILD_FOLDER_DB}"
-                sh "${pwd}"
                 sh "ls -la ."
                 sh "ls -la ./ejbca/"
                 sh "ls -la ./ejbca/jenkins-files/common"
