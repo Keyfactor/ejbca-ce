@@ -11,10 +11,10 @@ pipeline {
         BUILD_FOLDER = "${env.WORKSPACE}/${env.THIS_JOB_NAME}"
         BUILD_FOLDER_CONF = "${env.BUILD_FOLDER}/conf"
         BUILD_FOLDER_DB = "${env.BUILD_FOLDER}/database"
-        // Docker containers
-        DOCKER_NAME_NET  = 'net_' + THIS_JOB_NAME
-        DOCKER_NAME_DB = 'db_' + THIS_JOB_NAME
-        DOCKER_NAME_BASE = 'ee_' + THIS_JOB_NAME
+        // Docker container names
+        DOCKER_NAME_NET  = "net_${env.THIS_JOB_NAME}"
+        DOCKER_NAME_DB = "db_${env.THIS_JOB_NAME}"
+        DOCKER_NAME_BASE = "ee_${env.THIS_JOB_NAME}"
         // Environment
         JDK_VERSION = '8'
         ANT_VERSION = '1.9.8'
