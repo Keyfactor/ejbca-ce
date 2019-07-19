@@ -69,7 +69,7 @@ then
     DATABASE_USERNAME="ejbca"
     DATABASE_PASSWORD="ejbca"
 else
-  echo "Error: Cannot map the datbase family"
+  echo "Error: Cannot map the database family"
   exit 1
 fi
 sed -e "s#DATASOURCE_JNDI_NAME#$DATASOURCE_JNDI_NAME#" \
