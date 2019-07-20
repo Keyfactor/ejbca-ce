@@ -2,14 +2,6 @@
 
 # copyDatabaseContainer.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
 #                          [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
-echo "SRC_PATH: $1"
-echo "TARGET_PATH: $2"
-echo "DB_HOST: $3"
-echo "JDK: $4"
-echo "DB_FAMILY: $5"
-echo "DB_VERSION: $6"
-echo "SERVER_FAMILY: $7"
-echo "SERVER_VERSION: $8"
 
 DOCKERFILE_PATH=""
 DOCKERFILE_RUN_PATH=""
