@@ -38,7 +38,6 @@
         <property name="org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING" value="true"/>
     </system-properties>
 
-
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -82,7 +81,7 @@
             <handlers>
                 <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
-            <logger log-boot="true" log-read-only="false" enabled="false">
+            <logger log-boot="true" enabled="false">
                 <handlers>
                     <handler name="file"/>
                 </handlers>
@@ -93,7 +92,7 @@
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
-        <access-control provider="simple">
+        <access-control>
             <role-mapping>
                 <role name="SuperUser">
                     <include>
@@ -112,7 +111,7 @@
                     <named-formatter name="COLOR-PATTERN"/>
                 </formatter>
             </console-handler>
-            <periodic-rotating-file-handler name="FILE" autoflush="true">
+            <periodic-rotating-file-handler name="FILE">
                 <formatter>
                     <named-formatter name="PATTERN"/>
                 </formatter>
@@ -163,7 +162,7 @@
         <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:4.0">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
                     <driver>h2</driver>
                     <security>
@@ -171,9 +170,10 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-		        <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads" enabled="true" use-ccm="true">
-                    <connection-url>jdbc:db2://db_ee_cos7_openjdk8_wf10_nohsm_db2:50000/ejbca</connection-url>
-                    <driver>db2</driver>
+		        <datasource jndi-name="DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME" pool-name="ejbcads">
+                    <connection-url>DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL</connection-url>
+                    <driver>DOCKERFILE_STANDALONE_DATASOURCE_DRIVER</driver>
+                    DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
                         <min-pool-size>5</min-pool-size>
@@ -181,11 +181,11 @@
                         <prefill>true</prefill>
                     </pool>
                     <security>
-                        <user-name>db2inst1</user-name>
-                        <password>db2inst1</password>
+                        <user-name>DOCKERFILE_STANDALONE_DATASOURCE_USERNAME</user-name>
+                        <password>DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD</password>
                     </security>
                     <validation>
-                        <check-valid-connection-sql>select 1 from sysibm.sysdummy1</check-valid-connection-sql>
+                        <check-valid-connection-sql>DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_SQL</check-valid-connection-sql>
                         <validate-on-match>true</validate-on-match>
                         <background-validation>false</background-validation>
                     </validation>
@@ -198,9 +198,7 @@
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
                     </driver>
-                    <driver name="db2" module="com.ibm.db2">
-                        <xa-datasource-class>com.ibm.db2.jcc.DB2XADataSource</xa-datasource-class>
-                    </driver>
+                    DOCKERFILE_STANDALONE_DRIVER
                 </drivers>
             </datasources>
         </subsystem>
@@ -230,13 +228,13 @@
                 <stateless>
                     <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                 </stateless>
-                <stateful default-access-timeout="5000" cache-ref="simple" passivation-disabled-cache-ref="simple"/>
-                <singleton default-access-timeout="5000"/>
+                <stateful cache-ref="simple" passivation-disabled-cache-ref="simple"/>
+                <singleton/>
             </session-bean>
             <pools>
                 <bean-instance-pools>
-                    <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
-                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools"/>
+                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count"/>
                 </bean-instance-pools>
             </pools>
             <caches>
@@ -244,7 +242,7 @@
                 <cache name="distributable" passivation-store-ref="infinispan" aliases="passivating clustered"/>
             </caches>
             <passivation-stores>
-                <passivation-store name="infinispan" cache-container="ejb" max-size="10000"/>
+                <passivation-store name="infinispan"/>
             </passivation-stores>
             <async thread-pool-name="default"/>
             <timer-service thread-pool-name="default" default-data-store="default-file-store">
@@ -277,7 +275,7 @@
                 <local-cache name="passivation">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
-                    <file-store passivation="true" purge="false"/>
+                    <file-store purge="false"/>
                 </local-cache>
                 <local-cache name="persistent">
                     <locking isolation="REPEATABLE_READ"/>
@@ -285,14 +283,14 @@
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
                 <local-cache name="concurrent">
-                    <file-store passivation="true" purge="false"/>
+                    <file-store purge="false"/>
                 </local-cache>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
-                    <file-store passivation="true" purge="false"/>
+                    <file-store purge="false"/>
                 </local-cache>
                 <local-cache name="persistent">
                     <locking isolation="REPEATABLE_READ"/>
@@ -303,11 +301,11 @@
             <cache-container name="hibernate" default-cache="local-query" module="org.hibernate.infinispan">
                 <local-cache name="entity">
                     <transaction mode="NON_XA"/>
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="LRU"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="local-query">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="LRU"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="timestamps"/>
@@ -315,7 +313,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:4.0">
-            <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+            <archive-validation/>
             <bean-validation enabled="true"/>
             <default-workmanager>
                 <short-running-threads>
@@ -340,7 +338,7 @@
             <remoting-connector/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jpa:1.1">
-            <jpa default-datasource="" default-extended-persistence-inheritance="DEEP"/>
+            <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jsf:1.0"/>
         <subsystem xmlns="urn:jboss:domain:mail:2.0">
