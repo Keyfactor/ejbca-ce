@@ -149,8 +149,8 @@
                 </datasource>
 		        <datasource jndi-name="DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME" pool-name="ejbcads">
                     <connection-url>DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL</connection-url>
-                    <driver>db2</driver>
-                    DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS
+                    <driver>DOCKERFILE_STANDALONE_DATASOURCE_DRIVER</driver>
+                    DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
                         <min-pool-size>5</min-pool-size>
