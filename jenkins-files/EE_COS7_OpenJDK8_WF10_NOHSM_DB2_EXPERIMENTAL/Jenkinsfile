@@ -12,9 +12,9 @@ pipeline {
         BUILD_FOLDER_CONF = "${env.BUILD_FOLDER}/conf"
         BUILD_FOLDER_DB = "${env.BUILD_FOLDER}/database"
         // Docker container names
-        DOCKER_NAME_NET  = "net_${env.THIS_JOB_NAME}"
-        DOCKER_NAME_DB = "db_${env.THIS_JOB_NAME}"
-        DOCKER_NAME_BASE = "ee_${env.THIS_JOB_NAME}"
+        DOCKER_NAME_NET  = "net_${env.THIS_JOB_NAME.toLowerCase()}"
+        DOCKER_NAME_DB = "db_${env.THIS_JOB_NAME.toLowerCase()}"
+        DOCKER_NAME_BASE = "ee_${env.THIS_JOB_NAME.toLowerCase()}"
         // Environment
         JDK_VERSION = '8'
         ANT_VERSION = '1.9.8'
@@ -50,7 +50,10 @@ pipeline {
                 sh "echo Copying application server container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyServerContainer.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/server ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
                 sh "ls -la ${env.BUILD_FOLDER}"
+                sh "echo standalone1.xml:"
                 sh "cat ${env.BUILD_FOLDER}/standalone1.xml"
+                sh "echo standalone2.xml:"
+                sh "cat ${env.BUILD_FOLDER}/standalone2.xml"
 
                 // Copy database libraries for application server
                 sh "echo Copying database libraries for application server container..."
@@ -75,7 +78,7 @@ pipeline {
                 }
             }
 		}
-		stage('Install, deploy and run system tests') {
+		stage('Start the application server container, install, deploy and run system tests') {
 			steps {
 			    //
 			    sh "echo Building application server container..."
