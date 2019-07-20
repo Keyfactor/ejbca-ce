@@ -86,8 +86,7 @@ pipeline {
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
                     sh "echo Building database container..."
                     sh "echo DB_DOCKERFILE_EXTRA_ARGS="
-                    // TODO Check --privileged=true -p 50000:50000
-                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} $DB_DOCKERFILE_EXTRA_ARGS -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
+                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} ${env.DATABASE_DOCKERFILE_EXTRA_ARGS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
                     // Sleep for database startup and warmup
                     sh "sleep 120"
                 }
