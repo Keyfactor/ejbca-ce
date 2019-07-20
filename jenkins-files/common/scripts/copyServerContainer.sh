@@ -58,7 +58,7 @@ elif [ $5 = "mariadb" ]
 then
     echo "Using MariaDB pattern..."
     DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL="jdbc:mysql://$3:3306/ejbca"
-    DOCKERFILE_STANDALONE_DATASOURCE_DRIVER="mariadb-java-client.jar"
+    DOCKERFILE_STANDALONE_DATASOURCE_DRIVER="dbdriver.jar"
     DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS="<driver-class>org.mariadb.jdbc.Driver</driver-class>"
     DOCKERFILE_STANDALONE_DATASOURCE_USERNAME="ejbca"
     DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD="ejbca"
