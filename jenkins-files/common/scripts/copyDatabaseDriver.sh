@@ -40,10 +40,10 @@ fi
 
 if [ MODULE_XML != "" ]
 then
-    cp $1\lib\$5\$MODULE_XML $2\module.xml
+    cp $1/lib/$5/$MODULE_XML $2/module.xml
 fi
 
 if [ MODULE_JAR != "" ]
 then
-    cp $1\lib\$5\$MODULE_JAR $2\dbdriver.jar
+    cp $1/lib/$5/$MODULE_JAR $2/dbdriver.jar
 fi
