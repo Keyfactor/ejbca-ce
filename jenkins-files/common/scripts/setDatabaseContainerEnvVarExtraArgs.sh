@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# exportDatabaseContainerVariables.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#                                     [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
+# setDatabaseContainerEnvVarExtraArgs.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#                                        [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
 echo "SRC_PATH: $1"
 echo "TARGET_PATH: $2"
 echo "DB_HOST: $3"
@@ -36,4 +36,4 @@ else
   exit 1
 fi
 
-export DB_DOCKERFILE_EXTRA_ARGS="$DOCKERFILE_EXTRA_ARGS"
+return $DOCKERFILE_EXTRA_ARGS
