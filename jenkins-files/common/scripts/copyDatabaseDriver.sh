@@ -13,7 +13,6 @@ echo "SERVER_VERSION: $8"
 
 MODULE_XML=""
 MODULE_JAR=""
-MODULE_XML_COPY_PATH=""
 
 if [ $5 = "db2" ]
 then
@@ -47,9 +46,4 @@ fi
 if [ MODULE_JAR != "" ]
 then
     cp $1\lib\$5\$MODULE_JAR $2\dbdriver.jar
-fi
-
-if [ MODULE_XML_COPY_PATH != "" ]
-then
-    export MODULE_XML_COPY_PATH="$MODULE_XML_COPY_PATH"
 fi
