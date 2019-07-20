@@ -38,13 +38,14 @@ pipeline {
 		stage('Prepare the environment') {
             steps {
                 // Info output
-                sh "echo JDK_VERSION          = ${env.JDK_VERSION}"
-                sh "echo ANT_VERSION          = ${env.ANT_VERSION}"
-                sh "echo DB_FAMILY            = ${env.DB_FAMILY}"
-                sh "echo DB_VERSION           = ${env.DB_VERSION}"
-                sh "echo SERVER_FAMILY        = ${env.SERVER_FAMILY}"
-                sh "echo SERVER_VERSION       = ${env.SERVER_VERSION}"
-                sh "echo DOCKER_DB_EXTRA_ARGS = ${env.DOCKER_DB_EXTRA_ARGS}"
+                sh "echo JDK_VERSION           = ${env.JDK_VERSION}"
+                sh "echo ANT_VERSION           = ${env.ANT_VERSION}"
+                sh "echo DB_FAMILY             = ${env.DB_FAMILY}"
+                sh "echo DB_VERSION            = ${env.DB_VERSION}"
+                sh "echo SERVER_FAMILY         = ${env.SERVER_FAMILY}"
+                sh "echo SERVER_VERSION        = ${env.SERVER_VERSION}"
+                sh "echo DOCKER_DB_EXTRA_ARGS  = ${env.DOCKER_DB_EXTRA_ARGS}"
+                sh "echo DB_DRIVER_MODULE_PATH = ${env.DB_DRIVER_MODULE_PATH}"
 
                 // Create network
                 sh "echo Creating a network..."
