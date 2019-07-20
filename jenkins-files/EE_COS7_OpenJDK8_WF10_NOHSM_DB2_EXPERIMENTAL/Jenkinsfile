@@ -22,6 +22,8 @@ pipeline {
         DB_VERSION = '11.5.0.0a'
         SERVER_FAMILY = 'wildfly'
         SERVER_VERSION = '10.1.0.Final'
+        // Dynamic variables
+        DATABASE_DOCKERFILE_EXTRA_ARGS = sh(script: "./ejbca/jenkins-files/common/scripts/setDatabaseContainerEnvVarExtraArgs.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}", returnStdout: true).trim()
 	}
 	stages {
 		stage('Verify that space is clean') {
@@ -47,9 +49,8 @@ pipeline {
                 sh "ls -la ${env.BUILD_FOLDER_DB}"
 
                 // Export database container startup arguments
-                sh "echo Copying database container..."
-                sh "./ejbca/jenkins-files/common/scripts/exportDatabaseContainerVariables.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
-                sh "echo DB_DOCKERFILE_EXTRA_ARGS=$DB_DOCKERFILE_EXTRA_ARGS"
+                sh "echo Setting database container startup arguments..."
+                sh "echo DATABASE_DOCKERFILE_EXTRA_ARGS=${env.DATABASE_DOCKERFILE_EXTRA_ARGS}"
 
                 // Copy server container
                 sh "echo Copying application server container..."
@@ -63,7 +64,6 @@ pipeline {
                 // Copy database libraries for application server
                 sh "echo Copying database libraries for application server container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyDatabaseDriver.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/lib ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
-                sh "echo MODULE_XML_COPY_PATH=$MODULE_XML_COPY_PATH"
 
                 // Copy configuration properties
                 sh "echo Copying configuration properties..."
