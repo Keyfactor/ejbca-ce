@@ -23,7 +23,7 @@ pipeline {
         SERVER_FAMILY = 'wildfly'
         SERVER_VERSION = '10.1.0.Final'
         // Dynamic variables
-        DATABASE_DOCKERFILE_EXTRA_ARGS = sh(script: "./ejbca/jenkins-files/common/scripts/setDatabaseContainerEnvVarExtraArgs.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}", returnStdout: true).trim()
+        DOCKER_DB_EXTRA_ARGS = sh(script: "./ejbca/jenkins-files/common/scripts/setDatabaseContainerEnvVarExtraArgs.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}", returnStdout: true).trim()
 	}
 	stages {
 		stage('Verify that space is clean') {
@@ -36,8 +36,20 @@ pipeline {
 		}
 		stage('Prepare the environment') {
             steps {
+                // Info output
+                sh "echo JDK_VERSION          = ${env.JDK_VERSION}"
+                sh "echo ANT_VERSION          = ${env.ANT_VERSION}"
+                sh "echo DB_FAMILY            = ${env.DB_FAMILY}"
+                sh "echo DB_VERSION           = ${env.DB_VERSION}"
+                sh "echo SERVER_FAMILY        = ${env.SERVER_FAMILY}"
+                sh "echo SERVER_VERSION       = ${env.SERVER_VERSION}"
+                sh "echo DOCKER_DB_EXTRA_ARGS = ${env.DOCKER_DB_EXTRA_ARGS}"
+
+                // Create network
                 sh "echo Creating a network..."
                 sh "docker network create --driver bridge ${env.DOCKER_NAME_NET} || true"
+
+                // Create environment folders
                 sh "echo Creating environment setup folders..."
                 sh "mkdir ${env.BUILD_FOLDER}"
                 sh "mkdir ${env.BUILD_FOLDER_CONF}"
@@ -46,11 +58,6 @@ pipeline {
                 // Copy database container
                 sh "echo Copying database container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyDatabaseContainer.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
-                sh "ls -la ${env.BUILD_FOLDER_DB}"
-
-                // Export database container startup arguments
-                sh "echo Setting database container startup arguments..."
-                sh "echo DATABASE_DOCKERFILE_EXTRA_ARGS=${env.DATABASE_DOCKERFILE_EXTRA_ARGS}"
 
                 // Copy server container
                 sh "echo Copying application server container..."
@@ -85,8 +92,7 @@ pipeline {
                     sh "echo Building database container..."
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
                     sh "echo Building database container..."
-                    sh "echo DB_DOCKERFILE_EXTRA_ARGS="
-                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} ${env.DATABASE_DOCKERFILE_EXTRA_ARGS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
+                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} ${env.DOCKER_DB_EXTRA_ARGS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
                     // Sleep for database startup and warmup
                     sh "sleep 120"
                 }
@@ -94,10 +100,13 @@ pipeline {
 		}
 		stage('Start the application server container, install, deploy and run system tests') {
 			steps {
-			    //
-			    sh "echo Building application server container..."
-			    //
+			    dir ("${env.BUILD_FOLDER}") {
+			        sh "echo Building application server container..."
+			        sh "docker build -t ${env.DOCKER_NAME_BASE} -m 3GB . "
+                }
+                sh "mkdir ear || true"
 			    sh "echo Starting application server container..."
+			    sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
 			}
 		}
 	}
