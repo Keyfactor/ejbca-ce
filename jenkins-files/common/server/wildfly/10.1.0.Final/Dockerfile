@@ -1,6 +1,6 @@
 FROM jboss/wildfly:10.1.0.Final
 
-ARG DB_DRIVER_MODULE_PATH=""
+ARG DB_DRIVER_MODULE_PATH
 
 USER root
 
@@ -40,6 +40,9 @@ ADD standalone1.xml /opt/standalone1.xml
 ADD standalone2.xml /opt/standalone2.xml
 
 # Add Database module and/or driver
+
+RUN echo $DB_DRIVER_MODULE_PATH
+
 
 #RUN mkdir -p /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/
 #ADD db2jcc4.jar /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/db2jcc4.jar
