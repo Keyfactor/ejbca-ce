@@ -1,5 +1,7 @@
 FROM jboss/wildfly:10.1.0.Final
 
+ARG DB_DRIVER_MODULE_PATH=""
+
 USER root
 
 # Create Ant Dir
@@ -34,13 +36,18 @@ ADD conf /opt/conf
 RUN chmod 777 /opt/conf
 
 # Copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
-ADD ../standalone1.xml /opt/standalone1.xml
-ADD ../standalone2.xml /opt/standalone2.xml
+ADD standalone1.xml /opt/standalone1.xml
+ADD standalone2.xml /opt/standalone2.xml
 
-# Add IBM DB2 driver
+# Add Database module and/or driver
+
 #RUN mkdir -p /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/
 #ADD db2jcc4.jar /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/db2jcc4.jar
 #ADD module.xml /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/module.xml
+RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ] ; then mkdir -p /opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH ; fi
+RUN if [ -f "module.xml" ]; then cp module.xml /opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/module.xml; fi
+# ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
+RUN if [ -f "module.xml" ]; then cp dbdriver.jar /opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/dbdriver.jar; else cp dbdriver.jar /opt/jboss/wildfly/standalone/deployments/dbdriver.jar fi
 
 # Fix permissions (1001 is the jenkins user)
 RUN chown -R 1001:1001 /opt/jboss/wildfly
