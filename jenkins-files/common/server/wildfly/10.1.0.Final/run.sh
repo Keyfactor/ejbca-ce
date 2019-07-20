@@ -38,7 +38,6 @@ wait_for_deployment() {
 	fi
 }
 
-
 echo '=================== Checking Java Version =================================='
 java -version
 
