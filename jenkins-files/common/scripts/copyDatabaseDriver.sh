@@ -33,6 +33,8 @@ fi
 if [ MODULE_XML != "" ]
 then
     cp $1/$5/$MODULE_XML $2/module.xml
+else
+    echo "" > $2/module.xml
 fi
 
 if [ MODULE_JAR != "" ]
