@@ -10,7 +10,7 @@ then
     DB_DRIVER_MODULE_PATH="com/ibm/db2/main/"
 elif [ $5 = "mariadb" ]
 then
-    DB_DRIVER_MODULE_PATH=""
+    DB_DRIVER_MODULE_PATH="x"
 elif [ $5 = "mssql" ]
 then
     DB_DRIVER_MODULE_PATH="com/microsoft/mssql/main/"
