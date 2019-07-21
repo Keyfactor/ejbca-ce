@@ -71,6 +71,7 @@ pipeline {
                 // Copy database libraries for application server
                 sh "echo Copying database libraries for application server container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyDatabaseDriver.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/lib ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+                sh "ls -la ${env.BUILD_FOLDER}"
 
                 // Copy configuration properties
                 sh "echo Copying configuration properties..."
