@@ -18,12 +18,17 @@ then
         echo "Error: Cannot find the DB2 container with version $6"
         exit 1
     fi
-
 elif [ $5 = "mariadb" ]
 then
     echo "Using MariaDB container..."
-    echo "Error: Not implemented"
-    exit 1
+    if [ -f "$1/$5/$6/Dockerfile" ]
+    then
+        echo "Found MariaDB container with version $6"
+        DOCKERFILE_PATH="$1/$5/$6/Dockerfile"
+    else
+        echo "Error: Cannot find the MariaDB container with version $6"
+        exit 1
+    fi
 elif [ $5 = "mssql" ]
 then
     echo "Using MS SQL container..."
@@ -41,4 +46,8 @@ fi
 
 # Copy resources
 cp $DOCKERFILE_PATH $2/
-cp $DOCKERFILE_INIT_SCRIPT_PATH $2/
+
+if [ "x$DOCKERFILE_INIT_SCRIPT_PATH" != "x" ]
+then
+    cp $DOCKERFILE_INIT_SCRIPT_PATH $2/
+fi

@@ -16,8 +16,8 @@ pipeline {
         // Environment
         JDK_VERSION = '8'
         ANT_VERSION = '1.9.8'
-        DB_FAMILY = 'db2'
-        DB_VERSION = '11.5.0.0a'
+        DB_FAMILY = 'mariadb'
+        DB_VERSION = '10.2.17'
         SERVER_FAMILY = 'wildfly'
         SERVER_VERSION = '10.1.0.Final'
         // Dynamic variables

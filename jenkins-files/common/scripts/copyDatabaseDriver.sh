@@ -30,14 +30,14 @@ else
   exit 1
 fi
 
-if [ MODULE_XML != "" ]
+if [ "x$MODULE_XML" != "x" ]
 then
     cp $1/$5/$MODULE_XML $2/module.xml
 else
     echo "" > $2/module.xml
 fi
 
-if [ MODULE_JAR != "" ]
+if [ "x$MODULE_JAR" != "x" ]
 then
     cp $1/$5/$MODULE_JAR $2/dbdriver.jar
 fi
