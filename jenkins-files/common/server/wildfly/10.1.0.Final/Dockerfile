@@ -1,8 +1,6 @@
 FROM jboss/wildfly:10.1.0.Final
 ARG DB_DRIVER_MODULE_PATH
 
-RUN echo $DB_DRIVER_MODULE_PATH
-
 USER root
 
 # Create Ant Dir
@@ -40,13 +38,12 @@ RUN chmod 777 /opt/conf
 ADD standalone1.xml /opt/standalone1.xml
 ADD standalone2.xml /opt/standalone2.xml
 
-# Add Database module and/or driver
-
-RUN echo $DB_DRIVER_MODULE_PATH
-
-RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ] ; then echo "here" && mkdir -p "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH" ; fi
-RUN if [ -f "module.xml" ]; then echo "here2" && cp module.xml "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/module.xml"; fi
-RUN if [ -f "module.xml" ]; then echo "here3.0" && cp dbdriver.jar "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/dbdriver.jar"; else echo "here3.1" && cp dbdriver.jar /opt/jboss/wildfly/standalone/deployments/dbdriver.jar fi
+# Add a database module with driver or copy the driver to deployment folder
+ADD module.xml /opt/module.xml
+ADD dbdriver.jar /opt/dbdriver.jar
+RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ] ; then mkdir -p /opt/jboss/wildfly/modules/system/layers/base/${DB_DRIVER_MODULE_PATH} ; fi
+RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ]; then cp /opt/module.xml /opt/jboss/wildfly/modules/system/layers/base/${DB_DRIVER_MODULE_PATH}/ ; fi
+RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ]; then cp /opt/dbdriver.jar /opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/ ; else cp /opt/dbdriver.jar /opt/jboss/wildfly/standalone/deployments/ ; fi
 
 # Fix permissions (1001 is the jenkins user)
 RUN chown -R 1001:1001 /opt/jboss/wildfly
