@@ -62,29 +62,14 @@ pipeline {
                 // Copy server container
                 sh "echo Copying application server container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyServerContainer.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/server ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
-                sh "ls -la ${env.BUILD_FOLDER}"
-                sh "echo standalone1.xml:"
-                sh "cat ${env.BUILD_FOLDER}/standalone1.xml"
-                sh "echo standalone2.xml:"
-                sh "cat ${env.BUILD_FOLDER}/standalone2.xml"
 
                 // Copy database libraries for application server
                 sh "echo Copying database libraries for application server container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyDatabaseDriver.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/lib ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
-                sh "ls -la ${env.BUILD_FOLDER}"
 
                 // Copy configuration properties
                 sh "echo Copying configuration properties..."
                 sh "./ejbca/jenkins-files/common/scripts/copyConfigurationProperties.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/conf ${env.BUILD_FOLDER_CONF} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
-                sh "echo database.properties:"
-                sh "cat ${env.BUILD_FOLDER_CONF}/database.properties"
-                sh "echo ejbca.properties:"
-                sh "cat ${env.BUILD_FOLDER_CONF}/ejbca.properties"
-
-                // Output
-                sh "ls -la ${env.BUILD_FOLDER}"
-                sh "ls -la ${env.BUILD_FOLDER_CONF}"
-                sh "ls -la ${env.BUILD_FOLDER_DB}"
             }
         }
 		stage('Start the database container') {
@@ -92,9 +77,9 @@ pipeline {
                 dir ("${env.BUILD_FOLDER_DB}") {
                     sh "echo Building database container..."
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
-                    sh "echo Building database container..."
+                    sh "echo Starting database container..."
                     sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} ${env.DOCKER_DB_EXTRA_ARGS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
-                    // Sleep for database startup and warmup
+                    // Sleep for database startup and warm-up
                     sh "sleep 120"
                 }
             }
@@ -110,6 +95,11 @@ pipeline {
 			    sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
 			}
 		}
+		stage('Save test results') {
+            steps {
+                junit "ejbca/**/reports/**/TEST-*.xml"
+            }
+        }
 	}
 	post {
 		always {
