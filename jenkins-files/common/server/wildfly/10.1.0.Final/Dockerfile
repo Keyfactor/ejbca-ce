@@ -44,9 +44,9 @@ ADD standalone2.xml /opt/standalone2.xml
 
 RUN echo $DB_DRIVER_MODULE_PATH
 
-RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ] ; then mkdir -p "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH" ; fi
-RUN if [ -f "module.xml" ]; then cp module.xml "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/module.xml"; fi
-RUN if [ -f "module.xml" ]; then cp dbdriver.jar "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/dbdriver.jar"; else cp dbdriver.jar /opt/jboss/wildfly/standalone/deployments/dbdriver.jar fi
+RUN if [ "x$DB_DRIVER_MODULE_PATH" != "x" ] ; then echo "here" && mkdir -p "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH" ; fi
+RUN if [ -f "module.xml" ]; then echo "here2" && cp module.xml "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/module.xml"; fi
+RUN if [ -f "module.xml" ]; then echo "here3.0" && cp dbdriver.jar "/opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/dbdriver.jar"; else echo "here3.1" && cp dbdriver.jar /opt/jboss/wildfly/standalone/deployments/dbdriver.jar fi
 
 # Fix permissions (1001 is the jenkins user)
 RUN chown -R 1001:1001 /opt/jboss/wildfly
