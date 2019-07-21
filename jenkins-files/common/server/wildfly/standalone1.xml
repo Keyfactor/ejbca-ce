@@ -64,7 +64,7 @@
             <handlers>
                 <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
-            <logger log-boot="true" enabled="false">
+            <logger log-boot="true" log-read-only="false" enabled="false">
                 <handlers>
                     <handler name="file"/>
                 </handlers>
@@ -75,7 +75,7 @@
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
-        <access-control>
+        <access-control provider="simple">
             <role-mapping>
                 <role name="SuperUser">
                     <include>
@@ -94,7 +94,7 @@
                     <named-formatter name="COLOR-PATTERN"/>
                 </formatter>
             </console-handler>
-            <periodic-rotating-file-handler name="FILE">
+            <periodic-rotating-file-handler name="FILE" autoflush="true">
                 <formatter>
                     <named-formatter name="PATTERN"/>
                 </formatter>
@@ -210,8 +210,8 @@
             </session-bean>
             <pools>
                 <bean-instance-pools>
-                    <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools"/>
-                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count"/>
+                    <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                 </bean-instance-pools>
             </pools>
             <caches>
@@ -219,7 +219,7 @@
                 <cache name="distributable" passivation-store-ref="infinispan" aliases="passivating clustered"/>
             </caches>
             <passivation-stores>
-                <passivation-store name="infinispan"/>
+                <passivation-store name="infinispan" cache-container="ejb" max-size="10000"/>
             </passivation-stores>
             <async thread-pool-name="default"/>
             <timer-service thread-pool-name="default" default-data-store="default-file-store">
@@ -252,7 +252,7 @@
                 <local-cache name="passivation">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
-                    <file-store purge="false"/>
+                    <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="persistent">
                     <locking isolation="REPEATABLE_READ"/>
@@ -260,14 +260,14 @@
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
                 <local-cache name="concurrent">
-                    <file-store purge="false"/>
+                    <file-store passivation="true" purge="false"/>
                 </local-cache>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
-                    <file-store purge="false"/>
+                    <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="persistent">
                     <locking isolation="REPEATABLE_READ"/>
@@ -278,11 +278,11 @@
             <cache-container name="hibernate" default-cache="local-query" module="org.hibernate.infinispan">
                 <local-cache name="entity">
                     <transaction mode="NON_XA"/>
-                    <eviction strategy="LRU"/>
+                    <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="local-query">
-                    <eviction strategy="LRU"/>
+                    <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="timestamps"/>
@@ -290,7 +290,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:4.0">
-            <archive-validation/>
+            <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
             <bean-validation enabled="true"/>
             <default-workmanager>
                 <short-running-threads>
