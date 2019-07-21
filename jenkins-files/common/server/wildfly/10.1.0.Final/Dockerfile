@@ -1,6 +1,8 @@
 FROM jboss/wildfly:10.1.0.Final
 ARG DB_DRIVER_MODULE_PATH
 
+RUN echo $DB_DRIVER_MODULE_PATH
+
 USER root
 
 # Create Ant Dir
