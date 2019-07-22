@@ -1,0 +1,114 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+	environment {
+	    // Use a Jenkins job name as unique identifier for related resources
+        THIS_JOB_NAME = "$env.JOB_BASE_NAME"
+        // Folders
+        BUILD_FOLDER = "${env.WORKSPACE}/${env.THIS_JOB_NAME}"
+        BUILD_FOLDER_CONF = "${env.BUILD_FOLDER}/conf"
+        BUILD_FOLDER_DB = "${env.BUILD_FOLDER}/database"
+        // Docker container names
+        DOCKER_NAME_NET  = "net_${env.THIS_JOB_NAME.toLowerCase()}"
+        DOCKER_NAME_DB = "db_${env.THIS_JOB_NAME.toLowerCase()}"
+        DOCKER_NAME_BASE = "ee_${env.THIS_JOB_NAME.toLowerCase()}"
+        // Environment
+        JDK_VERSION = '8'
+        ANT_VERSION = '1.9.8'
+        DB_FAMILY = 'mssql'
+        DB_VERSION = '2017-latest'
+        SERVER_FAMILY = 'wildfly'
+        SERVER_VERSION = '10.1.0.Final'
+        // Dynamic variables
+        DOCKER_DB_EXTRA_ARGS = sh(script: "./ejbca/jenkins-files/common/scripts/setDatabaseContainerEnvVarExtraArgs.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}", returnStdout: true).trim()
+        DB_DRIVER_MODULE_PATH = sh(script: "./ejbca/jenkins-files/common/scripts/setDatabaseDriverEnvVarModulePath.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}", returnStdout: true).trim()
+	}
+	stages {
+		stage('Verify that space is clean') {
+			steps {
+				sh "docker container rm ${env.DOCKER_NAME_DB} -f || true"
+				sh "docker container rm ${env.DOCKER_NAME_BASE} -f || true"
+				sh "docker network rm ${env.DOCKER_NAME_NET} || true"
+				sh "rm -rf ${env.BUILD_FOLDER} || true"
+			}
+		}
+		stage('Prepare the environment') {
+            steps {
+                // Info output
+                sh "echo JDK_VERSION           = ${env.JDK_VERSION}"
+                sh "echo ANT_VERSION           = ${env.ANT_VERSION}"
+                sh "echo DB_FAMILY             = ${env.DB_FAMILY}"
+                sh "echo DB_VERSION            = ${env.DB_VERSION}"
+                sh "echo SERVER_FAMILY         = ${env.SERVER_FAMILY}"
+                sh "echo SERVER_VERSION        = ${env.SERVER_VERSION}"
+                sh "echo DOCKER_DB_EXTRA_ARGS  = ${env.DOCKER_DB_EXTRA_ARGS}"
+                sh "echo DB_DRIVER_MODULE_PATH = ${env.DB_DRIVER_MODULE_PATH}"
+
+                // Create network
+                sh "echo Creating a network..."
+                sh "docker network create --driver bridge ${env.DOCKER_NAME_NET} || true"
+
+                // Create environment folders
+                sh "echo Creating environment setup folders..."
+                sh "mkdir ${env.BUILD_FOLDER}"
+                sh "mkdir ${env.BUILD_FOLDER_CONF}"
+                sh "mkdir ${env.BUILD_FOLDER_DB}"
+
+                // Copy database container
+                sh "echo Copying database container..."
+                sh "./ejbca/jenkins-files/common/scripts/copyDatabaseContainer.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/database ${env.BUILD_FOLDER_DB} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+
+                // Copy server container
+                sh "echo Copying application server container..."
+                sh "./ejbca/jenkins-files/common/scripts/copyServerContainer.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/server ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+
+                // Copy database libraries for application server
+                sh "echo Copying database libraries for application server container..."
+                sh "./ejbca/jenkins-files/common/scripts/copyDatabaseDriver.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/lib ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+
+                // Copy configuration properties
+                sh "echo Copying configuration properties..."
+                sh "./ejbca/jenkins-files/common/scripts/copyConfigurationProperties.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/conf ${env.BUILD_FOLDER_CONF} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+            }
+        }
+		stage('Start the database container') {
+			steps {
+                dir ("${env.BUILD_FOLDER_DB}") {
+                    sh "echo Building database container..."
+                    sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
+                    sh "echo Starting database container..."
+                    sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} ${env.DOCKER_DB_EXTRA_ARGS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
+                    // Sleep for database startup and warm-up
+                    sh "sleep 120"
+                }
+            }
+		}
+		stage('Start the application server container, install, deploy and run system tests') {
+			steps {
+			    dir ("${env.BUILD_FOLDER}") {
+			        sh "echo Building application server container..."
+			        sh "docker build -t ${env.DOCKER_NAME_BASE} --build-arg DB_DRIVER_MODULE_PATH=${env.DB_DRIVER_MODULE_PATH} -m 3GB . "
+                }
+                sh "mkdir ear || true"
+			    sh "echo Starting application server container..."
+			    sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
+			}
+		}
+		stage('Save test results') {
+            steps {
+                junit "ejbca/**/reports/**/TEST-*.xml"
+            }
+        }
+	}
+	post {
+		always {
+			sh "docker stop --time=1 ${env.DOCKER_NAME_BASE} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_BASE} || true"
+			sh "docker stop --time=1 ${env.DOCKER_NAME_DB} || true"
+			sh "docker rm -f ${env.DOCKER_NAME_DB} || true"
+			sh "docker network rm ${env.DOCKER_NAME_NET} || true"
+			cleanWs()
+		}
+	}
+}
