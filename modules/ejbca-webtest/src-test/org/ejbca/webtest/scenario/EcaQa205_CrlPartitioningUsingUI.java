@@ -232,35 +232,24 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         swaggerUIHelper.executeEnrollKeystoreRequest();
 
         //Now verify the response
-        if (swaggerUIHelper.assertEnrollKeystoreSuccess().contains("201")) {
-            //**Wait a minute for the certificate to propagate in the system**
-            Thread.sleep(30000);
+        swaggerUIHelper.assertEnrollKeystoreSuccess();
+        //**Wait a minute for the certificate to propagate in the system**
+        Thread.sleep(30000);
 
-            //Get the certificate serial number from database
-            Collection<CertificateWrapper> certificateDataList = findSerialNumber(TestData.USERNAME);
-            String certificateSerialNumber = CertTools.getSerialNumberAsString(certificateDataList.iterator().next().getCertificate());
+        //Get the certificate serial number from database
+        Collection<CertificateWrapper> certificateDataList = findSerialNumber(TestData.USERNAME);
+        String certificateSerialNumber = CertTools.getSerialNumberAsString(certificateDataList.iterator().next().getCertificate());
 
-            System.out.println("Hexidecimal Representative:  " + certificateSerialNumber);
+        //Revoke certificate
+        swaggerUIHelper.putCertificateRevoke();
+        swaggerUIHelper.tryCertificateRevoke();
+        swaggerUIHelper.setCaSubjectDnForCertificateRevoke(TestData.ISSUER_DN);
+        swaggerUIHelper.setCertificateSerialNumber(certificateSerialNumber);
+        swaggerUIHelper.setReasonToRevoke("UNSPECIFIED");
+        swaggerUIHelper.setDateToRevoke();
 
-            //Revoke certificate
-            swaggerUIHelper.putCertificateRevoke();
-            swaggerUIHelper.tryCertificateRevoke();
-            swaggerUIHelper.setCaSubjectDnForCertificateRevoke(TestData.ISSUER_DN);
-            swaggerUIHelper.setCertificateSerialNumber(certificateSerialNumber);
-            swaggerUIHelper.setReasonToRevoke("UNSPECIFIED");
-            swaggerUIHelper.setDateToRevoke();
-
-            swaggerUIHelper.executeCertificateRevoke();
-
-            if (!swaggerUIHelper.assertCertificateRevokeSuccess().contains("200")) {
-                swaggerUIHelper.downloadCertificateRevokeResponse();
-                System.out.println("Failed to revoke certificate serial:  " + " , Reason:  " +
-                        swaggerUIHelper.getErrorMessage());
-            }
-        } else {
-            System.out.println("Failed to enroll certificate:  " + " , Reason:  " +
-                    swaggerUIHelper.getErrorMessage());
-        }
+        swaggerUIHelper.executeCertificateRevoke();
+        swaggerUIHelper.assertCertificateRevokeSuccess();
     }
 
     @Test

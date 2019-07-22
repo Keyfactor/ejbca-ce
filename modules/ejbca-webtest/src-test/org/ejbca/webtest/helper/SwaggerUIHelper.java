@@ -83,7 +83,7 @@ public class SwaggerUIHelper extends BaseHelper {
 
         static final By BUTTON_DOWNLOAD_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] div.download-contents");
         static final By TEXT_RESPONSE_CODE_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] table.responses-table:nth-child(4) tbody tr[class*='response'] td[class*=\"col_status\"]");
-        static final By TEXT_RESPONSE_BODY = By.cssSelector("div[id$=certificate-enrollKeystore] table.responses-table:nth-child(4) tbody tr[class*='response'] pre[class*=\" microlight\"]");
+        static final By TEXT_RESPONSE_BODY_ENROLLKEYSTORE = By.cssSelector("div[id$=certificate-enrollKeystore] table.responses-table:nth-child(4) tbody tr[class*='response'] pre[class*=\" microlight\"]");
 
         //Revoke
         static final By BUTTON_PUT_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] span.opblock-summary-method");
@@ -98,6 +98,7 @@ public class SwaggerUIHelper extends BaseHelper {
 
         static final By BUTTON_DOWNLOAD_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] div.download-contents");
         static final By TEXT_RESPONSE_CODE_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] table.responses-table:nth-child(4) tbody tr[class*='response'] td[class*=\"col_status\"]");
+        static final By TEXT_RESPONSE_BODY_CERTREVOKE = By.cssSelector("div[id$=certificate-revokeCertificate] table.responses-table:nth-child(4) tbody tr[class*='response'] pre[class*=\" microlight\"]");
     }
 
     //General Operations
@@ -254,13 +255,22 @@ public class SwaggerUIHelper extends BaseHelper {
      * Assert enrollment was successful
      *
      */
-    public String assertEnrollKeystoreSuccess() {
+    public void assertEnrollKeystoreSuccess() {
         String responseCode = getElementText(Page.TEXT_RESPONSE_CODE_ENROLLKEYSTORE);
-        String responseBody = getElementText(Page.TEXT_RESPONSE_BODY);
-        System.out.println(responseBody);
-        assertTrue("Unsuccessful certificate enrollment by enroll keystore",
-                getElementText(Page.TEXT_RESPONSE_CODE_ENROLLKEYSTORE).contains("201"));
-        return responseCode;
+        String responseBody = getElementText(Page.TEXT_RESPONSE_BODY_ENROLLKEYSTORE);
+        assertEquals("Unsuccessful certificate enrollment by enroll keystore: " + responseBody,
+                "201", responseCode);
+    }
+
+    /**
+     * Assert certificate revoke was successful
+     *
+     */
+    public void  assertCertificateRevokeSuccess() {
+        String responseCode = getElementText(Page.TEXT_RESPONSE_CODE_CERTREVOKE);
+        String responseBody = getElementText(Page.TEXT_RESPONSE_BODY_CERTREVOKE);
+        assertEquals("Unsuccessful certificate revoke: " + responseBody,
+                 "200", responseCode);
     }
 
 
@@ -324,18 +334,6 @@ public class SwaggerUIHelper extends BaseHelper {
      */
     public void executeCertificateRevoke() {
         clickLink(Page.BUTTON_EXECUTE_CERTREVOKE);
-    }
-
-    /**
-     * Assert certificate revoke was successful
-     *
-     */
-    public String assertCertificateRevokeSuccess() {
-        String responseCode = getElementText(Page.TEXT_RESPONSE_CODE_CERTREVOKE);
-        assertThat("Unsuccessful certificate revoke",
-                getElementText(Page.TEXT_RESPONSE_CODE_CERTREVOKE),
-                CoreMatchers.containsString("200"));
-        return responseCode;
     }
 
     /**
