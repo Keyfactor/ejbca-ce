@@ -13,7 +13,7 @@ then
     DOCKERFILE_EXTRA_ARGS="-p 3306:3306"
 elif [ $5 = "mssql" ]
 then
-    exit 1
+    DOCKERFILE_EXTRA_ARGS="-p 1433:1433"
 elif [ $5 = "oracle" ]
 then
     exit 1
