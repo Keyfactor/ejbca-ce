@@ -31,9 +31,17 @@ then
     fi
 elif [ $5 = "mssql" ]
 then
-    echo "Using MS SQL container..."
-    echo "Error: Not implemented"
-    exit 1
+    echo "Using MSSQL container..."
+    if [ -f "$1/$5/$6/Dockerfile" ]
+    then
+        echo "Found MSSQL container with version $6"
+        DOCKERFILE_PATH="$1/$5/$6/Dockerfile"
+        DOCKERFILE_INIT_SCRIPT_PATH="$1/$5/$6/entrypoint.sh"
+    else
+        echo "Error: Cannot find the MSSQL container with version $6"
+        exit 1
+    fi
+
 elif [ $5 = "oracle" ]
 then
     echo "Using Oracle container..."

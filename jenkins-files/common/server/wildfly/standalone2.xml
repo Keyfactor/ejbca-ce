@@ -185,7 +185,7 @@
                         <password>DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD</password>
                     </security>
                     <validation>
-                        <check-valid-connection-sql>DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_SQL</check-valid-connection-sql>
+                        DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION
                         <validate-on-match>true</validate-on-match>
                         <background-validation>false</background-validation>
                     </validation>
