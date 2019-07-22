@@ -18,8 +18,8 @@ then
 elif [ $5 = "mssql" ]
 then
     echo "Using MS SQL library..."
-    echo "Error: Not implemented"
-    exit 1
+    MODULE_XML="module_$4.xml"
+    MODULE_JAR="mssql-jdbc-7.2.2.jre$4.jar"
 elif [ $5 = "oracle" ]
 then
     echo "Using Oracle library..."
