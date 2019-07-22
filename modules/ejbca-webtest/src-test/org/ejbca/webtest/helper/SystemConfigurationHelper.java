@@ -42,7 +42,9 @@ public class SystemConfigurationHelper extends BaseHelper {
         static By getSystemConfigTabContainingText(final String text) {
             return By.xpath("//div/span/a[contains(text(),'" + text + "' )]");
         }
-        
+        static By getEnableButtonFromProtocolssTableRowContainingText(final String text) {
+            return By.xpath("//tr/td[contains(text(), '" + text + "')]/following-sibling::td//input[@value='Enable']");
+        }
     }
     
     /**
@@ -69,6 +71,25 @@ public class SystemConfigurationHelper extends BaseHelper {
             return locator;
         }
     }
+
+    /**
+     * Enum of available Protocols with corresponding labels
+     */
+    public enum SysConfigProtokols {
+        ACME("ACME"),
+        CERTSTORE("Certstore"),
+        REST_CERTIFICATE_MANAGEMENT("REST Certificate Management");
+
+        private final String label;
+
+        private SysConfigProtokols(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
     
     public SystemConfigurationHelper(final WebDriver webDriver) {
         super(webDriver);
@@ -85,7 +106,7 @@ public class SystemConfigurationHelper extends BaseHelper {
     
     /**
      * Opens the given tab in the 'System Configuration' page by clicking on the tab link
-     * @param locator enum of type SysConfigTabs
+     * @param tab enum of type SysConfigTabs
      */
     public void openTab(final SysConfigTabs tab) {
         clickLink(Page.getSystemConfigTabContainingText(tab.getLocatorId()));
@@ -146,4 +167,13 @@ public class SystemConfigurationHelper extends BaseHelper {
     public void cancelBasicConfiguration() {
         clickLink(Page.BUTTON_CANCEL_BASIC_CONFIG);
     }
+
+    /**
+     * Enables selected protocol
+     * @param protocol protocol to enable.
+     */
+    public void enableProtocol(SysConfigProtokols protocol) {
+        clickLinkIfExists(Page.getEnableButtonFromProtocolssTableRowContainingText(protocol.getLabel()));
+    }
+
 }
