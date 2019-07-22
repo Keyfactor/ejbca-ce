@@ -25,6 +25,8 @@ package org.ejbca.webtest.scenario;
 import org.apache.commons.lang.RandomStringUtils;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.*;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigProtokols;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
@@ -46,6 +48,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     private static ServicesHelper servicesHelper;
     private static AddEndEntityHelper addEndEntityHelperDefault;
     private static SwaggerUIHelper swaggerUIHelper;
+    private static SystemConfigurationHelper systemConfigurationHelper;
 
     // Test Data
     private static class TestData {
@@ -55,6 +58,10 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         private static final String ENTITY_NAME = "EndEntityProfile";
         private static final String CRL_SERVICE = "ServiceCrlPartition";
         private static final String ISSUER_DN = "CN=" + CA_NAME;
+        private static final String USERNAME = "Crl" + RandomStringUtils.randomAlphanumeric(8);
+        private static final String PASSWORD = "123" + RandomStringUtils.randomAlphanumeric(5);
+        private static final String END_ENTITY_NAME = "EcaQa205EE" + new Random().nextInt();
+
     }
 
     @BeforeClass
@@ -71,6 +78,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         servicesHelper = new ServicesHelper(webDriver);
         addEndEntityHelperDefault = new AddEndEntityHelper(webDriver);
         swaggerUIHelper = new SwaggerUIHelper(webDriver);
+        systemConfigurationHelper = new SystemConfigurationHelper(webDriver);
     }
 
     @AfterClass
@@ -179,40 +187,41 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         eeProfileHelper.saveEndEntityProfile(true);
     }
 
-    //This next test serves as a utility to simply generate
-    //a bulk of certificates and revoke them to use with
-    //the CRL partitions
+
+    @Test
+    public void stepM1_CreateEndEntity(){
+        //First add an end entity for the end user
+
+        Map<String, String> INPUT_END_ENTITY_FIELDMAP = new HashMap<>();
+        {
+            INPUT_END_ENTITY_FIELDMAP.put("Username", TestData.USERNAME);
+            INPUT_END_ENTITY_FIELDMAP.put("Password (or Enrollment Code)", TestData.PASSWORD);
+            INPUT_END_ENTITY_FIELDMAP.put("Confirm Password", TestData.PASSWORD);
+            INPUT_END_ENTITY_FIELDMAP.put("CN, Common name", TestData.END_ENTITY_NAME);
+        }
+
+        System.out.println("User:  " + TestData.USERNAME);
+
+
+        addEndEntityHelperDefault.openPage(getAdminWebUrl());
+        addEndEntityHelperDefault.setEndEntityProfile(TestData.ENTITY_NAME);
+        addEndEntityHelperDefault.fillFields(INPUT_END_ENTITY_FIELDMAP);
+        addEndEntityHelperDefault.setCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
+        addEndEntityHelperDefault.setCa(TestData.CA_NAME);
+        addEndEntityHelperDefault.setToken("JKS file");
+        addEndEntityHelperDefault.addEndEntity();
+    }
+
+    @Test
+    public void stepM2_enableSwagger(){
+        systemConfigurationHelper.openPage(getAdminWebUrl());
+        systemConfigurationHelper.openTab(SysConfigTabs.PROTOCOLCONFIG);
+        systemConfigurationHelper.enableProtocol(SysConfigProtokols.REST_CERTIFICATE_MANAGEMENT);
+    }
 
     //@Ignore
     @Test()
-    public void stepM_GenerateAndRevokeCertificates() throws InterruptedException {
-        //Create 500 users.
-        //Integer i = 0;
-        //while (i <= 500) {
-
-            //First add an end entity for the end user
-            String username = "Crl" + RandomStringUtils.randomAlphanumeric(8);
-            String password = "123" + RandomStringUtils.randomAlphanumeric(5);
-            String endEntityName = "EcaQa205EE" + new Random().nextInt();
-
-            Map<String, String> INPUT_END_ENTITY_FIELDMAP = new HashMap<>();
-            {
-                INPUT_END_ENTITY_FIELDMAP.put("Username", username);
-                INPUT_END_ENTITY_FIELDMAP.put("Password (or Enrollment Code)", password);
-                INPUT_END_ENTITY_FIELDMAP.put("Confirm Password", password);
-                INPUT_END_ENTITY_FIELDMAP.put("CN, Common name", endEntityName);
-            }
-
-            System.out.println("User:  " + username);
-
-
-            addEndEntityHelperDefault.openPage(getAdminWebUrl());
-            addEndEntityHelperDefault.setEndEntityProfile(TestData.ENTITY_NAME);
-            addEndEntityHelperDefault.fillFields(INPUT_END_ENTITY_FIELDMAP);
-            addEndEntityHelperDefault.setCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
-            addEndEntityHelperDefault.setCa(TestData.CA_NAME);
-            addEndEntityHelperDefault.setToken("JKS file");
-            addEndEntityHelperDefault.addEndEntity();
+    public void stepM3_GenerateAndRevokeCertificates() throws InterruptedException {
 
             //Open Swagger
             swaggerUIHelper.openPage(getSwaggerWebUrl());
@@ -220,7 +229,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
             //First Generate a certificate for the user
             swaggerUIHelper.postEnrollKeystore();
             swaggerUIHelper.tryEnrollKeystore();
-            swaggerUIHelper.setEnrollKeystoreAsJson(username, password, "RSA", "2048");
+            swaggerUIHelper.setEnrollKeystoreAsJson(TestData.USERNAME, TestData.PASSWORD, "RSA", "2048");
             swaggerUIHelper.executeEnrollKeystoreRequest();
 
             //Now verify the response
@@ -238,7 +247,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
 
                 //Get the certificate serial number from database
                 String certificateSerialNumber = queryHelper.getCertificateSerialNumberByUsername(getDatabaseConnection(),
-                        "ejbca", username);
+                        "ejbca", TestData.USERNAME);
 
                 //Convert to the hexidecimal format
                 BigInteger hex = new BigInteger(certificateSerialNumber);
