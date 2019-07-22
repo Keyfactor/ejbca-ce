@@ -13,6 +13,7 @@
 package org.ejbca.webtest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,8 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -39,6 +42,8 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.crl.CrlDataTestSessionRemote;
+import org.ejbca.core.ejb.crl.PublishingCrlProxySessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -445,6 +450,24 @@ public abstract class WebTestBase extends ExtentReportCreator {
         final ServiceSessionRemote serviceSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
         try {
             serviceSessionRemote.removeService(ADMIN_TOKEN, ServiceName);
+        } catch (Exception e) {
+            throw new IllegalStateException(e); //Should never happen with always allow token
+        }
+    }
+
+    protected static void removeCrlByIssuerDn(final String issuerDn) {
+        final CrlDataTestSessionRemote crlDataTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlDataTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        try {
+            crlDataTestSession.deleteCrlDataByIssuerDn(issuerDn);
+        } catch (Exception e) {
+            throw new IllegalStateException(e); //Should never happen with always allow token
+        }
+    }
+
+    protected static Collection<CertificateWrapper> findSerialNumber(final String username) {
+        final CertificateStoreSessionRemote certificateDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        try {
+            return certificateDataSession.findCertificatesByUsername(username);
         } catch (Exception e) {
             throw new IllegalStateException(e); //Should never happen with always allow token
         }
