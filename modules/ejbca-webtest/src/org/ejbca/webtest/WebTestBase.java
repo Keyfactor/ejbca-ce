@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -31,6 +32,7 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
@@ -43,7 +45,6 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.crl.CrlDataTestSessionRemote;
-import org.ejbca.core.ejb.crl.PublishingCrlProxySessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -207,27 +208,27 @@ public abstract class WebTestBase extends ExtentReportCreator {
         return StringUtils.isBlank(namespace) ? null : namespace;
     }
 
-    public String getPublicWebUrl() {
+    public static String getPublicWebUrl() {
         return "http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/";
     }
 
-    public String getAdminWebUrl() {
+    public static String getAdminWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/adminweb";
     }
 
-    public String getRaWebUrl() {
+    public static String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
     }
 
-    public String getRestUrl() {
+    public static String getRestUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ejbca-rest-api";
     }
 
-    public String getSwaggerWebUrl() {
+    public static String getSwaggerWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/swagger-ui#/";
     }
 
-    public String getDownloadDir() {
+    public static String getDownloadDir() {
         return downloadDir;
     }
 
@@ -472,5 +473,28 @@ public abstract class WebTestBase extends ExtentReportCreator {
             throw new IllegalStateException(e); //Should never happen with always allow token
         }
 
+    }
+
+    /** Finds the name of the crypto token for the management CA. Defaults to "ManagementCA" if something goes wrong. */
+    protected static String getManagementCACryptoTokenName() {
+        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        for (final String caName : SystemTestsConfiguration.getClientCertificateCaNames()) {
+            try {
+                final CAInfo managementCa = caSession.getCAInfo(ADMIN_TOKEN, caName);
+                if (managementCa.getCAToken() != null) {
+                    final int cryptoTokenId = managementCa.getCAToken().getCryptoTokenId();
+                    final CryptoTokenInfo cryptoToken = cryptoTokenManagementSession.getCryptoTokenInfo(ADMIN_TOKEN, cryptoTokenId);
+                    if (cryptoToken != null) {
+                        return cryptoToken.getName();
+                    }
+                } else {
+                    log.error("CA '" + managementCa.getName() + "' exists, but has no Crypto Token");
+                }
+            } catch (AuthorizationDeniedException e) {
+                log.error("Authorization denied to CA '" + caName + "': " + e.getMessage(), e);
+            }
+        }
+        return "ManagementCA";
     }
 }

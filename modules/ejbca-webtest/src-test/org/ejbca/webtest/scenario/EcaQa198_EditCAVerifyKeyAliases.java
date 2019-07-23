@@ -12,19 +12,11 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
-import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenInfo;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
@@ -78,36 +70,13 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException, IOException {
+    public static void exit() {
         // Remove generated artifacts
         removeCaAndCryptoToken(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
         new RemoveDir("test-statedump").deleteDirectoryStream();
         new RemoveDir("dist/statedump").deleteDirectoryStream();
         // super
         afterClass();
-    }
-    
-    /** Finds the name of the crypto token for the management CA. Defaults to "ManagementCA" if something goes wrong. */
-    private String getManagementCACryptoTokenName() {
-        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        for (final String caName : SystemTestsConfiguration.getClientCertificateCaNames()) {
-            try {
-                final CAInfo managementCa = caSession.getCAInfo(ADMIN_TOKEN, caName);
-                if (managementCa.getCAToken() != null) {
-                    final int cryptoTokenId = managementCa.getCAToken().getCryptoTokenId();
-                    final CryptoTokenInfo cryptoToken = cryptoTokenManagementSession.getCryptoTokenInfo(ADMIN_TOKEN, cryptoTokenId);
-                    if (cryptoToken != null) {
-                        return cryptoToken.getName();
-                    }
-                } else {
-                    log.error("CA '" + managementCa.getName() + "' exists, but has no Crypto Token");
-                }
-            } catch (AuthorizationDeniedException e) {
-                log.error("Authorization denied to CA '" + caName + "': " + e.getMessage(), e);
-            }
-        }
-        return "ManagementCA";
     }
 
     @Test
