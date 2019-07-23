@@ -1,5 +1,16 @@
 FROM jboss/wildfly:14.0.0.Final
+
 ARG DB_DRIVER_MODULE_PATH
+
+ARG DB_CONTAINER
+ARG DATASOURCE_JNDI_NAME
+ARG DATABASE_NAME
+ARG DATABASE_URL
+ARG DATABASE_DRIVER
+ARG DATABASE_USERNAME
+ARG DATABASE_PASSWORD
+
+RUN echo $DB_CONTAINER
 
 USER root
 
@@ -48,4 +59,5 @@ USER 1001:1001
 # Set the working directory to /app
 WORKDIR /app/ejbca
 
-CMD ["/opt/run.sh"]
+#                    1                2
+CMD ["/opt/run.sh", "$DB_CONTAINER"]
