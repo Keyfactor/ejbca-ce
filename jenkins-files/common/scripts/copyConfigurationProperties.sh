@@ -19,15 +19,15 @@ DATABASE_PASSWORD=""
 APPSERVER_HOME=""
 APPSERVER_TYPE=""
 
-# Copy resources in alphabetical order
+########################################################################################################################
+# jndi.properties.jboss
+########################################################################################################################
+COPY_JNDI_PROPERTIES_JBOSS=false
 
-echo "Copying cesecore.properties (without filtering)..."
-cp $1/cesecore.properties $2/
-
-echo "Copying cmptcp.properties (without filtering)..."
-cp $1/cmptcp.properties $2/
-
-echo "Copying database.properties (with filtering)..."
+########################################################################################################################
+# Setup variables
+########################################################################################################################
+# Database
 if [ $5 = "db2" ]
 then
     echo "Using DB2 pattern..."
@@ -64,6 +64,31 @@ else
   echo "Error: Cannot map the database family"
   exit 1
 fi
+# Application server
+if [ $7 = "wildfly" ]
+then
+    echo "Using WildFly pattern..."
+    APPSERVER_HOME="/opt/jboss/wildfly"
+    APPSERVER_TYPE="jboss"
+    if [ $8 = "14.0.0.Final" ]
+    then
+        COPY_JNDI_PROPERTIES_JBOSS=true
+    fi
+else
+  echo "Error: Cannot map the application server family"
+  exit 1
+fi
+
+########################################################################################################################
+# Copy resources in alphabetical order
+########################################################################################################################
+echo "Copying cesecore.properties (without filtering)..."
+cp $1/cesecore.properties $2/
+
+echo "Copying cmptcp.properties (without filtering)..."
+cp $1/cmptcp.properties $2/
+
+echo "Copying database.properties (with filtering)..."
 sed -e "s#DATASOURCE_JNDI_NAME#$DATASOURCE_JNDI_NAME#" \
     -e "s#DATABASE_NAME#$DATABASE_NAME#" \
     -e "s#DATABASE_URL#$DATABASE_URL#" \
@@ -76,18 +101,15 @@ echo "Copying databaseprotection.properties (without filtering)..."
 cp $1/databaseprotection.properties $2/
 
 echo "Copying ejbca.properties (with filtering)..."
-if [ $7 = "wildfly" ]
-then
-    echo "Using WildFly pattern..."
-    APPSERVER_HOME="/opt/jboss/wildfly"
-    APPSERVER_TYPE="jboss"
-else
-  echo "Error: Cannot map the application server family"
-  exit 1
-fi
 sed -e "s#APPSERVER_HOME#$APPSERVER_HOME#" \
     -e "s#APPSERVER_TYPE#$APPSERVER_TYPE#" \
     $1/ejbca.properties > $2/ejbca.properties
 
 echo "Copying install.properties (without filtering)..."
 cp $1/install.properties $2/
+
+if [ "xCOPY_JNDI_PROPERTIES_JBOSS" != "x" ]
+then
+    echo "Copying jndi.properties.jboss (without filtering)..."
+    cp $1/jndi.properties.jboss $2/
+fi
