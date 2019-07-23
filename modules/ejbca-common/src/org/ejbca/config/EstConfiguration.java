@@ -51,6 +51,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_REQUSERNAME   = "requsername";
     public static final String CONFIG_REQPASSWORD   = "reqpassword";
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
+    public static final String CONFIG_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
+    public static final String CONFIG_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
+    public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
+    public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
 
     private final String ALIAS_LIST = "aliaslist";
     public static final String EST_CONFIGURATION_ID = "4";
@@ -68,6 +72,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_REQUSERNAME = "";
     private static final String DEFAULT_REQPASSWORD = "";
     private static final String DEFAULT_ALLOWUPDATEWITHSAMEKEY = "true";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = "DN";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
 
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
@@ -109,6 +117,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_REQUSERNAME, DEFAULT_REQUSERNAME);
             data.put(alias + CONFIG_REQPASSWORD, DEFAULT_REQPASSWORD);
             data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_ALLOWUPDATEWITHSAMEKEY);
+            data.put(alias + CONFIG_RA_NAMEGENERATIONSCHEME, DEFAULT_RA_USERNAME_GENERATION_SCHEME);
+            data.put(alias + CONFIG_RA_NAMEGENERATIONPARAMS, DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+            data.put(alias + CONFIG_RA_NAMEGENERATIONPREFIX, DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+            data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
         }
     }
 
@@ -123,6 +135,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_REQUSERNAME);
         keys.add(alias + CONFIG_REQPASSWORD);
         keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONSCHEME);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
         return keys;
     }
 
@@ -466,6 +482,110 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     @Override
     public String getConfigurationId() {
         return EST_CONFIGURATION_ID;
+    }
+
+    /**
+     * Getter for RA Name Generation Scheme for given alias
+     * @param alias the EST alias to get the name generation scheme for
+     *
+     */
+    public String getRANameGenScheme(String alias) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONSCHEME;
+        
+        //Set default to RANDOM for aliases greated before RA name generation was added
+        String value = getValue(key, alias);
+        if (value == null) {
+            value = "RANDOM";
+        }
+        return value;
+    }
+
+    /**
+     * Setter for RA Name Generation Scheme
+     * @param alias the EST alias to set the name generation scheme for
+     * @param scheme RA name generation scheme
+     *
+     */
+    public void setRANameGenScheme(String alias, String scheme) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONSCHEME;
+        setValue(key, scheme, alias);
+    }
+    
+    /**
+     * Getter for RA Name Generation Params for given alias
+     * @param alias the EST alias to get the name generation DN parameters for
+     *
+     */
+    public String getRANameGenParams(String alias) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPARAMS;
+        return getValue(key, alias);
+    }
+
+    /**
+     * Setter for RA Name Generation Parameters
+     * @param alias the EST alias to set the name generation DN parameters for
+     * @param params RA name generation scheme DN parameters
+     *
+     */    
+    public void setRANameGenParams(String alias, String params) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPARAMS;
+        setValue(key, params, alias);
+    }
+
+    /**
+     * Getter for RA Name Generation Prefix for given alias
+     * @param alias the EST alias to get the name generation prefix for
+     *
+     */
+    public String getRANameGenPrefix(String alias) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPREFIX;
+
+        //Set default to empty String for aliases greated before RA name generation was added
+        String value = getValue(key, alias);
+        if (value == null) {
+            value = "";
+        }
+        return value;
+    }
+
+
+    /**
+     * Setter for RA Name Generation Prefix
+     * @param alias the EST alias to set the name generation prefix for
+     * @param prefix RA name prefix
+     *
+     */ 
+    public void setRANameGenPrefix(String alias, String prefix) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPREFIX;
+        setValue(key, prefix, alias);
+    }
+    
+
+    /**
+     * Getter for RA Name Generation Postfix
+     * @param alias the EST alias to set the name generation postfix for
+     *
+     */     
+    public String getRANameGenPostfix(String alias) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
+        
+        //Set default to empty String for aliases greated before RA name generation was added
+        String value = getValue(key, alias);
+        if (value == null) {
+            value = "";
+        }
+        return value;
+    }
+
+     /**
+     * Setter for RA Name Generation Postfix
+     * @param alias the EST alias to set the name generation postfix for
+     * @param postfix RA name postfix
+     *
+     */    
+    public void setRANameGenPostfix(String alias, String postfix) {
+        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
+        setValue(key, postfix, alias);
     }
 
 }
