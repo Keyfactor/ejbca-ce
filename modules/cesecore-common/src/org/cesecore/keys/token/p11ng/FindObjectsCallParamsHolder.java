@@ -89,7 +89,7 @@ public class FindObjectsCallParamsHolder {
 
     @Override
     public String toString() {
-        return "FindObjectsCallParamsHolder{" + "ckaClassName=" + ckaClassName + ", paramName=" + paramName + ", ckaLabel=" + ckaLabel + ", ckaId=" + ckaId + ", ckaSubject=" + ckaSubject + '}';
+        return "FindObjectsCallParamsHolder{" + "ckaClassName=" + ckaClassName + ", paramName=" + paramName + ", ckaLabel=" + ckaLabel + ", ckaId=" + Arrays.toString(ckaId) + ", ckaSubject=" + Arrays.toString(ckaSubject) + '}';
     }
 
 }
