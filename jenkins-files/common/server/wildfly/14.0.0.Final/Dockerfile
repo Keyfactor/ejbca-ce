@@ -10,7 +10,7 @@ ARG DATABASE_DRIVER
 ARG DATABASE_USERNAME
 ARG DATABASE_PASSWORD
 
-RUN echo $DB_CONTAINER
+RUN echo "DB_CONTAINER $DB_CONTAINER"
 
 USER root
 
@@ -59,5 +59,5 @@ USER 1001:1001
 # Set the working directory to /app
 WORKDIR /app/ejbca
 
-#                    1                2
-CMD ["/opt/run.sh", "$DB_CONTAINER"]
+#                   1                2
+CMD ["/opt/run.sh", $DB_CONTAINER]
