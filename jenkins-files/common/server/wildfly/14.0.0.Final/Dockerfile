@@ -60,4 +60,4 @@ USER 1001:1001
 WORKDIR /app/ejbca
 
 #                   1                2
-CMD ["/opt/run.sh", $DB_CONTAINER]
+CMD ["/opt/run.sh", "${DB_CONTAINER}"]
