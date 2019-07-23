@@ -917,8 +917,9 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
 						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
-						binding="#{useCrlDistributiOnPointOnCrl}">
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+						<f:validator validatorId="org.ejbca.util.validator.RequiredCheckboxValidator" disabled="#{editCAsMBean.caExternal or not editCAsMBean.usePartitionedCrl}"/>
+						<f:attribute name="errorMessage" value="#{web.text.PARTITIONEDCRLS_WITHOUT_IDPONCRL}"/>
 						<f:ajax render="checkboxcrldistributionpointoncrlcritical"/>
 					</h:selectBooleanCheckbox>
 
@@ -974,13 +975,10 @@
 					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
 											 value="#{editCAsMBean.usePartitionedCrl}"
 											 disabled="#{not editCAsMBean.hasEditRight}">
-						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.UseCRLPartitionValidator" disabled="#{editCAsMBean.caExternal}"/>
-						<f:attribute name="useCrlDistributiOnPointOnCrl" value="#{useCrlDistributiOnPointOnCrl}"/>
-						<f:attribute name="defaultCRLDistPointInput" value="#{defaultCRLDistPointInput}"/>
 						<f:ajax render=":editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
 							onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', ev.source.checked); } } "/>
 					</h:selectBooleanCheckbox>
-					<h:outputLabel for="crlpartitions"
+					<h:outputLabel for="checkboxusecrlpartitions"
 								   value="#{web.text.USE}" />
 					<h:outputScript rendered="${not editCAsMBean.usePartitionedCrlChecked}">
 					if (document.readyState != 'complete') {
@@ -1160,16 +1158,16 @@
 						value="#{editCAsMBean.defaultCRLDistPoint}"
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}"
-								 binding="#{defaultCRLDistPointInput}">
+						required="#{editCAsMBean.usePartitionedCrl}" requiredMessage="#{web.text.PARTITIONEDCRLS_WITHOUT_DEFAULTCDP}">
 						<f:validator validatorId="urlValidator"/>
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.PartitionedCrlUrlValidator" disabled="#{editCAsMBean.caExternal or not editCAsMBean.usePartitionedCrl}"/>
 						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_CDP_DEFAULTURI_ERROR}"/>
 					</h:inputText>
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genDefaultCrlDistPoint}"
 						value="#{web.text.GENERATE}"
-						disabled="#{not editCAsMBean.hasEditRight}"
-						immediate="true">
-						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" execute="@this checkboxusecrlpartitions subjectDnInputGroup" resetValues="true"/>
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" execute="checkboxusecrlpartitions subjectDnInputGroup"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1194,9 +1192,8 @@
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genDefaultCrlIssuer}"
 						value="#{web.text.GENERATE}"
-						disabled="#{not editCAsMBean.hasEditRight}"
-						immediate="true">
-						<f:ajax render=":editcapage:textfielddefaultcrlissuer" resetValues="true"/>
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultcrlissuer" execute="subjectDnInputGroup textfielddefaultcrlissuer"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1216,13 +1213,14 @@
 						id="textfieldcadefinedfreshestcrl" title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.caDefinedFreshestCRL}"
 						rendered="#{not editCAsMBean.caExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="urlValidator"/>
+					</h:inputText>
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genCaDefinedFreshestCrl}"
 						value="#{web.text.GENERATE}"
-						disabled="#{not editCAsMBean.hasEditRight}"
-						immediate="true">
-						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" execute="@this checkboxusecrlpartitions subjectDnInputGroup" resetValues="true"/>
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" execute="checkboxusecrlpartitions subjectDnInputGroup textfieldcadefinedfreshestcrl"/>
 					</h:commandButton>
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" styleClass="smallHelp" />
@@ -1248,9 +1246,8 @@
 						name="checkbexgeneratedefaultocsplocator"
 						action="#{editCAsMBean.genDefaultOcspLocator}"
 						value="#{web.text.GENERATE}"
-						disabled="#{not editCAsMBean.hasEditRight}"
-						immediate="true">
-						<f:ajax render=":editcapage:textfielddefaultocsplocator" resetValues="true"/>
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultocsplocator" execute="textfielddefaultocsplocator"/>
 					</h:commandButton>
 
 				</h:panelGroup>
@@ -1361,7 +1358,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup>
-					<h:outputLabel for="checkboxactivatecmsservice"
+					<h:outputLabel for="checkboxfinishuser"
 						value="#{web.text.FINISHUSER}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Finish_User')}"
@@ -1377,7 +1374,7 @@
 
 
 				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
-					<h:outputLabel for="checkboxactivatecmsservice"
+					<h:outputLabel for="textfieldsharedcmprasecret"
 						value="#{web.text.SHAREDCMPRASECRET}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CMP_RA_Authentication_Secret')}"
