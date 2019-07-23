@@ -1,9 +1,7 @@
 #!/bin/sh
 
-# run.sh DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#        [1]          [2] [3]       [4]        [5]           [6]
-
-echo "DB_CONTAINER = $1"
+echo "DB_CONTAINER = $DB_CONTAINER"
+echo "DATASOURCE_JNDI_NAME = $DATASOURCE_JNDI_NAME"
 
 # Options for JUnit JVM
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
