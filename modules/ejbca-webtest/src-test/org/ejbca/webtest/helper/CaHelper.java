@@ -14,6 +14,7 @@ package org.ejbca.webtest.helper;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -54,6 +55,9 @@ public class CaHelper extends BaseHelper {
          * Generate Default CRL Distribution Point
          */
         static final By BUTTON_GENERATEDEFAULTCRLDISTRIBUTIONPOINT = By.xpath("//input[@id='editcapage:textfielddefaultcrldistpoint']/following-sibling::input[1]");
+        static final By BUTTON_GENERATEDEFAULTCRLISSUER = By.xpath("//input[@id='editcapage:textfielddefaultcrlissuer']/following-sibling::input[1]");
+        static final By BUTTON_GENERATEDEFAULTFRESHESTCRLDISTRIBUTIONPOINT = By.xpath("//input[@id='editcapage:textfieldcadefinedfreshestcrl']/following-sibling::input[1]");
+        static final By BUTTON_GENERATEOCSPSERVICEDEFAULTURI = By.xpath("//input[@id='editcapage:textfielddefaultocsplocator']/following-sibling::input[1]");
         /**
          * CA Life Cycle / Renew Ca
          */
@@ -170,8 +174,11 @@ public class CaHelper extends BaseHelper {
          * crlSignKey
          */
         static final By TEXT_CRLSIGNKEY = By.id("editcapage:crlSignKey");
-
         static final By TEXT_DEFAULTCRLDISTRIBUTIONPOINT = By.id("editcapage:textfielddefaultcrldistpoint");
+        static final By TEXT_DEFAULTCRLISSUER = By.id("editcapage:textfielddefaultcrlissuer");
+        static final By TEXT_DEFAULTFRESHESTCRLDISTRIBUTIONPOINT = By.id("editcapage:textfieldcadefinedfreshestcrl");
+        static final By TEXT_OCSPSERVICEDEFAULTURI = By.id("editcapage:textfielddefaultocsplocator");
+        static final By TEXT_CAISSUERDEFAULTURI = By.id("editcapage:textfieldusercertificateaiadefaultcaissueruri");
 
         // Dynamic references
         static By getCaListElementContainingText(final String text) {
@@ -588,6 +595,35 @@ public class CaHelper extends BaseHelper {
     public void setDefaultCrlDistributionPoint(String crlDistributionPoint) {
             fillInput(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT, crlDistributionPoint);
     }
+    
+    /** Sets the Default CRL Issuer */
+    public void setDefaultCrlIssuer(final String crlIssuer) {
+        fillInput(Page.TEXT_DEFAULTCRLISSUER, crlIssuer);
+    }
+
+    /** Sets the Default Freshest CRL Distribution Point */
+    public void setDefaultFreshestCrlDistributionPoint(final String freshestCrlDp) {
+        fillInput(Page.TEXT_DEFAULTFRESHESTCRLDISTRIBUTIONPOINT, freshestCrlDp);
+    }
+
+    /** Sets the OCSP Service Default URI */
+    public void setOcspServiceDefaultUri(final String ocspUri) {
+        fillInput(Page.TEXT_OCSPSERVICEDEFAULTURI, ocspUri);
+    }
+    
+    /** Sets the CA Issuer Default URI */
+    public void setCaIssuerDefaultUri(final String caIssuerUri) {
+        fillInput(Page.TEXT_CAISSUERDEFAULTURI, caIssuerUri);
+    }
+    
+    /** Clears the text fields in the "Default CA defined validation data" section  */
+    public void clearDefaultCaDefinedValidationData() {
+        setDefaultCrlDistributionPoint("");
+        setDefaultCrlIssuer("");
+        setDefaultFreshestCrlDistributionPoint("");
+        setOcspServiceDefaultUri("");
+        setCaIssuerDefaultUri("");
+    }
 
     /**
      * Sets the number of suspended crl partitions
@@ -598,21 +634,60 @@ public class CaHelper extends BaseHelper {
         fillInput(Page.INPUT_NUMBEROFSUPSENDEDPARTITIONS, iSuspended);
     }
 
-    /**
-     * Click the generate for Default CRL Distribution Point
-     *
-     */
+    /** Clicks the 'Generate' button for Default CRL Distribution Point */
     public void clickGenerateDefaultCrlDistributionPoint() {
         clickLink(Page.BUTTON_GENERATEDEFAULTCRLDISTRIBUTIONPOINT);
     }
 
-    /**
-     * Asserts a url was generated
-     *
-     * @param sValue
-     */
-    public void assertDefaultCrlDistributionPointUri(String sValue) {
-        assertEquals(sValue, getElementValue(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT));
+    /** Asserts a URI was generated */
+    public void assertDefaultCrlDistributionPointUri(String uri) {
+        assertEquals(uri, getElementValue(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT));
+    }
+
+    /** Clicks the 'Generate' button for Default CRL Distribution Point */
+    public void clickGenerateDefaultCrlIssuer() {
+        clickLink(Page.BUTTON_GENERATEDEFAULTCRLISSUER);
+    }
+
+    /** Asserts a URI was generated */
+    public void assertDefaultCrlIssuer(final String uri) {
+        assertEquals(uri, getElementValue(Page.TEXT_DEFAULTCRLISSUER));
+    }
+
+    /** Clicks the 'Generate' button for Default Freshest CRL Distribution Point */
+    public void clickGenerateDefaultFreshestCrlDistributionPoint() {
+        clickLink(Page.BUTTON_GENERATEDEFAULTFRESHESTCRLDISTRIBUTIONPOINT);
+    }
+
+    /** Asserts a URI was generated */
+    public void assertDefaultFreshestCrlDistributionPointUri(final String uri) {
+        assertEquals(uri, getElementValue(Page.TEXT_DEFAULTFRESHESTCRLDISTRIBUTIONPOINT));
+    }
+
+    /** Clicks the 'Generate' button for OCSP service Default URI */
+    public void clickGenerateOcspServiceDefaultUri() {
+        clickLink(Page.BUTTON_GENERATEOCSPSERVICEDEFAULTURI);
+    }
+
+    /** Asserts a URI was generated */
+    public void assertOcspServiceDefaultUri(final String uri) {
+        assertEquals(uri, getElementValue(Page.TEXT_OCSPSERVICEDEFAULTURI));
+    }
+    
+    /** Waits for the "OCSP Service Default URI" field to be filled in */ 
+    public void waitForOcspServiceDefaultUri() {
+        for (int i = 0; i < DEFAULT_WAIT_TIMEOUT_SECONDS; i++) {
+            final String value = getElementValue(Page.TEXT_OCSPSERVICEDEFAULTURI);
+            if (StringUtils.isNotBlank(value)) {
+                return;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        fail("'OCSP Service Default URI' was still blank after " + DEFAULT_WAIT_TIMEOUT_SECONDS + " seconds.");
     }
 
     public void assertHasErrorMessage(final String errorMessageText) {
