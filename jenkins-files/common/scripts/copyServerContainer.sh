@@ -47,8 +47,6 @@ else
   exit 1
 fi
 
-./exportDatabaseVariables.sh
-
 if [ $DOCKERFILE_STANDALONE_FILTERED = true ]
 then
     echo "Configuring database in standalone.xml files..."
