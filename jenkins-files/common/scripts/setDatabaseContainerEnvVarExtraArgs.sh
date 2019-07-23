@@ -14,7 +14,7 @@ then
 elif [ $5 = "mariadb" ]
 then
     # -p 3306:3306
-    DOCKERFILE_EXTRA_ARGS=" "
+    DOCKERFILE_EXTRA_ARGS="-i"
 elif [ $5 = "mssql" ]
 then
     DOCKERFILE_EXTRA_ARGS="-p 1433:1433"
