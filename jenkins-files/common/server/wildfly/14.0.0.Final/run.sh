@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# run.sh DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#        [1]          [2] [3]       [4]        [5]           [6]
+
+echo "DB_CONTAINER = $1"
+
 # Options for JUnit JVM
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
@@ -43,9 +48,35 @@ echo '=================== Starting Application Server ====================='
 sleep 10
 
 echo '=================== Adding Datasource ==============================='
-JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command='data-source add --name=ejbcads --driver-name="mariadb-java-client.jar" --connection-url="jdbc:mysql://mariadb_wf14_1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"'
+
+DATASOURCE_DOMMAND = ""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND'data-source add"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --name=ejbcads"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --driver-name=\"mariadb-java-client.jar\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --connection-url=\"jdbc:mysql://mariadb_wf14_1:3306/ejbca\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --jndi-name=\"java:/EjbcaDS\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --use-ccm=true"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --driver-class=\"org.mariadb.jdbc.Driver\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --user-name=\"ejbca\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --password=\"ejbca\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --validate-on-match=true"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --background-validation=false"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --prepared-statements-cache-size=50"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --share-prepared-statements=true"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --min-pool-size=5"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --max-pool-size=150"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --pool-prefill=true"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --transaction-isolation=TRANSACTION_READ_COMMITTED"
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --check-valid-connection-sql=\"select 1;\""
+DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND'"
+
+echo "DATASOURCE_DOMMAND = $DATASOURCE_DOMMAND"
+
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=$DATASOURCE_DOMMAND
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 sleep 10
+
+exit 1
 
 echo '=================== Configuring Remote Interfaces ==================='
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
