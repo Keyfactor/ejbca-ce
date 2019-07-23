@@ -59,7 +59,6 @@ public interface PublishingCrlSession {
      * interval is defined (>0) a CRL is issued when this interval has passed,
      * even if the current CRL is still valid
      * <p>
-     * For partitioned CRLs, each partition is created in a separate transaction.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
@@ -73,7 +72,7 @@ public interface PublishingCrlSession {
      * @return true if a CRL was created
      * @throws javax.ejb.EJBException if communication or system error occurs
      */
-    boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException,
+    boolean createCRLNewConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException,
             CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
     /** Method that forces generation of a CRL for a certain CA.
