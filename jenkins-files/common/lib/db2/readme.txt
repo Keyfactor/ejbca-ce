@@ -1,0 +1,2 @@
+"Project";              "Library Name";             "License type(s)";              "License text";             "Source";                                                           "Comment";
+"IBM DB2 JDBC"          "db2jcc4.jar";              "IBM DB2 license";              "IBM DB2 license";          "http://www-01.ibm.com/support/docview.wss?uid=swg21363866";        "DB2 Version 10.5 Fix Pack 10. Version: 4.19.77. This driver is based on the JDBC 4 or later specifications";
