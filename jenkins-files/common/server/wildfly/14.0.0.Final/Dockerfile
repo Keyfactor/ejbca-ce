@@ -1,4 +1,4 @@
-FROM jboss/wildfly:10.1.0.Final
+FROM jboss/wildfly:14.0.0.Final
 ARG DB_DRIVER_MODULE_PATH
 
 USER root
@@ -22,7 +22,7 @@ RUN cd $HOME \
 # Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 # Setting environment variables
-ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
+ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=512m -Djava.net.preferIPv4Stack=true"
 # Setting Ant Params
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
@@ -33,10 +33,6 @@ RUN chmod +x /opt/run.sh
 # Copy ejbca conf to /opt in the container for runtime-usage
 ADD conf /opt/conf
 RUN chmod 777 /opt/conf
-
-# Copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
-ADD standalone1.xml /opt/standalone1.xml
-ADD standalone2.xml /opt/standalone2.xml
 
 # Add a database module with driver or copy the driver to deployment folder
 ADD module.xml /opt/module.xml
