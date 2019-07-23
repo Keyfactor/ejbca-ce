@@ -10,14 +10,14 @@ DOCKERFILE_EXTRA_ARGS=""
 ########################################################################################################################
 if [ $5 = "db2" ]
 then
-    DOCKERFILE_EXTRA_ARGS="--privileged=true -p 50000:50000"
+    DOCKERFILE_EXTRA_ARGS="--privileged=true -i"
 elif [ $5 = "mariadb" ]
 then
     # -p 3306:3306
     DOCKERFILE_EXTRA_ARGS="-i"
 elif [ $5 = "mssql" ]
 then
-    DOCKERFILE_EXTRA_ARGS="-p 1433:1433"
+    DOCKERFILE_EXTRA_ARGS="-i"
 elif [ $5 = "oracle" ]
 then
     exit 1
