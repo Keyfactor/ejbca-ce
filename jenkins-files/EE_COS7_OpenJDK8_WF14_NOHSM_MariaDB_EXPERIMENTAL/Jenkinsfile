@@ -94,7 +94,10 @@ pipeline {
                 sh "echo DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL = ${env.DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL}"
                 sh "mkdir ear || true"
 			    sh "echo Starting application server container..."
-			    sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
+			    sh "
+                    ./ejbca/jenkins-files/common/scripts/exportDatabaseVariables.sh ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}
+			        docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -e DB_CONTAINER=${env.DOCKER_NAME_DB} -e DATASOURCE_JNDI_NAME=JNDI -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}
+                "
 			}
 		}
 		stage('Save test results') {
