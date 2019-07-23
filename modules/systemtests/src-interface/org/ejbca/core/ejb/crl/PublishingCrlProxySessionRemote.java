@@ -79,7 +79,7 @@ public interface PublishingCrlProxySessionRemote {
      * @return true if a Delta CRL was created
      * @throws javax.ejb.EJBException if communication or system error occurs
      */
-    boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
+    boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
     
 }

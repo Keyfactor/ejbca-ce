@@ -284,10 +284,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean existsCa(final int caId) {
         return entityManager.find(CAData.class, caId) != null;
     }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean existsCa(final String name) {
         return findByName(name) != null;
@@ -440,6 +443,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         } 
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException {
@@ -652,6 +656,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return returnval;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
 	public CACommon getCAInternal(int caid, final String name, boolean fromCache) {
 	    if (log.isTraceEnabled()) {
@@ -777,6 +782,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return cadata;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean authorizedToCANoLogging(final AuthenticationToken admin, final int caid) {
         final boolean ret = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid);
@@ -787,6 +793,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return ret;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
     	final boolean ret = authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid);
@@ -984,6 +991,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return true;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Certificate getFutureRolloverCertificate(int caid) throws CADoesntExistsException {
         final CACommon ca = getCa(caid);
@@ -995,6 +1003,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return chain.get(0);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public int determineCrlPartitionIndex(final int caid, final CertificateWrapper cert) {
         final CACommon ca = getCa(caid);

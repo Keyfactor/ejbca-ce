@@ -79,7 +79,7 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * @return true if a Delta CRL was created
      * @throws javax.ejb.EJBException if communication or system error occurs
      */
-    boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
+    boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
     /** Internal method, do not use. Needs to be here for transaction management. */
     String internalCreateCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo)

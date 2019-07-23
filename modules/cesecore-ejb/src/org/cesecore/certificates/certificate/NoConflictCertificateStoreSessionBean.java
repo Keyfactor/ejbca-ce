@@ -272,6 +272,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
     }
     
+    // Used from CRL code, so this cannot require a transaction (and does not need to, since it just sets the status to the given value)
     @Override
     public boolean setStatus(final AuthenticationToken admin, final String fingerprint, final int status) throws AuthorizationDeniedException {
         if (!certificateStoreSession.setStatus(admin, fingerprint, status)) {

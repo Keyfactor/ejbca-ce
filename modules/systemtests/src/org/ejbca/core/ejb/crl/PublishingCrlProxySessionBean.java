@@ -32,7 +32,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlProxySessionRemote")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
 public class PublishingCrlProxySessionBean implements PublishingCrlProxySessionRemote {
 
     @EJB
@@ -49,9 +49,9 @@ public class PublishingCrlProxySessionBean implements PublishingCrlProxySessionR
     }
 
     @Override
-    public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime)
+    public boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime)
             throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
-        return publishingCrlSession.createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime);
+        return publishingCrlSession.createDeltaCrlConditioned(admin, caid, crloverlaptime);
     }
 
 }

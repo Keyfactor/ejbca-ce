@@ -431,12 +431,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isCryptoTokenStatusActive(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException {
         assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         return isCryptoTokenStatusActive(cryptoTokenId);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isCryptoTokenStatusActive(int cryptoTokenId) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
@@ -445,7 +447,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         return cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
     }
-    
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isCryptoTokenPresent(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
         assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
@@ -578,6 +581,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<KeyPairInfo> getKeyPairInfos(final AuthenticationToken authenticationToken, final int cryptoTokenId)
             throws CryptoTokenOfflineException, AuthorizationDeniedException {
@@ -594,6 +598,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return ret;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public KeyPairInfo getKeyPairInfo(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws CryptoTokenOfflineException,
             AuthorizationDeniedException {
@@ -609,6 +614,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public PublicKeyWrapper getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
@@ -616,6 +622,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return new PublicKeyWrapper(getCryptoTokenAndAssertExistence(cryptoTokenId).getPublicKey(alias));
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Integer getIdFromName(final String cryptoTokenName) {
         if (cryptoTokenName == null) {
@@ -640,6 +647,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return cryptoTokenId;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<String> getKeyPairAliases(final AuthenticationToken authenticationToken, final int cryptoTokenId)
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
@@ -746,6 +754,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {
         return getCryptoToken(cryptoTokenId).isAliasUsed(alias);
@@ -833,6 +842,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void testKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException {
