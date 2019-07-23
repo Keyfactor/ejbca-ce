@@ -13,7 +13,8 @@ then
     DOCKERFILE_EXTRA_ARGS="--privileged=true -p 50000:50000"
 elif [ $5 = "mariadb" ]
 then
-    DOCKERFILE_EXTRA_ARGS="-p 3306:3306"
+    # -p 3306:3306
+    DOCKERFILE_EXTRA_ARGS=""
 elif [ $5 = "mssql" ]
 then
     DOCKERFILE_EXTRA_ARGS="-p 1433:1433"
