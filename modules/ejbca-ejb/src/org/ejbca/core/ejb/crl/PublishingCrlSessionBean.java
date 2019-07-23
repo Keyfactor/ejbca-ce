@@ -79,7 +79,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlSessionRemote")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
 public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, PublishingCrlSessionRemote {
 
     private static final Logger log = Logger.getLogger(PublishingCrlSessionBean.class);
@@ -139,7 +139,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 log.debug("createCRLs for caid: " + caid);
             }
             try {
-                if (publishingCrlSession.createCRLNewTransactionConditioned(admin, caid, addtocrloverlaptime)) {
+                if (publishingCrlSession.createCRLNewConditioned(admin, caid, addtocrloverlaptime)) {
                     createdcrls.add(caid);
                 }
             } catch (CryptoTokenOfflineException | CAOfflineException | CADoesntExistsException e) {
@@ -167,7 +167,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 log.debug("createDeltaCRLs for caid: " + caid);
             }
             try {
-                if (publishingCrlSession.createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime)) {
+                if (publishingCrlSession.createDeltaCrlConditioned(admin, caid, crloverlaptime)) {
                     createddeltacrls.add(caid);
                 }
             } catch (CesecoreException e) {
@@ -183,9 +183,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return createddeltacrls;
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caId, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
+    public boolean createCRLNewConditioned(AuthenticationToken admin, int caId, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
         final Date now = new Date();
         // Get CA checks authorization to the CA
         final CA ca = (CA) caSession.getCA(admin, caId);
@@ -306,9 +305,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return false;
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
         boolean ret = false;
         final Date now = new Date();
         final CA ca = (CA) caSession.getCA(admin, caid);
@@ -423,7 +421,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean forceCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
         result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
@@ -437,7 +434,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
