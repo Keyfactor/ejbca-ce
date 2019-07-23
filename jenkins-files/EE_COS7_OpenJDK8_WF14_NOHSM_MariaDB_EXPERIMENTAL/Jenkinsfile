@@ -90,6 +90,8 @@ pipeline {
 			        sh "echo Building application server container..."
 			        sh "docker build -t ${env.DOCKER_NAME_BASE} --build-arg DB_DRIVER_MODULE_PATH=${env.DB_DRIVER_MODULE_PATH} --build-arg DB_CONTAINER=${env.DOCKER_NAME_DB} -m 3GB . "
                 }
+                sh "echo DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME      = ${env.DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME}"
+                sh "echo DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL = ${env.DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL}"
                 sh "mkdir ear || true"
 			    sh "echo Starting application server container..."
 			    sh "docker run --name ${env.DOCKER_NAME_BASE} --net=${env.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${env.DOCKER_NAME_BASE}"
