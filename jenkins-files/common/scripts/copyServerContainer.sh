@@ -47,9 +47,10 @@ else
   exit 1
 fi
 
+./exportDatabaseVariables.sh
+
 if [ $DOCKERFILE_STANDALONE_FILTERED = true ]
 then
-    ./exportDatabaseVariables.sh
     echo "Configuring database in standalone.xml files..."
     if [ $5 = "db2" ]
     then
