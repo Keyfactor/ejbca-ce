@@ -2,17 +2,6 @@ FROM jboss/wildfly:14.0.0.Final
 
 ARG DB_DRIVER_MODULE_PATH
 
-ENV DB_CONTAINER x
-ENV DATASOURCE_JNDI_NAME x
-ARG DATABASE_NAME
-ARG DATABASE_URL
-ARG DATABASE_DRIVER
-ARG DATABASE_USERNAME
-ARG DATABASE_PASSWORD
-
-RUN echo "DB_CONTAINER $DB_CONTAINER"
-RUN echo "DATASOURCE_JNDI_NAME $DATASOURCE_JNDI_NAME"
-
 USER root
 
 # Create Ant Dir
@@ -39,6 +28,8 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=5
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
 # Copy the run script and set execution privileges to it
+ADD env.sh /opt/
+RUN chmod +x /opt/env.sh
 ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
