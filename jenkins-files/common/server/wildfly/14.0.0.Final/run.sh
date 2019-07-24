@@ -1,8 +1,5 @@
 #!/bin/sh
 
-echo "DB_CONTAINER = $DB_CONTAINER"
-echo "DATASOURCE_JNDI_NAME = $DATASOURCE_JNDI_NAME"
-
 # Options for JUnit JVM
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
@@ -10,6 +7,21 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Options for the CLI tools. These require very little memory.
 # Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
 export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
+
+. /opt/env.sh
+
+echo "DB_DOCKERFILE_DATASOURCE_JNDI_NAME=$DB_DOCKERFILE_DATASOURCE_JNDI_NAME"
+echo "DB_DOCKERFILE_DATASOURCE_CONNECTION_URL=$DB_DOCKERFILE_DATASOURCE_CONNECTION_URL"
+echo "DB_DOCKERFILE_DATASOURCE_DRIVER=$DB_DOCKERFILE_DATASOURCE_DRIVER"
+echo "DB_DOCKERFILE_DATASOURCE_DRIVER_CLASS=$DB_DOCKERFILE_DATASOURCE_DRIVER_CLASS"
+echo "DB_DOCKERFILE_DATASOURCE_USERNAME=$DB_DOCKERFILE_DATASOURCE_USERNAME"
+echo "DB_DOCKERFILE_DATASOURCE_PASSWORD=$DB_DOCKERFILE_DATASOURCE_PASSWORD"
+echo "DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_SQL=$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_SQL"
+echo "DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_CHECKER=$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_CHECKER"
+echo "DB_DOCKERFILE_DRIVER_NAME=$DB_DOCKERFILE_DRIVER_NAME"
+echo "DB_DOCKERFILE_DRIVER_MODULE=$DB_DOCKERFILE_DRIVER_MODULE"
+echo "DB_DOCKERFILE_DRIVER_XA_CLASS=$DB_DOCKERFILE_DRIVER_XA_CLASS"
+echo "DB_DOCKERFILE_DRIVER_DRIVER_CLASS=$DB_DOCKERFILE_DRIVER_DRIVER_CLASS"
 
 wait_for_deployment() {
 	echo '=================== Waiting for deploy =========================='
@@ -47,26 +59,26 @@ sleep 10
 
 echo '=================== Adding Datasource ==============================='
 
-DATASOURCE_DOMMAND = ""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND'data-source add"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --name=ejbcads"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --driver-name=\"mariadb-java-client.jar\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --connection-url=\"jdbc:mysql://mariadb_wf14_1:3306/ejbca\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --jndi-name=\"java:/EjbcaDS\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --use-ccm=true"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --driver-class=\"org.mariadb.jdbc.Driver\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --user-name=\"ejbca\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --password=\"ejbca\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --validate-on-match=true"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --background-validation=false"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --prepared-statements-cache-size=50"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --share-prepared-statements=true"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --min-pool-size=5"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --max-pool-size=150"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --pool-prefill=true"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --transaction-isolation=TRANSACTION_READ_COMMITTED"
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --check-valid-connection-sql=\"select 1;\""
-DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND'"
+$DATASOURCE_DOMMAND = ""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND'data-source add"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --name=ejbcads"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --driver-name=\"mariadb-java-client.jar\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --connection-url=\"jdbc:mysql://mariadb_wf14_1:3306/ejbca\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --jndi-name=\"java:/EjbcaDS\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --use-ccm=true"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --driver-class=\"org.mariadb.jdbc.Driver\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --user-name=\"ejbca\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --password=\"ejbca\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --validate-on-match=true"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --background-validation=false"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --prepared-statements-cache-size=50"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --share-prepared-statements=true"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --min-pool-size=5"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --max-pool-size=150"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --pool-prefill=true"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --transaction-isolation=TRANSACTION_READ_COMMITTED"
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND --check-valid-connection-sql=\"select 1;\""
+$DATASOURCE_DOMMAND = "$DATASOURCE_DOMMAND'"
 
 echo "DATASOURCE_DOMMAND = $DATASOURCE_DOMMAND"
 
