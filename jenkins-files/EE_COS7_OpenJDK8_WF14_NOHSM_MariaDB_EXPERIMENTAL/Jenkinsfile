@@ -88,7 +88,7 @@ pipeline {
 			steps {
 			    dir ("${env.BUILD_FOLDER}") {
 			        sh "echo Building application server container..."
-			        sh "docker build -t ${env.DOCKER_NAME_BASE} --build-arg DB_DRIVER_MODULE_PATH=${env.DB_DRIVER_MODULE_PATH} --build-arg DB_CONTAINER=${env.DOCKER_NAME_DB} -m 3GB . "
+			        sh "docker build -t ${env.DOCKER_NAME_BASE} --build-arg DB_DRIVER_MODULE_PATH=${env.DB_DRIVER_MODULE_PATH} -m 3GB . "
                 }
                 sh "mkdir ear || true"
 			    sh "echo Starting application server container..."

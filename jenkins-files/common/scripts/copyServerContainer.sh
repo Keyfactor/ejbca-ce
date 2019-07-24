@@ -110,33 +110,35 @@ cp $DOCKERFILE_PATH $2/
 cp $DOCKERFILE_RUN_PATH $2/
 cp $DOCKERFILE_ENV_PATH $2/
 
-if [ $DOCKERFILE_STANDALONE_FILTERED = true ]
+if [ "$DOCKERFILE_STANDALONE_FILTERED" = true ]
 then
     echo "Configuring database in standalone.xml files..."
-    # Wrap driver-class if any
+    # Wrap <driver-class/>
     if [ "x$DB_DOCKERFILE_DATASOURCE_DRIVER_CLASS" != "x" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG="<driver-class>$DB_DOCKERFILE_DATASOURCE_DRIVER_CLASS</driver-class>"
     fi
-    # Wrap valid connection sql
-    if[ "x$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_SQL" != "x" ]
+    # Wrap <check-valid-connection-sql/>
+    if [ "x$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_SQL" != "x" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG="<check-valid-connection-sql>$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_SQL</check-valid-connection-sql>"
     fi
-    # Wrap valid connection checker class
-    if[ "x$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_CHECKER" != "x" ]
+    # Wrap <valid-connection-checker/>
+    if [ "x$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_CHECKER" != "x" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG="<valid-connection-checker class-name=\"$DB_DOCKERFILE_DATASOURCE_VALID_CONNECTION_CHECKER\"/>"
     fi
-    # Wrap
-    if[ "x$DB_DOCKERFILE_DRIVER_NAME" != "x" ]
+    # Wrap <driver/>
+    if [ "x$DB_DOCKERFILE_DRIVER_NAME" != "x" ]
     then
         DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG=""
-        if[ "x$DB_DOCKERFILE_DRIVER_XA_CLASS" != "x" ]
+        # Wrap <xa-datasource-class/>
+        if [ "x$DB_DOCKERFILE_DRIVER_XA_CLASS" != "x" ]
         then
             DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG="<xa-datasource-class>$DB_DOCKERFILE_DRIVER_XA_CLASS</xa-datasource-class>"
         fi
-        if[ "x$DB_DOCKERFILE_DRIVER_DRIVER_CLASS" != "x" ]
+        # Wrap <driver-class/>
+        if [ "x$DB_DOCKERFILE_DRIVER_DRIVER_CLASS" != "x" ]
         then
             DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG="<driver-class>$DB_DOCKERFILE_DRIVER_DRIVER_CLASS</driver-class>"
         fi
