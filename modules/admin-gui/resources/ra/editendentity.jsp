@@ -915,24 +915,24 @@ function checkUseInBatch(){
 
   <h2><%= ejbcawebbean.getText("EDIT_ENDENTITY_HEADING") %></h2>
 
- <%if(nouserparameter){%>
-  <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
-  <% } 
-     else{
-       if(userdata == null){%>
-  <div class="message alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></div> 
-    <% }
-       else{
-         if(notauthorized || profile == null){%>
-  <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></div> 
-    <%   }
-         else{ 
-             if(approvalmessage != null){ %>
-        	    <div class="message alert"><c:out value="<%= approvalmessage %>"/></div>
-        	 <% }         	 
-           if(endentitysaved){%>
-  <div class="message info"><%=ejbcawebbean.getText("ENDENTITYSAVED") %></div> 
-    <%     } %>
+ <%if (nouserparameter) {%>
+      <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
+  <% } else {
+       if (userdata == null) {%>
+         <div class="message alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></div> 
+       <% } else {
+         if (notauthorized) {%>
+             <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></div> 
+         <% } else {
+             if (profile == null) {%>
+                 <div class="message alert"><%=ejbcawebbean.getText("CANNOTVIEWUSERPROFREM") %></div> 
+             <% } else { 
+                 if(approvalmessage != null) { %>
+        	         <div class="message alert"><c:out value="<%= approvalmessage %>"/></div>
+        	     <% }         	 
+                 if(endentitysaved) {%>
+                     <div class="message info"><%=ejbcawebbean.getText("ENDENTITYSAVED") %></div> 
+                 <% } %>
 
     
 
@@ -1929,7 +1929,8 @@ function checkUseInBatch(){
 
   <%  }
     }    
-   } %>
+   }
+  } %>
    
 </body>
 </html>

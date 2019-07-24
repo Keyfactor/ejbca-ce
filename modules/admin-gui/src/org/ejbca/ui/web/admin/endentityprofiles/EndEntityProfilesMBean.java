@@ -41,16 +41,22 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StreamSizeLimitExceededException;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
@@ -96,6 +102,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private CaSessionLocal caSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private RoleDataSessionLocal roleDataSession;
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
 
@@ -205,6 +215,8 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addErrorMessage("EEPROFILENOTSELECTED");
         } else if (isEmptyProfile()) {
             addErrorMessage("YOUCANTEDITEMPTYPROFILE");
+        } else if (!canRemoveEndEntityProfile(getSelectedEndEntityProfileName())) {
+            addErrorMessage("COULDNTDELETEEEPROFILE");
         } else {
             clearMessages();
             deleteInProgress = true;
@@ -234,11 +246,83 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         clearMessages();
         try {
             endEntityProfileSession.removeEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName());
-            reset();
+            reset();   
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to remove end entity profile.");
         }
         nonAjaxPostRedirectGet(null);
+    }
+    
+    /**
+     * Tries to remove an End Entity Profile. Prints messages
+     * containing information about what is preventing the removal.
+     *
+     * @param name the name of the profile to be removed
+     * @return true if profile can be removed safely
+     */
+    private boolean canRemoveEndEntityProfile(String name) {
+        boolean ret = true;
+        int profileId;
+        try {
+            profileId = endEntityProfileSession.getEndEntityProfileId(name);
+        } catch (EndEntityProfileNotFoundException e) {
+            addNonTranslatedErrorMessage("EEPROFILEDOESNOTEXIST");
+            return false;
+        }
+        final List<UserData> users = endEntityAccessSession.findByEndEntityProfileId(profileId);
+        // Only return the users the admin is authorized to view to prevent information leaks
+        final List<String> authorizedUsers = new ArrayList<>();
+        for (UserData user : users) {
+            if (caSession.authorizedToCANoLogging(getAdmin(), user.getCaId())
+                    && authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWENDENTITY)) {
+                authorizedUsers.add(user.getUsername());
+            }
+        }
+        // Only return the End Entities that the admin is authorized to (empty string if none)
+        if (authorizedUsers.size() > 100) {
+            ret = false;
+            addErrorMessage("EEPROFILEUSEDINENDENTITIESEXCESSIVE");
+        } else if (authorizedUsers.size() > 0) {
+            ret = false;
+            addErrorMessage("EESUSINGPROFILE");
+            addNonTranslatedErrorMessage(StringUtils.join(authorizedUsers, ", "));
+        }
+        final List<String> rolesUsingProfile = getRulesWithEndEntityProfile(profileId);
+        if (rolesUsingProfile.size() > 0) {
+            ret = false;
+            // Only return the used administrator roles if the admin is authorized to view them to prevent information leaks
+            if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.VIEWROLES.resource())) {
+                addErrorMessage("ADMINROLESUSINGPROFILE");
+                addErrorMessage(StringUtils.join(rolesUsingProfile, ", "));
+            }
+        }
+        // Remove profile if it's not in use
+        return ret;
+    }
+    
+    /** @return a list of role names where the End Entity Profile's ID is explicitly defined in the role's access rules */
+    private List<String> getRulesWithEndEntityProfile(final int profileId) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getRulesWithEndEntityProfile(" + profileId + ")");
+        }
+        final List<String> rolenames = new ArrayList<>();
+        final Pattern idInRulename = Pattern.compile("^"+AccessRulesConstants.ENDENTITYPROFILEPREFIX+"(-?[0-9]+)/.*$");
+        for (final Role role : roleDataSession.getAllRoles()) {
+            for (final String explicitResource : role.getAccessRules().keySet()) {
+                final Matcher matcher = idInRulename.matcher(explicitResource);
+                if (matcher.find() && String.valueOf(profileId).equals(matcher.group(1))) {
+                    rolenames.add(role.getRoleNameFull());
+                    break;
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("End entity profile with id " + profileId + " is present in roles: " + StringUtils.join(rolenames, ", "));
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getRulesWithEndEntityProfile(" + profileId + ")");
+        }
+        return rolenames;
     }
     
     public void actionExportProfile() {
