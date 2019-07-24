@@ -62,6 +62,9 @@ pipeline {
                 // Copy server container
                 sh "echo Copying application server container..."
                 sh "./ejbca/jenkins-files/common/scripts/copyServerContainer.sh ${env.WORKSPACE}/ejbca/jenkins-files/common/server ${env.BUILD_FOLDER} ${env.DOCKER_NAME_DB} ${env.JDK_VERSION} ${env.DB_FAMILY} ${env.DB_VERSION} ${env.SERVER_FAMILY} ${env.SERVER_VERSION}"
+                sh "echo env.sh"
+                sh "cat ${env.BUILD_FOLDER}/env.sh"
+                sh "echo "
 
                 // Copy database libraries for application server
                 sh "echo Copying database libraries for application server container..."
