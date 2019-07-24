@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -77,11 +78,15 @@ public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
     }
     
     private void assertInputFieldValues(final String subjectDn, final String partitionSuffix) {
-        final String encodedSubjectDn = URLEncoder.encode(subjectDn, StandardCharsets.US_ASCII);
-        caHelper.assertDefaultCrlDistributionPointUri(getPublicWebUrl() + "publicweb/webdist/certdist?cmd=crl&issuer=" + encodedSubjectDn + partitionSuffix);
-        caHelper.assertDefaultCrlIssuer(subjectDn);
-        caHelper.assertDefaultFreshestCrlDistributionPointUri(getPublicWebUrl() + "publicweb/webdist/certdist?cmd=deltacrl&issuer=" + encodedSubjectDn + partitionSuffix);
-        caHelper.assertOcspServiceDefaultUri(getPublicWebUrl() + "publicweb/status/ocsp");
+        try {
+            final String encodedSubjectDn = URLEncoder.encode(subjectDn, "US-ASCII");
+            caHelper.assertDefaultCrlDistributionPointUri(getPublicWebUrl() + "publicweb/webdist/certdist?cmd=crl&issuer=" + encodedSubjectDn + partitionSuffix);
+            caHelper.assertDefaultCrlIssuer(subjectDn);
+            caHelper.assertDefaultFreshestCrlDistributionPointUri(getPublicWebUrl() + "publicweb/webdist/certdist?cmd=deltacrl&issuer=" + encodedSubjectDn + partitionSuffix);
+            caHelper.assertOcspServiceDefaultUri(getPublicWebUrl() + "publicweb/status/ocsp");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Test
