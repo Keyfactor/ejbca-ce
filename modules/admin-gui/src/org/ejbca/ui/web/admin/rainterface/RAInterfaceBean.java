@@ -667,32 +667,35 @@ public class RAInterfaceBean implements Serializable {
         final Collection<Integer> authorizedCas = sortedMap.values();
         // 2. Retrieve the list of CA's available to the end entity profile
         final EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(endentityprofileid);
-        final List<Integer> casDefineInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
-        boolean allCasDefineInEndEntityProfile = false;
-        if (casDefineInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
-            allCasDefineInEndEntityProfile = true;
-        }
-        // 3. Next retrieve all certificate profiles defined in the end entity profile
-        for (final Integer certificateProfileId : endentityprofile.getAvailableCertificateProfileIds()) {
-            final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId.intValue());
-            // 4. Retrieve all CAs defined in the current certificate profile
-            final Collection<Integer> casDefinedInCertificateProfile;
-            if (certprofile != null) {
-                casDefinedInCertificateProfile = certprofile.getAvailableCAs();
-            } else {
-                casDefinedInCertificateProfile = new ArrayList<>();
+        // If the end entity profile has been removed, just return empty result
+        if (endentityprofile != null) {
+            final List<Integer> casDefineInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
+            boolean allCasDefineInEndEntityProfile = false;
+            if (casDefineInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
+                allCasDefineInEndEntityProfile = true;
             }
-            // First make a clone of the full list of available CAs
-            final List<Integer> authorizedCasClone = new ArrayList<>(authorizedCas);
-            if (!casDefinedInCertificateProfile.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
-                //If ANYCA wasn't defined among the list from the cert profile, only keep the intersection
-                authorizedCasClone.retainAll(casDefinedInCertificateProfile);
+            // 3. Next retrieve all certificate profiles defined in the end entity profile
+            for (final Integer certificateProfileId : endentityprofile.getAvailableCertificateProfileIds()) {
+                final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId.intValue());
+                // 4. Retrieve all CAs defined in the current certificate profile
+                final Collection<Integer> casDefinedInCertificateProfile;
+                if (certprofile != null) {
+                    casDefinedInCertificateProfile = certprofile.getAvailableCAs();
+                } else {
+                    casDefinedInCertificateProfile = new ArrayList<>();
+                }
+                // First make a clone of the full list of available CAs
+                final List<Integer> authorizedCasClone = new ArrayList<>(authorizedCas);
+                if (!casDefinedInCertificateProfile.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
+                    //If ANYCA wasn't defined among the list from the cert profile, only keep the intersection
+                    authorizedCasClone.retainAll(casDefinedInCertificateProfile);
+                }
+                if (!allCasDefineInEndEntityProfile) {
+                    //If ALL wasn't defined in the EE profile, only keep the intersection
+                    authorizedCasClone.retainAll(casDefineInEndEntityProfile);
+                }
+                ret.put(certificateProfileId, authorizedCasClone);
             }
-            if (!allCasDefineInEndEntityProfile) {
-                //If ALL wasn't defined in the EE profile, only keep the intersection
-                authorizedCasClone.retainAll(casDefineInEndEntityProfile);
-            }
-            ret.put(certificateProfileId, authorizedCasClone);
         }
         return ret;
     }
