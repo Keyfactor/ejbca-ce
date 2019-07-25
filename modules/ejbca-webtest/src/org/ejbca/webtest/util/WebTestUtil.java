@@ -15,7 +15,7 @@ package org.ejbca.webtest.util;
 /**
  * This class contains utility methods for web tests.
  *
- * @version $Id: WebTestUtil.java 29858 2018-09-11 07:44:14Z andrey_s_helmes $
+ * @version $Id$
  */
 public abstract class WebTestUtil {
 

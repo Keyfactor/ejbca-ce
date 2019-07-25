@@ -19,7 +19,7 @@ package org.ejbca.webtest.scenario;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-205">ECAQA-205</a>
  *
- * @version $Id: EcaQa205_CrlPartitioningUsingUI.java 30836 2019-05-02 09:49:09Z margaret_d_thomas $
+ * @version $Id$
  */
 
 import org.apache.commons.lang.RandomStringUtils;

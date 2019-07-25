@@ -15,7 +15,7 @@ package org.ejbca.webtest.helper;
 /**
  * Helper class used to make REST calls using the Swagger UI
  *
- * @version $Id: SwaggerUIHelper.java 32091 2019-05-02 12:59:46Z margaret_d_thomas $
+ * @version $Id$
  *
  */
 import static org.junit.Assert.assertEquals;

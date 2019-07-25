@@ -63,7 +63,7 @@ import org.openqa.selenium.firefox.internal.ProfilesIni;
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
  *
- * @version $Id: WebTestBase.java 30768 2018-12-06 08:06:23Z andrey_s_helmes $
+ * @version $Id$
  */
 public abstract class WebTestBase extends ExtentReportCreator {
 
