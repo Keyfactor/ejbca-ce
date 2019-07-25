@@ -36,7 +36,8 @@ public enum AcmeProblem {
     PROBLEM_CONNECTION("connection", "The server could not connect to validation target"),
     PROBLEM_TLS("tls", "The server received a TLS error during validation"),
     PROBLEM_INCORRECT_RESPONSE("incorrectResponse", "Response received didn't match the challenge's requirements"),
-    PROBLEM_ACCOUNT_DOES_NOT_EXIST("accountDoesNotExist", "The request specified an account that does not exist");
+    PROBLEM_ACCOUNT_DOES_NOT_EXIST("accountDoesNotExist", "The request specified an account that does not exist"),
+    PROBLEM_ORDER_NOT_READY("orderNotReady", "Order is not ready yet.");
     
     
     private final String type;
