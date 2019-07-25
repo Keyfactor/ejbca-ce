@@ -3,7 +3,7 @@
 ### Language tool for EJBCA (Admin GUI)
 #
 # Filename:    language-tool.sh
-# Version:     1.2, 2014-10-16
+# Version:     1.3, 2019-07-25
 # Script:      Bash
 # Require:     EJBCA 6.3.0
 # Contributor: David CARELLA, david.carella [AT] gmail.com
@@ -14,7 +14,7 @@
 ## Constants
 
 PROGRAM=$(basename "$0")
-VERSION="1.2"
+VERSION="1.3"
 
 #- EJBCA folders
 SVN_ROOT="$(dirname "$0")/../../../.."				# Script path = modules/admin-gui/resources/languages/
@@ -37,7 +37,7 @@ PATH_MODULES="modules"								# Files: module source files
 #  $SVN_ROOT/$PATH_MODULES/
 
 #- EJBCA version (only numbers and dots)
-EJBCA_VERSION=$(cat $SVN_ROOT/src/internal.properties | grep "app.version.number=" | sed -e "s/^.*=\([0-9.]*\).*/\1/")
+EJBCA_VERSION=$(grep "app.version.number=" $SVN_ROOT/src/internal.properties | sed -e "s/^.*=\([0-9.]*[0-9]\).*$/\1/")
 
 #- Language
 LANG_PREFIX="languagefile"
@@ -417,7 +417,7 @@ case "$action" in
 			## Extract the language code from current language file name
 			lang=$(echo "$filename" | sed -e "s/"$LANG_PREFIX"\.\(.*\)\."$LANG_EXT"/\1/")
 			## Extract the language name from current language file name
-			langname=$(cat $LANG_ROOT/$filename | grep -e "^LANGUAGE_ENGLISHNAME" | sed -e "s/^LANGUAGE_ENGLISHNAME\s*=\s*\(.*\)\s*$/\1/")
+			langname=$(grep "LANGUAGE_ENGLISHNAME" ${LANG_ROOT}/$filename | sed -e "s/^.*=\s*\(.*[a-zA-Z]\).*$/\1/")
 			if [ -z "$langname" ]; then
 				langname="[$lang]"				# Default value, if the language name is not found.
 			fi
