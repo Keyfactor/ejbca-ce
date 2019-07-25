@@ -27,6 +27,7 @@ import java.util.Properties;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -199,9 +200,34 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
 
     @Override
+    public boolean isAliasUsed(final String alias) {
+        boolean aliasInUse = false;
+        try {
+            getPublicKey(alias);
+            aliasInUse = true;
+        } catch (CryptoTokenOfflineException e) {
+            try {
+                getPrivateKey(alias);
+                aliasInUse = true;
+            } catch (CryptoTokenOfflineException e1) {
+                if (slot.getSecretKey(alias) != null) {
+                    aliasInUse = true;
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            // NOOP no certificate references found. Alias not in use.
+        }
+        return aliasInUse;
+    }
+    
+    @Override
     public void deleteEntry(String alias)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException {
-        // TODO Auto-generated method stub
+        if (StringUtils.isNotEmpty(alias)) {
+            slot.removeKey(alias);
+        } else {
+            log.debug("Trying to delete keystore entry with empty alias.");
+        }
 
     }
 
