@@ -13,12 +13,17 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
+ * Provides access to methods in SctDataSession from non-EJB modules
+ *
  * @version $Id$
  */
 public interface SctDataCallback {
     void saveSctData(String fingerprint, int logId, long certificateExpirationDate, String data);
 
     Map<Integer, byte[]> findSctData(String fingerprint);
+
+    ExecutorService getThreadPool();
 }

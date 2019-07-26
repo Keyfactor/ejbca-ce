@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -398,6 +399,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     result.put(sctData.getLogId(), Hex.decode(sctData.getData()));
                 }
                 return result;
+            }
+
+            @Override
+            public ExecutorService getThreadPool() {
+                return sctDataSession.getThreadPool();
             }
         });
 
