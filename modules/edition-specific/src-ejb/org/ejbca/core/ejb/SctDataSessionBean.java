@@ -20,13 +20,14 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SctDataSession")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class SctDataSessionBean  implements SctDataSessionLocal {
+public class SctDataSessionBean implements SctDataSessionLocal {
     @Override
     public List<SctData> findSctData(String fingerprint) {
         throw new UnsupportedOperationException("SCT calls are only supported in EJBCA Enterprise");
@@ -34,6 +35,11 @@ public class SctDataSessionBean  implements SctDataSessionLocal {
 
     @Override
     public void addSctData(SctData sctData) {
+        throw new UnsupportedOperationException("SCT calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public ExecutorService getThreadPool() {
         throw new UnsupportedOperationException("SCT calls are only supported in EJBCA Enterprise");
     }
 }

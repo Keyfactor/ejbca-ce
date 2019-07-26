@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.certificatetransparency;
 
+import java.util.concurrent.ExecutorService;
+
 import javax.ejb.Local;
 
 /**
@@ -20,5 +22,9 @@ import javax.ejb.Local;
 @Local
 public interface SctDataSessionLocal extends SctDataSession {
 
+    /** Adds data to the persistent SCT cache */
     public void addSctData(SctData sctData);
+    
+    /** Returns a thread pool, whose threads can safely call the addSctData and fetchSctData methods */
+    public ExecutorService getThreadPool();
 }
