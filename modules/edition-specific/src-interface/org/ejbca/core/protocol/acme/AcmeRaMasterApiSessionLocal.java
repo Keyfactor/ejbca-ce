@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -135,6 +136,9 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.core.model.era.RaMasterApi#getCaaIdentities(AuthenticationToken, int) */
     Set<String> getCaaIdentities(AuthenticationToken authenticationToken, int caId) throws CADoesntExistsException, AuthorizationDeniedException;
 
+    /** @see org.ejbca.core.model.era.RaMasterApi#getGlobalConfiguration(Class<T> type) */
+    <T extends ConfigurationBase> T getGlobalConfiguration(Class<T> type);
+    
     boolean isPeerAuthorizedAcme();
 
 }
