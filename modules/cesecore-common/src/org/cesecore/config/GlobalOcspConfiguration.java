@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.config;
 
+import java.io.Serializable;
+
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
@@ -21,7 +23,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  *
  */
-public class GlobalOcspConfiguration extends ConfigurationBase {
+public class GlobalOcspConfiguration extends ConfigurationBase implements Serializable {
 
     public static final String OCSP_CONFIGURATION_ID = "OCSP";
    
