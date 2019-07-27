@@ -60,13 +60,18 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.RaStyleInfo;
+import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
+import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -1349,4 +1354,18 @@ public interface RaMasterApi {
      * @param acmeChallenges challenges list to persit
      */
     void persistAcmeChallengeList(final List<AcmeChallenge> acmeChallenges);
+    
+    /**
+     * Gets the global configuration for the concrete type <T extends ConfigurationBase>.
+     *
+     * @see GlobalConfiguration
+     * @see GlobalCesecoreConfiguration
+     * @see GlobalAcmeConfiguration
+     * @see GlobalOcspConfiguration
+     * @see GlobalUpgradeConfiguration
+     * 
+     * @param type the concrete global configuration object class.
+     * @return the global configuration or null.
+     */
+    <T extends ConfigurationBase> T getGlobalConfiguration(Class<T> type);
 }

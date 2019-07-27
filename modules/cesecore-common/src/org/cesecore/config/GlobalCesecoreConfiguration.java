@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.config;
 
+import java.io.Serializable;
+
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.internal.InternalResources;
 
@@ -21,7 +23,7 @@ import org.cesecore.internal.InternalResources;
  * @version $Id$
  *
  */
-public class GlobalCesecoreConfiguration extends ConfigurationBase {
+public class GlobalCesecoreConfiguration extends ConfigurationBase implements Serializable {
     
     private static final long serialVersionUID = 1L;
     

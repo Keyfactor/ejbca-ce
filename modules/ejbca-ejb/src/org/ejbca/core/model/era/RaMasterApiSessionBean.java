@@ -114,7 +114,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.RaStyleInfo;
+import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -134,6 +136,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -149,6 +152,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -2750,5 +2754,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends ConfigurationBase> T getGlobalConfiguration(final Class<T> type) {
+        T result = null;
+        if (GlobalConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        } else if (GlobalCesecoreConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        } else if (GlobalAcmeConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
+        } else if (GlobalOcspConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        } else if (GlobalUpgradeConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Found Global configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+        }
+        return result;
     }
 }

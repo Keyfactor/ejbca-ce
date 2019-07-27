@@ -9,6 +9,7 @@
  *************************************************************************/
 package org.ejbca.config;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import org.cesecore.configuration.ConfigurationBase;
  * 
  * @version $Id$
  */
-public class GlobalAcmeConfiguration extends ConfigurationBase {
+public class GlobalAcmeConfiguration extends ConfigurationBase implements Serializable {
 
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(GlobalAcmeConfiguration.class);
