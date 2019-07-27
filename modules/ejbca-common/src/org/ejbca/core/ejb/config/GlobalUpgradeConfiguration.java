@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.cesecore.configuration.ConfigurationBase;
@@ -21,7 +22,7 @@ import org.cesecore.configuration.ConfigurationBase;
  * 
  * @version $Id$
  */
-public class GlobalUpgradeConfiguration extends ConfigurationBase {
+public class GlobalUpgradeConfiguration extends ConfigurationBase implements Serializable {
 
     public static final String CONFIGURATION_ID = "UPGRADE";
    
