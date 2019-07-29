@@ -21,6 +21,7 @@ public enum AcmeProblem {
     PROBLEM_BAD_NONCE("badNonce", "The client sent an unacceptable anti-replay nonce"),
     PROBLEM_BAD_SIGNATURE_ALGORITHM("badSignatureAlgorithm",
                     "The JWS was signed with an algorithm the server does not support"),
+    PROBLEM_UNSUPPORTED_CONTACT("unsupportedContact", "The contact URL scheme is not supported. Use 'mailto'"),
     PROBLEM_INVALID_CONTACT("invalidContact", "The contact URI for an account was invalid"),
     PROBLEM_MALFORMED("malformed", "The request message was malformed"),
     PROBLEM_RATE_LIMITED("rateLimited", "The request exceeds a rate limit"),
