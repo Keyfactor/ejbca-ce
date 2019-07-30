@@ -37,8 +37,9 @@ public class EcaQa206_CRLPartitionsIncorrectSettings extends WebTestBase {
         static final String CA_NAME = "ECAQA-206-TestCA";
         static final String CRL_DISTRIBUTION_POINT_URL = "http://example.com/*.crl";
         static final String MISSING_ASTERISK_URL = "http://example.com/MissingAsterisk.crl";
-        static final String ERROR_MESSAGE = "Partitioned CRLs are not allowed without 'Issuing Distribution Point' and 'Default CRL Distribution Point'.";
-        static final String ASTERISK_MISSING_ERROR_MESSAGE = "'Default CRL Distribution Point' should contain asterisk (*) with Partitioned CRLs .";
+        static final String MISSING_IDP = "Partitioned CRLs are not allowed without 'Issuing Distribution Point on CRL'.";
+        static final String MISSING_CRLDP = "Partitioned CRLs are not allowed without a 'Default CRL Distribution Point' filled in, which must contain an asterisk (*) as a placeholder for the partition number.";
+        static final String ASTERISK_MISSING_ERROR_MESSAGE = "'Default CRL Distribution Point' should contain asterisk (*) with Partitioned CRLs.";
         static final String INCORRECT_PARTITION_NUMBER_ERROR_MESSAGE = "Error: Number of CRL partitions must be higher than number of suspended CRL partitions";
     }
 
@@ -72,7 +73,7 @@ public class EcaQa206_CRLPartitionsIncorrectSettings extends WebTestBase {
         caHelper.setNumberOfPartitions("1");
         caHelper.setDefaultCrlDistributionPoint(TestData.CRL_DISTRIBUTION_POINT_URL);
         caHelper.createCa();
-        caHelper.assertHasErrorMessage(TestData.ERROR_MESSAGE);
+        caHelper.assertHasErrorMessage(TestData.MISSING_IDP);
     }
 
     @Test
@@ -84,7 +85,7 @@ public class EcaQa206_CRLPartitionsIncorrectSettings extends WebTestBase {
         caHelper.checkIssuingDistPointOnCrls(true);
         caHelper.setNumberOfPartitions("1");
         caHelper.createCa();
-        caHelper.assertHasErrorMessage(TestData.ERROR_MESSAGE);
+        caHelper.assertHasErrorMessage(TestData.MISSING_CRLDP);
     }
 
     @Test
