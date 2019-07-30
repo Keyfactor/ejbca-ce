@@ -361,7 +361,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         activateKeyBinding(internalKeyBindingId);
         // Configure the OcspKeyBinding nextUpdateTime
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
-        ocspKeyBinding.setUntilNextUpdate(2534023007990l);
+        ocspKeyBinding.setUntilNextUpdate(260_000_000_000L); //number big enough to exceed year 9999
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
 
