@@ -410,7 +410,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     /** 
      * Tests the case of a standalone OCSP responder with a revoked certificate
      */
-//    @Test
+    @Test
     public void testResponseWithRevokedResponder() throws Exception {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
