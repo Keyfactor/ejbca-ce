@@ -18,6 +18,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 
+import org.apache.log4j.Logger;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -27,11 +29,28 @@ import org.junit.Test;
  */
 public class CryptoTokenFactoryTest {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenFactoryTest.class);
+
+    private static int numBuiltinCryptoTokenTypes;
+
+    @BeforeClass
+    public static void beforeClass() {
+        try {
+            Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken");
+            log.debug("Assuming we are running Enterprise Edition");
+            numBuiltinCryptoTokenTypes = 5;
+        } catch (ClassNotFoundException e) {
+            log.debug("Assuming we are running Community Edition");
+            numBuiltinCryptoTokenTypes = 4;
+        }
+    }
+
 	@Test
 	public void testAvailableCryptoToken() throws Exception {
+	    log.trace(">testAvailableCryptoToken");
 		CryptoTokenFactory mgr = CryptoTokenFactory.instance();
 		Collection<AvailableCryptoToken> tokens = mgr.getAvailableCryptoTokens();
-		assertEquals(5, tokens.size());
+		assertEquals(numBuiltinCryptoTokenTypes, tokens.size());
 		AvailableCryptoToken token1 = new AvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
 		AvailableCryptoToken token2 = new AvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", true, true);
 		AvailableCryptoToken token3 = new AvailableCryptoToken(NullCryptoToken.class.getName(), "Null", true, true);
@@ -52,7 +71,7 @@ public class CryptoTokenFactoryTest {
 		// The one with non existing classpath should not be added
 		mgr.addAvailableCryptoToken("foo.bar.CryptoToken", "FOO", true, true);
 		tokens = mgr.getAvailableCryptoTokens();
-		assertEquals(6, tokens.size());
+		assertEquals(numBuiltinCryptoTokenTypes+1, tokens.size());
 		assertTrue(tokens.contains(token1));
 		assertTrue(tokens.contains(token2));
 		assertTrue(tokens.contains(token3));
@@ -60,9 +79,9 @@ public class CryptoTokenFactoryTest {
 		assertTrue(tokens.contains(token5));
 		// The one with non existing classpath should not be added
 		assertFalse(tokens.contains(token6));
+		log.trace("<testAvailableCryptoToken");
 	}
 
-	
 }
 
 

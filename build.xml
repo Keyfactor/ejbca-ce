@@ -1077,6 +1077,7 @@
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/certificate/certextensions/BasicCVCertificateExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/configdump/**"/>
                 <exclude unless="edition.is.ee" name="modules/unidfnr/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-common/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-cryptotoken/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-camanagement/**"/>
