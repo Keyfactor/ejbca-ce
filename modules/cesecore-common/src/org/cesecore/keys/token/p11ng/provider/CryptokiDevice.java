@@ -144,6 +144,17 @@ public class CryptokiDevice {
             return useCache;
         }
 
+        public long getKeyIfExists(final String alias) {
+            Long session = null;
+            session = aquireSession();
+            // Check if any private key associated with the provided alias exist
+            long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.LABEL, alias));
+            if (objs.length == 0) {
+                throw new IllegalArgumentException("Key with label " + alias + " does not exists!");
+            }
+            return objs[0];
+        }
+        
         public synchronized void setUseCache(boolean useCache) {
             this.useCache = useCache;
         }
@@ -226,6 +237,17 @@ public class CryptokiDevice {
             c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
         }
 
+        public synchronized void loginGeneric(final String pin) {
+            // Note: We use a dedicated session for login so it will remain logged in
+            if (loginSession == null) {
+                loginSession = aquireSession();
+            }
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("c.Login(" + loginSession + ")");
+            }
+            c.Login(loginSession, CKU.CKU_CS_GENERIC, pin.getBytes(StandardCharsets.UTF_8));
+        }
+        
         public synchronized void logout() {
             try {
                 if (loginSession == null) {
