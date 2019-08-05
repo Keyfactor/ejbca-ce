@@ -717,6 +717,53 @@ public class CryptokiDevice {
             }
         }
         
+        public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount) {
+            //TODO Shouldn't be hard coded?
+            final int KAK_SIZE = 2048;
+            final int HASH_SIZE = 32;
+
+            Long session = null;
+            try {
+                session = aquireSession();
+
+                CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
+                params.ulCount = authorizedoperationCount;
+                params.write(); // Write data before passing structure to function
+                CKM mechanism = new CKM(CKM.CKM_CP5_AUTHORIZE, params.getPointer(), params.size());
+    
+                byte[] hash = new byte[HASH_SIZE];
+                long hashLen = hash.length;
+                
+                // Getting the key if it exist on the slot with the provided alias
+                long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
+                LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                
+                long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
+                if (rvAuthorizeKeyInit != CKR.OK) {
+                    throw new CKRException(rvAuthorizeKeyInit);
+                }
+                
+                // Here obtain the private key created in the previous init part
+                Key kakPrivateKey = keyAuthorizationKey.getPrivate();
+                byte[] authSig = new byte[bitsToBytes(KAK_SIZE)];
+                try {
+                    authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey);
+                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+                         | InvalidAlgorithmParameterException | SignatureException e) {
+                    LOG.error("Error occurred while signing the hash!", e);
+                }
+                
+                long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
+                if (rvAuthorizeKey != CKR.OK) {
+                    throw new CKRException(rvAuthorizeKey);
+                }
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+        
         public void generateKeyPair(String keyAlgorithm, String keySpec, String alias, boolean publicKeyToken, Map<Long, Object> overridePublic, Map<Long, Object> overridePrivate, CertificateGenerator certGenerator, boolean storeCertificate) throws CertificateEncodingException, CertificateException, OperatorCreationException {
             Long session = null;
             try {
