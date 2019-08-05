@@ -13,6 +13,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -20,12 +23,18 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
@@ -53,6 +62,9 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
+import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
+import org.cesecore.keys.token.p11ng.CK_CP5_INITIALIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.FindObjectsCallParamsHolder;
 import org.cesecore.keys.token.p11ng.GetAttributeValueCallParamsHolder;
 import org.cesecore.keys.token.p11ng.P11NGSlotStore;
@@ -69,6 +81,10 @@ import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.CKU;
 import org.pkcs11.jacknji11.CK_SESSION_INFO;
 import org.pkcs11.jacknji11.LongRef;
+
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
 
 
 /**
@@ -146,6 +162,7 @@ public class CryptokiDevice {
             return useCache;
         }
 
+        //TODO Can probably be removed. Unused.
         public long getKeyIfExists(final String alias) {
             Long session = null;
             session = aquireSession();
@@ -620,6 +637,86 @@ public class CryptokiDevice {
             }
         }
 
+        public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey) {
+            //TODO Shouldn't be hard coded?
+            final int KAK_SIZE = 2048;
+            final int KAK_PUBLIC_EXP_BUF_SIZE = 3;
+            final int KEY_AUTHORIZATION_ASSIGNED = 1;
+            final int HASH_SIZE = 32;
+            Long session = null;
+            try {
+                session = aquireSession();
+            
+                Key kakPublicKey = keyAuthorizationKey.getPublic();
+                Key kakPrivateKey = keyAuthorizationKey.getPrivate();
+                
+                RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
+                BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
+                BigInteger kakModulus = publicSpec.getModulus();
+                
+                byte[] kakModBuf = new byte[bitsToBytes(KAK_SIZE)];
+                byte[] kakPubExpBuf = new byte[KAK_PUBLIC_EXP_BUF_SIZE];
+                
+                int kakModLen = kakModulus.toByteArray().length;
+                int kakPubExpLen = kakPublicExponent.toByteArray().length;
+    
+                assert(kakModBuf.length >= kakModLen);
+                assert(kakPubExpBuf.length >= kakPubExpLen);
+                
+                kakModBuf = kakModulus.toByteArray();
+                kakPubExpBuf = kakPublicExponent.toByteArray();
+    
+                CK_CP5_INITIALIZE_PARAMS params = new CK_CP5_INITIALIZE_PARAMS();
+                CK_CP5_AUTH_DATA authData = new CK_CP5_AUTH_DATA();
+                authData.ulModulusLen = new NativeLong(kakModLen);
+                
+                // Allocate sufficient native memory to hold the java array Pointer ptr = new Memory(arr.length);
+                // Copy the java array's contents to the native memory ptr.write(0, arr, 0, arr.length);
+                Pointer kakModulusPointer = new Memory(kakModLen);
+                kakModulusPointer.write(0, kakModBuf, 0, kakModLen);
+                authData.pModulus = kakModulusPointer;
+                authData.ulPublicExponentLen = new NativeLong(kakPubExpLen);
+                
+                Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
+                kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
+                authData.pPublicExponent = kakPublicKeyExponentPointer;
+                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+    
+                params.authData = authData;
+                params.bAssigned = KEY_AUTHORIZATION_ASSIGNED;
+                
+                params.write(); // Write data before passing structure to function
+                CKM mechanism = new CKM(CKM.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
+                
+                byte[] hash = new byte[HASH_SIZE];
+                long hashLen = hash.length;
+                // Getting the key if it exist on the HSM slot with the provided alias
+                long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
+                LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
+                if (rvAuthorizeKeyInit != CKR.OK) {
+                    throw new CKRException(rvAuthorizeKeyInit);
+                }
+    
+                byte[] initSig = new byte[bitsToBytes(KAK_SIZE)];
+                try {
+                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey);
+                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+                         | InvalidAlgorithmParameterException | SignatureException e) {
+                    LOG.error("Error occurred while signing the hash!", e);
+                }
+    
+                long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
+                if (rvAuthorizeKey != CKR.OK) {
+                    throw new CKRException(rvAuthorizeKey);
+                }
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+        
         public void generateKeyPair(String keyAlgorithm, String keySpec, String alias, boolean publicKeyToken, Map<Long, Object> overridePublic, Map<Long, Object> overridePrivate, CertificateGenerator certGenerator, boolean storeCertificate) throws CertificateEncodingException, CertificateException, OperatorCreationException {
             Long session = null;
             try {
@@ -738,6 +835,37 @@ public class CryptokiDevice {
                     releaseSession(session);
                 }
             }
+        }
+        
+        private KeySpec generateKeySpec(final Key key) {
+            KeyFactory kf = null;
+            KeySpec spec = null;
+            try {
+                kf = KeyFactory.getInstance("RSA");
+                spec = kf.getKeySpec(key, KeySpec.class);
+            } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+                LOG.error("Error occurred while getting the key spec!", e);
+            }
+            return spec;
+        }
+        
+        private int bitsToBytes(final int kakSize) {
+            int result = (((kakSize) + 7)/8);
+            return result;
+        }
+        
+        private byte[] signHashPss(byte[] hash, long hashLen, int length, Key privateKey) 
+                throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException {
+            final int KEY_AUTHORIZATION_INIT_SIGN_SALT_SIZE = 32;
+            // Due to requirements at the HSM side we have to use RAW signer
+            Signature signature = Signature.getInstance("RawRSASSA-PSS", "BC");
+            PSSParameterSpec pssParameterSpec = new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, KEY_AUTHORIZATION_INIT_SIGN_SALT_SIZE, 
+                    PSSParameterSpec.DEFAULT.getTrailerField());
+            signature.setParameter(pssParameterSpec);
+            signature.initSign((PrivateKey) privateKey, new SecureRandom());
+            signature.update(hash);
+            byte[] signBytes = signature.sign();
+            return signBytes;
         }
         
         private CKA[] toCkaArray(HashMap<Long, Object> map) {
