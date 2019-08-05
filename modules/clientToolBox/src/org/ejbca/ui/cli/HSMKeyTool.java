@@ -550,7 +550,7 @@ public class HSMKeyTool extends ClientToolBox {
 
                 final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(oldDNName, serno, validFrom, validTo, newDNName, pkinfo);
 
-                // Copy all extensions except AKID
+                // Copy all extensions except AKID and Issuer Alternative Name
                 final ExtensionsGenerator extgen = new ExtensionsGenerator();
                 final Set<String> oids = new LinkedHashSet<>();
                 final Set<String> criticalOids = newCertX509.getCriticalExtensionOIDs();
@@ -558,7 +558,7 @@ public class HSMKeyTool extends ClientToolBox {
                 oids.addAll(newCertX509.getNonCriticalExtensionOIDs());
                 for (final String extOidStr : oids) {
                     final ASN1ObjectIdentifier extoid = new ASN1ObjectIdentifier(extOidStr);
-                    if (!extoid.equals(Extension.authorityKeyIdentifier)) {
+                    if (!extoid.equals(Extension.authorityKeyIdentifier) && !extoid.equals(Extension.issuerAlternativeName)) {
                         final byte[] extbytes = newCertX509.getExtensionValue(extOidStr);
                         final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(extbytes);
                         extgen.addExtension(extoid, criticalOids.contains(extOidStr), ASN1Primitive.fromByteArray(str.getOctets()));
@@ -587,6 +587,16 @@ public class HSMKeyTool extends ClientToolBox {
                     extgen.addExtension(Extension.authorityKeyIdentifier, false, akidExt);
                 } else {
                     System.err.println("Warning: The old certificate doesn't have any SubjectKeyIdentifier. The link certificate will not have any AuthorityKeyIdentifier.");
+                }
+                
+                // Copy the Issuer Alternative Name from the Subject Alternative Name of the old certificate
+                final byte[] oldSANBytes = oldCertX509.getExtensionValue(Extension.subjectAlternativeName.getId());
+                if (oldSANBytes != null) {
+                    final ASN1ObjectIdentifier sanOid = new ASN1ObjectIdentifier(Extension.issuerAlternativeName.getId());
+                    final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSANBytes);
+                    extgen.addExtension(sanOid, criticalOids.contains(Extension.issuerAlternativeName.getId()), ASN1Primitive.fromByteArray(str.getOctets()));
+                } else {
+                    System.err.println("Warning: The old certificate doesn't have any Subject Alternative Name. The link certificate will not have any Issuer Alternative Name.");
                 }
 
                 // Add extensions to the certificate
