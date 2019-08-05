@@ -171,8 +171,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
         PublicKey publicKey = slot.getPublicKey(alias);
         if (publicKey == null) {
-            publicKey = slot.getCertificate(alias).getPublicKey();
-
             final Certificate certificate = slot.getCertificate(alias);
             if (certificate == null) {
                 final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
