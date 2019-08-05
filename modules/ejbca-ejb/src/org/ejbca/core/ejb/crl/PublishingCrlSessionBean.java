@@ -455,6 +455,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
+     * @param lastBaseCrlInfo CRLInfo on the last base CRL created by this CA, or null, if no base CRL has been created before
      * @return fingerprint (primary key) of the generated CRL or null if
      *            generation failed
      * @throws AuthorizationDeniedException
@@ -749,7 +750,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     throw new IllegalStateException("CA " + ca.getName() + " is marked as it has gone through CA Name Change process but old name seems the same as new one! Could not proceed with generating and storing CRL");
                 }
             } else {
-                log.debug("CA "+ca.getName()+" has gone through CA Name Change process, but this is not the first CRL to be generated. Not getting CRL number from old CA name.");
+                log.debug("CA "+ca.getName()+" has gone through CA Name Change process, but this is not the first CRL to be generated. Not getting CRL number from old CA name, but continuing the sequence of this new CA.");
             }
         }
 
