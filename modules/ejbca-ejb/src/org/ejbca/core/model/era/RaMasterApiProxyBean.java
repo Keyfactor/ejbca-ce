@@ -3085,7 +3085,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public <T extends ConfigurationBase> T getGlobalConfiguration(final Class<T> type) {
         for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 8) {
                 try {
                     return raMasterApi.getGlobalConfiguration(type);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
