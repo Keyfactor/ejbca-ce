@@ -39,8 +39,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.crypto.SecretKey;
 import javax.security.auth.x500.X500Principal;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -82,7 +84,7 @@ public class CryptokiDevice {
     private final CEi c;
     private final JackNJI11Provider provider;
     private final ArrayList<Slot> slots = new ArrayList<>();
-    private final HashMap<Long, Slot> slotMap = new HashMap<>();    
+    private final HashMap<Long, Slot> slotMap = new HashMap<>();
     
     private static final int MAX_CHAIN_LENGTH = 100;
     
@@ -265,6 +267,84 @@ public class CryptokiDevice {
             }
         }
         
+        /** Finds a PrivateKey object by either certificate label or by private key label */
+        // TODO: Support alias that is hexademical or label or Id
+        private Long getPrivateKeyByLabel(final Long session, final String alias) {
+            long[] certificateRefs = findCertificateObjectsByLabel(session, alias);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
+            }
+          
+            final long[] privateKeyRefs;
+            if (certificateRefs.length > 0) {
+                CKA ckaId = getAttributeCertificateID(session, certificateRefs[0]);
+                if (ckaId == null) {
+                    LOG.warn("Missing ID attribute on certificate object with label " + alias);
+                    return null;
+                }
+                privateKeyRefs = findPrivateKeyObjectsByID(session, ckaId.getValue());
+                if (privateKeyRefs.length > 1) {
+                    LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
+                    return null;
+                }
+            } else {
+                privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));
+                if (privateKeyRefs.length > 1) {
+                    LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
+                    return null;
+                }
+            }
+            if (privateKeyRefs.length == 0) {
+                LOG.warn("No private key found for alias " + alias);
+                return null;
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Private Key Object: " +  privateKeyRefs[0]);
+            }
+            return privateKeyRefs[0];
+        }
+        
+        /** Finds a PublicKey object by either certificate label or by private key label */
+        // TODO: Support alias that is hexademical or label or Id
+        private Long getPublicKeyByLabel(final Long session, final String alias) {
+            long[] certificateRefs = findCertificateObjectsByLabel(session, alias);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
+            }
+          
+            final CKA ckaId;
+            if (certificateRefs.length > 0) {
+                ckaId = getAttributeCertificateID(session, certificateRefs[0]);
+            } else {
+                final long[] privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));
+                if (privateKeyRefs.length == 0) {
+                    LOG.warn("No public key found for alias " + alias);
+                    return null;
+                } else if (privateKeyRefs.length > 1) {
+                    LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
+                    return null;
+                }
+                // TODO use cache?
+                ckaId = c.GetAttributeValue(session, privateKeyRefs[0], CKA.ID);
+            }
+            if (ckaId == null) {
+                LOG.warn("Missing ID attribute on object with label " + alias);
+                return null;
+            }
+            final long[] publicKeyRefs = findPublicKeyObjectsByID(session, ckaId.getValue());
+            if (publicKeyRefs.length == 0) {
+                // A missing public key is fine, since you can have a certificate + private key instead
+                return null;
+            } else if (publicKeyRefs.length > 1) {
+                LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
+                return null;
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Public Key Object: " +  publicKeyRefs[0]);
+            }
+            return publicKeyRefs[0];
+        }
+        
         public PrivateKey unwrapPrivateKey(final byte[] wrappedPrivateKey, final String unwrapkey, final long wrappingCipher) {
             Long session = aquireSession();
             // Find unWrapKey
@@ -366,34 +446,21 @@ public class CryptokiDevice {
          * @return  The PrivateKey reference or null if no such key exists
          * @throws CryptoTokenOfflineException
          */
-        public PrivateKey aquirePrivateKey(String alias) throws CryptoTokenOfflineException { // TODO: Support alias that is hexademical or label or Id
-            Long session;
-            
+        public PrivateKey aquirePrivateKey(String alias) throws CryptoTokenOfflineException {
+            final long session;
             try {
                 session = aquireSession();
             } catch (CKRException ex) { // throw CryptoTokenOfflineException when device error
                 throw new CryptoTokenOfflineException(ex);
             }
-            
-            // Find certificate by label
-            long[] certificateRefs = findCertificateObjectsByLabel(session, alias);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-            }
-            
-            if (certificateRefs.length > 0) {
-                CKA ckaId = getAttributeCertificateID(session, certificateRefs[0]);
-                long[] privateObjects = findPrivateKeyObjectsByID(session, ckaId.getValue());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Private Objects: " +  Arrays.toString(privateObjects));
+            try {
+                final Long privateObject = getPrivateKeyByLabel(session, alias);
+                if (privateObject != null) {
+                    return new NJI11StaticSessionPrivateKey(session, privateObject, this, false);
                 }
-                if (privateObjects.length == 0) {
-                    LOG.warn("No private key object with CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                } else if (privateObjects.length > 1) {
-                    LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                } else {
-                    return new NJI11StaticSessionPrivateKey(session, privateObjects[0], this, false);
-                }
+            } catch (Exception e) {
+                closeSession(session);
+                throw e;
             }
             closeSession(session);
             return null;
@@ -407,28 +474,13 @@ public class CryptokiDevice {
          * @param alias of key entry
          * @return The PrivateKey reference or null if no such key exists
          */
-        public PrivateKey getReleasableSessionPrivateKey(String alias) {  // TODO: Support alias that is hexademical or label or Id
+        public PrivateKey getReleasableSessionPrivateKey(String alias) { 
             Long session = null;
             try {
                 session = aquireSession();
-                
-                // Find certificate by label
-                long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-                }
-
-                if (certificateRefs.length > 0) {
-                    CKA ckaId = c.GetAttributeValue(session, certificateRefs[0], CKA.ID);
-                    long[] privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Private Objects: " +  Arrays.toString(privateObjects));
-                    }
-                    if (privateObjects.length > 1) {
-                        LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                    } else {
-                        return new NJI11ReleasebleSessionPrivateKey(privateObjects[0], this);
-                    }
+                final Long privateObject = getPrivateKeyByLabel(session, alias);
+                if (privateObject != null) {
+                    return new NJI11ReleasebleSessionPrivateKey(privateObject, this);
                 }
                 return null;
             } finally {
@@ -438,40 +490,22 @@ public class CryptokiDevice {
             }
         }
 
-        public PublicKey getPublicKey(String alias) { // TODO: Support alias that is hexademical or label or Id
+        public PublicKey getPublicKey(String alias) {
             Long session = null;
             try {
                 session = aquireSession();
-                
-                // Find certificate by label
-                long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-                }
+                final Long publicKeyRef = getPublicKeyByLabel(session, alias);
+                if (publicKeyRef != null) {
+                    CKA publicValue = c.GetAttributeValue(session, publicKeyRef, CKA.MODULUS);
+                    final byte[] modulusBytes = publicValue.getValue();
+                    publicValue = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
+                    final byte[] publicExponentBytes = publicValue.getValue();
 
-                if (certificateRefs.length > 0) {
-                    CKA ckaId = c.GetAttributeValue(session, certificateRefs[0], CKA.ID);
-                    if (ckaId != null) {
-                        long[] publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaId.getValue()));
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Public Objects: " +  Arrays.toString(publicObjects));
-                        }
-                        if (publicObjects.length > 1) {
-                            LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                        } else if (publicObjects.length == 1) {
-                            long object = publicObjects[0];
-                            CKA publicValue = c.GetAttributeValue(session, object, CKA.MODULUS);
-                            final byte[] modulusBytes = publicValue.getValue();
-                            publicValue = c.GetAttributeValue(session, object, CKA.PUBLIC_EXPONENT);
-                            final byte[] publicExponentBytes = publicValue.getValue();
+                    final BigInteger n = new BigInteger(1, modulusBytes);
+                    final BigInteger e = new BigInteger(1, publicExponentBytes);
 
-                            final BigInteger n = new BigInteger(1, modulusBytes);
-                            final BigInteger e = new BigInteger(1, publicExponentBytes);
-
-                            PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(n, e));
-                            return publicKey;
-                        }
-                    }
+                    PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(n, e));
+                    return publicKey;
                 }
                 return null;
             } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
@@ -683,7 +717,7 @@ public class CryptokiDevice {
                                 new CKA(CKA.CERTIFICATE_TYPE, CKC.CKC_X_509),
                                 new CKA(CKA.TOKEN, true),
                                 new CKA(CKA.LABEL, alias),
-                                new CKA(CKA.SUBJECT, ((X509Certificate) cert).getSubjectX500Principal().getEncoded()),
+                                new CKA(CKA.SUBJECT, cert.getSubjectX500Principal().getEncoded()),
                                 new CKA(CKA.ID, alias),
                                 new CKA(CKA.VALUE, cert.getEncoded())
                             };
@@ -802,7 +836,7 @@ public class CryptokiDevice {
                 // 1. Search for a certificate
                 long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
+                    LOG.debug("removeKey: Found Certificate Objects: " +  Arrays.toString(certificateRefs));
                 }
                 
                 if (certificateRefs.length > 0) {
@@ -835,20 +869,10 @@ public class CryptokiDevice {
                     }
                     return allDeleted;
                 } else {
-                    // Find key
-                    long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
-
-                    if (objs.length >= 1) {
-                        for (long object : objs) {
-                            // Destroy secret key
-                            removeKeyObject(session, object);
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Destroyed Key: " + object + " with alias " + alias);
-                            }
-                        }
-                    } else {
-                        throw new IllegalArgumentException("key could not be found: " + alias + " so not deleted");
-                    }
+                    // No certificate found. Find and remove keys directly by label and ID
+                    removeKeysByType(session, CKO.SECRET_KEY, alias);
+                    removeKeysByType(session, CKO.PRIVATE_KEY, alias);
+                    removeKeysByType(session, CKO.PUBLIC_KEY, alias);
 
                     // Check whether key exists after deletion 
                     long[] objectsAfterDeletion = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
@@ -857,6 +881,26 @@ public class CryptokiDevice {
             } finally {
                 if (session != null) {
                     releaseSession(session);
+                }
+            }
+        }
+        
+        private void removeKeysByType(final long session, final long objectTypeCko, final String alias) {
+            final byte[] encodedAlias = alias.getBytes(StandardCharsets.UTF_8);
+            removeKeysByType(session, objectTypeCko, CKA.LABEL, encodedAlias);
+            removeKeysByType(session, objectTypeCko, CKA.ID, encodedAlias);
+        }
+
+        private void removeKeysByType(final long session, final long objectTypeCko, final long searchTypeCka, final byte[] alias) {
+            final long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, objectTypeCko), new CKA(searchTypeCka, alias));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("removeKeysByType: Found objects of type " + CKO.L2S(objectTypeCko) + " by " + CKA.L2S(searchTypeCka) + ": " +  Arrays.toString(objs));
+            }
+            for (long object : objs) {
+                // Destroy secret key
+                removeKeyObject(session, object);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Destroyed Key: " + object + " with alias " + alias);
                 }
             }
         }
@@ -1127,27 +1171,28 @@ public class CryptokiDevice {
             Long session = null;
             try {
                 session = aquireSession();
-
-                // 1. Search for all certificate objects on the token
-                long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-                }
                 
-                // Find those that have matching private keys
-                for (long certRef : certificateRefs) {
-                    CKA ckaId = c.GetAttributeValue(session, certRef, CKA.ID);
+                // Map private keys to certificate labels, or use the CKA_ID if not found
+                long[] privkeyRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Private Key Objects: " + Arrays.toString(privkeyRefs));
+                }
+                for (long privkeyRef : privkeyRefs) {
+                    CKA ckaId = c.GetAttributeValue(session, privkeyRef, CKA.ID);
                     if (ckaId != null) {
-                        long[] privRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
-                        if (privRefs.length > 1) {
-                            LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                        } else if (privRefs.length == 1) {
-                            CKA ckaLabel = c.GetAttributeValue(session, certRef, CKA.LABEL);                            
-                            result.add(new SlotEntry(toAlias(ckaId, ckaLabel), TokenEntry.TYPE_PRIVATEKEY_ENTRY));
+                        long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, ckaId.getValue()), new CKA(CKA.CLASS, CKO.CERTIFICATE));
+                        CKA ckaLabel = null;
+                        if (certificateRefs != null && certificateRefs.length >= 1) {
+                            // If a Certificate object exists, use its label. Otherwise, use the ID
+                            ckaLabel = c.GetAttributeValue(session, certificateRefs[0], CKA.LABEL);
+                        } else if (LOG.isDebugEnabled()) {
+                            LOG.debug("Private key does not have a corresponding certificate: " + Hex.toHexString(ckaId.getValue()));
                         }
+                        result.add(new SlotEntry(toAlias(ckaId, ckaLabel), TokenEntry.TYPE_PRIVATEKEY_ENTRY));
                     }
                 }
 
+                // Add all secret keys
                 long[] secretRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Secret Objects: " + Arrays.toString(secretRefs));
@@ -1192,58 +1237,9 @@ public class CryptokiDevice {
             try {
                 session = aquireSession();
 
-                // Find certificate by label
-                long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-                }
-
-                if (certificateRefs.length > 0) {
-                    CKA ckaId = c.GetAttributeValue(session, certificateRefs[0], CKA.ID);
-                    long[] privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Private Objects: " +  Arrays.toString(privateObjects));
-                    }
-                    if (privateObjects.length == 0) {
-                        LOG.warn("No private key object with CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                    } else if (privateObjects.length > 1) {
-                        LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                    } else {
-                        return c.GetAttributeValue(session, privateObjects[0], cka);
-                    }
-                }
-                return null;
-            } finally {
-                if (session != null) {
-                    releaseSession(session);
-                }
-            }
-        }
-        
-        public CKA getAllowedMechanismAttribute(String alias, long cka) { // TODO: Support for alias that is hexadecimal of label or ID
-            Long session = null;
-            try {
-                session = aquireSession();
-
-                // Find certificate by label
-                long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-                }
-
-                if (certificateRefs.length > 0) {
-                    CKA ckaId = c.GetAttributeValue(session, certificateRefs[0], CKA.ID);
-                    long[] privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Private Objects: " +  Arrays.toString(privateObjects));
-                    }
-                    if (privateObjects.length == 0) {
-                        LOG.warn("No private key object with CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                    } else if (privateObjects.length > 1) {
-                        LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
-                    } else {
-                        return c.GetAttributeValue(session, privateObjects[0], cka);
-                    }
+                final Long privateKeyRef = getPrivateKeyByLabel(session, alias);
+                if (privateKeyRef != null) {
+                    return c.GetAttributeValue(session, privateKeyRef, cka);
                 }
                 return null;
             } finally {
@@ -1264,42 +1260,24 @@ public class CryptokiDevice {
             try {
                 session = aquireSession();
 
-                // Find certificate by label
-                long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
-                }
+                final Long privateKeyRef = getPrivateKeyByLabel(session, alias);
+                final CKA attrs[] = c.GetAttributeValue(session, privateKeyRef, 
+                    CKA.SENSITIVE, 
+                    CKA.ALWAYS_SENSITIVE,
+                    CKA.EXTRACTABLE,
+                    CKA.NEVER_EXTRACTABLE,
+                    CKA.PRIVATE,
+                    CKA.DERIVE,
+                    CKA.MODIFIABLE);
 
-                if (certificateRefs.length > 0) {
-                    CKA ckaId = c.GetAttributeValue(session, certificateRefs[0], CKA.ID);
-                    long[] privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Private Objects: " +  Arrays.toString(privateObjects));
-                    }
-                    if (privateObjects.length == 0) {
-                        sb.append("No private key object with CKA_ID=0x").append(Hex.toHexString(ckaId.getValue()));
-                    } else if (privateObjects.length > 1) {
-                        sb.append("More than one private key object sharing CKA_ID=0x").append(Hex.toHexString(ckaId.getValue()));
-                    } else {
-                        final CKA attrs[] = c.GetAttributeValue(session, privateObjects[0], 
-                            CKA.SENSITIVE, 
-                            CKA.ALWAYS_SENSITIVE,
-                            CKA.EXTRACTABLE,
-                            CKA.NEVER_EXTRACTABLE,
-                            CKA.PRIVATE,
-                            CKA.DERIVE,
-                            CKA.MODIFIABLE);
-
-                        for ( final CKA attr : attrs ) {
-                            sb.append("  ");
-                            sb.append(CKA.L2S(attr.type));
-                            sb.append("=");
-                            try {
-                                sb.append(attr.getValueBool());
-                            } catch (IllegalStateException ignored) { // NOPMD
-                                sb.append("0x").append(Hex.toHexString(attr.getValue()));
-                            }
-                        }
+                for ( final CKA attr : attrs ) {
+                    sb.append("  ");
+                    sb.append(CKA.L2S(attr.type));
+                    sb.append("=");
+                    try {
+                        sb.append(attr.getValueBool());
+                    } catch (IllegalStateException ignored) { // NOPMD
+                        sb.append("0x").append(Hex.toHexString(attr.getValue()));
                     }
                 }
             } finally {
@@ -1397,14 +1375,38 @@ public class CryptokiDevice {
 
             return certificateRefs;
         }
+        
+        /**
+         * fetches public key objects with given ID.
+         *
+         * @param session session in HSM slot used to fetch objects 
+         * @param ckaIdValue ID of private key
+         * @return found private key objects
+         */
+        private long[] findPublicKeyObjectsByID(Long session, byte[] ckaIdValue) {
+             long[] publicObjects;
+             if (useCache) {
+                 FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_PUBLIC_KEY, P11NGStoreConstants.CKA_ID, ckaIdValue, null);
+                 if (cache.objectsExists(key)) {
+                     publicObjects = cache.getObjects(key);
+                 } else {
+                     publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
+                     cache.addObjectsSearchResult(key, publicObjects);
+                 }
+             } else {
+                 publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
+             }
+             
+             return publicObjects;
+         }
 
         /**
-        * fetches private key objects with given ID.
-        *
-        * @param session session in HSM slot used to fetch objects 
-        * @param ckaIdValue ID of private key
-        * @return found private key objects
-        */
+         * fetches private key objects with given ID.
+         *
+         * @param session session in HSM slot used to fetch objects 
+         * @param ckaIdValue ID of private key
+         * @return found private key objects
+         */
         long[] findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
             long[] privateObjects;
             if (useCache) {
