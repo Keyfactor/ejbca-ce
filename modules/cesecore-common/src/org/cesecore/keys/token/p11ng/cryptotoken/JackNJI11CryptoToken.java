@@ -2,9 +2,14 @@ package org.cesecore.keys.token.p11ng.cryptotoken;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -16,6 +21,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -70,6 +76,8 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
+    private static final int KAK_SIZE = 2048;
+    
     public static final String SLOT_LABEL_VALUE = "slotLabelValue";
     public static final String SLOT_LABEL_TYPE = "slotLabelType";
     public static final String SHLIB_LABEL_KEY = "sharedLibrary";
@@ -232,6 +240,13 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
 
     @Override
+    public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
+        final PrivateKey privateKey = getPrivateKey(alias);
+        final PublicKey publicKey = getPublicKey(alias);
+        testKeyPair(alias, publicKey, privateKey);
+    }
+    
+    @Override
     public void generateKeyPair(String keySpec, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
         log.info("Generating Key Pair...");
         final Map<Long, Object> publicAttributesMap = new HashMap<>();
@@ -243,9 +258,8 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             log.error("Dummy certificate generation failed. Objects might still have been created in the device: ", ex);
             System.err.println("Dummy certificate generation failed. Objects might still have been created in the device: " + ex.getMessage());
         }
-
     }
-
+    
     @Override
     public void generateKeyPair(AlgorithmParameterSpec spec, String alias)
             throws InvalidAlgorithmParameterException, CertificateException, IOException, CryptoTokenOfflineException {
@@ -409,6 +423,5 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             return this.result;
         }
     }
-    
     
 }
