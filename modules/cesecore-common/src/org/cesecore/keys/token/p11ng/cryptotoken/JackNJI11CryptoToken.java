@@ -151,7 +151,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     @Override
     public void activate(char[] authenticationcode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         log.info("Activating CP5 token...");
-        log.info("State before login: " + this.slot.toString());
+        log.info("State before login: " + this.slot);
         if (this.slot == null) {
             throw new CryptoTokenOfflineException("Slot not initialized.");
         }
@@ -237,17 +237,8 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         final Map<Long, Object> publicAttributesMap = new HashMap<>();
         final Map<Long, Object> privateAttributesMap = new HashMap<>();
         try {
-            slot.generateKeyPair("RSA", "2048", alias, false, publicAttributesMap, privateAttributesMap, new CryptokiDevice.CertificateGenerator() {
-                @Override
-                public X509Certificate generateCertificate(KeyPair keyPair, Provider provider)
-                        throws OperatorCreationException, CertificateException {
-                    try {
-                        return getSelfCertificate("CN=Dummy certificate created by a CESeCore application", (long) 30 * 24 * 60 * 60 * 365, AlgorithmTools.SIG_ALGS_RSA, keyPair);
-                    } catch (InvalidKeyException e) {
-                        throw new KeyCreationException("Dummy certificate chain was created with an invalid key" , e);
-                    }
-                }
-            }, true);
+            slot.generateKeyPair("RSA", "2048", alias, true, publicAttributesMap, privateAttributesMap, null, false);
+            log.debug("Successfully generated key pair");
         } catch (CertificateException | OperatorCreationException ex) {
             log.error("Dummy certificate generation failed. Objects might still have been created in the device: ", ex);
             System.err.println("Dummy certificate generation failed. Objects might still have been created in the device: " + ex.getMessage());
