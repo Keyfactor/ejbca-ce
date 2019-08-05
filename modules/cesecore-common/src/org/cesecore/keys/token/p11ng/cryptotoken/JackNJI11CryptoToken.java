@@ -1,29 +1,18 @@
 package org.cesecore.keys.token.p11ng.cryptotoken;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -35,17 +24,8 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.operator.BufferingContentSigner;
-import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -57,10 +37,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
-import org.cesecore.keys.util.ISignOperation;
-import org.cesecore.keys.util.SignWithWorkingAlgorithm;
-import org.cesecore.keys.util.TaskWithSigningException;
-import org.cesecore.util.CertTools;
 
 /**
  * 
@@ -361,67 +337,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             }
         }
         return ret;
-    }
-
-    // TODO Copied from KeyStoreTools. Should be able to unify
-    private X509Certificate getSelfCertificate(String myname, long validity, List<String> sigAlgs, KeyPair keyPair) throws InvalidKeyException,
-        CertificateException {
-        final long currentTime = new Date().getTime();
-        final Date firstDate = new Date(currentTime - 24 * 60 * 60 * 1000);
-        final Date lastDate = new Date(currentTime + validity * 1000);
-        final X500Name issuer = new X500Name(myname);
-        final BigInteger serno = BigInteger.valueOf(firstDate.getTime());
-        final PublicKey publicKey = keyPair.getPublic();
-        if (publicKey == null) {
-            throw new InvalidKeyException("Public key is null");
-        }
-
-        try {
-            final X509v3CertificateBuilder cb = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
-            final CertificateSignOperation cso = new CertificateSignOperation(keyPair.getPrivate(), cb);
-            SignWithWorkingAlgorithm.doSignTask(sigAlgs, getSignProviderName(), cso);
-            final X509CertificateHolder cert = cso.getResult();
-            if ( cert==null ) {
-                throw new CertificateException("Self signing of certificate failed.");
-            }
-            return CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
-        } catch (TaskWithSigningException e) {
-            log.error("Error creating content signer: ", e);
-            throw new CertificateException(e);
-        } catch (IOException e) {
-            throw new CertificateException("Could not read certificate", e);
-        } catch (NoSuchProviderException e) {
-            throw new CertificateException(String.format("Provider '%s' does not exist.", getSignProviderName()), e);
-        }
-    }
-    // TODO Copied from KeyStoreTools. Should be able to unify
-    private class CertificateSignOperation implements ISignOperation {
-
-        final private PrivateKey privateKey;
-        final private X509v3CertificateBuilder certificateBuilder;
-        private X509CertificateHolder result;
-
-        public CertificateSignOperation(
-                final PrivateKey pk,
-                final X509v3CertificateBuilder cb) {
-            this.privateKey = pk;
-            this.certificateBuilder = cb;
-        }
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void taskWithSigning(String sigAlg, Provider provider) throws TaskWithSigningException {
-            log.debug("Keystore signing algorithm " + sigAlg);
-            final ContentSigner signer;
-            try {
-                signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider.getName()).build(this.privateKey), 20480);
-            } catch (OperatorCreationException e) {
-                throw new TaskWithSigningException(String.format("Signing certificate failed: %s", e.getMessage()), e);
-            }
-            this.result = this.certificateBuilder.build(signer);
-        }
-        public X509CertificateHolder getResult() {
-            return this.result;
-        }
     }
     
 }

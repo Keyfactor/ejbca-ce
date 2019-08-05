@@ -831,28 +831,28 @@ public class CryptokiDevice {
                     LOG.debug("Generated public key: " + publicKeyRef.value + " and private key: " + privateKeyRef.value);
                 }
 
-                CKA publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.MODULUS);
+                if (certGenerator != null) {
+                    CKA publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.MODULUS);
+    
+                    final byte[] modulusBytes = publicValue.getValue();
+    
+                    publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.PUBLIC_EXPONENT);
+                    final byte[] publicExponentBytes = publicValue.getValue();
+    
+                    final BigInteger n = new BigInteger(1, modulusBytes);
+                    final BigInteger e = new BigInteger(1, publicExponentBytes);
+                    try {
+                        RSAPublicKey publicKey = new RSAPublicKey(n, e);
+    
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Public key: " + Base64.toBase64String(publicKey.getEncoded()));
+                        }
+    
+                        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                        PublicKey pubKey = keyFactory.generatePublic(new X509EncodedKeySpec(new SubjectPublicKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption), publicKey.getEncoded()).getEncoded())); // TODO: Maybe not the shortest
+    
+                        KeyPair keyPair = new KeyPair(pubKey, new NJI11StaticSessionPrivateKey(session, privateKeyRef.value, this, false));
 
-                final byte[] modulusBytes = publicValue.getValue();
-
-                publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.PUBLIC_EXPONENT);
-                final byte[] publicExponentBytes = publicValue.getValue();
-
-                final BigInteger n = new BigInteger(1, modulusBytes);
-                final BigInteger e = new BigInteger(1, publicExponentBytes);
-                try {
-                    RSAPublicKey publicKey = new RSAPublicKey(n, e);
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Public key: " + Base64.toBase64String(publicKey.getEncoded()));
-                    }
-
-                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                    PublicKey pubKey = keyFactory.generatePublic(new X509EncodedKeySpec(new SubjectPublicKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption), publicKey.getEncoded()).getEncoded())); // TODO: Maybe not the shortest
-
-                    KeyPair keyPair = new KeyPair(pubKey, new NJI11StaticSessionPrivateKey(session, privateKeyRef.value, this, false));
-
-                    if (certGenerator != null) {
                         X509Certificate cert = certGenerator.generateCertificate(keyPair, provider); // Note: Caller might want to store the certificate so we need to call this even if storeCertificate==false
                         
                         if (storeCertificate) {
@@ -867,9 +867,9 @@ public class CryptokiDevice {
                             };
                             c.CreateObject(session, cert0Template);
                         }
+                    } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException ex) {
+                        throw new RuntimeException(ex); // TODO
                     }
-                } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException ex) {
-                    throw new RuntimeException(ex); // TODO
                 }
                 
                 // remove negative (empty) cached search results if exists as key is created actually now
