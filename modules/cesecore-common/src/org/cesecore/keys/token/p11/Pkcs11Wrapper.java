@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 public class Pkcs11Wrapper {
     private static final Logger log = Logger.getLogger(Pkcs11Wrapper.class);
 
-    private static volatile Map<String, Pkcs11Wrapper> instances = new HashMap<String, Pkcs11Wrapper>();
+    private static volatile Map<String, Pkcs11Wrapper> instances = new HashMap<>();
     private static final Lock lock = new ReentrantLock();
     private final Method getSlotListMethod;
     private final Method getTokenInfoMethod;
@@ -134,7 +134,7 @@ public class Pkcs11Wrapper {
             log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
-        this.labelMap = new HashMap<Long, char[]>();
+        this.labelMap = new HashMap<>();
         this.slotList = C_GetSlotList();
         for( long id : this.slotList) {
             this.labelMap.put(Long.valueOf(id), getTokenLabelLocal(id));
