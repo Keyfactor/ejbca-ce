@@ -22,6 +22,7 @@ public class P11NGStoreConstants {
     public static final String CKA_SUBJECT = "SUBJECT";
     public static final String CKA_VALUE = "VALUE";
 
+    public static final String CKO_PUBLIC_KEY = "PUBLIC_KEY";
     public static final String CKO_PRIVATE_KEY = "PRIVATE_KEY";
     public static final String CKO_SECRET_KEY = "SECRET_KEY";
     public static final String CKO_CERTIFICATE = "CERTIFICATE";
