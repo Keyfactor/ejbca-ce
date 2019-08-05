@@ -305,6 +305,7 @@ public class CryptokiDevice {
                     return null;
                 }
             } else {
+                // In this case, we assume the private/public key has the alias in the ID attribute
                 privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));
                 if (privateKeyRefs.length > 1) {
                     LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
@@ -329,31 +330,24 @@ public class CryptokiDevice {
                 LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
             }
           
-            final CKA ckaId;
+            final byte[] publicKeyId;
             if (certificateRefs.length > 0) {
-                ckaId = getAttributeCertificateID(session, certificateRefs[0]);
-            } else {
-                final long[] privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));
-                if (privateKeyRefs.length == 0) {
-                    LOG.warn("No public key found for alias " + alias);
-                    return null;
-                } else if (privateKeyRefs.length > 1) {
-                    LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
+                final CKA ckaId = getAttributeCertificateID(session, certificateRefs[0]);
+                if (ckaId == null) {
+                    LOG.warn("Missing ID attribute on object with label " + alias);
                     return null;
                 }
-                // TODO use cache?
-                ckaId = c.GetAttributeValue(session, privateKeyRefs[0], CKA.ID);
+                publicKeyId = ckaId.getValue();
+            } else {
+                // In this case, we assume the private/public key has the alias in the ID attribute
+                publicKeyId = alias.getBytes(StandardCharsets.UTF_8);
             }
-            if (ckaId == null) {
-                LOG.warn("Missing ID attribute on object with label " + alias);
-                return null;
-            }
-            final long[] publicKeyRefs = findPublicKeyObjectsByID(session, ckaId.getValue());
+            final long[] publicKeyRefs = findPublicKeyObjectsByID(session, publicKeyId);
             if (publicKeyRefs.length == 0) {
                 // A missing public key is fine, since you can have a certificate + private key instead
                 return null;
             } else if (publicKeyRefs.length > 1) {
-                LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
+                LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(publicKeyId));
                 return null;
             }
             if (LOG.isDebugEnabled()) {
@@ -1240,8 +1234,8 @@ public class CryptokiDevice {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Stored CA certificate object: " + newCertRef);
                         }
-                }
                     }
+                }
             } catch (CertificateEncodingException ex) {
                 throw new IllegalArgumentException(ex);
             } finally {
@@ -1263,7 +1257,10 @@ public class CryptokiDevice {
                 }
 
                 if (certificateRefs.length < 1) {
-                    throw new IllegalArgumentException("No such key");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Certificate with this alias does not exist: " + alias);
+                    }
+                    return null;
                 }
                 
                 CKA ckaValue = c.GetAttributeValue(session, certificateRefs[0], CKA.VALUE);
@@ -1523,6 +1520,9 @@ public class CryptokiDevice {
                 certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
             }
             
+            if (certificateRefs.length > 1) {
+                LOG.warn("More than one certificate object with label " + alias);
+            }
             return certificateRefs;
         }
 
