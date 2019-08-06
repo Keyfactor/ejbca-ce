@@ -104,16 +104,13 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFileName, libraryFileDir);
         device.getSlots();
         if (slotLabelType == Pkcs11SlotLabelType.SLOT_NUMBER) {
-            //            TODO add support
-            //            this.slot = device.getSlot(Long.valueOf(slotLabelValue)); <---- SignServer way of doing it
-            throw new UnsupportedOperationException("Slot by label not supported for this Crypto Tokne Type");
+            slot = device.getSlot(Long.valueOf(sSlotLabel));
         } else if (slotLabelType == Pkcs11SlotLabelType.SLOT_INDEX) {
             // Removing 'i' e.g. from 'i0'
             final String slotIndex = sSlotLabel.substring(1, sSlotLabel.length());
-            this.slot = device.getSlotByIndex(Integer.valueOf(slotIndex));
+            slot = device.getSlotByIndex(Integer.valueOf(slotIndex));
         } else {
-            //          TODO Fix. Note: Throwing exception here will fail loading this class on deployment
-            log.info("Unknown slot label reference type");
+            slot = device.getSlotByLabel(sSlotLabel);
         }
         
         if (slot == null) {
