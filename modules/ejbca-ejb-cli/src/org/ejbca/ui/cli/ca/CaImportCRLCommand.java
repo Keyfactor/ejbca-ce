@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509CRL;
@@ -36,6 +37,9 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -49,9 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
@@ -162,8 +164,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                             continue;
                         }
                         final Date time = new Date(); // time from which certificate is valid
-                        final KeyPair key_pair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-
+                        KeyPair key_pair = getStaticRSAKeyPair();
                         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(key_pair.getPublic().getEncoded());
                         final X500Name dnName = new X500Name("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
                         final Date notAfter = new Date(time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10); // 10 years of life
@@ -294,4 +295,53 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
     protected Logger getLogger() {
         return log;
     }
+    
+    public static final String STATIC_KEY_RSA_PRIV =
+            "-----BEGIN RSA PRIVATE KEY-----\n" +
+            "MIIEogIBAAKCAQEAy0d3OgaScTQrYT2ujMYESueWv4Iz7OnuuX17tYvlSYpEc75I\n" +
+            "xPexlt0hXFneqi7MC787tXfD7ZJCNbXT1YP9bd4+pOhBONR3Mwg01Ig1sZ9826Vo\n" +
+            "1NR4YxO+NFi1noV8qUVsGV5NBs7i/R6lJIcO05KFa1JCYShETl+V9RMg6zEekJNS\n" +
+            "9Ds6lzFuudwOnz/8ldZ85iZxG7ssbDI5zz3FDJ1HOSofJ8llP6D97nYJBf/kXmPu\n" +
+            "G3KE9pF9Cto3KkPViDbTmuwx2RfISvdqbJESTvcPhk4K7J+yx2XwIFjzAT6SGP4I\n" +
+            "NDnNGXt79PUyefXWzIqyafOXDD/JPkaMCEN/0wIDAQABAoIBAFGvOxK/F1OUEiZ2\n" +
+            "IdEBtTHgU+xKxtDZxAsXiIGQYKenfxA/k4BKxDsKSuCQYHBkc6v4wWaPZNTvY9mv\n" +
+            "Yhs3ebwPhX7AsYzDm86O6qPIxELHAuZEVpbHdkTh5xmj1/+GRmzCr8iV4z/sHLx3\n" +
+            "9wZxmxybkS9qE7B0/NW9hUXA1QaMs13uPsaQnYStoeyaGTp8fqNImTxUOWkYFS1C\n" +
+            "D7guA5Pq3SoUm9PEy5dv0GyE5oXEDnLOmQIzdftilzleY4Zxe8BiqWf4k5FJiLQI\n" +
+            "T1PUQaqtf3Ei6WykQnUuX5iHyS8hkKbOfQFc88uEjKUVAPUMyMcSLWB9mPwDJfB0\n" +
+            "d0KXriECgYEA+SMRzeAUL+MmE+PsAFeQtFiRKFsLBU3SrUyIQYRwNl4upV7CAvdZ\n" +
+            "J1ipPkDxvuJt12Tpcw3I6VRsWy2Sdu881ue2/AJ7wj0HrYGnNkr1Zqv76LbeXWTI\n" +
+            "8E/aFIu0Z+is+F/iigyVe//roMN+l5S/HX6TeJKxV+pS5ahplS5TtwMCgYEA0OEA\n" +
+            "9rfKV6up2SqRU8TiBisjl/pePEQZkKgpnYQcOyGBAQL5Zk60Cqa/Xm04NCTPJPyK\n" +
+            "Qm5aD1y7c0526vIj0LJrs9X5AmqBN5f4SMbx/L0g8gAMCvjn4wwS2qX7K0mc92Ff\n" +
+            "9/qJizxq8cJO5RC6H3t9OWgZuasWBMRGye4yEvECgYBdL3ncWIEUfFDkxa6jXh1Y\n" +
+            "53u77XnMzRQNEAAzCVdzbnziC/RjaaMmLWp4R5BkhorxMuSCzVglthclb4FGDSvj\n" +
+            "ch4mWsNxnqQ9iK5Dh3wMoC2EGMpJgoYKJMP8RVkAOK5h5HN2kUhkbg/zPMwf5For\n" +
+            "rQl54tyEdrf1AK4lR4O2gwKBgA6CElcQnPVJ7xouYrm2yxwykt5TfYgiEsSBaaKP\n" +
+            "MobI5PT1B+2bOdYjjtc4LtcwV1LyV4gVshuvDTYNFSVsfCBaxDBRhGIuk5sQ6yXi\n" +
+            "65vqZwdoCW4Zq8GRbR3SuYdgLY7hLJFEzZjmMWdpX6F5b/QP17rNCDxlLbpXB7Ou\n" +
+            "37uBAoGAFQSOOBpuihRekEHhkQdu8p1HrPxEhXPrzWvLrOjIezRU9/3oU32cfKS/\n" +
+            "LflobGIhsqsQzdAtpfZdEZmRq6hPQ4tw+6qaql5a5164AteOrq6UjMLuuxJyGVNQ\n" +
+            "qB53/QNbrXSLAf100bBgotfutynTW4f37t0IPGG7i+44wEdj6gU=\n" +
+            "-----END RSA PRIVATE KEY-----\n";
+
+    private static KeyPair staticKp = null;
+    private KeyPair getStaticRSAKeyPair() {
+        if (staticKp == null) {
+            synchronized (this) {
+                if (staticKp == null) {
+                    final StringReader reader = new StringReader(CaImportCRLCommand.STATIC_KEY_RSA_PRIV);
+                    try (PEMParser pemParser = new PEMParser(reader)) {
+                        PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
+                        JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                        staticKp = keyConverter.getKeyPair(pemKeyPair);
+                    } catch (IOException e) {
+                        throw new IllegalStateException("IOException parsing hard coded presign key. This should never happen: ", e);
+                    }
+                }
+            }
+        }
+        return staticKp;
+    }
+
 }
