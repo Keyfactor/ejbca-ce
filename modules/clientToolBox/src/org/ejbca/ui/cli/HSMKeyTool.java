@@ -595,8 +595,6 @@ public class HSMKeyTool extends ClientToolBox {
                     final ASN1ObjectIdentifier sanOid = new ASN1ObjectIdentifier(Extension.issuerAlternativeName.getId());
                     final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSANBytes);
                     extgen.addExtension(sanOid, criticalOids.contains(Extension.issuerAlternativeName.getId()), ASN1Primitive.fromByteArray(str.getOctets()));
-                } else {
-                    System.err.println("Warning: The old certificate doesn't have any Subject Alternative Name. The link certificate will not have any Issuer Alternative Name.");
                 }
 
                 // Add extensions to the certificate
