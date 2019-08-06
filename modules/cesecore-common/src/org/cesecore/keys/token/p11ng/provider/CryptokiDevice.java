@@ -12,6 +12,10 @@ package org.cesecore.keys.token.p11ng.provider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -80,6 +84,7 @@ import org.pkcs11.jacknji11.CKR;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.CKU;
 import org.pkcs11.jacknji11.CK_SESSION_INFO;
+import org.pkcs11.jacknji11.CK_TOKEN_INFO;
 import org.pkcs11.jacknji11.LongRef;
 
 import com.sun.jna.Memory;
@@ -101,6 +106,7 @@ public class CryptokiDevice {
     private final JackNJI11Provider provider;
     private final ArrayList<Slot> slots = new ArrayList<>();
     private final HashMap<Long, Slot> slotMap = new HashMap<>();
+    private final HashMap<String, Slot> slotLabelMap = new HashMap<>();
     
     private static final int MAX_CHAIN_LENGTH = 100;
     
@@ -132,10 +138,23 @@ public class CryptokiDevice {
             Slot s = new Slot(slotId);
             slots.add(s);
             slotMap.put(slotId, s);
+            final CK_TOKEN_INFO tokenInfo = c.GetTokenInfo(slotId);
+            try {
+                slotLabelMap.put(decodeUtf8(tokenInfo.label).trim(), s);
+            } catch (CharacterCodingException e) {
+                LOG.info("Label of slot " + slotId + " / index " + slots.size() + " could not be parsed as UTF-8. This slot/token must be referenced by index or ID");
+            }
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("slots: " + slots);
         }
+    }
+    
+    private String decodeUtf8(final byte[] bytes) throws CharacterCodingException {
+        final CharsetDecoder cd = StandardCharsets.UTF_8.newDecoder();
+        cd.onMalformedInput(CodingErrorAction.REPORT);
+        cd.onUnmappableCharacter(CodingErrorAction.REPORT);
+        return cd.decode(ByteBuffer.wrap(bytes)).toString();
     }
     
     public Slot getSlot(final Long slotId) {
@@ -144,6 +163,10 @@ public class CryptokiDevice {
     
     public Slot getSlotByIndex(final int slotIndex) {
         return slots.get(slotIndex);
+    }
+
+    public Slot getSlotByLabel(final String slotLabel) {
+        return slotLabelMap.get(slotLabel);
     }
     
     public List<Slot> getSlots() {
