@@ -53,7 +53,8 @@ public class CvcGetChainCommand extends EJBCAWSRABaseCommand implements IAdminCo
 	 * @throws IllegalAdminCommandException Error in command args
 	 * @throws ErrorAdminCommandException Error running command
 	 */
-	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+	@Override
+    public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {   
 			if(args.length < 3 || args.length > 3){
@@ -93,11 +94,15 @@ public class CvcGetChainCommand extends EJBCAWSRABaseCommand implements IAdminCo
 		}
 	}
 
-	protected void usage() {
-		getPrintStream().println("Command used to get the certificate chain for a user. The users last issued certificate is returned, according to the certificate validity date. If two certificates have the exact same issue date the order is indefined.");
+	@Override
+    protected void usage() {
+        getPrintStream().println(
+                "Command used to get the certificate chain for a user. The users last issued certificate is returned, "
+                        + "according to the certificate validity date. If two certificates have the exact same issue date the "
+                        + "order is undefined.");
 		getPrintStream().println("Usage : cvcgetchain <username> <basefilename>\n");
-		getPrintStream().println("The certificates are written to <basefilename><order>.cvcert. Order nr 1 is the users certificate, followed by the CAs certificates.");
+        getPrintStream().println(
+                "The certificates are written to <basefilename><order>.cvcert. Order nr 1 is the user's certificate, "
+                        + "followed by the CA's certificates.");
 	}
-
-
 }
