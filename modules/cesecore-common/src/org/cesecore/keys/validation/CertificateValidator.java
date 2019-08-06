@@ -32,7 +32,7 @@ public interface CertificateValidator extends Validator, ValidityAwareValidator,
      *
      * @param ca the issuing CA.
      * @param externalScriptsWhitelist
-     * @param certifcate the certificate to validate.
+     * @param certificate the certificate to validate.
      * @param whitelist a whitelist containing all scripts permitted to be executed
      * @return the error messages or an empty list if the certificate was validated successfully.
      * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example CVC certificate instead of X.509 or other type
