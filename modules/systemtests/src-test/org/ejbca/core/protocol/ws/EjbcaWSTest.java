@@ -2429,7 +2429,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             caname = "Test-Import-CSCA";
             final byte[] updateFile = readDerFile("external_csca_certificate_for_update.der");
             ejbcaraws.updateCaCert(caname, updateFile);
-            // Optional change of serialNumber could be checked here, but is stored in the CVCs key sequence ...
             cainfo = caSession.getCAInfo(intAdmin, caname);
             assertCertificateEquals("The updated CA certificate chain must replace the existing CA certificate chain.", updateFile, cainfo);
 

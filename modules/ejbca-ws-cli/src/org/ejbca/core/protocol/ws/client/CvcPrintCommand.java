@@ -130,7 +130,7 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	protected void usage() {
 		getPrintStream().println("Command used to pretty print a CVC certificate or request.");
 		getPrintStream().println("Usage : cvcprint <filename> [verifycert] [CVCA-certificate for EC params]\n\n");
-		getPrintStream().println("If adding the optional parameter verifycert the program tries to verify a certifcate given as filename with the certificate given as verifycert.");
+		getPrintStream().println("If adding the optional parameter verifycert the program tries to verify a certificate given as filename with the certificate given as verifycert.");
 		getPrintStream().println("If verifying an IS cert with a DV cert no curve parameters exist in the public key in the certificate, you can therefore add the CVCA certificate to complete the public key.");
 	}
 

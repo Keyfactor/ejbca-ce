@@ -898,7 +898,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void migrateDatabase660() throws UpgradeFailedException {
         log.debug("migrateDatabase660: Upgrading roles with approval rules");
-        // Any roles with access to /ca_functionality/view_certifcate_profiles should be given /ca_functionality/view_approval_profiles
+        // Any roles with access to /ca_functionality/view_certificate_profiles should be given /ca_functionality/view_approval_profiles
         legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
                 Arrays.asList(StandardRules.CERTIFICATEPROFILEVIEW.resource()), Arrays.asList(StandardRules.APPROVALPROFILEVIEW.resource()), false);
         // Any roles with access to /ca_functionality/edit_certificate_profiles should be given /ca_functionality/edit_approval_profiles

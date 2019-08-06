@@ -229,24 +229,24 @@ public class EndEntityAccessSessionTest extends CaTestCase {
                 EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId(caName));
             
             // 1. Search for user with no certificates at all.
-            assertFindCertifcateResults(alwaysAllowToken, username, 0, 0);
+            assertFindCertificateResults(alwaysAllowToken, username, 0, 0);
             
             // 1.1 Search for user with 1 valid certificate.
             certificate1 = createCertificateForUser(alwaysAllowToken, username);
-            assertFindCertifcateResults(alwaysAllowToken, username, 1, 0);
+            assertFindCertificateResults(alwaysAllowToken, username, 1, 0);
 
             // 1.2 Search for user with 2 valid certificates.
             EndEntityInformation user = endEntityAccessSession.findUser(alwaysAllowToken, username);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSessionRemote.changeUser(alwaysAllowToken, user, false);
             certificate2 = createCertificateForUser(alwaysAllowToken, username);
-            assertFindCertifcateResults(alwaysAllowToken, username, 2, 0);
+            assertFindCertificateResults(alwaysAllowToken, username, 2, 0);
             
             // 1.3 Search for user with valid or unvalid certificates.
             endEntityManagementSessionRemote.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(certificate1), caInfo.getSubjectDN(), RevocationReasons.UNSPECIFIED.ordinal());
-            assertFindCertifcateResults(alwaysAllowToken, username, 2, 1);
+            assertFindCertificateResults(alwaysAllowToken, username, 2, 1);
             endEntityManagementSessionRemote.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(certificate2), caInfo.getSubjectDN(), RevocationReasons.UNSPECIFIED.ordinal());
-            assertFindCertifcateResults(alwaysAllowToken, username, 2, 2);
+            assertFindCertificateResults(alwaysAllowToken, username, 2, 2);
             
             // 2. Test exceptions thrown.
             AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken((X509Certificate) certificate1);
@@ -328,7 +328,7 @@ public class EndEntityAccessSessionTest extends CaTestCase {
     }
     
     
-    private void assertFindCertifcateResults(final AuthenticationToken admin, final String username, final int valid, final int invalid) throws Exception {
+    private void assertFindCertificateResults(final AuthenticationToken admin, final String username, final int valid, final int invalid) throws Exception {
         Collection<CertificateWrapper> result = endEntityAccessSession.findCertificatesByUsername(alwaysAllowToken, username, false, System.currentTimeMillis());
         assertEquals("Certificate search for user with " + valid + " certificate(s) should return a collection with " + valid + " item(s) (valid=false).", valid , result.size());
         result = endEntityAccessSession.findCertificatesByUsername(alwaysAllowToken, username, true, System.currentTimeMillis());
