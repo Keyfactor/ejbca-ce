@@ -28,7 +28,11 @@ public interface CryptoTokenSessionLocal extends CryptoTokenSession {
      * Throws RuntimeException if allow.nonexisting.slot=false (default) and a PKCS#11 slot does not exist. */
     CryptoToken getCryptoToken(int cryptoTokenId);
 
-    /** Add the specified CryptoToken to the database and return the id used to store it */
+    /** Add the specified CryptoToken to the database if it does not exist, or edit the CryptoToken if it exists.
+     * Has an optimization that if the CryptoToken exists and is not changed from what already exists in the database, no change is made.
+     * This optimization prevents other cluster nodes to reload the crypto token (can be a PKCS#11 token) when there is no need.
+     * @param cryptoToken the crypto token data to add or edit
+     * @return the crypto token ID used to store it. */
     int mergeCryptoToken(CryptoToken cryptoToken) throws CryptoTokenNameInUseException;
 
     /** Remove the specified CryptoToken from the database. 
