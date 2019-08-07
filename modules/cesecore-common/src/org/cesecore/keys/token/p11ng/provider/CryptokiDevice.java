@@ -74,6 +74,7 @@ import org.cesecore.keys.token.p11ng.GetAttributeValueCallParamsHolder;
 import org.cesecore.keys.token.p11ng.P11NGSlotStore;
 import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
 import org.cesecore.keys.token.p11ng.TokenEntry;
+import org.cesecore.keys.util.KeyTools;
 import org.pkcs11.jacknji11.CEi;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKC;
@@ -184,7 +185,7 @@ public class CryptokiDevice {
         public synchronized boolean isUseCache() {
             return useCache;
         }
-
+        
         //TODO Can probably be removed. Unused.
         public long getKeyIfExists(final String alias) {
             Long session = null;
@@ -656,22 +657,21 @@ public class CryptokiDevice {
 
         public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey) {
             //TODO Shouldn't be hard coded?
-            final int KAK_SIZE = 2048;
             final int KAK_PUBLIC_EXP_BUF_SIZE = 3;
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
             final int HASH_SIZE = 32;
             Long session = null;
             try {
                 session = aquireSession();
-            
-                Key kakPublicKey = keyAuthorizationKey.getPublic();
-                Key kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
+                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
                 
                 RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
                 BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
                 BigInteger kakModulus = publicSpec.getModulus();
                 
-                byte[] kakModBuf = new byte[bitsToBytes(KAK_SIZE)];
+                byte[] kakModBuf = new byte[bitsToBytes(kakLength)];
                 byte[] kakPubExpBuf = new byte[KAK_PUBLIC_EXP_BUF_SIZE];
                 
                 int kakModLen = kakModulus.toByteArray().length;
@@ -707,15 +707,20 @@ public class CryptokiDevice {
                 
                 byte[] hash = new byte[HASH_SIZE];
                 long hashLen = hash.length;
-                // Getting the key if it exist on the HSM slot with the provided alias
+                // Getting the key to initialize and associate with KAK if it exist on the HSM slot with the provided alias.
                 long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
-                LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                if (privateKeyObjects.length == 0) {
+                    throw new IllegalStateException("No private key found for alias '" + alias + "'");
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                }
                 long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
                 if (rvAuthorizeKeyInit != CKR.OK) {
                     throw new CKRException(rvAuthorizeKeyInit);
                 }
     
-                byte[] initSig = new byte[bitsToBytes(KAK_SIZE)];
+                byte[] initSig = new byte[bitsToBytes(kakLength)];
                 try {
                     initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey);
                 } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
@@ -735,8 +740,6 @@ public class CryptokiDevice {
         }
         
         public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount) {
-            //TODO Shouldn't be hard coded?
-            final int KAK_SIZE = 2048;
             final int HASH_SIZE = 32;
 
             Long session = null;
@@ -751,18 +754,24 @@ public class CryptokiDevice {
                 byte[] hash = new byte[HASH_SIZE];
                 long hashLen = hash.length;
                 
-                // Getting the key if it exist on the slot with the provided alias
+                // Getting the key to authorize if it exist on the slot with the provided alias
                 long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
-                LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                if (privateKeyObjects.length == 0) {
+                    throw new IllegalStateException("No private key found for alias '" + alias + "'");
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                }
                 
                 long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
                 if (rvAuthorizeKeyInit != CKR.OK) {
                     throw new CKRException(rvAuthorizeKeyInit);
                 }
                 
-                // Here obtain the private key created in the previous init part
-                Key kakPrivateKey = keyAuthorizationKey.getPrivate();
-                byte[] authSig = new byte[bitsToBytes(KAK_SIZE)];
+                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
+                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
+                byte[] authSig = new byte[bitsToBytes(kakLength)];
                 try {
                     authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey);
                 } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
