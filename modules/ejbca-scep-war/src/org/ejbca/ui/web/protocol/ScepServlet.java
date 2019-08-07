@@ -292,7 +292,6 @@ public class ScepServlet extends HttpServlet {
                  "SHA-1"               CA Supports the SHA-1 hashing algorithm.
                  "DES3"                CA Supports the Triple-DES encryption algorithm.                     
                  */
-                // We do not support 3DES as of now, so we leave that out
                 log.debug("Got SCEP GetCACaps request");
                 response.setContentType("text/plain");
                 response.getOutputStream().print(new String(dispatchResponse));
