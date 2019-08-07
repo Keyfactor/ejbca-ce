@@ -279,19 +279,20 @@ public class ScepServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "No rollover certificate found for this CA.");
                 }
             } else if (operation.equals("GetCACaps")) {
-                // The response for GetCACaps is a <lf> separated list of capabilities
+                // The response for GetCACaps is a <lf> separated list of capabilities, from draft-nourse-scep-23
 
                 /*
                  "GetNextCACert"       CA Supports the GetNextCACert message.
                  "POSTPKIOperation"    PKIOPeration messages may be sent via HTTP POST.
-                 "SHA-1"               CA Supports the SHA-1 hashing algorithm in 
-                                       signatures and fingerprints.  If present, the
-                                       client SHOULD use SHA-1.  If absent, the client
-                                       MUST use MD5 to maintain backward compatability.
                  "Renewal"             Clients may use current certificate and key to
                                        authenticate an enrollment request for a new
                                        certificate.  
+                 "SHA-512"             CA Supports the SHA-512 hashing algorithm.
+                 "SHA-256"             CA Supports the SHA-256 hashing algorithm.
+                 "SHA-1"               CA Supports the SHA-1 hashing algorithm.
+                 "DES3"                CA Supports the Triple-DES encryption algorithm.                     
                  */
+                // We do not support 3DES as of now, so we leave that out
                 log.debug("Got SCEP GetCACaps request");
                 response.setContentType("text/plain");
                 response.getOutputStream().print(new String(dispatchResponse));

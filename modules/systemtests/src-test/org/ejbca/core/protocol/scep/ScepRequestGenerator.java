@@ -28,7 +28,6 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -98,17 +97,17 @@ public class ScepRequestGenerator {
     }
 
     public byte[] generateCrlReq(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey) throws CertificateEncodingException, CMSException, IOException {
+            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
         this.cacert = ca;
         this.reqdn = dn;
         X500Name name = CertTools.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
-        return wrap(ias.getEncoded(), "22", transactionId, senderCertificate, signatureKey);        
+        return wrap(ias.getEncoded(), "22", transactionId, senderCertificate, signatureKey, encryptionAlg);        
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey) throws IOException, OperatorCreationException, CertificateException, CMSException {
+            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws IOException, OperatorCreationException, CertificateException, CMSException {
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // Requested extensions attribute
@@ -122,11 +121,11 @@ public class ScepRequestGenerator {
             throw new IllegalArgumentException("error encoding value: " + e);
         }
         extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(bOut.toByteArray()));
-        return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey);
+        return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, encryptionAlg);
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, Extensions exts,
-            final X509Certificate senderCertificate, final PrivateKey signatureKey) throws OperatorCreationException, CertificateException,
+            final X509Certificate senderCertificate, final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws OperatorCreationException, CertificateException,
             IOException, CMSException {
         this.cacert = ca;
         this.reqdn = dn;
@@ -158,11 +157,11 @@ public class ScepRequestGenerator {
                 CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // wrap message in pkcs#7
-        return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey);
+        return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey, encryptionAlg);
     }
 
     public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey) throws NoSuchAlgorithmException,
+            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws NoSuchAlgorithmException,
             NoSuchProviderException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException {
         this.cacert = ca;
         this.reqdn = dn;
@@ -177,14 +176,22 @@ public class ScepRequestGenerator {
         DERSequence seq = new DERSequence(vec);
 
         // wrap message in pkcs#7
-        return wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey);
+        return wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey, encryptionAlg);
     }
     
-    private CMSEnvelopedData envelope(CMSTypedData envThis) throws CMSException, CertificateEncodingException {
+    /**
+     * 
+     * @param envThis
+     * @param encryptionAlg SMIMECapability.dES_CBC (DES) or SMIMECapability.dES_EDE3_CBC (3DES)
+     * @return
+     * @throws CMSException
+     * @throws CertificateEncodingException
+     */
+    private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
         // Envelope the CMS message
         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cacert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
-        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(encryptionAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
         CMSEnvelopedData ed = edGen.generate(envThis, jceCMSContentEncryptorBuilder.build());
         return ed;
     }
@@ -244,12 +251,12 @@ public class ScepRequestGenerator {
     }
 
     private byte[] wrap(byte[] envBytes, String messageType, String transactionId, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey) throws CertificateEncodingException, CMSException, IOException {
+            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
 
         // 
         // Create inner enveloped data
         //
-        CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes));
+        CMSEnvelopedData ed = envelope(new CMSProcessableByteArray(envBytes), encryptionAlg);
         log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
         CMSTypedData msg = new CMSProcessableByteArray(ed.getEncoded());
         //
