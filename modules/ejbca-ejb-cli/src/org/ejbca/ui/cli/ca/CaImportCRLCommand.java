@@ -296,7 +296,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
         return log;
     }
     
-    public static final String STATIC_KEY_RSA_PRIV =
+    private static final String STATIC_KEY_RSA_PRIV =
             "-----BEGIN RSA PRIVATE KEY-----\n" +
             "MIIEogIBAAKCAQEAy0d3OgaScTQrYT2ujMYESueWv4Iz7OnuuX17tYvlSYpEc75I\n" +
             "xPexlt0hXFneqi7MC787tXfD7ZJCNbXT1YP9bd4+pOhBONR3Mwg01Ig1sZ9826Vo\n" +
@@ -329,15 +329,13 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
     private KeyPair getStaticRSAKeyPair() {
         if (staticKp == null) {
             synchronized (this) {
-                if (staticKp == null) {
-                    final StringReader reader = new StringReader(CaImportCRLCommand.STATIC_KEY_RSA_PRIV);
-                    try (PEMParser pemParser = new PEMParser(reader)) {
-                        PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
-                        JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-                        staticKp = keyConverter.getKeyPair(pemKeyPair);
-                    } catch (IOException e) {
-                        throw new IllegalStateException("IOException parsing hard coded presign key. This should never happen: ", e);
-                    }
+                final StringReader reader = new StringReader(CaImportCRLCommand.STATIC_KEY_RSA_PRIV);
+                try (PEMParser pemParser = new PEMParser(reader)) {
+                    PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
+                    JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                    staticKp = keyConverter.getKeyPair(pemKeyPair);
+                } catch (IOException e) {
+                    throw new IllegalStateException("IOException parsing hard coded presign key. This should never happen: ", e);
                 }
             }
         }
