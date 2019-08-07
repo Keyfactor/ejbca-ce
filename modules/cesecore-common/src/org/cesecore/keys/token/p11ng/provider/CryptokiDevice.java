@@ -186,18 +186,6 @@ public class CryptokiDevice {
             return useCache;
         }
         
-        //TODO Can probably be removed. Unused.
-        public long getKeyIfExists(final String alias) {
-            Long session = null;
-            session = aquireSession();
-            // Check if any private key associated with the provided alias exist
-            long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.LABEL, alias));
-            if (objs.length == 0) {
-                throw new IllegalArgumentException("Key with label " + alias + " does not exists!");
-            }
-            return objs[0];
-        }
-        
         public synchronized void setUseCache(boolean useCache) {
             this.useCache = useCache;
         }
