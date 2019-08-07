@@ -267,17 +267,6 @@ public class CryptokiDevice {
             }
             c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
         }
-
-        public synchronized void loginGeneric(final String pin) {
-            // Note: We use a dedicated session for login so it will remain logged in
-            if (loginSession == null) {
-                loginSession = aquireSession();
-            }
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("c.Login(" + loginSession + ")");
-            }
-            c.Login(loginSession, CKU.CKU_CS_GENERIC, pin.getBytes(StandardCharsets.UTF_8));
-        }
         
         public synchronized void logout() {
             try {
