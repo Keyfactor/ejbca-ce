@@ -30,6 +30,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -46,6 +47,7 @@ import org.bouncycastle.asn1.cms.RecipientIdentifier;
 import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.cms.SignedData;
 import org.bouncycastle.asn1.cms.SignerInfo;
+import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
@@ -162,11 +164,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     private transient IssuerAndSerialNumber issuerAndSerno = null;
 
     /** preferred digest algorithm to use in replies, if applicable.
-     *  Defaults to CMSSignedGenerator.DIGEST_MD5 for SCEP messages. If SCEP request is 
+     *  Defaults to CMSSignedGenerator.DIGEST_SHA256 for SCEP messages. If SCEP request is 
      * digested with SHA1 it is set to SHA1 though. This is only for backwards compatibility issues, as specified in a SCEP draft.
-     * Modern request/responses will use SHA-1.
+     * Modern request/responses will use SHA-256.
      */
-    private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_MD5;
+    private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA256;
+    /** preferred content encryption algorithm to use in replies, if applicable.
+     *  Defaults to SMIMECapability.dES_CBC for SCEP messages. If SCEP request is 
+     * encrypted with dES_EDE3_CBC it is set to this though. This is only for backwards compatibility issues, as specified in a SCEP draft.
+     */
+    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
 
 	private transient Certificate signercert;
 
@@ -388,6 +395,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         }
 
         CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
+        contentEncAlg = ed.getContentEncryptionAlgorithm().getAlgorithm();
         RecipientInformationStore recipients = ed.getRecipientInfos();
         Collection<RecipientInformation> c = recipients.getRecipients();
         Iterator<RecipientInformation> it = c.iterator();
@@ -748,6 +756,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     	return signercert;
     }
     
+    /** Method used to retrieve the content encryption algorithm that was used to encrypt the SCEP request
+     * 
+     * @return ASN1ObjectOdentifier, typically SMIMECapability.dES_CBC or SMIMECapability.dES_EDE3_CBC
+     */
+    public ASN1ObjectIdentifier getContentEncAlg() {
+        return contentEncAlg;
+    }
+
     private static class ScepVerifierProvider implements SignerInformationVerifierProvider {
         
         private final SignerInformationVerifier signerInformationVerifier;

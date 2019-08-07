@@ -419,8 +419,8 @@ public class ProtocolScepHttpTest {
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        // TODO: we don't respond with 3DES, so check for simple DES. GetCACaps don't announce 3DES support so it's OK for now.
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        // When the request is encrypted with 3DES, the response should be as well.
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_EDE3_CBC);
     }
 
     @Test
@@ -667,7 +667,7 @@ public class ProtocolScepHttpTest {
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
-        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1");
+        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
         sendGetCACapsRequest("NonExistent", 404);
     }
 
@@ -761,7 +761,7 @@ public class ProtocolScepHttpTest {
             con.getDoOutput();
             con.connect();
             assertEquals("Should get an error response code if no rollover certificate exists", 403, con.getResponseCode());
-            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1");
+            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
             
             // Create a rollover certificate
             final int subCAId = cainfo.getCAId();
@@ -796,7 +796,7 @@ public class ProtocolScepHttpTest {
             assertEquals("Rollover certificate should have status CERT_ROLLOVERPENDING", CertificateConstants.CERT_ROLLOVERPENDING, certData.getStatus());
             
             // Now we should get the certificate chain of the rollover cert
-            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1");
+            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3");
             final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA, currentCert);
             assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
             final Certificate nextCert = nextChain.get(0);

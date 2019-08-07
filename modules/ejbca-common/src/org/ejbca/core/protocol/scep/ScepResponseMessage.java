@@ -124,7 +124,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     private transient boolean includeCACert = true;
 
     /** Default digest algorithm for SCEP response message, can be overridden */
-    private transient String digestAlg = CMSSignedDataGenerator.DIGEST_MD5;
+    private transient String digestAlg = CMSSignedDataGenerator.DIGEST_SHA256;
+    /** Default content encryption algorithm, can be overridden by request message */
+    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
     
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
@@ -293,7 +295,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                     edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate) cert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                 }
                 try {
-                    JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(SMIMECapability.dES_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                    JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(contentEncAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
                     CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()), jceCMSContentEncryptorBuilder.build());
                     if (log.isDebugEnabled()) {
                         log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
@@ -443,6 +445,11 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
     @Override
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
+        if (reqMsg instanceof ScepRequestMessage) {
+            ScepRequestMessage scep = (ScepRequestMessage) reqMsg;
+            this.contentEncAlg = scep.getContentEncAlg();
+        }
+
     }
     
     @Override
