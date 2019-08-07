@@ -180,12 +180,7 @@ public class ScepRequestGenerator {
     }
     
     /**
-     * 
-     * @param envThis
      * @param encryptionAlg SMIMECapability.dES_CBC (DES) or SMIMECapability.dES_EDE3_CBC (3DES)
-     * @return
-     * @throws CMSException
-     * @throws CertificateEncodingException
      */
     private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
