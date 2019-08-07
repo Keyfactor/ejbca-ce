@@ -25,6 +25,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -130,7 +132,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public int mergeCryptoToken(final CryptoToken cryptoToken) throws CryptoTokenNameInUseException {
         if (log.isTraceEnabled()) {
-            log.trace(">addCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getClass().getName());
+            log.trace(">mergeCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getClass().getName());
         }
         final int cryptoTokenId = cryptoToken.getId();
         final String tokenName = cryptoToken.getTokenName();
@@ -145,6 +147,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         final Properties tokenProperties = cryptoToken.getProperties();
         final byte[] tokenDataAsBytes = cryptoToken.getTokenData();
         CryptoTokenData cryptoTokenData = entityManager.find(CryptoTokenData.class, cryptoTokenId);
+        boolean doMerge = true;
         if (cryptoTokenData == null) {
             // The cryptoToken does not exist in the database, before we add it we want to check that the name is not in use
             if (isCryptoTokenNameUsed(tokenName)) {
@@ -158,17 +161,38 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
             // It might be the case that the calling transaction has already loaded a reference to this token
             // and hence we need to get the same one and perform updates on this object instead of trying to
             // merge a new object.
-            cryptoTokenData.setTokenName(tokenName);
-            cryptoTokenData.setTokenType(tokenType);
-            cryptoTokenData.setLastUpdate(lastUpdate);
-            cryptoTokenData.setTokenProperties(tokenProperties);
-            cryptoTokenData.setTokenDataAsBytes(tokenDataAsBytes);
+            
+            // Don't update an object if it has not changed. This is an optimization that is important for PKCS#11 crypto tokens.
+            // if we update lastUpdate, without changing any actual data (PKCS#11 will not change crypto token data when generating and removing keys for example, but
+            // soft crypto tokens will), the crypto token will be reloaded and most likely get deactivated on other cluster nodes (when it is reloaded there). 
+            // We don't want that, so don't update the database contents if it's not needed.
+            // We only check for empty "tokenDataAsBytes", which is what it is on HSM crypto tokens, don't want to compare binary byte arrays here
+            if (StringUtils.equals(tokenName, cryptoTokenData.getTokenName()) && StringUtils.equals(tokenType, cryptoTokenData.getTokenType()) 
+                    && tokenProperties.equals(cryptoTokenData.getTokenProperties()) 
+                    && ArrayUtils.isEmpty(tokenDataAsBytes) && ArrayUtils.isEmpty(cryptoTokenData.getTokenDataAsBytes())) {
+                doMerge = false;
+            } else {
+                cryptoTokenData.setTokenName(tokenName);
+                cryptoTokenData.setTokenType(tokenType);
+                cryptoTokenData.setLastUpdate(lastUpdate);
+                cryptoTokenData.setTokenProperties(tokenProperties);
+                cryptoTokenData.setTokenDataAsBytes(tokenDataAsBytes);
+            }
         }
-        cryptoTokenData = createOrUpdateCryptoTokenData(cryptoTokenData);
-        // Update cache with provided token (it might be active and we like keeping things active)
-        CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, cryptoTokenData.getProtectString(0).hashCode(), tokenName, cryptoToken);
+        if (doMerge) {
+        	if (log.isDebugEnabled()) {
+        	    log.debug("Merging crypto token to database: " + tokenName);
+        	}
+            cryptoTokenData = createOrUpdateCryptoTokenData(cryptoTokenData);
+            // Update cache with provided token (it might be active and we like keeping things active)
+            CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, cryptoTokenData.getProtectString(0).hashCode(), tokenName, cryptoToken);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Not merging crypto token to database, as there are no changes to existing data: " + tokenName);
+            }
+        }
         if (log.isTraceEnabled()) {
-            log.trace("<addCryptoToken " + cryptoToken.getTokenName());
+            log.trace("<mergeCryptoToken " + cryptoToken.getTokenName() + ", doMerge=" + doMerge);
         }
         return cryptoTokenId;   // tokenId
     }
