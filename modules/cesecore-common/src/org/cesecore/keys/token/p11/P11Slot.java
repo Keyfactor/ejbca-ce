@@ -204,8 +204,10 @@ public class P11Slot {
         }
         return getInstance(slotLabelType, friendlyName, slotLabel, sharedLibrary, attributesFile, null, p11SlotUser, id, addProvider);
     }
+    
     /**
-     * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters. Do only use this method if the P11 shared library is ony specified in this config file.
+     * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead of parameters. 
+     * Do only use this method if the P11 shared library is only specified in this config file.
      * @param sunP11ConfigFileName name of config file
      * @param p11SlotUser Token that should use this object.
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
