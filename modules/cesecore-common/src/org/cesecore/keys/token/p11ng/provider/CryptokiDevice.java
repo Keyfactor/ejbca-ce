@@ -717,8 +717,6 @@ public class CryptokiDevice {
         }
         
         public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount) {
-            final int HASH_SIZE = 32;
-
             Long session = null;
             try {
                 session = aquireSession();
@@ -728,7 +726,9 @@ public class CryptokiDevice {
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_AUTHORIZE, params.getPointer(), params.size());
     
-                byte[] hash = new byte[HASH_SIZE];
+                // Size of the hash returned from c.authorizeKeyInit. Initially this is an empty array, after c.authorizeKeyInit
+                // it's populated by hash value.
+                byte[] hash = new byte[32];
                 long hashLen = hash.length;
                 
                 // Getting the key to authorize if it exist on the slot with the provided alias
