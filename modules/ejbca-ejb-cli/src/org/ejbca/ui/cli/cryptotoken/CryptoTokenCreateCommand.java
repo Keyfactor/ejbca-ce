@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -71,7 +72,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         registerParameter(new Parameter(AUTOACTIVATE_KEY, "true|false", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow whether crypto token should be autoactivated or not."));
         registerParameter(new Parameter(TYPE_KEY, "Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Available types: "
-                + SoftCryptoToken.class.getSimpleName() + ", " + PKCS11CryptoToken.class.getSimpleName()));
+                + getAvailableTokenTypes()));
         //Soft params
         registerParameter(new Parameter(PRIVATE_KEY_EXPORT_KEY, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "(" + SoftCryptoToken.class.getSimpleName() + ") Set to true|false to allow|disallow private key export."));
@@ -95,6 +96,20 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         return new String[] { "cryptotoken" };
     }
 
+    /** Returns a string with a list of the available Crypto Token types, which is shown in the help text. */
+    private String getAvailableTokenTypes() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(SoftCryptoToken.class.getSimpleName());
+        sb.append(", ");
+        sb.append(PKCS11CryptoToken.class.getSimpleName());
+        try {
+            final Class<?> jackJni11Class = Class.forName(CryptoTokenFactory.JACKNJI_NAME);
+            sb.append(", ");
+            sb.append(jackJni11Class.getSimpleName());
+        } catch (ClassNotFoundException e) { /* Ignored */ }
+        return sb.toString();
+    }
+
     @Override
     public String getMainCommand() {
         return "create";
@@ -116,8 +131,12 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY,
                     Boolean.toString(Boolean.valueOf(parameters.get(PRIVATE_KEY_EXPORT_KEY))));
             cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
-        } else if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
-            className = PKCS11CryptoToken.class.getName();
+        } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
+            if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
+                className = PKCS11CryptoToken.class.getName();
+            } else {
+                className = CryptoTokenFactory.JACKNJI_NAME;
+            }
             // Parse library file
             String pkcs11LibFilename = parameters.get(PKCS11_LIB_KEY);
             if(null == pkcs11LibFilename) {
