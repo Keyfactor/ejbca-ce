@@ -327,8 +327,8 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 
     private static KeyPair staticKp = null;
     private KeyPair getStaticRSAKeyPair() {
-        if (staticKp == null) {
-            synchronized (this) {
+        synchronized (this) {
+            if (staticKp == null) {
                 final StringReader reader = new StringReader(CaImportCRLCommand.STATIC_KEY_RSA_PRIV);
                 try (PEMParser pemParser = new PEMParser(reader)) {
                     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
