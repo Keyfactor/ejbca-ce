@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
@@ -233,9 +234,9 @@ public class ProtocolScepHttpTest {
     public static void beforeClass() throws Exception {
         // Pre-generate key for all requests to speed things up a bit
         try {
-            key1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            keyTestRollover = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            key1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            key2 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            keyTestRollover = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -387,12 +388,52 @@ public class ProtocolScepHttpTest {
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC);
         
+    }
+
+    @Test
+    public void test04ScepRequestOKSHA256() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);        
+        // Make user that we know...
+        createScepUser(userName1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+    }
+
+    @Test
+    public void test04ScepRequestOKSHA256DES3() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);        
+        // Make user that we know...
+        createScepUser(userName1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_EDE3_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        // TODO: we don't respond with 3DES, so check for simple DES. GetCACaps don't announce 3DES support so it's OK for now.
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+    }
+
+    @Test
+    public void test04ScepRequestOKSHA512() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);        
+        // Make user that we know...
+        createScepUser(userName1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA512, userDN1, SMIMECapability.dES_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA512, false, SMIMECapability.dES_CBC);
     }
 
     @Test
@@ -406,11 +447,11 @@ public class ProtocolScepHttpTest {
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false, SMIMECapability.dES_CBC);
         
     }
 
@@ -424,11 +465,11 @@ public class ProtocolScepHttpTest {
         
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
         
     }
 
@@ -442,11 +483,11 @@ public class ProtocolScepHttpTest {
         
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, true);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, true, SMIMECapability.dES_CBC);
         
     }
 
@@ -601,22 +642,32 @@ public class ProtocolScepHttpTest {
     }
 
     @Test
-    public void test09ScepGetCrl() throws Exception {
-        
+    public void test09ScepGetCrlSHA1() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         publishingCrlSession.forceCRL(admin, x509ca.getCAId());
-        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1);
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
-        
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC);
+    }
+
+    @Test
+    public void test09ScepGetCrlSHA256() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, false);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
     }
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
-        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-1");
+        checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1");
         sendGetCACapsRequest("NonExistent", 404);
     }
 
@@ -628,7 +679,7 @@ public class ProtocolScepHttpTest {
         // create new user for new DN.
         createScepUser(userName2, userDN2);
 
-        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2);
+        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, SMIMECapability.dES_CBC);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
     
@@ -652,7 +703,7 @@ public class ProtocolScepHttpTest {
         // user.
         changeScepUser(userName2, userDN1);
 
-        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2, key2, BouncyCastleProvider.PROVIDER_NAME);
+        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, key2, BouncyCastleProvider.PROVIDER_NAME, SMIMECapability.dES_CBC);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
         String returnMessageString = new String(retMsg);      
@@ -687,7 +738,7 @@ public class ProtocolScepHttpTest {
             
             // Create sub CA
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ROLLOVER_SUB_CA, "1024");
-            final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             X509CAInfo cainfo = new X509CAInfo(ROLLOVER_SUB_CA_DN, ROLLOVER_SUB_CA, CAConstants.CA_ACTIVE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
             cainfo.setDescription("JUnit Test Sub CA for SCEP GetNextCACert test");
@@ -710,7 +761,7 @@ public class ProtocolScepHttpTest {
             con.getDoOutput();
             con.connect();
             assertEquals("Should get an error response code if no rollover certificate exists", 403, con.getResponseCode());
-            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-1");
+            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1");
             
             // Create a rollover certificate
             final int subCAId = cainfo.getCAId();
@@ -745,7 +796,7 @@ public class ProtocolScepHttpTest {
             assertEquals("Rollover certificate should have status CERT_ROLLOVERPENDING", CertificateConstants.CERT_ROLLOVERPENDING, certData.getStatus());
             
             // Now we should get the certificate chain of the rollover cert
-            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1");
+            checkCACaps(ROLLOVER_SUB_CA, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1");
             final List<Certificate> nextChain = sendGetNextCACert(ROLLOVER_SUB_CA, currentCert);
             assertEquals("should return a certificate chain with the rollover certificate", 2, nextChain.size());
             final Certificate nextCert = nextChain.get(0);
@@ -798,7 +849,7 @@ public class ProtocolScepHttpTest {
             byte[] msgBytes = genScepRolloverCARequest(subcaCurrentCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
             byte[] retMsg = sendScep(false, msgBytes);
             assertNotNull(retMsg);
-            checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover);
+            checkScepResponse(retMsg, rolloverDN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert, keyTestRollover, SMIMECapability.dES_CBC);
             
             // Clean up
             try {
@@ -810,10 +861,10 @@ public class ProtocolScepHttpTest {
             
             // Now request a certificate signed by the roll over CA certificate
             createScepUser(rolloverUser, rolloverDN, subCAId);
-            byte[] msgBytes2 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA1, rolloverDN);
+            byte[] msgBytes2 = genScepRolloverCARequest(subcaRolloverCert, CMSSignedGenerator.DIGEST_SHA256, rolloverDN);
             byte[] retMsg2 = sendScep(false, msgBytes2);
             assertNotNull(retMsg2);
-            checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaRolloverCert, keyTestRollover);
+            checkScepResponse(retMsg2, rolloverDN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, subcaRolloverCert, keyTestRollover, SMIMECapability.dES_CBC);
             
             
         } finally {
@@ -957,12 +1008,12 @@ public class ProtocolScepHttpTest {
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws IOException, CMSException,
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, ASN1ObjectIdentifier encryptionAlg) throws IOException, CMSException,
             IllegalStateException, OperatorCreationException, CertificateException {
-        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME);
+        return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME, encryptionAlg);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider) throws
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider, ASN1ObjectIdentifier encryptionAlg) throws
             IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keyPair, signatureProvider);
@@ -974,11 +1025,11 @@ public class ProtocolScepHttpTest {
         byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
         transId = new String(Base64.encode(digest));
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
         if (makeCrlReq) {
-            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate());
+            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate());
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
@@ -1002,8 +1053,8 @@ public class ProtocolScepHttpTest {
         byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
         transId = new String(Base64.encode(digest));
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
-                keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate());
+                keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate(), SMIMECapability.dES_CBC);
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
@@ -1011,14 +1062,14 @@ public class ProtocolScepHttpTest {
         return msgBytes;
     }
     
-    private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca)
+    private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca, ASN1ObjectIdentifier encryptionAlg)
             throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
             SignatureException, CertificateException {
-        checkScepResponse(retMsg, userDN, -1L, _senderNonce, transId, crlRep, digestOid, noca, cacert, key1);
+        checkScepResponse(retMsg, userDN, -1L, _senderNonce, transId, crlRep, digestOid, noca, cacert, key1, encryptionAlg);
     }
     
     private void checkScepResponse(byte[] retMsg, String userDN, long startValidity, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca,
-                                   X509Certificate caCertToUse, KeyPair key)
+                                   X509Certificate caCertToUse, KeyPair key, ASN1ObjectIdentifier encryptionAlg)
             throws CMSException, OperatorCreationException, NoSuchProviderException, CRLException, InvalidKeyException, NoSuchAlgorithmException,
             SignatureException, CertificateException {
 
@@ -1114,6 +1165,10 @@ public class ProtocolScepHttpTest {
             // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
             rec.setMustProduceEncodableUnwrappedKey(true);            
             decBytes = recipient.getContent(rec);
+            String encAlg = ed.getContentEncryptionAlgorithm().getAlgorithm().getId();
+            // Was it the expected encryption algo from the server?
+            log.debug("Encryption algorithm from the server is: " + encAlg);
+            assertEquals("The server did not encrypt with the expected encryption algorithm", encryptionAlg.getId(), encAlg);
             // This is yet another CMS signed data
             CMSSignedData sd = new CMSSignedData(decBytes);
             // Get certificates from the signed data
