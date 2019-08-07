@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -583,21 +585,20 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
         log.info("Performing statedump import");
         result = statedumpSession.performImport(getAdmin(), options);
-        log.info("Statedump successfully imported.");
+        log.info("Statedump with was successfully imported.");
 
         // Lock down after import
         if (lockdown) {
-            log.info("Locking down Statedump in the Admin Web.");
+            log.info("Locking down Statedump in the CA web.");
             lockDownStatedump();
         } else {
-            log.debug("Not locking down statedump.");
+            log.debug("Not locking down Statedump.");
         }
 
         // Done, add result messages
         for (String msg : result.getNotices()) {
             super.addNonTranslatedInfoMessage(msg);
         }
-        super.addNonTranslatedInfoMessage("State dump was successfully imported.");
     }
 
     private void importStatedump(byte[] zip, boolean lockdown) throws IOException, AuthorizationDeniedException {
@@ -707,9 +708,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (importFromDir) {
                 final File basedir = new File(statedumpSession.getTemplatesBasedir(getAdmin()));
                 importStatedump(new File(basedir, statedumpDir), statedumpLockdownAfterImport);
+                super.addNonTranslatedErrorMessage("Statedump imported successfully.");
             } else {
                 byte[] uploadedFileBytes = statedumpFile.getBytes();
                 importStatedump(uploadedFileBytes, statedumpLockdownAfterImport);
+                super.addNonTranslatedErrorMessage("Statedump with ID "
+                        + new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(uploadedFileBytes), false)).substring(0, 6)
+                        + " imported successfully.");
             }
         } catch (Exception e) {
             String msg = "Statedump import failed. " + e.getLocalizedMessage();
