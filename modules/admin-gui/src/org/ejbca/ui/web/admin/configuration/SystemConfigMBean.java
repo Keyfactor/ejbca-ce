@@ -712,9 +712,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             } else {
                 byte[] uploadedFileBytes = statedumpFile.getBytes();
                 importStatedump(uploadedFileBytes, statedumpLockdownAfterImport);
-                super.addNonTranslatedErrorMessage("Statedump with ID "
-                        + new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(uploadedFileBytes), false)).substring(0, 6)
-                        + " imported successfully.");
+                // This value is only used to cross-check the imported statedump against a key ceremony script, to prevent
+                // the wrong statedump from being imported by accident. It has nothing to do with security.
+                final String statedumpId = new String(Hex.encodeHex(MessageDigest.getInstance("SHA-256").digest(uploadedFileBytes), false))
+                        .substring(0, 6);
+                super.addNonTranslatedErrorMessage("Statedump with ID " + statedumpId + " imported successfully.");
             }
         } catch (Exception e) {
             String msg = "Statedump import failed. " + e.getLocalizedMessage();
