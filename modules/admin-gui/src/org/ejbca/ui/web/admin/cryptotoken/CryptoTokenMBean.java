@@ -14,6 +14,9 @@ package org.ejbca.ui.web.admin.cryptotoken;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -543,6 +546,32 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 // The default should be null, but we will get a value "default" from the GUI code in this case..
                 final String p11AttributeFile = getCurrentCryptoToken().getP11AttributeFile();
                 if (!"default".equals(p11AttributeFile)) {
+                    final File file = new File(p11AttributeFile);
+                    if (!file.isFile() || !file.canRead()) {
+                        addNonTranslatedErrorMessage("The attributes file " + p11AttributeFile + " does not exist or cannot be read. "
+                                + "Make sure this file exists on the filesystem, and is readable by the application server.");
+                    }
+                    for (final String line : Files.readAllLines(Paths.get(p11AttributeFile), StandardCharsets.UTF_8)) {
+                        if (line.startsWith("name")) {
+                            addNonTranslatedErrorMessage(String.format("A name suffix of the provider instance should not be specified "
+                                    + "when using a custom attributes file with EJBCA. Remove the line '%s'.", line));
+                        }
+                        if (line.startsWith("slot=") || line.startsWith("slot =")) {
+                            addNonTranslatedErrorMessage(
+                                    String.format("A slot ID to be associated with the provider instance should not be specified when "
+                                            + "using a custom attributes file with EJBCA. Remove the line '%s'.", line));
+                        }
+                        if (line.startsWith("slotListIndex=") || line.startsWith("slotListIndex =")) {
+                            addNonTranslatedErrorMessage(
+                                    String.format("A slot index to be associated with the provider instance should not be specified when "
+                                            + "using a custom attributes file with EJBCA. Remove the line '%s'.", line));
+                        }
+                        if (line.startsWith("library")) {
+                            addNonTranslatedErrorMessage(
+                                    String.format("A pathname to the PKCS11 implementation should not be specified when using a custom "
+                                            + "attributes file with EJBCA. Remove the line '%s'.", line));
+                        }
+                    }
                     properties.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, p11AttributeFile);
                 }
                 if (checkSlotInUse) {
@@ -593,9 +622,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         BaseCryptoToken.setAutoActivatePin(properties, new String(secret), true);
                     }
                     currentCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name, className, properties, null, secret);
-                    addNonTranslatedInfoMessage("CryptoToken created successfully.");
+                    addNonTranslatedInfoMessage("Crypto token created successfully.");
                 } else {
-                    addNonTranslatedErrorMessage("You must provide an authentication code to create a CryptoToken.");
+                    addNonTranslatedErrorMessage("You must provide an authentication code to create a crypto token.");
                     return;
                 }
             } else {
@@ -608,7 +637,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     }
                 }
                 cryptoTokenManagementSession.saveCryptoToken(authenticationToken, getCurrentCryptoTokenId(), name, properties, secret);
-                addNonTranslatedInfoMessage("CryptoToken saved successfully.");
+                addNonTranslatedInfoMessage("Crypto token saved successfully.");
             }
             flushCaches();
             setCurrentCryptoTokenEditMode(false);                    
