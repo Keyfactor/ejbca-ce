@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -76,6 +77,16 @@ public class CachedCryptoToken implements CryptoToken {
         return wrappedCryptoToken.doPermitExtractablePrivateKey();
     }
 
+    @Override
+    public void keyAuthorizeInit(String alias, KeyPair kakKeyPair, String signProviderName) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+    
+    @Override
+    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+    
     @Override
     public void generateKey(String algorithm, int keysize, String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
             KeyStoreException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException,

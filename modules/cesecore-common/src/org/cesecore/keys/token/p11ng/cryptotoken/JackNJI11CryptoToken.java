@@ -3,6 +3,7 @@ package org.cesecore.keys.token.p11ng.cryptotoken;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -249,6 +250,18 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
 
     @Override
+    public void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName) {
+        log.info("Key Authorize Init..."); //TODO remove
+        slot.keyAuthorizeInit(alias, kakPair, signProviderName);
+    }
+    
+    @Override
+    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
+        log.info("Key Authorize...");
+        slot.keyAuthorize(alias, kakPair, maxOperationCount, signProviderName);
+    }
+    
+    @Override
     public List<String> getAliases() throws CryptoTokenOfflineException {
         final List<String> aliases = new ArrayList<>();
         final Enumeration<SlotEntry> e = slot.aliases();
@@ -281,10 +294,10 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     public int getTokenStatus() {
         // TODO temporary solution. Works to detect if not logged in and allow doing so (in GUI). 
         // However we can not take token "offline" this way
-        log.info("Session Status: " + this.slot.toString());
-        if (this.slot.getActiveSessions().size() == 0) {
+        if (this.slot == null || this.slot.getActiveSessions().size() == 0) {
             return CryptoToken.STATUS_OFFLINE;
         }
+        log.info("Session Status: " + this.slot.toString());
         return CryptoToken.STATUS_ACTIVE;
 // SignServer way of doing it >        
 //        int ret = CryptoToken.STATUS_OFFLINE;
