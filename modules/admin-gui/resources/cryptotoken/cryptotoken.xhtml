@@ -328,16 +328,28 @@
 					<h:commandButton
 						action="#{cryptoTokenMBean.cancelCurrentCryptoToken}"
 						value="#{web.text.CRYPTOTOKEN_CANCEL}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode &amp;&amp; cryptoTokenMBean.currentCryptoTokenId != 0}" />
+						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" />
+                    <ui:remove>
+                    <!-- Three cases of the Save button. 
+                    "Save" with slot-check if we are creating a new crypto token, will check if slot is already in use by another crypto token. 
+                    "Confirm Save" without slot-check if we are creating a new crypto token, and need to confirm that we are re-using the same slot. 
+                    "Save" without slot-check if we are editing an existing new crypto token (currentCryptoTokenId != 0). 
+                    -->
+                    </ui:remove>
 					<h:commandButton
 						action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
 						value="#{web.text.CRYPTOTOKEN_SAVE}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed}" 
+						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed and cryptoTokenMBean.currentCryptoTokenId == 0}" 
 						onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
                     <h:commandButton
                         action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
                         value="#{web.text.CRYPTOTOKEN_SAVE_CONFIRM}"
                         rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}" 
+                        onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                    <h:commandButton
+                        action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
+                        value="#{web.text.CRYPTOTOKEN_SAVE}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" 
                         onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
 				</h:panelGroup>
 			</h:panelGrid>
