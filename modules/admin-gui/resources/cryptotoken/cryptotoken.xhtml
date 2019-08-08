@@ -396,10 +396,30 @@
 					<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}"
 						rendered="#{keyPairGuiInfo.placeholder}" />
 				</h:column>
+				<h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}">
+					<f:facet name="header">
+						<h:outputText value="Key Authorization Key"/>
+					</f:facet>
+					<h:selectOneMenu value="#{keyPairGuiInfo.selectedKakCryptoTokenId}">
+						<f:selectItems value="#{cryptoTokenMBean.availableCryptoTokens}"/>
+						<f:ajax render="selectKakAliasMenu"/>
+					</h:selectOneMenu>
+					<h:selectOneMenu id="selectKakAliasMenu" value="#{keyPairGuiInfo.selectedKakKeyAlias}">
+						<f:selectItems value="#{keyPairGuiInfo.availableKeyAliases}"/>
+					</h:selectOneMenu>
+				</h:column>
 				<h:column>
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ACTION}" />
 					</f:facet>
+					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_INIT}"
+						action="#{cryptoTokenMBean.initializeKey}"
+						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
+						disabled="#{keyPairGuiInfo.placeholder}"/>
+					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_AUTH}"
+						action="#{cryptoTokenMBean.authorizeKey}"
+						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
+						disabled="#{keyPairGuiInfo.placeholder}"/>
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
 						action="#{cryptoTokenMBean.testKeyPair}"
 						rendered="#{cryptoTokenMBean.allowedToKeyTest}"
