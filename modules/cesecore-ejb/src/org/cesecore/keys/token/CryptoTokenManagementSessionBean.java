@@ -706,7 +706,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         cryptoToken.generateKeyPair(keySpecification, alias);
         try {
             Class<?> c = Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken");
-            if (c != null && !(cryptoToken instanceof JackNJI11CryptoToken)) {
+            if (c != null && !c.isInstance(cryptoToken)) {
                 cryptoToken.testKeyPair(alias);
             }
         } catch (ClassNotFoundException e) {
