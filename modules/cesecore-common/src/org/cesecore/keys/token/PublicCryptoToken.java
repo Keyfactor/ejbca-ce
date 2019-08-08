@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -169,6 +170,16 @@ public class PublicCryptoToken implements CryptoToken {
 		// static do nothing
 	}
 
+    @Override
+    public void keyAuthorizeInit(String alias, KeyPair kakKeyPair, String signProviderName) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+	
+    @Override
+    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+    
 	@Override
 	public String getSignProviderName() {
 		return providerName;

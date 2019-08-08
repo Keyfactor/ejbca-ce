@@ -250,5 +250,30 @@ public interface CryptoTokenManagementSession {
      */
     boolean isAliasUsedInCryptoToken(int cryptoTokenId, String alias);
 
+    /**
+     * Operation specific for CP5 crypto tokens.
+     * 
+     * @param authenticationToken the administrator performing the action.
+     * @param cryptoTokenId the CryptoToken to operate on.
+     * @param alias of the key to authorize init (i.e. associate with KAK).
+     * @param kakTokenId Id of the CryptoToken containing the KAK (Key Authorization Key)
+     * @param kakTokenKeyAlias Alias of the key which will be used as KAK.
+     */
+    void keyAuthorizeInit(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenId, String kakTokenKeyAlias)
+            throws CryptoTokenOfflineException;
+
+    /**
+     * Operation specific for CP5 crypto tokens.
+     * 
+     * @param authenticationToken the administrator performing the action.
+     * @param cryptoTokenId the CryptoToken to operate on.
+     * @param alias of the key to authorize (Must be associate with KAK already).
+     * @param kakTokenId Id of the CryptoToken containing the KAK (Key Authorization Key)
+     * @param kakTokenKeyAlias Alias of the key which will be used as KAK.
+     * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
+     */
+    void keyAuthorize(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
+            long maxOperationCount) throws CryptoTokenOfflineException;
+
 
 }

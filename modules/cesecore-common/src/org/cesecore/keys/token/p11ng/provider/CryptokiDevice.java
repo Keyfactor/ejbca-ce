@@ -632,7 +632,7 @@ public class CryptokiDevice {
             }
         }
 
-        public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey) {
+        public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName) {
             //TODO Shouldn't be hard coded?
             final int KAK_PUBLIC_EXP_BUF_SIZE = 3;
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
@@ -699,7 +699,7 @@ public class CryptokiDevice {
     
                 byte[] initSig = new byte[bitsToBytes(kakLength)];
                 try {
-                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey);
+                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
                 } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
                          | InvalidAlgorithmParameterException | SignatureException e) {
                     LOG.error("Error occurred while signing the hash!", e);
@@ -716,7 +716,7 @@ public class CryptokiDevice {
             }
         }
         
-        public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount) {
+        public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount, String signProviderName) {
             Long session = null;
             try {
                 session = aquireSession();
@@ -750,7 +750,7 @@ public class CryptokiDevice {
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
                 byte[] authSig = new byte[bitsToBytes(kakLength)];
                 try {
-                    authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey);
+                    authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
                 } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
                          | InvalidAlgorithmParameterException | SignatureException e) {
                     LOG.error("Error occurred while signing the hash!", e);
@@ -904,11 +904,11 @@ public class CryptokiDevice {
             return result;
         }
         
-        private byte[] signHashPss(byte[] hash, long hashLen, int length, Key privateKey) 
+        private byte[] signHashPss(byte[] hash, long hashLen, int length, Key privateKey, String signProviderName) 
                 throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException {
             final int KEY_AUTHORIZATION_INIT_SIGN_SALT_SIZE = 32;
             // Due to requirements at the HSM side we have to use RAW signer
-            Signature signature = Signature.getInstance("RawRSASSA-PSS", "BC");
+            Signature signature = Signature.getInstance("RawRSASSA-PSS", signProviderName);
             PSSParameterSpec pssParameterSpec = new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, KEY_AUTHORIZATION_INIT_SIGN_SALT_SIZE, 
                     PSSParameterSpec.DEFAULT.getTrailerField());
             signature.setParameter(pssParameterSpec);

@@ -14,6 +14,7 @@ package org.cesecore.keys.token;
 
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -161,6 +162,16 @@ public abstract class BaseCryptoToken implements CryptoToken {
         KeyTools.testKey(privateKey, publicKey, getSignProviderName());
     }
 
+    @Override
+    public void keyAuthorizeInit(String alias, KeyPair kakKeyPair, String signProviderName) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+    
+    @Override
+    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+    
     /**
      * Reads the public key object, does so from the certificate retrieved from the alias from the KeyStore.
      *
