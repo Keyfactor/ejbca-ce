@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -137,6 +138,25 @@ public interface CryptoToken extends Serializable {
      */
     void deleteEntry(String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException;
 
+    /**
+     * Operation specific for CP5 crypto tokens
+     * 
+     * @param alias of the key to authorize init (i.e. associate with KAK)
+     * @param kakPair Key Authorization Key pair to associate key with.
+     * @param signProviderName Name of the signature provider
+     */
+    void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName);
+    
+    /**
+     * Operation specific for CP5 crypto tokens
+     * 
+     * @param alias of the key to authorize  (i.e. associat with KAK)
+     * @param kakPair Key Authorization Key which is already associated with key
+     * @param signProviderName Name of the signature provider
+     * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
+     */
+    void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount);
+    
     /** Generates a key pair (asymmetric keys) in the crypto token.
      *
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
@@ -265,5 +285,7 @@ public interface CryptoToken extends Serializable {
 
     /** @return true if there is an auto activation PIN stored in the token */
     boolean isAutoActivationPinPresent();
+
+
     
 }
