@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -695,19 +696,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /** @return a list of library SelectItems sort by display name for detected P11 libraries. */
     public List<SelectItem> getAvailableCryptoTokenP11AttributeFiles() {
-        final List<SelectItem> ret = new ArrayList<>();
-        ret.add(new SelectItem("default", "Default"));
-        for (Entry<String, String> entry: WebConfiguration.getAvailableP11AttributeFiles().entrySet()) {
-            ret.add(new SelectItem(entry.getKey(), entry.getValue()));
-        }
-        // Sort by display name
-        Collections.sort(ret, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem s0, SelectItem s1) {
-                return String.valueOf(s0.getValue()).compareTo(String.valueOf(s1));
-            }
-        });
-        return ret;
+        final List<SelectItem> availableP11AttributeFiles = WebConfiguration.getAvailableP11AttributeFiles()
+            .entrySet()
+            .stream()
+            .map(entry -> new SelectItem(entry.getKey(), entry.getValue()))
+            .sorted((s0, s1) -> String.valueOf(s0.getValue()).compareTo(String.valueOf(s1)))
+            .collect(Collectors.toList());
+        availableP11AttributeFiles.add(0, new SelectItem("default", "Default"));
+        return availableP11AttributeFiles;
     }
     
     public List<SelectItem> getAvailableCryptoTokenP11SlotLabelTypes() {
