@@ -57,6 +57,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
@@ -703,7 +704,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
         cryptoToken.generateKeyPair(keySpecification, alias);
-        cryptoToken.testKeyPair(alias);
+        try {
+            Class<?> c = Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken");
+            if (c != null && !(cryptoToken instanceof JackNJI11CryptoToken)) {
+                cryptoToken.testKeyPair(alias);
+            }
+        } catch (ClassNotFoundException e) {
+            // This is supposed to happen in the case of Community Edition
+        }
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
         try {
             cryptoTokenSession.mergeCryptoToken(cryptoToken);
