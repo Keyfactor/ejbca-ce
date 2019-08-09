@@ -244,11 +244,21 @@
          </h:selectBooleanCheckbox>
         <h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_USEISSUERNOTBEFOREASARCHIVECUTOFF}" for="useIssuerNotBeforeAsArchiveCutoff" />
     </h:panelGroup>
-    <h:panelGrid id="retentionPeriodSettings" columns="2" rendered="#{internalKeyBindingMBean.ocspArchiveCutoffExtensionEnabled and !internalKeyBindingMBean.useIssuerNotBeforeAsArchiveCutoff}">
-        <h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RETENTIONPERIOD}" for="retentionPeriod" />
+    <h:panelGrid id="retentionPeriodSettings" columns="2">
+        <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RETENTIONPERIOD}" 
+            rendered="#{internalKeyBindingMBean.ocspArchiveCutoffExtensionEnabled and !internalKeyBindingMBean.useIssuerNotBeforeAsArchiveCutoff}" />
         <h:panelGroup>
-            <div><h:inputText id="retentionPeriod" value="#{internalKeyBindingMBean.retentionPeriod}" disabled="#{not internalKeyBindingMBean.inEditMode}" /></div>
-            <div><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RETENTIONPERIOD_HELPTEXT}" /></div>
+            <div>
+                <h:inputText id="retentionPeriod" value="#{internalKeyBindingMBean.retentionPeriod}" disabled="#{not internalKeyBindingMBean.inEditMode}" 
+                    rendered="#{internalKeyBindingMBean.ocspArchiveCutoffExtensionEnabled and !internalKeyBindingMBean.useIssuerNotBeforeAsArchiveCutoff}">
+                    <f:validator validatorId="simpleTimeValidator"/>
+					<f:attribute name="precision" value="seconds"/>
+                </h:inputText>
+            </div>
+            <div>
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RETENTIONPERIOD_HELPTEXT}" 
+                    rendered="#{internalKeyBindingMBean.ocspArchiveCutoffExtensionEnabled and !internalKeyBindingMBean.useIssuerNotBeforeAsArchiveCutoff}"/>
+            </div>
         </h:panelGroup>
     </h:panelGrid>
     
