@@ -67,6 +67,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
+import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -86,6 +87,7 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -766,6 +768,24 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
     private ListDataModel<String> ocspExtensions = null;
     private Map<String, String> ocspExtensionOidNameMap = new HashMap<>();
+    private boolean useIssuerNotBeforeAsArchiveCutoff = false;
+    private SimpleTime retentionPeriod = SimpleTime.getInstance("1y");
+
+    public boolean getUseIssuerNotBeforeAsArchiveCutoff() {
+        return this.useIssuerNotBeforeAsArchiveCutoff;
+    }
+
+    public void setUseIssuerNotBeforeAsArchiveCutoff(final boolean useIssuerNotBeforeAsArchiveCutoff) {
+        this.useIssuerNotBeforeAsArchiveCutoff = useIssuerNotBeforeAsArchiveCutoff;
+    }
+
+    public String getRetentionPeriod() {
+        return retentionPeriod.toString();
+    }
+
+    public void setRetentionPeriod(final String retentionPeriod) {
+        this.retentionPeriod = SimpleTime.getInstance(retentionPeriod);
+    }
 
     public Integer getCurrentCertificateAuthority() {
         return currentCertificateAuthority;
@@ -903,6 +923,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public boolean isBoundToCertificate() {
         return !"0".equals(getCurrentInternalKeyBindingId()) && getBoundCertificateId() != null;
+    }
+
+    public boolean isOcspArchiveCutoffExtensionEnabled() {
+        @SuppressWarnings("unchecked")
+        final List<String> enabledOcspExtensions = (List<String>) getOcspExtensions().getWrappedData();
+        return enabledOcspExtensions.stream().anyMatch(enabledOcspExtension -> OcspArchiveCutoffExtension.EXTENSION_OID.equals(enabledOcspExtension));
     }
 
     private String boundCertificateId = null;
@@ -1420,7 +1446,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) trustedCertificates.getWrappedData());
             if (isOcspKeyBinding()) {
-                internalKeyBinding.setOcspExtensions((List<String>) ocspExtensions.getWrappedData());
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
+                ocspKeyBinding.setOcspExtensions((List<String>) ocspExtensions.getWrappedData());
+                ocspKeyBinding.setRetentionPeriod(retentionPeriod);
+                ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);
             }
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                     .getWrappedData();
