@@ -136,6 +136,7 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
+import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
@@ -1339,7 +1340,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if (transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                         }
-                        addArchiveCutoff = checkAddArchiveCuttoff(caCertificateSubjectDn, certId);
+                        addArchiveCutoff = checkAddArchiveCutoff(caCertificateSubjectDn, certId, ocspSigningCacheEntry.getOcspKeyBinding());
                     }
                     if (log.isDebugEnabled()) {
                         log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
@@ -1348,8 +1349,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                     respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if (addArchiveCutoff) {
-                        producedAt = new Date();
-                        addArchiveCutoff(respItem, producedAt);
+                        addArchiveCutoff(respItem, ocspSigningCacheEntry.getIssuerCaCertificate(), ocspSigningCacheEntry.getOcspKeyBinding());
                     }
                 }
  
@@ -1532,12 +1532,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
     
-    private boolean checkAddArchiveCuttoff(String caCertificateSubjectDn, CertificateID certId) {
-        if (OcspConfiguration.getExpiredArchiveCutoff() == -1) {
+    private boolean checkAddArchiveCutoff(final String caCertificateSubjectDn, final CertificateID certId, final OcspKeyBinding ocspKeyBinding) {
+        if (ocspKeyBinding == null || !ocspKeyBinding.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
             return false;
         }
-        CertificateInfo info = certificateStoreSession.findFirstCertificateInfo(caCertificateSubjectDn, certId.getSerialNumber());
-        Date expDate = info.getExpireDate();
+        final CertificateInfo info = certificateStoreSession.findFirstCertificateInfo(caCertificateSubjectDn, certId.getSerialNumber());
+        final Date expDate = info.getExpireDate();
         if (expDate.before(new Date())) {
             log.info("Certificate with serial number '" + certId.getSerialNumber() + "' is not valid. " +
                     "Adding singleExtension id-pkix-ocsp-archive-cutoff");
@@ -1546,20 +1546,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return false;
     }
     
-    private void addArchiveCutoff(OCSPResponseItem respItem, Date producedAt) {
-        long archPeriod = OcspConfiguration.getExpiredArchiveCutoff();
-        if (archPeriod == -1) {
-            return;
-        }
-        long res = producedAt.getTime() - archPeriod;
-        ASN1OctetString archiveCutoffValue;
+    private void addArchiveCutoff(final OCSPResponseItem respItem, final X509Certificate issuer, final OcspKeyBinding ocspKeyBinding) {
         try {
-            archiveCutoffValue = new DEROctetString(new ASN1GeneralizedTime(new Date(res)));
-        } catch (IOException e) {
+            final long archiveCutoffDate = ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff() ?
+                    issuer.getNotBefore().getTime() : new Date().getTime() - ocspKeyBinding.getRetentionPeriod().getLong();
+            final DEROctetString encodedValue = new DEROctetString(new ASN1GeneralizedTime(new Date(archiveCutoffDate)));
+            final Extension archiveCutoffExtension = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, encodedValue);
+            respItem.addExtensions(Collections.singletonMap(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, archiveCutoffExtension));
+        } catch (final IOException e) {
             throw new IllegalStateException("IOException was caught when decoding static value.", e);
-        } 
-        Extension archiveCutoff = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, archiveCutoffValue);
-        respItem.addExtensions(Collections.singletonMap(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, archiveCutoff));
+        }
     }
 
     /**
