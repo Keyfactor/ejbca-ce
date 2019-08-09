@@ -1056,6 +1056,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final int kakTokenId = keyPairGuiInfo.getSelectedKakCryptoTokenId();
         if (kakTokenId == 0 || kakAlias == null) {
             addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to initialize key");
+            return;
         }
         try {
             cryptoTokenManagementSession.keyAuthorizeInit(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias);
@@ -1072,6 +1073,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final int kakTokenId = keyPairGuiInfo.getSelectedKakCryptoTokenId();
         if (kakTokenId == 0 || kakAlias == null) {
             addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to authorize key");
+            return;
         }
         try {
             // TODO GUI support for maxOperationCount 
