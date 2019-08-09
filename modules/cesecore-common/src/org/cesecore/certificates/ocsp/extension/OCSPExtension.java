@@ -13,7 +13,6 @@
 
 package org.cesecore.certificates.ocsp.extension;
 
-import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +23,11 @@ import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.cesecore.keybind.InternalKeyBinding;
 
 /**
- * Interface that must be implemented by OCSP extensions that are added to the OCSPServlet
+ * Interface that must be implemented by OCSP extensions that are added to the OCSPServlet.
+ * <p>
+ * <b>Implementation note:</b> Classes implementing this interface are loaded with a service loader. 
+ * If you move/rename this interface, you need to manually update the appropriate build.xml script
+ * to contain the new package and class name.
  * 
  * @version $Id$
  */
@@ -53,8 +56,7 @@ public interface OCSPExtension {
      *            Used to get the trusted ca cert etc.
      * 
      * @return Hashtable with X509Extensions <String oid, X509Extension ext> that will be added to responseExtensions by OCSP responder, or null if an
-     *         error occurs
-     * @throws IOException 
+     *         error occurs 
      */
     Map<ASN1ObjectIdentifier, Extension> process(final X509Certificate[] requestCertificates, final String remoteAddress, final String remoteHost,
             final X509Certificate cert, final CertificateStatus status, final InternalKeyBinding internalKeyBinding);
