@@ -44,6 +44,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
@@ -100,6 +101,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
     public static final String PROPERTY_MAX_AGE = "maxAge";
     public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
+    public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
+    public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
     
     {
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
@@ -210,6 +213,56 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      *  */
     public void setNonceEnabled(boolean enabled) {
         setProperty(PROPERTY_ENABLE_NONCE, Boolean.valueOf(enabled));
+    }
+
+    /**
+     * Get the retention period being enforced by the CA. The date obtained by subtracting this
+     * retention interval value from the producedAt time in a response is defined as the 
+     * certificate's "archive cutoff" date.
+     * 
+     * <p>If nothing is specified for this OCSP key binding, the default value of 1 year is used.
+     * 
+     * @return the retention period for archive cutoff.
+     */
+    public SimpleTime getRetentionPeriod() {
+        final String retentionPeriod = getData(PROPERTY_RETENTION_PERIOD, "1y");
+        return SimpleTime.getInstance(retentionPeriod);
+    }
+
+    /**
+     * Set the retention period being enforced by the CA. See also {@link #getRetentionPeriod()}.
+     * 
+     * @param retentionPeriod the new retention period to use for archive cutoff.
+     */
+    public void setRetentionPeriod(final SimpleTime retentionPeriod) {
+        putData(PROPERTY_RETENTION_PERIOD, retentionPeriod.toString());
+    }
+
+    /**
+     * Get a boolean indicating whether the notBefore date of the issuer for the OCSP signing certificate
+     * should be used as archive cutoff date in OCSP responses when the archiveCutoff extension is enabled
+     * (instead of deriving the archive cutoff date from the producedAt time of the OCSP response).
+     * 
+     * <p>This setting should be enabled to conform with ETSI EN 319 411-2, CSS-6.3.10-08.
+     * 
+     * <p>If nothing is specified for this OCSP key binding, the default value of false is returned
+     * (do not use the issuer's notBefore date as archive cutoff date).
+     *  
+     * @return true if the notBefore date of the issuer should be used as archive cutoff date.
+     */
+    public boolean useIssuerNotBeforeAsArchiveCutoff() {
+        return getData(PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF, false);
+    }
+
+    /**
+     * Set a boolean indicating whether the notBefore date of the issuer for the OCSP signing certificate
+     * should be used as archive cutoff date in OCSP responses when the archiveCutoff extension is enabled.
+     * See also {@link #useIssuerNotBeforeAsArchiveCutoff()}.
+     * 
+     * @param useIssuerNotBeforeAsArchiveCutoff true to enable this setting, false otherwise.
+     */
+    public void setUseIssuerNotBeforeAsArchiveCutoff(final boolean useIssuerNotBeforeAsArchiveCutoff) {
+        putData(PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF, useIssuerNotBeforeAsArchiveCutoff);
     }
 
     public static boolean isOcspSigningCertificate(final Certificate certificate, AvailableExtendedKeyUsagesConfiguration ekuConfig) {

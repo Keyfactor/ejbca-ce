@@ -276,13 +276,13 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     protected abstract void upgrade(final float latestVersion, final float currentVersion);
 
     /** Store data in the underlying map. Encourages use of String valued keys. */
-    private void putData(final String key, final Object value) {
+    protected void putData(final String key, final Object value) {
         data.put(SUBCLASS_PREFIX + key, value);
     }
 
     /** @return data from the underlying map. Encourages use of String valued keys. */
     @SuppressWarnings("unchecked")
-    private <T> T getData(final String key, final T defaultValue) {
+    protected <T> T getData(final String key, final T defaultValue) {
         final T ret = (T) data.get(SUBCLASS_PREFIX + key);
         return ret==null ? defaultValue : ret;
     }
