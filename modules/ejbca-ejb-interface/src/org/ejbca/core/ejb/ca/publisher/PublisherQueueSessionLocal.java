@@ -108,6 +108,10 @@ public interface PublisherQueueSessionLocal {
      * Repeat this process as long as we actually manage to publish something this is because when publishing starts to work we want to publish everything in one go, if possible.
      * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
      * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
+     * 
+     * @param admin the administrator that must be authorized for publishing
+     * @param publisher the publisher to publish to
+     * @return how many publishing operations that succeeded and failed 
      */
     PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher);
 
@@ -139,6 +143,10 @@ public interface PublisherQueueSessionLocal {
     List<Object> publishCertificateNonTransactionalInternal(List<BasePublisher> publishers, AuthenticationToken admin, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation);
 	
-    /** Publishers digest queues in transaction-based "chunks". */
+    /** Publishers digest queues in transaction-based "chunks". 
+     * @param admin the administrator that must be authorized for publishing
+     * @param publisher the publisher to publish to
+     * @return how many publishing operations that succeeded and failed 
+     */
     PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher);
 }
