@@ -295,11 +295,12 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     /** 
-     * @param admin
-     * @param publisherId
-     * @param publisher
+     * @param admin the administrator that must be authorized for publishing
+     * @param publisher the publisher to publish to
+     * @param publisherQueueData the data to publish
      *  
-     * @return how many publishing operations that succeeded and failed */
+     * @return how many publishing operations that succeeded and failed 
+     */
     private PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, Collection<PublisherQueueData> publisherQueueData) {
         final int publisherId;
         if (publisher != null) {
