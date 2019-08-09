@@ -54,7 +54,6 @@ public class OcspConfiguration {
     public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
     public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
     public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
-    public static final String EXPIREDCERT_RETENTIONPERIOD = "ocsp.expiredcert.retentionperiod";
     public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
     public static final String MAX_AGE = "ocsp.maxAge";
@@ -468,28 +467,6 @@ public class OcspConfiguration {
     public static String getTransactionLogOrder() {
         String value = ConfigurationHolder.getString("ocsp.trx-log-order");
         value = value.replace("\\\"", "\""); // From EJBCA 3.9 the "-char does not need to be escaped, but we want to be backward compatible
-        return value;
-    }
-
-    
-    /**
-     * The default number of milliseconds a response is valid, or -1 to disable. See RFC5019.
-     */
-    public static long getExpiredArchiveCutoff() {
-        Configuration config = ConfigurationHolder.instance();
-        
-        if(StringUtils.equals(config.getString(EXPIREDCERT_RETENTIONPERIOD), "-1")) {
-            return -1;
-        }
-        
-        long value = 31536000;
-        try {
-            value = config.getLong(EXPIREDCERT_RETENTIONPERIOD, value) * 1000;
-        } catch (ConversionException e) {
-            log.warn("\"ocsp.expiredcert.retentionperiod\" is not a decimal integer. Using default value: " + value);
-        }
-        
-        
         return value;
     }
     
