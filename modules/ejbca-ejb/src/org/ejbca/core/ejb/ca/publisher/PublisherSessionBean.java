@@ -309,7 +309,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     pqvd.setUserDN(issuerDn);
                     String fp = CertTools.getFingerprintAsString(incrl);
                     try {
-                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, PublisherConst.STATUS_PENDING);
+                        // publishStatus can only be either STATUS_PENDING or STATUS_SUCCESS, for CRLs we want to store with the actual status, that may be
+                        // STATUS_SUCCESS if it was published directly above (status is success, but useQueueForCRLS and keepPublishedInQueue is active)
+                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, publishStatus);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, "CRL");
                         log.info(msg);
                     } catch (CreateException e) {
