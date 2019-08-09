@@ -585,7 +585,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
         log.info("Performing statedump import");
         result = statedumpSession.performImport(getAdmin(), options);
-        log.info("Statedump with was successfully imported.");
+        log.info("Statedump was successfully imported.");
 
         // Lock down after import
         if (lockdown) {
