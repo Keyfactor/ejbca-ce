@@ -13,10 +13,11 @@ fi
 
 
 if [ -z "$EJBCA_HOME" ]; then
-    CLI_JAR=$(dirname "$0")/../dist/ejbca-ejb-cli/ejbca-ejb-cli.jar
-else
-    CLI_JAR="$EJBCA_HOME/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar"
+    # It is important to set EJBCA_HOME since some code in the JAR use this variable
+    EJBCA_HOME=$(dirname "$0")/../
 fi
+
+CLI_JAR="$EJBCA_HOME/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar"
 
 if [ ! -f "$CLI_JAR" ]; then
     echo "Cannot find the EJBCA CLI binary '$CLI_JAR'." 1>&2
