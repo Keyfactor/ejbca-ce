@@ -13,6 +13,13 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -162,13 +169,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 
 /**
@@ -1106,14 +1106,11 @@ Content-Type: text/html; charset=iso-8859-1
     
     
     /**
-     * This test tests that the OCSP response contains the extension "id_pkix_ocsp_archive_cutoff" if "ocsp.expiredcert.retentionperiod" 
-     * is set in the configuration file
-     * 
-     * @throws Exception
+     * This test tests that the OCSP response contains the extension "id_pkix_ocsp_archive_cutoff" if an OCSP key binding
+     * is configured for a CA and the archiveCutoff extension is enabled.
      */
     @Test
     public void testExpiredCertArchiveCutoffExtension() throws Exception {
-        
         final String username = "expiredCertUsername";
         String cpname = "ValidityCertProfile";
         String eepname = "ValidityEEProfile";
@@ -1188,9 +1185,6 @@ Content-Type: text/html; charset=iso-8859-1
             
             // -------- Send a request where id_pkix_ocsp_archive_cutoff SHOULD NOT be used
             // set ocsp configuration
-            Map<String,String> map = new HashMap<String, String>();
-            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "-1");
-            this.helper.alterConfig(map);
         
             gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
@@ -1204,9 +1198,7 @@ Content-Type: text/html; charset=iso-8859-1
             
             // ------------ Send a request where id_pkix_ocsp_archive_cutoff SHOULD be used
             // set ocsp configuration
-            map = new HashMap<String, String>();
-            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "63072000"); // 2 years
-            this.helper.alterConfig(map);
+            // TODO Add an OCSP key binding with a retention period of 2 years.
         
             gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
@@ -1223,6 +1215,7 @@ Content-Type: text/html; charset=iso-8859-1
             diff = expectedValue - actualValue;
             assertTrue("Wrong archive cutoff value.", diff < 60000);
         
+            // TODO Test archive cutoff date derived from notBefore date of the issuing CA.
         } finally {
             endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
             eeProfSession.removeEndEntityProfile(admin, eepname);
