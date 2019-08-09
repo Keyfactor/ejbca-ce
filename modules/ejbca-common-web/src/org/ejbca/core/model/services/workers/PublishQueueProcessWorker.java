@@ -91,7 +91,8 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 running = b.booleanValue();
             }
         }
-        PublishingResult publishingResult = new PublishingResult();
+        final PublishingResult publishingResult = new PublishingResult();
+        final ServiceExecutionResult ret;
         if (!running) {
             try {
                 synchronized (runmap) {
@@ -100,7 +101,9 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 Object o = properties.get(PROP_PUBLISHER_IDS);
                 if (o != null) {
                     String idstr = (String) o;
-                    log.debug("Ids: " + idstr);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Publisher IDs: " + idstr);
+                    }
                     // Loop through all handled publisher ids and process
                     // anything in the queue
                     String[] ids = StringUtils.split(idstr, ';');
@@ -111,34 +114,37 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                         int publisherId = Integer.valueOf(ids[i]);
                         // Get everything from the queue for this publisher id
                         BasePublisher publisher = publisherSession.getPublisher(publisherId);                  
-                        publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher);
+                        publishingResult.append(publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher));
                     }
                 } else {
-                    log.debug("No publisher ids configured for worker.");
+                    log.debug("No publisher IDs configured for worker.");
                 }
             } finally {
                 synchronized (runmap) {
                     runmap.put(this.serviceName, Boolean.FALSE);
                 }
             }
+            if (publishingResult.getSuccesses() == 0 && publishingResult.getFailures() == 0) {
+                ret = new ServiceExecutionResult(Result.NO_ACTION,
+                        "Publishing Queue Service " + serviceName + " ran, but the publishing queue was either empty or the publisher(s) could not connect.");
+            } else {
+                if (publishingResult.getFailures() != 0) {
+                    ret = new ServiceExecutionResult(Result.FAILURE,
+                            "Publishing Queue Service " + serviceName + " ran with " + publishingResult.getFailures() + " failed publishing operations"
+                                    + (publishingResult.getSuccesses() == 0 ? "."
+                                            : " and " + publishingResult.getSuccesses() + " successful publishing operations."));
+                } else {
+                    ret = new ServiceExecutionResult(Result.SUCCESS, "Publishing Queue Service " + serviceName + " ran with "
+                            + publishingResult.getSuccesses() + " successful publishing operations.");
+                }
+            }
         } else {
-            log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName()));
+            final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());
+            log.info(msg);
+            ret = new ServiceExecutionResult(Result.NO_ACTION, msg);
         }
         log.trace("<work");
-        if (publishingResult.getSuccesses() == 0 && publishingResult.getFailures() == 0) {
-            return new ServiceExecutionResult(Result.NO_ACTION,
-                    "Publishing Queue Service " + serviceName + " ran, but the publishing queue was either empty or the publisher(s) could not connect.");
-        } else {
-            if (publishingResult.getFailures() != 0) {
-                return new ServiceExecutionResult(Result.FAILURE,
-                        "Publishing Queue Service " + serviceName + " ran with " + publishingResult.getFailures() + " failed publishing operations"
-                                + (publishingResult.getSuccesses() == 0 ? "."
-                                        : " and " + publishingResult.getSuccesses() + " successful publishing operations."));
-            } else {
-                return new ServiceExecutionResult(Result.SUCCESS, "Publishing Queue Service " + serviceName + " ran with "
-                        + publishingResult.getSuccesses() + " successful publishing operations.");
-            }
-        }
+        return ret;
     }
 
     /**
