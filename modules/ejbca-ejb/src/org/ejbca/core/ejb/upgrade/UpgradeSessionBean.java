@@ -76,6 +76,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
@@ -101,6 +102,7 @@ import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
@@ -551,6 +553,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         if (isLesserThan(oldVersion, "7.2.0")) {
             upgradeSession.upgradeCrlStoreAndCertStoreConfiguration720();
             setLastUpgradedToVersion("7.2.0");
+        }
+        if (isLesserThan(oldVersion, "7.3.0")) {
+            upgradeSession.migrateDatabase730();
+            setLastUpgradedToVersion("7.3.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1708,6 +1714,44 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
 
         log.debug("Adjustment of CRL Store and Cert Store settings in modular protocols configuration finished.");
+    }
+
+    @Override
+    public void migrateDatabase730() {
+        try {
+            log.info("Migrating settings for archive cutoff (RFC6960) to internal key bindings.");
+            if (ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") == null) {
+                log.warn("The property ocsp.expiredcert.retentionperiod was not set, using default 1 year retention period.");
+            } else {
+                log.debug("The property ocsp.expiredcert.retentionperiod has the value '" + ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") + "'.");
+            }
+            final String configuredValue = ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") == null ? "31536000" :
+                ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod");
+            final int retentionPeriodInSeconds = Integer.parseInt(StringUtils.trim(configuredValue));
+            if (retentionPeriodInSeconds == -1) {
+                // The archive cutoff extension is disabled
+                log.info("The archive cutoff extension is disabled on this EJBCA instance. Nothing to do.");
+                return;
+            }
+            final List<Integer> ocspKeyBindingIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
+            log.debug("Fetched " + ocspKeyBindingIds.size() + " OCSP key bindings from the database.");
+            for (final int ocspKeyBindingId : ocspKeyBindingIds) {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBinding(ocspKeyBindingId);
+                final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
+                ocspExtensions.add(OcspArchiveCutoffExtension.EXTENSION_OID);
+                ocspKeyBinding.setRetentionPeriod(SimpleTime.getInstance(retentionPeriodInSeconds * 1000));
+                ocspKeyBinding.setOcspExtensions(ocspExtensions);
+                internalKeyBindingDataSession.mergeInternalKeyBinding(ocspKeyBinding);
+                log.info("Added id-pkix-ocsp-archive-cutoff with a retention period of " + retentionPeriodInSeconds + " seconds to OCSP key binding "
+                        + ocspKeyBinding.getName() + " (" + ocspKeyBindingId + ").");
+            }
+            log.info("Successfully migrated OCSP key bindings.");
+        } catch (NumberFormatException e) {
+            log.fatal("The property 'ocsp.expiredcert.retentionperiod' does not contain a valid integer. Fix the problem and restart the application server.");
+            throw e;
+        } catch (InternalKeyBindingNameInUseException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
