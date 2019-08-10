@@ -73,6 +73,8 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     void migrateDatabase6150() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only! */
     void upgradeCrlStoreAndCertStoreConfiguration720();
+    /** For internal user from UpgradeSessionBean only */
+    void migrateDatabase730();
 
     
     /** Persist the time when the post-upgrade starts or 0L when it is no longer running. */
