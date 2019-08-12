@@ -1263,7 +1263,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
 
                     final String sStatus;
-                    boolean addArchiveCutoff = false;
                     if (status.equals(CertificateStatus.NOT_AVAILABLE)) {
                         // No revocation info available for this cert, handle it
                         if (log.isDebugEnabled()) {
@@ -1340,7 +1339,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if (transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                         }
-                        addArchiveCutoff = checkAddArchiveCutoff(caCertificateSubjectDn, certId, ocspSigningCacheEntry.getOcspKeyBinding());
                     }
                     if (log.isDebugEnabled()) {
                         log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
@@ -1348,8 +1346,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                     respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
-                    if (addArchiveCutoff) {
-                        addArchiveCutoff(respItem, ocspSigningCacheEntry.getIssuerCaCertificate(), ocspSigningCacheEntry.getOcspKeyBinding());
+                    final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
+                    if (ocspKeyBinding != null && ocspKeyBinding.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
+                        addArchiveCutoff(respItem, ocspSigningCacheEntry.getIssuerCaCertificate(), ocspKeyBinding);
                     }
                 }
  
@@ -1532,20 +1531,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
     
-    private boolean checkAddArchiveCutoff(final String caCertificateSubjectDn, final CertificateID certId, final OcspKeyBinding ocspKeyBinding) {
-        if (ocspKeyBinding == null || !ocspKeyBinding.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
-            return false;
-        }
-        final CertificateInfo info = certificateStoreSession.findFirstCertificateInfo(caCertificateSubjectDn, certId.getSerialNumber());
-        final Date expDate = info.getExpireDate();
-        if (expDate.before(new Date())) {
-            log.info("Certificate with serial number '" + certId.getSerialNumber() + "' is not valid. " +
-                    "Adding singleExtension id-pkix-ocsp-archive-cutoff");
-            return true;
-        }
-        return false;
-    }
-    
     private void addArchiveCutoff(final OCSPResponseItem respItem, final X509Certificate issuer, final OcspKeyBinding ocspKeyBinding) {
         try {
             final long archiveCutoffDate = ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff() ?
@@ -1553,8 +1538,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             final DEROctetString encodedValue = new DEROctetString(new ASN1GeneralizedTime(new Date(archiveCutoffDate)));
             final Extension archiveCutoffExtension = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, encodedValue);
             respItem.addExtensions(Collections.singletonMap(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, archiveCutoffExtension));
+            if (log.isDebugEnabled()) {
+                if (ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff()) {
+                    log.debug("Added ETSI id-pkix-ocsp-archive-cutoff (" + archiveCutoffDate + ") to OCSP response with cert ID serial number "
+                            + respItem.getCertID().getSerialNumber() + ".");
+                } else {
+                    log.debug("Added id-pkix-ocsp-archive-cutoff (" + archiveCutoffDate + ") to OCSP response with cert ID serial number "
+                            + respItem.getCertID().getSerialNumber() + ".");
+                }
+            }
         } catch (final IOException e) {
-            throw new IllegalStateException("IOException was caught when decoding static value.", e);
+            throw new IllegalStateException("An error occurred when constructing the id-pkix-ocsp-archive-cutoff extension.", e);
         }
     }
 
