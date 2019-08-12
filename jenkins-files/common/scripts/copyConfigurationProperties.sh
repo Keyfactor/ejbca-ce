@@ -57,7 +57,7 @@ echo "Copying cmptcp.properties (without filtering)..."
 cp $1/cmptcp.properties $2/
 
 echo "Copying database.properties (with filtering)..."
-sed -e "s#DATASOURCE_JNDI_NAME#java:/$DB_DATASOURCE_JNDI_NAME#" \
+sed -e "s#DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
     -e "s#DATABASE_NAME#$DB_NAME#" \
     -e "s#DATABASE_URL#$DB_DATASOURCE_CONNECTION_URL#" \
     -e "s#DATABASE_DRIVER#$DB_DRIVER#" \
