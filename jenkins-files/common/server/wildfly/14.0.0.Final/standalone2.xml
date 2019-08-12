@@ -167,7 +167,7 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-                <datasource jndi-name="DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME" pool-name="ejbcads">
+                <datasource jndi-name="java:/DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME" pool-name="ejbcads">
                     <connection-url>DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL</connection-url>
                     <driver>DOCKERFILE_STANDALONE_DATASOURCE_DRIVER</driver>
                     DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS
