@@ -64,31 +64,31 @@ if [ "$DOCKERFILE_STANDALONE_FILTERED" = true ]
 then
     echo "Configuring database in standalone.xml files..."
     # Wrap <driver-class/>
-    if [ "x$DB_DATASOURCE_DRIVER_CLASS" != "x" ]
+    if [ -z "$DB_DATASOURCE_DRIVER_CLASS" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG="<driver-class>$DB_DATASOURCE_DRIVER_CLASS</driver-class>"
     fi
     # Wrap <check-valid-connection-sql/>
-    if [ "x$DB_DATASOURCE_VALID_CONNECTION_SQL" != "x" ]
+    if [ -z "$DB_DATASOURCE_VALID_CONNECTION_SQL" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG="<check-valid-connection-sql>$DB_DATASOURCE_VALID_CONNECTION_SQL</check-valid-connection-sql>"
     fi
     # Wrap <valid-connection-checker/>
-    if [ "x$DB_DATASOURCE_VALID_CONNECTION_CHECKER" != "x" ]
+    if [ -z "$DB_DATASOURCE_VALID_CONNECTION_CHECKER" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG="<valid-connection-checker class-name=\"$DB_DATASOURCE_VALID_CONNECTION_CHECKER\"/>"
     fi
     # Wrap <driver/>
-    if [ "x$DB_DRIVER_NAME" != "x" ]
+    if [ -z "$DB_DRIVER_NAME" ]
     then
         DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG=""
         # Wrap <xa-datasource-class/>
-        if [ "x$DB_DRIVER_XA_CLASS" != "x" ]
+        if [ -z "$DB_DRIVER_XA_CLASS" ]
         then
             DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG="<xa-datasource-class>$DB_DRIVER_XA_CLASS</xa-datasource-class>"
         fi
         # Wrap <driver-class/>
-        if [ "x$DB_DRIVER_DRIVER_CLASS" != "x" ]
+        if [ -z "$DB_DRIVER_DRIVER_CLASS" ]
         then
             DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG="<driver-class>$DB_DRIVER_DRIVER_CLASS</driver-class>"
         fi
