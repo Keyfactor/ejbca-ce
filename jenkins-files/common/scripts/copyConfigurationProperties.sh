@@ -4,19 +4,21 @@
 #                                [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
 
 ########################################################################################################################
-# database.properties variables
+# database.properties replacement variables
 ########################################################################################################################
-DATASOURCE_JNDI_NAME="EjbcaDS"
-DATABASE_NAME=""
-DATABASE_URL=""
-DATABASE_DRIVER=""
-DATABASE_USERNAME=""
-DATABASE_PASSWORD=""
+#DATASOURCE_JNDI_NAME
+#DATABASE_NAME
+#DATABASE_URL
+#DATABASE_DRIVER
+#DATABASE_USERNAME
+#DATABASE_PASSWORD
 
 ########################################################################################################################
-# ejbca.properties variables
+# ejbca.properties replacement variables
 ########################################################################################################################
+#APPSERVER_HOME
 APPSERVER_HOME=""
+#APPSERVER_TYPE
 APPSERVER_TYPE=""
 
 ########################################################################################################################
@@ -27,43 +29,9 @@ COPY_JNDI_PROPERTIES_JBOSS=false
 ########################################################################################################################
 # Setup variables
 ########################################################################################################################
-# Database
-if [ $5 = "db2" ]
-then
-    echo "Using DB2 pattern..."
-    DATABASE_NAME="db2"
-    DATABASE_URL="jdbc:db2://${3}:50000/ejbca"
-    DATABASE_DRIVER="com.ibm.db2.jcc.DB2Driver"
-    DATABASE_USERNAME="db2inst1"
-    DATABASE_PASSWORD="db2inst1"
-elif [ $5 = "mariadb" ]
-then
-    echo "Using MariaDB pattern..."
-    DATABASE_NAME="mysql"
-    DATABASE_URL="jdbc:mysql://${3}:3306/ejbca"
-    DATABASE_DRIVER="org.mariadb.jdbc.Driver"
-    DATABASE_USERNAME="ejbca"
-    DATABASE_PASSWORD="ejbca"
-elif [ $5 = "mssql" ]
-then
-    echo "Using MS SQL pattern..."
-    DATABASE_NAME="mssql"
-    DATABASE_URL="jdbc:sqlserver://${3}:1433;databaseName=ejbca"
-    DATABASE_DRIVER="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-    DATABASE_USERNAME="sa"
-    DATABASE_PASSWORD="MyEjbcaPass1100"
-elif [ $5 = "oracle" ]
-then
-    echo "Using Oracle DB pattern..."
-    DATABASE_NAME="oracle"
-    DATABASE_URL="jdbc:oracle:${3}:@oracledb:1521:XE"
-    DATABASE_DRIVER="oracle.jdbc.driver.OracleDriver"
-    DATABASE_USERNAME="ejbca"
-    DATABASE_PASSWORD="ejbca"
-else
-  echo "Error: Cannot map the database family"
-  exit 1
-fi
+# Call setDatabaseConnectionVariables.sh to reuse database connection variables
+$2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
+
 # Application server
 if [ $7 = "wildfly" ]
 then
@@ -89,12 +57,12 @@ echo "Copying cmptcp.properties (without filtering)..."
 cp $1/cmptcp.properties $2/
 
 echo "Copying database.properties (with filtering)..."
-sed -e "s#DATASOURCE_JNDI_NAME#$DATASOURCE_JNDI_NAME#" \
-    -e "s#DATABASE_NAME#$DATABASE_NAME#" \
-    -e "s#DATABASE_URL#$DATABASE_URL#" \
-    -e "s#DATABASE_DRIVER#$DATABASE_DRIVER#" \
-    -e "s#DATABASE_USERNAME#$DATABASE_USERNAME#" \
-    -e "s#DATABASE_PASSWORD#$DATABASE_PASSWORD#" \
+sed -e "s#DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
+    -e "s#DATABASE_NAME#$DB_NAME#" \
+    -e "s#DATABASE_URL#$DB_DATASOURCE_CONNECTION_URL#" \
+    -e "s#DATABASE_DRIVER#$DB_DRIVER#" \
+    -e "s#DATABASE_USERNAME#$DB_DATASOURCE_USERNAME#" \
+    -e "s#DATABASE_PASSWORD#$DB_DATASOURCE_PASSWORD#" \
     $1/database.properties > $2/database.properties
 
 echo "Copying databaseprotection.properties (without filtering)..."
