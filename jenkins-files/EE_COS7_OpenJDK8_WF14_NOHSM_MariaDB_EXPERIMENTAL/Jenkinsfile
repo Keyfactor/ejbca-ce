@@ -58,6 +58,7 @@ pipeline {
                 // Copy the database connection script defining connection variables
                 sh "echo Copying database configuration script..."
                 sh "cp ./ejbca/jenkins-files/common/scripts/setDatabaseConnectionVariables.sh ${env.BUILD_FOLDER}/"
+                sh "cp ./ejbca/jenkins-files/common/scripts/setDatabaseConnectionVariables.sh ${env.BUILD_FOLDER_CONF}/"
 
                 // Copy database container
                 sh "echo Copying database container..."
