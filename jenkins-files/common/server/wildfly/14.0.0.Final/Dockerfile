@@ -28,8 +28,6 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=5
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
 # Copy the run script and set execution privileges to it
-ADD env.sh /opt/
-RUN chmod +x /opt/env.sh
 ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
