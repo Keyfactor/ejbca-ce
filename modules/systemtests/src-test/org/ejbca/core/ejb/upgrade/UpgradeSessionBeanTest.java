@@ -65,6 +65,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
+import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -950,10 +951,12 @@ public class UpgradeSessionBeanTest {
             final InternalKeyBindingInfo ocspTestKeyBindingPostUpgrade = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
             assertNotNull("Could not find ocsp key binding after upgrade", ocspTestKeyBindingPostUpgrade);
             final List<String> ocspKeyExtensionOids = ocspTestKeyBindingPostUpgrade.getOcspExtensions();
-            assertEquals("Unexpected amount of extensionOids imported from ocsp.properties", 3, ocspKeyExtensionOids.size());
+            assertEquals("Unexpected amount of extensionOids imported from ocsp.properties", 4, ocspKeyExtensionOids.size());
             assertTrue("IKB did not contain Unid extension after upgrade", ocspKeyExtensionOids.contains(OCSPUnidExtension.OCSP_UNID_OID));
             assertTrue("IKB did not contain CertHash extension after upgrade", ocspKeyExtensionOids.contains(OcspCertHashExtension.CERT_HASH_OID));
             assertTrue("IKB did not contain CtSct extension after upgrade", ocspKeyExtensionOids.contains(OCSP_SCTLIST_OID));
+            assertTrue("IKB did not contain Archive Cutoff extension after upgrade.",
+                    ocspKeyExtensionOids.contains(OcspArchiveCutoffExtension.EXTENSION_OID));
         } finally {
             // Delete test key binding and restore previous ocsp.extensionoid value
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, keyBindingName);
