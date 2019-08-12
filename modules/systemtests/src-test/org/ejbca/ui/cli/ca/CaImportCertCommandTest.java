@@ -19,13 +19,12 @@ import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
@@ -92,7 +91,7 @@ public class CaImportCertCommandTest {
 
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
@@ -109,13 +108,11 @@ public class CaImportCertCommandTest {
         endEntityInformation.setPassword("foo123");
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
-        Certificate certificate = ((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req,
-                X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate();
+        final Certificate certificate = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req,
+                X509ResponseMessage.class, signSession.fetchCertGenParams()).getCertificate();
         certificateSerialNumber = CertTools.getSerialNumber(certificate);
-        FileOutputStream fileOutputStream = new FileOutputStream(certificateFile);
-        try {
-            fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(certificate)));
-        } finally {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(certificateFile)) {
+            fileOutputStream.write(CertTools.getPemFromCertificateChain(Collections.singletonList(certificate)));
             fileOutputStream.close();
         }
         List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(USERNAME));
@@ -139,10 +136,6 @@ public class CaImportCertCommandTest {
         if (endEntityAccessSession.findUser(authenticationToken, USERNAME) != null) {
             endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
         }
-        
-        if (endEntityAccessSession.findUser(authenticationToken, USERNAME) != null) {
-            endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
-        }
         List<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(USERNAME));
         if (userCerts.size() > 0) {
             for (Certificate certificate : userCerts) {
@@ -161,7 +154,7 @@ public class CaImportCertCommandTest {
     }
 
     @Test
-    public void testCommand1() throws CADoesntExistsException, AuthorizationDeniedException {
+    public void testCommand1() throws AuthorizationDeniedException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", "--email", "foo@foo.com", certificateFile.getAbsolutePath(),
                 "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
         assertEquals(CommandResult.SUCCESS, command.execute(args));
@@ -169,7 +162,7 @@ public class CaImportCertCommandTest {
     }
     
     @Test
-    public void testCommand2() throws CADoesntExistsException, AuthorizationDeniedException {
+    public void testCommand2() throws AuthorizationDeniedException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", certificateFile.getAbsolutePath(),
                 "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
         assertEquals(CommandResult.SUCCESS, command.execute(args));
