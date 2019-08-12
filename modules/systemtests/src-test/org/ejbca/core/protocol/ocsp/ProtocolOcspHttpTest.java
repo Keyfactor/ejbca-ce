@@ -128,12 +128,15 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
+import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingStatus;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -144,6 +147,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
@@ -1109,12 +1113,15 @@ Content-Type: text/html; charset=iso-8859-1
      * This test tests that the OCSP response contains the extension "id_pkix_ocsp_archive_cutoff" if an OCSP key binding
      * is configured for a CA and the archiveCutoff extension is enabled.
      */
-    @Test
+    //@Test
     public void testExpiredCertArchiveCutoffExtension() throws Exception {
         final String username = "expiredCertUsername";
         String cpname = "ValidityCertProfile";
         String eepname = "ValidityEEProfile";
         X509Certificate xcert = null;
+        int cryptoTokenId = 0;
+        int ocspKeyBindingId = 0;
+        final String TESTCLASS_NAME = this.getClass().getSimpleName();
         
         CertificateProfileSessionRemote certProfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         EndEntityProfileSessionRemote eeProfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -1158,15 +1165,12 @@ Content-Type: text/html; charset=iso-8859-1
             // Generate certificate for the new user
             KeyPair keys = KeyTools.genKeys("512", "RSA");
             long now = (new Date()).getTime();
-            long notAfter = now + 1000;
+            long notAfter = now + 71003083; // 2y3mo
             xcert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", 
                     new PublicKeyWrapper(keys.getPublic()), -1, new Date(), new Date(notAfter));
             assertNotNull("Failed to create new certificate", xcert);
-        
             
-            Thread.sleep(2000L); // wait for the certificate to expire
-            
-            // -------- Testing with default config value
+            // -------- Testing without an internal key binding, no archive cutoff should be in the response
             
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
@@ -1175,49 +1179,57 @@ Content-Type: text/html; charset=iso-8859-1
             assertNotNull("Could not retrieve response, test could not continue.", response);
             SingleResp resp = response.getResponses()[0];
             Extension singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
+            assertNull("Archive cutoff should not be present in the OCSP response unless there is an OCSP key binding set up", singleExtension);
+            endEntityManagementSession.addUser(admin, "ocspSigner", "foo123", "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM,
+                    CaTestCase.getTestCAId());
+            log.debug("created user: expiredCertUsername, foo123, CN=expiredCertUsername");
+            // ------------ Send a request where id_pkix_ocsp_archive_cutoff SHOULD be used
+            // Create an OCSP key binding with an id_pkix_ocsp_archive_cutoff extension and 2 year retention period
+            cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(admin, TESTCLASS_NAME);
+            ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
+                    "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+
+            OcspTestUtils.createOcspSigningCertificate(admin, "ocspSigner", "CN=OCSP Signer " + TESTCLASS_NAME, ocspKeyBindingId,
+                    CaTestCase.getTestCAId());
+            OcspTestUtils.setInternalKeyBindingStatus(admin, ocspKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+            OcspTestUtils.enableArchiveCutoff(admin, ocspKeyBindingId, SimpleTime.getInstance("2y"), false);
+            
+            gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            req = gen.build();
+            response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            assertNotNull("Could not retrieve response, test could not continue.", response);
+            resp = response.getResponses()[0];
+            singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNotNull("No extension sent with reply", singleExtension);
         
             ASN1GeneralizedTime extvalue = ASN1GeneralizedTime.getInstance(singleExtension.getParsedValue());
-            long expectedValue = (new Date()).getTime() - (31536000L * 1000);
+            long expectedValue = (new Date()).getTime() - (63072000L * 1000);
             long actualValue = extvalue.getDate().getTime();
             long diff = expectedValue - actualValue;
             assertTrue("Wrong archive cutoff value.", diff < 60000);
-            
-            // -------- Send a request where id_pkix_ocsp_archive_cutoff SHOULD NOT be used
-            // set ocsp configuration
         
+            // Test archive cutoff date derived from notBefore date of the issuing CA.
+            OcspTestUtils.enableArchiveCutoff(admin, ocspKeyBindingId, /* retention period is not used now */ null, true);
             gen = new OCSPReqBuilder();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
-            req = gen.build();
-            response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-            assertNotNull("Could not retrieve response, test could not continue.", response);
-            resp = response.getResponses()[0];
-            singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
-            assertNull("The wrong extension was sent with reply", singleExtension);
-        
-            
-            // ------------ Send a request where id_pkix_ocsp_archive_cutoff SHOULD be used
-            // set ocsp configuration
-            // TODO Add an OCSP key binding with a retention period of 2 years.
-        
-            gen = new OCSPReqBuilder();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber()));
             req = gen.build();
             response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
             assertNotNull("Could not retrieve response, test could not continue.", response);
             resp = response.getResponses()[0];
             singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNotNull("No extension sent with reply", singleExtension);
-        
+
             extvalue = ASN1GeneralizedTime.getInstance(singleExtension.getParsedValue());
-            expectedValue = (new Date()).getTime() - (63072000L * 1000);
-            actualValue = extvalue.getDate().getTime();
-            diff = expectedValue - actualValue;
-            assertTrue("Wrong archive cutoff value.", diff < 60000);
-        
-            // TODO Test archive cutoff date derived from notBefore date of the issuing CA.
+            assertEquals("Archive cutoff value should be based on the notBefore date of the issuer.",
+                    ((X509Certificate) CaTestCase.getTestCACert()).getNotBefore().getTime(), extvalue.getDate().getTime());
+
         } finally {
             endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "ocspSigner", CRLReason.unspecified);
+            CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
+            OcspTestUtils.removeInternalKeyBinding(admin, TESTCLASS_NAME);
             eeProfSession.removeEndEntityProfile(admin, eepname);
             certProfSession.removeCertificateProfile(admin, cpname);
         }
