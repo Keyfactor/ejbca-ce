@@ -41,6 +41,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.SimpleTime;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -150,17 +151,24 @@ public class OcspKeyBindingTest {
         assertTrue("getIncludeSignCert", keybind.getIncludeSignCert());
         assertFalse("getRequireTrustedSignature", keybind.getRequireTrustedSignature());
         assertEquals("getResponderIdType", ResponderIdType.KEYHASH, keybind.getResponderIdType());
+        assertEquals("Default retention period should be 1 year.", "1y", keybind.getRetentionPeriod().toString());
+        assertEquals("ETSI Archive Cutoff should be disabled by default.", false, keybind.useIssuerNotBeforeAsArchiveCutoff());
         // Test getters and setters
         keybind.setNonExistingGood(true);
         keybind.setIncludeCertChain(false);
         keybind.setIncludeSignCert(false);
         keybind.setRequireTrustedSignature(true);
         keybind.setResponderIdType(ResponderIdType.NAME);
+        keybind.setUseIssuerNotBeforeAsArchiveCutoff(true);
+        keybind.setUseIssuerNotBeforeAsArchiveCutoff(true);
+        keybind.setRetentionPeriod(SimpleTime.getInstance("10y"));
         assertTrue("setNonExistingGood", keybind.getNonExistingGood());
         assertFalse("setIncludeSignCert", keybind.getIncludeSignCert());
         assertFalse("setIncludeCertChain", keybind.getIncludeCertChain());
         assertTrue("setRequireTrustedSignature", keybind.getRequireTrustedSignature());
         assertEquals("setResponderIdType", ResponderIdType.NAME, keybind.getResponderIdType());
+        assertEquals("Retention period did not change.", "10y", keybind.getRetentionPeriod().toString());
+        assertEquals("Use ETSI archive cutoff option did not change.", true, keybind.useIssuerNotBeforeAsArchiveCutoff());
     }
 
 }
