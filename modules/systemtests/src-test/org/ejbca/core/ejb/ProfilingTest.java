@@ -14,13 +14,12 @@ package org.ejbca.core.ejb;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.config.DatabaseConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -33,7 +32,16 @@ public class ProfilingTest {
     
     private static final Logger log = Logger.getLogger(ProfilingTest.class);
 
-    private static final long HIGEST_AVERAGE_ALLOWED_MS = 30000L;
+    // Default
+    private static final long HIGEST_AVERAGE_ALLOWED_MS_DEFAULT = 30_000L;
+    // MariaDB: 31976ms, 34336ms, 38924ms => 39_000L
+    private static final long HIGEST_AVERAGE_ALLOWED_MS_FOR_MARIADB = 39_000L;
+    // DB2: 37956ms, 41023ms, 34750ms => 42_000L
+    private static final long HIGEST_AVERAGE_ALLOWED_MS_FOR_DB2 = 42_000L;
+    // MSSQL: 56174ms, 56153ms, 59961ms => 60_000L
+    private static final long HIGEST_AVERAGE_ALLOWED_MS_FOR_MSSQL = 60_000L;
+    // Oracle: 34098ms, 30731ms, 31835ms => 35_000L
+    private static final long HIGEST_AVERAGE_ALLOWED_MS_FOR_ORACLE = 35_000L;
 
     private ProfilingStatsAccessSessionRemote profilingStatsAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ProfilingStatsAccessSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -51,36 +59,24 @@ public class ProfilingTest {
             return;
         }
         // Sort with most consumed time first
-        Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
-            @Override
-            public int compare(ProfilingStat p0, ProfilingStat p1) {
-                return (int)(p1.getDurationMilliSeconds() - p0.getDurationMilliSeconds());
-            }
-        });
+        profilingStats.sort((p0, p1) -> (int) (p1.getDurationMilliSeconds() - p0.getDurationMilliSeconds()));
         log.info("\n\nInvocations with most consumed time:\n" + getAsString(profilingStats));
         // Sort with highest average (slowest) first
-        Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
-            @Override
-            public int compare(ProfilingStat p0, ProfilingStat p1) {
-                return (int)(p1.getAverageMilliSeconds() - p0.getAverageMilliSeconds());
-            }
-        });
+        profilingStats.sort((p0, p1) -> (int) (p1.getAverageMilliSeconds() - p0.getAverageMilliSeconds()));
         log.info("\n\nInvocations with average highest invocation time:\n" + getAsString(profilingStats));
         // Sort with most invoked methods first
-        Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
-            @Override
-            public int compare(ProfilingStat p0, ProfilingStat p1) {
-                return (int)(p1.getInvocations() - p0.getInvocations());
-            }
-        });
+        profilingStats.sort((p0, p1) -> (int) (p1.getInvocations() - p0.getInvocations()));
         log.info("\n\nMost invoked methods:\n" + getAsString(profilingStats));
         // Make a sanity check that the highest average invocation has not run too high
         long highestAverage = 0;
         for (final ProfilingStat profilingStat : profilingStats) {
             highestAverage = Math.max(highestAverage, profilingStat.getAverageMilliSeconds());
         }
-        assertTrue("Highest average invocation time was " + highestAverage + "ms. Max allowed for this test to pass is " +
-                HIGEST_AVERAGE_ALLOWED_MS +" ms.", highestAverage<HIGEST_AVERAGE_ALLOWED_MS);
+        final long higestAverageAllowed = getHigestAverageAllowedMsPerDatabase();
+        final String highestAverageInvocationTimeWas = "Highest average invocation time was " + highestAverage + "ms.";
+        assertTrue(
+                highestAverageInvocationTimeWas + " Max allowed for this test to pass is " + higestAverageAllowed +" ms.",
+                highestAverage < higestAverageAllowed);
     }
     
     // Output in a format that is friendly to post-processing
@@ -97,5 +93,25 @@ public class ProfilingTest {
             sb.append(String.format("%10.3f", Long.valueOf(profilingStat.getAverageMicroSeconds()).doubleValue()/1000)).append('\n');
         }
         return sb.toString();
+    }
+
+    private long getHigestAverageAllowedMsPerDatabase() {
+        final String databaseName = DatabaseConfiguration.getDatabaseName();
+        // As in database.properties.sample
+        if("mysql".equalsIgnoreCase(databaseName)) {
+            return HIGEST_AVERAGE_ALLOWED_MS_FOR_MARIADB;
+        }
+        else if("db2".equalsIgnoreCase(databaseName)) {
+            return HIGEST_AVERAGE_ALLOWED_MS_FOR_DB2;
+        }
+        else if("mssql".equalsIgnoreCase(databaseName)) {
+            return HIGEST_AVERAGE_ALLOWED_MS_FOR_MSSQL;
+        }
+        else if("oracle".equalsIgnoreCase(databaseName)) {
+            return HIGEST_AVERAGE_ALLOWED_MS_FOR_ORACLE;
+        }
+        log.debug("A value of the higest allowed average for database (" + databaseName + ") was not found, falling back to default (" + HIGEST_AVERAGE_ALLOWED_MS_DEFAULT + ").");
+        // Return default
+        return HIGEST_AVERAGE_ALLOWED_MS_DEFAULT;
     }
 }
