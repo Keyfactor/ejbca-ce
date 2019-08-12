@@ -48,31 +48,31 @@ if [ "$DOCKERFILE_STANDALONE_FILTERED" = true ]
 then
     echo "Configuring database in standalone.xml files..."
     # Wrap <driver-class/>
-    if [ -z "$DB_DATASOURCE_DRIVER_CLASS" ]
+    if [ ! -z "$DB_DATASOURCE_DRIVER_CLASS" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG="<driver-class>$DB_DATASOURCE_DRIVER_CLASS</driver-class>"
     fi
     # Wrap <check-valid-connection-sql/>
-    if [ -z "$DB_DATASOURCE_VALID_CONNECTION_SQL" ]
+    if [ ! -z "$DB_DATASOURCE_VALID_CONNECTION_SQL" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG="<check-valid-connection-sql>$DB_DATASOURCE_VALID_CONNECTION_SQL</check-valid-connection-sql>"
     fi
     # Wrap <valid-connection-checker/>
-    if [ -z "$DB_DATASOURCE_VALID_CONNECTION_CHECKER" ]
+    if [ ! -z "$DB_DATASOURCE_VALID_CONNECTION_CHECKER" ]
     then
         DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG="<valid-connection-checker class-name=\"$DB_DATASOURCE_VALID_CONNECTION_CHECKER\"/>"
     fi
     # Wrap <driver/>
-    if [ -z "$DB_DRIVER_NAME" ]
+    if [ ! -z "$DB_DRIVER_NAME" ]
     then
         DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG=""
         # Wrap <xa-datasource-class/>
-        if [ -z "$DB_DRIVER_XA_CLASS" ]
+        if [ ! -z "$DB_DRIVER_XA_CLASS" ]
         then
             DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG="<xa-datasource-class>$DB_DRIVER_XA_CLASS</xa-datasource-class>"
         fi
         # Wrap <driver-class/>
-        if [ -z "$DB_DRIVER_DRIVER_CLASS" ]
+        if [ ! -z "$DB_DRIVER_DRIVER_CLASS" ]
         then
             DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG="<driver-class>$DB_DRIVER_DRIVER_CLASS</driver-class>"
         fi
@@ -82,7 +82,7 @@ then
     echo "standalone.xml Replacement Variables:"
     echo "DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME        [$DB_DATASOURCE_JNDI_NAME]"
     echo "DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL   [$DB_DATASOURCE_CONNECTION_URL]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_DRIVER           [$DB_DRIVER]"
+    echo "DOCKERFILE_STANDALONE_DATASOURCE_DRIVER           [$DB_DATASOURCE_DRIVER]"
     echo "DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS        [$DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG]"
     echo "DOCKERFILE_STANDALONE_DATASOURCE_USERNAME         [$DB_DATASOURCE_USERNAME]"
     echo "DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD         [$DB_DATASOURCE_PASSWORD]"
@@ -92,7 +92,7 @@ then
     # standalone1.xml
     sed -e "s#DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL#$DB_DATASOURCE_CONNECTION_URL#" \
-        -e "s#DOCKERFILE_STANDALONE_DATASOURCE_DRIVER#$DB_DRIVER#" \
+        -e "s#DOCKERFILE_STANDALONE_DATASOURCE_DRIVER#$DB_DATASOURCE_DRIVER#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS#$DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_USERNAME#$DB_DATASOURCE_USERNAME#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD#$DB_DATASOURCE_PASSWORD#" \
