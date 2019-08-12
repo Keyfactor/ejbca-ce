@@ -768,11 +768,21 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
     private ListDataModel<String> ocspExtensions = null;
     private Map<String, String> ocspExtensionOidNameMap = new HashMap<>();
-    private boolean useIssuerNotBeforeAsArchiveCutoff = false;
-    private SimpleTime retentionPeriod = SimpleTime.getInstance("1y");
+    private Boolean useIssuerNotBeforeAsArchiveCutoff;
+    private SimpleTime retentionPeriod;
 
     public boolean getUseIssuerNotBeforeAsArchiveCutoff() {
-        return this.useIssuerNotBeforeAsArchiveCutoff;
+        try {
+            if (useIssuerNotBeforeAsArchiveCutoff == null) {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                        Integer.parseInt(currentInternalKeyBindingId));
+                useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding == null ? false : ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff();
+            }
+            return useIssuerNotBeforeAsArchiveCutoff;
+        } catch (AuthorizationDeniedException e) {
+            addNonTranslatedErrorMessage(e);
+            return false;
+        }
     }
 
     public void setUseIssuerNotBeforeAsArchiveCutoff(final boolean useIssuerNotBeforeAsArchiveCutoff) {
@@ -780,7 +790,17 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public String getRetentionPeriod() {
-        return retentionPeriod.toString();
+        try {
+            if (retentionPeriod == null) {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                        Integer.parseInt(currentInternalKeyBindingId));
+                retentionPeriod = ocspKeyBinding == null ? SimpleTime.getInstance("1y") : ocspKeyBinding.getRetentionPeriod();
+            }
+            return retentionPeriod.toString();
+        } catch (AuthorizationDeniedException e) {
+            addNonTranslatedErrorMessage(e);
+            return "";
+        }
     }
 
     public void setRetentionPeriod(final String retentionPeriod) {
@@ -814,6 +834,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         trustedCertificates = null;
         inEditMode = false;
         ocspExtensions = null;
+        retentionPeriod = null;
+        useIssuerNotBeforeAsArchiveCutoff = null;
     }
 
     /** @return the current InternalKeyBindingId as a String */
@@ -880,6 +902,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
             internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBinding.getCopyOfProperties().values()));
             trustedCertificates = null;
+            retentionPeriod = null;
+            useIssuerNotBeforeAsArchiveCutoff = null;
         }
     }
 
