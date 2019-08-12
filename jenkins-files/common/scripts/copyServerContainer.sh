@@ -5,7 +5,6 @@
 
 DOCKERFILE_PATH=""
 DOCKERFILE_RUN_PATH=""
-DOCKERFILE_ENV_PATH=""
 DOCKERFILE_STANDALONE_FILTERED=false
 DOCKERFILE_STANDALONE1_PATH=""
 DOCKERFILE_STANDALONE2_PATH=""
@@ -39,6 +38,7 @@ fi
 # Call setDatabaseConnectionVariables.sh to reuse database connection variables
 $2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
 
+echo "copyServerContainer.sh-setDatabaseConnectionVariables.sh"
 echo $DB_NAME
 echo $DB_DRIVER
 echo $DB_DATASOURCE_JNDI_NAME
@@ -59,7 +59,6 @@ echo $DB_DRIVER_DRIVER_CLASS
 ########################################################################################################################
 cp $DOCKERFILE_PATH $2/
 cp $DOCKERFILE_RUN_PATH $2/
-cp $DOCKERFILE_ENV_PATH $2/
 
 if [ "$DOCKERFILE_STANDALONE_FILTERED" = true ]
 then
