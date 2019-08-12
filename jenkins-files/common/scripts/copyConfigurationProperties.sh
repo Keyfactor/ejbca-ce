@@ -30,7 +30,7 @@ COPY_JNDI_PROPERTIES_JBOSS=false
 # Setup variables
 ########################################################################################################################
 # Call setDatabaseConnectionVariables.sh to reuse database connection variables
-$2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
+. $2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
 
 echo "copyConfigurationProperties.sh-setDatabaseConnectionVariables.sh"
 echo $DB_NAME
