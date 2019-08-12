@@ -32,22 +32,6 @@ COPY_JNDI_PROPERTIES_JBOSS=false
 # Call setDatabaseConnectionVariables.sh to reuse database connection variables
 . $2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
 
-echo "copyConfigurationProperties.sh-setDatabaseConnectionVariables.sh"
-echo $DB_NAME
-echo $DB_DRIVER
-echo $DB_DATASOURCE_JNDI_NAME
-echo $DB_DATASOURCE_CONNECTION_URL
-echo $DB_DATASOURCE_DRIVER
-echo $DB_DATASOURCE_DRIVER_CLASS
-echo $DB_DATASOURCE_USERNAME
-echo $DB_DATASOURCE_PASSWORD
-echo $DB_DATASOURCE_VALID_CONNECTION_SQL
-echo $DB_DATASOURCE_VALID_CONNECTION_CHECKER
-echo $DB_DRIVER_NAME
-echo $DB_DRIVER_MODULE
-echo $DB_DRIVER_XA_CLASS
-echo $DB_DRIVER_DRIVER_CLASS
-
 # Application server
 if [ $7 = "wildfly" ]
 then
@@ -81,8 +65,6 @@ sed -e "s#DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
     -e "s#DATABASE_PASSWORD#$DB_DATASOURCE_PASSWORD#" \
     $1/database.properties > $2/database.properties
 
-cat $2/database.properties
-
 echo "Copying databaseprotection.properties (without filtering)..."
 cp $1/databaseprotection.properties $2/
 
@@ -90,8 +72,6 @@ echo "Copying ejbca.properties (with filtering)..."
 sed -e "s#APPSERVER_HOME#$APPSERVER_HOME#" \
     -e "s#APPSERVER_TYPE#$APPSERVER_TYPE#" \
     $1/ejbca.properties > $2/ejbca.properties
-
-cat $2/ejbca.properties
 
 echo "Copying install.properties (without filtering)..."
 cp $1/install.properties $2/
