@@ -100,7 +100,7 @@ then
         -e "s#DOCKERFILE_STANDALONE_DRIVER#$DOCKERFILE_STANDALONE_DRIVER_TAG#" \
         $DOCKERFILE_STANDALONE1_PATH > $2/standalone1.xml
 
-    cat $DOCKERFILE_STANDALONE1_PATH > $2/standalone1.xml
+    cat $2/standalone1.xml
 
     # standalone2.xml
     sed -e "s#DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
