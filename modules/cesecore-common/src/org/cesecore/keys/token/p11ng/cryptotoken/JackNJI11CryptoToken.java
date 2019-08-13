@@ -42,7 +42,6 @@ import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 /**
  * 
  * @version $Id$
- *
  */
 public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser {
 
