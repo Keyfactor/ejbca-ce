@@ -1540,10 +1540,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             respItem.addExtensions(Collections.singletonMap(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, archiveCutoffExtension));
             if (log.isDebugEnabled()) {
                 if (ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff()) {
-                    log.debug("Added ETSI id-pkix-ocsp-archive-cutoff (" + archiveCutoffDate + ") to OCSP response with cert ID serial number "
+                    log.debug("Added ETSI EN 319411-2, CSS-6.3.10-10 id-pkix-ocsp-archive-cutoff (issuer notBefore = " + archiveCutoffDate
+                            + ") to OCSP response with cert ID serial number "
                             + respItem.getCertID().getSerialNumber() + ".");
                 } else {
-                    log.debug("Added id-pkix-ocsp-archive-cutoff (" + archiveCutoffDate + ") to OCSP response with cert ID serial number "
+                    log.debug("Added id-pkix-ocsp-archive-cutoff (producedAt - " + ocspKeyBinding.getRetentionPeriod().getLong() + " = "
+                            + archiveCutoffDate + ") to OCSP response with cert ID serial number "
                             + respItem.getCertID().getSerialNumber() + ".");
                 }
             }
