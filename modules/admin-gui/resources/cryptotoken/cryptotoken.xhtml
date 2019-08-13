@@ -415,7 +415,7 @@
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_INIT}"
 						action="#{cryptoTokenMBean.initializeKey}"
 						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-						disabled="#{keyPairGuiInfo.placeholder}"/>
+						disabled="#{keyPairGuiInfo.placeholder or keyPairGuiInfo.initialized}"/>
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_AUTH}"
 						action="#{cryptoTokenMBean.authorizeKey}"
 						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
