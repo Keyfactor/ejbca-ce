@@ -275,5 +275,25 @@ public interface CryptoTokenManagementSession {
     void keyAuthorize(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
             long maxOperationCount) throws CryptoTokenOfflineException;
 
+    
+    /**
+     * Operation specific for CP5 crypto tokens.
+     * 
+     * @param authenticationToken
+     * @param cryptoTokenId
+     * @param alias
+     * @return true if key is initialized already otherwise false
+     */
+    boolean isKeyInitialized(AuthenticationToken authenticationToken, int cryptoTokenId, String alias);
+    
+    /**
+     * Operation specific for CP5 crypto tokens.
+     * 
+     * @param authenticationToken
+     * @param cryptoTokenId
+     * @param alias
+     * @return Max operation count remaining for a CP5 key
+     */
+    long maxOperationCount(AuthenticationToken authenticationToken, int cryptoTokenId, String alias);
 
 }
