@@ -157,6 +157,23 @@ public interface CryptoToken extends Serializable {
      */
     void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount);
     
+    /**
+     * Operation specific for CP5 crypto tokens
+     * 
+     * @param alias
+     * @return true if the CP5 key is already initialized, false otherwise
+     */
+    boolean isKeyInitialized(String alias);
+    
+    
+    /**
+     * Operation specific for CP5 crypto tokens
+     * 
+     * @param alias
+     * @return number of operations remaining for a CP5 key
+     */
+    long maxOperationCount(String alias);
+    
     /** Generates a key pair (asymmetric keys) in the crypto token.
      *
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
