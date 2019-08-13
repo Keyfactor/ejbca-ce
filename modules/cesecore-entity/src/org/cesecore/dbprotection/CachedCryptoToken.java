@@ -88,6 +88,16 @@ public class CachedCryptoToken implements CryptoToken {
     }
     
     @Override
+    public boolean isKeyInitialized(final String alias) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+    
+    @Override
+    public long maxOperationCount(final String alias) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }    
+    
+    @Override
     public void generateKey(String algorithm, int keysize, String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
             KeyStoreException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException,
             SignatureException, CertificateException, IOException, NoSuchPaddingException, IllegalBlockSizeException {

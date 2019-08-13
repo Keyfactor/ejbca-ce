@@ -59,6 +59,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
@@ -262,6 +263,24 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
         cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount);
+    }
+    
+    @Override
+    public boolean isKeyInitialized(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias) {
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        if (cryptoToken instanceof JackNJI11CryptoToken) {
+            return cryptoToken.isKeyInitialized(alias);
+        }
+        return false;
+    }
+    
+    @Override
+    public long maxOperationCount(AuthenticationToken authenticationToken, int cryptoTokenId, final String alias) {
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        if (cryptoToken instanceof JackNJI11CryptoToken) {
+            return cryptoToken.maxOperationCount(alias);
+        }
+        return 0;
     }
     
     @Override

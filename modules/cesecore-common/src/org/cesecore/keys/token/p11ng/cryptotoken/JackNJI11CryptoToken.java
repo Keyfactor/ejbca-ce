@@ -262,6 +262,16 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
     
     @Override
+    public boolean isKeyInitialized(final String alias) {
+        return slot.isKeyAuthorized(alias);
+    }
+    
+    @Override
+    public long maxOperationCount(final String alias) {
+        return slot.maxOperationCount(alias);
+    }
+    
+    @Override
     public List<String> getAliases() throws CryptoTokenOfflineException {
         final List<String> aliases = new ArrayList<>();
         final Enumeration<SlotEntry> e = slot.aliases();
