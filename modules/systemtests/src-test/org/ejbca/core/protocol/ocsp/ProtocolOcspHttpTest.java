@@ -1113,7 +1113,7 @@ Content-Type: text/html; charset=iso-8859-1
      * This test tests that the OCSP response contains the extension "id_pkix_ocsp_archive_cutoff" if an OCSP key binding
      * is configured for a CA and the archiveCutoff extension is enabled.
      */
-    //@Test
+    @Test
     public void testArchiveCutoffExtension() throws Exception {
         final String username = "certUsername";
         String cpname = "ValidityCertProfile";
@@ -1186,14 +1186,25 @@ Content-Type: text/html; charset=iso-8859-1
             cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(admin, TESTCLASS_NAME);
             ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
                     "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-            endEntityManagementSession.addUser(admin, "ocspSigner", "foo123", "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
+            if (!endEntityManagementSession.existsUser("ocspSigner")) {
+                endEntityManagementSession.addUser(admin, "ocspSigner", "foo123", "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
                     cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.TOKEN_USERGEN, CaTestCase.getTestCAId());
+                        EndEntityConstants.TOKEN_USERGEN, caid);
+            } else {
+                log.debug("User ocspSigner already exists.");
+                EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
+                        caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                        eepId, cpId, null, null, EndEntityConstants.TOKEN_USERGEN, null);
+                userData.setPassword("foo123");
+                endEntityManagementSession.changeUser(admin, userData, false);
+                log.debug("Reset status to NEW");
+            }
             OcspTestUtils.createOcspSigningCertificate(admin, "ocspSigner", "CN=OCSP Signer " + TESTCLASS_NAME, ocspKeyBindingId,
                     CaTestCase.getTestCAId());
+            OcspTestUtils.updateInternalKeyBindingCertificate(admin, ocspKeyBindingId);
             OcspTestUtils.setInternalKeyBindingStatus(admin, ocspKeyBindingId, InternalKeyBindingStatus.ACTIVE);
             OcspTestUtils.enableArchiveCutoff(admin, ocspKeyBindingId, SimpleTime.getInstance("2y"), false);
-            
+            OcspTestUtils.clearOcspSigningCache();
             gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
             req = gen.build();
@@ -1210,7 +1221,8 @@ Content-Type: text/html; charset=iso-8859-1
             assertTrue("Wrong archive cutoff value.", diff < 60000);
         
             // Test archive cutoff date derived from notBefore date of the issuing CA.
-            OcspTestUtils.enableArchiveCutoff(admin, ocspKeyBindingId, /* retention period is not used now */ null, true);
+            OcspTestUtils.enableArchiveCutoff(admin, ocspKeyBindingId, /* retention period is not used now */ SimpleTime.getInstance("22y"), true);
+            OcspTestUtils.clearOcspSigningCache();
             gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber()));
             req = gen.build();
@@ -1225,7 +1237,12 @@ Content-Type: text/html; charset=iso-8859-1
                     ((X509Certificate) CaTestCase.getTestCACert()).getNotBefore().getTime(), extvalue.getDate().getTime());
 
         } finally {
-            endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
+            }
+            if (endEntityManagementSession.existsUser("ocspSigner")) {
+                endEntityManagementSession.revokeAndDeleteUser(admin, "ocspSigner", CRLReason.unspecified);
+            }
             CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
             OcspTestUtils.removeInternalKeyBinding(admin, TESTCLASS_NAME);
             eeProfSession.removeEndEntityProfile(admin, eepname);

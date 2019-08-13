@@ -1721,12 +1721,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         try {
             log.info("Migrating settings for archive cutoff (RFC6960) to internal key bindings.");
             if (ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") == null) {
-                log.warn("The property ocsp.expiredcert.retentionperiod was not set, using default 1 year retention period.");
+                log.warn("The property ocsp.expiredcert.retentionperiod was not set, disabling archive cutoff.");
+                return;
             } else {
                 log.debug("The property ocsp.expiredcert.retentionperiod has the value '" + ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") + "'.");
             }
-            final String configuredValue = ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") == null ? "31536000" :
-                ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod");
+            final String configuredValue = ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod");
             final int retentionPeriodInSeconds = Integer.parseInt(StringUtils.trim(configuredValue));
             if (retentionPeriodInSeconds == -1) {
                 // The archive cutoff extension is disabled

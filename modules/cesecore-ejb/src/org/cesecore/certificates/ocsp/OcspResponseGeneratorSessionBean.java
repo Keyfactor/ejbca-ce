@@ -1349,6 +1349,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
                     if (ocspKeyBinding != null && ocspKeyBinding.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
                         addArchiveCutoff(respItem, ocspSigningCacheEntry.getIssuerCaCertificate(), ocspKeyBinding);
+                    } else {
+                        log.debug("Not adding archiveCutoff, ocspKeyBinding = " + ocspKeyBinding);
+                        if (ocspKeyBinding != null) {
+                            log.debug("Name of ocspKeyBinding loaded from cache " + ocspKeyBinding.getName() + " Extensions: "
+                                    + ocspKeyBinding.getOcspExtensions());
+                        }
                     }
                 }
  

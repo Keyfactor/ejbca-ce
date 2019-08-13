@@ -1472,8 +1472,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             if (isOcspKeyBinding()) {
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
                 ocspKeyBinding.setOcspExtensions((List<String>) ocspExtensions.getWrappedData());
-                ocspKeyBinding.setRetentionPeriod(retentionPeriod);
-                ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);
+                if (retentionPeriod != null) {
+                    ocspKeyBinding.setRetentionPeriod(retentionPeriod);
+                }
+                if (useIssuerNotBeforeAsArchiveCutoff != null) {
+                    ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);
+                }
             }
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                     .getWrappedData();
