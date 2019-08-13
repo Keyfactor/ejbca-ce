@@ -767,6 +767,14 @@ public class CryptokiDevice {
             }
         }
         
+        public boolean isKeyAuthorized(String alias) {
+            return false; // Here we have to call the actual check via native commands
+        }
+        
+        public long maxOperationCount(String alias) {
+            return 0; // Here we have to call the actual check via native commands
+        }
+        
         public void generateKeyPair(String keyAlgorithm, String keySpec, String alias, boolean publicKeyToken, Map<Long, Object> overridePublic, Map<Long, Object> overridePrivate, CertificateGenerator certGenerator, boolean storeCertificate) throws CertificateEncodingException, CertificateException, OperatorCreationException {
             Long session = null;
             try {
