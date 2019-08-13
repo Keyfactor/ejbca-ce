@@ -95,6 +95,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    private long maxOperationCount;
+    
+    public long getMaxOperationCount() {
+        return maxOperationCount;
+    }
+
+    public void setMaxOperationCount(long maxOperationCount) {
+        this.maxOperationCount = maxOperationCount;
+    }
+    
     /** GUI table representation of a CryptoToken that can be interacted with. */
     public class CryptoTokenGuiInfo {
         private final CryptoTokenInfo cryptoTokenInfo;
@@ -1076,8 +1086,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return;
         }
         try {
-            // TODO GUI support for maxOperationCount 
-            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias, 100);
+            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias, maxOperationCount);
         } catch (CryptoTokenOfflineException e) {
             addNonTranslatedErrorMessage(e);
         }
@@ -1141,5 +1150,4 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public boolean isP11SlotUsed() {
         return p11SlotUsed;
     }
-    
 }
