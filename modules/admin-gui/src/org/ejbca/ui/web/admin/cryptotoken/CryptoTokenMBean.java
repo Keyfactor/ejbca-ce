@@ -95,16 +95,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private long maxOperationCount;
-    
-    public long getMaxOperationCount() {
-        return maxOperationCount;
-    }
-
-    public void setMaxOperationCount(long maxOperationCount) {
-        this.maxOperationCount = maxOperationCount;
-    }
-    
     /** GUI table representation of a CryptoToken that can be interacted with. */
     public class CryptoTokenGuiInfo {
         private final CryptoTokenInfo cryptoTokenInfo;
@@ -280,6 +270,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean selected = false;
         private int selectedKakCryptoTokenId;
         private String selectedKakKeyAlias;
+        private long maxOperationCount;
         
         private KeyPairGuiInfo(KeyPairInfo keyPairInfo) {
             alias = keyPairInfo.getAlias();
@@ -343,6 +334,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setSelectedKakCryptoTokenId(int selectedKakCryptoTokenId) { this.selectedKakCryptoTokenId = selectedKakCryptoTokenId; }
         public String getSelectedKakKeyAlias() { return selectedKakKeyAlias; }
         public void setSelectedKakKeyAlias(String selectedKakKeyAlias) { this.selectedKakKeyAlias = selectedKakKeyAlias; }
+
+        public long getMaxOperationCount() {
+            return maxOperationCount;
+        }
+        public void setMaxOperationCount(long maxOperationCount) {
+            this.maxOperationCount = maxOperationCount;
+        }
     }
 
     private static final long serialVersionUID = 1L;
@@ -1086,7 +1084,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return;
         }
         try {
-            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias, maxOperationCount);
+            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, 
+                    kakAlias, keyPairGuiInfo.maxOperationCount);
         } catch (CryptoTokenOfflineException e) {
             addNonTranslatedErrorMessage(e);
         }
