@@ -14,7 +14,10 @@ package org.cesecore.certificates.ocsp;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
@@ -62,6 +65,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.junit.Assert;
 
 /**
  * @version $Id$
@@ -246,6 +250,20 @@ public class OcspTestUtils {
                 return;
             }
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+        }
+    }
+
+    public static void clearOcspSigningCache() {
+        try {
+            final URL url = new URL("http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true");
+            final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"
+                        + ". The response code was: " + con.getResponseCode());
+            }
+        } catch (IOException e) {
+            Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"
+                    + ". The error was: " + e.getMessage());
         }
     }
 }
