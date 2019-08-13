@@ -357,4 +357,13 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
         return true;
     }
 
+    @Override
+    public boolean isKeyInitialized(String alias) {
+        return true;
+    }
+
+    @Override
+    public long maxOperationCount(String alias) {
+        return Long.MAX_VALUE;
+    }
 }
