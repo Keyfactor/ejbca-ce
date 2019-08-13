@@ -421,14 +421,13 @@
 						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
 						disabled="#{keyPairGuiInfo.placeholder}"/>
 					<h:inputText size="1" style="margin-left: 2px; margin-right: 2px;"
-					  value="#{cryptoTokenMBean.maxOperationCount}"
-					  rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-					  disabled="#{keyPairGuiInfo.placeholder}"
-					  >
+					  	value="#{keyPairGuiInfo.maxOperationCount}"
+					  	rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
+					  	disabled="#{keyPairGuiInfo.placeholder}">
 						<f:validator validatorId="cP5KeyMaxOperationsValidator" />
 					</h:inputText>
 					<h:outputText styleClass="smallHelp"
-						value="#{web.text.CRYPTOTOKEN_KPM_MAX_OPERATIONS}" style="margin-right: 2px;"
+						value="#{web.text.CRYPTOTOKEN_KPM_KEY_OPERATION_COUNT}" style="margin-right: 2px;"
 						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
 						 /> 
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
