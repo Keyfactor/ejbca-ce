@@ -25,6 +25,7 @@ import javax.naming.OperationNotSupportedException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
@@ -33,24 +34,25 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * @version $Id$
  */
 public class InternalKeyBindingInfo implements InternalKeyBinding {
-
     private static final long serialVersionUID = 1L;
 
-    final private String implementationAlias;
-    final private int id;
-    final private String name;
-    final private InternalKeyBindingStatus status;
-    final private InternalKeyBindingOperationalStatus operationalStatus;
-    final private String certificateId;
-    final private int cryptoTokenId;
-    final private String keyPairAlias;
-    final private String nextKeyPairAlias;
-    final private Map<String, DynamicUiProperty<? extends Serializable>> properties;
-    final private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
-    final private List<String> ocspExtensions;
-    final private String signatureAlgorithm;
+    private final String implementationAlias;
+    private final int id;
+    private final String name;
+    private final InternalKeyBindingStatus status;
+    private final InternalKeyBindingOperationalStatus operationalStatus;
+    private final String certificateId;
+    private final int cryptoTokenId;
+    private final String keyPairAlias;
+    private final String nextKeyPairAlias;
+    private final Map<String, DynamicUiProperty<? extends Serializable>> properties;
+    private final List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
+    private final List<String> ocspExtensions;
+    private final String signatureAlgorithm;
+    private boolean useIssuerNotBeforeAsArchiveCutoff;
+    private String retentionPeriod;
     
-    public InternalKeyBindingInfo(InternalKeyBinding internalKeyBinding) {
+    public InternalKeyBindingInfo(final InternalKeyBinding internalKeyBinding) {
         this.implementationAlias = internalKeyBinding.getImplementationAlias();
         this.id = internalKeyBinding.getId();
         this.name = internalKeyBinding.getName();
@@ -64,6 +66,11 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.trustedCertificateReferences = internalKeyBinding.getTrustedCertificateReferences();
         this.ocspExtensions = internalKeyBinding.getOcspExtensions();
         this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
+        if (internalKeyBinding instanceof OcspKeyBinding) {
+            final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
+            this.useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff();
+            this.retentionPeriod = ocspKeyBinding.getRetentionPeriod() == null ? "1y" : ocspKeyBinding.getRetentionPeriod().toString();
+        }
     }
     
     @Override
@@ -221,5 +228,13 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     public byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
             throws IOException, OperatorCreationException {
         throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    public String getRetentionPeriod() {
+        return retentionPeriod;
+    }
+
+    public boolean useIssuerNotBeforeAsArchiveCutoff() {
+        return useIssuerNotBeforeAsArchiveCutoff;
     }
 }

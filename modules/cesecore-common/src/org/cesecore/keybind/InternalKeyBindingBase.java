@@ -34,14 +34,13 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * @version $Id$
  */
 public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap implements InternalKeyBinding {
-
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(InternalKeyBindingBase.class);
-    private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
-    private static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
-    private static final String PROP_SIGNATURE_ALGORITHM = "signatureAlgorithm";
-    private static final String PROP_OCSP_EXTENSION = "ocspExtensions";
-    private static final String BASECLASS_PREFIX = "BASECLASS_";
+    public static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
+    public static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
+    public static final String PROP_SIGNATURE_ALGORITHM = "signatureAlgorithm";
+    public static final String PROP_OCSP_EXTENSION = "ocspExtensions";
+    public static final String BASECLASS_PREFIX = "BASECLASS_";
     public static final String SUBCLASS_PREFIX = "SUBCLASS_";
     
     private int internalKeyBindingId;
