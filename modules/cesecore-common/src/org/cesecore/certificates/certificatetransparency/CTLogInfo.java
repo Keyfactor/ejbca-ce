@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.Date;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -40,6 +41,8 @@ public final class CTLogInfo implements Serializable {
     @Deprecated
     private boolean isMandatory;
     private Integer expirationYearRequired;
+    private Date intervalStart;
+    private Date intervalEnd;
 
     private transient PublicKey publicKey;
 
@@ -192,6 +195,40 @@ public final class CTLogInfo implements Serializable {
      */
     public void setExpirationYearRequired(final Integer expirationYearRequired) {
         this.expirationYearRequired = expirationYearRequired;
+    }
+
+    /**
+     * Returns the start date for expiration period, defines  which certificates published to this CT log must
+     * have in order to be accepted, or null if there is no such requirement. For
+     * example, if this method returns "20.01.2019" then you should only try to publish
+     * certificates to this CT log expiring after this date, since all other certificates
+     * will be rejected.
+     * @return the expiration period start date required for all certificates being published to
+     * this log or null if there is no such requirement
+     */
+    public Date getIntervalStart() {
+        return intervalStart;
+    }
+
+    public void setIntervalStart(Date intervalStart) {
+        this.intervalStart = intervalStart;
+    }
+
+    /**
+     * Returns the end date for expiration period, defines  which certificates published to this CT log must
+     * have in order to be accepted, or null if there is no such requirement. For
+     * example, if this method returns "20.10.2019" then you should only try to publish
+     * certificates to this CT log expiring before this date, since all other certificates
+     * will be rejected.
+     * @return the expiration period start date required for all certificates being published to
+     * this log or null if there is no such requirement
+     */
+    public Date getIntervalEnd() {
+        return intervalEnd;
+    }
+
+    public void setIntervalEnd(Date intervalEnd) {
+        this.intervalEnd = intervalEnd;
     }
 
     @Override
