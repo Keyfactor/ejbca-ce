@@ -26,6 +26,7 @@ import org.cesecore.keys.util.KeyTools;
  * This class is used to manage CT logs in EJBCA's system configuration. It adds some additional
  * functionality to the CtLogManager, such as loading and saving state from the database, editing of
  * new CT logs, checking whether a CT log is in use before removing it and language awareness.
+ * 
  * @version $Id$
  */
 public class SystemConfigurationCtLogManager extends CtLogManager {
@@ -420,24 +421,23 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         return false;
     }
 
-    private Date getStartOfTheDay(Date date){
-        Calendar calendar = Calendar.getInstance();
+    private Date getStartOfTheDay(final Date date) {
+        final Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DATE);
         calendar.set(year, month, day, 0, 0, 0);
-        date = calendar.getTime();
-        return date;
+        return calendar.getTime();
     }
-    private Date getEndOfTheDay(Date date){
-        Calendar calendar = Calendar.getInstance();
+
+    private Date getEndOfTheDay(final Date date) {
+        final Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DATE);
         calendar.set(year, month, day, 23, 59, 59);
-        date = calendar.getTime();
-        return date;
+        return calendar.getTime();
     }
 }
