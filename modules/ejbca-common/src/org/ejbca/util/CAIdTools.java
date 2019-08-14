@@ -34,6 +34,7 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -207,7 +208,7 @@ public final class CAIdTools {
      * @param fromId Old CA Id to replace.
      * @param toId New CA Id to replace with.
      * @param toSubjectDN New CA Subject DN.
-     * @return True if the configuration was changed. If so it should be persisted to the database.
+     * @return true if the configuration was changed. If so it should be persisted to the database.
      */
     public static boolean updateCAIds(final GlobalConfiguration globalConfig, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
@@ -224,7 +225,7 @@ public final class CAIdTools {
      * @param fromId Old CA Id to replace.
      * @param toId New CA Id to replace with.
      * @param toSubjectDN New CA Subject DN.
-     * @return True if the configuration changed. If so it should be persisted to the database.
+     * @return true if the configuration changed. If so it should be persisted to the database.
      */
     public static boolean updateCAIds(final CmpConfiguration cmpConfig, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
@@ -240,11 +241,30 @@ public final class CAIdTools {
 
     /**
      * Updates any references to a CA's CAId and Subject DN.
+     * @param estConfig EST configuration object to modify.
+     * @param fromId Old CA Id to replace.
+     * @param toId New CA Id to replace with.
+     * @return true if the configuration changed. If so it should be persisted to the database.
+     */
+    public static boolean updateCAIds(final EstConfiguration estConfig, final int fromId, final int toId) {
+        boolean changed = false;
+        for (String alias : estConfig.getAliasList()) {
+            final String defaultCaID = estConfig.getDefaultCAID(alias);
+            if (defaultCaID != null && Integer.valueOf(defaultCaID) == fromId) {
+                estConfig.setDefaultCAID(alias, toId);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Updates any references to a CA's CAId and Subject DN.
      * @param ocspConfig OCSP configuration object to modify.
      * @param fromId Old CA Id to replace.
      * @param toId New CA Id to replace with.
      * @param toSubjectDN New CA Subject DN.
-     * @return True if the configuration was changed. If so it should be persisted to the database.
+     * @return true if the configuration was changed. If so it should be persisted to the database.
      */
     public static boolean updateCAIds(final GlobalOcspConfiguration ocspConfig, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
