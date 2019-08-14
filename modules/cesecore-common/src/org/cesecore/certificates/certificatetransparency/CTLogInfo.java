@@ -199,36 +199,50 @@ public final class CTLogInfo implements Serializable {
     }
 
     /**
-     * Returns the start date for expiration period, defines  which certificates published to this CT log must
-     * have in order to be accepted, or null if there is no such requirement. For
-     * example, if this method returns "20.01.2019" then you should only try to publish
+     * Returns a {@link Date} object defining the start date of the validity period, which all certificates
+     * published to this CT log must fulfill in order to be accepted, or null if there is no such requirement.
+     * 
+     * <p>For example, if this method returns "20.01.2019" then you should only try to publish
      * certificates to this CT log expiring after this date, since all other certificates
      * will be rejected.
-     * @return the expiration period start date required for all certificates being published to
-     * this log or null if there is no such requirement
+     * 
+     * @return the validity period start date for sharding or null if there is no such requirement.
      */
     public Date getIntervalStart() {
         return intervalStart;
     }
 
-    public void setIntervalStart(Date intervalStart) {
+    /**
+     * Sets a {@link Date} object defining the start date of the validity period, which all certificates
+     * published to this CT log must fulfill. See also {@link #getIntervalStart()}.
+     * 
+     * @param intervalStart the new validity start date for sharding or null to disable.
+     */
+    public void setIntervalStart(final Date intervalStart) {
         this.intervalStart = intervalStart;
     }
 
     /**
-     * Returns the end date for expiration period, defines  which certificates published to this CT log must
-     * have in order to be accepted, or null if there is no such requirement. For
-     * example, if this method returns "20.10.2019" then you should only try to publish
+     * Returns a {@link Date} object defining the end date of the validity period, which all certificates
+     * published to this CT log must fulfill in order to be accepted, or null if there is no such requirement.
+     * 
+     * <p>For example, if this method returns "20.01.2020" then you should only try to publish
      * certificates to this CT log expiring before this date, since all other certificates
      * will be rejected.
-     * @return the expiration period start date required for all certificates being published to
-     * this log or null if there is no such requirement
+     * 
+     * @return the validity period end date for sharding or null if there is no such requirement.
      */
     public Date getIntervalEnd() {
         return intervalEnd;
     }
 
-    public void setIntervalEnd(Date intervalEnd) {
+    /**
+     * Sets a {@link Date} object defining the end date of the validity period, which all certificates
+     * published to this CT log must fulfill. See also {@link #getIntervalEnd()}.
+     * 
+     * @param intervalEnd the new validity end date for sharding or null to disable.
+     */
+    public void setIntervalEnd(final Date intervalEnd) {
         this.intervalEnd = intervalEnd;
     }
 
