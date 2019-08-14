@@ -14,19 +14,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
 import org.pkcs11.jacknji11.CKA;
 
 /**
  * Holder for parameters to result mapping of HSM calls with respect to a slot for P11NG provider.
  * 
- * @author Vinay Singh
  * @version $Id$
  */
 public class P11NGSlotStore {
-    /** Logger for this class. */
-    private static final Logger LOG = Logger.getLogger(P11NGSlotStore.class);
-
     private final Map<FindObjectsCallParamsHolder, long[]> findObjectsCallParams2ResultMap = new HashMap<>();
     private final Map<GetAttributeValueCallParamsHolder, CKA> getAttributeValueCallParams2ResultMap = new HashMap<>();
 
