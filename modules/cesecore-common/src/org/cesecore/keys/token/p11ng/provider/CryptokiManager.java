@@ -23,7 +23,6 @@ import org.pkcs11.jacknji11.jna.JNAiNative;
 /**
  * Singleton managing the various cryptoki devices available.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class CryptokiManager {

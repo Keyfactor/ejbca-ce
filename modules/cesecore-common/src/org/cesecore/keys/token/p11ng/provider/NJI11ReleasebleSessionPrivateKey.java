@@ -15,7 +15,6 @@ import java.security.PrivateKey;
 /**
  * A PrivateKey without a session.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class NJI11ReleasebleSessionPrivateKey extends NJI11Object implements Key, PrivateKey {

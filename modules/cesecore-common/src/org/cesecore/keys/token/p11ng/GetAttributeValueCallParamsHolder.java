@@ -14,7 +14,6 @@ import java.util.Objects;
 /**
  * Holder for parameters of getAttributeValue method HSM calls with respect to P11NG provider.
  * 
- * @author Vinay Singh
  * @version $Id$
  */
 public class GetAttributeValueCallParamsHolder {

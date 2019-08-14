@@ -15,7 +15,6 @@ import javax.crypto.SecretKey;
 /**
  * A SecretKey without a session.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class NJI11ReleasebleSessionSecretKey extends NJI11Object implements Key, SecretKey {

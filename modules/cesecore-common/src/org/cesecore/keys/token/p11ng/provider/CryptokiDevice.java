@@ -96,7 +96,6 @@ import com.sun.jna.Pointer;
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class CryptokiDevice {

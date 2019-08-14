@@ -15,7 +15,6 @@ import java.util.Objects;
 /**
  * Holder for parameters of findObjects method HSM calls with respect to P11NG provider.
  * 
- * @author Vinay Singh
  * @version $Id$
  */
 public class FindObjectsCallParamsHolder {

@@ -14,7 +14,6 @@ import java.security.PublicKey;
 /**
  * Holder for a wrapped key-pair.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class GeneratedKeyData {

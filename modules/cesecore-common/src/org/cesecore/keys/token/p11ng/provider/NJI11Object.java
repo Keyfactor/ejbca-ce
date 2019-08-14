@@ -12,7 +12,6 @@ package org.cesecore.keys.token.p11ng.provider;
 /**
  * A PKCS#11 object.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class NJI11Object {

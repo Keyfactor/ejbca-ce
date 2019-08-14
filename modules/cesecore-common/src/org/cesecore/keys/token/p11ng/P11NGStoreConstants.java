@@ -12,7 +12,6 @@ package org.cesecore.keys.token.p11ng;
 /**
  * Class containing constants common for caching implementation of P11NG provider.
  * 
- * @author Vinay Singh
  * @version $Id$
  */
 public class P11NGStoreConstants {

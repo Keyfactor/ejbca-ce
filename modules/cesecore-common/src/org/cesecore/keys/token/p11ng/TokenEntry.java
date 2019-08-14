@@ -20,7 +20,6 @@ import org.cesecore.util.CertTools;
 /**
  * Represents an entry in the token with at minimum an alias and a type.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class TokenEntry implements Serializable {

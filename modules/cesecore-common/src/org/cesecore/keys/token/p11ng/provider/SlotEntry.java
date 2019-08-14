@@ -12,7 +12,6 @@ package org.cesecore.keys.token.p11ng.provider;
 /**
  * Represents an entry in the HSM Slot with an alias and a type.
  *
- * @author Vinay Singh
  * @version $Id$
  */
 public class SlotEntry {

@@ -15,7 +15,6 @@ import java.security.PrivateKey;
 /**
  * A PrivateKey with a reserved session.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class NJI11StaticSessionPrivateKey extends NJI11Object implements Key, PrivateKey {
