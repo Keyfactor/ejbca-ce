@@ -153,7 +153,8 @@ public final class CTLogInfo implements Serializable {
     }
 
     /** Makes sure that a URL ends with /ct/v1/ */
-    public static String fixUrl(final String urlToFix) {
+    public static String fixUrl(String urlToFix) {
+        urlToFix = urlToFix.trim();
         String url = (urlToFix.endsWith("/") ? urlToFix : urlToFix + "/");
         if (!url.endsWith("/ct/v1/")) {
             if (!url.endsWith("/ct/")) {
