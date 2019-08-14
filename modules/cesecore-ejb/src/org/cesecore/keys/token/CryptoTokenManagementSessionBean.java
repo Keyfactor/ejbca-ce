@@ -760,6 +760,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             }
         } catch (ClassNotFoundException e) {
             // This is supposed to happen in the case of Community Edition
+            cryptoToken.testKeyPair(alias);
         }
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
         try {
