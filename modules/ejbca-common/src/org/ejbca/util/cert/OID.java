@@ -19,7 +19,6 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 /**
  * Utilities for to be used on an Object Identifier (OID).
  * 
- * @author Lars Silvén
  * @version $Id$
  */
 public class OID {
@@ -46,11 +45,15 @@ public class OID {
 			}
 			sOID+=token;
 		}
-		try {
-			new ASN1ObjectIdentifier(sOID);
-		} catch ( IllegalArgumentException e ) {
-			return false;
-		}
-		return true;
+        return isValidOid(sOID);
+    }
+
+    public static boolean isValidOid(final String oid) {
+        try {
+            new ASN1ObjectIdentifier(oid);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
 	}
 }

@@ -776,7 +776,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             if (useIssuerNotBeforeAsArchiveCutoff == null) {
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
                         Integer.parseInt(currentInternalKeyBindingId));
-                useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding == null ? false : ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff();
+                useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding == null ? false : ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff();
             }
             return useIssuerNotBeforeAsArchiveCutoff;
         } catch (AuthorizationDeniedException e) {
