@@ -152,7 +152,7 @@ public class OcspKeyBindingTest {
         assertFalse("getRequireTrustedSignature", keybind.getRequireTrustedSignature());
         assertEquals("getResponderIdType", ResponderIdType.KEYHASH, keybind.getResponderIdType());
         assertEquals("Default retention period should be 1 year.", "1y", keybind.getRetentionPeriod().toString());
-        assertEquals("ETSI Archive Cutoff should be disabled by default.", false, keybind.useIssuerNotBeforeAsArchiveCutoff());
+        assertEquals("ETSI Archive Cutoff should be disabled by default.", false, keybind.getUseIssuerNotBeforeAsArchiveCutoff());
         // Test getters and setters
         keybind.setNonExistingGood(true);
         keybind.setIncludeCertChain(false);
@@ -168,7 +168,7 @@ public class OcspKeyBindingTest {
         assertTrue("setRequireTrustedSignature", keybind.getRequireTrustedSignature());
         assertEquals("setResponderIdType", ResponderIdType.NAME, keybind.getResponderIdType());
         assertEquals("Retention period did not change.", "10y", keybind.getRetentionPeriod().toString());
-        assertEquals("Use ETSI archive cutoff option did not change.", true, keybind.useIssuerNotBeforeAsArchiveCutoff());
+        assertEquals("Use ETSI archive cutoff option did not change.", true, keybind.getUseIssuerNotBeforeAsArchiveCutoff());
     }
 
 }
