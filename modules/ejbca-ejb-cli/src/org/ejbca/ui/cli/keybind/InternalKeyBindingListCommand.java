@@ -25,9 +25,12 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -37,7 +40,7 @@ import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
- * See getDescription().
+ * Implements the CLI command <code>./ejbca.sh keybind list</code>.
  * 
  * @version $Id$
  */
@@ -63,13 +66,13 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        final List<? extends InternalKeyBinding> internalKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(
+        final List<InternalKeyBindingInfo> internalKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(
                 getAuthenticationToken(), null);
         // Sort by type and name
         Collections.sort(internalKeyBindings, new Comparator<InternalKeyBinding>() {
             @Override
             public int compare(InternalKeyBinding o1, InternalKeyBinding o2) {
-                final int typeCompare = o1.getImplementationAlias().compareTo(o1.getImplementationAlias());
+                final int typeCompare = o1.getImplementationAlias().compareTo(o2.getImplementationAlias());
                 if (typeCompare != 0) {
                     return typeCompare;
                 }
@@ -83,7 +86,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                     .info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, NextKeyPairAlias, SignatureAlgorithm, properties={Implementations specific properties}, trust={list of trusted CAs and certificates}");
         }
         final Date now = new Date();
-        for (final InternalKeyBinding internalKeyBinding : internalKeyBindings) {
+        for (final InternalKeyBindingInfo internalKeyBinding : internalKeyBindings) {
             final StringBuilder sb = new StringBuilder();
             final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
             try {
@@ -145,6 +148,24 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                     }
                 }
                 sb.append("\n }");
+                if (OcspKeyBinding.IMPLEMENTATION_ALIAS.equals(internalKeyBinding.getImplementationAlias())) {
+                    sb.append(", ocspExtensions={");
+                    for (final String ocspExtension : internalKeyBinding.getOcspExtensions()) {
+                        sb.append(System.lineSeparator() + "\tOID: " + ocspExtension);
+                    }
+                    if (internalKeyBinding.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
+                        sb.append(System.lineSeparator() + " }, archiveCutoff={" + System.lineSeparator());
+                        if (internalKeyBinding.useIssuerNotBeforeAsArchiveCutoff()) {
+                            sb.append("\tUsing issuer's noBefore date as archive cutoff date (ETSI EN 319 411-2, CSS-6.3.10-08)."
+                                    + System.lineSeparator());
+                        } else {
+                            sb.append(
+                                    "\tUsing a retention period of '" + internalKeyBinding.getRetentionPeriod().toString() + "'."
+                                            + System.lineSeparator());
+                        }
+                    }
+                    sb.append(" }");
+                }
                 getLogger().info(sb);
             } catch (AuthorizationDeniedException e) {
                 log.error("CLI user not authorized to view key bindings.");
@@ -164,6 +185,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
         return getCommandDescription();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
     }
