@@ -250,14 +250,14 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      *  
      * @return true if the notBefore date of the issuer should be used as archive cutoff date.
      */
-    public boolean useIssuerNotBeforeAsArchiveCutoff() {
+    public boolean getUseIssuerNotBeforeAsArchiveCutoff() {
         return getData(PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF, false);
     }
 
     /**
      * Set a boolean indicating whether the notBefore date of the issuer for the OCSP signing certificate
      * should be used as archive cutoff date in OCSP responses when the archiveCutoff extension is enabled.
-     * See also {@link #useIssuerNotBeforeAsArchiveCutoff()}.
+     * See also {@link #getUseIssuerNotBeforeAsArchiveCutoff()}.
      * 
      * @param useIssuerNotBeforeAsArchiveCutoff true to enable this setting, false otherwise.
      */

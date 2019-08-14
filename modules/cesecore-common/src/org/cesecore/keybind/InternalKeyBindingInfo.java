@@ -68,7 +68,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
         if (internalKeyBinding instanceof OcspKeyBinding) {
             final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
-            this.useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff();
+            this.useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff();
             this.retentionPeriod = ocspKeyBinding.getRetentionPeriod() == null ? "1y" : ocspKeyBinding.getRetentionPeriod().toString();
         }
     }
