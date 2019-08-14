@@ -19,7 +19,6 @@ import org.pkcs11.jacknji11.ULong;
 /**
  * Handles mapping between PKCS#11 mechanism constant names and values.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class MechanismNames {

@@ -15,7 +15,6 @@ import java.security.cert.Certificate;
  * Holder for the response data and certificate to simplify migration of the
  * unit tests that was designed for the old API.
  *
- * @author vinay
  * @version $Id$
  */
 public class SimplifiedResponse {

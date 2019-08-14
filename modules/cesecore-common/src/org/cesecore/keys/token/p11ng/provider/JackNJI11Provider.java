@@ -29,7 +29,6 @@ import org.pkcs11.jacknji11.CKM;
 /**
  * Provider using JackNJI11.
  *
- * @author Markus Kilås
  * @version $Id$
  */
 public class JackNJI11Provider extends Provider {
