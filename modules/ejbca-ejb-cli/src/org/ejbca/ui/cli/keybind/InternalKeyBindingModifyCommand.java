@@ -15,20 +15,26 @@ package org.ejbca.ui.cli.keybind;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -36,6 +42,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+import org.ejbca.util.cert.OID;
 
 /**
  * See getDescription().
@@ -49,8 +56,11 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
     private static final String NEXTKEYPAIR_KEY = "--nextkeypair";
     private static final String ADDTRUST_KEY = "--addtrust";
     private static final String REMOVETRUST_KEY = "--removetrust";
+    private static final String OCSP_EXTENSIONS = "--ocsp-extensions";
+    private static final String ARCHIVE_CUTOFF = "--archive-cutoff";
+    private static final String ETSI_ARCHIVE_CUTOFF = "--etsi-archive-cutoff";
 
-    private static final String TRUSTARGUMENT_SEPARATOR = ",";
+    private static final String SEPARATOR = ",";
 
     // TODO: Implement escape characters for the trusts. Both ',' and ';' are valid in CA names. 
     // TODO: Test adding and removing multiple trusts
@@ -74,6 +84,19 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 ParameterMode.ARGUMENT,
                 "Removes trust entries to the given keybinding. Trust entries can be of the form <CAName[;CertificateSerialNumber]> where the serialnumber is in hex and optional. "
                         + "Multiple trust entries can be added by separating them with a ',' i.e. <CA1[;CertificateSerialNumber],CA2[;CertificateSerialNumber]>"));
+        registerParameter(new Parameter(
+                OCSP_EXTENSIONS,
+                "OCSP Extensions",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Specifies a colon-separated list of OIDs, identifying the OCSP extensions to use for an OCSP key binding."));
+        registerParameter(new Parameter(ARCHIVE_CUTOFF, "Enable Archive Cutoff", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Enable OCSP archive cutoff (RFC 6960 section 4.4.4.) with the specified retention period. The retention period is a duration, e.g. '10y' (10 years) or '16mo' (16 months)."));
+        registerParameter(new Parameter(ETSI_ARCHIVE_CUTOFF, "Enable ETSI Archive Cutoff", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.FLAG,
+                "Enable OCSP archive cutoff (RFC 6960 section 4.4.4.), with the archive cutoff date set the to issuer's notBefore date, as mandated by ETSI EN 319 411-2, CSS-6.3.10-08."));
         //Register type specific properties dynamically
         Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
@@ -103,6 +126,12 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
         final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession
                 .getInternalKeyBinding(getAdmin(), internalKeyBindingId.intValue());
 
+        // Ensure archive cutoff with a retention period and ETSI archive cutoff is not being used at the same time
+        if (parameters.get(ARCHIVE_CUTOFF) != null && parameters.get(ETSI_ARCHIVE_CUTOFF) != null) {
+            getLogger().error(
+                    "You cannot use OCSP archive cutoff with a retention period, and OCSP archive cutoff with an ETSI archive cutoff date at the same time.");
+            return CommandResult.CLI_FAILURE;
+        }
         // Extract properties      
         final Map<String, String> propertyMap = new HashMap<String, String>();
         //Get dynamically loaded properties
@@ -117,7 +146,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
         final List<InternalKeyBindingTrustEntry> removeTrustList = new ArrayList<InternalKeyBindingTrustEntry>();
         final String removeTrustArguments = parameters.get(REMOVETRUST_KEY);
         if (removeTrustArguments != null) {
-            for (String trustArgument : removeTrustArguments.split(TRUSTARGUMENT_SEPARATOR)) {
+            for (String trustArgument : removeTrustArguments.split(SEPARATOR)) {
                 String value;
                 String key;
                 int indexOfEqualsSign = trustArgument.indexOf(';');
@@ -150,11 +179,11 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 }
             }
         }
-     // Extract add trust entries
+        // Extract add trust entries
         final List<InternalKeyBindingTrustEntry> addTrustList = new ArrayList<InternalKeyBindingTrustEntry>();
         final String addTrustArguments = parameters.get(ADDTRUST_KEY);
         if (addTrustArguments != null) {
-            for (String trustArgument : addTrustArguments.split(TRUSTARGUMENT_SEPARATOR)) {
+            for (String trustArgument : addTrustArguments.split(SEPARATOR)) {
                 String value;
                 String key;
                 int indexOfEqualsSign = trustArgument.indexOf(';');
@@ -252,6 +281,64 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
             }
 
         }
+        // Update OCSP extensions
+        if (parameters.get(OCSP_EXTENSIONS) != null) {
+            if (internalKeyBinding instanceof OcspKeyBinding) {
+                final List<String> ocspExtensions = Arrays.asList(parameters.get(OCSP_EXTENSIONS).split(SEPARATOR))
+                        .stream()
+                        .map(ocspExtension -> ocspExtension.trim())
+                        .filter(ocspExtension -> !StringUtils.isEmpty(ocspExtension))
+                        .collect(Collectors.toList());
+                for (final String ocspExtension : ocspExtensions) {
+                    if (!OID.isValidOid(ocspExtension)) {
+                        getLogger().error(ocspExtension + " is not a valid OID.");
+                        return CommandResult.CLI_FAILURE;
+                    }
+                }
+                internalKeyBinding.setOcspExtensions(ocspExtensions);
+                modified = true;
+            } else {
+                getLogger().error("OCSP extensions can only be used with OCSP key bindings.");
+                return CommandResult.CLI_FAILURE;
+            }
+        }
+        // Set settings for archive cutoff
+        if (parameters.get(ARCHIVE_CUTOFF) != null) {
+            if (internalKeyBinding instanceof OcspKeyBinding) {
+                final SimpleTime retentionPeriod = SimpleTime.getInstance(parameters.get(ARCHIVE_CUTOFF));
+                if (retentionPeriod == null) {
+                    getLogger().error(parameters.get(ARCHIVE_CUTOFF) + " is not a valid retention period.");
+                    return CommandResult.CLI_FAILURE;
+                }
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
+                final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
+                if (!ocspExtensions.contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
+                    ocspExtensions.add(OcspArchiveCutoffExtension.EXTENSION_OID);
+                    ocspKeyBinding.setOcspExtensions(ocspExtensions);
+                }
+                ocspKeyBinding.setRetentionPeriod(retentionPeriod);
+                ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(false);
+                modified = true;
+            } else {
+                getLogger().error("Archive Cutoff can only be used with OCSP key bindings.");
+                return CommandResult.CLI_FAILURE;
+            }
+        }
+        if (parameters.get(ETSI_ARCHIVE_CUTOFF) != null) {
+            if (internalKeyBinding instanceof OcspKeyBinding) {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
+                final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
+                if (!ocspExtensions.contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
+                    ocspExtensions.add(OcspArchiveCutoffExtension.EXTENSION_OID);
+                    ocspKeyBinding.setOcspExtensions(ocspExtensions);
+                }
+                ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(true);
+                modified = true;
+            } else {
+                getLogger().error("Archive Cutoff can only be used with OCSP key bindings.");
+                return CommandResult.CLI_FAILURE;
+            }
+        }
         // Persist modifications
         if (modified) {
             internalKeyBindingMgmtSession.persistInternalKeyBinding(getAdmin(), internalKeyBinding);
@@ -276,6 +363,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
         return sb.toString();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
     }
