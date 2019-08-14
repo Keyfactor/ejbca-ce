@@ -1533,13 +1533,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     private void addArchiveCutoff(final OCSPResponseItem respItem, final X509Certificate issuer, final OcspKeyBinding ocspKeyBinding) {
         try {
-            final long archiveCutoffDate = ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff() ?
+            final long archiveCutoffDate = ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff() ?
                     issuer.getNotBefore().getTime() : new Date().getTime() - ocspKeyBinding.getRetentionPeriod().getLong();
             final DEROctetString encodedValue = new DEROctetString(new ASN1GeneralizedTime(new Date(archiveCutoffDate)));
             final Extension archiveCutoffExtension = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, encodedValue);
             respItem.addExtensions(Collections.singletonMap(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, archiveCutoffExtension));
             if (log.isDebugEnabled()) {
-                if (ocspKeyBinding.useIssuerNotBeforeAsArchiveCutoff()) {
+                if (ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff()) {
                     log.debug("Added ETSI EN 319411-2, CSS-6.3.10-10 id-pkix-ocsp-archive-cutoff (issuer notBefore = " + archiveCutoffDate
                             + ") to OCSP response with cert ID serial number "
                             + respItem.getCertID().getSerialNumber() + ".");
