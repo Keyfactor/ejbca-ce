@@ -38,6 +38,8 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
+import org.pkcs11.jacknji11.CKR;
+import org.pkcs11.jacknji11.CKRException;
 
 /**
  * 
@@ -138,10 +140,16 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         }
         try {
             this.slot.login(String.valueOf(authenticationcode));
+        } catch (CKRException e) {
+            final String msg = "Failed to initialize PKCS#11 provider slot '" + this.sSlotLabel + "'. Error code: " + CKR.L2S(e.getCKR());
+            log.warn(msg, e);
+            CryptoTokenAuthenticationFailedException authFailException = new CryptoTokenAuthenticationFailedException(msg);
+            authFailException.initCause(e);
+            throw authFailException;
         } catch (Exception e) {
-            log.warn("Failed to initialize PKCS11 provider slot '" + this.sSlotLabel + "'.", e);
-            CryptoTokenAuthenticationFailedException authFailException = new CryptoTokenAuthenticationFailedException(
-                    "Failed to initialize PKCS11 provider slot '" + this.sSlotLabel + "'.");
+            final String msg = "Failed to initialize PKCS#11 provider slot '" + this.sSlotLabel + "'.";
+            log.warn(msg, e);
+            CryptoTokenAuthenticationFailedException authFailException = new CryptoTokenAuthenticationFailedException(msg);
             authFailException.initCause(e);
             throw authFailException;
         }
@@ -165,6 +173,20 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
 
     @Override
+    public boolean doesPrivateKeyExist(final String alias) {
+        try {
+            final PrivateKey privateKey = slot.aquirePrivateKey(alias);
+            if (privateKey != null) {
+                slot.releasePrivateKey(privateKey);
+                return true;
+            }
+            return false;
+        } catch (CryptoTokenOfflineException e) {
+            return false;
+        }
+    }
+
+    @Override
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
         PublicKey publicKey = slot.getPublicKey(alias);
         if (publicKey == null) {
@@ -180,23 +202,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public boolean isAliasUsed(final String alias) {
-        boolean aliasInUse = false;
-        try {
-            getPublicKey(alias);
-            aliasInUse = true;
-        } catch (CryptoTokenOfflineException e) {
-            try {
-                getPrivateKey(alias);
-                aliasInUse = true;
-            } catch (CryptoTokenOfflineException e1) {
-                if (slot.getSecretKey(alias) != null) {
-                    aliasInUse = true;
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            // NOOP no certificate references found. Alias not in use.
-        }
-        return aliasInUse;
+        return slot.isAliasUsed(alias);
     }
     
     @Override
@@ -212,9 +218,13 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
-        final PrivateKey privateKey = getPrivateKey(alias);
         final PublicKey publicKey = getPublicKey(alias);
-        testKeyPair(alias, publicKey, privateKey);
+        final PrivateKey privateKey = slot.aquirePrivateKey(alias);
+        try {
+            testKeyPair(alias, publicKey, privateKey);
+        } finally {
+            slot.releasePrivateKey(privateKey);
+        }
     }
     
     @Override
