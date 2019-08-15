@@ -239,8 +239,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
 
     /**
-     * Get a boolean indicating whether the notBefore date of the issuer for the OCSP signing certificate
-     * should be used as archive cutoff date in OCSP responses when the archiveCutoff extension is enabled
+     * Get a boolean indicating whether the notBefore date of the issuer of the certificate being queried for,
+     * should be used as archive cutoff date in OCSP responses, when the archiveCutoff extension is enabled
      * (instead of deriving the archive cutoff date from the producedAt time of the OCSP response).
      * 
      * <p>This setting should be enabled to conform with ETSI EN 319 411-2, CSS-6.3.10-08.
@@ -248,15 +248,15 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      * <p>If nothing is specified for this OCSP key binding, the default value of false is returned
      * (do not use the issuer's notBefore date as archive cutoff date).
      *  
-     * @return true if the notBefore date of the issuer should be used as archive cutoff date.
+     * @return true if the responder is using ETSI compliant archive cutoff dates.
      */
     public boolean getUseIssuerNotBeforeAsArchiveCutoff() {
         return getData(PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF, false);
     }
 
     /**
-     * Set a boolean indicating whether the notBefore date of the issuer for the OCSP signing certificate
-     * should be used as archive cutoff date in OCSP responses when the archiveCutoff extension is enabled.
+     * Set a boolean indicating whether the notBefore date of the issuer of the certificate being queried for,
+     * should be used as archive cutoff date in OCSP responses, when the archiveCutoff extension is enabled.
      * See also {@link #getUseIssuerNotBeforeAsArchiveCutoff()}.
      * 
      * @param useIssuerNotBeforeAsArchiveCutoff true to enable this setting, false otherwise.
