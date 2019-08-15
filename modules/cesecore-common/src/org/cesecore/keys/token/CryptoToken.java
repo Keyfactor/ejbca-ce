@@ -111,6 +111,9 @@ public interface CryptoToken extends Serializable {
     */
     PrivateKey getPrivateKey(String alias) throws CryptoTokenOfflineException;
 
+    /** @return true if a private key exists for the given alias */
+    boolean doesPrivateKeyExist(final String alias);
+
     /** Returns the public key (if possible) of token.
     *
     * @param alias the key alias to retrieve from the token
