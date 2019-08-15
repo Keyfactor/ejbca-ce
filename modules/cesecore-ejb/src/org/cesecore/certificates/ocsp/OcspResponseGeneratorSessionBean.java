@@ -1543,12 +1543,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (log.isDebugEnabled()) {
                 if (ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff()) {
                     log.debug("Added ETSI EN 319411-2, CSS-6.3.10-10 id-pkix-ocsp-archive-cutoff (issuer notBefore = " + archiveCutoffDate
-                            + ") to OCSP response with cert ID serial number "
-                            + respItem.getCertID().getSerialNumber() + ".");
+                            + ") to OCSP response with cert ID serial number 0x"
+                            + respItem.getCertID().getSerialNumber().toString(16) + ".");
                 } else {
                     log.debug("Added id-pkix-ocsp-archive-cutoff (producedAt - " + ocspKeyBinding.getRetentionPeriod().getLong() + " = "
-                            + archiveCutoffDate + ") to OCSP response with cert ID serial number "
-                            + respItem.getCertID().getSerialNumber() + ".");
+                            + archiveCutoffDate + ") to OCSP response with cert ID serial number 0x"
+                            + respItem.getCertID().getSerialNumber().toString(16) + ".");
                 }
             }
         } catch (final IOException e) {
