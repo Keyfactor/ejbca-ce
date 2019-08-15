@@ -381,9 +381,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         ctLogToUpdate.setExpirationYearRequired(ctLogEditor.getIsAcceptingByExpirationYear() && !ctLogEditor.isUseIntervalAcception()
                 ? Integer.valueOf(ctLogEditor.getExpirationYearRequired()) : null);
         ctLogToUpdate.setIntervalStart(ctLogEditor.isUseIntervalAcception() && ctLogEditor.getIsAcceptingByExpirationYear()
-                ? getStartOfTheDay(ctLogEditor.getIntervalStart()) : null);
+                ? ctLogEditor.getIntervalStart() : null);
         ctLogToUpdate.setIntervalEnd(ctLogEditor.isUseIntervalAcception() && ctLogEditor.getIsAcceptingByExpirationYear()
-                ? getEndOfTheDay(ctLogEditor.getIntervalEnd()) : null);
+                ? ctLogEditor.getIntervalEnd() : null);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
         ctLogEditor.stopEditing();
         return CT_LOG_SAVED;
@@ -421,23 +421,4 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         return false;
     }
 
-    private Date getStartOfTheDay(final Date date) {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 0, 0, 0);
-        return calendar.getTime();
-    }
-
-    private Date getEndOfTheDay(final Date date) {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 23, 59, 59);
-        return calendar.getTime();
-    }
 }
