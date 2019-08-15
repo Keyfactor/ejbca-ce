@@ -780,13 +780,8 @@ public class CryptokiDevice {
                 session = aquireSession();
 
                 // Check if any key with provided alias exists 
-                long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
-                if (objs.length != 0) {
-                    throw new IllegalArgumentException("Key with label " + alias + " already exists");
-                }
-                objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
-                if (objs.length != 0) {
-                    throw new IllegalArgumentException("Key with ID " + alias + " already exists");
+                if (isAliasUsed(session, alias)) {
+                    throw new IllegalArgumentException("Key with ID or label " + alias + " already exists");
                 }
 
                 if (!"RSA".equals(keyAlgorithm)) {
@@ -1784,6 +1779,31 @@ public class CryptokiDevice {
         private boolean unwrappedPrivateKeyExists(long unwrappedPrivateKey) {
             Long[] privateKeyObjectsBoxed = ArrayUtils.toObject(findAllPrivateKeyObjects());
             return Arrays.asList(privateKeyObjectsBoxed).contains(unwrappedPrivateKey);
+        }
+
+        private boolean isAliasUsed(final long session, final String alias) {
+            long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
+            if (objs.length != 0) {
+                return true;
+            }
+            objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
+            if (objs.length != 0) {
+                return true;
+            }
+            return false;
+        }
+
+        /** Returns true if an alias is used as a label or ID */
+        public boolean isAliasUsed(final String alias) {
+            Long session = null;
+            try {
+                session = aquireSession();
+                return isAliasUsed(session, alias);
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
         }
 
     }

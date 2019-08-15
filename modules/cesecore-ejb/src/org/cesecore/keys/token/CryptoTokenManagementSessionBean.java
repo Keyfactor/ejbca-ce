@@ -709,17 +709,19 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private List<String> getKeyPairAliasesInternal(final CryptoToken cryptoToken) throws CryptoTokenOfflineException {
         try {
             final List<String> aliasEnumeration = cryptoToken.getAliases();
-            final List<String> keyPairAliases = new ArrayList<String>();
-            for(final String currentAlias : aliasEnumeration) {
+            final List<String> keyPairAliases = new ArrayList<>();
+            for (final String currentAlias : aliasEnumeration) {
                 try {
-                    if (cryptoToken.getPublicKey(currentAlias) != null && cryptoToken.getPrivateKey(currentAlias) != null) {
+                    if (cryptoToken.getPublicKey(currentAlias) != null && cryptoToken.doesPrivateKeyExist(currentAlias)) {
                         // A key pair exists for this alias, so add it
                         keyPairAliases.add(currentAlias);
+                        continue; // next alias, skip debug log
                     }
                 } catch (CryptoTokenOfflineException ignored) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Ignored key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
-                    }
+                    // Ignored
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Ignored key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
                 }
             }
             return keyPairAliases;

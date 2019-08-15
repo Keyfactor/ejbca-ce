@@ -130,6 +130,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
      *
      * @return false if the key must not be extractable
      */
+    @Override
     public boolean doPermitExtractablePrivateKey() {
         return getProperties().containsKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY) &&
                Boolean.parseBoolean(getProperties().getProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
@@ -277,10 +278,10 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                     if (properties.containsKey("PIN")) {
                         prop.setProperty("PIN", "hidden");
                     }
-                    log.debug("Prop: " + (prop != null ? prop.toString() : "null"));
+                    log.debug("Prop: " + prop.toString());
                 } else {
                     // If no autoactivation PIN codes exists we can debug log everything as original.
-                    log.debug("Properties: " + (properties != null ? properties.toString() : "null"));
+                    log.debug("Properties: " + properties.toString());
                 }
             } // if (log.isDebugEnabled())
             this.properties = properties;
@@ -489,6 +490,15 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             throw new CryptoTokenOfflineException(e);
         } catch (ProviderException e) {
             throw new CryptoTokenOfflineException(e);
+        }
+    }
+
+    @Override
+    public boolean doesPrivateKeyExist(final String alias) {
+        try {
+            return getPrivateKey(alias) != null;
+        } catch (CryptoTokenOfflineException e) {
+            return false;
         }
     }
 

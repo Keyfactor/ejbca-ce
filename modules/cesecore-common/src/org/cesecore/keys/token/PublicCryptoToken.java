@@ -129,6 +129,12 @@ public class PublicCryptoToken implements CryptoToken {
 	}
 
 	@Override
+	public boolean doesPrivateKeyExist(final String alias) {
+	    // No private keys for this token
+	    return false;
+	}
+
+	@Override
 	public PublicKey getPublicKey(String alias)
 			throws CryptoTokenOfflineException {
 		return this.pk;
