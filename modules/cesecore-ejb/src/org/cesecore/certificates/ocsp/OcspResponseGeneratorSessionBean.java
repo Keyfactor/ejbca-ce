@@ -1119,6 +1119,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             
             // Look over the status requests
             List<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
+            // If the Extended Revoked Definition should be added for certificates that we can not find in the database, see RFC6960 4.4.8
             boolean addExtendedRevokedExtension = false;
             Date producedAt = null;
             for (Req ocspRequest : ocspRequests) {
@@ -1292,6 +1293,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
+                            // Unknown certificate, "non issued", add the Extended Revoked Definition, RFC6960 4.4.8
                             addExtendedRevokedExtension = true;
                         } else if (OcspConfigurationCache.INSTANCE.isNonExistingUnauthorized(ocspSigningCacheEntry.getOcspKeyBinding())
                                 && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
