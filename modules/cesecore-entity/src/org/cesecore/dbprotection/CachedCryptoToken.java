@@ -158,6 +158,15 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
+    public boolean doesPrivateKeyExist(final String alias) {
+        try {
+            return getPrivateKey(alias) != null;
+        } catch (CryptoTokenOfflineException e) {
+            return false;
+        }
+    }
+
+    @Override
     public Properties getProperties() {
         return wrappedCryptoToken.getProperties();
     }

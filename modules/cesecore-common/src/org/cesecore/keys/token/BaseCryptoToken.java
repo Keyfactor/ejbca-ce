@@ -280,10 +280,10 @@ public abstract class BaseCryptoToken implements CryptoToken {
                     if (properties.containsKey("PIN")) {
                         prop.setProperty("PIN", "hidden");
                     }
-                    log.debug("Prop: " + (prop != null ? prop.toString() : "null"));
+                    log.debug("Prop: " + prop.toString());
                 } else {
                     // If no autoactivation PIN codes exists we can debug log everything as original.
-                    log.debug("Properties: " + (properties != null ? properties.toString() : "null"));
+                    log.debug("Properties: " + properties.toString());
                 }
             } // if (log.isDebugEnabled())
             this.properties = properties;
@@ -499,6 +499,15 @@ public abstract class BaseCryptoToken implements CryptoToken {
             throw new CryptoTokenOfflineException(e);
         } catch (ProviderException e) {
             throw new CryptoTokenOfflineException(e);
+        }
+    }
+
+    @Override
+    public boolean doesPrivateKeyExist(final String alias) {
+        try {
+            return getPrivateKey(alias) != null;
+        } catch (CryptoTokenOfflineException e) {
+            return false;
         }
     }
 
