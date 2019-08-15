@@ -164,7 +164,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public PrivateKey getPrivateKey(final String alias) throws CryptoTokenOfflineException {
-        final PrivateKey privateKey = slot.aquirePrivateKey(alias);
+        final PrivateKey privateKey = slot.getReleasableSessionPrivateKey(alias);
         if (privateKey == null) {
             log.error("No key found for alias: " + alias);
             throw new CryptoTokenOfflineException("No private key with alias: " + alias);
