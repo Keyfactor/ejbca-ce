@@ -125,10 +125,6 @@
         <validator-class>org.ejbca.ui.web.admin.LegalCharsValidator</validator-class>
   </validator>
   <validator>
-        <validator-id>cP5KeyMaxOperationsValidator</validator-id>
-        <validator-class>org.ejbca.ui.web.admin.CP5KeyMaxOperationsValidator</validator-class>
-  </validator>
-  <validator>
         <validator-id>multiLineFreeTextValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.MultiLineFreeTextValidator</validator-class>
   </validator>

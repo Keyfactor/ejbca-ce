@@ -272,8 +272,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String selectedKakKeyAlias;
         private boolean initialized;
         private boolean authorized = false;
-        private long maxOperationCount; // This one is used when authorizing a CP5 key
-        private final long currentMaxOperationCount; // This one should be read from HSM after key is used
+        private String maxOperationCount; // This one is used when authorizing a CP5 key
         
         private KeyPairGuiInfo(KeyPairInfo keyPairInfo) {
             alias = keyPairInfo.getAlias();
@@ -287,7 +286,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             subjectKeyID = keyPairInfo.getSubjectKeyID();
             placeholder = false;
             initialized = cryptoTokenManagementSession.isKeyInitialized(authenticationToken, getCurrentCryptoTokenId(), alias); 
-            currentMaxOperationCount = cryptoTokenManagementSession.maxOperationCount(authenticationToken, getCurrentCryptoTokenId(), alias);
+            maxOperationCount = String.valueOf(cryptoTokenManagementSession.maxOperationCount(authenticationToken, getCurrentCryptoTokenId(), alias));
         }
         
         /**
@@ -307,7 +306,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             subjectKeyID = "";
             placeholder = true;
             initialized = false;
-            currentMaxOperationCount = 0;
+            maxOperationCount = "0";
         }
         
         public List<SelectItem> getAvailableKeyAliases() {
@@ -342,10 +341,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public String getSelectedKakKeyAlias() { return selectedKakKeyAlias; }
         public void setSelectedKakKeyAlias(String selectedKakKeyAlias) { this.selectedKakKeyAlias = selectedKakKeyAlias; }
 
-        public long getMaxOperationCount() {
-            return currentMaxOperationCount;
+        public String getMaxOperationCount() {
+            return maxOperationCount;
         }
-        public void setMaxOperationCount(long maxOperationCount) {
+        public void setMaxOperationCount(final String maxOperationCount) {
             this.maxOperationCount = maxOperationCount;
         }
 
@@ -1104,7 +1103,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         try {
             cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, 
-                    kakAlias, keyPairGuiInfo.maxOperationCount);
+                    kakAlias, Long.parseLong(keyPairGuiInfo.maxOperationCount));
         } catch (CryptoTokenOfflineException e) {
             addNonTranslatedErrorMessage(e);
         }

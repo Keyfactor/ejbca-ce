@@ -424,8 +424,8 @@
 					  	value="#{keyPairGuiInfo.maxOperationCount}"
 					  	rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
 					  	disabled="#{keyPairGuiInfo.placeholder}" 
-					  	validatorMessage="Max operation count must be a number between 0 and 4294967295!">
-						<f:validateLongRange minimum="0" maximum="4294967295" />
+					  	label="Max Operation Count">
+ 					<f:validateLongRange minimum="-1" maximum="4294967295" /> 
 					</h:inputText>
 					<h:outputText styleClass="smallHelp"
 						value="#{web.text.CRYPTOTOKEN_KPM_KEY_OPERATION_COUNT}" style="margin-right: 2px;"
