@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
@@ -312,8 +312,8 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 }
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
                 final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
-                if (!ocspExtensions.contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
-                    ocspExtensions.add(OcspArchiveCutoffExtension.EXTENSION_OID);
+                if (!ocspExtensions.contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId())) {
+                    ocspExtensions.add(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId());
                     ocspKeyBinding.setOcspExtensions(ocspExtensions);
                 }
                 ocspKeyBinding.setRetentionPeriod(retentionPeriod);
@@ -328,8 +328,8 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
             if (internalKeyBinding instanceof OcspKeyBinding) {
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
                 final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
-                if (!ocspExtensions.contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
-                    ocspExtensions.add(OcspArchiveCutoffExtension.EXTENSION_OID);
+                if (!ocspExtensions.contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId())) {
+                    ocspExtensions.add(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId());
                     ocspKeyBinding.setOcspExtensions(ocspExtensions);
                 }
                 ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(true);

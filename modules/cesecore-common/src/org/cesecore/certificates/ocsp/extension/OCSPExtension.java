@@ -23,7 +23,9 @@ import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.cesecore.keybind.InternalKeyBinding;
 
 /**
- * Interface that must be implemented by OCSP extensions that are added to the OCSPServlet.
+ * Interface that must be implemented by OCSP extensions that are added to the OCSPServlet, if the extensions should be configurable (on/off).
+ * The usage of two-fold, one is to display and configure the extension in the Admin Web, the other is to trigger server side execution when the extension appears in 
+ * an OCSP request.
  * <p>
  * <b>Implementation note:</b> Classes implementing this interface are loaded with a service loader. 
  * If you move/rename this interface, you need to manually update the appropriate build.xml script
@@ -33,13 +35,14 @@ import org.cesecore.keybind.InternalKeyBinding;
  */
 public interface OCSPExtension {
 
-    /** Called after construction
-     * 
-     */
+    /** Called after construction */
     void init();
 
     /**
-     * Called by OCSP responder when the configured extension is found in the request.
+     * Called by OCSP responder when the configured extension is found in the request. 
+     * Implement when there should be an action on the OCSP server based on requests from the client. All extensions do not need to trigger processing on the server. 
+     * If a response extension should be included in the OCSP response, as response to the extension in the request, those should be returned by this method and is then included in 
+     * the OCSP response by the server.
      * 
      * @param requestCertificates
      *            A certificate array from the original HttpServletRequest, used for authorization.
@@ -62,7 +65,7 @@ public interface OCSPExtension {
             final X509Certificate cert, final CertificateStatus status, final InternalKeyBinding internalKeyBinding);
 
     /**
-     * Returns the last error that occured during process(), when process returns null
+     * Returns the last error that occurred during process(), when process returns null
      * 
      * @return error code as defined by implementing class
      */
