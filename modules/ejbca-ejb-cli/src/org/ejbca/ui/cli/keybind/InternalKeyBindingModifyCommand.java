@@ -90,8 +90,8 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 MandatoryMode.OPTIONAL,
                 StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
-                "Specifies a colon-separated list of OIDs, identifying the OCSP extensions to use for an OCSP key binding."));
-        registerParameter(new Parameter(ARCHIVE_CUTOFF, "Enable Archive Cutoff", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                "Specifies a colon-separated list of OIDs, identifying the OCSP extensions to use for an OCSP key binding. Use empty list \"\" to clear all extensions."));
+        registerParameter(new Parameter(ARCHIVE_CUTOFF, "Retention Period", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
                 "Enable OCSP archive cutoff (RFC 6960 section 4.4.4.) with the specified retention period. The retention period is a duration, e.g. '10y' (10 years) or '16mo' (16 months)."));
         registerParameter(new Parameter(ETSI_ARCHIVE_CUTOFF, "Enable ETSI Archive Cutoff", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
