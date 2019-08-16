@@ -435,7 +435,10 @@
         <socket-binding name="https" port="${jboss.https.port:8443}"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
-	<socket-binding name="remoting" port="4447"/>
+	    <socket-binding name="remoting" port="4447"/>
+        <outbound-socket-binding name="remote-ejb">
+            <local-destination socket-binding-ref="http"/>
+        </outbound-socket-binding>
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
