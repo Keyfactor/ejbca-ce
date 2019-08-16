@@ -226,7 +226,7 @@ public class RaRoleMemberBean implements Serializable {
             Collections.sort(caInfos, new Comparator<CAInfo>() {
                 @Override
                 public int compare(final CAInfo caInfo1, final CAInfo caInfo2) {
-                    return caInfo1.getName().compareTo(caInfo2.getName());
+                    return caInfo1.getName().compareToIgnoreCase(caInfo2.getName());
                 }
             });
             for (final CAInfo caInfo : caInfos) {
