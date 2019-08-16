@@ -28,9 +28,9 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class ProfilingTest {
+public class ProfilingSystemTest {
     
-    private static final Logger log = Logger.getLogger(ProfilingTest.class);
+    private static final Logger log = Logger.getLogger(ProfilingSystemTest.class);
 
     // Default
     private static final long HIGEST_AVERAGE_ALLOWED_MS_DEFAULT = 30_000L;
