@@ -174,7 +174,7 @@ public class RaCasPageBean implements Serializable {
                     for (int i=0; i<Math.min(size1, size2); i++) {
                         final String name1 = caAndCrl1.chainNames.get(i);
                         final String name2 = caAndCrl.chainNames.get(i);
-                        final int compareTo = name1.compareTo(name2);
+                        final int compareTo = name1.compareToIgnoreCase(name2);
                         if (compareTo!=0) {
                             return compareTo;
                         }
