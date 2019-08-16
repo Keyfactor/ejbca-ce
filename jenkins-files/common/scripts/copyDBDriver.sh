@@ -1,7 +1,11 @@
 #!/bin/sh
 
-# copyDatabaseDriver.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#                       [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
+# This utility script defines the database driver and copies it.
+# copyDBDriver.sh JENKINS_FILES_LIB BUILD_FOLDER DOCKER_NAME_DB JDK_VERSION DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#                 [1]               [2]          [3]            [4]         [5]       [6]        [7]           [8]
+#echo
+#echo "copyDBDriver.sh [$1] [$2] [$3] [$4] [$5] [$6] [$7] [$8]"
+#echo
 
 MODULE_XML=""
 MODULE_JAR=""
@@ -11,21 +15,17 @@ MODULE_JAR=""
 ########################################################################################################################
 if [ $5 = "db2" ]
 then
-    echo "Using DB2 library..."
     MODULE_XML="module_$4.xml"
     MODULE_JAR="db2jcc4.jar"
 elif [ $5 = "mariadb" ]
 then
-    echo "Using MariaDB library..."
     MODULE_JAR="mariadb-java-client.jar"
 elif [ $5 = "mssql" ]
 then
-    echo "Using MS SQL library..."
     MODULE_XML="module_$4.xml"
     MODULE_JAR="mssql-jdbc-7.2.2.jre$4.jar"
 elif [ $5 = "oracle" ]
 then
-    echo "Using Oracle library..."
     echo "Error: Not implemented"
     exit 1
 else

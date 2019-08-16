@@ -1,9 +1,17 @@
 #!/bin/sh
 
-# copyDatabaseContainer.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#                          [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
+# This utility script defines the application server docker artifacts and copies them.
+# copyAppDocker.sh JENKINS_FILES_SERVER BUILD_FOLDER DOCKER_NAME_DB JDK_VERSION DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#                  [1]                  [2]          [3]            [4]         [5]       [6]        [7]           [8]
+#echo
+#echo "copyAppDocker.sh [$1] [$2] [$3] [$4] [$5] [$6] [$7] [$8]"
+#echo
 
+########################################################################################################################
+# Variables
+########################################################################################################################
 DOCKERFILE_PATH=""
+DOCKERFILE_ENV_PATH=""
 DOCKERFILE_RUN_PATH=""
 DOCKERFILE_STANDALONE_FILTERED=false
 DOCKERFILE_STANDALONE1_PATH=""
@@ -15,13 +23,12 @@ DOCKERFILE_STANDALONE_DRIVER_TAG=""
 ########################################################################################################################
 # Setup variables
 ########################################################################################################################
-echo "Looking for application server container..."
 if [ $7 = "wildfly" ]
 then
     if [ -f "$1/$7/$8/Dockerfile" ]
     then
-        echo "Found WildFly container with version $8"
         DOCKERFILE_PATH="$1/$7/$8/Dockerfile"
+        DOCKERFILE_ENV_PATH="$1/$7/$8/env.sh"
         DOCKERFILE_RUN_PATH="$1/$7/$8/run.sh"
         DOCKERFILE_STANDALONE_FILTERED=true
         DOCKERFILE_STANDALONE1_PATH="$1/$7/$8/standalone1.xml"
@@ -31,22 +38,19 @@ then
         exit 1
     fi
 else
-  echo "Error: Cannot map the application server family"
-  exit 1
+    echo "Error: Cannot map the application server family"
+    exit 1
 fi
-
-# Call setDatabaseConnectionVariables.sh to reuse database connection variables
-. $2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
 
 ########################################################################################################################
 # Copy resources
 ########################################################################################################################
 cp $DOCKERFILE_PATH $2/
+cp $DOCKERFILE_ENV_PATH $2/
 cp $DOCKERFILE_RUN_PATH $2/
 
 if [ "$DOCKERFILE_STANDALONE_FILTERED" = true ]
 then
-    echo "Configuring database in standalone.xml files..."
     # Wrap <driver-class/>
     if [ ! -z "$DB_DATASOURCE_DRIVER_CLASS" ]
     then
@@ -79,15 +83,15 @@ then
         DOCKERFILE_STANDALONE_DRIVER_TAG="<driver name=\"$DB_DRIVER_NAME\" module=\"$DB_DRIVER_MODULE\">$DOCKERFILE_STANDALONE_DRIVER_INTERNAL_TAG</driver>"
     fi
 
-    echo "standalone.xml Replacement Variables:"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME        [$DB_DATASOURCE_JNDI_NAME]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL   [$DB_DATASOURCE_CONNECTION_URL]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_DRIVER           [$DB_DATASOURCE_DRIVER]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS        [$DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_USERNAME         [$DB_DATASOURCE_USERNAME]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD         [$DB_DATASOURCE_PASSWORD]"
-    echo "DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION [$DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG]"
-    echo "DOCKERFILE_STANDALONE_DRIVER                      [$DOCKERFILE_STANDALONE_DRIVER_TAG]"
+#    echo "standalone.xml Replacement Variables:"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME        [$DB_DATASOURCE_JNDI_NAME]"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL   [$DB_DATASOURCE_CONNECTION_URL]"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_DRIVER           [$DB_DATASOURCE_DRIVER]"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS        [$DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG]"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_USERNAME         [$DB_DATASOURCE_USERNAME]"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD         [$DB_DATASOURCE_PASSWORD]"
+#    echo "DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION [$DOCKERFILE_STANDALONE_DATASOURCE_VALID_CONNECTION_TAG]"
+#    echo "DOCKERFILE_STANDALONE_DRIVER                      [$DOCKERFILE_STANDALONE_DRIVER_TAG]"
 
     # standalone1.xml
     sed -e "s#DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
@@ -100,12 +104,10 @@ then
         -e "s#DOCKERFILE_STANDALONE_DRIVER#$DOCKERFILE_STANDALONE_DRIVER_TAG#" \
         $DOCKERFILE_STANDALONE1_PATH > $2/standalone1.xml
 
-    cat $2/standalone1.xml
-
     # standalone2.xml
     sed -e "s#DOCKERFILE_STANDALONE_DATASOURCE_JNDI_NAME#$DB_DATASOURCE_JNDI_NAME#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_CONNECTION_URL#$DB_DATASOURCE_CONNECTION_URL#" \
-        -e "s#DOCKERFILE_STANDALONE_DATASOURCE_DRIVER#$DB_DRIVER#" \
+        -e "s#DOCKERFILE_STANDALONE_DATASOURCE_DRIVER#$DB_DATASOURCE_DRIVER#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_DRV_CLASS#$DOCKERFILE_STANDALONE_DATASOURCE_DRIVER_CLASS_TAG#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_USERNAME#$DB_DATASOURCE_USERNAME#" \
         -e "s#DOCKERFILE_STANDALONE_DATASOURCE_PASSWORD#$DB_DATASOURCE_PASSWORD#" \

@@ -1,24 +1,31 @@
 #!/bin/sh
 
-# copyConfigurationProperties.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#                                [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
+# This utility script defines the configuration of application server and database and copies it.
+# copyConfigProps.sh JENKINS_FILES_CONF BUILD_FOLDER_CONF DOCKER_NAME_DB JDK_VERSION DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#                    [1]                [2]               [3]            [4]         [5]       [6]        [7]           [8]
+#echo
+#echo "copyConfigProps.sh [$1] [$2] [$3] [$4] [$5] [$6] [$7] [$8]"
+#echo
 
+########################################################################################################################
+# Variables
+########################################################################################################################
 ########################################################################################################################
 # database.properties replacement variables
 ########################################################################################################################
-#DATASOURCE_JNDI_NAME
-#DATABASE_NAME
-#DATABASE_URL
-#DATABASE_DRIVER
-#DATABASE_USERNAME
-#DATABASE_PASSWORD
+#DATASOURCE_JNDI_NAME   -> $DB_DATASOURCE_JNDI_NAME
+#DATABASE_NAME          -> $DB_NAME
+#DATABASE_URL           -> $DB_DATASOURCE_CONNECTION_URL
+#DATABASE_DRIVER        -> $DB_DRIVER
+#DATABASE_USERNAME      -> $DB_DATASOURCE_USERNAME
+#DATABASE_PASSWORD      -> $DB_DATASOURCE_PASSWORD
 
 ########################################################################################################################
 # ejbca.properties replacement variables
 ########################################################################################################################
-#APPSERVER_HOME
+#APPSERVER_HOME         -> $APPSERVER_HOME
 APPSERVER_HOME=""
-#APPSERVER_TYPE
+#APPSERVER_TYPE         -> $APPSERVER_TYPE
 APPSERVER_TYPE=""
 
 ########################################################################################################################
@@ -29,13 +36,9 @@ COPY_JNDI_PROPERTIES_JBOSS=false
 ########################################################################################################################
 # Setup variables
 ########################################################################################################################
-# Call setDatabaseConnectionVariables.sh to reuse database connection variables
-. $2/setDatabaseConnectionVariables.sh $1 $2 $3 $4 $5 $6 $7 $8
-
 # Application server
 if [ $7 = "wildfly" ]
 then
-    echo "Using WildFly pattern..."
     APPSERVER_HOME="/opt/jboss/wildfly"
     APPSERVER_TYPE="jboss"
     if [ $8 = "14.0.0.Final" ]
@@ -76,8 +79,10 @@ sed -e "s#APPSERVER_HOME#$APPSERVER_HOME#" \
 echo "Copying install.properties (without filtering)..."
 cp $1/install.properties $2/
 
-if [ "xCOPY_JNDI_PROPERTIES_JBOSS" != "x" ]
+if [ "x$COPY_JNDI_PROPERTIES_JBOSS" != "x" ]
 then
     echo "Copying jndi.properties.jboss (without filtering)..."
     cp $1/jndi.properties.jboss $2/
 fi
+
+echo
