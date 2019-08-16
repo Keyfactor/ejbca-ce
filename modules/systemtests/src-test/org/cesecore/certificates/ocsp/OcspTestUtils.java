@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -27,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -53,7 +52,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -66,6 +64,8 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.Assert;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @version $Id$
@@ -171,8 +171,8 @@ public class OcspTestUtils {
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken,
                 ocspKeyBindingId);
         final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
-        if (!ocspExtensions.contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
-            ocspExtensions.add(OcspArchiveCutoffExtension.EXTENSION_OID);
+        if (!ocspExtensions.contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId())) {
+            ocspExtensions.add(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId());
         }
         ocspKeyBinding.setOcspExtensions(ocspExtensions);
         ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);

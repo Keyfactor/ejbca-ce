@@ -52,6 +52,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -67,7 +68,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
-import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -952,7 +952,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public boolean isOcspArchiveCutoffExtensionEnabled() {
         @SuppressWarnings("unchecked")
         final List<String> enabledOcspExtensions = (List<String>) getOcspExtensions().getWrappedData();
-        return enabledOcspExtensions.stream().anyMatch(enabledOcspExtension -> OcspArchiveCutoffExtension.EXTENSION_OID.equals(enabledOcspExtension));
+        return enabledOcspExtensions.stream().anyMatch(enabledOcspExtension -> OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId().equals(enabledOcspExtension));
     }
 
     private String boundCertificateId = null;

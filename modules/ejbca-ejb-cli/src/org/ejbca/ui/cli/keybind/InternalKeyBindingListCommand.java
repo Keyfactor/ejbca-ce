@@ -20,12 +20,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -153,7 +153,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                     for (final String ocspExtension : internalKeyBinding.getOcspExtensions()) {
                         sb.append(System.lineSeparator() + "\tOID: " + ocspExtension);
                     }
-                    if (internalKeyBinding.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID)) {
+                    if (internalKeyBinding.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId())) {
                         sb.append(System.lineSeparator() + " }, archiveCutoff={" + System.lineSeparator());
                         if (internalKeyBinding.useIssuerNotBeforeAsArchiveCutoff()) {
                             sb.append("\tUsing issuer's noBefore date as archive cutoff date (ETSI EN 319 411-2, CSS-6.3.10-08)."
