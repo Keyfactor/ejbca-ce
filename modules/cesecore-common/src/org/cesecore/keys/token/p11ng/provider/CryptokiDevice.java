@@ -256,6 +256,13 @@ public class CryptokiDevice {
             }
         }
 
+        /** Aquires the login session. Can be called before login to check distinguish non-authorization related exception */
+        public synchronized void prepareLogin() {
+            if (loginSession == null) {
+                loginSession = aquireSession();
+            }
+        }
+        
         public synchronized void login(final String pin) {
             // Note: We use a dedicated session for login so it will remain logged in
             if (loginSession == null) {
