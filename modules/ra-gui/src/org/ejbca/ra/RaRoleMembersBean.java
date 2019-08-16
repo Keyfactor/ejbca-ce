@@ -198,25 +198,25 @@ public class RaRoleMembersBean implements Serializable {
                 switch (sortBy) {
                 // TODO locale-aware sorting
                 case ROLE: {
-                    int diff = o1.getRoleName().compareTo(o2.getRoleName()) * sortDir;
+                    int diff = o1.getRoleName().compareToIgnoreCase(o2.getRoleName()) * sortDir;
                     if (diff != 0) {
                         return diff;
                     } else {
-                        return o1.getRoleNamespace().compareTo(o2.getRoleNamespace()) * sortDir;
+                        return o1.getRoleNamespace().compareToIgnoreCase(o2.getRoleNamespace()) * sortDir;
                     }
                 }
                 case ROLENAMESPACE: {
-                    int diff = o1.getRoleNamespace().compareTo(o2.getRoleNamespace()) * sortDir;
+                    int diff = o1.getRoleNamespace().compareToIgnoreCase(o2.getRoleNamespace()) * sortDir;
                     if (diff != 0) {
                         return diff;
                     } else {
-                        return o1.getRoleName().compareTo(o2.getRoleName()) * sortDir;
+                        return o1.getRoleName().compareToIgnoreCase(o2.getRoleName()) * sortDir;
                     }
                 }
-                case CA: return o1.getCaName().compareTo(o2.getCaName()) * sortDir;
-                case TOKENTYPE: return StringUtils.defaultString(rm1.getTokenType()).compareTo(StringUtils.defaultString(rm2.getTokenType())) * sortDir;
-                case TOKENMATCHVALUE: return StringUtils.defaultString(rm1.getTokenMatchValue()).compareTo(StringUtils.defaultString(rm2.getTokenMatchValue())) * sortDir;
-                case DESCRIPTION: return StringUtils.defaultString(rm1.getDescription()).compareTo(StringUtils.defaultString(rm2.getDescription())) * sortDir;
+                case CA: return o1.getCaName().compareToIgnoreCase(o2.getCaName()) * sortDir;
+                case TOKENTYPE: return StringUtils.defaultString(rm1.getTokenType()).compareToIgnoreCase(StringUtils.defaultString(rm2.getTokenType())) * sortDir;
+                case TOKENMATCHVALUE: return StringUtils.defaultString(rm1.getTokenMatchValue()).compareToIgnoreCase(StringUtils.defaultString(rm2.getTokenMatchValue())) * sortDir;
+                case DESCRIPTION: return StringUtils.defaultString(rm1.getDescription()).compareToIgnoreCase(StringUtils.defaultString(rm2.getDescription())) * sortDir;
                 default:
                     throw new IllegalStateException("Invalid sortBy value");
                 }
@@ -320,7 +320,7 @@ public class RaRoleMembersBean implements Serializable {
             Collections.sort(caInfos, new Comparator<CAInfo>() {
                 @Override
                 public int compare(final CAInfo caInfo1, final CAInfo caInfo2) {
-                    return caInfo1.getName().compareTo(caInfo2.getName());
+                    return caInfo1.getName().compareToIgnoreCase(caInfo2.getName());
                 }
             });
             caIdToNameMap = new HashMap<>();
