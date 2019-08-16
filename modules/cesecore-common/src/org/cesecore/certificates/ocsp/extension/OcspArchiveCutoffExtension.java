@@ -21,9 +21,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.util.CertTools;
 
 /**
  * Represents the OCSP Archive Cutoff extension described in RFC6960, section 4.4.4.
@@ -69,7 +71,6 @@ import org.cesecore.keybind.InternalKeyBinding;
  */
 public class OcspArchiveCutoffExtension implements OCSPExtension {
     private final Logger log = Logger.getLogger(OcspArchiveCutoffExtension.class);
-    public static final String EXTENSION_OID = "1.3.6.1.5.5.7.48.6";
     public static final String EXTENSION_NAME = "Archive Cutoff";
 
     @Override
@@ -81,7 +82,7 @@ public class OcspArchiveCutoffExtension implements OCSPExtension {
             final X509Certificate cert, final CertificateStatus status, final InternalKeyBinding internalKeyBinding) {
         if (log.isDebugEnabled()) {
             log.debug(remoteAddress + " sent an OCSP request containing an OCSP archive cutoff extension, asking for the status of the certificate"
-                    + " with serial number " + cert.getSerialNumber() + " issued by '" + cert.getIssuerDN()  + "'. The OCSP archive cutoff extension"
+                    + " with serial number " + CertTools.getSerialNumberAsString(cert) + " issued by '" + CertTools.getIssuerDN(cert)  + "'. The OCSP archive cutoff extension"
                     + " should only be present in OCSP responses. This message is probably an indication of a misconfigured OCSP client.");
         }
         return new HashMap<ASN1ObjectIdentifier, Extension>();
@@ -95,13 +96,13 @@ public class OcspArchiveCutoffExtension implements OCSPExtension {
     @Override
     public Set<OCSPExtensionType> getExtensionType() {
         final HashSet<OCSPExtensionType> applicableExtensionTypes = new HashSet<>();
-        applicableExtensionTypes.add(OCSPExtensionType.RESPONSE);
+        applicableExtensionTypes.add(OCSPExtensionType.SINGLE_RESPONSE);
         return applicableExtensionTypes;
     }
 
     @Override
     public String getOid() {
-        return EXTENSION_OID;
+        return OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId();
     }
 
     @Override
