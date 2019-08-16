@@ -26,24 +26,26 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=2
 # Setting Ant Params
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
-# Copy the run script and set execution privileges to it
+# Copy run scripts and set execution privileges
+ADD env.sh /opt/
+RUN chmod a+x /opt/env.sh
 ADD run.sh /opt/
-RUN chmod +x /opt/run.sh
+RUN chmod a+x /opt/run.sh
 
-# Copy ejbca conf to /opt in the container for runtime-usage
-ADD conf /opt/conf
-RUN chmod 777 /opt/conf
-
-# Copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
+# Copy two stages of standalone.xml file. They are both needed for different stages of installation.
 ADD standalone1.xml /opt/standalone1.xml
 ADD standalone2.xml /opt/standalone2.xml
 
 # Add a database module with driver or copy the driver to deployment folder
 ADD module.xml /opt/module.xml
 ADD dbdriver.jar /opt/dbdriver.jar
+
+# Create deployments folder for db driver if any
+RUN mkdir -p /opt/deployments/
+
 RUN if [ "x$DB_DRIVER_MODULE_PATH" != "xx" ] ; then mkdir -p /opt/jboss/wildfly/modules/system/layers/base/${DB_DRIVER_MODULE_PATH} ; fi
 RUN if [ "x$DB_DRIVER_MODULE_PATH" != "xx" ] ; then cp /opt/module.xml /opt/jboss/wildfly/modules/system/layers/base/${DB_DRIVER_MODULE_PATH}/ ; fi
-RUN if [ "x$DB_DRIVER_MODULE_PATH" != "xx" ] ; then cp /opt/dbdriver.jar /opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/ ; else cp /opt/dbdriver.jar /opt/jboss/wildfly/standalone/deployments/ ; fi
+RUN if [ "x$DB_DRIVER_MODULE_PATH" != "xx" ] ; then cp /opt/dbdriver.jar /opt/jboss/wildfly/modules/system/layers/base/$DB_DRIVER_MODULE_PATH/ ; else cp /opt/dbdriver.jar /opt/deployments/ ; fi
 
 # Fix permissions (1001 is the jenkins user)
 RUN chown -R 1001:1001 /opt/jboss/wildfly
@@ -51,5 +53,11 @@ USER 1001:1001
 
 # Set the working directory to /app
 WORKDIR /app/ejbca
+
+EXPOSE 4447
+EXPOSE 8080
+EXPOSE 8442
+EXPOSE 8443
+EXPOSE 9990
 
 CMD ["/opt/run.sh"]

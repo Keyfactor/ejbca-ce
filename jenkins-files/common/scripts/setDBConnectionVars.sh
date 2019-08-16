@@ -1,11 +1,14 @@
 #!/bin/sh
 
-# This utility script defines database related variables and exports them
-# setDatabaseConnectionVariables.sh SRC_PATH TARGET_PATH DB_CONTAINER JDK DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
-#                                   [1]      [2]         [3]          [4] [5]       [6]        [7]           [8]
+# This utility script defines the database connection variables and exports them.
+# setDBConnectionVars.sh JENKINS_FILES_DB BUILD_FOLDER_DB DOCKER_NAME_DB JDK_VERSION DB_FAMILY DB_VERSION SERVER_FAMILY SERVER_VERSION
+#                        [1]              [2]             [3]            [4]         [5]       [6]        [7]           [8]
+#echo
+#echo "setDBConnectionVars.sh [$1] [$2] [$3] [$4] [$5] [$6] [$7] [$8]"
+#echo
 
 ########################################################################################################################
-# Database variables
+# Variables
 ########################################################################################################################
 DB_NAME=""
 DB_DRIVER=""
@@ -22,9 +25,11 @@ DB_DRIVER_MODULE=""
 DB_DRIVER_XA_CLASS=""
 DB_DRIVER_DRIVER_CLASS=""
 
+########################################################################################################################
+# Setup variables
+########################################################################################################################
 if [ $5 = "db2" ]
 then
-    echo "Using DB2 pattern..."
     DB_NAME="db2"
     DB_DRIVER="com.ibm.db2.jcc.DB2Driver"
     DB_DATASOURCE_CONNECTION_URL="jdbc:db2://$3:50000/ejbca"
@@ -40,7 +45,6 @@ then
     DB_DRIVER_DRIVER_CLASS=""
 elif [ $5 = "mariadb" ]
 then
-    echo "Using MariaDB pattern..."
     DB_NAME="mysql"
     DB_DRIVER="org.mariadb.jdbc.Driver"
     DB_DATASOURCE_CONNECTION_URL="jdbc:mysql://$3:3306/ejbca"
@@ -56,7 +60,6 @@ then
     DB_DRIVER_DRIVER_CLASS=""
 elif [ $5 = "mssql" ]
 then
-    echo "Using MS SQL pattern..."
     DB_NAME="mssql"
     DB_DRIVER="com.microsoft.sqlserver.jdbc.SQLServerDriver"
     DB_DATASOURCE_CONNECTION_URL="jdbc:sqlserver://$3:1433;databaseName=ejbca"
@@ -72,7 +75,6 @@ then
     DB_DRIVER_DRIVER_CLASS="com.microsoft.sqlserver.jdbc.SQLServerDriver"
 elif [ $5 = "oracle" ]
 then
-    echo "Using Oracle DB pattern..."
     DB_NAME="oracle"
     DB_DRIVER="oracle.jdbc.driver.OracleDriver"
     DB_DATASOURCE_CONNECTION_URL="jdbc:oracle:${3}:@oracledb:1521:XE"
@@ -93,6 +95,9 @@ else
   exit 1
 fi
 
+########################################################################################################################
+# Export variables
+########################################################################################################################
 export DB_NAME="$DB_NAME"
 export DB_DRIVER="$DB_DRIVER"
 export DB_DATASOURCE_JNDI_NAME="$DB_DATASOURCE_JNDI_NAME"
@@ -107,19 +112,3 @@ export DB_DRIVER_NAME="$DB_DRIVER_NAME"
 export DB_DRIVER_MODULE="$DB_DRIVER_MODULE"
 export DB_DRIVER_XA_CLASS="$DB_DRIVER_XA_CLASS"
 export DB_DRIVER_DRIVER_CLASS="$DB_DRIVER_DRIVER_CLASS"
-
-echo "Database Connection Variables:"
-echo "DB_NAME:                                  [$DB_NAME]"
-echo "DB_DRIVER:                                [$DB_DRIVER]"
-echo "DB_DATASOURCE_JNDI_NAME                   [$DB_DATASOURCE_JNDI_NAME]"
-echo "DB_DATASOURCE_CONNECTION_URL              [$DB_DATASOURCE_CONNECTION_URL]"
-echo "DB_DATASOURCE_DRIVER                      [$DB_DATASOURCE_DRIVER]"
-echo "DB_DATASOURCE_DRIVER_CLASS                [$DB_DATASOURCE_DRIVER_CLASS]"
-echo "DB_DATASOURCE_USERNAME                    [$DB_DATASOURCE_USERNAME]"
-echo "DB_DATASOURCE_PASSWORD                    [$DB_DATASOURCE_PASSWORD]"
-echo "DB_DATASOURCE_VALID_CONNECTION_SQL        [$DB_DATASOURCE_VALID_CONNECTION_SQL]"
-echo "DB_DATASOURCE_VALID_CONNECTION_CHECKER    [$DB_DATASOURCE_VALID_CONNECTION_CHECKER]"
-echo "DB_DRIVER_NAME                            [$DB_DRIVER_NAME]"
-echo "DB_DRIVER_MODULE                          [$DB_DRIVER_MODULE]"
-echo "DB_DRIVER_XA_CLASS                        [$DB_DRIVER_XA_CLASS]"
-echo "DB_DRIVER_DRIVER_CLASS                    [$DB_DRIVER_DRIVER_CLASS]"
