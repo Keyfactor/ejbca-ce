@@ -1583,7 +1583,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 if (item1.getLabel()==null) {
                     return Integer.MIN_VALUE;
                 }
-                return item1.getLabel().compareTo(item2.getLabel());
+                return item1.getLabel().compareToIgnoreCase(item2.getLabel());
             }
         });
     }
