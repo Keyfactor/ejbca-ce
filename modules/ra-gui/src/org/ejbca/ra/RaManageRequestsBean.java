@@ -219,10 +219,10 @@ public class RaManageRequestsBean implements Serializable {
                 switch (sortBy) {
                 // TODO locale-aware sorting
                 case ID: return o1.getId().compareTo(o2.getId()) * sortDir;
-                case CA: return o1.getCa().compareTo(o2.getCa()) * sortDir;
-                case TYPE: return o1.getType().compareTo(o2.getType()) * sortDir;
-                case DISPLAY_NAME: return o1.getDisplayName().compareTo(o2.getDisplayName()) * sortDir;
-                case REQUESTER_NAME: return o1.getRequesterName().compareTo(o2.getRequesterName()) * sortDir;
+                case CA: return o1.getCa().compareToIgnoreCase(o2.getCa()) * sortDir;
+                case TYPE: return o1.getType().compareToIgnoreCase(o2.getType()) * sortDir;
+                case DISPLAY_NAME: return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()) * sortDir;
+                case REQUESTER_NAME: return o1.getRequesterName().compareToIgnoreCase(o2.getRequesterName()) * sortDir;
                 case STATUS: return o1.getStatus().compareTo(o2.getStatus()) * sortDir;
                 case REQUEST_DATE:
                 default:
