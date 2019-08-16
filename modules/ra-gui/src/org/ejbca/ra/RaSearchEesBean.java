@@ -221,18 +221,18 @@ public class RaSearchEesBean implements Serializable {
             public int compare(RaEndEntityDetails o1, RaEndEntityDetails o2) {
                 switch (sortBy) {
                 case PROFILE:
-                    return o1.getEepName().concat(o1.getCpName()).compareTo(o2.getEepName().concat(o2.getCpName())) * (sortAscending ? 1 : -1);
+                    return o1.getEepName().concat(o1.getCpName()).compareToIgnoreCase(o2.getEepName().concat(o2.getCpName())) * (sortAscending ? 1 : -1);
                 case CA:
-                    return o1.getCaName().compareTo(o2.getCaName()) * (sortAscending ? 1 : -1);
+                    return o1.getCaName().compareToIgnoreCase(o2.getCaName()) * (sortAscending ? 1 : -1);
                 case SUBJECT:
-                    return (o1.getSubjectDn()+o1.getSubjectAn()).compareTo(o2.getSubjectDn()+o2.getSubjectAn()) * (sortAscending ? 1 : -1);
+                    return (o1.getSubjectDn()+o1.getSubjectAn()).compareToIgnoreCase(o2.getSubjectDn()+o2.getSubjectAn()) * (sortAscending ? 1 : -1);
                 case MODIFIED:
                     return o1.getModified().compareTo(o2.getModified()) * (sortAscending ? 1 : -1);
                 case STATUS:
                     return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
                 case USERNAME:
                 default:
-                    return o1.getUsername().compareTo(o2.getUsername()) * (sortAscending ? 1 : -1);
+                    return o1.getUsername().compareToIgnoreCase(o2.getUsername()) * (sortAscending ? 1 : -1);
                 }
             }
         });
@@ -385,7 +385,7 @@ public class RaSearchEesBean implements Serializable {
             Collections.sort(caInfos, new Comparator<CAInfo>() {
                 @Override
                 public int compare(final CAInfo caInfo1, final CAInfo caInfo2) {
-                    return caInfo1.getName().compareTo(caInfo2.getName());
+                    return caInfo1.getName().compareToIgnoreCase(caInfo2.getName());
                 }
             });
             caIdToNameMap = new HashMap<>();
@@ -494,7 +494,7 @@ public class RaSearchEesBean implements Serializable {
         Collections.sort(entrySetSorted, new Comparator<Entry<T, String>>() {
             @Override
             public int compare(final Entry<T, String> o1, final Entry<T, String> o2) {
-                return o1.getValue().compareTo(o2.getValue());
+                return o1.getValue().compareToIgnoreCase(o2.getValue());
             }
         });
         return entrySetSorted;
