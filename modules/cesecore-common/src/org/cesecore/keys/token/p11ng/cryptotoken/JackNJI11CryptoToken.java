@@ -38,8 +38,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
-import org.pkcs11.jacknji11.CKR;
-import org.pkcs11.jacknji11.CKRException;
 
 /**
  * 
@@ -134,26 +132,27 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     @Override
     public void activate(char[] authenticationcode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         log.info("Activating CP5 token...");
-        log.info("State before login: " + this.slot);
-        if (this.slot == null) {
+        log.info("State before login: " + slot);
+        if (slot == null) {
             throw new CryptoTokenOfflineException("Slot not initialized.");
         }
         try {
-            this.slot.login(String.valueOf(authenticationcode));
-        } catch (CKRException e) {
-            final String msg = "Failed to initialize PKCS#11 provider slot '" + this.sSlotLabel + "'. Error code: " + CKR.L2S(e.getCKR());
-            log.warn(msg, e);
-            CryptoTokenAuthenticationFailedException authFailException = new CryptoTokenAuthenticationFailedException(msg);
-            authFailException.initCause(e);
-            throw authFailException;
+            slot.prepareLogin();
         } catch (Exception e) {
-            final String msg = "Failed to initialize PKCS#11 provider slot '" + this.sSlotLabel + "'.";
+            final String msg = "Failed to initialize PKCS#11 provider slot '" + sSlotLabel + "'.";
+            log.warn(msg, e);
+            throw new CryptoTokenOfflineException(msg, e);
+        }
+        try {
+            slot.login(String.valueOf(authenticationcode));
+        } catch (Exception e) {
+            final String msg = "Failed to login to PKCS#11 provider slot '" + sSlotLabel + "'.";
             log.warn(msg, e);
             CryptoTokenAuthenticationFailedException authFailException = new CryptoTokenAuthenticationFailedException(msg);
             authFailException.initCause(e);
             throw authFailException;
         }
-        log.info("State after login: " + this.slot.toString());
+        log.info("State after login: " + slot.toString());
     }
 
     @Override

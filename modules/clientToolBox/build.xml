@@ -21,6 +21,7 @@
 		<path refid="lib.commons-io.classpath"/>	
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.jacknji.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.log4j.classpath"/> 		
 		<path location="${mod.cesecore-common.lib}"/>
