@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -65,7 +60,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
-import org.cesecore.certificates.ocsp.extension.OcspArchiveCutoffExtension;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -118,6 +112,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System tests for the upgrade session bean. 
@@ -1081,7 +1081,7 @@ public class UpgradeSessionBeanTest {
             final InternalKeyBindingInfo ocspResponder = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
             Assert.assertTrue(
                     "OCSP key binding should not contain an archive cutoff extension when upgrading without 'ocsp.expiredcert.retentionperiod' configured.",
-                    !ocspResponder.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID));
+                    !ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
         } finally {
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token");
@@ -1103,7 +1103,7 @@ public class UpgradeSessionBeanTest {
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
             final InternalKeyBindingInfo ocspResponder = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
             Assert.assertTrue("OCSP key binding should not contain an archive cutoff extension when 'ocsp.expiredcert.retentionperiod=-1'.",
-                    !ocspResponder.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID));
+                    !ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
         } finally {
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token");
@@ -1132,9 +1132,9 @@ public class UpgradeSessionBeanTest {
             final InternalKeyBindingInfo ocspResponder2 = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken,
                     internalKeyBindingId2);
             Assert.assertTrue("The 1st OCSP key binding is missing an archive cutoff extension.",
-                    ocspResponder1.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID));
+                    ocspResponder1.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
             Assert.assertTrue("The 2nd OCSP key binding is missing an archive cutoff extension.",
-                    ocspResponder1.getOcspExtensions().contains(OcspArchiveCutoffExtension.EXTENSION_OID));
+                    ocspResponder1.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
             Assert.assertEquals("The 1st OCSP key binding should have the retention period set to 10 years.", "10y",
                     ocspResponder1.getRetentionPeriod());
             Assert.assertEquals("The 2nd OCSP key binding should have the retention period set to 10 years.", "10y",
