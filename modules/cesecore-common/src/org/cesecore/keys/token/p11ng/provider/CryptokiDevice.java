@@ -17,6 +17,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.security.DigestException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -61,7 +62,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
@@ -649,7 +652,6 @@ public class CryptokiDevice {
                 final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
                 final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
-                
                 RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
                 BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
                 BigInteger kakModulus = publicSpec.getModulus();
@@ -680,7 +682,9 @@ public class CryptokiDevice {
                 Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
                 kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
                 authData.pPublicExponent = kakPublicKeyExponentPointer;
-                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+//                TODO make optional 
+//                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
     
                 params.authData = authData;
                 params.bAssigned = KEY_AUTHORIZATION_ASSIGNED;
@@ -704,13 +708,20 @@ public class CryptokiDevice {
                 }
     
                 byte[] initSig = new byte[bitsToBytes(kakLength)];
+//                TODO make optional (sign PSS or PKCS1)
+//                try {
+//                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
+//                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+//                         | InvalidAlgorithmParameterException | SignatureException e) {
+//                    LOG.error("Error occurred while signing the hash!", e);
+//                }
+    
                 try {
-                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
-                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-                         | InvalidAlgorithmParameterException | SignatureException e) {
+                    initSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
+                } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
                     LOG.error("Error occurred while signing the hash!", e);
                 }
-    
+                
                 long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
                     throw new CKRException(rvAuthorizeKey);
@@ -755,12 +766,19 @@ public class CryptokiDevice {
                 final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
                 byte[] authSig = new byte[bitsToBytes(kakLength)];
+                
+//                TODO make optional (sign PSS or PKCS1)
                 try {
-                    authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
-                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-                         | InvalidAlgorithmParameterException | SignatureException e) {
+                    authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
+                } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
                     LOG.error("Error occurred while signing the hash!", e);
                 }
+//                try {
+//                    authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
+//                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+//                         | InvalidAlgorithmParameterException | SignatureException e) {
+//                    LOG.error("Error occurred while signing the hash!", e);
+//                }
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
@@ -925,6 +943,24 @@ public class CryptokiDevice {
             signature.update(hash);
             byte[] signBytes = signature.sign();
             return signBytes;
+        }
+        
+        private byte[] signHashPkcs1(byte[] hash, Key privateKey, String signProviderName) 
+                throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, DigestException, NoSuchProviderException {
+            Signature signer = Signature.getInstance("NONEwithRSA", signProviderName);
+            signer.initSign((PrivateKey) privateKey);
+            signer.update(wrapForRsaSign(hash, "SHA-256"));
+            byte[] signed = signer.sign();
+            return signed;
+        }
+        
+        private byte[] wrapForRsaSign(byte[] dig, String hashAlgo) throws DigestException {
+            DigestInfo di = new DigestInfo(new DefaultDigestAlgorithmIdentifierFinder().find(hashAlgo), dig);
+            try {
+                return di.getEncoded();
+            } catch (IOException e) {
+                throw new DigestException(e);
+            }
         }
         
         private CKA[] toCkaArray(HashMap<Long, Object> map) {
