@@ -755,13 +755,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
         cryptoToken.generateKeyPair(keySpecification, alias);
-        try {
-            Class<?> c = Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken");
-            if (c != null && !c.isInstance(cryptoToken)) {
-                cryptoToken.testKeyPair(alias);
-            }
-        } catch (ClassNotFoundException e) {
-            // This is supposed to happen in the case of Community Edition
+        if (!cryptoToken.getClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             cryptoToken.testKeyPair(alias);
         }
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
