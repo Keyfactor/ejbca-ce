@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.p11ng.MechanismNames;
 import org.pkcs11.jacknji11.CKM;
@@ -59,7 +60,7 @@ public class JackNJI11Provider extends Provider {
 
     private static class MyService extends Service {
 
-        private static final Class[] paramTypes = {Provider.class, String.class};
+        private static final Class<?>[] paramTypes = {Provider.class, String.class};
 
         MyService(Provider provider, String type, String algorithm,
                 String className) {
@@ -70,7 +71,7 @@ public class JackNJI11Provider extends Provider {
         public Object newInstance(Object param) throws NoSuchAlgorithmException {
             try {
                 // get the Class object for the implementation class
-                Class clazz;
+                Class<?> clazz;
                 Provider provider = getProvider();
                 ClassLoader loader = provider.getClass().getClassLoader();
                 if (loader == null) {
@@ -79,7 +80,7 @@ public class JackNJI11Provider extends Provider {
                     clazz = loader.loadClass(getClassName());
                 }
                 // fetch the (Provider, String) constructor
-                Constructor cons = clazz.getConstructor(paramTypes);
+                Constructor<?> cons = clazz.getConstructor(paramTypes);
                 // invoke constructor and return the SPI object
                 Object obj = cons.newInstance(new Object[] {provider, getAlgorithm()});
                 return obj;
@@ -128,6 +129,9 @@ public class JackNJI11Provider extends Provider {
     }
 
     private static class MySignature extends SignatureSpi {
+
+        private static final Logger log = Logger.getLogger(MySignature.class);
+
         private final JackNJI11Provider provider;
         private final String algorithm;
         private int opmode;
@@ -135,6 +139,8 @@ public class JackNJI11Provider extends Provider {
         private long session;
         private ByteArrayOutputStream buffer;
         private final int type;
+        private boolean hasActiveSession;
+        private Exception debugStacktrace;
 
         // constant for type digesting, we do the hashing ourselves
         // private final static int T_DIGEST = 1;          // TODO: Currently it is not supported
@@ -172,17 +178,26 @@ public class JackNJI11Provider extends Provider {
             if (pk instanceof NJI11StaticSessionPrivateKey) {
                 session = ((NJI11StaticSessionPrivateKey) pk).getSession();
             } else {
-                session = myKey.getSlot().aquireSession(); // TODO: If SignInit fails we should release this one
+                session = myKey.getSlot().aquireSession();
+                hasActiveSession = true;
             }
-            
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("enigneInitSign: session: " + session + ", object: " +
-                          myKey.getObject());
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("enigneInitSign: session: " + session + ", object: " +
+                              myKey.getObject());
+                    debugStacktrace = new Exception();
+                }
+                
+                long sigAlgoValue = MechanismNames.longFromSigAlgoName(this.algorithm);
+                byte[] param = MechanismNames.CKM_PARAMS.get(sigAlgoValue);
+                myKey.getSlot().getCryptoki().SignInit(session, new CKM(sigAlgoValue, param), myKey.getObject());
+            } catch (Exception e) {
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().releaseSession(session);
+                    hasActiveSession = false;
+                }
+                throw e;
             }
-            
-            long sigAlgoValue = MechanismNames.longFromSigAlgoName(this.algorithm);
-            byte[] param = MechanismNames.CKM_PARAMS.get(sigAlgoValue);
-            myKey.getSlot().getCryptoki().SignInit(session, new CKM(sigAlgoValue, param), myKey.getObject());
         }
 
         @Override
@@ -212,33 +227,57 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected byte[] engineSign() throws SignatureException {
-            // TODO: If this fails we should also release the session?
-            byte[] result;
-            if (type == T_UPDATE) {
-                result = myKey.getSlot().getCryptoki().SignFinal(session);
-            } else { // single-part operation if hash is provided for signing
-                result = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+            try {
+                if (type == T_UPDATE) {
+                    return myKey.getSlot().getCryptoki().SignFinal(session);
+                } else { // single-part operation if hash is provided for signing
+                    return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                }
+            } finally {
+                // Signing is done, either successful or failed
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                    myKey.getSlot().releaseSession(session);
+                    hasActiveSession = false;
+                }
             }
-
-            if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
-                myKey.getSlot().releaseSession(session);
-            }
-            return result;
         }
 
         @Override
         protected boolean engineVerify(byte[] bytes) throws SignatureException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @SuppressWarnings({"override", "deprecation"})
+        @Override
+        @SuppressWarnings("deprecation")
         protected void engineSetParameter(String string, Object o) throws InvalidParameterException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @SuppressWarnings({"override", "deprecation"})
+        @Override
+        @SuppressWarnings("deprecation")
         protected Object engineGetParameter(String string) throws InvalidParameterException {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        @Override
+        @SuppressWarnings("deprecation")
+        protected void finalize() throws Throwable {
+            try {
+                if (hasActiveSession) {
+                    log.warn("Signature object was not de-initialized. Enable debug logging to see init stack trace", debugStacktrace);
+                    try {
+                        final CryptokiDevice.Slot slot = myKey.getSlot();
+                        if (slot != null) {
+                            slot.releaseSession(session);
+                        }
+                    } catch (RuntimeException e) {
+                        // Can't do anything
+                        log.warn("Failed to release PKCS#11 session in finalizer");
+                    }
+                }
+            } finally {
+                super.finalize();
+            }
         }
     }
 
