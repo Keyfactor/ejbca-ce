@@ -1035,7 +1035,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         try {
             cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), getNewKeyPairSpec());
         } catch (CryptoTokenOfflineException e) {
-            addNonTranslatedErrorMessage("Token is off-line. KeyPair cannot be generated.");
+            final String msg = "Token is off-line. KeyPair cannot be generated.";
+            log.debug(msg, e);
+            addNonTranslatedErrorMessage(msg);
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e);
             final String logMsg = getAdmin().toString() + " failed to generate a keypair:";
