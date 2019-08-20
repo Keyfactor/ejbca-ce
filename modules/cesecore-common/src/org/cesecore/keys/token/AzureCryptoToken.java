@@ -130,7 +130,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private static final PublicKey getDummyCacheKey() {
         if (ecPublicDummyKey == null) {
-            synchronized (ecPublicDummyKey) {
+            synchronized (ecPublicKeyBytes) {
                 if (ecPublicDummyKey == null) {
                     ecPublicDummyKey = KeyTools.getPublicKeyFromBytes(ecPublicKeyBytes);
                 }
