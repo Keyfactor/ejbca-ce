@@ -751,6 +751,10 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         filterOutSelectItems(newAccessRules, getAvailableResourcesKeyValidators());
         filterOutSelectItems(newAccessRules, getAvailableResourcesIkb());
         filterOutSelectItems(newAccessRules, getAvailableResourcesOther());
+        // Remove access rule for key recovery if key recovery is disabled
+        if (!isEnabledKeyRecovery()) {
+            newAccessRules.remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
+        }
         // Add access rules selected by the user
         for (final String resource : getResourcesCaSelected()) {
             newAccessRules.put(resource, Role.STATE_ALLOW);
