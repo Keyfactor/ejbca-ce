@@ -95,6 +95,7 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.AccessRulesMigrator;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -1718,6 +1719,32 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Override
     public void migrateDatabase730() {
+        migrateOcspKeyBindings730();
+        removeStaleAccesssRules730();
+    }
+
+    private void removeStaleAccesssRules730() {
+        try {
+            final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            if (!globalConfiguration.getEnableKeyRecovery()) {
+                log.info("Key recovery is disabled. Checking if there are any stale access rules to remove...");
+                for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
+                    if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
+                        role.getAccessRules().remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
+                        roleSession.persistRole(authenticationToken, role);
+                        log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.getRoleName());
+                    }
+                }
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.error("Not all stale access rules may have been removed, authorisation to one or more resources was denied.", e);
+        } catch (RoleExistsException e) {
+            log.error("Not all stale access rules may have been removed, failed to overwrite existing role.", e);
+        }
+    }
+
+    private void migrateOcspKeyBindings730() {
         try {
             log.info("Migrating settings for archive cutoff (RFC6960) to internal key bindings.");
             if (ConfigurationHolder.getString("ocsp.expiredcert.retentionperiod") == null) {
