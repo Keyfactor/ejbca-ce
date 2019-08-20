@@ -15,14 +15,14 @@ package org.ejbca.configdump;
 import java.util.List;
 
 /**
- * Holds information about the status of a Configdump export operation.
+ * Holds information about the status of a Configdump import operation.
  * @version $Id$
  */
-public final class ConfigdumpExportResult extends ConfigdumpResult {
+public final class ConfigdumpImportResult extends ConfigdumpResult {
     
     private static final long serialVersionUID = 1L;
     
-    public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings) {
+    public ConfigdumpImportResult(final List<String> reportedErrors, final List<String> reportedWarnings) {
         super(reportedErrors, reportedWarnings);
     }
     
