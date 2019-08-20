@@ -69,6 +69,9 @@ import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
@@ -310,6 +313,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private UploadedFile statedumpFile = null;
     private String statedumpDir = null;
     private boolean statedumpLockdownAfterImport = false;
+    private SystemConfigurationCtLogManager ctLogManager;
+    private GoogleCtPolicy googleCtPolicy;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -317,8 +322,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     /** Session bean for importing statedump. Will be null if statedump isn't available */
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
-    private SystemConfigurationCtLogManager ctLogManager;
-    private GoogleCtPolicy googleCtPolicy;
+    private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
 
 
     // Authentication check and audit log page access request
@@ -806,7 +810,20 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
-
+                // Purge access rule for key recovery from all roles if key recovery is disabled
+                // This is done after the configuration has been saved successfully, thus making
+                // sure the administrator has access to edit the configuration, since no access
+                // control check is performed in this step.
+                if (!currentConfig.getEnableKeyRecovery()) {
+                    log.info("Key recovery has been disabled. Checking if there are any stale access rules to remove...");
+                    for (final Role role : roleSession.getAllRoles()) {
+                        if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
+                            role.getAccessRules().remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
+                            roleSession.persistRole(role);
+                            log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.getRoleName());
+                        }
+                    }
+                }
             } catch (AuthorizationDeniedException | InvalidConfigurationException e) {
                 String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
                 log.info(msg);

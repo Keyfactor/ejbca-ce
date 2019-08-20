@@ -12,12 +12,19 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -112,12 +119,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * System tests for the upgrade session bean. 
@@ -1144,6 +1145,33 @@ public class UpgradeSessionBeanTest {
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token 1");
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder 2");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token 2");
+        }
+    }
+
+    @Test
+    public void testRemoveStaleAccesssRules730() throws Exception {
+        Role persistedRole = null;
+        try {
+            final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            // Disable key recovery and add a stale access rule
+            globalConfiguration.setEnableKeyRecovery(false);
+            final HashMap<String, Boolean> accessRules = new HashMap<>();
+            accessRules.put(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW);
+            final Role role = new Role(null, "testRemoveStaleAccesssRules730", accessRules);
+            persistedRole = roleSession.persistRole(alwaysAllowtoken, role);
+            final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            globalUpgradeConfiguration.setUpgradedFromVersion("7.2.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
+            final Role roleAfterUpgrade = roleSession.getRole(alwaysAllowtoken, persistedRole.getRoleId());
+            Assert.assertTrue("Stale access rule was not removed.",
+                    !roleAfterUpgrade.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY)));
+        } finally {
+            if (persistedRole != null) {
+                roleSession.deleteRoleIdempotent(alwaysAllowtoken, persistedRole.getRoleId());
+            }
         }
     }
 
