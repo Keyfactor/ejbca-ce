@@ -37,8 +37,19 @@ public interface ConfigdumpSession {
      * @return Result object. In case errors are set to be ignored, then this contains a list of errors.
      * @throws ConfigdumpException If an error occurs, which was not ignored.
      * @throws IOException On failure to create the YAML files etc.
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException If the given authentication token is not authorized to /system_functionality/edit_systemconfiguration, or not authorized to any of the CAs, crypto tokens, etc.
      */
     ConfigdumpExportResult performExport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
+
+    /**
+     * Imports from scratch or updates EJBCA data from a set of YAML files in the format created by {@link #performExport}.
+     * @param admin Authentication token of the requesting admin (for the Configdump CLI, this is a CLI authentication token).
+     * @param setting Settings such as import directory.
+     * @return Result object. In case errors are set to be ignored, then this contains a list of errors.
+     * @throws ConfigdumpException If an error occurs, which was not ignored.
+     * @throws IOException On failure to read the YAML files etc.
+     * @throws AuthorizationDeniedException If the given authentication token is not authorized to /system_functionality/edit_systemconfiguration, or not authorized to create the items to import.
+     */
+    ConfigdumpExportResult performImport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
 
 }
