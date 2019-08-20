@@ -19,6 +19,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.configdump.ConfigDumpSetting;
 import org.ejbca.configdump.ConfigdumpException;
 import org.ejbca.configdump.ConfigdumpExportResult;
+import org.ejbca.configdump.ConfigdumpImportResult;
 
 /**
  * Interface for exporting (and the future, importing) data with Configdump.
@@ -48,8 +49,8 @@ public interface ConfigdumpSession {
      * @return Result object. In case errors are set to be ignored, then this contains a list of errors.
      * @throws ConfigdumpException If an error occurs, which was not ignored.
      * @throws IOException On failure to read the YAML files etc.
-     * @throws AuthorizationDeniedException If the given authentication token is not authorized to /system_functionality/edit_systemconfiguration, or not authorized to create the items to import.
+     * @throws AuthorizationDeniedException If the given authentication token is not authorized to create/update/delete the items to import.
      */
-    ConfigdumpExportResult performImport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
+    ConfigdumpImportResult performImport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
 
 }
