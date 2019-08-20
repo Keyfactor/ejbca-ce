@@ -282,6 +282,9 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     @Override
     public List<String> getAliases() throws CryptoTokenOfflineException {
         final List<String> aliases = new ArrayList<>();
+        if (slot == null) { // Happens if we try to list aliases while the CryptoToken is offline
+            return aliases;
+        }
         final Enumeration<SlotEntry> e = slot.aliases();
         while (e.hasMoreElements()) {
             final SlotEntry slotEntry = e.nextElement();
