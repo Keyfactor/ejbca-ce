@@ -3601,9 +3601,9 @@ public abstract class CertTools {
     } // generateMD5Fingerprint
 
     /**
-     * Converts Sun Key usage bits to Bouncy castle key usage kits
+     * Converts Sun Key usage bits to Bouncy castle key usage bits.
      * 
-     * @param sku key usage bit fields according to java.security.cert.X509Certificate#getKeyUsage, must be a boolean aray of size 9.
+     * @param sku key usage bit fields according to java.security.cert.X509Certificate#getKeyUsage, must be a boolean array of size 9.
      * @return key usage int according to org.bouncycastle.jce.X509KeyUsage#X509KeyUsage, or -1 if input is null.
      * @see java.security.cert.X509Certificate#getKeyUsage
      * @see org.bouncycastle.jce.X509KeyUsage#X509KeyUsage
