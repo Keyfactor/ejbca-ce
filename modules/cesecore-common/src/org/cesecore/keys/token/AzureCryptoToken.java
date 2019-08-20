@@ -123,7 +123,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private KeyAliasesCache aliasCache = new KeyAliasesCache();
     
-    private static PublicKey ecPublicDummyKey = null;
+    private static volatile PublicKey ecPublicDummyKey = null;
     private static final byte[] ecPublicKeyBytes = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
             "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
     /** @return a dummy key (hardcoded prime256v1) to add in initial stage of caching, because we can not put anything empty in the cache, because putting null means remove...
@@ -260,9 +260,9 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 aliasCache.flush(); // make sure the crypto token is off-line
                 throw new CryptoTokenOfflineException(e);
             }
-            return new ArrayList<String>(aliasCache.getAllNames());
+            return new ArrayList<>(aliasCache.getAllNames());
         } else {
-            return new ArrayList<String>(aliasCache.getAllNames());
+            return new ArrayList<>(aliasCache.getAllNames());
         }
         
     }
