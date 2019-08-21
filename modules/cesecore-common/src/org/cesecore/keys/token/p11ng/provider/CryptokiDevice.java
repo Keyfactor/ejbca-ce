@@ -642,7 +642,6 @@ public class CryptokiDevice {
         }
 
         public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName) {
-            //TODO Shouldn't be hard coded?
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
             final int HASH_SIZE = 32;
             Long session = null;
