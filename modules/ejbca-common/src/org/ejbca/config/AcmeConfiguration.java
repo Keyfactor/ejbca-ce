@@ -76,7 +76,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setConfigurationId(final String configurationId) { this.configurationId = configurationId; }
 
     /**
-     * https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.3.5
+     * External Account Binding
+     * https://tools.ietf.org/html/rfc8555#section-7.3.4
      *
      * NOTE: Don't expose this as client configuration yet. The current implementation has the code for validation
      *       using a dummy HMAC, but will strip this info anyway from the actual account.
@@ -91,7 +92,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     /**
-     * https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.1
+     * Pre-Authorization
+     * https://tools.ietf.org/html/rfc8555#section-7.4.1
+     * 
      * "If a CA wishes to allow pre-authorization within ACME, it can offer a "new authorization" resource in its
      * directory by adding the field "newAuthz" with a URL for the new authorization resource."
      */

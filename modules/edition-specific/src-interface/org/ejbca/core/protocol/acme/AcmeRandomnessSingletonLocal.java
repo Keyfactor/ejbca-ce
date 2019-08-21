@@ -21,7 +21,7 @@ package org.ejbca.core.protocol.acme;
 public interface AcmeRandomnessSingletonLocal {
 
     /**
-     * https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-8.3
+     * https://tools.ietf.org/html/rfc8555#section-8.3
      * 
      * "  token (required, string):  A random value that uniquely identifies
      *       the challenge.  This value MUST have at least 128 bits of entropy.
