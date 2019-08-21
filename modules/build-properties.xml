@@ -279,14 +279,6 @@
 		</fileset>
 	</path>
 
-	<path id="lib.hibernate-validator.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/hibernate-validator">
-			<include name="*.jar"/>
-			<exclude name="*-javadoc.jar"/>
-			<exclude name="*-sources.jar"/>
-		</fileset>
-	</path>
-
 	<path id="lib.jboss-logging.classpath">
         <fileset dir="${ejbca.home}/lib/hibernate">
             <include name="*.jar"/>
@@ -413,25 +405,24 @@
 
 	<path id="lib.jpa.classpath">
         <fileset dir="${ejbca.home}/lib/hibernate">
-        	<include name="classmate*.jar"/>
+            <include name="antlr-*.jar"/>
         	<include name="byte-buddy*.jar"/>
-        	<include name="FastInfoset*.jar"/>
-        	<include name="istack-commons-runtime*.jar"/>
-        	<include name="jandex*.jar"/>
-        	<include name="javax.activation*.jar"/>
-        	<include name="javax.persistence*.jar"/>
-        	<include name="jaxb-runtime*.jar"/>
-        	<include name="stax-ex*.jar"/>
-        	<include name="txw2*.jar"/>
-        	<include name="antlr-*.jar"/>
+            <include name="classmate*.jar"/>
             <include name="dom4j-*.jar"/>
+        	<include name="FastInfoset*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>
             <include name="hibernate-core-*.jar"/>
-            <include name="hibernate-entitymanager-*.jar"/>
-            <include name="hibernate-jpa-*.jar"/>
+        	<include name="istack-commons-runtime*.jar"/>
+        	<include name="jandex*.jar"/>
             <include name="javassist-*.jar"/>
+        	<include name="javax.activation*.jar"/>
+        	<include name="javax.persistence*.jar"/>
+            <include name="jaxb-api*.jar"/>
+        	<include name="jaxb-runtime*.jar"/>
             <include name="jboss-logging-*.jar"/>
             <include name="jboss-transaction-api*.jar"/>
+        	<include name="stax-ex*.jar"/>
+        	<include name="txw2*.jar"/>
         </fileset>
 	<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
 	</path>
