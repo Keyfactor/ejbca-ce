@@ -142,14 +142,14 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         try {
             slot.prepareLogin();
         } catch (Exception e) {
-            final String msg = "Failed to initialize PKCS#11 provider slot '" + sSlotLabel + "'.";
+            final String msg = "Failed to initialize PKCS#11 provider slot '" + sSlotLabel + "': "  + e.getMessage();
             log.warn(msg, e);
             throw new CryptoTokenOfflineException(msg, e);
         }
         try {
             slot.login(String.valueOf(authenticationcode));
         } catch (Exception e) {
-            final String msg = "Failed to login to PKCS#11 provider slot '" + sSlotLabel + "'.";
+            final String msg = "Failed to login to PKCS#11 provider slot '" + sSlotLabel + "': " + e.getMessage();
             log.warn(msg, e);
             CryptoTokenAuthenticationFailedException authFailException = new CryptoTokenAuthenticationFailedException(msg);
             authFailException.initCause(e);
