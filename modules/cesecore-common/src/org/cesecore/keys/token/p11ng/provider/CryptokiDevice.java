@@ -643,7 +643,6 @@ public class CryptokiDevice {
 
         public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName) {
             //TODO Shouldn't be hard coded?
-            final int KAK_PUBLIC_EXP_BUF_SIZE = 3;
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
             final int HASH_SIZE = 32;
             Long session = null;
@@ -655,15 +654,14 @@ public class CryptokiDevice {
                 RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
                 BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
                 BigInteger kakModulus = publicSpec.getModulus();
-                
-                byte[] kakModBuf = new byte[bitsToBytes(kakLength)];
-                byte[] kakPubExpBuf = new byte[KAK_PUBLIC_EXP_BUF_SIZE];
-                
+
                 int kakModLen = kakModulus.toByteArray().length;
                 int kakPubExpLen = kakPublicExponent.toByteArray().length;
+                
+                byte[] kakModBuf = new byte[bitsToBytes(kakLength)];
+                byte[] kakPubExpBuf = new byte[kakPubExpLen];
     
                 assert(kakModBuf.length >= kakModLen);
-                assert(kakPubExpBuf.length >= kakPubExpLen);
                 
                 kakModBuf = kakModulus.toByteArray();
                 kakPubExpBuf = kakPublicExponent.toByteArray();
