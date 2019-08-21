@@ -1192,10 +1192,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
 
-                Collection<String> extensionOids = new ArrayList<>();
-                if (ocspSigningCacheEntry.getOcspKeyBinding() != null) {
-                    extensionOids = ocspSigningCacheEntry.getOcspKeyBinding().getOcspExtensions();
-                }
+                final List<String> extensionOids = ocspSigningCacheEntry.getOcspKeyBinding() != null
+                        ? ocspSigningCacheEntry.getOcspKeyBinding().getOcspExtensions()
+                        : new ArrayList<String>();
                 
                 // Intended for debugging. Will usually be null
                 String alwaysUseOid = OcspConfiguration.getAlwaysSendCustomOCSPExtension();
