@@ -34,6 +34,8 @@ import org.pkcs11.jacknji11.CKM;
  */
 public class JackNJI11Provider extends Provider {
 
+    private static final long serialVersionUID = 7972160215413860118L;
+
     /** Logger for this class. */
     private static final Logger LOG = Logger.getLogger(JackNJI11Provider.class);
 
@@ -134,7 +136,6 @@ public class JackNJI11Provider extends Provider {
 
         private final JackNJI11Provider provider;
         private final String algorithm;
-        private int opmode;
         private NJI11Object myKey;
         private long session;
         private ByteArrayOutputStream buffer;
@@ -248,13 +249,11 @@ public class JackNJI11Provider extends Provider {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         protected void engineSetParameter(String string, Object o) throws InvalidParameterException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         protected Object engineGetParameter(String string) throws InvalidParameterException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
