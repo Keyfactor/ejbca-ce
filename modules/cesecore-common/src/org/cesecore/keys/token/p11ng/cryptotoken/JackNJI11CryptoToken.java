@@ -26,6 +26,9 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
@@ -231,8 +234,18 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         log.info("Generating Key Pair...");
         final Map<Long, Object> publicAttributesMap = new HashMap<>();
         final Map<Long, Object> privateAttributesMap = new HashMap<>();
+        String keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
         try {
-            slot.generateKeyPair("RSA", "2048", alias, true, publicAttributesMap, privateAttributesMap, null, false);
+            if (keySpec.toUpperCase().startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
+            } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+                keyAlg = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+            } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
+                keyAlg = AlgorithmConstants.KEYALGORITHM_DSTU4145;
+            } else if (!Character.isDigit(keySpec.charAt(0))) {
+                keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+            }
+            slot.generateKeyPair(keyAlg, keySpec, alias, true, publicAttributesMap, privateAttributesMap, null, false);
             log.debug("Successfully generated key pair");
         } catch (CertificateException | OperatorCreationException ex) {
             log.error("Dummy certificate generation failed. Objects might still have been created in the device: ", ex);
