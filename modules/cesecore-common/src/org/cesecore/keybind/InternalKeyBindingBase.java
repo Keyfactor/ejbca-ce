@@ -227,9 +227,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         if (ocspExtensions == null) {
             ocspExtensions = getDataInternal(PROP_OCSP_EXTENSION, new ArrayList<String>());
         }
-        final ArrayList<String> ocspExensions = new ArrayList<>();
-        ocspExensions.addAll(this.ocspExtensions);
-        return ocspExtensions;
+        return new ArrayList<String>(this.ocspExtensions);
     }
     
     @Override
