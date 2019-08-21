@@ -18,7 +18,7 @@ import javax.ejb.Local;
 /**
  * Replay Protection nonce logic
  *
- * https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-6.4
+ * https://tools.ietf.org/html/rfc8555#section-6.5
  *
  *   Example value from RFC draft: D8s4D2mLs8Vn-goWuPQeKA
  *
