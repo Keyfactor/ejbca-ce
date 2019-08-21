@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -125,8 +126,20 @@ public interface InternalKeyBinding extends Serializable {
     /** Set the currently used signature algorithm (it is up to the caller to ensure that this is compatible with the current keyspec). */
     void setSignatureAlgorithm(String signatureAlgorithm);
 
+    /**
+     * Get a copy with a list of OIDs describing the OCSP extensions enabled for this OCSP key binding.
+     * 
+     * @return a copy with a list of OIDs.
+     */
     List<String> getOcspExtensions();
     
+    /**
+     * Set a list of OIDs describing the OCSP extensions enabled for this OCSP key binding.
+     * 
+     * <p>Available OCSP extensions implement the interface {@link OCSPExtension}.
+     * 
+     * @param ocspExtensions a list of OIDs.
+     */
     void setOcspExtensions(List<String> ocspExtensions);
 
     /**
