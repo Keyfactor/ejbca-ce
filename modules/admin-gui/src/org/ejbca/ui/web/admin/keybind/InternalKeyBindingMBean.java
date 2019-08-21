@@ -1266,7 +1266,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
                             authenticationToken, internalKeyBindingId);
-                    ocspExtensions = new ListDataModel<>(new ArrayList<>(internalKeyBinding.getOcspExtensions()));
+                    ocspExtensions = new ListDataModel<>(internalKeyBinding.getOcspExtensions());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }
