@@ -271,7 +271,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private int selectedKakCryptoTokenId;
         private String selectedKakKeyAlias;
         private boolean initialized;
-        private boolean authorized = false;
+        private boolean authorized;
         private String maxOperationCount; // This one is used when authorizing a CP5 key
         
         private KeyPairGuiInfo(KeyPairInfo keyPairInfo) {
