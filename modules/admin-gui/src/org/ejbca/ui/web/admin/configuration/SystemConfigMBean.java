@@ -129,6 +129,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
         private int sessionTimeoutTime;
+        private boolean hideDeprecatedFunctionality;
 
         //Admin Preferences
         private int preferedLanguage;
@@ -169,6 +170,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
+                this.hideDeprecatedFunctionality = globalConfig.getHideDeprecatedFunctionality();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 // Admin Preferences
@@ -237,6 +239,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableSessionTimeout(boolean enableSessionTimeout) { this.enableSessionTimeout = enableSessionTimeout;}
         public int getSessionTimeoutTime() {return sessionTimeoutTime;}
         public void setSessionTimeoutTime(int sessionTimeoutTime) {this.sessionTimeoutTime = sessionTimeoutTime;}
+        public boolean getHideDeprecatedFunctionality() { return this.hideDeprecatedFunctionality; }
+        public void setHideDeprecatedFunctionality(final boolean hideDeprecatedFunctionality) { this.hideDeprecatedFunctionality = hideDeprecatedFunctionality; }
 
         public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
@@ -792,6 +796,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
+                globalConfig.setHideDeprecatedFunctionality(currentConfig.getHideDeprecatedFunctionality());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {
