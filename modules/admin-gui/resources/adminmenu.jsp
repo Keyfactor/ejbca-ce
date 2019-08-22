@@ -183,7 +183,7 @@ org.ejbca.util.HTMLTools
    // RA FUNCTIONS
 %>
 <%
-      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
+      if(!globalconfiguration.getHideDeprecatedFunctionality() && ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
            raheaderprinted=true;
@@ -199,7 +199,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
 <% } %>
 <%
-      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
+      if(!globalconfiguration.getHideDeprecatedFunctionality() && ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
             if(!raheaderprinted){
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
               raheaderprinted=true;
@@ -237,7 +237,7 @@ org.ejbca.util.HTMLTools
          // If authorized to approve data show related links
    	  boolean approveendentity = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 	  boolean approvecaaction = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
-	  if(ejbcawebbean.isRunningBuildWithCA() && approveendentity || approvecaaction){
+	  if(!globalconfiguration.getHideDeprecatedFunctionality() && ejbcawebbean.isRunningBuildWithCA() && approveendentity || approvecaaction){
            if(!logheaderprinted){
              out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
              logheaderprinted=true;
@@ -403,7 +403,7 @@ if(configheaderprinted){
 		</li>
 <% } %>
 
-<% if (ejbcawebbean.isRunningBuildWithCA()) { %>
+<% if (!globalconfiguration.getHideDeprecatedFunctionality() && ejbcawebbean.isRunningBuildWithCA()) { %>
 		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
 		</li>
 <% } %>
