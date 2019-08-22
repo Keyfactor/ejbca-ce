@@ -79,9 +79,9 @@
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewRAHeader}">
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_RAFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
-          <h:outputLink id="raAddendentity" value="#{adminMenuBean.adminWebUrl}/ra/addendentity.jsp" rendered="#{adminMenuBean.authorizedToCreateEndEntity}"><h:outputText value="#{web.text.NAV_ADDENDENTITY}"/></h:outputLink>
+          <h:outputLink id="raAddendentity" value="#{adminMenuBean.adminWebUrl}/ra/addendentity.jsp" rendered="#{adminMenuBean.authorizedToCreateEndEntity and !adminMenuBean.deprecatedFunctionalityHidden}"><h:outputText value="#{web.text.NAV_ADDENDENTITY}"/></h:outputLink>
           <h:outputLink id="raEditendentityprofiles" value="#{adminMenuBean.adminWebUrl}/ra/editendentityprofiles/editendentityprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntityProfiles}"><h:outputText value="#{web.text.NAV_ENDENTITYPROFILES}"/></h:outputLink>
-          <h:outputLink id="raListendentities" value="#{adminMenuBean.adminWebUrl}/ra/listendentities.jsp" rendered="#{adminMenuBean.authorizedToViewEndEntity}"><h:outputText value="#{web.text.NAV_SEARCHENDENTITIES}"/></h:outputLink>
+          <h:outputLink id="raListendentities" value="#{adminMenuBean.adminWebUrl}/ra/listendentities.jsp" rendered="#{adminMenuBean.authorizedToViewEndEntity and !adminMenuBean.deprecatedFunctionalityHidden}"><h:outputText value="#{web.text.NAV_SEARCHENDENTITIES}"/></h:outputLink>
           <h:outputLink id="raEdituserdatasources" value="#{adminMenuBean.adminWebUrl}/ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}"><h:outputText value="#{web.text.NAV_USERDATASOURCES}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
@@ -90,7 +90,7 @@
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink id="supervisionEditapprovalprofiles" value="#{adminMenuBean.adminWebUrl}/approval/editapprovalprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewApprovalProfiles}">
             <h:outputText value="#{web.text.NAV_APPROVALPROFILES}"/></h:outputLink>
-          <h:outputLink id="supervisionApproveactionlist" value="#{adminMenuBean.adminWebUrl}/approval/approvalactions.xhtml" rendered="#{adminMenuBean.authorizedToApproveActions}">
+          <h:outputLink id="supervisionApproveactionlist" value="#{adminMenuBean.adminWebUrl}/approval/approvalactions.xhtml" rendered="#{adminMenuBean.authorizedToApproveActions and !adminMenuBean.deprecatedFunctionalityHidden}">
             <h:outputText value="#{web.text.NAV_APPROVEACTIONS}"/></h:outputLink>
           <h:outputLink id="supervisionAuditsearch" value="#{adminMenuBean.adminWebUrl}/audit/search.xhtml" rendered="#{adminMenuBean.authorizedToViewLog}"><h:outputText value="#{web.text.NAV_AUDIT}"/></h:outputLink>
         </h:panelGroup>
@@ -120,7 +120,7 @@
         <h:panelGroup layout="block" styleClass="misc-section-content">
           <h:outputLink value="#{adminMenuBean.adminWebUrl}/mypreferences.xhtml"><h:outputText value="#{web.text.NAV_MYPREFERENCES}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb" rendered="#{adminMenuBean.authorizedToViewRaWeb}"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb and !adminMenuBean.deprecatedFunctionalityHidden}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
         </h:panelGroup>
