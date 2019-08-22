@@ -108,6 +108,9 @@ public abstract class ProtectedData {
     /**
      * asks the data class for the string to be protected. Version is -1 for a new row to be protected, and otherwise a version given earlier from the
      * data class when storing the row.
+     * 
+     * WARNING: changing an existing protectString for an implementing class must make sure backwards and forwards compatibility (versioning) 
+     * in order to not break existing installations. 
      *
      * @param version the version of the string that is protected, used as input when verifying data. -1 when getting protection string for data to be
      *          inserted or updated. -1 means that the data class should use it's latest version of protect string
