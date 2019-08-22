@@ -242,4 +242,8 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public String getAdminWebUrl() {
         return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
     }
+
+    public boolean isDeprecatedFunctionalityHidden() {
+        return getEjbcaWebBean().getGlobalConfiguration().getHideDeprecatedFunctionality();
+    }
 }
