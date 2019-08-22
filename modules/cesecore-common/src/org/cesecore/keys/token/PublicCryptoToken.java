@@ -39,6 +39,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import java.nio.file.Path;
+
 
 /**
  * Just to be used for encryption (not decryption) and verifying (not signing)
@@ -277,6 +279,18 @@ public class PublicCryptoToken implements CryptoToken {
     @Override
     public void setTokenName(final String tokenName) {
         this.tokenName = tokenName;
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 
 }

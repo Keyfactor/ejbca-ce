@@ -11,6 +11,9 @@ package org.cesecore.keys.token.p11ng.provider;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -76,6 +79,7 @@ import org.cesecore.keys.token.p11ng.FindObjectsCallParamsHolder;
 import org.cesecore.keys.token.p11ng.GetAttributeValueCallParamsHolder;
 import org.cesecore.keys.token.p11ng.P11NGSlotStore;
 import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
+import org.cesecore.keys.token.p11ng.PToPBackupObj;
 import org.cesecore.keys.token.p11ng.TokenEntry;
 import org.cesecore.keys.util.KeyTools;
 import org.pkcs11.jacknji11.CEi;
@@ -94,6 +98,7 @@ import org.pkcs11.jacknji11.LongRef;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
 
 
 /**
@@ -788,6 +793,27 @@ public class CryptokiDevice {
             }
         }
         
+        public void backupObject(final long objectHandle, final String backupFile) {
+            Long session = null;
+            try {
+                session = aquireSession();
+                
+                PToPBackupObj ppBackupObj = new PToPBackupObj(null);
+                LongByReference backupObjectLength = new LongByReference();
+                
+                c.backupObject(session, objectHandle, ppBackupObj.getPointer(), backupObjectLength);
+                int length = (int) backupObjectLength.getValue();
+                byte[] resultBytes = ppBackupObj.getValue().getByteArray(0, length);
+                
+                write2File(resultBytes, backupFile);
+
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+        
         public boolean isKeyAuthorized(String alias) {
             return false; // TODO: Call the actual check via native commands (if possible)
         }
@@ -908,6 +934,14 @@ public class CryptokiDevice {
                 if (session != null) {
                     releaseSession(session);
                 }
+            }
+        }
+        
+        private void write2File(byte[] bytes, String filePath) {
+            try (OutputStream os = new FileOutputStream(new File(filePath))) {
+                os.write(bytes);
+            } catch (Exception e) {
+                LOG.error("Error happened while writing key to file!", e);
             }
         }
         
