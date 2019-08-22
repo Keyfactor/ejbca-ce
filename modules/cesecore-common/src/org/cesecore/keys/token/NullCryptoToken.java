@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
+import java.nio.file.Path;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -103,6 +104,18 @@ public class NullCryptoToken extends BaseCryptoToken {
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 
 }
