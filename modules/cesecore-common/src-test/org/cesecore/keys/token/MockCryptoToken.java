@@ -13,6 +13,7 @@
 package org.cesecore.keys.token;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -94,6 +95,18 @@ public class MockCryptoToken extends BaseCryptoToken {
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
+    }
+
+    @Override
+    public void backupKey(int keySpecId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 
 }
