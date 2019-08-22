@@ -166,7 +166,8 @@ public interface CryptoToken extends Serializable {
     void restoreKey();
     
     /**
-     * Operation specific for CP5 crypto tokens
+     * Operation specific for CP5 crypto tokens. 
+     * Checks if the crypto key is already initialized or not.
      * 
      * @param alias
      * @return true if the CP5 key is already initialized, false otherwise
@@ -175,7 +176,9 @@ public interface CryptoToken extends Serializable {
     
     
     /**
-     * Operation specific for CP5 crypto tokens
+     * Operation specific for CP5 crypto tokens.
+     * 
+     * Number of operations a crypto key is able to perform such as signing etc.
      * 
      * @param alias
      * @return number of operations remaining for a CP5 key
