@@ -669,7 +669,7 @@ public class UserData extends ProtectedData implements Serializable {
         }
         build.append(getCardNumber());
         build.append(getSubjectEmail()).append(getStatus()).append(getType()).append(getClearPassword()).append(getPasswordHash()).append(getTimeCreated()).append(getTimeModified());
-        build.append(getEndEntityProfileId()).append(getCertificateProfileId()).append(getTokenType()).append(getExtendedInformationData());
+        build.append(getEndEntityProfileId()).append(getCertificateProfileId()).append(getTokenType()).append(getHardTokenIssuerId()).append(getExtendedInformationData());
         return build.toString();
     }
 
