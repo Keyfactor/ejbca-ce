@@ -23,11 +23,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileData;
  * in turn called toString() on the objects in it. One of the objects was an ApprovalRequestType. In ECA-6518 the
  * toString() method was overridden in this enum, causing the string representation to be different. This caused
  * rowProtection signature verification to fail when you upgraded from a version <=6.11 to a version >=6.12.
- *
+ * <p>
  * The aim of Eca7277CertificateProfileData is to fix this problem. Eca7277CertificateProfileData behaves exactly
  * like CertificateProfileData, but replaces any faulty substrings found in the protect string returned by
  * getProtectString() before returning it to the caller.
- *
+ * <p>
  * This class, the regression test and all references to these can be safely removed when we are sure that all
  * installations have performed a post-upgrade on EJBCA version 7.x or later.
  *
