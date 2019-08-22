@@ -33,6 +33,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.legacy.Eca7277CertificateProfileData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -137,6 +138,32 @@ public class UserData extends ProtectedData implements Serializable {
         if (log.isDebugEnabled()) {
             log.debug("Created user " + username);
         }
+    }
+    
+    /** Copy constructor */
+    public UserData(final UserData userdata) {
+        username = userdata.username;
+        subjectDN = userdata.subjectDN;
+        caId = userdata.caId;
+        subjectAltName = userdata.subjectAltName;
+        cardNumber = userdata.cardNumber;
+        subjectEmail = userdata.subjectEmail;
+        status = userdata.status;
+        type = userdata.type;
+        clearPassword = userdata.clearPassword;
+        passwordHash = userdata.passwordHash;
+        timeCreated = userdata.timeCreated;
+        timeModified = userdata.timeModified;
+        endEntityProfileId = userdata.endEntityProfileId;
+        certificateProfileId = userdata.certificateProfileId;
+        tokenType = userdata.tokenType;
+        hardTokenIssuerId = userdata.hardTokenIssuerId;
+        extendedInformationData = userdata.extendedInformationData;
+        extendedInformation = userdata.extendedInformation;
+        keyStorePassword = userdata.keyStorePassword;
+        rowVersion = userdata.rowVersion;
+        rowProtection = userdata.rowProtection;
+        transientPwd = userdata.transientPwd;
     }
 
     public UserData() {
@@ -696,6 +723,33 @@ public class UserData extends ProtectedData implements Serializable {
     @Override
     protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
+    }
+
+    /**
+     * Due to an issue with db protection between EJBCA 7.2.0 and 7.2.2 we need special handling to verify protection
+     * created between those versions. If the initial data verification failed, we generate a protect string compatible
+     * with 7.2.0 and 7.2.1, and try verifying again. If this fails we behave as usual, i.e. throw the original
+     * exception if erroronverify is set, or if not set just log a warning.
+     *
+     * This code needs to be kept as long as we support installations where 7.2.0/7.2.1 have been used at any
+     * point, i.e. essentially forever. 
+     *
+     * @param possibleTamper an exception raised due to a possible database tamper
+     * @throws DatabaseProtectionException possibleTamper is thrown if the exception was not caused by ECA-8457, i.e
+     * the signature did not verify over the alternative protect string either.
+     */
+    @Transient
+    @Override
+    @Deprecated
+    protected void onDataVerificationError(final DatabaseProtectionException possibleTamper) throws DatabaseProtectionException {
+        try {
+            // Try to verify again with a mocked CertificateProfileData object returning a "patched"
+            // protect string
+            impl.verifyData(new Eca8457UserData(this));
+        } catch (final DatabaseProtectionException e) {
+            // Ignore the new exception and fall back to the default behaviour
+            super.onDataVerificationError(possibleTamper);
+        }
     }
 
     @Override
