@@ -726,7 +726,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /**
-     * Due to an issue with db protection between EJBCA 7.2.0 and 7.2.2 we need special handling to verify protection
+     * Due to an issue with db protection between EJBCA 7.2.0 and 7.2.1.1 we need special handling to verify protection
      * created between those versions. If the initial data verification failed, we generate a protect string compatible
      * with 7.2.0 and 7.2.1, and try verifying again. If this fails we behave as usual, i.e. throw the original
      * exception if erroronverify is set, or if not set just log a warning.
