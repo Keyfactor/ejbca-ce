@@ -18,12 +18,12 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 /**
  * Due to a mistake in EJBCA 7.2.0, the behavior* of getProtectString method was changed, leading to a backwards
- * incompatibility. The old behavior was restored 7.2.2, so upgrades from 7.1.x and older will work. Since
+ * incompatibility. The old behavior was restored 7.2.1.1, so upgrades from 7.1.x and older will work. Since
  * reverting is also not backwards compatible (protect strings must be identical), we need special handling
  * to support data signed/hashed in 7.2.0 and 7.2.1. This is what this class does.
  * <p>
  * * The behavior change was that hardTokenIssuerId was removed from the getProtectString method. It was
- * added back again in 7.2.2, and this class handles the behavior of 7.2.0 and 7.2.1 where hardTokenIssuerId
+ * added back again in 7.2.1.1, and this class handles the behavior of 7.2.0 and 7.2.1 where hardTokenIssuerId
  * was absent. hardTokenIssuerId is a deprecated field that is no longer used, so there are no security
  * implications of the changes. The signing/HMAC'ing is not affected at all; the presence of a valid
  * signature/HMAC has always been required.
