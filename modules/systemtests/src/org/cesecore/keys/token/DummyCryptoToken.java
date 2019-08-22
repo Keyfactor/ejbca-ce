@@ -13,6 +13,7 @@
 package org.cesecore.keys.token;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -125,6 +126,16 @@ public class DummyCryptoToken extends BaseCryptoToken {
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
     }
 
 }

@@ -1,6 +1,7 @@
 package org.cesecore.keys.token.p11ng.cryptotoken;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -283,6 +284,14 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
     
     @Override
+    public void backupKey(final int keySpecId, final Path backupFilePath) {
+        log.info("Backup Object...");
+        slot.backupObject(keySpecId, backupFilePath.toString());
+
+    }
+    
+    
+    @Override
     public boolean isKeyInitialized(final String alias) {
         return slot.isKeyAuthorized(alias);
     }
@@ -379,6 +388,12 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             }
         }
         return ret;
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
     
 }

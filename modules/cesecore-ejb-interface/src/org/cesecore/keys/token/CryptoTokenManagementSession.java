@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.List;
@@ -275,6 +276,9 @@ public interface CryptoTokenManagementSession {
     void keyAuthorize(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
             long maxOperationCount) throws CryptoTokenOfflineException;
 
+    void backupKey(final int keySpecId, final Path backupFilePath) throws CryptoTokenOfflineException;
+    
+    void restoreKey() throws CryptoTokenOfflineException;
     
     /**
      * Operation specific for CP5 crypto tokens.
