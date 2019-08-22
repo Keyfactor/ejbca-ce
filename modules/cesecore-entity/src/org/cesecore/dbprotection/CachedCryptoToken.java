@@ -35,6 +35,8 @@ import javax.crypto.NoSuchPaddingException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import java.nio.file.Path;
+
 
 /**
  * Wrapper for a CryptoToken that caches references to private and secret keys.
@@ -232,5 +234,17 @@ public class CachedCryptoToken implements CryptoToken {
     @Override
     public boolean isAutoActivationPinPresent() {
         return wrappedCryptoToken.isAutoActivationPinPresent();
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 }

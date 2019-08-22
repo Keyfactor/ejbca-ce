@@ -64,6 +64,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import java.nio.file.Path;
+
 
 /**
  * Class implementing a keystore on Azure Key Vault, using their REST API.
@@ -862,5 +864,17 @@ public class AzureCryptoToken extends BaseCryptoToken {
             put("Signature.SHA384WITHECDSA" , AzureSignature.SHA384WithECDSA.class.getName());
             put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
         }
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 }

@@ -14,6 +14,7 @@ package org.cesecore.keys.token;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -159,6 +160,10 @@ public interface CryptoToken extends Serializable {
      * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
      */
     void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount);
+    
+    void backupKey(int keySpecId, Path backupFilePath);
+    
+    void restoreKey();
     
     /**
      * Operation specific for CP5 crypto tokens

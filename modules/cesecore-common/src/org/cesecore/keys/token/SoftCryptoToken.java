@@ -42,6 +42,8 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+import java.nio.file.Path;
+
 
 /**
  * Handles maintenance of the soft devices producing signatures and handling the private key and stored in database.
@@ -364,6 +366,18 @@ public class SoftCryptoToken extends BaseCryptoToken {
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
         return true;
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 
 }

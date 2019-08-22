@@ -15,6 +15,7 @@ package org.ejbca.performance.legacy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -365,5 +366,17 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
     @Override
     public long maxOperationCount(String alias) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+
+    @Override
+    public void backupKey(int keySpecId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 }
