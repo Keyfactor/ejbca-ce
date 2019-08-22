@@ -35,6 +35,8 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyStoreTools;
+import java.nio.file.Path;
+
 
 /**
  * Class implementing a keystore on PKCS11 tokens.
@@ -354,5 +356,17 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
+    }
+
+    @Override
+    public void backupKey(int specId, Path backupFilePath) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void restoreKey() {
+        // TODO Auto-generated method stub
+        
     }
 }

@@ -63,6 +63,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+import java.nio.file.Path;
 
 /**
  * @see CryptoTokenManagementSession
@@ -262,6 +263,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
         cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount);
+    }
+    
+    @Override
+    public void backupKey(int specId, Path backupFilePath) throws CryptoTokenOfflineException {
+        // TODO: read this from command line
+        long objectHandle = 0;
+        
     }
     
     @Override
@@ -976,5 +984,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 details.put(key, newValue);
             }
         }
+    }
+
+    @Override
+    public void restoreKey() throws CryptoTokenOfflineException {
+        // TODO Auto-generated method stub
+        
     }
 }
