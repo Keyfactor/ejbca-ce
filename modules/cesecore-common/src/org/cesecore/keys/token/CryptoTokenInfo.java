@@ -16,13 +16,14 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.util.Named;
 
 /**
  * Non-sensitive information about a CryptoToken.
  * 
  * @version $Id$
  */
-public class CryptoTokenInfo implements Serializable {
+public class CryptoTokenInfo implements Named, Serializable {
 
     private static final long serialVersionUID = 5025517840531557857L;
     private final Integer cryptoTokenId;
@@ -45,6 +46,7 @@ public class CryptoTokenInfo implements Serializable {
         return cryptoTokenId;
     }
 
+    @Override
     public String getName() {
         return name;
     }
