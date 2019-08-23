@@ -31,10 +31,28 @@ public class ConfigDumpSetting implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ItemType {
-        ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE, CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, 
-        ENDENTITY, SYSCONFIG, ADMINPREFS, CMPCONFIG, OCSPCONFIG, PEERCONNECTOR, PEERCONFIG, SCEPCONFIG, ESTCONFIG,
-        VALIDATOR, CTLOG, EXTENDEDKEYUSAGE, CERTEXTENSION
+        ACMECONFIG("acme-config"), CA("certification-authorities"), CRYPTOTOKEN("crypto-tokens"), PUBLISHER("publishers"),
+        APPROVALPROFILE("approval-profiles"), CERTPROFILE("certificate-profiles"), EEPROFILE("end-entity-profiles"),
+        SERVICE("services"), ROLE("admin-roles"), KEYBINDING("internal-key-bindings"), ADMINPREFS("admin-preferences"),
+        OCSPCONFIG("ocsp-configuration"), PEERCONNECTOR("peer-connectors"), SCEPCONFIG("scep-config"), ESTCONFIG("est-config"),
+        VALIDATOR("validators"), CTLOG("ct-logs"), EXTENDEDKEYUSAGE("extended-key-usage"), CERTEXTENSION("custom-certificate-extensions");
+        // Unimplemented:
+        //ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
+
+        private final String subdirectory;
+
+        private ItemType(final String subdirectory) {
+            this.subdirectory = subdirectory;
+        }
+
+        public String getSubdirectory() { return subdirectory; }
     };
+    
+    public enum ImportMode {
+        REPLACE,
+        UPDATE,
+        NO_OVERWRITE,
+    }
 
     private File location;
     private Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
@@ -43,8 +61,19 @@ public class ConfigDumpSetting implements Serializable {
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
+    private ImportMode importMode;
 
-    
+    public ConfigDumpSetting(final File location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
+            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors, final boolean ignoreWarnings) {
+        this.location = location;
+        this.included = included;
+        this.excluded = excluded;
+        this.includedAnyType = includedAnyType;
+        this.excludedAnyType = excludedAnyType;
+        this.ignoreErrors = ignoreErrors;
+        this.ignoreWarnings = ignoreWarnings;
+    }
+
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
     }
@@ -93,15 +122,8 @@ public class ConfigDumpSetting implements Serializable {
         return ignoreWarnings;
     }
     
-    public ConfigDumpSetting(final File location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
-            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors, final boolean ignoreWarnings) {
-        this.location = location;
-        this.included = included;
-        this.excluded = excluded;
-        this.includedAnyType = includedAnyType;
-        this.excludedAnyType = excludedAnyType;
-        this.ignoreErrors = ignoreErrors;
-        this.ignoreWarnings = ignoreWarnings;
+    public ImportMode getImportMode() {
+        return importMode;
     }
 
     public boolean isIncluded(final ItemType type, final String nameStr) {
