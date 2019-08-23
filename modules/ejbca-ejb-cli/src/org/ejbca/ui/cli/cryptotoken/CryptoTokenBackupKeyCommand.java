@@ -15,13 +15,13 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-public class CryptoTokenBackupCommand extends BaseCryptoTokenCommand {
+public class CryptoTokenBackupKeyCommand extends BaseCryptoTokenCommand {
     
-    private static final Logger log = Logger.getLogger(CryptoTokenBackupCommand.class);
+    private static final Logger log = Logger.getLogger(CryptoTokenBackupKeyCommand.class);
     
     private static final String KEY_PAIR_ALIAS_KEY = "--alias";
-    private static final String KEY_PAIR_SPEC_ID_KEY = "--keySpecId";
-    private static final String KEY_PAIR_BACKUP_FILE_KEY = "--backupFile";
+    private static final String KEY_PAIR_SPEC_ID_KEY = "--keyspecid";
+    private static final String KEY_PAIR_BACKUP_FILE_KEY = "--backupfile";
 
     {
         registerParameter(new Parameter(KEY_PAIR_ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -34,7 +34,7 @@ public class CryptoTokenBackupCommand extends BaseCryptoTokenCommand {
     
     @Override
     public String getMainCommand() {
-        return "backupKey";
+        return "backupkey";
     }
 
     @Override
@@ -45,7 +45,6 @@ public class CryptoTokenBackupCommand extends BaseCryptoTokenCommand {
     @Override
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters)
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        
         final Path backupFilePath = Paths.get(parameters.get(KEY_PAIR_BACKUP_FILE_KEY));
         final int keySpecId = Integer.parseInt(parameters.get(KEY_PAIR_SPEC_ID_KEY));
         
@@ -53,15 +52,11 @@ public class CryptoTokenBackupCommand extends BaseCryptoTokenCommand {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
             cryptoTokenManagementSession.backupKey(keySpecId, backupFilePath);
-            
+            return CommandResult.SUCCESS;
         } catch (Exception e) {
             getLogger().info("CryptoToken activation failed: " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        
-        
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override
