@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -182,6 +183,16 @@ public abstract class BaseCryptoToken implements CryptoToken {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
     
+    @Override
+    public void backupKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+    
+    @Override
+    public void restoreKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+
     /**
      * Reads the public key object, does so from the certificate retrieved from the alias from the KeyStore.
      *

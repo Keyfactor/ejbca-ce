@@ -865,16 +865,4 @@ public class AzureCryptoToken extends BaseCryptoToken {
             put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
         }
     }
-
-    @Override
-    public void backupKey(int specId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
-    }
 }
