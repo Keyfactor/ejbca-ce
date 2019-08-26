@@ -370,13 +370,11 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
 
     @Override
     public void backupKey(int keySpecId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
 
     @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
+    public void restoreKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
 }

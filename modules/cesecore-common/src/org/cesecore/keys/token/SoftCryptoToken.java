@@ -42,7 +42,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
-import java.nio.file.Path;
 
 
 /**
@@ -367,17 +366,4 @@ public class SoftCryptoToken extends BaseCryptoToken {
     public boolean permitExtractablePrivateKeyForTest() {
         return true;
     }
-
-    @Override
-    public void backupKey(int specId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
-    }
-
 }

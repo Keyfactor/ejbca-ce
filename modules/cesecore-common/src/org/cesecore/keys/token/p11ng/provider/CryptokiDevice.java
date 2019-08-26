@@ -20,6 +20,8 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.DigestException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -819,6 +821,24 @@ public class CryptokiDevice {
                 
                 write2File(resultBytes, backupFile);
 
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+        
+        public void restoreObject(final long objectHandle, final Path backupFilePath) {
+            Long session = null;
+            try {
+                //TODO: Check how to handle two users case here
+                session = aquireSession();
+                final byte[] bytes = Files.readAllBytes(backupFilePath);
+                final long flags = 0; // alternative value here would be something called "CXI_KEY_FLAG_VOLATILE" but this causes 0x00000054: FUNCTION_NOT_SUPPORTED
+                c.restoreObject(session, flags, bytes, objectHandle);
+            
+            } catch (IOException e) {
+                LOG.error("Error while restoring key from backup file ", e);
             } finally {
                 if (session != null) {
                     releaseSession(session);

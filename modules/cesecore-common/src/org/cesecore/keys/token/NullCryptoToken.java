@@ -105,18 +105,5 @@ public class NullCryptoToken extends BaseCryptoToken {
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
     }
-
-    @Override
-    public void backupKey(int specId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
-    }
-
 }
 

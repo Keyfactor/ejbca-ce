@@ -19,13 +19,10 @@ public class CryptoTokenBackupKeyCommand extends BaseCryptoTokenCommand {
     
     private static final Logger log = Logger.getLogger(CryptoTokenBackupKeyCommand.class);
     
-    private static final String KEY_PAIR_ALIAS_KEY = "--alias";
     private static final String KEY_PAIR_SPEC_ID_KEY = "--keyspecid";
     private static final String KEY_PAIR_BACKUP_FILE_KEY = "--backupfile";
 
     {
-        registerParameter(new Parameter(KEY_PAIR_ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key pair alias"));
         registerParameter(new Parameter(KEY_PAIR_SPEC_ID_KEY, "Key Specification id", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Key specification for the key to be backed up, can be retrieved using cxitool's ListKeys command."));
         registerParameter(new Parameter(KEY_PAIR_BACKUP_FILE_KEY, "Key backup file", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
@@ -51,7 +48,7 @@ public class CryptoTokenBackupKeyCommand extends BaseCryptoTokenCommand {
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            cryptoTokenManagementSession.backupKey(keySpecId, backupFilePath);
+            cryptoTokenManagementSession.backupKey(keySpecId, backupFilePath, cryptoTokenId);
             return CommandResult.SUCCESS;
         } catch (Exception e) {
             getLogger().info("CryptoToken activation failed: " + e.getMessage());

@@ -198,6 +198,16 @@ public class PublicCryptoToken implements CryptoToken {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
     
+    @Override
+    public void backupKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+    
+    @Override
+    public void restoreKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+    
 	@Override
 	public String getSignProviderName() {
 		return providerName;
@@ -280,17 +290,4 @@ public class PublicCryptoToken implements CryptoToken {
     public void setTokenName(final String tokenName) {
         this.tokenName = tokenName;
     }
-
-    @Override
-    public void backupKey(int specId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
-    }
-
 }

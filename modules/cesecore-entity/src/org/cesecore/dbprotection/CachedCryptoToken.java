@@ -100,6 +100,16 @@ public class CachedCryptoToken implements CryptoToken {
     }    
     
     @Override
+    public void backupKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+    
+    @Override
+    public void restoreKey(int keySpecId, Path backupFilePath) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    } 
+    
+    @Override
     public void generateKey(String algorithm, int keysize, String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
             KeyStoreException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException,
             SignatureException, CertificateException, IOException, NoSuchPaddingException, IllegalBlockSizeException {
@@ -234,17 +244,5 @@ public class CachedCryptoToken implements CryptoToken {
     @Override
     public boolean isAutoActivationPinPresent() {
         return wrappedCryptoToken.isAutoActivationPinPresent();
-    }
-
-    @Override
-    public void backupKey(int specId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
     }
 }
