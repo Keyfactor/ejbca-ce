@@ -120,15 +120,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         if (slot == null) {
             throw new NoSuchSlotException("Unable to obtain token in slot");
         }
-        //        TODO Seems to be done automatically at crypto token creation in EJBCA
-        //        String authCode = props.getProperty("pin");
-        //        if (authCode != null) {
-        //            try {
-        //                slot.login(authCode);
-        //            } catch (Exception e) {
-        //                log.error("Error auto activating PKCS11CryptoToken : " + e.getMessage(), e);
-        //            }
-        //        }
+
         String autoActivatePin = BaseCryptoToken.getAutoActivatePin(properties);
         try {
             if (autoActivatePin != null) {
