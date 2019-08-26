@@ -96,17 +96,4 @@ public class MockCryptoToken extends BaseCryptoToken {
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
     }
-
-    @Override
-    public void backupKey(int keySpecId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
-    }
-
 }
