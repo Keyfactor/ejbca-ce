@@ -20,28 +20,28 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  * 
  * @version $Id$
  */
-public class CryptoTokenBackupKeyCommand extends BaseCryptoTokenCommand {
+public class CryptoTokenRestoreKeyCommand extends BaseCryptoTokenCommand {
     
-    private static final Logger log = Logger.getLogger(CryptoTokenBackupKeyCommand.class);
+    private static final Logger log = Logger.getLogger(CryptoTokenRestoreKeyCommand.class);
     
     private static final String KEY_PAIR_SPEC_ID_KEY = "--keyspecid";
     private static final String KEY_PAIR_BACKUP_FILE_KEY = "--backupfile";
-
+    
     {
         registerParameter(new Parameter(KEY_PAIR_SPEC_ID_KEY, "Key Specification id", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Key specification for the key to be backed up, can be retrieved using cxitool's ListKeys command."));
+                ParameterMode.ARGUMENT, "Key specification for the key to be restored, can be retrieved using cxitool's ListKeys command."));
         registerParameter(new Parameter(KEY_PAIR_BACKUP_FILE_KEY, "Key backup file", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "The file that key backup will be saved to."));
+                ParameterMode.ARGUMENT, "The backup file that key will be read from."));
     }
-    
+
     @Override
     public String getMainCommand() {
-        return "backupkey";
+        return "restorekey";
     }
 
     @Override
     public String getCommandDescription() {
-        return "Backup the provided key to given file";
+        return "Restore the provided key from given file";
     }
 
     @Override
@@ -53,10 +53,10 @@ public class CryptoTokenBackupKeyCommand extends BaseCryptoTokenCommand {
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            cryptoTokenManagementSession.backupKey(keySpecId, backupFilePath, cryptoTokenId);
+            cryptoTokenManagementSession.restoreKey(keySpecId, backupFilePath, cryptoTokenId);
             return CommandResult.SUCCESS;
         } catch (Exception e) {
-            getLogger().info("Key backup operation failed: " + e.getMessage());
+            getLogger().info("Key resotre operation failed: " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
