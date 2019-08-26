@@ -135,8 +135,8 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public void activate(char[] authenticationcode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
-        log.info("Activating CP5 token...");
-        log.info("State before login: " + slot);
+        log.info("Activating CP5 token..."); //TODO remove
+        log.info("State before login: " + slot); //TODO remove
         if (slot == null) {
             throw new CryptoTokenOfflineException("Slot not initialized.");
         }
@@ -156,12 +156,12 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             authFailException.initCause(e);
             throw authFailException;
         }
-        log.info("State after login: " + slot.toString());
+        log.info("State after login: " + slot.toString()); //TODO remove
     }
 
     @Override
     public void deactivate() {
-        log.info("Deactivating CP5 token...");
+        log.info("Deactivating CP5 token..."); //TODO remove
         this.slot.logout();
     }
 
@@ -335,41 +335,11 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public int getTokenStatus() {
-        // TODO temporary solution. Works to detect if not logged in and allow doing so (in GUI). 
-        // However we can not take token "offline" this way
+        log.info("Session Status: " + this.slot.toString()); //TODO remove
         if (this.slot == null || this.slot.getActiveSessions().size() == 0) {
             return CryptoToken.STATUS_OFFLINE;
         }
-        log.info("Session Status: " + this.slot.toString());
         return CryptoToken.STATUS_ACTIVE;
-// SignServer way of doing it >        
-//        int ret = CryptoToken.STATUS_OFFLINE;
-//        try {
-//            for (String testKey : new String[]{keyAlias, nextKeyAlias}) {
-//                if (testKey != null && !testKey.isEmpty()) {
-//                    PrivateKey privateKey = null;
-//                    try {
-//                        privateKey = slot.aquirePrivateKey(testKey);
-//                        if (privateKey != null) {
-//                            PublicKey publicKey = slot.getPublicKey(testKey);
-//                            if (publicKey == null) {
-//                                publicKey = slot.getCertificate(testKey).getPublicKey();
-//                            }
-//                            CryptoTokenHelper.testSignAndVerify(privateKey, publicKey, slot.getProvider().getName(), signatureAlgorithm);
-//                            ret = CryptoToken.STATUS_ACTIVE;
-//                        }
-//                    } finally {
-//                        if (privateKey != null) {
-//                            slot.releasePrivateKey(privateKey);
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Throwable th) {
-//            log.error("Error getting token status", th);
-//            ret = CryptoToken.STATUS_OFFLINE;
-//        }
-//        return ret;
     }
 
     /**
