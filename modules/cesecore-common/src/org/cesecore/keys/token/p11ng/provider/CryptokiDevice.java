@@ -279,7 +279,19 @@ public class CryptokiDevice {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("c.Login(" + loginSession + ")");
             }
-            c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
+            try {
+                c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                try {
+                    // Avoid session leak. Close the aquired session if login failed.
+                    closeSession(loginSession);
+                    // Aquire a new session on next attempt. This one is closed.
+                    loginSession = null;
+                } catch (Exception e1) {
+                    // No point in throwing
+                }
+                throw e;
+            }
         }
         
         public synchronized void logout() {
