@@ -17,4 +17,4 @@ if exist "%TOOLBOX_HOME%clientToolBox.jar" goto exists
 :exists
 
 rem @echo on
-java -Djava.endorsed.dirs="%TOOLBOX_HOME%endorsed" -jar "%TOOLBOX_HOME%clientToolBox.jar" %args%
+${javaCmd} ${JAVA_OPT} -cp "%TOOLBOX_HOME%clientToolBox.jar;%TOOLBOX_HOME%endorsed/*" org.ejbca.ui.cli.ClientToolBox "${@}"
