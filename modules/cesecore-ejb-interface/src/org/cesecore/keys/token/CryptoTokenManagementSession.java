@@ -276,12 +276,13 @@ public interface CryptoTokenManagementSession {
     void keyAuthorize(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
             long maxOperationCount) throws CryptoTokenOfflineException;
 
-    void backupKey(final int keySpecId, final Path backupFilePath) throws CryptoTokenOfflineException;
+    void backupKey(final int keySpecId, final Path backupFilePath, final int cryptoTokenId) throws CryptoTokenOfflineException;
     
     void restoreKey() throws CryptoTokenOfflineException;
     
     /**
      * Operation specific for CP5 crypto tokens.
+     * Returns the initialization status of the key on the HSM.
      * 
      * @param authenticationToken
      * @param cryptoTokenId
@@ -292,6 +293,7 @@ public interface CryptoTokenManagementSession {
     
     /**
      * Operation specific for CP5 crypto tokens.
+     * Gets the maximum number of operations that the key with provided alias can perform at the moment. 
      * 
      * @param authenticationToken
      * @param cryptoTokenId
