@@ -357,16 +357,4 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
     }
-
-    @Override
-    public void backupKey(int specId, Path backupFilePath) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
-    }
 }
