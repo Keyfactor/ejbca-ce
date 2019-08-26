@@ -22,6 +22,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,6 +53,11 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     @ManagedProperty(value = "#{estConfigMBean}")
     private EstConfigMBean estConfigMBean;
     EstAliasGui estAliasGui = null;
+
+    @PostConstruct
+    public void initialize() {
+        getEjbcaWebBean().clearEstConfigClone();
+    }
 
     public class EstAliasGui {
         private String name;
