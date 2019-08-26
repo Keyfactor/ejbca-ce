@@ -161,9 +161,22 @@ public interface CryptoToken extends Serializable {
      */
     void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount);
     
+    /**
+     * Operation specific for CP5 crypto tokens
+     * Creates a backup for the given key by its spec id in the back up file.
+     * @param keySpecId
+     * @param backupFilePath
+     */
     void backupKey(int keySpecId, Path backupFilePath);
     
-    void restoreKey();
+    /**
+     * Operation specific for CP5 crypto tokens.
+     * Retrieves a previously backed up key from a backup file into HSM.
+     * 
+     * @param keySpecId
+     * @param backupFilePath
+     */
+    void restoreKey(int keySpecId, Path backupFilePath);
     
     /**
      * Operation specific for CP5 crypto tokens. 
