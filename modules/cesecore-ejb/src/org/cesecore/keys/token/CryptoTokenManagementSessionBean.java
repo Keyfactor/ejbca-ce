@@ -266,10 +266,15 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
-    public void backupKey(int specId, Path backupFilePath) throws CryptoTokenOfflineException {
-        // TODO: read this from command line
-        long objectHandle = 0;
-        
+    public void backupKey(int specId, Path backupFilePath, int cryptoTokenId) throws CryptoTokenOfflineException {
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        cryptoToken.backupKey(specId, backupFilePath);
+    }
+    
+    @Override
+    public void restoreKey(int specId, Path backupFilePath, int cryptoTokenId) throws CryptoTokenOfflineException {
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        cryptoToken.restoreKey(specId, backupFilePath);
     }
     
     @Override
@@ -984,11 +989,5 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 details.put(key, newValue);
             }
         }
-    }
-
-    @Override
-    public void restoreKey() throws CryptoTokenOfflineException {
-        // TODO Auto-generated method stub
-        
     }
 }

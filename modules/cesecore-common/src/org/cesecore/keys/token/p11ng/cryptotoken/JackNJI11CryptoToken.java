@@ -288,9 +288,13 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     public void backupKey(final int keySpecId, final Path backupFilePath) {
         log.info("Backup Object...");
         slot.backupObject(keySpecId, backupFilePath.toString());
-
     }
     
+    @Override
+    public void restoreKey(final int keySpecId, final Path backupFilePath) {
+        log.info("Restore Object...");
+        slot.restoreObject(keySpecId, backupFilePath);
+    }
     
     @Override
     public boolean isKeyInitialized(final String alias) {
@@ -358,12 +362,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             }
         }
         return ret;
-    }
-
-    @Override
-    public void restoreKey() {
-        // TODO Auto-generated method stub
-        
     }
     
 }
