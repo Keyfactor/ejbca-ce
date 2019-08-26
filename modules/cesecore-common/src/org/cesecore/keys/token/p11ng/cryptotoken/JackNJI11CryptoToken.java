@@ -129,6 +129,15 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         //                log.error("Error auto activating PKCS11CryptoToken : " + e.getMessage(), e);
         //            }
         //        }
+        String autoActivatePin = BaseCryptoToken.getAutoActivatePin(properties);
+        try {
+            if (autoActivatePin != null) {
+                activate(autoActivatePin.toCharArray());
+            }
+        } catch (CryptoTokenAuthenticationFailedException e) {
+            throw new CryptoTokenOfflineException(e);
+        }
+        
         setJCAProvider(slot.getProvider());
 
     }
@@ -313,12 +322,10 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             aliases.add(slotEntry.getAlias());
         }
         return aliases;
-        //        return Collections.list(getKeyStore().aliases()); <---- Traditional way of doing it. TODO Remove this line.
     }
 
     @Override
     public byte[] getTokenData() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -335,6 +342,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public int getTokenStatus() {
+        autoActivate();
         log.info("Session Status: " + this.slot.toString()); //TODO remove
         if (this.slot == null || this.slot.getActiveSessions().size() == 0) {
             return CryptoToken.STATUS_OFFLINE;
