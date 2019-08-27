@@ -187,7 +187,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
-    private static final String HIDE_DEPRECATED_FUNCTIONALITY = "hide_deprecated_functionality";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -533,14 +532,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         }
     }
     
-    public boolean getHideDeprecatedFunctionality() {
-        return getBoolean(HIDE_DEPRECATED_FUNCTIONALITY, true);
-    }
-
-    public void setHideDeprecatedFunctionality(final boolean hideDeprecatedFunctionality) {
-        putBoolean(HIDE_DEPRECATED_FUNCTIONALITY, hideDeprecatedFunctionality);
-    }
-
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
         final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
