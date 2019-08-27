@@ -317,6 +317,7 @@ public abstract class AlgorithmTools {
                 ecSigAlgs.add(0, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
                 break;
             case 521:
+                // This is really 521 and not 512, the corresponding EC curve is for example secp521r1
                 ecSigAlgs.remove(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
                 ecSigAlgs.add(0, AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
                 break;
