@@ -64,7 +64,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import java.nio.file.Path;
 
 
 /**
@@ -195,18 +194,13 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     @Override
     public int getTokenStatus() {
-        Set<String> names = aliasCache.getAllNames();
+        final Set<String> names = aliasCache.getAllNames();
         if (names.isEmpty()) {
             log.debug("No alias names found, check that it is not just an empty key vault, which is active anyhow.");
-            try {
-                CloseableHttpResponse response = listKeysRESTCall();
-                try {                    
-                    if (response.getStatusLine().getStatusCode() == 200) {
-                        // there are no keys, but listKeys call returns OK
-                        return STATUS_ACTIVE;
-                    }
-                } finally {
-                    response.close();
+            try (CloseableHttpResponse response = listKeysRESTCall()) {                    
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    // there are no keys, but listKeys call returns OK
+                    return STATUS_ACTIVE;
                 }
             } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | IOException e) {
                 if (log.isDebugEnabled()) {
@@ -226,37 +220,38 @@ public class AzureCryptoToken extends BaseCryptoToken {
             log.debug("getAliases called for crypto token: "+getId()+", "+getTokenName()+", "+getKeyVaultName()+", "+getKeyVaultType()+", "+authorizationHeader);
         }
         if (aliasCache.shouldCheckForUpdates(0) || aliasCache.getAllNames().isEmpty()) {
-            try {
+            try (CloseableHttpResponse response = listKeysRESTCall()) {
                 // Connect to Azure Key Vault and get the list of keys there.
-                CloseableHttpResponse response = listKeysRESTCall();
-                try {
-                    InputStream content = response.getEntity().getContent();
-                    log.debug("getAliases response code: " + response.getStatusLine().getStatusCode());
-                    String s = IOUtils.toString(content, "UTF-8");
+                final InputStream content = response.getEntity().getContent();
+                if (log.isDebugEnabled()) {
+                    log.debug("getAliases response code: " + response.getStatusLine().getStatusCode());                    
+                }
+                String s = IOUtils.toString(content, "UTF-8");
+                if (log.isDebugEnabled()) {
                     log.debug("getAliases JSON response: " + s);
-                    if (response.getStatusLine().getStatusCode() == 200) {
-                        JSONParser jsonParser = new JSONParser();
-                        JSONObject parse = (JSONObject) jsonParser.parse(s);
-                        JSONArray value = (JSONArray) parse.get("value");
-                        if (value != null) {
-                            // We have some keys, lets re-fill the array
-                            aliasCache.flush();
-                            for (Object o : value) {
-                                JSONObject o1 = (JSONObject) o;
-                                final String kid = (String) o1.get("kid");
-                                // Return only the key name.
-                                final String alias = kid.substring(kid.lastIndexOf("/") + 1);
+                }
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    final JSONParser jsonParser = new JSONParser();
+                    final JSONObject parse = (JSONObject) jsonParser.parse(s);
+                    final JSONArray value = (JSONArray) parse.get("value");
+                    if (value != null) {
+                        // We have some keys, lets re-fill the array
+                        aliasCache.flush();
+                        for (Object o : value) {
+                            final JSONObject o1 = (JSONObject) o;
+                            final String kid = (String) o1.get("kid");
+                            // Return only the key name.
+                            final String alias = kid.substring(kid.lastIndexOf("/") + 1);
+                            if (log.isDebugEnabled()) {
                                 log.debug("Adding alias to cache: '"+alias);
-                                // Add a dummy public key
-                                aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
                             }
-                        }                    
-                    } else {
-                        aliasCache.flush(); // make sure the crypto token is off-line
-                        throw new CryptoTokenOfflineException("Can not list keys, response code is " + response.getStatusLine().getStatusCode());                    
-                    }
-                } finally {
-                    response.close();
+                            // Add a dummy public key
+                            aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
+                        }
+                    }                    
+                } else {
+                    aliasCache.flush(); // make sure the crypto token is off-line
+                    throw new CryptoTokenOfflineException("Can not list keys, response code is " + response.getStatusLine().getStatusCode());                    
                 }
             } catch (IOException | ParseException | CryptoTokenAuthenticationFailedException e) {
                 aliasCache.flush(); // make sure the crypto token is off-line
@@ -283,56 +278,47 @@ public class AzureCryptoToken extends BaseCryptoToken {
      * 3. "First" request again, this time with the newly fetched authorizationToken
      * 
      * @param request
-     * @return CloseableHttpResponse with the response
+     * @return CloseableHttpResponse with the response, the caller is responsible for closing it
      * @throws CryptoTokenAuthenticationFailedException
      * @throws CryptoTokenOfflineException
      */
     CloseableHttpResponse performRequest(HttpRequestBase request) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         try {
             CloseableHttpResponse response = performRESTAPIRequest(request);
-            int statusCode = response.getStatusLine().getStatusCode();
-
-//            if (statusCode == 403) { // TODO check if it is really desirable to test for 403 status too, this arises, for example when an authorization header belonging to another application is used.
-//                // TODO if really needed, look into other mechanism to perform this recovery... maybe by using recursion.
-//                AUTHORIZATION_HEADER = null;
-//                response = performAuthenticatedRequest(request);
-//            }
-            if (statusCode == 401) {
+            final int requestStatusCode = response.getStatusLine().getStatusCode();
+            if (requestStatusCode == 401) {
                 log.debug("Got access denied calling key vault, try to get authentication URI and fetch auth token");
                 // Bet bearer token (authentication token).
-                Header lastHeader = response.getLastHeader("WWW-Authenticate");
-                // Close as soon as possible
+                final Header lastHeader = response.getLastHeader("WWW-Authenticate");
+                // Close as soon as possible, we don't need this response, it's an "Error Response" for invalid_token 
                 response.close();
-                HeaderElement[] elements = lastHeader.getElements();
+                final HeaderElement[] elements = lastHeader.getElements();
                 String oauthServiceURL = null;
                 String oauthResource = null;
                 for (HeaderElement element : elements) {
-                    String elementName = element.getName();
+                    final String elementName = element.getName();
                     if (log.isDebugEnabled()) {
                         log.debug("Investigating WWW-Authenticate HeaderElement: " + elementName);
                     }
-                    // TODO determine the difference between "Bearer authorization_uri" and "Bearer authorization".
-                    if (elementName.equals("Bearer authorization_uri") || elementName.equals("Bearer authorization")){
+                    if (elementName.equals("Bearer authorization_uri")) {
+                        // "Bearer authorization_uri", see https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code.
                         oauthServiceURL = element.getValue();
                         if (log.isDebugEnabled()) {
                             log.debug("Found a Bearer authorization_uri: " + oauthServiceURL);
                         }
-//                    } else if(elementName.equals("error") && element.getValue().equals("invalid_token")){
-//                        AUTHORIZATION_HEADER = null;
-//                        response = performAuthenticatedRequest(request);
-                    } else if(elementName.equals("resource")) {
+                    } else if (elementName.equals("resource")) {
+                        // "resource_id" to be used as resource in request, see https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code.
                         oauthResource = element.getValue();
                         if (log.isDebugEnabled()) {
                             log.debug("Found a resource: " + oauthResource);
                         }
                     }
                 }
-                HttpPost request1 = new HttpPost(oauthServiceURL + "/oauth2/token");
-                ArrayList<NameValuePair> parameters = new ArrayList<>();
+                final HttpPost request1 = new HttpPost(oauthServiceURL + "/oauth2/token");
+                final ArrayList<NameValuePair> parameters = new ArrayList<>();
                 parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));                
-                // Authentication
+                // ECA-8473: We only support client_secret for authentication right now. A more recommended way is to use certificate to authenticate.
                 parameters.add(new BasicNameValuePair("client_id", clientID));
-                // TODO: We only support client_secret right now. A more recommended way is to use certificate to authenticate.
                 parameters.add(new BasicNameValuePair("client_secret", clientSecret));
                 if (log.isDebugEnabled()) {
                     log.debug("Using client_id and client_secret: '" + clientID + ":<nologgingcleartextpasswords>'");
@@ -342,26 +328,25 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 if (log.isDebugEnabled()) {
                     log.debug("Authorization request: " + request1.toString());
                 }
-                CloseableHttpResponse authResponse = authHttpClient.execute(request1);
+                final CloseableHttpResponse authResponse = authHttpClient.execute(request1);
                 try {
-
-                    statusCode = authResponse.getStatusLine().getStatusCode();
+                    final int authStatusCode = authResponse.getStatusLine().getStatusCode();
                     if (log.isDebugEnabled()) {
-                        log.debug("Status code for authorization request is: " + statusCode);
+                        log.debug("Status code for authorization request is: " + authStatusCode);
                         log.debug("Response.toString: " + authResponse.toString());
                     }
-                    String s = IOUtils.toString(authResponse.getEntity().getContent(), "UTF-8");
+                    final String s = IOUtils.toString(authResponse.getEntity().getContent(), "UTF-8");
                     if (log.isDebugEnabled()) {
                         log.debug("Authorization JSON response: " + s);
                     }
-                    JSONParser jsonParser = new JSONParser();
-                    JSONObject parse = (JSONObject) jsonParser.parse(s);
-                    if (statusCode == 401 || statusCode == 400) { // 401 expected for no secret or wrong secret, 400 expected for wrong client_id
+                    final JSONParser jsonParser = new JSONParser();
+                    final JSONObject parse = (JSONObject) jsonParser.parse(s);
+                    if (authStatusCode == 401 || authStatusCode == 400) { // 401 expected for no secret or wrong secret, 400 expected for wrong client_id
                         authorizationHeader = null;
-                        log.info("Authorization denied for Azure Crypto Token authentication call to URI " + request1.getURI() + ", for client_id " + clientID);
+                        log.info("Authorization denied with statusCode " + authStatusCode + " for Azure Crypto Token authentication call to URI " + request1.getURI() + ", for client_id " + clientID);
                         throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization denied, JSON response: " + s);
-                    } else if (statusCode == 200) {
-                        String access_token = (String) parse.get("access_token");
+                    } else if (authStatusCode == 200) {
+                        final String access_token = (String) parse.get("access_token");
                         authorizationHeader = "Bearer " + access_token;
                         if (log.isDebugEnabled()) {
                             log.debug("Authorization header from authentication response: " + authorizationHeader);
@@ -369,7 +354,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         // Now we are authorized, make the request we came to this method for again
                         response = performRESTAPIRequest(request);
                     } else {
-                        throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization failed with unknown response code " + statusCode + ", JSON response: " + s);
+                        throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization failed with unknown response code " + authStatusCode + ", JSON response: " + s);
                     }
                 } finally {
                     authResponse.close();
@@ -397,54 +382,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     @Override
     public void activate(final char[] authCode) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        // TODO: should we skip this part if we call activate with the same authCode? That could save some calls to getAliases and some time perhaps.
+        // ECA-8472: should we skip this part if we call activate with the same authCode? That could save some calls to getAliases and some time perhaps.
         clientSecret = new String(authCode);
-        
-        // TODO: not tested. Try to create a key vault if we have set properties to create it, and the property that it is created has not been set.
-        // In theory this should allow us to create a new key vault from within EJBCA (the client_id then needs permissions to create key vaults though which may not be desired
-        if (getProperties().getProperty("createNewKeyVault") != null && getProperties().getProperty("keyvaultCreated") == null) { // Create new key vault, although maybe this operation doesn't belong to this method.
-            log.info("Activating Key Vault Crypto Token: Property createNewKeyVault is set, will try to create a new Key Vault");
-            throw new IllegalArgumentException("Not implemented");
-            /* 
-            // TODO check if EJBCA should really create the key vault on Aure Key Vault, check at its current behavior with P11CryptoToken or SOftCryptoToken, if the key vault should be created from here at least be prepared for that vault name being already created in which case it shouldn't be created again... but the most appropriate seems to be to not create the key vault from EJBCA.... Really research on this.
-            // TODO confirm that it is the first time that it is called when the 'name' property doesn't exist.
-            // TODO check that maybe the api-version should be only one for each configured CryptoToken.
-            HttpPut request = new HttpPut("https://management.azure.com/subscriptions/" + AzureConstants.SUBSCRIPTION_ID + "/resourceGroups/" + AzureConstants.RESOURCE_GROUP + "/providers/Microsoft.KeyVault/vaults/" + getKeyVaultName() + "?api-version=2015-06-01");
-            request.setHeader("Content-Type", "application/json");
-            // TODO try to get location, tenantId, objectId (from authorized principal).
-            // TODO try to set only minimum permissions required at least as defaults, overridable from the AzureCryptoToken configuration properties.
-
-            String jsonRequest = " {\"location\": \"" + AzureConstants.LOCATION + "\", \"properties\": {\"tenantId\": \"" + AzureConstants.TENANT_ID + "\", \"sku\": {\"family\": \"A\", \"name\": \"" + AzureConstants.KEYVAULT_SKU_TYPE + "\"}, \"accessPolicies\": [{\"tenantId\": \"" + AzureConstants.TENANT_ID + "\", \"objectId\": \"" + AzureConstants.PRINCIPAL_OBJECT_ID + "\", \"permissions\": {\"keys\": [\"get\", \"create\", \"delete\", \"list\", \"update\", \"import\", \"backup\", \"restore\", \"sign\"], \"secrets\": [\"all\"], \"certificates\": [\"all\"]}}]}}";
-            try {
-                request.setEntity(new StringEntity(jsonRequest));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                CloseableHttpResponse response = performAuthenticatedRequest(request, getKeyVaultName());
-                int statusCode = response.getStatusLine().getStatusCode();
-                log.debug("Status code for first request try is: " + statusCode);
-                log.debug("Response.toString: " + response.toString());
-                // TODO note that it seems that after a successful response the new key vault DNS record takes some time to be available for use (e.g. for the next call to getAliases) in that case at the beginning at least sleep for some time... or check for up to X seconds for the vault to be ready for use.... Or maybe it is enough with clearing some Java/OS DNS cache?.
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                // TODO check if it is required to process some data of this response.
-                // TODO manage the exception when the key vault can't be created, e.g. because that key vault name already exist.
-                getAliases();
-                getProperties().setProperty("keyvaultCreated", "true");
-            } catch (SecurityException e) {
-                // TODO research, instead of just changing the status to OFFLINE, maybe display some error message immediately. Look for current CryptoToken implementations behavior.
-
-            }
-            */
-        } else {
-            log.info("Activating Key Vault Crypto Token, listing aliases");
-            getAliases();
-        }
-
+        log.info("Activating Key Vault Crypto Token, listing aliases");
+        getAliases();
     }
 
     @Override
@@ -467,7 +408,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException,
             CertificateException, IOException, CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
-            Map<String, Integer> nameToId = aliasCache.getNameToIdMap();
+            final Map<String, Integer> nameToId = aliasCache.getNameToIdMap();
             final Integer id = nameToId.get(alias);
             if (id == null) {
                 throw new KeyStoreException("Key with alias '" + alias +"', does not have an ID in our cache");
@@ -476,32 +417,27 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // https://docs.microsoft.com/en-us/rest/api/keyvault/deletekey/deletekey
             // DELETE {vaultBaseUrl}/keys/{key-name}?api-version=7.0
             HttpDelete request = new HttpDelete("https://" + getKeyVaultName() + ".vault.azure.net/keys/" + alias + "?api-version=7.0");
-            try {
-                CloseableHttpResponse response = performRequest(request);
-                try {
-                    if (response.getStatusLine().getStatusCode() != 200) {
-                        InputStream content = response.getEntity().getContent();
-                        String s = IOUtils.toString(content, "UTF-8");
-                        if (log.isDebugEnabled()) {
-                            log.debug("deleteEntry error JSON response: " + s);
-                        }
-                        throw new CryptoTokenOfflineException("Azure Crypto Token key deletion failed, JSON response: " + s);
-                    } else {
-                        InputStream content = response.getEntity().getContent();
-                        String s = IOUtils.toString(content, "UTF-8");
-                        if (log.isDebugEnabled()) {
-                            log.debug("deleteEntry success JSON response: " + s);
-                        }
-                        // Remove the entry from our cache
-                        aliasCache.removeEntry(id);
+            try (CloseableHttpResponse response = performRequest(request)) {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    final InputStream content = response.getEntity().getContent();
+                    final String s = IOUtils.toString(content, "UTF-8");
+                    if (log.isDebugEnabled()) {
+                        log.debug("deleteEntry error JSON response: " + s);
                     }
-                } finally {
-                    response.close();
+                    throw new CryptoTokenOfflineException("Azure Crypto Token key deletion failed, JSON response: " + s);
+                } else {
+                    final InputStream content = response.getEntity().getContent();
+                    final String s = IOUtils.toString(content, "UTF-8");
+                    if (log.isDebugEnabled()) {
+                        log.debug("deleteEntry success JSON response: " + s);
+                    }
+                    // Remove the entry from our cache
+                    aliasCache.removeEntry(id);
                 }
             } catch (CryptoTokenAuthenticationFailedException e) {
                 throw new CryptoTokenOfflineException(e);
             }
-            String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
+            final String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
             log.info(msg);
         } else {
             log.info("Trying to delete keystore entry with empty alias.");
@@ -519,7 +455,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // Allow kty RSA-HSM or EC-HSM. RSA key_size or "crv" (P-256, P-384, P-521), 
             // {"kty": "RSA-HSM", "key-size": 2048, "attributes": {"enabled": true}}
             // {"kty": "EC-HSM", "crv": "P-256", "attributes": {"enabled": true}}
-            StringBuilder str = new StringBuilder("{\"kty\": ");
+            final StringBuilder str = new StringBuilder("{\"kty\": ");
             // If it is pure numeric, it is an RSA key length
             if (NumberUtils.isNumber(keySpec)) {
                 String kty = "RSA-HSM";
@@ -553,7 +489,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             }
             str.append(", \"attributes\": {\"enabled\": true}}");
             //  generate key in our previously created key vault.
-            HttpPost request = new HttpPost("https://" + getKeyVaultName() + ".vault.azure.net/keys/" + alias + "/create?api-version=7.0");
+            final HttpPost request = new HttpPost("https://" + getKeyVaultName() + ".vault.azure.net/keys/" + alias + "/create?api-version=7.0");
             request.setHeader("Content-Type", "application/json");
             try {
                 request.setEntity(new StringEntity(str.toString()));
@@ -563,29 +499,24 @@ public class AzureCryptoToken extends BaseCryptoToken {
             } catch (UnsupportedEncodingException e) {
                 throw new InvalidAlgorithmParameterException(e);
             }
-            try {
-                CloseableHttpResponse response = performRequest(request);
-                try {
-                    if (response.getStatusLine().getStatusCode() != 200) {
-                        InputStream content = response.getEntity().getContent();
-                        String s = IOUtils.toString(content, "UTF-8");
-                        if (log.isDebugEnabled()) {
-                            log.debug("generateKeyPair error JSON response: " + s);
-                        }
-                        throw new CryptoTokenOfflineException("Azure Crypto Token key generation failed, JSON response: " + s);
-                    } else {
-                        InputStream content = response.getEntity().getContent();
-                        String s = IOUtils.toString(content, "UTF-8");
-                        if (log.isDebugEnabled()) {
-                            log.debug("generateKeyPair success JSON response: " + s);
-                        }
+            try (CloseableHttpResponse response = performRequest(request)) {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    final InputStream content = response.getEntity().getContent();
+                    final String s = IOUtils.toString(content, "UTF-8");
+                    if (log.isDebugEnabled()) {
+                        log.debug("generateKeyPair error JSON response: " + s);
                     }
-                    // Update client key aliases next time we want to use one, could be done without having to update the whole cache, 
-                    // but might as well as we don't cache for too long anyhow
-                    aliasCache.flush();
-                } finally {
-                    response.close();
+                    throw new CryptoTokenOfflineException("Azure Crypto Token key generation failed, JSON response: " + s);
+                } else {
+                    final InputStream content = response.getEntity().getContent();
+                    final String s = IOUtils.toString(content, "UTF-8");
+                    if (log.isDebugEnabled()) {
+                        log.debug("generateKeyPair success JSON response: " + s);
+                    }
                 }
+                // Update client key aliases next time we want to use one, could be done without having to update the whole cache, 
+                // but might as well as we don't cache for too long anyhow
+                aliasCache.flush();
             } catch (CryptoTokenAuthenticationFailedException e) {
                 throw new CryptoTokenOfflineException(e);
             } catch (IOException e) {
@@ -640,7 +571,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     @Override
     public boolean isAliasUsed(String alias) {
-        Set<String> names = aliasCache.getAllNames();
+        final Set<String> names = aliasCache.getAllNames();
         if (!names.isEmpty()) {
             boolean ret = names.contains(alias);
             if (log.isDebugEnabled()) {
@@ -655,13 +586,13 @@ public class AzureCryptoToken extends BaseCryptoToken {
     @Override
     public PrivateKey getPrivateKey(String alias) throws CryptoTokenOfflineException {
         // Does the alias exist?
-        PublicKey pubK = getPublicKey(alias); 
+        final PublicKey pubK = getPublicKey(alias); 
         if (pubK == null) {
             log.warn(intres.getLocalizedMessage("token.noprivate", alias));
             final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
             throw new CryptoTokenOfflineException(msg);
         }
-        String fullkeyname = createFullKeyName(alias);
+        final String fullkeyname = createFullKeyName(alias);
         if (log.isDebugEnabled()) {
             // This is a URI for Key Vault
             log.debug("getPrivateKey: " + fullkeyname);
@@ -679,9 +610,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
             try {
                 // connect to Azure and retrieve public key, use empty version string to get last version (don't check for existing key versions to save a round trip)
                 HttpGet request2 = new HttpGet(createFullKeyName(alias) + "/?api-version=7.0");
-                CloseableHttpResponse response = performRequest(request2);
-                try {
-                    InputStream content = response.getEntity().getContent();
+                try (CloseableHttpResponse response = performRequest(request2)) {
+                    final InputStream content = response.getEntity().getContent();
                     String s = null;
                     if (content != null){
                         s = IOUtils.toString(content, "UTF-8");
@@ -701,36 +631,36 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         log.warn("We got HTTP 200 as response code getting public key, but no JSON content returned. Unknown error sate from Key Vault. Returning null as public key (we can't find it)");
                         return null;
                     }
-                    JSONParser jsonParser = new JSONParser();
-                    JSONObject parse = (JSONObject) jsonParser.parse(s);
-                    JSONObject key = (JSONObject) parse.get("key");
-                    String kty = (String) key.get("kty");
-                    if (kty.toString().startsWith("RSA")) {
-                        String modulusB64 = (String) key.get("n");
-                        String exponentB64 = (String) key.get("e");
-                        byte[] modulus = Base64.decodeURLSafe(modulusB64);
+                    final JSONParser jsonParser = new JSONParser();
+                    final JSONObject parse = (JSONObject) jsonParser.parse(s);
+                    final JSONObject key = (JSONObject) parse.get("key");
+                    final String kty = (String) key.get("kty");
+                    if (kty.startsWith("RSA")) {
+                        final String modulusB64 = (String) key.get("n");
+                        final String exponentB64 = (String) key.get("e");
+                        final byte[] modulus = Base64.decodeURLSafe(modulusB64);
                         // We want to 0-fill the returned modulus to make the BigInteger decode it properly as two-complements binary
-                        byte[] fixedModulus = new byte[modulus.length+1];
+                        final byte[] fixedModulus = new byte[modulus.length+1];
                         fixedModulus[0] = 0;
                         System.arraycopy(modulus, 0, fixedModulus, 1, modulus.length);
-                        BigInteger bigIntegerModulus = new BigInteger(fixedModulus);
-                        BigInteger bigIntegerExponent = new BigInteger(Base64.decodeURLSafe(exponentB64));
-                        KeyFactory rsa = KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+                        final BigInteger bigIntegerModulus = new BigInteger(fixedModulus);
+                        final BigInteger bigIntegerExponent = new BigInteger(Base64.decodeURLSafe(exponentB64));
+                        final KeyFactory rsa = KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
                         publicKey = rsa.generatePublic(new RSAPublicKeySpec(bigIntegerModulus, bigIntegerExponent));                    
-                    } else if (kty.toString().startsWith("EC")) {
-                        String crv = (String) key.get("crv");
-                        String xB64 = (String) key.get("x");
-                        String yB64 = (String) key.get("y");
-                        byte[] x = Base64.decodeURLSafe(xB64);
-                        byte[] y = Base64.decodeURLSafe(yB64);
-                        byte[] fixedX = new byte[x.length+1];
+                    } else if (kty.startsWith("EC")) {
+                        final String crv = (String) key.get("crv");
+                        final String xB64 = (String) key.get("x");
+                        final String yB64 = (String) key.get("y");
+                        final byte[] x = Base64.decodeURLSafe(xB64);
+                        final byte[] y = Base64.decodeURLSafe(yB64);
+                        final byte[] fixedX = new byte[x.length+1];
                         fixedX[0] = 0;
                         System.arraycopy(x, 0, fixedX, 1, x.length);
-                        BigInteger bigIntegerX = new BigInteger(fixedX);
+                        final BigInteger bigIntegerX = new BigInteger(fixedX);
                         byte[] fixedY = new byte[y.length+1];
                         fixedY[0] = 0;
                         System.arraycopy(y, 0, fixedY, 1, y.length);
-                        BigInteger bigIntegerY = new BigInteger(fixedY);
+                        final BigInteger bigIntegerY = new BigInteger(fixedY);
                         // Construct the public key object (Bouncy Castle)
                         final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(crv);
                         final java.security.spec.ECPoint p = new java.security.spec.ECPoint(bigIntegerX, bigIntegerY);
@@ -743,22 +673,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         throw new CryptoTokenOfflineException("Unknown key type (kty) in JSON public key response (neither RSA nor EC): " + kty);
                     }
                     aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, publicKey);
-                } finally {
-                    response.close();
                 }
                 return publicKey;
-            } catch (CryptoTokenAuthenticationFailedException e) {
+            } catch (CryptoTokenAuthenticationFailedException | IOException | ParseException | NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
                 throw new CryptoTokenOfflineException(e);
-            } catch (IOException e) {
-                throw new CryptoTokenOfflineException(e);
-            } catch (ParseException e) {
-                throw new CryptoTokenOfflineException(e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new CryptoTokenOfflineException(e);
-            } catch (InvalidKeySpecException e) {
-                throw new CryptoTokenOfflineException(e);
-            } catch (NoSuchProviderException e) {
-                throw new CryptoTokenOfflineException(e); // No BC provider
             }            
         } else {
             if (log.isDebugEnabled()) {
