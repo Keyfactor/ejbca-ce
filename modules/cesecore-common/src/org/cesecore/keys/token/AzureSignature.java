@@ -82,10 +82,10 @@ public class AzureSignature extends SignatureSpi {
             }
             //String lastKeyVersion = AzureCryptoToken.getLastKeyVersion(privateKey.getKeyURI());
             //HttpPost request = new HttpPost(lastKeyVersion + "/sign?api-version=2016-10-01");
-            HttpPost request = new HttpPost(privateKey.getKeyURI() + "/sign?api-version=2016-10-01");
+            final HttpPost request = new HttpPost(privateKey.getKeyURI() + "/sign?api-version=2016-10-01");
             request.setHeader("Content-Type", "application/json");
 
-            HashMap<String, String> map = new HashMap<>();
+            final HashMap<String, String> map = new HashMap<>();
             // RSA SHA-256 Signature algorithm, https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.keyvault.cryptography.algorithms.rs256
             // ES256 is ECDSA with curve P-256 from NIST
             // ES384 is ECDSA with curve P-384 from NIST
@@ -99,20 +99,19 @@ public class AzureSignature extends SignatureSpi {
             } catch (NoSuchProviderException e) {
                 throw new SignatureException("BC provider not installed, fatal error: ", e);
             }
-            byte[] digest = hash.digest(tbs);
+            final byte[] digest = hash.digest(tbs);
             map.put("value", java.util.Base64.getEncoder().encodeToString(digest));
-            JSONObject jsonObject = new JSONObject(map);
-            StringWriter out = new StringWriter();
+            final JSONObject jsonObject = new JSONObject(map);
+            final StringWriter out = new StringWriter();
             jsonObject.writeJSONString(out);
             request.setEntity(new StringEntity(out.toString()));
             if (log.isDebugEnabled()) {
                 log.debug("engineSign Request: " + request.toString()+", "+privateKey.toString());
             }
-            CloseableHttpResponse response = privateKey.getCryptoToken().performRequest(request);
-            try {
-                InputStream content = response.getEntity().getContent();
-                String s = IOUtils.toString(content, "UTF-8");
-                int statusCode = response.getStatusLine().getStatusCode();
+            try (final CloseableHttpResponse response = privateKey.getCryptoToken().performRequest(request)) {
+                final InputStream content = response.getEntity().getContent();
+                final String s = IOUtils.toString(content, "UTF-8");
+                final int statusCode = response.getStatusLine().getStatusCode();
                 if (log.isDebugEnabled()) {
                     log.debug("Status code engineSign is: " + statusCode);
                     log.debug("Response.toString: " + response.toString());
@@ -121,14 +120,14 @@ public class AzureSignature extends SignatureSpi {
                 if (statusCode != 200) {
                     throw new SignatureException("Signing failed with status code " + statusCode + ", and response JSON: " + s);
                 }
-                JSONParser jsonParser = new JSONParser();
-                JSONObject parse = (JSONObject) jsonParser.parse(s);
-                String value = (String) parse.get("value");
+                final JSONParser jsonParser = new JSONParser();
+                final JSONObject parse = (JSONObject) jsonParser.parse(s);
+                final String value = (String) parse.get("value");
                 if (log.isDebugEnabled()) {
                     log.debug("Response Signature Base64 value: " + value);
                 }
                 byte[] bytes = Base64.decodeURLSafe(value);
-                int valueLength = bytes.length;
+                final int valueLength = bytes.length;
                 if (log.isDebugEnabled()) {
                     log.debug("Response bytes length: " + valueLength);
                 }
@@ -151,12 +150,10 @@ public class AzureSignature extends SignatureSpi {
                     if (log.isDebugEnabled()) {
                         log.debug("(EC) n is: "+BigIntegers.getUnsignedByteLength(n));
                     }
-                    BigInteger[] plain = PlainDSAEncoding.INSTANCE.decode(n, bytes);
+                    final BigInteger[] plain = PlainDSAEncoding.INSTANCE.decode(n, bytes);
                     bytes = StandardDSAEncoding.INSTANCE.encode(n, plain[0], plain[1]);
                 }
                 return bytes;
-            } finally {
-                response.close();
             }
         } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | IOException | ParseException e) {
             throw new SignatureException(e);
