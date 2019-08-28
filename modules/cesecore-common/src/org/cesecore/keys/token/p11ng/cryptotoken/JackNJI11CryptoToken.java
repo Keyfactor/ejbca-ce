@@ -55,8 +55,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     private static final Logger log = Logger.getLogger(JackNJI11CryptoToken.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    private static final int KAK_SIZE = 2048;
     
     public static final String SLOT_LABEL_VALUE = "slotLabelValue";
     public static final String SLOT_LABEL_TYPE = "slotLabelType";
