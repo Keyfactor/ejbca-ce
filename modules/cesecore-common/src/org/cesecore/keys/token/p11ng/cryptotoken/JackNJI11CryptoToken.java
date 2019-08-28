@@ -249,7 +249,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             log.debug("Successfully generated key pair");
         } catch (CertificateException | OperatorCreationException ex) {
             log.error("Dummy certificate generation failed. Objects might still have been created in the device: ", ex);
-            System.err.println("Dummy certificate generation failed. Objects might still have been created in the device: " + ex.getMessage());
         }
     }
     
