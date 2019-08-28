@@ -337,10 +337,11 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     @Override
     public int getTokenStatus() {
         autoActivate();
-        log.info("Session Status: " + this.slot.toString()); //TODO remove
         if (this.slot == null || this.slot.getActiveSessions().size() == 0) {
+            log.info("Session Status: Slot unavilable"); //TODO remove
             return CryptoToken.STATUS_OFFLINE;
         }
+        log.info("Session Status: " + this.slot.toString()); //TODO remove
         return CryptoToken.STATUS_ACTIVE;
     }
 
