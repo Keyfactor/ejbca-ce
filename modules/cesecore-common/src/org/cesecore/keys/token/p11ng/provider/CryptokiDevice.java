@@ -216,7 +216,7 @@ public class CryptokiDevice {
             return idleSessions;
         }
         
-        protected synchronized long aquireSession() {
+        public synchronized long aquireSession() {
             Long session;
             if (!idleSessions.isEmpty()) {
                 session = idleSessions.pop();
@@ -1697,7 +1697,7 @@ public class CryptokiDevice {
          * @param ckaIdValue ID of private key
          * @return found private key objects
          */
-        long[] findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
+        public long[] findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
             long[] privateObjects;
             if (useCache) {
                 FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_PRIVATE_KEY, P11NGStoreConstants.CKA_ID, ckaIdValue, null);
