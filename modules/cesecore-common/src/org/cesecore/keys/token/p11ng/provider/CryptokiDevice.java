@@ -676,10 +676,8 @@ public class CryptokiDevice {
                 int kakModLen = kakModulus.toByteArray().length;
                 int kakPubExpLen = kakPublicExponent.toByteArray().length;
                 
-                byte[] kakModBuf = new byte[bitsToBytes(kakLength)];
+                byte[] kakModBuf = new byte[kakModLen];
                 byte[] kakPubExpBuf = new byte[kakPubExpLen];
-    
-                assert(kakModBuf.length >= kakModLen);
                 
                 kakModBuf = kakModulus.toByteArray();
                 kakPubExpBuf = kakPublicExponent.toByteArray();
@@ -717,7 +715,7 @@ public class CryptokiDevice {
                 }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
-                }
+                }   
                 long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
                 if (rvAuthorizeKeyInit != CKR.OK) {
                     throw new CKRException(rvAuthorizeKeyInit);
