@@ -54,7 +54,7 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, plugins-ee-clean, clover.clean, 
-		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean"/>
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ngcliclean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -117,6 +117,14 @@
 		<echo message="Cleaning cmpclient"/>
 		<ant antfile="${mod.cmpclient.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
+
+	<condition property="p11ngcli.exists">
+		<available file="${mod.p11ngcli.path}/build.xml" />
+	</condition>
+	<target name="p11ngcliclean" if="${p11ngcli.exists}">
+		<echo message="Cleaning p11ngcli"/>
+		<ant antfile="${mod.p11ngcli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>	
 	
     <condition property="cmpproxy.exists">
     	<available file="${mod.cmpProxy.path}/build-http.xml" />
@@ -600,6 +608,18 @@
 		</fail>
 		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
+
+	<target name="p11ngcli" depends="ejbca-ejb-interface, ejbca-ejb-cli">
+		<echo  message="${mod.p11ngcli.path}/build.xml" />
+		<fail message="P11NgCli is not distributed with this version of EJBCA">
+		    <condition>
+		    	<not>
+		    		<available file="${mod.p11ngcli.path}/build.xml" />
+		    	</not>
+		    </condition>
+		</fail>
+		<ant antfile="${mod.p11ngcli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>	
 	
 	<target name="est-war" depends="ejbca-common-web, edition-specific-interface, eedition-ejb" description="Build the EST WAR" if="${mod.est.exists}">
 		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
