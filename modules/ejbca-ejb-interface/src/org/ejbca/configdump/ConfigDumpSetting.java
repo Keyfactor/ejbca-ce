@@ -61,7 +61,7 @@ public class ConfigDumpSetting implements Serializable {
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
-    private ImportMode importMode;
+    private ImportMode importMode = ImportMode.NO_OVERWRITE; // FIXME or should we have a dry-run flag + a list of objects to overwrite? like statedump 
 
     public ConfigDumpSetting(final File location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
             final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors, final boolean ignoreWarnings) {
