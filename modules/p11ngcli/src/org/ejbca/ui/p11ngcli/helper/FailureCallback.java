@@ -1,5 +1,5 @@
 
-package org.ejbca.ui.p11ngcli;
+package org.ejbca.ui.p11ngcli.helper;
 
 /**
  * 
