@@ -300,19 +300,26 @@ public class AzureCryptoToken extends BaseCryptoToken {
                     if (log.isDebugEnabled()) {
                         log.debug("Investigating WWW-Authenticate HeaderElement: " + elementName);
                     }
-                    if (elementName.equals("Bearer authorization_uri")) {
-                        // "Bearer authorization_uri", see https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code.
+                    // "Bearer authorization_uri", see https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code.
+                    // The actual response does not seem to match the documentation at the URL above though, as it returns for example:
+                    // Bearer authorization="https://login.windows.net/8375a5cc-74ce-45e8-abc1-00a87441a554"
+                    // resource="https://vault.azure.net"
+                    // We play it safe and look for both values, the doc and the actual return
+                    if (elementName.equals("Bearer authorization") || elementName.equals("Bearer authorization_uri")) {
                         oauthServiceURL = element.getValue();
                         if (log.isDebugEnabled()) {
-                            log.debug("Found a Bearer authorization_uri: " + oauthServiceURL);
+                            log.debug("Found a Bearer authorization uri: " + oauthServiceURL);
                         }
-                    } else if (elementName.equals("resource")) {
+                    } else if (elementName.equals("resource") || elementName.equals("resource_id")) {
                         // "resource_id" to be used as resource in request, see https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code.
                         oauthResource = element.getValue();
                         if (log.isDebugEnabled()) {
-                            log.debug("Found a resource: " + oauthResource);
+                            log.debug("Found a resource ID: " + oauthResource);
                         }
                     }
+                }
+                if (oauthServiceURL == null) {
+                    throw new CryptoTokenAuthenticationFailedException("We did not find a 'Bearer authorization' uri in the WWW-Authenticate for a 401 response");
                 }
                 final HttpPost request1 = new HttpPost(oauthServiceURL + "/oauth2/token");
                 final ArrayList<NameValuePair> parameters = new ArrayList<>();
