@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.p11ngcli;
+package org.ejbca.ui.p11ngcli.helper;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;

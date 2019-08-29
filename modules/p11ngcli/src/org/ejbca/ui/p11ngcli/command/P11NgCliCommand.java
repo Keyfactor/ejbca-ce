@@ -1,6 +1,9 @@
 
-package org.ejbca.ui.p11ngcli;
+package org.ejbca.ui.p11ngcli.command;
 
+
+import static org.cesecore.keys.token.p11ng.TokenEntry.TYPE_PRIVATEKEY_ENTRY;
+import static org.cesecore.keys.token.p11ng.TokenEntry.TYPE_SECRETKEY_ENTRY;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -9,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -50,18 +52,9 @@ import java.util.Properties;
 
 import javax.security.auth.x500.X500Principal;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.LongByReference;
-
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -86,6 +79,17 @@ import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.GeneratedKeyData;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+import org.ejbca.ui.p11ngcli.helper.FailureCallback;
+import org.ejbca.ui.p11ngcli.helper.OneTimeThread;
+import org.ejbca.ui.p11ngcli.helper.OperationsThread;
+import org.ejbca.ui.p11ngcli.helper.TestSignThread;
+import org.ejbca.ui.p11ngcli.helper.UnwrapThread;
 import org.pkcs11.jacknji11.CEi;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKK;
@@ -104,23 +108,23 @@ import org.pkcs11.jacknji11.LongRef;
 import org.pkcs11.jacknji11.jna.JNAi;
 import org.pkcs11.jacknji11.jna.JNAiNative;
 
-import static org.cesecore.keys.token.p11ng.TokenEntry.TYPE_PRIVATEKEY_ENTRY;
-import static org.cesecore.keys.token.p11ng.TokenEntry.TYPE_SECRETKEY_ENTRY;
-
-
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.NativeLibrary;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
 
 /**
  * CLI command providing actions using JackNJI11 for troubleshooting.
  *
- * @author Markus Kilås
- * @version $Id: P11NgCli.java 9495 2018-08-30 14:15:46Z vinays $
+ * $Id$
  */
-public class P11NgCli {
+public class P11NgCliCommand extends P11NgCliCommandBase {
 	  
     /** Logger for this class. */
-    private static final Logger LOG = Logger.getLogger(P11NgCli.class);
+    private static final Logger log = Logger.getLogger(P11NgCliCommand.class);
     
-    private static final Options OPTIONS;
     private static final String LIBFILE = "libfile";
     private static final String ACTION = "action";
     private static final String SLOT = "slot";
@@ -162,37 +166,87 @@ public class P11NgCli {
     
     private static int exitCode;
     
-    static {
-        OPTIONS = new Options();
-        OPTIONS.addOption(LIBFILE, true, "Shared library path");
-        OPTIONS.addOption(ACTION, true, "Operation to perform. Any of: " + Arrays.asList(Action.values()));
-        OPTIONS.addOption(SLOT, true, "Slot ID to operate on");
-        OPTIONS.addOption(PIN, true, "User PIN");
-        OPTIONS.addOption(USER_AND_PIN, true, "User name and PIN");
-        OPTIONS.addOption(USER2_AND_PIN, true, "Second user name and PIN");
-        OPTIONS.addOption(ALIAS, true, "Key alias");
-        OPTIONS.addOption(WRAPKEY, true, "Label of key to wrap with");
-        OPTIONS.addOption(UNWRAPKEY, true, "Label of key to unwrap with");
-        OPTIONS.addOption(PRIVATEKEY, true, "base64 encoded encrypted (wrapped) private key");
-        OPTIONS.addOption(PUBLICKEY, true, "base64 encoded public key");
-        OPTIONS.addOption(PLAINTEXT, true, "text string to sign");
-        OPTIONS.addOption(METHOD, true, "Method to use, either pkcs11 (default) or provider");
-        OPTIONS.addOption(SELFCERT, false, "Generate a self-signed certificate for the new key-pair");
-        OPTIONS.addOption(OBJECT, true, "Object ID (decimal)");
-        OPTIONS.addOption(ATTRIBUTES_FILE, true, "Path of file containing attributes to be used while generating key pair");
-        OPTIONS.addOption(THREADS, true, "For sign-/unwrapPerformanceTest: Number of stresstest threads to run (default: 1)");
-        OPTIONS.addOption(WARMUPTIME, true, "For sign-/unwrapPerformanceTest: Don't count number of signings and response times until after this time (in milliseconds). Default=0 (no warmup time).");
-        OPTIONS.addOption(TIMELIMIT, true, "For sign-/unwrapPerformanceTest: Optional. Only run for the specified time (in milliseconds).");
-        OPTIONS.addOption(USE_CACHE, true, "For sign-/unwrapPerformanceTest: Whether key objects are fetched from cache instead of HSM token (default: true)");
-        OPTIONS.addOption(SIGNATUREALGORITHM, true, "For sign-/unwrapPerformanceTest: Signature algorithm to use (default: SHA256withRSA)");
-        OPTIONS.addOption(OBJECT_SPEC_ID, true, "idx of the key to back up");
-        OPTIONS.addOption(BACKUPFILE, true, "full path to the file where backup bytes would be stored");
-        OPTIONS.addOption(KAK_FILE_PATH, true, "full path to the file where kak private key will be stored and read from");
-        OPTIONS.addOption(MAX_OPERATIONS, true, "Maximum number of operations associated with the key, if not provided the number of operations will be unlimited");
+    
+  //Register all parameters
+    {
+        registerParameter(
+                new Parameter(LIBFILE, "lib file", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Shared library path"));
+        registerParameter(
+                new Parameter(ACTION, "action", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Operation to perform. Any of: "));
+        registerParameter(
+                new Parameter(SLOT, "HSM slot", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Slot on the HSM which will be used."));        
+        registerParameter(
+                new Parameter(PIN, "PIN for the slot", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "The pin which is used to connect to HSM slot."));
+        registerParameter(
+                new Parameter(USER_AND_PIN, "User name and pin ", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                        "This option is used to provide user cridential for running the CP5 command."));
+        registerParameter(
+                new Parameter(USER2_AND_PIN, "User name 2 and pin", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                        "This option is used to provide user cridential for running the CP5 command (subset of them need two users)."));
+        registerParameter(
+                new Parameter(ALIAS, "alias", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Alias of the key pair on the HSM."));
+        registerParameter(
+                new Parameter(WRAPKEY, "wrap key", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Label of key to wrap with"));
+        registerParameter(
+                new Parameter(UNWRAPKEY, "unwrap key", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Label of key to unwrap with"));
+        registerParameter(
+                new Parameter(PRIVATEKEY, "private key", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "base64 encoded encrypted (wrapped) private key"));
+        registerParameter(
+                new Parameter(PUBLICKEY, "public key", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "base64 encoded public key"));
+        registerParameter(
+                new Parameter(PLAINTEXT, "plain text", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "text string to sign"));
+        registerParameter(
+                new Parameter(METHOD, "method", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Method to use, either pkcs11 (default) or provider"));
+        registerParameter(
+                new Parameter(SELFCERT, "self cert", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Generate a self-signed certificate for the new key-pair"));
+        registerParameter(
+                new Parameter(OBJECT, "object", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Object ID (decimal)"));
+        registerParameter(
+                new Parameter(ATTRIBUTES_FILE, "attributes file", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Path of file containing attributes to be used while generating key pair"));
+        registerParameter(
+                new Parameter(THREADS, "threads", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "For sign-/unwrapPerformanceTest: Number of stresstest threads to run (default: 1)"));
+        registerParameter(
+                new Parameter(WARMUPTIME, "warm up time", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "For sign-/unwrapPerformanceTest: Don't count number of signings and response times until after this time (in milliseconds). Default=0 (no warmup time)."));
+        registerParameter(
+                new Parameter(TIMELIMIT, "time limit", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "For sign-/unwrapPerformanceTest: Optional. Only run for the specified time (in milliseconds)."));
+        registerParameter(
+                new Parameter(USE_CACHE, "use cache", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "For sign-/unwrapPerformanceTest: Whether key objects are fetched from cache instead of HSM token (default: true)"));
+        registerParameter(
+                new Parameter(SIGNATUREALGORITHM, "signature algorithm", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "For sign-/unwrapPerformanceTest: Signature algorithm to use (default: SHA256withRSA)"));
+        registerParameter(
+                new Parameter(OBJECT_SPEC_ID, "object spec id", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "idx of the key to back up"));        
+        registerParameter(
+                new Parameter(BACKUPFILE, "backup file", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "full path to the file where backup bytes would be stored"));   
+        registerParameter(
+                new Parameter(KAK_FILE_PATH, "KAK file path", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                        "The path which will be used to save the KAK file to and later for authorization the KAK will be read from it."));
+        registerParameter(
+                new Parameter(MAX_OPERATIONS, "object spec id", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "Maximum number of operations associated with the key, if not provided the number of operations will be unlimited"));   
     }
     
     static {Security.addProvider(new BouncyCastleProvider());}
-
 
     private static enum Action {
         listSlots,
@@ -206,7 +260,7 @@ public class P11NgCli {
         generateAndWrapKeyPair,
         unwrapAndSign,
         deleteKeyStoreEntryByAlias,
-        deleteObjects,
+        deleteObject,
         generateKeyPair,
         signPerformanceTest,
         unwrapPerformanceTest,
@@ -221,19 +275,6 @@ public class P11NgCli {
     private static enum Method {
         pkcs11,
         provider
-    }
-    
-    public static void main(String[] args) throws CryptoTokenOfflineException {
-        final P11NgCli cli = new P11NgCli();
-        try {
-            cli.execute(args);
-            System.exit(exitCode);
-        } catch (ParseException ex) {
-            System.err.println(ex.getMessage());
-            System.err.println(cli.getUsages());
-
-            System.exit(-2);
-        }
     }
     
     public String getUsages() {
@@ -262,48 +303,33 @@ public class P11NgCli {
             .append("r) ").append(COMMAND).append(" -libfile /opt/ETcpsdk/lib/linux-x86_64/libctsw.so -action restoreObject -slot 0 -user_and_pin USR_0000,foo123 -user2_and_pin USR_0001,foo123 -object_spec_id 1 -backupFile /tmp/backupkey1").append(NL);
         
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        final HelpFormatter formatter = new HelpFormatter();
-        
-        PrintWriter pw = new PrintWriter(bout);
-        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "p11ng-tool [options]",  getDescription(), OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, footer.toString());
-        pw.close();
-        
         return bout.toString();
     }
     
-    public String getDescription() {
+    @Override
+    public String getCommandDescription() {
         return "P11NG commands";
     }
     
-    public void execute(String[] args) throws ParseException, CryptoTokenOfflineException {
-        final CommandLine commandLine = new GnuParser().parse(OPTIONS, args);
+    @Override 
+    public CommandResult execute(ParameterContainer parameters) {
+        log.trace(">executeCommand");
         
-        final String lib;
-        if (commandLine.hasOption(LIBFILE)) { 
-            lib = commandLine.getOptionValue(LIBFILE);
-        } else {
-            throw new ParseException("Missing: " + LIBFILE);
-        }
-        
-        final Action action;
-        if (commandLine.hasOption(ACTION)) { 
-            action = Action.valueOf(commandLine.getOptionValue(ACTION));
-        } else {
-            throw new ParseException("Missing: " + ACTION);
-        }
+        final String lib = parameters.get(LIBFILE);
+        final Action action = Action.valueOf(parameters.get(ACTION));
 
         // Doesn't seem to work, anyway...
         System.setProperty("jna.debug_load", "true");
         System.setProperty("jna.nosys", "true");
         System.setProperty("CS_AUTH_KEYS", "C:\\Users\\tarmo\\Desktop\\cs0000.key");
      
-        LOG.debug("Action: " + action);
+        log.debug("Action: " + action);
         
         try {
             final File library = new File(lib);
             final String libDir = library.getParent();
             final String libName = library.getName();
-            LOG.debug("Adding search path: " + libDir);
+            log.debug("Adding search path: " + libDir);
             NativeLibrary.addSearchPath(libName, libDir);
             JNAiNative jnaiNative = (JNAiNative) Native.loadLibrary(libName, JNAiNative.class);
             ce = new CEi(new Ci(new JNAi(jnaiNative)));
@@ -330,10 +356,7 @@ public class P11NgCli {
                 }
                 
                 case showSlotInfo: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     ce.Initialize();
                     CK_SLOT_INFO info = ce.GetSlotInfo(slotId);
                     System.out.println("info: " + info);
@@ -341,25 +364,21 @@ public class P11NgCli {
                 }
                 
                 case showTokenInfo: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     ce.Initialize();
                     CK_TOKEN_INFO info = ce.GetTokenInfo(slotId);
                     System.out.println("info: " + info);
                     break;
                 }
                 case showAttributeInfo: {
-                    checkForCommandLineOptions(commandLine);
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
-                    final String alias = commandLine.getOptionValue(ALIAS);
+                    final String alias = parameters.get(ALIAS);
                     // Getting the key if it exist on the slot with the provided alias
                     // Final long key = getKeyIfExists(commandLine, slot, alias); 
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
                     long[] privateObjects = ce.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.LABEL, alias));
                     System.out.println("Size of the privateObjects array is " + privateObjects.length);
                     for (long object : privateObjects) {
@@ -368,20 +387,13 @@ public class P11NgCli {
                     break;
                 }
                 case listObjects: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     ce.Initialize();
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
                     
                     // tmp - remove later
                     //long slot = ce.GetSlot("RootCA");
-                    
-                    if (commandLine.hasOption(PIN)) {
-                        ce.Login(session, CKU.USER, commandLine.getOptionValue(PIN).getBytes());
-                    }            
-                    
+                    ce.Login(session, CKU.USER, parameters.get(PIN).getBytes());
                     long[] privateObjects = ce.FindObjects(session, new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
                     System.out.println("Private Key Objects: " +  Arrays.toString(privateObjects));
                     StringBuilder buff = new StringBuilder();
@@ -417,24 +429,21 @@ public class P11NgCli {
                     break;
                 }
                 case listKeyStoreEntries: {
-                    LOG.debug("Using provider");
+                    log.debug("Using provider");
 
                     Security.addProvider(new BouncyCastleProvider());
-                    
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
                     
-                    if (commandLine.hasOption(PIN)) {
-                        slot.login(commandLine.getOptionValue(PIN));
+                    Enumeration<SlotEntry> e = null;
+                    try {
+                        e = slot.aliases();
+                    } catch (CryptoTokenOfflineException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
                     }
-                                    
-                    final Enumeration<SlotEntry> e = slot.aliases();
                     final StringBuilder buff = new StringBuilder();
                     while (e.hasMoreElements()) {
                         final SlotEntry slotEntry  = e.nextElement();                
@@ -461,49 +470,25 @@ public class P11NgCli {
                     break;
                 }
                 case generateKey: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(ALIAS)) {
-                        throw new ParseException("Missing " + ALIAS);
-                    }
-                    final String alias = commandLine.getOptionValue(ALIAS);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String alias = parameters.get(ALIAS);
 
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
-                    slot.login(commandLine.getOptionValue(PIN));                  
-
+                    slot.login(parameters.get(PIN));                  
                     slot.generateKey(CKM.AES_KEY_GEN, 128, alias);
-
                     System.out.println("Generated wrapKey" + " with alias " + alias);
-
                     break;
                 }
                 case generateAndWrapKeyPair: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(WRAPKEY)) {
-                        throw new ParseException("Missing " + WRAPKEY);
-                    }
-                    final String wrapkey = commandLine.getOptionValue(WRAPKEY);
-                    final boolean selfCert = commandLine.hasOption(SELFCERT);
-                    if (!commandLine.hasOption(ALIAS)) {
-                        throw new ParseException("Missing " + ALIAS);
-                    }
-                    final String alias = commandLine.getOptionValue(ALIAS);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String wrapkey = parameters.get(WRAPKEY);
+                    final boolean selfCert = Boolean.getBoolean(parameters.get(SELFCERT));
+                    final String alias = parameters.get(ALIAS);
 
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
-                    slot.login(commandLine.getOptionValue(PIN));                    
+                    slot.login(parameters.get(PIN));                    
 
                     GeneratedKeyData generatedKeyData = slot.generateWrappedKey(wrapkey, "RSA", "2048", CKM.AES_CBC_PAD);
 
@@ -521,7 +506,7 @@ public class P11NgCli {
                         rsaPublicKey = new RSAPublicKey(rsaPublicKeyStructure.getModulus(), rsaPublicKeyStructure.getPublicExponent());
                         System.out.println("Public key: " + new String(Base64.encode(rsaPublicKey.getEncoded())));
                     } catch (IOException ex) {
-                        LOG.error("IO error while generating wrapped key ", ex);
+                        log.error("IO error while generating wrapped key ", ex);
                         System.err.println("IO error while generating wrapped key " + ex.getMessage());
                         break;
                     }
@@ -551,7 +536,7 @@ public class P11NgCli {
                             System.out.println("Self signed certificate for generated wrapped key pair alias: " + alias);
                             System.out.println(pemCertificates);
                         } catch (IOException | OperatorCreationException ex) {
-                            LOG.error("Self signed certificate creation failed: ", ex);
+                            log.error("Self signed certificate creation failed: ", ex);
                             System.err.println("Self signed certificate creation failed: " + ex.getMessage());
                         } finally {
                             if (privateKey != null) {
@@ -562,60 +547,36 @@ public class P11NgCli {
                     break;
                 }
                 case unwrapAndSign: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(UNWRAPKEY)) {
-                        throw new ParseException("Missing " + UNWRAPKEY);
-                    }
-                    final String unwrapkey = commandLine.getOptionValue(UNWRAPKEY);
-                    if (!commandLine.hasOption(PRIVATEKEY)) {
-                        throw new ParseException("Missing " + PRIVATEKEY);
-                    }
-                    final String wrapped = commandLine.getOptionValue(PRIVATEKEY);
-                    if (!commandLine.hasOption(PUBLICKEY)) {
-                        throw new ParseException("Missing " + PUBLICKEY);
-                    }
-                    final String publickey = commandLine.getOptionValue(PUBLICKEY);
-                    if (!commandLine.hasOption(PLAINTEXT)) {
-                        throw new ParseException("Missing " + PLAINTEXT);
-                    }
-                    final String plaintext = commandLine.getOptionValue(PLAINTEXT);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String unwrapkey = parameters.get(UNWRAPKEY);
+                    final String wrapped = parameters.get(PRIVATEKEY);
+                    final String publickey = parameters.get(PUBLICKEY);
+                    final String plaintext = parameters.get(PLAINTEXT);
                     try {
                         RSAPublicKey rsa = RSAPublicKey.getInstance(new ASN1InputStream(Base64.decode(publickey.getBytes())).readObject());
                         PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(rsa.getModulus(), rsa.getPublicExponent()));
 
-                        if (commandLine.hasOption(METHOD) && Method.valueOf(commandLine.getOptionValue(METHOD)) == Method.provider) {
-                            unwrapAndSignUsingProvider(libName, libDir, slotId, commandLine.getOptionValue(PIN), unwrapkey, wrapped, plaintext, publicKey);
+                        if (!StringUtils.isBlank(parameters.get(METHOD)) && Method.valueOf(parameters.get(METHOD)) == Method.provider) {
+                            unwrapAndSignUsingProvider(libName, libDir, slotId, parameters.get(PIN), unwrapkey, wrapped, plaintext, publicKey);
                         } else {
-                            unwrapAndSignUsingPKCS11(slotId, commandLine.getOptionValue(PIN), unwrapkey, wrapped, plaintext, publicKey);
+                            unwrapAndSignUsingPKCS11(slotId, parameters.get(PIN), unwrapkey, wrapped, plaintext, publicKey);
                         }
 
                     } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException | InvalidKeySpecException | IOException ex) {
-                        LOG.error("unwrapAndSign failed:", ex);
+                        log.error("unwrapAndSign failed:", ex);
                         System.err.println("unwrapAndSign failed: " + ex.getMessage());
                     }
                     
                     break;
                 }
                 case deleteKeyStoreEntryByAlias: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(ALIAS)) {
-                        throw new ParseException("Missing " + ALIAS);
-                    }
-                    final String alias = commandLine.getOptionValue(ALIAS);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String alias = parameters.get(ALIAS);
 
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
-                    if (commandLine.hasOption(PIN)) {
-                        slot.login(commandLine.getOptionValue(PIN));
+                    if (!StringUtils.isBlank(parameters.get(PIN))) {
+                        slot.login(parameters.get(PIN));
                     }
 
                     if (slot.removeKey(alias)) {
@@ -626,45 +587,23 @@ public class P11NgCli {
 
                     break;
                 }
-                case deleteObjects: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(OBJECT)) {
-                        throw new ParseException("Missing " + OBJECT);
-                    }
-                    final String[] objectIds = commandLine.getOptionValues(OBJECT);
+                case deleteObject: {
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String objectId = parameters.get(OBJECT);
                     ce.Initialize();
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    ce.Login(session, CKU.USER, commandLine.getOptionValue(PIN).getBytes());                    
-
-                    for (String objectId : objectIds) {
-                        System.out.println("Destroying object " + objectId);
-                        ce.DestroyObject(session, Long.parseLong(objectId));
-                    }
-
+                    ce.Login(session, CKU.USER, parameters.get(PIN).getBytes());                    
+                    System.out.println("Destroying object " + objectId);
+                    ce.DestroyObject(session, Long.parseLong(objectId));
                     break;
                 }
                 case generateKeyPair: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(ALIAS)) {
-                        throw new ParseException("Missing " + ALIAS);
-                    }
-                    final String alias = commandLine.getOptionValue(ALIAS);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String alias = parameters.get(ALIAS);
                     
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     final CryptokiDevice.Slot slot = device.getSlot(slotId);
-                    slot.login(commandLine.getOptionValue(PIN));       
+                    slot.login(parameters.get(PIN));       
                     
                     final Map<Long, Object> publicAttributesMap = new HashMap<>();
                     final Map<Long, Object> privateAttributesMap = new HashMap<>();
@@ -675,7 +614,7 @@ public class P11NgCli {
                     try {
                         slot.generateKeyPair("RSA", "2048", alias, false, publicAttributesMap, privateAttributesMap, null, true);
                     } catch (CertificateException | OperatorCreationException ex) {
-                        LOG.error("Key generation failed! ", ex);
+                        log.error("Key generation failed! ", ex);
                         System.err.println("Key generation failed! " + ex.getMessage()); 
                     }
 
@@ -684,135 +623,119 @@ public class P11NgCli {
                     break;
                 }
                 case signPerformanceTest: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final String pin = commandLine.getOptionValue(PIN);
-                    if (!commandLine.hasOption(ALIAS)) {
-                        throw new ParseException("Missing " + ALIAS);
-                    }
-                    final String alias = commandLine.getOptionValue(ALIAS);
-
-                    String signatureAlgorithm = commandLine.getOptionValue(SIGNATUREALGORITHM);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String pin = parameters.get(PIN);
+                    final String alias = parameters.get(ALIAS);
+                    String signatureAlgorithm = parameters.get(SIGNATUREALGORITHM);
                     if (signatureAlgorithm == null) {
                         signatureAlgorithm = "SHA256withRSA";
                     }
 
-                    final String threadsString = commandLine.getOptionValue(THREADS, Integer.toString(1));
-                    final int numThreads;
-                    final int warmupTime;
-                    final int timeLimit;
+                    final String threadsString = parameters.get(THREADS);
+                    int numThreads = 0;
+                    int warmupTime = 0;
+                    int timeLimit = 0;
                     
                     try {
                         numThreads = Integer.parseInt(threadsString);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("Illegal number of threads: " + threadsString);
+                        log.error("Illegal number of threads: " + threadsString);
                     }
                     
                     if (numThreads < 1) {
-                        throw new ParseException("Illegal number of threads: " + threadsString);
+                        log.error("Illegal number of threads: " + threadsString);
                     }
                     
-                    final String warmupTimeString = commandLine.getOptionValue(WARMUPTIME, Integer.toString(0));
+                    final String warmupTimeString = parameters.get(WARMUPTIME);
                     try {
                         warmupTime = Integer.parseInt(warmupTimeString);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("Illegal warmup time: " + warmupTimeString);
+                        log.error("Illegal warmup time: " + warmupTimeString);
                     }
                     
                     if (warmupTime < 0) {
-                        throw new ParseException("Warmup time can not be negative");
+                        log.error("Warmup time can not be negative");
                     }
                     
-                    final String timeLimitString = commandLine.getOptionValue(TIMELIMIT);
+                    final String timeLimitString = parameters.get(TIMELIMIT);
                     
                     if (timeLimitString != null) {
                         try {
                             timeLimit = Integer.parseInt(timeLimitString);
                             
                             if (timeLimit < 0) {
-                                throw new ParseException("Time limit can not be negative");
+                                log.error("Time limit can not be negative");
                             }
                         } catch (NumberFormatException ex) {
-                            throw new ParseException("Illegal time limit: " + timeLimitString);
+                            log.error("Illegal time limit: " + timeLimitString, ex);
                         }
                     } else {
                         timeLimit = -1;
                     }
 
-                    boolean useCache = Boolean.parseBoolean(commandLine.getOptionValue(USE_CACHE, DEFAULT_PROPERTY_USE_CACHE));
+                    boolean useCache = Boolean.parseBoolean(parameters.get(USE_CACHE));
 
                     try {
                         runSignPerformanceTest(alias, libName, libDir, slotId, pin,
                                        numThreads, warmupTime, timeLimit, useCache, signatureAlgorithm);
                     } catch (InterruptedException ex) {
-                        LOG.error("Failed to start: " + ex.getMessage());
+                        log.error("Failed to start: " + ex.getMessage());
                         exitCode = -1;
                     }
                     break;
                 }
                 case oneTimePerformanceTest: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final String pin = commandLine.getOptionValue(PIN);                
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String pin = parameters.get(PIN);                
 
-                    String signatureAlgorithm = commandLine.getOptionValue(SIGNATUREALGORITHM);
+                    String signatureAlgorithm = parameters.get(SIGNATUREALGORITHM);
                     if (signatureAlgorithm == null) {
                         signatureAlgorithm = "SHA256withRSA";
                     }
 
-                    final String threadsString = commandLine.getOptionValue(THREADS, Integer.toString(1));
-                    final int numThreads;
-                    final int warmupTime;
-                    final int timeLimit;
+                    final String threadsString = parameters.get(THREADS);
+                    int numThreads = 0;
+                    int warmupTime = 0;
+                    int timeLimit = 0;
                     
                     try {
                         numThreads = Integer.parseInt(threadsString);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("Illegal number of threads: " + threadsString);
+                        log.error("Illegal number of threads: " + threadsString, e);
                     }
                     
                     if (numThreads < 1) {
-                        throw new ParseException("Illegal number of threads: " + threadsString);
+                        log.error("Illegal number of threads: " + threadsString);
                     }
                     
-                    final String warmupTimeString = commandLine.getOptionValue(WARMUPTIME, Integer.toString(0));
+                    final String warmupTimeString = parameters.get(WARMUPTIME);
                     try {
                         warmupTime = Integer.parseInt(warmupTimeString);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("Illegal warmup time: " + warmupTimeString);
+                        log.error("Illegal warmup time: " + warmupTimeString);
                     }
                     
                     if (warmupTime < 0) {
-                        throw new ParseException("Warmup time can not be negative");
+                        log.info("Warmup time can not be negative");
                     }
                     
-                    final String timeLimitString = commandLine.getOptionValue(TIMELIMIT);
+                    final String timeLimitString = parameters.get(TIMELIMIT);
                     
                     if (timeLimitString != null) {
                         try {
                             timeLimit = Integer.parseInt(timeLimitString);
                             
                             if (timeLimit < 0) {
-                                throw new ParseException("Time limit can not be negative");
+                                log.info("Time limit can not be negative");
                             }
                         } catch (NumberFormatException ex) {
-                            throw new ParseException("Illegal time limit: " + timeLimitString);
+                            log.info("Illegal time limit: " + timeLimitString);
                         }
                     } else {
                         timeLimit = -1;
                     }
 
-                    boolean useCache = Boolean.parseBoolean(commandLine.getOptionValue(USE_CACHE, DEFAULT_PROPERTY_USE_CACHE));
+                    boolean useCache = Boolean.parseBoolean(parameters.get(USE_CACHE));
                     
                     // For simplicity we skip overriding the default attributes.
                     Properties attributesConfig;
@@ -823,101 +746,82 @@ public class P11NgCli {
                         oneTimePerformanceTest(libName, libDir, slotId, pin,
                                        numThreads, warmupTime, timeLimit, useCache, signatureAlgorithm, publicAttributesMap, privateAttributesMap);
                     } catch (InterruptedException ex) {
-                        LOG.error("Failed to start: " + ex.getMessage());
+                        log.error("Failed to start: " + ex.getMessage());
                         exitCode = -1;
                     }
                     break;
                 }                
                 case unwrapPerformanceTest: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
-                    if (!commandLine.hasOption(PIN)) {
-                        throw new ParseException("Missing " + PIN);
-                    }
-                    final String pin = commandLine.getOptionValue(PIN);
-                    if (!commandLine.hasOption(WRAPKEY)) {
-                        throw new ParseException("Missing " + WRAPKEY);
-                    }
-                    final String wrapkey = commandLine.getOptionValue(WRAPKEY);
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String pin = parameters.get(PIN);
+                    final String wrapkey = parameters.get(WRAPKEY);
                     
-                    String signatureAlgorithm = commandLine.getOptionValue(SIGNATUREALGORITHM);
+                    String signatureAlgorithm = parameters.get(SIGNATUREALGORITHM);
                     if (signatureAlgorithm == null) {
                         signatureAlgorithm = "SHA256withRSA";
                     }
                     
-                    final String threadsString = commandLine.getOptionValue(THREADS, Integer.toString(1));
-                    final int numThreads;
-                    final int warmupTime;
-                    final int timeLimit;
+                    final String threadsString = parameters.get(THREADS);
+                    int numThreads = 0;
+                    int warmupTime = 0;
+                    int timeLimit = 0;
                     
                     try {
                         numThreads = Integer.parseInt(threadsString);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("Illegal number of threads: " + threadsString);
+                        log.info("Illegal number of threads: " + threadsString);
                     }
                     
                     if (numThreads < 1) {
-                        throw new ParseException("Illegal number of threads: " + threadsString);
+                        log.info("Illegal number of threads: " + threadsString);
                     }
                     
-                    final String warmupTimeString = commandLine.getOptionValue(WARMUPTIME, Integer.toString(0));
+                    final String warmupTimeString = parameters.get(WARMUPTIME);
                     try {
                         warmupTime = Integer.parseInt(warmupTimeString);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("Illegal warmup time: " + warmupTimeString);
+                        log.info("Illegal warmup time: " + warmupTimeString);
                     }
                     
                     if (warmupTime < 0) {
-                        throw new ParseException("Warmup time can not be negative");
+                        log.info("Warmup time can not be negative");
                     }
                     
-                    final String timeLimitString = commandLine.getOptionValue(TIMELIMIT);
+                    final String timeLimitString = parameters.get(TIMELIMIT);
                     
                     if (timeLimitString != null) {
                         try {
                             timeLimit = Integer.parseInt(timeLimitString);
                             
                             if (timeLimit < 0) {
-                                throw new ParseException("Time limit can not be negative");
+                                log.error("Time limit can not be negative");
                             }
                         } catch (NumberFormatException ex) {
-                            throw new ParseException("Illegal time limit: " + timeLimitString);
+                            log.error("Illegal time limit: " + timeLimitString);
                         }
                     } else {
                         timeLimit = -1;
                     }
                     
-                    boolean useCache = Boolean.parseBoolean(commandLine.getOptionValue(USE_CACHE, DEFAULT_PROPERTY_USE_CACHE));
+                    boolean useCache = Boolean.parseBoolean(parameters.get(USE_CACHE));
                     
                     try {
                         runUnwrapPerformanceTest(wrapkey, libName, libDir, slotId, pin,
                                                  numThreads, warmupTime, timeLimit, 
                                                  signatureAlgorithm, useCache);
                     } catch (InterruptedException ex) {
-                        LOG.error("Failed to start: " + ex.getMessage());
+                        log.error("Failed to start: " + ex.getMessage());
                         exitCode = -1;
                     }
                     break;
                 }
                 case keyAuthorizationInit:{
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
+                    final String alias = parameters.get(ALIAS);
+                    final String kakFilePath = parameters.get(KAK_FILE_PATH);
                     
-                    checkForCommandLineOptions(commandLine);
-                    if (!commandLine.hasOption(KAK_FILE_PATH)) {
-                        throw new ParseException("Missing " + KAK_FILE_PATH);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
-
-                    final String alias = commandLine.getOptionValue(ALIAS);
-                    final String kakFilePath = commandLine.getOptionValue(KAK_FILE_PATH);
-                    // Getting the key if it exist on the HSM slot with the provided alias
-                    
-
-                    
-                    //final long keyFromHSM = getKeyIfExists(commandLine, slot, alias);
                     
                     // KAK generation part
                     KeyPair kakPair = generateKeyPair(); 
@@ -928,7 +832,7 @@ public class P11NgCli {
                     try { 
                     	savePrivateKey(kakFilePath, kakPrivateKey);
                     } catch (IOException e) {
-                    	LOG.error("IOException happened while saving the kak private key on the disk!", e);
+                    	log.error("IOException happened while saving the kak private key on the disk!", e);
                     }
                     
                     RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
@@ -967,7 +871,7 @@ public class P11NgCli {
                     params.bAssigned = KEY_AUTHORIZATION_ASSIGNED;
                     
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
                     
                     params.write(); // Write data before passing structure to function
 					CKM mechanism = new CKM(CKM.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
@@ -989,7 +893,7 @@ public class P11NgCli {
 						initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey);
 					} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
 						     | InvalidAlgorithmParameterException | SignatureException e) {
-						LOG.error("Error happened while signing the hash!", e);
+						log.error("Error happened while signing the hash!", e);
 					}
 
                     long rvAuthorizeKey = ce.authorizeKey(session, initSig, initSig.length);
@@ -1002,21 +906,12 @@ public class P11NgCli {
                     break;
                 }
                 case keyAuthorization: {
-                    checkForCommandLineOptions(commandLine);
-                    if (!commandLine.hasOption(KAK_FILE_PATH)) {
-                        throw new ParseException("Missing " + KAK_FILE_PATH);
-                    }
-                    
-                    if (commandLine.hasOption(MAX_OPERATIONS)) {
-                    	AUTH_CTR = Long.valueOf(commandLine.getOptionValue(MAX_OPERATIONS));
-                    }
-                    
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
                     
-                    final String alias = commandLine.getOptionValue(ALIAS);
-                    final String kakFilePath = commandLine.getOptionValue(KAK_FILE_PATH);
+                    final String alias = parameters.get(ALIAS);
+                    final String kakFilePath = parameters.get(KAK_FILE_PATH);
                     
                     CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
                     
@@ -1029,7 +924,7 @@ public class P11NgCli {
                     long hashLen = hash.length;
                     
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
                     
                     long[] privateKeyObjects = getPrivateKeyFromHSM(slot, alias);
                     
@@ -1044,7 +939,7 @@ public class P11NgCli {
                     try {
                     	kakPrivateKey = loadPrivateKey(kakFilePath, "RSA");
                     } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-						LOG.error("Error happened while loading the kak key pair from disk!", e);
+						log.error("Error happened while loading the kak key pair from disk!", e);
                     }
 
                     byte[] authSig = new byte[bitsToBytes(KAK_SIZE)];
@@ -1052,7 +947,7 @@ public class P11NgCli {
                     	authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey);
 					} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
 							 | InvalidAlgorithmParameterException | SignatureException e) {
-						LOG.error("Error happened while signing the hash!", e);
+						log.error("Error happened while signing the hash!", e);
 					}
                     
                     long rvAuthorizeKey = ce.authorizeKey(session, authSig, authSig.length);
@@ -1065,16 +960,15 @@ public class P11NgCli {
                     break;
                 }
                 case unblockKey: {
-                    checkForCommandLineOptions(commandLine);
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     CryptokiDevice.Slot slot = device.getSlot(slotId);
-                    final String alias = commandLine.getOptionValue(ALIAS);
+                    final String alias = parameters.get(ALIAS);
                     // Getting the key if it exist on the slot with the provided alias
                     long[] privateKeyObjects = getPrivateKeyFromHSM(slot, alias);
                     
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
                     long rvUnblockKey = ce.unblockKey(session, privateKeyObjects[0]);
                     if (rvUnblockKey != CKR.OK) {
                     	cleanUp(session);
@@ -1083,26 +977,13 @@ public class P11NgCli {
                     cleanUp(session);
                     break;
                 } case backupObject: {
-                    if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(USER_AND_PIN)) {
-                        throw new ParseException("Missing " + USER_AND_PIN);
-                    }
-                    if (!commandLine.hasOption(OBJECT_SPEC_ID)) {
-                        throw new ParseException("Missing " + OBJECT_SPEC_ID);
-                    }
-                    if (!commandLine.hasOption(BACKUPFILE)) {
-                        throw new ParseException("Missing " + BACKUPFILE);
-                    }
-                    
-                	final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                	final long slotId = Long.parseLong(parameters.get(SLOT));
                     CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     device.getSlot(slotId);                    
                     
                     long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
-                    long objectHandle = Long.parseLong(commandLine.getOptionValue(OBJECT_SPEC_ID));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    long objectHandle = Long.parseLong(parameters.get(OBJECT_SPEC_ID));
                     
                     PToPBackupObj ppBackupObj = new PToPBackupObj(null);
                     LongByReference backupObjectLength = new LongByReference();
@@ -1111,39 +992,24 @@ public class P11NgCli {
                     
                     int length = (int) backupObjectLength.getValue();
                     byte[] resultBytes = ppBackupObj.getValue().getByteArray(0, length);
-                    final String backupFile = commandLine.getOptionValue(BACKUPFILE);
+                    final String backupFile = parameters.get(BACKUPFILE);
                     
                     write2File(resultBytes, backupFile);
                     cleanUp(session);
                     break;
                 } case restoreObject: {
-                	if (!commandLine.hasOption(SLOT)) {
-                        throw new ParseException("Missing " + SLOT);
-                    }
-                    if (!commandLine.hasOption(USER_AND_PIN)) {
-                        throw new ParseException("Missing " + USER_AND_PIN);
-                    }
-                    if (!commandLine.hasOption(USER2_AND_PIN)) {
-                        throw new ParseException("Missing " + USER2_AND_PIN);
-                    }
-                    if (!commandLine.hasOption(OBJECT_SPEC_ID)) {
-                        throw new ParseException("Missing " + OBJECT_SPEC_ID);
-                    }
-                    if (!commandLine.hasOption(BACKUPFILE)) {
-                        throw new ParseException("Missing " + BACKUPFILE);
-                    }
-                    final long slotId = Long.parseLong(commandLine.getOptionValue(SLOT));
+                    final long slotId = Long.parseLong(parameters.get(SLOT));
                     final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
                     device.getSlot(slotId); // Initialize slot
                     final long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);                    
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
-                    ce.Login(session, CKU.CKU_CS_GENERIC, commandLine.getOptionValue(USER2_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER_AND_PIN).getBytes(StandardCharsets.UTF_8));
+                    ce.Login(session, CKU.CKU_CS_GENERIC, parameters.get(USER2_AND_PIN).getBytes(StandardCharsets.UTF_8));
                     
-                    final Path filePath = Paths.get(commandLine.getOptionValue(BACKUPFILE));
+                    final Path filePath = Paths.get(parameters.get(BACKUPFILE));
                     final byte[] bytes = Files.readAllBytes(filePath);
                     final long flags = 0; // alternative value here would be something called "CXI_KEY_FLAG_VOLATILE" but this causes 0x00000054: FUNCTION_NOT_SUPPORTED
                     
-                    final long objectHandle = Long.parseLong(commandLine.getOptionValue(OBJECT_SPEC_ID));
+                    final long objectHandle = Long.parseLong(parameters.get(OBJECT_SPEC_ID));
                     ce.restoreObject(session, flags, bytes, objectHandle);
                     /*
                       CK_SESSION_HANDLE     hSession,
@@ -1160,7 +1026,8 @@ public class P11NgCli {
             e.printStackTrace();
         } finally {
             // CE.Finalize();
-        }      
+        }
+        return CommandResult.SUCCESS;      
     }
 
     private long[] getPrivateKeyFromHSM(CryptokiDevice.Slot slot, final String alias) {
@@ -1169,8 +1036,8 @@ public class P11NgCli {
         if (privateKeyObjects.length == 0) {
             throw new IllegalStateException("No private key found for alias '" + alias + "'");
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+        if (log.isDebugEnabled()) {
+            log.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
         }
         return privateKeyObjects;
     }
@@ -1188,7 +1055,7 @@ public class P11NgCli {
             kf = KeyFactory.getInstance("RSA");
             spec = kf.getKeySpec(key, KeySpec.class);
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
-        	LOG.error("Error happened while getting the key spec!", e);
+        	log.error("Error happened while getting the key spec!", e);
         }
         return spec;
 	}
@@ -1198,7 +1065,7 @@ public class P11NgCli {
         try {
             kpg = KeyPairGenerator.getInstance("RSA", "BC");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-        	LOG.error("Error happened while generationg the key pair!", e);
+        	log.error("Error happened while generationg the key pair!", e);
         }
         kpg.initialize(KAK_SIZE);
         return kpg.generateKeyPair();
@@ -1208,7 +1075,7 @@ public class P11NgCli {
 	    final Path pathToKeyDirectory = Paths.get(path);
 
 	    if(Files.notExists(pathToKeyDirectory)){
-	        LOG.info("Target directory \"" + path + "\" will be created.");
+	        log.info("Target directory \"" + path + "\" will be created.");
 	        Files.createDirectories(pathToKeyDirectory);
 	    }
 		// Store Private Key.
@@ -1256,7 +1123,7 @@ public class P11NgCli {
         try (OutputStream os = new FileOutputStream(new File(filePath))) {
             os.write(bytes);
         } catch (Exception e) {
-        	LOG.error("Error happened while writing key to file!", e);
+        	log.error("Error happened while writing key to file!", e);
         }
     }
 
@@ -1288,8 +1155,8 @@ public class P11NgCli {
         Thread shutdownHook = new Thread() {
             @Override
             public void run() {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Shutdown hook called");
+                if (log.isDebugEnabled()) {
+                    log.debug("Shutdown hook called");
                 }
                 shutdown(threads, warmupTime);
             }
@@ -1306,7 +1173,7 @@ public class P11NgCli {
                 }
 
                 // Print message
-                LOG.error("   " + message);
+                log.error("   " + message);
                 exitCode = -1;
             }
         };
@@ -1323,8 +1190,8 @@ public class P11NgCli {
         startTime = System.currentTimeMillis();
         
         for (int i = 0; i < numberOfThreads; i++) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("thread: " + i);
+            if (log.isDebugEnabled()) {
+                log.debug("thread: " + i);
             }
             threads[i].start();
         }
@@ -1332,17 +1199,17 @@ public class P11NgCli {
         // Wait for the threads to finish
         try {
             for (final TestSignThread w : threads) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Waiting for thread " + w.getName());
+                if (log.isDebugEnabled()) {
+                    log.debug("Waiting for thread " + w.getName());
                 }
                 w.join();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Thread " + w.getName() + " stopped");
+                if (log.isDebugEnabled()) {
+                    log.debug("Thread " + w.getName() + " stopped");
                 }
             }
         } catch (InterruptedException ex) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Interupted when waiting for thread: " + ex.getMessage());
+            if (log.isDebugEnabled()) {
+                log.debug("Interupted when waiting for thread: " + ex.getMessage());
             }
         }
     }
@@ -1358,8 +1225,8 @@ public class P11NgCli {
         Thread shutdownHook = new Thread() {
             @Override
             public void run() {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Shutdown hook called");
+                if (log.isDebugEnabled()) {
+                    log.debug("Shutdown hook called");
                 }
                 shutdown(threads, warmupTime);
             }
@@ -1376,7 +1243,7 @@ public class P11NgCli {
                 }
 
                 // Print message
-                LOG.error("   " + message);
+                log.error("   " + message);
                 exitCode = -1;
             }
         };
@@ -1393,8 +1260,8 @@ public class P11NgCli {
         startTime = System.currentTimeMillis();
         
         for (int i = 0; i < numberOfThreads; i++) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("thread: " + i);
+            if (log.isDebugEnabled()) {
+                log.debug("thread: " + i);
             }
             threads[i].start();
         }
@@ -1402,17 +1269,17 @@ public class P11NgCli {
         // Wait for the threads to finish
         try {
             for (final OneTimeThread w : threads) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Waiting for thread " + w.getName());
+                if (log.isDebugEnabled()) {
+                    log.debug("Waiting for thread " + w.getName());
                 }
                 w.join();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Thread " + w.getName() + " stopped");
+                if (log.isDebugEnabled()) {
+                    log.debug("Thread " + w.getName() + " stopped");
                 }
             }
         } catch (InterruptedException ex) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Interupted when waiting for thread: " + ex.getMessage());
+            if (log.isDebugEnabled()) {
+                log.debug("Interupted when waiting for thread: " + ex.getMessage());
             }
         }
     }
@@ -1429,8 +1296,8 @@ public class P11NgCli {
         Thread shutdownHook = new Thread() {
             @Override
             public void run() {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Shutdown hook called");
+                if (log.isDebugEnabled()) {
+                    log.debug("Shutdown hook called");
                 }
                 shutdown(threads, warmupTime);
             }
@@ -1447,7 +1314,7 @@ public class P11NgCli {
                 }
 
                 // Print message
-                LOG.error("   " + message);
+                log.error("   " + message);
                 exitCode = -1;
             }
         };
@@ -1473,8 +1340,8 @@ public class P11NgCli {
         startTime = System.currentTimeMillis();
         
         for (int i = 0; i < numberOfThreads; i++) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("thread: " + i);
+            if (log.isDebugEnabled()) {
+                log.debug("thread: " + i);
             }
             threads[i].start();
         }
@@ -1482,17 +1349,17 @@ public class P11NgCli {
         // Wait for the threads to finish
         try {
             for (final UnwrapThread w : threads) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Waiting for thread " + w.getName());
+                if (log.isDebugEnabled()) {
+                    log.debug("Waiting for thread " + w.getName());
                 }
                 w.join();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Thread " + w.getName() + " stopped");
+                if (log.isDebugEnabled()) {
+                    log.debug("Thread " + w.getName() + " stopped");
                 }
             }
         } catch (InterruptedException ex) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Interupted when waiting for thread: " + ex.getMessage());
+            if (log.isDebugEnabled()) {
+                log.debug("Interupted when waiting for thread: " + ex.getMessage());
             }
         }
     }
@@ -1511,11 +1378,11 @@ public class P11NgCli {
                 final OperationsThread thread = threads[i];
                 thread.join();
                 final int numberOfOperations = thread.getNumberOfOperations();
-                LOG.info("Number of operations for thread " + i + ": " + numberOfOperations);
+                log.info("Number of operations for thread " + i + ": " + numberOfOperations);
                 totalOperationsPerformed += thread.getNumberOfOperations();
             }
         } catch (InterruptedException ex) {
-            LOG.error("Interrupted: " + ex.getMessage());
+            log.error("Interrupted: " + ex.getMessage());
         }
         
         long totalRunTime = System.currentTimeMillis() - startTime - warmupTime;
@@ -1527,8 +1394,8 @@ public class P11NgCli {
         }
         
         
-        LOG.info("Total number of signings: " + totalOperationsPerformed);
-        LOG.info("Signings per second: " + tps);
+        log.info("Total number of signings: " + totalOperationsPerformed);
+        log.info("Signings per second: " + tps);
     }
 
     private static void printGeneralObjectInfo(StringBuilder buff, long object, long session) {
@@ -1568,7 +1435,7 @@ public class P11NgCli {
     } 
 
     private void unwrapAndSignUsingPKCS11(final long slotId, final String pin, final String unwrapkey, final String wrapped, final String plaintext, final PublicKey publicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
-        LOG.debug("Using p11");
+        log.debug("Using p11");
         
         ce.Initialize();
         long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
@@ -1616,7 +1483,7 @@ public class P11NgCli {
     }
 
     private void unwrapAndSignUsingProvider(final String libName, final String libDir, final long slotId, final String pin, final String unwrapkey, final String wrapped, final String plaintext, final PublicKey publicKey) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException, NoSuchProviderException {
-        LOG.debug("Using provider");
+        log.debug("Using provider");
         CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
         CryptokiDevice.Slot slot = device.getSlot(slotId);
         slot.login(pin);
@@ -1663,10 +1530,28 @@ public class P11NgCli {
                 try {
                     in.close();
                 } catch (IOException ex) {
-                    LOG.error("Could not close " + ATTRIBUTES_FILE, ex);
+                    log.error("Could not close " + ATTRIBUTES_FILE, ex);
                 }
             }
         }
+    }
+
+    @Override
+    public String getMainCommand() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getFullHelpText() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        // TODO Auto-generated method stub
+        return null;
     }
     
 }
