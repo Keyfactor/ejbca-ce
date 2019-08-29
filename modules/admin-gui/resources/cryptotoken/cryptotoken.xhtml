@@ -406,6 +406,7 @@
 					</h:selectOneMenu>
 					<h:selectOneMenu id="selectKakAliasMenu" value="#{keyPairGuiInfo.selectedKakKeyAlias}">
 						<f:selectItems value="#{keyPairGuiInfo.availableKeyAliases}"/>
+						<f:ajax render="selectKakAliasMenu"/>
 					</h:selectOneMenu>
 				</h:column>
 				<h:column>
@@ -417,20 +418,11 @@
 						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
 						disabled="#{keyPairGuiInfo.placeholder or keyPairGuiInfo.initialized}"/>
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_AUTH}"
-						action="#{cryptoTokenMBean.authorizeKey}"
-						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-						disabled="#{keyPairGuiInfo.placeholder}"/>
-					<h:inputText size="1" style="margin-left: 2px; margin-right: 2px;"
-					  	value="#{keyPairGuiInfo.maxOperationCount}"
-					  	rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-					  	disabled="#{keyPairGuiInfo.placeholder}" 
-					  	label="Max Operation Count">
- 					<f:validateLongRange minimum="-1" maximum="4294967295" /> 
-					</h:inputText>
-					<h:outputText styleClass="smallHelp"
-						value="#{web.text.CRYPTOTOKEN_KPM_KEY_OPERATION_COUNT}" style="margin-right: 2px;"
-						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-						 /> 
+							action="#{cryptoTokenMBean.actionAuthorizeStart}"
+							rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
+							disabled="#{keyPairGuiInfo.placeholder}">
+						<f:ajax execute="@this" render=":modalBlockContainer"/>
+					</h:commandButton>
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
 						action="#{cryptoTokenMBean.testKeyPair}"
 						rendered="#{cryptoTokenMBean.allowedToKeyTest}"
@@ -494,5 +486,42 @@
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
+	
+	<ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>
+    <ui:param name="renderModal" value="#{cryptoTokenMBean.authorizeInProgress}"/>
+    <ui:define name="modal">
+        <h:form id="modal">
+            <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
+            <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
+
+            <h:panelGroup id="authorize" rendered="#{cryptoTokenMBean.authorizeInProgress}">
+                <h2><h:outputText value="#{web.text.CRYPTOTOKEN_KPM_AUTH_KEY}"/></h2>
+				<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_KEY_OPERATION_COUNT}" style="margin-right: 2px;"/>
+				<br/><br/>
+				<h:panelGrid columns="2">
+					<h:selectBooleanCheckbox id="unlimitedOperations" value="#{cryptoTokenMBean.unlimitedOperations}">
+						<f:ajax render="maxNrOfOperations"/>
+					</h:selectBooleanCheckbox>
+					<h:outputLabel value="#{web.text.UNLIMITED}"/>
+					<h:inputText id="maxNrOfOperations" size="3" style="margin-left: 2px; margin-right: 2px;"
+					  	value="#{cryptoTokenMBean.maxOperationCount}"
+					  	disabled="#{cryptoTokenMBean.unlimitedOperations}" 
+					  	label="Max Operation Count">
+						<f:validateLongRange minimum="0" maximum="4294967295" /> 
+					</h:inputText>
+					<h:outputLabel value="Allowed operations"/>
+				</h:panelGrid>
+				<br/>
+               	<h:panelGroup styleClass="fullwidth" layout="block">
+                    <h:commandButton value="#{web.text.CANCEL}" action="#{cryptoTokenMBean.actionAuthorizeCancel}" immediate="true">
+                        <f:ajax execute="@this" render=":modalBlockContainer"/>
+                    </h:commandButton>
+                    <h:commandButton id="confirmAuthorizeButton" value="#{web.text.CRYPTOTOKEN_KPM_AUTH}" action="#{cryptoTokenMBean.authorizeKey}">
+                    </h:commandButton>
+               	</h:panelGroup>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+	
 </ui:composition>
 </html>
