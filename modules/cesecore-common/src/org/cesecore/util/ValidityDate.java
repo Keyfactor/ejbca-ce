@@ -50,6 +50,11 @@ public class ValidityDate {
 	/** Pattern used to separate seconds (in $2 reference) and everything else (in $1)*/
 	private static final Pattern SECONDS_MATCHER = Pattern.compile("(\\d{4,4}-\\d\\d-\\d\\d \\d\\d:\\d\\d)(:\\d\\d)");
 
+	private static final String RELATIVE_TIME_REGEX = "\\d+:\\d?\\d:\\d?\\d"; // example: 90:0:0 or 0:15:30
+    private static final String ISO_TIME_REGEX = "\\d{4,}-(0\\d|10|11|12)-[0123]\\d( \\d\\d:\\d\\d(:\\d\\d)?)?([+-]\\d\\d:\\d\\d)?"; // example: 2019-12-31 or 2019-12-31 23:59:59+00:00
+    public static final String VALIDITY_TIME_REGEX = "^(" + RELATIVE_TIME_REGEX + "|" + ISO_TIME_REGEX + ")$";
+    private static final Pattern VALIDITY_TIME_PATTERN = Pattern.compile(VALIDITY_TIME_REGEX);
+	
     // Can't be instantiated
     private ValidityDate() {
     }
@@ -290,5 +295,10 @@ public class ValidityDate {
 	/** Strips the seconds part of a date string on the form yyyy-MM-dd hh:mm */
 	public static String stripSecondsFromIso8601UtcDate(final String dateString) {
 	    return SECONDS_MATCHER.matcher(dateString).replaceFirst("$1");
+	}
+	
+	/** Returns true if the date is on the form yyyy-MM-dd hh:mm:ss (or abbreviated) or in relative format, d:h:m */
+	public static boolean isAbsoluteTimeOrDaysHoursMinutes(final String dateString) {
+	    return VALIDITY_TIME_PATTERN.matcher(dateString).matches();
 	}
 }
