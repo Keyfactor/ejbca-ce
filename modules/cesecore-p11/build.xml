@@ -17,6 +17,9 @@
 			<src path="${cesecore-p11.src.dir}"/>
 		</javac>
 		<jar jarfile="${cesecore-p11.lib}">
+            <manifest>
+                <attribute name="Implementation-Version" value="${app.version}"/>
+            </manifest>
 			<fileset dir="${cesecore-p11.build.dir}"/>
 		</jar>
 	</target>

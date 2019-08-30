@@ -53,6 +53,9 @@
             file="${cesecore-x509ca.dir}/build/classes" classpath="manifest.classpath"/>
         <mkdir dir="${cesecore-x509ca.dir}/dist"/>
         <jar destfile="${cesecore-x509ca.dir}/dist/cesecore-x509ca.jar">
+            <manifest>
+                <attribute name="Implementation-Version" value="${app.version}"/>
+            </manifest>
             <fileset dir="${cesecore-x509ca.dir}/build" includes="META-INF/**/*"/>
             <fileset dir="${cesecore-x509ca.dir}/build/classes/" excludes="**/*.java"/>
             <fileset dir="${cesecore-x509ca.dir}/src/" excludes="**/*.java"/>

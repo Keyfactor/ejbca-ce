@@ -55,8 +55,9 @@
 
     <jar jarfile="${mod.p11ngcli.lib}">
       <manifest >
-	<attribute name="Class-path" value="${p11ngcli.dependencies} ./" />
-	<attribute name="Main-Class" value="org.ejbca.ui.p11ngcli.CmpClient"/>
+        <attribute name="Implementation-Version" value="${app.version}"/>
+        <attribute name="Class-path" value="${p11ngcli.dependencies} ./" />
+        <attribute name="Main-Class" value="org.ejbca.ui.p11ngcli.CmpClient"/>
       </manifest>
       <fileset dir="${p11ngcli.build.dir}" includes="**/*.class **/*.xml **/*.properties META-INF/**/*"/>
     </jar>

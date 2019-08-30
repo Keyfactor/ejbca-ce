@@ -45,6 +45,9 @@
 		</javac>
 		<mkdir dir="${cesecore-ejb.dir}/dist"/>
 		<jar destfile="${cesecore-ejb.dir}/dist/cesecore-ejb.jar">
+            <manifest>
+                <attribute name="Implementation-Version" value="${app.version}"/>
+            </manifest>
 			<fileset dir="${cesecore-ejb.dir}/build/classes/" excludes="**/*.java"/>
 			<fileset dir="${cesecore-ejb.dir}/src/" excludes="**/*.java"/>
 		</jar>
