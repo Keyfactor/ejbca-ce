@@ -61,6 +61,7 @@
     	<mkdir dir="${mod.ejbca-ejb-cli.lib.dir}" />	<!-- Make sure the dir exists before we start the jar-task -->
     	<jar destfile="${mod.ejbca-ejb-cli.lib}">
     		<manifest>
+                <attribute name="Implementation-Version" value="${app.version}"/>
     			<attribute name="Class-path" value="${ejbca-ejb-cli.dependencies} ./" />
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.EjbcaEjbCli"/>
     		</manifest>
