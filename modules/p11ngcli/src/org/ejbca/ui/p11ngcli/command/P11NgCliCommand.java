@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
@@ -52,8 +51,6 @@ import java.util.Properties;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -611,13 +608,14 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
                     final Map<String, Object> params = new HashMap<>(); // CLI currently does not support specifying Dummy certificate parameters as it is not required as of now
                     Properties attributesConfig;
 
-                    try {
+                    //TODO: Fix this.
+                /*                    try {
                         slot.generateKeyPair("RSA", "2048", alias, false, publicAttributesMap, privateAttributesMap, null, true);
                     } catch (CertificateException | OperatorCreationException ex) {
                         log.error("Key generation failed! ", ex);
                         System.err.println("Key generation failed! " + ex.getMessage()); 
                     }
-
+                */
                     System.out.println("Generated key pair with alias " + alias);
                     
                     break;
@@ -1131,19 +1129,6 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
 		int result = (((kakSize) + 7)/8);
 		return result;
 	}
-
-	private void checkForCommandLineOptions(final CommandLine commandLine) throws ParseException {
-        if (!commandLine.hasOption(SLOT)) {
-            throw new ParseException("Missing " + SLOT);
-        }
-        if (!commandLine.hasOption(USER_AND_PIN)) {
-            throw new ParseException("Missing " + USER_AND_PIN);
-        }
-        if (!commandLine.hasOption(ALIAS)) {
-            throw new ParseException("Missing " + ALIAS);
-        }
-
-    }
     
     private void runSignPerformanceTest(final String alias, final String libName,
                                         final String libDir, final long slotId,
@@ -1511,47 +1496,20 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
             }
         }
     }
-    
-    private Properties getAttributesPropertiesFromFile(String filePath) throws IOException, ParseException {
-        Properties attributesConfig = null;
-        InputStream in = null;
-        final File attributesfile = new File(filePath);
-        try {
-            if (attributesfile.exists()) {
-                in = new FileInputStream(attributesfile);
-                attributesConfig = new Properties();
-                attributesConfig.load(in);
-            } else {
-                throw new ParseException(ATTRIBUTES_FILE + " not found at path: " + filePath);
-            }
-            return attributesConfig;
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ex) {
-                    log.error("Could not close " + ATTRIBUTES_FILE, ex);
-                }
-            }
-        }
-    }
 
     @Override
     public String getMainCommand() {
-        // TODO Auto-generated method stub
-        return null;
+        return "p11ngcli";
     }
 
     @Override
     public String getFullHelpText() {
-        // TODO Auto-generated method stub
-        return null;
+        return getCommandDescription();
     }
 
     @Override
     protected Logger getLogger() {
-        // TODO Auto-generated method stub
-        return null;
+        return log;
     }
     
 }

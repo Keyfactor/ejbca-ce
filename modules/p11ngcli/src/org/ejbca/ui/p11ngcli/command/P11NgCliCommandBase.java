@@ -10,14 +10,15 @@
 package org.ejbca.ui.p11ngcli.command;
 
 import java.nio.charset.StandardCharsets;
-import org.ejbca.ui.cli.infrastructure.command.PasswordUsingCommandBase;
+
+import org.ejbca.ui.cli.infrastructure.command.CommandBase;
 
 /**
  * 
- * $Id$
+ * $Id$ 
  *
  */
-public abstract class P11NgCliCommandBase extends PasswordUsingCommandBase {
+public abstract class P11NgCliCommandBase extends CommandBase {
 
     public static final String UTF_8 = StandardCharsets.UTF_8.name(); //charset's canonical name e.g "UTF-8".
 

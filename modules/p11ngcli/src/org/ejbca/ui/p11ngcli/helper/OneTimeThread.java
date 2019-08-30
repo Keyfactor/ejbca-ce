@@ -125,12 +125,13 @@ public class OneTimeThread extends OperationsThread {
 
                     final Map<String, Object> params = new HashMap<>(); // CLI currently does not support specifying Dummy certificate parameters as it is not required as of now
 
-                    slot.generateKeyPair("RSA", "2048", oneTimeKeyAlias, false, publicAttributesMap, privateAttributesMap, new CryptokiDevice.CertificateGenerator() {
+                    //TODO: Fix this
+                    /*                    slot.generateKeyPair("RSA", "2048", oneTimeKeyAlias, false, publicAttributesMap, privateAttributesMap, new CryptokiDevice.CertificateGenerator() {
                         @Override
                         public X509Certificate generateCertificate(KeyPair keyPair, Provider provider) throws OperatorCreationException, CertificateException {
                             return createDummyCertificate(oneTimeKeyAlias, params, keyPair, slot.getProvider().getName());
                         }
-                    }, true);
+                    }, true)*/;
 
                     privKey = slot.aquirePrivateKey(oneTimeKeyAlias);
 
@@ -158,7 +159,7 @@ public class OneTimeThread extends OperationsThread {
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException
                 | UnsupportedEncodingException | SignatureException
-                | CryptoTokenOfflineException | RuntimeException | CertificateException | OperatorCreationException e) {
+                | CryptoTokenOfflineException | RuntimeException e) {
             LOG.error("Failing signing: " + e.getMessage());
             fireFailure(getName() + ": failed after " + getNumberOfOperations() + " signings: " + e.getMessage());
         }
