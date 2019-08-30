@@ -58,6 +58,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", "SHA256withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA384withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA512withRSAandMGF1", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA256withECDSA", MySignature.class.getName()));
     }
 
     private static class MyService extends Service {
@@ -183,14 +184,13 @@ public class JackNJI11Provider extends Provider {
                 hasActiveSession = true;
             }
             try {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("enigneInitSign: session: " + session + ", object: " +
-                              myKey.getObject());
-                    debugStacktrace = new Exception();
-                }
-                
                 long sigAlgoValue = MechanismNames.longFromSigAlgoName(this.algorithm);
                 byte[] param = MechanismNames.CKM_PARAMS.get(sigAlgoValue);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("engineInitSign: session: " + session + ", object: " +
+                            myKey.getObject() + ", sigAlgoValue: " + sigAlgoValue + ", param: " + param);
+                    debugStacktrace = new Exception();
+                }
                 myKey.getSlot().getCryptoki().SignInit(session, new CKM(sigAlgoValue, param), myKey.getObject());
             } catch (Exception e) {
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
