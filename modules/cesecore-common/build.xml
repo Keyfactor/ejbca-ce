@@ -66,6 +66,9 @@
     		file="${cesecore-common.dir}/build/classes" classpath="manifest.classpath"/>
 		<mkdir dir="${cesecore-common.dir}/dist"/>
 		<jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">
+            <manifest>
+                <attribute name="Implementation-Version" value="${app.version}"/>
+            </manifest>
 			<fileset dir="${cesecore-common.dir}/build" includes="META-INF/**/*"/>
 			<fileset dir="${cesecore-common.dir}/build/classes/" excludes="**/*.java"/>
 			<fileset dir="${cesecore-common.dir}/src/" excludes="**/*.java"/>
