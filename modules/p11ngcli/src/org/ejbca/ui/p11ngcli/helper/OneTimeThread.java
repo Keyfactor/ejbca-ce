@@ -53,7 +53,7 @@ public class OneTimeThread extends OperationsThread {
     /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger.getLogger(OneTimeThread.class);
+    private static final Logger log = Logger.getLogger(OneTimeThread.class);
 
     private final int id;
     private final String libName;
@@ -108,7 +108,7 @@ public class OneTimeThread extends OperationsThread {
 
         slot.setUseCache(useCache);
 
-        LOG.info("Starting thread " + id);
+        log.info("Starting thread " + id);
 
         final long startTime = System.currentTimeMillis();
         final long stopTime
@@ -125,13 +125,16 @@ public class OneTimeThread extends OperationsThread {
 
                     final Map<String, Object> params = new HashMap<>(); // CLI currently does not support specifying Dummy certificate parameters as it is not required as of now
 
-                    //TODO: Fix this
-                    /*                    slot.generateKeyPair("RSA", "2048", oneTimeKeyAlias, false, publicAttributesMap, privateAttributesMap, new CryptokiDevice.CertificateGenerator() {
-                        @Override
-                        public X509Certificate generateCertificate(KeyPair keyPair, Provider provider) throws OperatorCreationException, CertificateException {
-                            return createDummyCertificate(oneTimeKeyAlias, params, keyPair, slot.getProvider().getName());
-                        }
-                    }, true)*/;
+                    try {
+                        slot.generateRsaKeyPair("RSA", oneTimeKeyAlias, false, publicAttributesMap, privateAttributesMap, new CryptokiDevice.CertificateGenerator() {
+                            @Override
+                            public X509Certificate generateCertificate(KeyPair keyPair, Provider provider) throws OperatorCreationException, CertificateException {
+                                return createDummyCertificate(oneTimeKeyAlias, params, keyPair, slot.getProvider().getName());
+                            }
+                        }, true);
+                    } catch (CertificateException | OperatorCreationException e) {
+                        log.error("Exception happened while generating RSA key pair!", e);
+                    }
 
                     privKey = slot.aquirePrivateKey(oneTimeKeyAlias);
 
@@ -160,7 +163,7 @@ public class OneTimeThread extends OperationsThread {
         } catch (NoSuchAlgorithmException | InvalidKeyException
                 | UnsupportedEncodingException | SignatureException
                 | CryptoTokenOfflineException | RuntimeException e) {
-            LOG.error("Failing signing: " + e.getMessage());
+            log.error("Failing signing: " + e.getMessage());
             fireFailure(getName() + ": failed after " + getNumberOfOperations() + " signings: " + e.getMessage());
         }
     }
@@ -172,9 +175,9 @@ public class OneTimeThread extends OperationsThread {
         sign.update(inputData.getBytes("UTF-8"));
         byte[] signature = sign.sign();
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Signing in thread " + id);
-            LOG.debug("Signature: " + new String(Base64.encode(signature)));
+        if (log.isDebugEnabled()) {
+            log.debug("Signing in thread " + id);
+            log.debug("Signature: " + new String(Base64.encode(signature)));
         }
     }
     
@@ -197,8 +200,8 @@ public class OneTimeThread extends OperationsThread {
     }
     
     private static X509Certificate createDummyCertificate(final String alias, String dn, Long validity, String signatureAlgorithm, final KeyPair keyPair, final String provider) throws OperatorCreationException, CertificateException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Regenerate self signed certificate requested with values: "
+        if (log.isDebugEnabled()) {
+            log.debug("Regenerate self signed certificate requested with values: "
                     + "DN: " + dn + ", "
                     + "validity: " + validity + ", "
                     + "signature algorithm: " + signatureAlgorithm);
@@ -233,8 +236,8 @@ public class OneTimeThread extends OperationsThread {
         final Date lastDate = new Date(currentTime + validity * 1000);
 
         // Add all mandatory attributes
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("keystore signing algorithm " + sigAlg);
+        if (log.isDebugEnabled()) {
+            log.debug("keystore signing algorithm " + sigAlg);
         }
 
         final PublicKey publicKey = keyPair.getPublic();
