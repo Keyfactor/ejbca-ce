@@ -496,6 +496,18 @@ public class CertificateView implements Serializable {
         return false;
     }
 
+    public boolean hasAuthorityInformationAccess() {
+        if (certificate==null) {
+            return false;
+        }
+        if (certificate instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate)certificate;
+            byte[] ext = x509cert.getExtensionValue(Extension.authorityInfoAccess.getId());
+            return ext != null;
+        }
+        return false;
+    }
+
     public boolean hasQcStatement() {
         if (certificate==null) {
             return false;
