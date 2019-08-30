@@ -7,7 +7,7 @@ package org.ejbca.ui.p11ngcli.helper;
  *
  */
 public abstract class OperationsThread  extends Thread {
-    private final FailureCallback failureCallback;
+    FailureCallback failureCallback;
     private volatile boolean stop;
     private int numOperations;
     
