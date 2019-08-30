@@ -146,7 +146,9 @@
                     <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTALTNAME}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
-                    <h:outputLabel value="#{viewCertificateMBean.subjectAltName}"/>
+                    <ui:repeat value="#{viewCertificateMBean.subjectAltName}" var="string" varStatus="loop">
+                        <h:outputLabel value="#{string}"/><br/>
+                    </ui:repeat>
                 </h:panelGroup>
                 
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
@@ -196,9 +198,19 @@
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel escape="false" value="#{web.text.EXT_ABBR_AUTHORITYINFOACCESS}"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
-                    <h:outputLabel value="#{viewCertificateMBean.authorityInfoAccess}"/>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc and !viewCertificateMBean.hasAuthorityInformationAccess}">
+                    <h:outputLabel value="#{web.text.NO}"/>
                 </h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc and viewCertificateMBean.hasAuthorityInformationAccess}">
+	                <h:outputLabel value="#{web.text.EXT_PKIX_AIA_OCSP_URI}: " rendered="#{!empty viewCertificateMBean.aiaOcspServiceLocators}"/><br/>
+	                <ui:repeat value="#{viewCertificateMBean.aiaOcspServiceLocators}" var="string" varStatus="loop">
+	                    &nbsp;&nbsp;<h:outputLabel value="#{string}"/><br/>
+	                </ui:repeat>
+	                <h:outputLabel value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}: " rendered="#{!empty viewCertificateMBean.aiaCaIssuerUris}"/><br/>
+	                <ui:repeat value="#{viewCertificateMBean.aiaCaIssuerUris}" var="string" varStatus="loop">
+	                    &nbsp;&nbsp;<h:outputLabel value="#{string}"/><br/>
+	                </ui:repeat>
+				</h:panelGroup>
                 
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_QCSTATEMENTS}"/>
