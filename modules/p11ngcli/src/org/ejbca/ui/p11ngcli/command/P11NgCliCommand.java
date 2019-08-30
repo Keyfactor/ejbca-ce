@@ -122,31 +122,31 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
     /** Logger for this class. */
     private static final Logger log = Logger.getLogger(P11NgCliCommand.class);
     
-    private static final String LIBFILE = "libfile";
-    private static final String ACTION = "action";
-    private static final String SLOT = "slot";
-    private static final String PIN = "pin";
-    private static final String USER_AND_PIN = "user_and_pin";
-    private static final String USER2_AND_PIN = "user2_and_pin";
-    private static final String ALIAS = "alias";
-    private static final String WRAPKEY = "wrapkey";
-    private static final String UNWRAPKEY = "unwrapkey";
-    private static final String PRIVATEKEY = "privatekey";
-    private static final String PUBLICKEY = "publickey";
-    private static final String PLAINTEXT = "plaintext";
-    private static final String METHOD = "method";
-    private static final String SELFCERT = "selfcert";
-    private static final String OBJECT = "object";
-    private static final String ATTRIBUTES_FILE = "attributes_file";
-    private static final String THREADS = "threads";
-    private static final String WARMUPTIME = "warmuptime";
-    private static final String TIMELIMIT = "timelimit";
-    private static final String USE_CACHE = "use_cache";
-    private static final String SIGNATUREALGORITHM = "signaturealgorithm";
-    private static final String OBJECT_SPEC_ID = "object_spec_id";
-    private static final String BACKUPFILE = "backupFile"; 
-    private static final String KAK_FILE_PATH = "kak_file_path";
-    private static final String MAX_OPERATIONS = "max_operations";
+    private static final String LIBFILE = "-libfile";
+    private static final String ACTION = "-action";
+    private static final String SLOT = "-slot";
+    private static final String PIN = "-pin";
+    private static final String USER_AND_PIN = "-user_and_pin";
+    private static final String USER2_AND_PIN = "-user2_and_pin";
+    private static final String ALIAS = "-alias";
+    private static final String WRAPKEY = "-wrapkey";
+    private static final String UNWRAPKEY = "-unwrapkey";
+    private static final String PRIVATEKEY = "-privatekey";
+    private static final String PUBLICKEY = "-publickey";
+    private static final String PLAINTEXT = "-plaintext";
+    private static final String METHOD = "-method";
+    private static final String SELFCERT = "-selfcert";
+    private static final String OBJECT = "-object";
+    private static final String ATTRIBUTES_FILE = "-attributes_file";
+    private static final String THREADS = "-threads";
+    private static final String WARMUPTIME = "-warmuptime";
+    private static final String TIMELIMIT = "-timelimit";
+    private static final String USE_CACHE = "-use_cache";
+    private static final String SIGNATUREALGORITHM = "-signaturealgorithm";
+    private static final String OBJECT_SPEC_ID = "-object_spec_id";
+    private static final String BACKUPFILE = "-backupFile"; 
+    private static final String KAK_FILE_PATH = "-kak_file_path";
+    private static final String MAX_OPERATIONS = "-max_operations";
     
     private static final int KAK_SIZE = 2048;
     private static final int KEY_AUTHORIZATION_INIT_SIGN_SALT_SIZE = 32;
@@ -246,7 +246,6 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
     static {Security.addProvider(new BouncyCastleProvider());}
 
     private static enum Action {
-        listSlots,
         showInfo,
         showSlotInfo,
         showTokenInfo,
@@ -332,19 +331,6 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
             ce = new CEi(new Ci(new JNAi(jnaiNative)));
             
             switch (action) {
-                case listSlots: {
-                    ce.Initialize();
-                    long[] allSlots = ce.GetSlotList(false);
-                    System.out.println("All slots:        " + Arrays.toString(allSlots));
-                    long[] slots = ce.GetSlotList(true);
-                    System.out.println("Slots with token: " + Arrays.toString(slots));
-                    
-                    for (long slot : allSlots) {
-                        CK_TOKEN_INFO info = ce.GetTokenInfo(slot);
-                        System.out.println("ID: " + slot + ", Label: " + new String(info.label, StandardCharsets.UTF_8));
-                    }
-                    break;
-                }
                 case showInfo: {
                     ce.Initialize();
                     CK_INFO info = ce.GetInfo();
@@ -605,17 +591,12 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
                     final Map<Long, Object> publicAttributesMap = new HashMap<>();
                     final Map<Long, Object> privateAttributesMap = new HashMap<>();
 
-                    final Map<String, Object> params = new HashMap<>(); // CLI currently does not support specifying Dummy certificate parameters as it is not required as of now
-                    Properties attributesConfig;
-
-                    //TODO: Fix this.
-                /*                    try {
-                        slot.generateKeyPair("RSA", "2048", alias, false, publicAttributesMap, privateAttributesMap, null, true);
+                    try {
+                        slot.generateRsaKeyPair("RSA", alias, false, publicAttributesMap, privateAttributesMap, null, true);
                     } catch (CertificateException | OperatorCreationException ex) {
                         log.error("Key generation failed! ", ex);
                         System.err.println("Key generation failed! " + ex.getMessage()); 
                     }
-                */
                     System.out.println("Generated key pair with alias " + alias);
                     
                     break;
