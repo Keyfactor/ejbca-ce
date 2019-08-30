@@ -1,7 +1,5 @@
 package org.ejbca.ui.p11ngcli.command;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -9,14 +7,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+import org.ejbca.ui.p11ngcli.helper.P11NgCliHelper;
 import org.pkcs11.jacknji11.CEi;
 import org.pkcs11.jacknji11.CK_INFO;
-import org.pkcs11.jacknji11.Ci;
-import org.pkcs11.jacknji11.jna.JNAi;
-import org.pkcs11.jacknji11.jna.JNAiNative;
-
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
 
 public class P11NgCliShowInfoCommand extends P11NgCliCommandBase {
     
@@ -46,13 +39,7 @@ public class P11NgCliShowInfoCommand extends P11NgCliCommandBase {
     protected CommandResult execute(ParameterContainer parameters) {
         final String lib = parameters.get(LIBFILE);
         try {
-            final File library = new File(lib);
-            final String libDir = library.getParent();
-            final String libName = library.getName();
-            log.debug("Adding search path: " + libDir);
-            NativeLibrary.addSearchPath(libName, libDir);
-            JNAiNative jnaiNative = (JNAiNative) Native.loadLibrary(libName, JNAiNative.class);
-            ce = new CEi(new Ci(new JNAi(jnaiNative)));
+            ce = P11NgCliHelper.provideCe(lib);
             ce.Initialize();
             CK_INFO info = ce.GetInfo();
             System.out.println("info: " + info);
