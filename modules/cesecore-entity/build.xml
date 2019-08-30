@@ -41,6 +41,9 @@
 		</javac>
 		<mkdir dir="${cesecore-entity.dir}/dist" />
 		<jar destfile="${cesecore-entity.dir}/dist/cesecore-entity.jar">
+            <manifest>
+                <attribute name="Implementation-Version" value="${app.version}"/>
+            </manifest>
 			<fileset dir="${cesecore-entity.build.dir}/classes/" excludes="**/*.java" />
 			<fileset dir="${cesecore-entity.dir}/src/" excludes="**/*.java" />
 		</jar>
