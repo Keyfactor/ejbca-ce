@@ -18,6 +18,8 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -85,13 +87,15 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private String formattedCertSn;
     private String issuerDnUnescaped;
     private String subjectDnUnescaped;
-    private String subjectAltName;
+    private List<String> subjectAltName;
     private String subjectDirAttributes;
     private String publicKey;
     private String basicConstraints;
     private String keyUsage;
     private String extendedKeyUsage;
-    private String authorityInfoAccess;
+    private List<String> aiaOcspServiceLocators ;
+    private List<String> aiaCaIssuerUris;
+    private boolean hasAuthorityInformationAccess;
     private String fingerPrint;
     private String revoked;
     private boolean hasNameConstraints;
@@ -153,7 +157,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
             issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
             subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDN());
-            subjectAltName = (certificateData.getSubjectAltName() == null) ? ejbcaBean.getText("ALT_NONE") : certificateData.getSubjectAltName().replace( ",", "</br>");
+            subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
             subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
             publicKey = composePublicKeyValue();
             
@@ -164,7 +168,11 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             
             keyUsage = composeKeyUsage();
             extendedKeyUsage = composeExtendedKeyUsage();
-            authorityInfoAccess = composeAuthorityInfoAccess();
+            
+            aiaOcspServiceLocators = certificateData.getAuthorityInformationAccessOcspUrls();
+            aiaCaIssuerUris = certificateData.getAuthorityInformationAccessCaIssuerUris();
+            hasAuthorityInformationAccess = certificateData.hasAuthorityInformationAccess();
+
             fingerPrint = composeFingerPrint();
             revoked = composeRevokedText();
             
@@ -246,31 +254,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             return fingerprint;
         }
     }
-
-
-    private String composeAuthorityInfoAccess() {
-        final StringBuilder builder = new StringBuilder();
-        
-        final List<String> aiaOcspServiceLocators = certificateData.getAuthorityInformationAccessOcspUrls();
-        if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
-            builder.append(ejbcaBean.getText("EXT_PKIX_AIA_OCSP_URI"))
-                .append(":")
-                .append("<br/>&nbsp;")
-                .append(StringUtils.join(aiaOcspServiceLocators, "<br/>&nbsp;"))
-                .append("<br/>");
-        }
-        
-        final List<String> aiaCaIssuerUris = certificateData.getAuthorityInformationAccessCaIssuerUris();
-        if (null != aiaCaIssuerUris && aiaCaIssuerUris.size() > 0) {
-            builder.append(ejbcaBean.getText("EXT_PKIX_AIA_CAISSUERS_URI"))
-                .append(":")
-                .append("<br/>&nbsp;")
-                .append(StringUtils.join(aiaCaIssuerUris, "<br/>&nbsp;"));
-        }
-        
-        return (builder.length() > 0) ? builder.toString() : ejbcaBean.getText("NO");
-    }
-
 
     private String composeExtendedKeyUsage() {
         final List<String> texts = new ArrayList<>();
@@ -472,7 +455,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return subjectDnUnescaped;
     }
     
-    public String getSubjectAltName() {
+    public List<String> getSubjectAltName() {
         return subjectAltName;
     }
     
@@ -496,10 +479,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return extendedKeyUsage;
     }
     
-    public String getAuthorityInfoAccess() {
-        return authorityInfoAccess;
-    }
-    
     public String getFingerPrint() {
         return fingerPrint;
     }
@@ -511,7 +490,11 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     public boolean getHasNameConstraints() {
         return hasNameConstraints;
     }
-    
+
+    public boolean getHasAuthorityInformationAccess() {
+        return hasAuthorityInformationAccess;
+    }
+
     public boolean isQcStatement() {
         return qcStatement;
     }
@@ -573,6 +556,15 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return returnToLink;
     }
     
+    
+    public List<String> getAiaOcspServiceLocators() {
+        return aiaOcspServiceLocators;
+    }
+
+    public List<String> getAiaCaIssuerUris() {
+        return aiaCaIssuerUris;
+    }
+
     public void actionViewOlder() {
         final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
         
