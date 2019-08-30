@@ -10,10 +10,10 @@
 package org.cesecore.keys.token.p11ng.provider;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -64,15 +64,21 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
+import org.bouncycastle.jce.ECPointUtil;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
@@ -84,6 +90,7 @@ import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
 import org.cesecore.keys.token.p11ng.PToPBackupObj;
 import org.cesecore.keys.token.p11ng.TokenEntry;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.StringTools;
 import org.pkcs11.jacknji11.CEi;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKC;
@@ -101,7 +108,6 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.LongByReference;
-
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
@@ -530,26 +536,79 @@ public class CryptokiDevice {
             }
         }
 
-        public PublicKey getPublicKey(String alias) {
+        public PublicKey getPublicKey(final String alias) {
             Long session = null;
             try {
                 session = aquireSession();
                 final Long publicKeyRef = getPublicKeyByLabel(session, alias);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Fetching public key '" + alias + "' with publicKeyRef = " + publicKeyRef + ".");
+                }
                 if (publicKeyRef != null) {
-                    CKA publicValue = c.GetAttributeValue(session, publicKeyRef, CKA.MODULUS);
-                    final byte[] modulusBytes = publicValue.getValue();
-                    publicValue = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
-                    final byte[] publicExponentBytes = publicValue.getValue();
+                    final CKA modulus = c.GetAttributeValue(session, publicKeyRef, CKA.MODULUS);
+                    if (modulus.getValue() == null) {
+                        final CKA ckaQ = c.GetAttributeValue(session, publicKeyRef, CKA.EC_POINT);
+                        final CKA ckaParams = c.GetAttributeValue(session, publicKeyRef, CKA.EC_PARAMS);
+                        if (ckaQ.getValue() == null || ckaParams.getValue() == null) {
+                            if (LOG.isDebugEnabled()) {
+                                if (ckaQ.getValue() == null) {
+                                    LOG.error("Mandatory attribute CKA_EC_POINT is missing for key with alias '" + alias + "'.");
+                                } else if (ckaParams.getValue() == null) {
+                                    LOG.error("Mandatory attribute CKA_EC_PARAMS is missing for key with alias '" + alias + "'.");
+                                }
+                            }
+                            return null;
+                        }
+                        final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());
+                        if (oid == null) {
+                            if (LOG.isDebugEnabled()) {
+                                LOG.error("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
+                            }
+                            return null;
+                        }
+                        final ECParameterSpec params = AlgorithmTools.getEcParameterSpecFromOid(oid);
+                        if (params == null) {
+                            if (LOG.isDebugEnabled()) {
+                                LOG.error("Could not find an elliptic curve with the specified CKA_EC_PARAMS. The DER encoded parameters look like this: " 
+                                        + StringTools.hex(ckaParams.getValue()) + ".");
+                            }
+                            return null;
+                        }
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Trying to decode public elliptic curve point Q using the curve with OID " + oid.getId() 
+                                + ". The DER encoded point looks like this: " + StringTools.hex(ckaQ.getValue()));
+                        }
+                        final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(params.getCurve(), params.getSeed());
+                        final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                        final java.security.spec.ECParameterSpec parameterSpec = EC5Util.convertSpec(ellipticCurve, params);
+                        final java.security.spec.ECPublicKeySpec keySpec = new java.security.spec.ECPublicKeySpec(ecPoint, parameterSpec);
+                        return KeyFactory.getInstance("EC", "BC").generatePublic(keySpec);
+                    } else {
+                        final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
+                        final byte[] modulusBytes = modulus.getValue();
+                        final byte[] publicExponentBytes = publicExponent.getValue();
 
-                    final BigInteger n = new BigInteger(1, modulusBytes);
-                    final BigInteger e = new BigInteger(1, publicExponentBytes);
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Trying to decode RSA modulus: " + StringTools.hex(modulusBytes) + " and public exponent: "
+                                    + StringTools.hex(publicExponentBytes));
+                        }
+                        if (publicExponentBytes == null) {
+                            if (LOG.isDebugEnabled()) {
+                                LOG.error("Mandatory attribute CKA_PUBLIC_EXPONENT is missing for RSA key with alias '" + alias + "'.");
+                            }
+                            return null;
+                        }
 
-                    PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(n, e));
-                    return publicKey;
+                        final BigInteger n = new BigInteger(1, modulusBytes);
+                        final BigInteger e = new BigInteger(1, publicExponentBytes);
+
+                        return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(n, e));
+                    }
                 }
                 return null;
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-                throw new RuntimeException(ex);
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
+                throw new RuntimeException("Unable to fetch public key.", e);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -852,7 +911,99 @@ public class CryptokiDevice {
             return 0; // TODO: Call the actual check via native commands (if possible)
         }
         
-        public void generateKeyPair(String keyAlgorithm, String keySpec, String alias, boolean publicKeyToken, Map<Long, Object> overridePublic, Map<Long, Object> overridePrivate, CertificateGenerator certGenerator, boolean storeCertificate) throws CertificateEncodingException, CertificateException, OperatorCreationException {
+        /**
+         * Generate an ECC keypair in the HSM.
+         * 
+         * @param oid the OID of the curve to use for key generation, e.g. <code>new ASN1ObjectIdentifier("1.2.840.10045.3.1.7")</code>.
+         * @param alias the CKA_LABEL of the key.
+         * @throws IllegalStateException if a key with the specified alias already exists on the token.
+         */
+        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias) {
+            Long session = null;
+            try {
+                session = aquireSession();
+                if (isAliasUsed(session, alias)) {
+                    throw new IllegalArgumentException("Key with CKA_LABEL " + alias + " already exists.");
+                }
+
+                final HashMap<Long, Object> publicKeyTemplate = new HashMap<>();
+                // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.8 - Public key objects
+                /* CK_TRUE if key supports encryption. */
+                publicKeyTemplate.put(CKA.ENCRYPT, false);
+                /* CK_TRUE if key supports verification where the signature is an appendix to the data. */
+                publicKeyTemplate.put(CKA.VERIFY, true);
+                /* CK_TRUE if key supports verification where the data is recovered from the signature. */
+                // *Comment* ECDSA does not support data recovery on signature verification, but some other ECC signature schemes such as Abe-Okamoto does.
+                publicKeyTemplate.put(CKA.VERIFY_RECOVER, false);
+                /* CK_TRUE if key supports wrapping (i.e., can be used to wrap other keys) */
+                publicKeyTemplate.put(CKA.WRAP, false);
+
+                // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.4 - Storage objects
+                /* CK_TRUE if object is a token object or CK_FALSE if object is a session object. */
+                publicKeyTemplate.put(CKA.TOKEN, true);
+                /* Description of the object (default empty). */
+                publicKeyTemplate.put(CKA.LABEL, ("pub-" + alias).getBytes(StandardCharsets.UTF_8));
+
+                // PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.7 - Key objects
+                /* Key identifier for key (default empty). The CKA_ID field is intended to distinguish among multiple keys. In the case of 
+                 * public and private keys, this field assists in handling multiple keys held by the same subject; the key identifier for 
+                 * a public key and its corresponding private key should be the same */
+                publicKeyTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
+
+                // Attributes from PKCS #11 Cryptographic Token Interface Current Mechanisms Specification Version 2.40 section 2.3.3 - ECDSA public key objects
+                /* DER-encoding of an ANSI X9.62 Parameters, also known as "EC domain parameters". */
+                // *Comment* See X9.62-1998 Public Key Cryptography For The Financial Services Industry: The Elliptic Curve Digital Signature Algorithm (ECDSA)
+                // page 27.
+                publicKeyTemplate.put(CKA.EC_PARAMS, oid.getEncoded());
+
+                final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
+                // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
+                /* CK_TRUE if key is sensitive. */
+                privateKeyTemplate.put(CKA.SENSITIVE, true);
+                /* CK_TRUE if key supports decryption */
+                privateKeyTemplate.put(CKA.DECRYPT, false);
+                /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
+                privateKeyTemplate.put(CKA.SIGN, true);
+                /* CK_TRUE if key supports signatures where the data can be recovered from the signature. */
+                privateKeyTemplate.put(CKA.SIGN_RECOVER, false);
+                /* CK_TRUE if key supports unwrapping (i.e., can be used to unwrap other keys. */
+                privateKeyTemplate.put(CKA.UNWRAP, false);
+                /* CK_TRUE if key is extractable and can be wrapped. */
+                privateKeyTemplate.put(CKA.EXTRACTABLE, false);
+
+                // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.4 - Storage objects
+                /* CK_TRUE if object is a token object or CK_FALSE if object is a session object. */
+                privateKeyTemplate.put(CKA.TOKEN, true);
+                /* Description of the object (default empty). */
+                privateKeyTemplate.put(CKA.LABEL, ("priv-" + alias).getBytes(StandardCharsets.UTF_8));
+
+                // PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.7 - Key objects
+                /* Key identifier for key (default empty). The CKA_ID field is intended to distinguish among multiple keys. In the case of 
+                 * public and private keys, this field assists in handling multiple keys held by the same subject; the key identifier for 
+                 * a public key and its corresponding private key should be the same */
+                privateKeyTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
+                
+                final LongRef publicKeyRef = new LongRef();
+                final LongRef privateKeyRef = new LongRef();
+                c.GenerateKeyPair(session, new CKM(CKM.ECDSA_KEY_PAIR_GEN), toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
+                        publicKeyRef, privateKeyRef);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Generated EC public key " + publicKeyRef.value + " and EC private key " + privateKeyRef.value + ".");
+                }
+
+                if (useCache) {
+                    cache.removeObjectsSearchResultByLabel(alias);
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to encode OID.", e);
+            } finally {
+                releaseSession(session);
+            }
+        }
+
+        public void generateRsaKeyPair(final String keySpec, final String alias, final boolean publicKeyToken, final Map<Long, Object> overridePublic,
+                final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate)
+                throws CertificateEncodingException, CertificateException, OperatorCreationException {
             Long session = null;
             try {
                 session = aquireSession();
@@ -862,9 +1013,6 @@ public class CryptokiDevice {
                     throw new IllegalArgumentException("Key with ID or label " + alias + " already exists");
                 }
 
-                if (!"RSA".equals(keyAlgorithm)) {
-                    throw new IllegalArgumentException("Only RSA supported as key algorithm");
-                }
                 final int keyLength = Integer.parseInt(keySpec);
 
                 long[] mechanisms = c.GetMechanismList(id);

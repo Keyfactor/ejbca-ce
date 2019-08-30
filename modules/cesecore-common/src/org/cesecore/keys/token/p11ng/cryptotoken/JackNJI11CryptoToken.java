@@ -26,6 +26,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -245,8 +246,19 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
             } else if (!Character.isDigit(keySpec.charAt(0))) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
             }
-            slot.generateKeyPair(keyAlg, keySpec, alias, true, publicAttributesMap, privateAttributesMap, null, false);
-            log.debug("Successfully generated key pair");
+            if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_RSA)) {
+                slot.generateRsaKeyPair(keySpec, alias, true, publicAttributesMap, privateAttributesMap, null, false);
+            } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
+                if (!StringUtils.equals(oidString, keySpec)) {
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias);
+                } else {
+                    throw new InvalidAlgorithmParameterException("The elliptic curve " + keySpec + " is not supported.");
+                }
+            } else {
+                throw new InvalidAlgorithmParameterException("The key specification " + keySpec + " is not supported.");
+            }
+            log.debug("Successfully generated keypair");
         } catch (CertificateException | OperatorCreationException ex) {
             log.error("Dummy certificate generation failed. Objects might still have been created in the device: ", ex);
         }
