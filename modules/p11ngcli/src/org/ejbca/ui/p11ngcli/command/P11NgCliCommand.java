@@ -246,11 +246,8 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
     static {Security.addProvider(new BouncyCastleProvider());}
 
     private static enum Action {
-        showInfo,
-        showSlotInfo,
         showTokenInfo,
         showAttributeInfo,
-        listObjects,
         listKeyStoreEntries,
         generateKey,
         generateAndWrapKeyPair,
@@ -331,21 +328,6 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
             ce = new CEi(new Ci(new JNAi(jnaiNative)));
             
             switch (action) {
-                case showInfo: {
-                    ce.Initialize();
-                    CK_INFO info = ce.GetInfo();
-                    System.out.println("info: " + info);
-                    break;
-                }
-                
-                case showSlotInfo: {
-                    final long slotId = Long.parseLong(parameters.get(SLOT));
-                    ce.Initialize();
-                    CK_SLOT_INFO info = ce.GetSlotInfo(slotId);
-                    System.out.println("info: " + info);
-                    break;
-                }
-                
                 case showTokenInfo: {
                     final long slotId = Long.parseLong(parameters.get(SLOT));
                     ce.Initialize();
@@ -367,48 +349,6 @@ public class P11NgCliCommand extends P11NgCliCommandBase {
                     for (long object : privateObjects) {
                         System.out.println("The key label is : " + ce.GetAttributeValue(session, object, CKA.VENDOR_PTK_USAGE_COUNT).getValueStr());
                     }
-                    break;
-                }
-                case listObjects: {
-                    final long slotId = Long.parseLong(parameters.get(SLOT));
-                    ce.Initialize();
-                    long session = ce.OpenSession(slotId, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                    
-                    // tmp - remove later
-                    //long slot = ce.GetSlot("RootCA");
-                    ce.Login(session, CKU.USER, parameters.get(PIN).getBytes());
-                    long[] privateObjects = ce.FindObjects(session, new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
-                    System.out.println("Private Key Objects: " +  Arrays.toString(privateObjects));
-                    StringBuilder buff = new StringBuilder();
-                    for (long object : privateObjects) {
-                        printGeneralObjectInfo(buff, object, session);
-                    }
-                    System.out.println(buff.toString());
-
-                    long[] publicObjects = ce.FindObjects(session, new CKA(CKA.CLASS, CKO.PUBLIC_KEY));
-                    System.out.println("Public Key Objects: " +  Arrays.toString(publicObjects));
-                    buff = new StringBuilder();
-                    for (long object : publicObjects) {
-                        printGeneralObjectInfo(buff, object, session);
-                    }
-                    System.out.println(buff.toString());
-                    
-                    long[] certificateObjects = ce.FindObjects(session, new CKA(CKA.CLASS, CKO.CERTIFICATE));
-                    System.out.println("Certificate Objects: " +  Arrays.toString(certificateObjects));
-                    buff = new StringBuilder();
-                    for (long object : certificateObjects) {
-                        printGeneralObjectInfo(buff, object, session);
-                        printCertificateObjectInfo(buff, object, session);
-                    }
-                    System.out.println(buff.toString());
-                    
-                    long[] secretObjects = ce.FindObjects(session, new CKA(CKA.CLASS, CKO.SECRET_KEY));
-                    System.out.println("Secret Objects: " +  Arrays.toString(secretObjects));
-                    buff = new StringBuilder();
-                    for (long object : secretObjects) {
-                        printGeneralObjectInfo(buff, object, session);
-                    }
-                    System.out.println(buff.toString());
                     break;
                 }
                 case listKeyStoreEntries: {
