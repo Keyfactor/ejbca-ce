@@ -43,13 +43,22 @@ import java.util.TreeMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.anssi.ANSSINamedCurves;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
+import org.bouncycastle.asn1.cryptopro.ECGOST3410NamedCurves;
+import org.bouncycastle.asn1.gm.GMNamedCurves;
+import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.asn1.teletrust.TeleTrusTNamedCurves;
 import org.bouncycastle.asn1.ua.UAObjectIdentifiers;
+import org.bouncycastle.asn1.x9.X962NamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -1006,5 +1015,47 @@ public abstract class AlgorithmTools {
         return certificateProfile.getAvailableKeyAlgorithmsAsList().contains("ECDSA")
                 || certificateProfile.getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
                 || certificateProfile.getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
+    }
+
+    /**
+     * Get a Bouncy Castle elliptic curve parameter specification by OID.
+     * 
+     * <p>If you only have the name of the curve, use {@link #AlgorithmTools.getEcKeySpecOidFromBcName(String arg0)} 
+     * to lookup the OID first.
+     * 
+     * @param oid the OID of the curve.
+     * @return the elliptic curve parameter specification for the curve, or null if the OID is unknown.
+     */
+    public static org.bouncycastle.jce.spec.ECParameterSpec getEcParameterSpecFromOid(final ASN1ObjectIdentifier oid) {
+        if (NISTNamedCurves.getByOID(oid) != null) {
+            final X9ECParameters x9ecParameters = NISTNamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
+        }
+        if (SECNamedCurves.getByOID(oid) != null) {
+            final X9ECParameters x9ecParameters = SECNamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
+        }
+        if (X962NamedCurves.getByOID(oid) != null) {
+            final X9ECParameters x9ecParameters = X962NamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
+        }
+        if (ECGOST3410NamedCurves.getByOID(oid) != null) {
+            final ECDomainParameters ecDomainParameters = ECGOST3410NamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(ecDomainParameters.getCurve(), ecDomainParameters.getG(),
+                    ecDomainParameters.getN());
+        }
+        if (TeleTrusTNamedCurves.getByOID(oid) != null) {
+            final X9ECParameters x9ecParameters = TeleTrusTNamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
+        }
+        if (ANSSINamedCurves.getByOID(oid) != null) {
+            final X9ECParameters x9ecParameters = ANSSINamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
+        }
+        if (GMNamedCurves.getByOID(oid) != null) {
+            final X9ECParameters x9ecParameters = GMNamedCurves.getByOID(oid);
+            return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
+        }
+        return null;
     }
 }
