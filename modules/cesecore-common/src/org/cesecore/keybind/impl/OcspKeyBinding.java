@@ -62,12 +62,13 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         
         private final int numericValue;
         private final String label;
-        private static Map<Integer, ResponderIdType> numericValueLookupMap;
+        private static Map<Integer, ResponderIdType> numericValueLookupMap = new HashMap<>();
+        private static Map<String, ResponderIdType> labelLookupMap = new HashMap<>();
         
         static {
-            numericValueLookupMap = new HashMap<>();
-            for(ResponderIdType responderIdType : ResponderIdType.values()) {
+            for (ResponderIdType responderIdType : ResponderIdType.values()) {
                 numericValueLookupMap.put(responderIdType.getNumericValue(), responderIdType);
+                labelLookupMap.put(responderIdType.getLabel(), responderIdType);
             }
         }
         
@@ -85,7 +86,11 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         }
         
         public static ResponderIdType getFromNumericValue(int numericValue) {
-            return numericValueLookupMap.get(Integer.valueOf(numericValue));
+            return numericValueLookupMap.get(numericValue);
+        }
+        
+        public static ResponderIdType getFromLabel(final String label) {
+            return labelLookupMap.get(label);
         }
 
     }
@@ -105,17 +110,17 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
     
     {
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
-        addProperty(new DynamicUiProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
+        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
                 Arrays.asList(ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name())));
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<Long>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
-        addProperty(new DynamicUiProperty<Long>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
-        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
+        addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
+        addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
     }
 
     
