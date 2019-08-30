@@ -55,9 +55,8 @@
 
     <jar jarfile="${mod.p11ngcli.lib}">
       <manifest >
-        <attribute name="Implementation-Version" value="${app.version}"/>
-        <attribute name="Class-path" value="${p11ngcli.dependencies} ./" />
-        <attribute name="Main-Class" value="org.ejbca.ui.p11ngcli.CmpClient"/>
+	<attribute name="Class-path" value="${p11ngcli.dependencies} ./" />
+	<attribute name="Main-Class" value="org.ejbca.ui.p11ngcli.P11NgCli"/>
       </manifest>
       <fileset dir="${p11ngcli.build.dir}" includes="**/*.class **/*.xml **/*.properties META-INF/**/*"/>
     </jar>
@@ -86,6 +85,15 @@
       <path refid="p11ngcli.lib.classpath" />
       <map from="${ejbca.home}/" to=""/>
     </pathconvert>
+	<!-- Copy scripts etc to mod.configdump.dist -->
+	<copy todir="${mod.p11ngcli.dist}">
+  		<fileset dir="${p11ngcli.dir}/resources">
+  	    	<include name="p11ngcli.bat"/>
+  	        <include name="p11ngcli.sh"/>
+  	        <include name="README"/>
+  	        <include name="properties/**/*.*"/>
+  	    </fileset>
+	</copy>
     <copy todir="${mod.p11ngcli.dist}/lib" flatten="true">
       <fileset dir="${ejbca.home}" includes="${lib.p11ngcli.classpath.property}"/>
     </copy>
