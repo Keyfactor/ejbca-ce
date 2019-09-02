@@ -137,7 +137,7 @@ public class DNFieldExtractor implements java.io.Serializable {
         } else if (type == DNFieldExtractor.TYPE_SUBJECTDIRATTR) {
             return DnComponents.getDirAttrDnIds();
         } else {
-            return new ArrayList<Integer>();
+            return new ArrayList<>();
         }
     }
     
@@ -177,8 +177,8 @@ public class DNFieldExtractor implements java.io.Serializable {
         switch (dnType) {
         case DNFieldExtractor.TYPE_SUBJECTDN: return DnComponents.getDnIdFromDnName(dnComponent);
         case DNFieldExtractor.TYPE_SUBJECTALTNAME: return DnComponents.getDnIdFromAltName(dnComponent);
-        case DNFieldExtractor.TYPE_SUBJECTDIRATTR: DnComponents.getDnIdFromDirAttr(dnComponent);
-        default: throw new IllegalArgumentException("Invalid DN type");
+        case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return DnComponents.getDnIdFromDirAttr(dnComponent);
+        default: throw new IllegalArgumentException("Invalid DN type " + dnType);
         }
     }
     
