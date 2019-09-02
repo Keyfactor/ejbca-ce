@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -80,7 +81,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,1,"DEP2_1;DEP2_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
         
         // Test completly erronious DN
         try{ 
@@ -194,9 +195,9 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.UPN,0,"test.com;primekey.se");
         profile.setValue(DnComponents.IPADDRESS,0,"11.11.1.1");
 
-        profile.setRequired(EndEntityProfile.EMAIL,0,true);
-        profile.setModifyable(EndEntityProfile.EMAIL,0,false);
-        profile.setValue(EndEntityProfile.EMAIL,0,"test.com;primekey.se");
+        profile.setEmailRequired(true);
+        profile.setEmailDomainModifiable(false);
+        profile.setEmailDomain("test.com;primekey.se");
         
         // Test completly erronious Alt Name
         try{ 
@@ -311,9 +312,7 @@ public class UserFulfillEndEntityProfileTest {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,
-                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
-                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+        profile.setAvailableCertificateProfileIds(Arrays.asList(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
         
         // Test illegal value of  Certificate Profile
         try{ 
@@ -433,7 +432,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,4,"DEP3_1;DEP3_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
                 
         // Test with two OU  (2 required)
         try{ 
@@ -502,7 +501,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,2,"HARD;SOFT");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
         
         // Test with one OU  (1 required)
         try{ 
@@ -627,9 +626,9 @@ public class UserFulfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(EndEntityProfileValidationException e){
+        } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());
-        	
         }        
         
         // Test with two IPAddress  (1 required)
@@ -638,9 +637,9 @@ public class UserFulfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(EndEntityProfileValidationException e){
+        } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());
-        	
         }  
         
         // Test with three IPAddress  (1 required)
@@ -649,9 +648,9 @@ public class UserFulfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(EndEntityProfileValidationException e){
+        } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());
-        	
         }  
         
         // Test with four IPAddress  (3 allowed)
@@ -685,7 +684,8 @@ public class UserFulfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null);
            log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(EndEntityProfileValidationException e){
+        } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());        	        	
         } 
         
@@ -772,7 +772,8 @@ public class UserFulfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(EndEntityProfileValidationException e){
+        } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error Subject Dir Attributes wasn't checked propertly");        	        	
         } 
         try{ 
@@ -798,7 +799,8 @@ public class UserFulfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(EndEntityProfileValidationException e){
+        } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error DateOfBirth wasn't checked propertly");        	        	
         } 
         }{
@@ -816,11 +818,11 @@ public class UserFulfillEndEntityProfileTest {
         String relativeNegative = "-10:00:00";
         ExtendedInformation ei = new ExtendedInformation();
         // Use empty, should fail
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
-        profile.setUse(EndEntityProfile.STARTTIME, 0, true);
-        profile.setUse(EndEntityProfile.ENDTIME, 0, false);
-        profile.setValue(EndEntityProfile.STARTTIME, 0, "");
-        profile.setValue(EndEntityProfile.ENDTIME, 0, "");
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setValidityStartTimeUsed(true);
+        profile.setValidityEndTimeUsed(false);
+        profile.setValidityStartTime("");
+        profile.setValidityEndTime("");
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "");
         try { 
         	// Custom starttime can be empty or null
@@ -829,10 +831,11 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Empty start time was not checked correctly.");
-        } 
-        profile.setUse(EndEntityProfile.STARTTIME, 0, false);
-        profile.setUse(EndEntityProfile.ENDTIME, 0, true);
+        }
+        profile.setValidityStartTimeUsed(false);
+        profile.setValidityEndTimeUsed(true);
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "");
         try { 
         	// Custom endtime can be empty or null
@@ -841,11 +844,12 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Empty end time was not checked correctly.");
         } 
         // Static times work?
-        profile.setUse(EndEntityProfile.STARTTIME, 0, true);
-        profile.setUse(EndEntityProfile.ENDTIME, 0, true);
+        profile.setValidityStartTimeUsed(true);
+        profile.setValidityEndTimeUsed(true);
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
         try { 
@@ -854,6 +858,7 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Static times does not work. ("+e.getMessage()+")");
         } 
         // Relative times work?
@@ -865,6 +870,7 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Relative times does not work.");
         } 
         // Static start, rel end work?
@@ -876,6 +882,7 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Static start time w relative end time does not work.");
         } 
         // Rel start, static end work?
@@ -887,6 +894,7 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Relative start time w static end time does not work.");
         }
         // Negative relative start times work?
@@ -991,14 +999,15 @@ public class UserFulfillEndEntityProfileTest {
         final EndEntityProfile profile = new EndEntityProfile();
         final ExtendedInformation ei = new ExtendedInformation();
         // Use empty, should fail
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
-        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAllowedRequestsUsed(false);
         try { 
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Allowedrequests not checked correctly, should be allowed.");
         } 
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "2");
@@ -1009,14 +1018,15 @@ public class UserFulfillEndEntityProfileTest {
         	fail("Error: Allowed requests was not checked correctly, should not be allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } 
-        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        }
+        profile.setAllowedRequestsUsed(true);
         try { 
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } catch (EndEntityProfileValidationException e) {
+            log.error(e.getMessage(), e);
         	fail("Error: Allowedrequests not checked correctly, should be allowed.");
         } 
         }{
@@ -1025,13 +1035,10 @@ public class UserFulfillEndEntityProfileTest {
         
         
         // Set so maxFailedLogins=non-modifyable required 
-        profile.addField(EndEntityProfile.MAXFAILEDLOGINS);
-        profile.setUse(EndEntityProfile.MAXFAILEDLOGINS,0,true);
-        profile.setRequired(EndEntityProfile.MAXFAILEDLOGINS,0,true);
-        profile.setModifyable(EndEntityProfile.MAXFAILEDLOGINS,0,false);
-        profile.setValue(EndEntityProfile.MAXFAILEDLOGINS,0,"7");
-
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
+        profile.setMaxFailedLoginsUsed(true);
+        profile.setMaxFailedLoginsModifiable(false);
+        profile.setMaxFailedLogins(7);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
         
         try {
         	final ExtendedInformation ei = new ExtendedInformation();
@@ -1083,7 +1090,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,1,"DEP2_1;DEP2_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
+        profile.setAvailableCAs(Arrays.asList(testca1));
 
         // Test right CA
         try{ 
@@ -1106,7 +1113,7 @@ public class UserFulfillEndEntityProfileTest {
         }
 
         // Set Any CA available
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+SecConst.ALLCAS);
+        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
 
         // Test right CA
         try{ 
@@ -1148,7 +1155,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,1,"DEP2_1;DEP2_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setValue(EndEntityProfile.AVAILCAS,0,""+TEST_CA_1);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
         
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.UPN);
@@ -1167,9 +1174,9 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.UPN,0,"test.com;primekey.se");
         profile.setValue(DnComponents.IPADDRESS,0,"11.11.1.1");
 
-        profile.setRequired(EndEntityProfile.EMAIL,0,true);
-        profile.setModifyable(EndEntityProfile.EMAIL,0,false);
-        profile.setValue(EndEntityProfile.EMAIL,0,"test.com;primekey.se");
+        profile.setEmailRequired(true);
+        profile.setEmailDomainModifiable(false);
+        profile.setEmailDomain("test.com;primekey.se");
         
         // Test with a mix of several rfc822name fields
         //profile.addField(DnComponents.RFC822NAME); already set
