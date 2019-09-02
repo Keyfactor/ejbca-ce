@@ -149,9 +149,9 @@
 	<property name="mod.cmpclient.dist" location="${ejbca.dist.path}/cmpclient" />
 	<property name="mod.cmpclient.lib" location="${mod.cmpclient.dist}/cmpclient.jar" />
 	<property name="mod.cmpclient.path" location="${mod.path}/cmpclient" />
-	<property name="mod.p11ngcli.dist" location="${ejbca.dist.path}/p11ngcli" />
-	<property name="mod.p11ngcli.lib" location="${mod.p11ngcli.dist}/p11ngcli.jar" />
-	<property name="mod.p11ngcli.path" location="${mod.path}/p11ngcli" />
+	<property name="mod.p11ng-cli.dist" location="${ejbca.dist.path}/p11ng-cli" />
+	<property name="mod.p11ng-cli.lib" location="${mod.p11ng-cli.dist}/p11ng-cli.jar" />
+	<property name="mod.p11ng-cli.path" location="${mod.path}/p11ng-cli" />
 	<property name="mod.cli-util.dist" location="${mod.dist.path}/" />
 	<property name="mod.cli-util.lib" location="${mod.cli-util.dist}/cli-util.jar" />
 	<property name="mod.cli-util.path" location="${mod.path}/cli-util" />
