@@ -1068,7 +1068,7 @@
                 <exclude unless="edition.is.ee" name="modules/externalra-gui/**"/>
                 <exclude unless="edition.is.ee" name="modules/externalra-scep/**"/>
                 <exclude unless="edition.is.ee" name="modules/cmpclient/**"/>
-                <exclude unless="edition.is.ee" name="modules/p11ngcli/**"/>
+                <exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
                 <exclude unless="edition.is.ee" name="modules/acme/**"/>
                 <exclude unless="edition.is.ee" name="lib/dnsjava-*.jar"/>
                 <exclude unless="edition.is.ee" name="lib/dnssecjava-*.jar"/>
@@ -1532,8 +1532,8 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<ant dir="modules" target="cmpclient" />
     </target>
 
-	<target name="p11ngcli" depends="deprecated:check" description="Build EJBCA P11NgCli">
-		<ant dir="modules" target="p11ngcli" />
+	<target name="p11ng-cli" depends="deprecated:check" description="Build EJBCA P11NgCli">
+		<ant dir="modules" target="p11ng-cli" />
     </target>	
 	
     <target name="validationtool" depends="doc, deprecated:check" description="Builds the ValidationTool standalone client application">
