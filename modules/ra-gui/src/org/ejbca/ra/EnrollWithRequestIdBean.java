@@ -131,6 +131,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         endEntityInformation = null;
         selectedAlgorithm = null;
         certificateProfile = null;
+        generatedToken = null;
     }
 
     /** Check the status of request ID */
