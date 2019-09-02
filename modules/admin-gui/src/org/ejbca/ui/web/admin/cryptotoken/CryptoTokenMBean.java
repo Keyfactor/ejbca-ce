@@ -272,8 +272,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String selectedKakKeyAlias;
         private boolean initialized;
         private boolean authorized;
-//        private boolean unlimitedOperations; // This one is used when authorizing a CP5 key
-//        private String maxOperationCount; // This one is used when authorizing a CP5 key
         
         private KeyPairGuiInfo(KeyPairInfo keyPairInfo) {
             alias = keyPairInfo.getAlias();
@@ -287,7 +285,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             subjectKeyID = keyPairInfo.getSubjectKeyID();
             placeholder = false;
             initialized = cryptoTokenManagementSession.isKeyInitialized(authenticationToken, getCurrentCryptoTokenId(), alias); 
-//            maxOperationCount = String.valueOf(cryptoTokenManagementSession.maxOperationCount(authenticationToken, getCurrentCryptoTokenId(), alias));
         }
         
         /**
@@ -307,8 +304,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             subjectKeyID = "";
             placeholder = true;
             initialized = false;
-//            unlimitedOperations = true;
-//            maxOperationCount = "0";
         }
         
         public List<SelectItem> getAvailableKeyAliases() {
@@ -342,23 +337,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setSelectedKakCryptoTokenId(int selectedKakCryptoTokenId) { this.selectedKakCryptoTokenId = selectedKakCryptoTokenId; }
         public String getSelectedKakKeyAlias() { return selectedKakKeyAlias; }
         public void setSelectedKakKeyAlias(String selectedKakKeyAlias) { this.selectedKakKeyAlias = selectedKakKeyAlias; }
-
-        
-//        public boolean isUnlimitedOperations() {
-//            return unlimitedOperations;
-//        }
-//
-//        public void setUnlimitedOperations(boolean unlimitedOperations) {
-//            this.unlimitedOperations = unlimitedOperations;
-//        }
-//
-//        /** @return number of allowed operations for this key. 0 if 'Unlimited' is checked */
-//        public String getMaxOperationCount() {
-//            return unlimitedOperations ? "0" : maxOperationCount;
-//        }
-//        public void setMaxOperationCount(final String maxOperationCount) {
-//            this.maxOperationCount = maxOperationCount;
-//        }
 
         public boolean isInitialized() {
             return initialized;
@@ -435,7 +413,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         this.unlimitedOperations = unlimitedOperations;
     }
 
-    /** @return number of allowed operations for this key. 0 if 'Unlimited' is checked */
+    /** @return number of allowed operations for this key. -1 if 'Unlimited' is checked */
     public String getMaxOperationCount() {
         return unlimitedOperations ? "-1" : maxOperationCount;
     }
