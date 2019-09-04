@@ -46,6 +46,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
@@ -909,7 +910,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public void setUsePsd2QcStatement(boolean usePsd2QcStatement) {
         profiledata.setPsd2QcStatementUsed(usePsd2QcStatement);
-    } 
+    }
+
+    public String getCabfOrganizationIdentifierRegex() {
+        return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
 
     // OTHER DATA
 

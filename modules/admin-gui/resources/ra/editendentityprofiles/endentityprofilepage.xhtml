@@ -923,6 +923,44 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="usePsd2QcStatementCheckBox" value="#{web.text.USE}"/>
 	            </h:panelGrid>
+	            &nbsp;
+	            <h:panelGroup id="cabfOrgIdentLabelGroup">
+					<h:outputText value="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER}"/>
+					&nbsp;
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#CABFOrganizationIdentifier')}" escape="false"/>
+	       		</h:panelGroup>
+	       		<h:panelGrid id="cabfOrgIdentGrid" columns="7">
+					<h:selectBooleanCheckbox 
+						id="cabfOrgIdentCheckbox" 
+						value="#{endEntityProfileMBean.profiledata.cabfOrganizationIdentifierUsed}" 
+						disabled="#{endEntityProfileMBean.viewOnly}">
+						<f:ajax render="cabfOrgIdentGrid"/>
+					</h:selectBooleanCheckbox>
+				    <h:outputLabel for="cabfOrgIdentCheckbox"  value="#{web.text.USE} : "/>
+					<h:outputLabel for="cabfOrgIdentValue"  value="#{web.text.VALUE}"/>
+					<h:inputText 
+						id="cabfOrgIdentValue"
+						value="#{endEntityProfileMBean.profiledata.cabfOrganizationIdentifier}" 
+					  		size="25" 
+					  		maxlength="50"
+					  		title="#{web.text.FORMAT_CABFORGANIZATIONIDENTIFIER}"
+					  		pt:pattern="#{endEntityProfileMBean.cabfOrganizationIdentifierRegex}"
+							disabled="#{endEntityProfileMBean.viewOnly or not endEntityProfileMBean.profiledata.cabfOrganizationIdentifierUsed}">
+				        <f:ajax/> 
+				    </h:inputText>
+				    <h:selectBooleanCheckbox 
+				    	id="cabfOrgIdentReqCheckBox" 
+				    	value="#{endEntityProfileMBean.profiledata.cabfOrganizationIdentifierRequired}" 
+				    	disabled="#{endEntityProfileMBean.viewOnly or not endEntityProfileMBean.profiledata.cabfOrganizationIdentifierUsed}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="cabfOrganizationIdentifierRequired"  value="#{web.text.REQUIRED}"/>
+					<h:selectBooleanCheckbox 
+				    	id="cabfOrgIdentModCheckBox" 
+				    	value="#{endEntityProfileMBean.profiledata.cabfOrganizationIdentifierModifiable}" 
+				    	disabled="#{endEntityProfileMBean.viewOnly or not endEntityProfileMBean.profiledata.cabfOrganizationIdentifierUsed}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="cabfOrgIdentModCheckBox"  value="#{web.text.MODIFYABLE}"/>
+				</h:panelGrid>
 			</h:panelGrid>
 				
 <!-- OTHER DATA -->		
