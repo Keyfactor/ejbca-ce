@@ -38,6 +38,7 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -279,6 +280,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
     protected static final String USENAMECONSTRAINTS = "usenameconstraints";
     protected static final String NAMECONSTRAINTSCRITICAL = "nameconstraintscritical";
+    protected static final String USECABFORGANIZATIONIDENTIFIER = "usecabforganizationidentifier";
     protected static final String USESUBJECTDIRATTRIBUTES = "usesubjectdirattributes";
     protected static final String CVCTERMINALTYPE = "cvctermtype";
     protected static final String CVCACCESSRIGHTS = "cvcaccessrights";
@@ -367,6 +369,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
         useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
         useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
+        useStandardCertificateExtensions.put(USECABFORGANIZATIONIDENTIFIER, CabForumOrganizationIdentifier.OID);
     }
 
     // Old values used to upgrade from v22 to v23
@@ -695,7 +698,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Gets the certificate validity offset.
      * @return the offset as simple time string with seconds precision (i.e. '-10m')
-     * @see #link{org.cesecore.util.SimpleTime}
+     * @see org.cesecore.util.SimpleTime
      */
     public String getCertificateValidityOffset() {
         return (String) data.get(CERTIFICATE_VALIDITY_OFFSET);
@@ -779,7 +782,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     private void setExpirationRestrictionWeekdays(boolean[] weekdays) {
-        final ArrayList<Boolean> list = new ArrayList<Boolean>(weekdays.length);
+        final ArrayList<Boolean> list = new ArrayList<>(weekdays.length);
         for (int i = 0; i < weekdays.length; i++) {
             list.add(Boolean.valueOf(weekdays[i]));
         }
@@ -1139,7 +1142,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         @SuppressWarnings("unchecked")
         List<CertificatePolicy> l = (List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES);
         if (l == null) {
-            l = new ArrayList<CertificatePolicy>();
+            l = new ArrayList<>();
         } else {
             // Check class name, because we changed this in EJBCA 5 and need to support older versions in the database for 100% upgrade
             if (l.size() > 0) {
@@ -1154,7 +1157,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     @SuppressWarnings("unchecked")
                     List<Object> oldl = (List<Object>) data.get(CERTIFICATE_POLICIES);
                     // In worst case they can have mixed old and new classes, therefore we use a "normal" iterator so we can verify the cast
-                    l = new ArrayList<CertificatePolicy>();
+                    l = new ArrayList<>();
                     for (int i = 0; i < oldl.size(); i++) {
                         try {
                             org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy oldPol = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)oldl.get(i);
@@ -1202,14 +1205,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity
-     * @see CertificateConstants.CERTTYPE_ROOTCA, etc
+     * @see {@link CertificateConstants#CERTTYPE_ROOTCA}, etc
      */
     public int getType() {
         return ((Integer) data.get(TYPE)).intValue();
     }
 
     /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity
-     * @see CertificateConstants.CERTTYPE_ROOTCA, etc
+     * @see {@link CertificateConstants#CERTTYPE_ROOTCA}, etc
      */
     public void setType(int type) {
         data.put(TYPE, Integer.valueOf(type));
@@ -1368,7 +1371,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setKeyUsage(boolean[] keyusage) {
-        ArrayList<Boolean> keyuse = new ArrayList<Boolean>(keyusage.length);
+        ArrayList<Boolean> keyuse = new ArrayList<>(keyusage.length);
 
         for (int i = 0; i < keyusage.length; i++) {
             keyuse.add(Boolean.valueOf(keyusage[i]));
@@ -1609,7 +1612,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param Set of oids (strings), or an empty set, should not be null
      */
     public void setOverridableExtensionOIDs(Set<String> overridableextensionoids) {
-        data.put(OVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<String>(overridableextensionoids));
+        data.put(OVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<>(overridableextensionoids));
     }
 
     /**
@@ -1620,7 +1623,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public Set<String> getOverridableExtensionOIDs() {
     	if (data.get(OVERRIDABLEEXTENSIONOIDS) == null) {
-    		return new LinkedHashSet<String>();
+    		return new LinkedHashSet<>();
     	}
         return (Set<String>) data.get(OVERRIDABLEEXTENSIONOIDS);
     }
@@ -1631,7 +1634,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param Set of oids (strings) that are not allowed to be overridden, or empty set to not disallow anything, not null
      */
     public void setNonOverridableExtensionOIDs(Set<String> nonoverridableextensionoids) {
-        data.put(NONOVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<String>(nonoverridableextensionoids));
+        data.put(NONOVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<>(nonoverridableextensionoids));
     }
 
     /**
@@ -1642,7 +1645,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public Set<String> getNonOverridableExtensionOIDs() {
     	if (data.get(NONOVERRIDABLEEXTENSIONOIDS) == null) {
-    		return new LinkedHashSet<String>();
+    		return new LinkedHashSet<>();
     	}
         return (Set<String>) data.get(NONOVERRIDABLEEXTENSIONOIDS);
     }
@@ -1656,7 +1659,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public String createSubjectDNSubSet(String dn) {
         DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
-        return constructUserData(extractor, getSubjectDNSubSet(), true);
+        return constructUserData(extractor, getSubjectDNSubSet());
     }
 
     public boolean getUseSubjectAltNameSubSet() {
@@ -1693,7 +1696,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public String createSubjectAltNameSubSet(String subjectaltname) {
         DNFieldExtractor extractor = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-        return constructUserData(extractor, getSubjectAltNameSubSet(), false);
+        return constructUserData(extractor, getSubjectAltNameSubSet());
     }
 
     /**
@@ -1703,7 +1706,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param usefields
      * @return
      */
-    protected static String constructUserData(DNFieldExtractor extractor, Collection<Integer> usefields, boolean subjectdn) {
+    private static String constructUserData(final DNFieldExtractor extractor, final Collection<Integer> usefields) {
         String retval = "";
 
         if (usefields instanceof List<?>) {
@@ -2111,6 +2114,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    /** 
+     * @return true if the CA/B Forum Organization Identifier extension should be included, or false (default) if it should not
+     */
+    public boolean getUseCabfOrganizationIdentifier() {
+        Boolean ret = ((Boolean) data.get(USECABFORGANIZATIONIDENTIFIER));
+        if (ret == null) {
+            return false; // default value
+        }
+        return ret;
+    }
+
+    public void setUseCabfOrganizationIdentifier(boolean use) {
+        data.put(USECABFORGANIZATIONIDENTIFIER, use);
+    }
+
     public boolean getUseNameConstraints() {
         Boolean b = (Boolean) data.get(USENAMECONSTRAINTS);
         return b != null && b.booleanValue();
@@ -2337,8 +2355,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * @return the ID of an approval profile
-     *
+     * Sets the ID of an approval profile
      * @deprecated since 6.8.0. Use setApprovals() instead;
      */
     @Deprecated
@@ -2351,7 +2368,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             approvals = new LinkedHashMap<>();
         }
         // We must store this as a predictable order map in the database, in order for databaseprotection to work
-        data.put(APPROVALS, new LinkedHashMap<ApprovalRequestType, Integer>(approvals));
+        data.put(APPROVALS, new LinkedHashMap<>(approvals));
     }
 
     /**

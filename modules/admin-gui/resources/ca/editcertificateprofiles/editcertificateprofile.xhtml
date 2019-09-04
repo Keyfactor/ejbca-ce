@@ -1064,7 +1064,16 @@
 					<h:selectBooleanCheckbox id="checkusecardnumber" value="#{certProfileBean.certificateProfile.useCardNumber}" disabled="#{certProfilesBean.viewOnly}"/>
 					<h:outputLabel for="checkusecardnumber" value="#{web.text.USE}"/>
 				</h:panelGroup>
-		
+
+				<!-- CA/B Forum Organization Identifier -->
+				<h:panelGroup rendered="#{!certProfileBean.typeCA}">
+					<h:outputLabel for="checkcabforganiationidentifier" value="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER}"/>
+				</h:panelGroup>
+                <h:panelGroup id="checkcabforganizationidentifiergroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
+                    <h:selectBooleanCheckbox id="checkcabforganiationidentifier" value="#{certProfileBean.certificateProfile.useCabfOrganizationIdentifier}" disabled="#{certProfilesBean.viewOnly}"/>
+                    <h:outputLabel for="checkcabforganiationidentifier" value="#{web.text.USE}"/>
+                </h:panelGroup>
+
 				<!-- Custom Certificate Extensions -->
 				<h:outputLabel rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" for="selectusedcertificateextensions"
 					value="#{web.text.USEDCERTEXTENSIONS}"/>
