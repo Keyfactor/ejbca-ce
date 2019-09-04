@@ -36,7 +36,7 @@ public class CabForumOrganizationIdentifier extends StandardCertificateExtension
     private static final long serialVersionUID = 1L;
     
     public static final String OID = "2.23.140.3.1";
-    public static final String VALIDATION_REGEX = "[A-Z]{5,5}(\\+[A-Z][A-Z])?-.*";
+    public static final String VALIDATION_REGEX = "[A-Z0-9]{5,5}(\\+[A-Z0-9]+)?-.*";
 
     @Override
     public void init(final CertificateProfile certProf) {
