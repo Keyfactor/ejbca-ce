@@ -1,3 +1,4 @@
+<%@page import="org.apache.commons.lang.StringUtils"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
@@ -6,7 +7,7 @@
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
                  org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, 
-                 org.apache.commons.lang.time.DateUtils, java.util.Locale,
+                 org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils, java.util.Locale,
                  org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.crl.RevokedCertInfo,
                  org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.util.CertTools, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" %>
 <html>
@@ -281,11 +282,12 @@
 
     <!-- ---------- Other certificate data -------------------- -->
 
-    <% if (  viewendentityhelper.profile.getUse(EndEntityProfile.CERTSERIALNR, 0)
-    	  || viewendentityhelper.profile.getUse(EndEntityProfile.STARTTIME, 0) 
-    	  || viewendentityhelper.profile.getUse(EndEntityProfile.ENDTIME, 0)
-    	  || viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER, 0)
+    <% if (  viewendentityhelper.profile.isCustomSerialNumberUsed()
+    	  || viewendentityhelper.profile.isValidityStartTimeUsed() 
+    	  || viewendentityhelper.profile.isValidityEndTimeUsed()
+    	  || viewendentityhelper.profile.isCardNumberUsed()
     	  || viewendentityhelper.profile.isPsd2QcStatementUsed()
+    	  || viewendentityhelper.profile.isCabfOrganizationIdentifierUsed()
     	  ) {
         %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
@@ -406,6 +408,12 @@
       	</td>
       </tr>
     <% } %>
+    <% if (viewendentityhelper.userdata.getExtendedInformation() != null && StringUtils.isNotEmpty(viewendentityhelper.userdata.getExtendedInformation().getCabfOrganizationIdentifier())) { %>
+		<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_CABF_ORGANIZATION_IDENTIFIER\") %>"/></td>
+			<td><c:out value="<%=viewendentityhelper.userdata.getExtendedInformation().getCabfOrganizationIdentifier()%>"/></td>
+		</tr>
+	<%	} %>
 
     <!-- ---------- Other data -------------------- -->
 

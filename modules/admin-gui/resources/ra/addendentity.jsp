@@ -1,3 +1,4 @@
+<%@page import="org.apache.commons.lang.StringUtils"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
@@ -7,7 +8,7 @@
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
                  org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, javax.ejb.CreateException, java.io.Serializable, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, 
-                 org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils,
+                 org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils,
                  org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
                  org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.certificate.certextensions.CertificateExtensionException, org.cesecore.certificates.ca.IllegalNameException, org.ejbca.util.HTMLTools" %>
 <html> 
@@ -41,6 +42,7 @@
     static final String TEXTFIELD_MAXFAILEDLOGINS = "textfieldmaxfailedlogins";
 	static final String TEXTFIELD_NCANAME = "psd2ncaname";
 	static final String TEXTFIELD_NCAID = "psd2ncaid";
+	static final String TEXTFIELD_CABFORGANIZATIONIDENTIFIER = "cabforgident";
     
     static final String TEXTAREA_EXTENSIONDATA = "textareaextensiondata";
     static final String TEXTAREA_NC_PERMITTED = "textarencpermitted"; // Name Constraints
@@ -214,7 +216,7 @@
             value = value.trim();
             if (!value.equals("")) {
                 newuser.setUsername(value);
-                oldprofile.setValue(EndEntityProfile.USERNAME, 0, value);
+                oldprofile.setUsernameDefault(value);
                 addedusername = value;
             }
         }
@@ -233,7 +235,7 @@
             value = value.trim();
             if (!value.equals("")) {
                 newuser.setPassword(value);
-                oldprofile.setValue(EndEntityProfile.PASSWORD, 0, value);
+                oldprofile.setPredefinedPassword(value);
             }
         }
 
@@ -318,7 +320,7 @@
             oldcardnumber = value;
             if (!value.equals("")) {
                 newuser.setCardNumber(value);
-                oldprofile.setValue(EndEntityProfile.CARDNUMBER, 0, value);
+                oldprofile.setCardNumber(value);
             }
         }
 
@@ -573,7 +575,7 @@
         oldprofile.setValue(EndEntityProfile.DEFKEYSTORE, 0, value);
         lastselectedtoken = value;
 
-        if (oldprofile.getUse(EndEntityProfile.STARTTIME, 0)) {
+        if (oldprofile.isValidityStartTimeUsed()) {
             value = request.getParameter(TEXTFIELD_STARTTIME);
             if (value != null) {
                 value = value.trim();
@@ -585,11 +587,11 @@
                     }
                     ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, storeValue);
                     newuser.setExtendedInformation(ei);
-                    oldprofile.setValue(EndEntityProfile.STARTTIME, 0, value);
+                    oldprofile.setValidityStartTime(value);
                 }
             }
         }
-        if (oldprofile.getUse(EndEntityProfile.ENDTIME, 0)) {
+        if (oldprofile.isValidityEndTimeUsed()) {
             value = request.getParameter(TEXTFIELD_ENDTIME);
             if (value != null) {
                 value = value.trim();
@@ -601,11 +603,11 @@
                     }
                     ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, storeValue);
                     newuser.setExtendedInformation(ei);
-                    oldprofile.setValue(EndEntityProfile.ENDTIME, 0, value);
+                    oldprofile.setValidityEndTime(value);
                 }
             }
         }
-        if (oldprofile.getUse(EndEntityProfile.CERTSERIALNR, 0)) {
+        if (oldprofile.isCustomSerialNumberUsed()) {
             ExtendedInformation ei = newuser.getExtendedInformation();
             if (ei == null) {
                 ei = new ExtendedInformation();
@@ -641,8 +643,18 @@
             }
             newuser.setExtendedInformation(ei);
         }
+        if (oldprofile.isCabfOrganizationIdentifierUsed()) {
+            ExtendedInformation ei = newuser.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            value = request.getParameter(TEXTFIELD_CABFORGANIZATIONIDENTIFIER);
+            ei.setCabfOrganizationIdentifier(StringUtils.trim(value));
+            // TODO validation
+            newuser.setExtendedInformation(ei);
+        }
         try {
-            if (oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0)) {
+            if (oldprofile.isNameConstraintsPermittedUsed()) {
                 ExtendedInformation ei = newuser.getExtendedInformation();
                 if (ei == null) {
                     ei = new ExtendedInformation();
@@ -655,7 +667,7 @@
                 }
                 newuser.setExtendedInformation(ei);
             }
-            if (oldprofile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0)) {
+            if (oldprofile.isNameConstraintsExcludedUsed()) {
                 ExtendedInformation ei = newuser.getExtendedInformation();
                 if (ei == null) {
                     ei = new ExtendedInformation();
@@ -684,7 +696,7 @@
                 try {
                     EndEntityInformation endEntityInformation = rabean.addUser(newuser);
                     newuser.setUsername(endEntityInformation.getUsername());
-                    oldprofile.setValue(EndEntityProfile.USERNAME, 0, endEntityInformation.getUsername());
+                    oldprofile.setUsernameDefault(endEntityInformation.getUsername());
                     addedusername = endEntityInformation.getUsername();
                     useradded = true;
                 } catch (org.ejbca.core.model.approval.ApprovalException e) {
@@ -843,20 +855,20 @@ function fillCAField(){
 function checkallfields(){
     var illegalfields = 0;
 
-    <% if(profile.isModifyable(EndEntityProfile.USERNAME,0)){ %>
+    <% if (!profile.isAutoGeneratedUsername()) { %>
     if(!checkfieldforlegalchars("document.adduser.<%=TEXTFIELD_USERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("USERNAME") %>"))
       illegalfields++;
-    <%  if(profile.isRequired(EndEntityProfile.USERNAME,0)){%>
+    <%  if (profile.isUsernameRequired()){%>
     if((document.adduser.<%= TEXTFIELD_USERNAME %>.value == "")){
       alert("<%= ejbcawebbean.getText("REQUIREDUSERNAME", true) %>");
       illegalfields++;
     } 
     <%    }
         }
-       if(profile.getUse(EndEntityProfile.PASSWORD,0)){
-         if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>
+       if (!profile.useAutoGeneratedPasswd()){
+         if (profile.isPasswordModifiable()){%>
 
-    <%  if(profile.isRequired(EndEntityProfile.PASSWORD,0)){%>
+    <%  if (profile.isPasswordRequired()){%>
     if((document.adduser.<%= TEXTFIELD_PASSWORD %>.value == "") && !profile.isPasswordPreDefined()){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD", true) %>");
       illegalfields++;
@@ -1024,8 +1036,8 @@ function checkallfields(){
            }
          }
  
-       if(profile.getUse(EndEntityProfile.PASSWORD,0)){
-         if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
+       if (!profile.useAutoGeneratedPasswd()) {
+         if (profile.isPasswordModifiable()) { %>
     if(document.adduser.<%= TEXTFIELD_PASSWORD %>.value != document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.value){
       alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH", true) %>");
       illegalfields++;
@@ -1151,21 +1163,19 @@ function checkallfields(){
 
     <!-- ---------- Main -------------------- -->
 
-          <% if(profile.getUse(EndEntityProfile.USERNAME,0)){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><strong><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>"/></strong></td> 
 	<td>
-            <%if(!profile.isModifyable(EndEntityProfile.USERNAME,0)){%>
-            <input type="text" name="<%= TEXTFIELD_USERNAME %>" disabled="disabled" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.USERNAME,0) %>"/>' title="<%= ejbcawebbean.getText("USERNAMEWILLBEAUTOGENERATED") %>">	
+            <%if (profile.isAutoGeneratedUsername()){%>
+            <input type="text" name="<%= TEXTFIELD_USERNAME %>" disabled="disabled" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getUsernameDefault() %>"/>' title="<%= ejbcawebbean.getText("USERNAMEWILLBEAUTOGENERATED") %>">	
             <%}else{ %> 
-            <input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.USERNAME,0) %>"/>' title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
+            <input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getUsernameDefault() %>"/>' title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
           	<%} %>
     </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.USERNAME,0)) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if (profile.isUsernameRequired()) out.write(" CHECKED "); %>></td>
       </tr>
-         <% }%>
 
-          <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
+          <% if (!profile.useAutoGeneratedPasswd()){ %>
       <tr id="Row<%=(row)%2%>">
 		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"PASSWORDORENROLLMENTCODE\") %>"/></td>
         <td>   
@@ -1174,7 +1184,7 @@ function checkallfields(){
         		<i><c:out value="<%= ejbcawebbean.getText(\"PASSWORD_DEFINED_IN_PROFILE\") %>"/></i>
         	<% } %>
         </td>
-		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
+		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if (profile.isPasswordRequired()) out.write(" CHECKED "); %>></td>
       </tr>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CONFIRMPASSWORD\") %>"/></td>
@@ -1580,13 +1590,14 @@ function checkallfields(){
 
     <!-- ---------- Other certificate data -------------------- -->
 
-	<%	if ( profile.getUse(EndEntityProfile.CERTSERIALNR, 0)
-		  || profile.getUse(EndEntityProfile.STARTTIME, 0)
-		  || profile.getUse(EndEntityProfile.ENDTIME, 0)
-		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
-		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0)
-		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0)
+	<%	if ( profile.isCustomSerialNumberUsed()
+		  || profile.isValidityStartTimeUsed()
+		  || profile.isValidityEndTimeUsed()
+		  || profile.isCardNumberUsed()
+		  || profile.isNameConstraintsPermittedUsed()
+		  || profile.isNameConstraintsExcludedUsed()
 		  || profile.isPsd2QcStatementUsed()
+		  || profile.isCabfOrganizationIdentifierUsed()
 		   ) { %>
 	    <tr id="Row<%=(row++)%2%>" class="section">
 		<td align="right">
@@ -1597,7 +1608,7 @@ function checkallfields(){
 	    </tr>
 	<%	} %>
 
-	<%	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
+	<%	if (profile.isCustomSerialNumberUsed()) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"CERT_SERIALNUMBER_HEXA\") %>"/>
@@ -1608,14 +1619,11 @@ function checkallfields(){
 			</td>
 			<td>
 				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="disabled" />
-				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
-						out.write(" CHECKED ");
-					} %>
 			</td>
 		</tr>
 	<%	} %> 
 
-    <%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
+    <%	if (profile.isValidityStartTimeUsed()) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/End_Entity_Profiles.html#Certificate_Validity") %>
@@ -1625,13 +1633,13 @@ function checkallfields(){
 			</td>
 			<td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
-					<% String str = profile.getValue(EndEntityProfile.STARTTIME, 0);	
+					<% String str = profile.getValidityStartTime();	
 					String startTime = "";
 					if (str != null && str.trim().length() > 0) {
 						startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(str); 
 					} %>
 					value='<c:out value="<%= startTime %>"/>'
-					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
+					<%	if (!profile.isValidityStartTimeModifiable()) { %>
 					readonly="true"
 					<%	} %>
 					/>
@@ -1646,7 +1654,7 @@ function checkallfields(){
 		</tr>
 	<%	} %>
 
-    <%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+    <%	if (profile.isValidityEndTimeUsed()) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/End_Entity_Profiles.html#Certificate_Validity") %>
@@ -1656,20 +1664,20 @@ function checkallfields(){
 			</td>
 			<td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
-					<% String str = profile.getValue(EndEntityProfile.ENDTIME, 0);	
+					<% String str = profile.getValidityEndTime();	
 					String endTime = "";
 					if (str != null && str.trim().length() > 0) {
 						endTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(str); 
 					} %>
 					value='<c:out value="<%= endTime %>"/>'
-					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
+					<% if (!profile.isValidityEndTimeModifiable()) { %>
 					readonly="true"
-					<%	} %>
+					<% } %>
 					/>
 			</td>
 			<td>
 				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_ENDTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled"
-				<%	if ( profile.isRequired(EndEntityProfile.ENDTIME, 0) ) {
+				<%	if (profile.isRequired(EndEntityProfile.ENDTIME, 0) ) {
 						out.write(" CHECKED ");
 					} %>
 				/>
@@ -1677,17 +1685,17 @@ function checkallfields(){
 		</tr>
 	<%	} %>
 
-	<%	if( profile.getUse(EndEntityProfile.CARDNUMBER,0) ) { %>
+	<%	if (profile.isCardNumberUsed()) { %>
 		<tr id="Row<%=(row++)%2%>">
 			<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
 			<td>
 				<input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>' title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
 			</td>
-			<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
+			<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if (profile.isCardNumberRequired()) out.write(" CHECKED "); %>></td>
 		</tr>
 	<%	} %>
 	
-	<% if( profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0) ) { %>
+	<% if (profile.isNameConstraintsPermittedUsed()) { %>
         <tr id="Row<%=(row)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
@@ -1698,10 +1706,10 @@ function checkallfields(){
             <td>
                 <textarea name="<%=TEXTAREA_NC_PERMITTED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"></textarea>
             </td>
-            <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_NC_PERMITTED %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.NAMECONSTRAINTS_PERMITTED,0)) out.write(" CHECKED "); %>></td>
+            <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_NC_PERMITTED %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if (profile.isNameConstraintsPermittedRequired()) out.write(" CHECKED "); %>></td>
         </tr>
     <% } %>
-    <% if( profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0) ) { %>
+    <% if (profile.isNameConstraintsExcludedUsed()) { %>
         <tr id="Row<%=(row++)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
@@ -1711,7 +1719,7 @@ function checkallfields(){
             <td>
                 <textarea name="<%=TEXTAREA_NC_EXCLUDED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"></textarea>
             </td>
-            <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_NC_EXCLUDED %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED,0)) out.write(" CHECKED "); %>></td>
+            <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_NC_EXCLUDED %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if (profile.isNameConstraintsExcludedRequired()) out.write(" CHECKED "); %>></td>
         </tr>
     <%  } %>
 
@@ -1769,6 +1777,22 @@ function checkallfields(){
 		</td>
     </tr>
 	<%	} %> 
+	
+	<% if (profile.isCabfOrganizationIdentifierUsed()) { %>
+		<tr id="Row<%=(row++)%2%>">
+			<td align="right">
+				<c:out value="<%= ejbcawebbean.getText(\"EXT_CABF_ORGANIZATION_IDENTIFIER\") %>"/>
+			</td>
+			<td>
+				<input type="text" name="<%= TEXTFIELD_CABFORGANIZATIONIDENTIFIER %>" size="30" maxlength="256" tabindex="<%=tabindex++%>"  value="<c:out value="<%=profile.getCabfOrganizationIdentifier()%>"/>"
+					<% if (!profile.isCabfOrganizationIdentifierModifiable()) out.write(" readonly=\"true\" "); %>
+					pattern="[A-Z0-9]{5,5}(\+[A-Z0-9]+)?-.+"/>
+			</td>
+			<td>
+				<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"  <% if (profile.isCabfOrganizationIdentifierRequired()) out.write(" CHECKED "); %>/>
+			</td>
+		</tr>
+	<%	} %>
 
     <!-- ---------- Other data -------------------- -->
 
