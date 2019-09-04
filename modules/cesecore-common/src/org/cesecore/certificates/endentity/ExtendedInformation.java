@@ -112,6 +112,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String QCETSIPSD2ROLESOFPSP = "qcetsipsd2rolesofpsp";
     private static final String QCETSIPSD2NCANAME = "qcetsipsd2ncaname";
     private static final String QCETSIPSD2NCAID = "qcetsipsd2ncaid";
+    private static final String CABFORGANIZATIONIDENTIFIER = "cabforganizationidentifier";
 
     /** Keystore specifications used for enrolling end entity user with key-pair generated on a server side (KickAssRA).*/
     private static String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
@@ -427,6 +428,76 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         } else {
             data.put(QCETSIPSD2NCAID, qcpsd2ncaid);
         }
+    }
+    
+    /**
+     * Returns the full CA/B Forum Organization Identifier string.
+     * The format is <code>SSSCC-RRR...</code> or <code>SSSCC+PP-RRR...</code>,
+     * where III is the Registration Scheme Identifier, CC is the country code,
+     * PP is an optional state/province code and RRR is the coutry/state specific
+     * registration reference.
+     */
+    public String getCabfOrganizationIdentifier() {
+        return StringUtils.defaultString((String) data.get(CABFORGANIZATIONIDENTIFIER));
+    }
+
+    /** Sets the full CA/B Forum Organization Identifier string */
+    public void setCabfOrganizationIdentifier(final String value) {
+        if (StringUtils.isEmpty(value)) {
+            data.remove(CABFORGANIZATIONIDENTIFIER);
+        } else {
+            data.put(CABFORGANIZATIONIDENTIFIER, value);
+        }
+    }
+
+    /**
+     * Returns the "Registration Scheme Identifier" part of the CA/B Forum Organization Identifier
+     * @return Three letter "Registration Scheme Identifier"
+     */
+    public String getCabfRegistrationSchemeIdentifier() {
+        return getCabfOrganizationIdentifier().substring(0, 3);
+    }
+
+    /**
+     * Returns the "Registration Country" part of the CA/B Forum Organization Identifier
+     * @return Two letter ISO country code
+     */
+    public String getCabfRegistrationCountry() {
+        return getCabfOrganizationIdentifier().substring(3, 5);
+    }
+
+    /**
+     * Returns the "Registration State of Province" part of the CA/B Forum Organization Identifier.
+     * Not all countries have states or provinces.
+     * @return Two letter state or province code, or null if absent.
+     * @throws IllegalStateException if the organization identifier is malformed
+     */
+    public String getCabfRegistrationStateOrProvince() {
+        final String orgIdent = getCabfOrganizationIdentifier();
+        if (orgIdent.charAt(5) == '+') {
+            final int hyphen = orgIdent.indexOf('-');
+            if (hyphen == -1) {
+                throw new IllegalStateException("Missing hyphen in CA/B Forum Organization Identifier");
+            }
+            return orgIdent.substring(6, hyphen);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the "Registration Reference" part of the CA/B Forum Organization Identifier.
+     * The format is country/state specific.
+     * @return Country/state specific "Registration Reference" string.
+     * @throws IllegalStateException if the organization identifier is malformed
+     */
+    public String getCabfRegistrationReference() {
+        final String orgIdent = getCabfOrganizationIdentifier();
+        final int hyphen = orgIdent.indexOf('-');
+        if (hyphen == -1) {
+            throw new IllegalStateException("Missing hyphen in CA/B Forum Organization Identifier");
+        }
+        return orgIdent.substring(hyphen+1);
     }
 
     /** @return the subject DN exactly as requested (via WS ) */
