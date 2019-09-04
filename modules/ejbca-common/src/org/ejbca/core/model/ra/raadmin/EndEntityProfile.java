@@ -1234,14 +1234,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setValidityEndTime(final String endTime) {
         setValue(ENDTIME, 0, endTime);
     }
-    
-    public String getCardNumber() {
-        return getValue(CARDNUMBER, 0);
-    }
-
-    public void setCardNumber(final String cardNumber) {
-        setValue(CARDNUMBER, 0, cardNumber);
-    }
 
     public boolean isCardNumberUsed() {
         return getUse(CARDNUMBER, 0);

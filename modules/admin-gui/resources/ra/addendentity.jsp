@@ -320,7 +320,6 @@
             oldcardnumber = value;
             if (!value.equals("")) {
                 newuser.setCardNumber(value);
-                oldprofile.setCardNumber(value);
             }
         }
 
