@@ -1860,22 +1860,6 @@ public class CryptokiDevice {
             }
             return privateObjects;
         }
-        
-        public long getPrivateKeyByAlias(final long session, final String alias) {
-            long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.LABEL, alias));
-            if (objs.length == 0) {
-                throw new IllegalArgumentException("Key with label " + alias + " does not exists!");
-            }
-            return objs[0];
-        }
-        
-        public long getPublicKeyByAlias(final long session, final String alias) {
-            long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.LABEL, alias));
-            if (objs.length == 0) {
-                throw new IllegalArgumentException("Key with label " + alias + " does not exists!");
-            }
-            return objs[0];
-        }
 
         /**
          * Finds all private key objects (both token and session keys).
@@ -1902,7 +1886,7 @@ public class CryptokiDevice {
         * @param alias label of secret key
         * @return found secret key objects
         */
-        public long[] findSecretKeyObjectsByLabel(Long session, String alias) {
+        long[] findSecretKeyObjectsByLabel(Long session, String alias) {
             long[] secretObjects;
             if (useCache) {
                 FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_SECRET_KEY, P11NGStoreConstants.CKA_LABEL, alias);
