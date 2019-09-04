@@ -65,8 +65,8 @@ public class ExtendedInformationTest {
         // Test by hardcoding in the binary encoded data, to ensure we can read such data
         // As it was stored before EJBCA 6.8.0
         ExtendedInformation ei4 = new ExtendedInformation();
-        LinkedHashMap<String,Object> map = new LinkedHashMap<String,Object>();
-        map.put(UpgradeableDataHashMap.VERSION, new Float(4));
+        LinkedHashMap<String,Object> map = new LinkedHashMap<>();
+        map.put(UpgradeableDataHashMap.VERSION, 4.0F);
         map.put("CERTIFICATE_REQUEST", Base64.decode(pkcs10.getBytes(StandardCharsets.UTF_8)));
         ei4.setData(map);
         assertEquals(pkcs10, new String(Base64.encode(ei4.getCertificateRequest()), StandardCharsets.UTF_8));
@@ -153,5 +153,38 @@ public class ExtendedInformationTest {
         extendedInformation.getRawData().put("maxfailedloginattempts", maxFailedLoginAttempts);
         assertEquals(Integer.valueOf(remainingLoginAttempts), (Integer) extendedInformation.getRemainingLoginAttempts());
         assertEquals(Integer.valueOf(maxFailedLoginAttempts), (Integer) extendedInformation.getMaxLoginAttempts());
+    }
+
+    @Test
+    public void parseCabfOrganizationIdentifierVatScheme() {
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setCabfOrganizationIdentifier("VATSE-556677123401");
+        assertEquals("VATSE-556677123401", extendedInformation.getCabfOrganizationIdentifier());
+        assertEquals("Wrong scheme identifier was extracted.", "VAT", extendedInformation.getCabfRegistrationSchemeIdentifier());
+        assertEquals("Wrong country code was extracted.", "SE", extendedInformation.getCabfRegistrationCountry());
+        assertNull("State or Province should be null", extendedInformation.getCabfRegistrationStateOrProvince());
+        assertEquals("Wrong registration reference was extracted.", "556677123401", extendedInformation.getCabfRegistrationReference());
+    }
+
+    @Test
+    public void parseCabfOrganizationIdentifierPsbScheme() {
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setCabfOrganizationIdentifier("PSDBE-NBB-1234.567.890");
+        assertEquals("PSDBE-NBB-1234.567.890", extendedInformation.getCabfOrganizationIdentifier());
+        assertEquals("Wrong scheme identifier was extracted.", "PSD", extendedInformation.getCabfRegistrationSchemeIdentifier());
+        assertEquals("Wrong country code was extracted.", "BE", extendedInformation.getCabfRegistrationCountry());
+        assertNull("State or Province should be null", extendedInformation.getCabfRegistrationStateOrProvince());
+        assertEquals("Wrong registration reference was extracted.", "NBB-1234.567.890", extendedInformation.getCabfRegistrationReference());
+    }
+
+    @Test
+    public void parseCabfOrganizationIdentifierNtrWithState() {
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setCabfOrganizationIdentifier("NTRUS+CA-12345678");
+        assertEquals("NTRUS+CA-12345678", extendedInformation.getCabfOrganizationIdentifier());
+        assertEquals("Wrong scheme identifier was extracted.", "NTR", extendedInformation.getCabfRegistrationSchemeIdentifier());
+        assertEquals("Wrong country code was extracted.", "US", extendedInformation.getCabfRegistrationCountry());
+        assertEquals("Wrong state or province value was extracted", "CA", extendedInformation.getCabfRegistrationStateOrProvince());
+        assertEquals("Wrong registration reference was extracted.", "12345678", extendedInformation.getCabfRegistrationReference());
     }
 }

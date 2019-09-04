@@ -44,8 +44,8 @@ public enum RevocationReasons {
     private final String stringValue;
     private final String humanReadable;
 
-    private static final Map<Integer, RevocationReasons> databaseLookupMap = new HashMap<Integer, RevocationReasons>();
-    private static final Map<String, RevocationReasons> cliLookupMap = new HashMap<String, RevocationReasons>();
+    private static final Map<Integer, RevocationReasons> databaseLookupMap = new HashMap<>();
+    private static final Map<String, RevocationReasons> cliLookupMap = new HashMap<>();
     private static final Collection<Integer> reasonableRevocationReasons;
     
     static {

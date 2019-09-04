@@ -46,7 +46,7 @@ public enum EndEntityTypes  {
     private String description;
     
     static {
-        lookupTable = new HashMap<Integer, EndEntityTypes>();
+        lookupTable = new HashMap<>();
         for(EndEntityTypes type : EndEntityTypes.values()) {
             lookupTable.put(type.hexValue(), type);
         }
@@ -70,7 +70,7 @@ public enum EndEntityTypes  {
     }
     
     public static EndEntityTypes[] getTypesFromHexCode(int hexCode) {
-        List<EndEntityTypes> result = new ArrayList<EndEntityTypes>();
+        List<EndEntityTypes> result = new ArrayList<>();
         for(EndEntityTypes type : EndEntityTypes.values()) {
             if(type.isContainedInType(hexCode)) {
                 result.add(type);

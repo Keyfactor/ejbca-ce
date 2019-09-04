@@ -231,14 +231,14 @@ public class EndEntityInformation implements Serializable {
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean.
      */
     @Deprecated
-    public void setAdministrator(final boolean administrator){
-        final EndEntityType type = getType();
+    public void setAdministrator(final boolean administrator) {
+        final EndEntityType endEntityType = getType();
         if (administrator) {
-            type.addType(EndEntityTypes.ADMINISTRATOR);
+            endEntityType.addType(EndEntityTypes.ADMINISTRATOR);
         } else {
-            type.removeType(EndEntityTypes.ADMINISTRATOR);
+            endEntityType.removeType(EndEntityTypes.ADMINISTRATOR);
         }
-        setType(type);
+        setType(endEntityType);
     }
 
     public boolean getKeyRecoverable(){
@@ -246,13 +246,13 @@ public class EndEntityInformation implements Serializable {
     }
 
     public void setKeyRecoverable(final boolean keyrecoverable){
-        final EndEntityType type = getType();
+        final EndEntityType endEntityType = getType();
         if (keyrecoverable) {
-            type.addType(EndEntityTypes.KEYRECOVERABLE);
+            endEntityType.addType(EndEntityTypes.KEYRECOVERABLE);
         } else {
-            type.removeType(EndEntityTypes.KEYRECOVERABLE);
+            endEntityType.removeType(EndEntityTypes.KEYRECOVERABLE);
         }
-        setType(type);
+        setType(endEntityType);
     }
 
     public boolean getSendNotification(){
@@ -263,14 +263,14 @@ public class EndEntityInformation implements Serializable {
      * setSendNotification() must be called after setType(), because it adds to the type
      * @param sendnotification true or false
      */
-    public void setSendNotification(final boolean sendnotification){
-        final EndEntityType type = getType();
+    public void setSendNotification(final boolean sendnotification) {
+        final EndEntityType endEntityType = getType();
         if (sendnotification) {
-            type.addType(EndEntityTypes.SENDNOTIFICATION);
+            endEntityType.addType(EndEntityTypes.SENDNOTIFICATION);
         } else {
-            type.removeType(EndEntityTypes.SENDNOTIFICATION);
+            endEntityType.removeType(EndEntityTypes.SENDNOTIFICATION);
         }
-        setType(type);
+        setType(endEntityType);
     }
 
     public boolean getPrintUserData(){
@@ -278,13 +278,13 @@ public class EndEntityInformation implements Serializable {
     }
 
     public void setPrintUserData(final boolean printUserData){
-        final EndEntityType type = getType();
+        final EndEntityType endEntityType = getType();
         if (printUserData) {
-            type.addType(EndEntityTypes.PRINT);
+            endEntityType.addType(EndEntityTypes.PRINT);
         } else {
-            type.removeType(EndEntityTypes.PRINT);
+            endEntityType.removeType(EndEntityTypes.PRINT);
         }
-        setType(type);
+        setType(endEntityType);
     }
 
 	/**
@@ -337,7 +337,7 @@ public class EndEntityInformation implements Serializable {
     	return ret;
     }
 
-    /** @return the DN to be used when creating a certificate (without empty fields).
+    /** Returns the DN to be used when creating a certificate (without empty fields).
      * If the registered DN has unused DN fields the empty ones are kept, i.e.
      * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
      * Use method getCertificateDN() to get the DN stripped from empty fields, getDN() returns DN with empty fields.

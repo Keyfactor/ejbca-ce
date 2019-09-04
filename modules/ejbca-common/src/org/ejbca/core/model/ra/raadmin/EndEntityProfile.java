@@ -148,6 +148,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /** Minimum password strength in bits */
     private static final String MINPWDSTRENGTH    = "MINPWDSTRENGTH";
+    
+    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";
 
     // Default values
     // These must be in a strict order that can never change 
@@ -186,6 +188,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	dataConstants.put(MINPWDSTRENGTH, 90);
     	dataConstants.put(NAMECONSTRAINTS_PERMITTED, 89);
     	dataConstants.put(NAMECONSTRAINTS_EXCLUDED, 88);
+    	dataConstants.put(CABFORGANIZATIONIDENTIFIER, 87);
     }
 	// The max value in dataConstants (we only want to do this once)
     private static final int dataConstantsMaxValue = Collections.max(dataConstants.values());
@@ -327,6 +330,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setRequired(MAXFAILEDLOGINS,0,false);
         	setRequired(NAMECONSTRAINTS_EXCLUDED,0,false);
         	setRequired(NAMECONSTRAINTS_PERMITTED,0,false);
+        	setRequired(CABFORGANIZATIONIDENTIFIER,0,false);
         	setValue(DEFAULTCERTPROFILE,0, CONST_DEFAULTCERTPROFILE);
         	setValue(AVAILCERTPROFILES,0, CONST_AVAILCERTPROFILES1);
         	setValue(DEFKEYSTORE,0, CONST_DEFKEYSTORE);
@@ -345,6 +349,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(MINPWDSTRENGTH,0,false);
         	setUse(NAMECONSTRAINTS_PERMITTED,0,false);
         	setUse(NAMECONSTRAINTS_EXCLUDED,0,false);
+        	setUse(CABFORGANIZATIONIDENTIFIER,0,false);
         } else {
         	// initialize profile data
         	addFieldWithDefaults(USERNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -370,6 +375,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	addFieldWithDefaults(MAXFAILEDLOGINS, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(NAMECONSTRAINTS_PERMITTED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(NAMECONSTRAINTS_EXCLUDED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(CABFORGANIZATIONIDENTIFIER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         }
     }
 
@@ -2683,6 +2689,38 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setNameConstraintsExcludedRequired(final boolean required) {
         setRequired(NAMECONSTRAINTS_EXCLUDED, 0, required);
+    }
+    
+    public String getCabfOrganizationIdentifier() {
+        return getValue(CABFORGANIZATIONIDENTIFIER, 0);
+    }
+
+    public void setCabfOrganizationIdentifier(final String value) {
+        setValue(CABFORGANIZATIONIDENTIFIER, 0, value);
+    }
+    
+    public boolean isCabfOrganizationIdentifierUsed() {
+        return getUse(CABFORGANIZATIONIDENTIFIER, 0);
+    }
+
+    public void setCabfOrganizationIdentifierUsed(final boolean use) {
+        setUse(CABFORGANIZATIONIDENTIFIER, 0, use);
+    }
+    
+    public boolean isCabfOrganizationIdentifierModifiable() {
+        return isModifyable(CABFORGANIZATIONIDENTIFIER, 0);
+    }
+
+    public void setCabfOrganizationIdentifierModifiable(final boolean modifiable) {
+        setModifyable(CABFORGANIZATIONIDENTIFIER, 0, modifiable);
+    }
+
+    public boolean isCabfOrganizationIdentifierRequired() {
+        return isRequired(CABFORGANIZATIONIDENTIFIER, 0);
+    }
+
+    public void setCabfOrganizationIdentifierRequired(final boolean required) {
+        setRequired(CABFORGANIZATIONIDENTIFIER, 0, required);
     }
 
     /**

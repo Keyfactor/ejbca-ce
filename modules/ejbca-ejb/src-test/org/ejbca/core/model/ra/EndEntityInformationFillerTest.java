@@ -53,6 +53,8 @@ public class EndEntityInformationFillerTest {
         profile.setValue(DnComponents.COMMONNAME, 0, "defaultCN");
         profile.setValue(DnComponents.COUNTRY, 0, "fr");
         profile.setValue(DnComponents.ORGANIZATION, 0, "linagora");
+        profile.setCabfOrganizationIdentifierUsed(true);
+        profile.setCabfOrganizationIdentifier("VATSE-556677123401");
     }
 
     /**
@@ -69,6 +71,7 @@ public class EndEntityInformationFillerTest {
     	assertEquals("user@linagora.com", userData.getEmail());
     	assertEquals("userPassword", userData.getPassword());
     	assertEquals(expectedUserDn, userData.getDN());
+    	assertEquals("VATSE-556677123401", userData.getExtendedInformation().getCabfOrganizationIdentifier());
     }
     /**
      * userName is merged

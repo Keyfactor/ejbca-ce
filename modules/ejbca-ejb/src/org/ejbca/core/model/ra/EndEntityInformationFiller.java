@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.CertTools;
@@ -87,6 +88,18 @@ public class EndEntityInformationFiller {
         		userData.setType(new EndEntityType(type));
         	}
         }
+        
+        if (profile.isCabfOrganizationIdentifierUsed()) {
+            ExtendedInformation extInfo = userData.getExtendedInformation();
+            if (extInfo == null) {
+                extInfo = new ExtendedInformation();
+                extInfo.setCabfOrganizationIdentifier(profile.getCabfOrganizationIdentifier());
+                userData.setExtendedInformation(extInfo);
+            } else if (StringUtils.isEmpty(extInfo.getCabfOrganizationIdentifier())) {
+                extInfo.setCabfOrganizationIdentifier(profile.getCabfOrganizationIdentifier());
+            }
+        }
+        
         return userData;
     }
 
