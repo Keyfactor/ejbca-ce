@@ -1105,8 +1105,8 @@ public final class KeyTools {
                     throw new InvalidKeyException("Result from signing is null.");
                 }
                 if (log.isDebugEnabled()) {
-                    log.trace("Created signature of size: " + signBV.length);
-                    log.trace("Created signature: " + new String(Hex.encode(signBV)));
+                    log.debug("Created signature of size: " + signBV.length);
+                    log.debug("Created signature: " + new String(Hex.encode(signBV)));
                 }
             }
             {
@@ -1122,9 +1122,9 @@ public final class KeyTools {
                     throw new InvalidKeyException("Signature was not correctly verified.");
                 }
             }
-        } catch ( InvalidKeyException e ) {
+        } catch (InvalidKeyException e) {
             throw e;
-        } catch (  TaskWithSigningException | SignatureException e ) {
+        } catch (TaskWithSigningException | SignatureException e) {
             throw new InvalidKeyException(String.format("Exception testing key: %s", e.getMessage()), e);
         }
     }

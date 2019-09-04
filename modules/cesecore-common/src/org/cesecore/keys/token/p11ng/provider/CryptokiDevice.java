@@ -1360,7 +1360,7 @@ public class CryptokiDevice {
                 if (certificateRefs.length == 0 || (certificateRefs.length == 1 && certificateRefs[0] == certRef)) {
                     removeCertificateObject(session, certRef);
                 } else {
-                    keptSubjects.add(Hex.toHexString(ckaSubject.getValue()));
+                    keptSubjects.add(StringTools.hex(ckaSubject.getValue()));
                 }
 
                 // 5. Unless the certificate is self-signed, find the issuer certificate object or if no found skip to 7
@@ -1372,7 +1372,7 @@ public class CryptokiDevice {
                     if (certificateRefs.length == 0) {
                         break;
                     } else if (certificateRefs.length > 1) {
-                        LOG.warn("Multiple certificate objects sharing the same CKA_SUBJECT: " + Hex.toHexString(ckaIssuer.getValue()));
+                        LOG.warn("Multiple certificate objects sharing the same CKA_SUBJECT: " + StringTools.hex(ckaIssuer.getValue()));
                     }
                     // 6. Do step 4 for that object
                     certRef = certificateRefs[0];
