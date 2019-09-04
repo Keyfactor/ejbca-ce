@@ -77,6 +77,32 @@ public class AlgorithmToolsTest {
     }
 
     @Test
+    public void testDigestFromAlgoName() throws Exception {
+        final byte[] someBytes = new byte[] {};
+        // SHA2-{256,384,512}
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA256_WITH_RSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1).digest(someBytes);
+
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA384_WITH_RSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1).digest(someBytes);
+
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA512_WITH_RSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1).digest(someBytes);
+        // SHA3-{256,384,512}
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA).digest(someBytes);
+
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA).digest(someBytes);
+
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA).digest(someBytes);
+        AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA).digest(someBytes);
+    }
+
+    @Test
     public void testGetKeyAlgorithmFromSigAlg() {
 
         // Test that key algorithm is RSA for all of its signature algorithms

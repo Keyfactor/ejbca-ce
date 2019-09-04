@@ -11,6 +11,8 @@ package org.cesecore.keys.token.p11ng;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
 import org.pkcs11.jacknji11.C;
 import org.pkcs11.jacknji11.CKG;
 import org.pkcs11.jacknji11.CKM;
@@ -48,12 +50,13 @@ public class MechanismNames {
         SIGALGOS2L.put("SHA256withRSAandMGF1", CKM.SHA256_RSA_PKCS_PSS);
         SIGALGOS2L.put("SHA384withRSAandMGF1", CKM.SHA384_RSA_PKCS_PSS);
         SIGALGOS2L.put("SHA512withRSAandMGF1", CKM.SHA512_RSA_PKCS_PSS);
+        SIGALGOS2L.put("SHA256withECDSA", CKM.ECDSA);
         
         CKM_PARAMS = new HashMap<>();
         CKM_PARAMS.put(CKM.SHA1_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA_1, CKG.MGF1_SHA1, 20}));
         CKM_PARAMS.put(CKM.SHA256_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA256, CKG.MGF1_SHA256, 32}));
         CKM_PARAMS.put(CKM.SHA384_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA384, CKG.MGF1_SHA384, 48}));
-        CKM_PARAMS.put(CKM.SHA512_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA512, CKG.MGF1_SHA512, 64}));  
+        CKM_PARAMS.put(CKM.SHA512_RSA_PKCS_PSS, ULong.ulong2b(new long[] { CKM.SHA512, CKG.MGF1_SHA512, 64 }));
     }
 
     /**
@@ -85,7 +88,7 @@ public class MechanismNames {
      * @param name to get long value for
      * @return long value or null if unknown
      */
-    public static Long longFromSigAlgoName(String name) {
-        return SIGALGOS2L.get(name);
+    public static Optional<Long> longFromSigAlgoName(final String name) {
+        return Optional.of(SIGALGOS2L.get(name));
     }
 }
