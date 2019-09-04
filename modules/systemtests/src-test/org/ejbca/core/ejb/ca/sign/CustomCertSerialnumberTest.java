@@ -25,6 +25,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -122,10 +123,10 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         fooCertProfileId = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
 
         final EndEntityProfile profile = new EndEntityProfile(true);
-        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.toString(fooCertProfileId));
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfileId));
-        profile.setValue(EndEntityProfile.AVAILKEYSTORE, 0, Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN));
-        assertTrue(profile.getUse(EndEntityProfile.CERTSERIALNR, 0));
+        profile.setDefaultCertificateProfile(fooCertProfileId);
+        profile.setAvailableCertificateProfileIds(Arrays.asList(fooCertProfileId));
+        profile.setAvailableTokenTypes(Arrays.asList(SecConst.TOKEN_SOFT_BROWSERGEN));
+        assertTrue(profile.isCustomSerialNumberUsed());
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "FOOEEPROFILE", profile);
         fooEEProfileId = endEntityProfileSession.getEndEntityProfileId("FOOEEPROFILE");
       
