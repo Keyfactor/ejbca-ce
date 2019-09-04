@@ -10,11 +10,15 @@
 package org.cesecore.keys.token.p11ng.provider;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.ProviderException;
@@ -24,7 +28,12 @@ import java.security.SignatureSpi;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11ng.MechanismNames;
+import org.cesecore.util.StringTools;
 import org.pkcs11.jacknji11.CKM;
 
 /**
@@ -58,7 +67,12 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", "SHA256withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA384withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA512withRSAandMGF1", MySignature.class.getName()));
-        putService(new MySigningService(this, "Signature", "SHA256withECDSA", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
     }
 
     private static class MyService extends Service {
@@ -132,7 +146,6 @@ public class JackNJI11Provider extends Provider {
     }
 
     private static class MySignature extends SignatureSpi {
-
         private static final Logger log = Logger.getLogger(MySignature.class);
 
         private final JackNJI11Provider provider;
@@ -145,8 +158,7 @@ public class JackNJI11Provider extends Provider {
         private Exception debugStacktrace;
 
         // constant for type digesting, we do the hashing ourselves
-        // private final static int T_DIGEST = 1;          // TODO: Currently it is not supported
-        
+        private final static int T_DIGEST = 1;
         // constant for type update, token does everything
         private final static int T_UPDATE = 2;
         // constant for type raw, used with NONEwithRSA only
@@ -160,6 +172,8 @@ public class JackNJI11Provider extends Provider {
 
             if (algorithm.equals("NONEwithRSA")) {
                 type = T_RAW;
+            } else if (algorithm.equals("SHA256withECDSA")) {
+                type = T_DIGEST;
             } else {
                 type = T_UPDATE;
             }
@@ -184,15 +198,23 @@ public class JackNJI11Provider extends Provider {
                 hasActiveSession = true;
             }
             try {
-                long sigAlgoValue = MechanismNames.longFromSigAlgoName(this.algorithm);
-                byte[] param = MechanismNames.CKM_PARAMS.get(sigAlgoValue);
+                if (!MechanismNames.longFromSigAlgoName(this.algorithm).isPresent()) {
+                    final String message = "The signature algorithm " + algorithm + " is not supported by P11NG.";
+                    log.error(message);
+                    throw new InvalidKeyException("The signature algorithm " + algorithm + " is not supported by P11NG.");
+                }
+                final long mechanism = MechanismNames.longFromSigAlgoName(this.algorithm).get();
+                byte[] param = MechanismNames.CKM_PARAMS.get(mechanism);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineInitSign: session: " + session + ", object: " +
-                            myKey.getObject() + ", sigAlgoValue: " + sigAlgoValue + ", param: " + param);
+                            myKey.getObject() + ", sigAlgoValue: " + mechanism + ", param: " + StringTools.hex(param));
                     debugStacktrace = new Exception();
                 }
-                myKey.getSlot().getCryptoki().SignInit(session, new CKM(sigAlgoValue, param), myKey.getObject());
+                myKey.getSlot().getCryptoki().SignInit(session, new CKM(mechanism, param),
+                        myKey.getObject());
+                log.debug("C_SignInit with mechanism " + mechanism + " successful.");
             } catch (Exception e) {
+                log.error("An exception occurred when calling C_SignInit: " + e.getMessage());
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
                     myKey.getSlot().releaseSession(session);
                     hasActiveSession = false;
@@ -208,7 +230,8 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineUpdate(byte[] bytes, int offset, int length) throws SignatureException {
-            switch (type) {
+            try {
+                switch (type) {
                 case T_UPDATE:
                     if (offset != 0 || length != bytes.length) {
                         byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
@@ -217,23 +240,75 @@ public class JackNJI11Provider extends Provider {
                         myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
                     }
                     break;
-                case T_RAW: // No need to call SignUpdte as hash is supplied already
+                case T_RAW: // No need to call SignUpdate as hash is supplied already
                     buffer = new ByteArrayOutputStream();
                     buffer.write(bytes, offset, length);
                     break;
+                case T_DIGEST:
+                    if (offset != 0 || length != bytes.length) {
+                        final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm)
+                                .digest(Arrays.copyOfRange(bytes, offset, (offset + length)));
+                        buffer = new ByteArrayOutputStream();
+                        buffer.write(digest);
+                    } else {
+                        final byte[] digest = MessageDigest.getInstance("SHA-256").digest(bytes);
+                        buffer = new ByteArrayOutputStream();
+                        buffer.write(digest);
+                    }
+                    break;
                 default:
                     throw new ProviderException("Internal error");
+                }
+            } catch (NoSuchAlgorithmException e) {
+                log.error("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.");
+                throw new SignatureException(e);
+            } catch (IOException e) {
+                log.error("I/O exception occurred when writing byte array to output stream (offset = " + offset + "), length = (" + length + ").");
+                throw new SignatureException(e);
+            } catch (NoSuchProviderException e) {
+                log.error("The Bouncy Castle provider has not been installed.");
+                throw new SignatureException(e);
             }
         }
 
         @Override
         protected byte[] engineSign() throws SignatureException {
+            log.debug("engineSign with " + type);
             try {
                 if (type == T_UPDATE) {
-                    return myKey.getSlot().getCryptoki().SignFinal(session);
-                } else { // single-part operation if hash is provided for signing
-                    return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                    final byte[] ret = myKey.getSlot().getCryptoki().SignFinal(session);
+                    return ret;
+                } else if (type == T_DIGEST) {
+                    final byte[] rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+
+                    final BigInteger[] sig = new BigInteger[2];
+                    final byte[] first = new byte[rawSig.length / 2];
+                    final byte[] second = new byte[rawSig.length / 2];
+
+                    System.arraycopy(rawSig, 0, first, 0, first.length);
+                    System.arraycopy(rawSig, first.length, second, 0, second.length);
+                    sig[0] = new BigInteger(1, first);
+                    sig[1] = new BigInteger(1, second);
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("Parsed signature: " +  System.lineSeparator() +
+                                       "   X: " + sig[0].toString() + System.lineSeparator() +
+                                       "   Y: " + sig[1].toString());
+                    }
+
+                    // DER encode the elliptic curve point as a DER sequence with two integers (X, Y)
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    final DERSequenceGenerator seq = new DERSequenceGenerator(baos);
+                    seq.addObject(new ASN1Integer(sig[0]));
+                    seq.addObject(new ASN1Integer(sig[1]));
+                    seq.close();
+                    return baos.toByteArray();
+                } else {
+                    final byte[] ret = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                    return ret;
                 }
+            } catch (IOException e) {
+                throw new SignatureException(e);
             } finally {
                 // Signing is done, either successful or failed
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
@@ -279,5 +354,4 @@ public class JackNJI11Provider extends Provider {
             }
         }
     }
-
 }
