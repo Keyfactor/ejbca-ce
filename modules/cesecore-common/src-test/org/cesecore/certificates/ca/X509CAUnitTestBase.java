@@ -93,7 +93,7 @@ public class X509CAUnitTestBase {
     }
 
     /** @return a new empty soft auto-activated CryptoToken */
-    protected CryptoToken getNewCryptoToken() {
+    protected static CryptoToken getNewCryptoToken() {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
         CryptoToken cryptoToken;
