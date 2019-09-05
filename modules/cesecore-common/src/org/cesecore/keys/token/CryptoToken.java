@@ -88,7 +88,7 @@ public interface CryptoToken extends Serializable {
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected.
      * @throws CryptoTokenAuthenticationFailedException with error message if authentication to tokens fail.
      */
-    void activate(char[] authenticationcode) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
+    void activate(char[] authenticationCode) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
 
     /**
      * Method used to deactivate tokens.
@@ -112,22 +112,31 @@ public interface CryptoToken extends Serializable {
     */
     PrivateKey getPrivateKey(String alias) throws CryptoTokenOfflineException;
 
-    /** @return true if a private key exists for the given alias */
-    boolean doesPrivateKeyExist(final String alias);
+    /**
+     * Determine if a token contains a private key with a certain alias.
+     *  
+     * @param alias the alias of the private key to look for.
+     * @return true if a private key exists for the given alias.
+     */
+    boolean doesPrivateKeyExist(String alias);
 
-    /** Returns the public key (if possible) of token.
+    /** 
+     * Retrieve a public key from a token with the alias specified.
     *
-    * @param alias the key alias to retrieve from the token
-    * @throws CryptoTokenOfflineException if Crypto Token is not available or connected
-    * @return the public key, or null if key with the alias does not exist.
+    * @param alias the alias of the key to retrieve.
+    * @throws CryptoTokenOfflineException if the crypto token is not available or connected.
+    * @return the public key, or null if no key with the given alias could be found in the token.
     */
     PublicKey getPublicKey(String alias) throws CryptoTokenOfflineException;
 
-    /** Returns the key (if possible) of token, used for symmetric keys. For assymmetric keys getPrivateKye and getPublic key is recommended..
+    /**
+     * Returns the symmetric key from a token with the alias specified.
+     * 
+     * <p>To fetch an asymmetric key, use {@link #getPublicKey(String)} or {@link #getPrivateKey(String)} instead.
     *
-    * @param alias the key alias to retrieve from the token
-    * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
-    * @return Key object
+    * @param alias the alias of the private key to look for.
+    * @throws CryptoTokenOfflineException if the crypto token is not available or connected.
+    * @return the symmetric key, or null if no key with the given alias could be found in the token.
     */
     Key getKey(String alias) throws CryptoTokenOfflineException;
 
@@ -203,7 +212,7 @@ public interface CryptoToken extends Serializable {
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
      * @param alias the name of the key pair in the crypto token
      */
-    void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
+    void generateKeyPair(String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException;
 
     /** Generates a key pair (asymmetric keys) in the crypto token. This method is used when you have an existing PublicKey and
@@ -227,8 +236,9 @@ public interface CryptoToken extends Serializable {
      * @throws NoSuchAlgorithmException
      * @throws KeyStoreException
      */
-    void generateKey(final String algorithm, final int keysize, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, CryptoTokenOfflineException,
-    InvalidKeyException, InvalidAlgorithmParameterException, SignatureException, CertificateException, IOException, NoSuchPaddingException, IllegalBlockSizeException;
+    void generateKey(String algorithm, int keysize, String alias) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException,
+            CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException, SignatureException, CertificateException,
+            IOException, NoSuchPaddingException, IllegalBlockSizeException;
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signing device implementation.
@@ -326,7 +336,4 @@ public interface CryptoToken extends Serializable {
 
     /** @return true if there is an auto activation PIN stored in the token */
     boolean isAutoActivationPinPresent();
-
-
-    
 }
