@@ -426,7 +426,11 @@ public class Pkcs11SlotLabel {
                 log.debug("Using JDK8 SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
             }
             // The old (<=JDK8) Sun PKCS11 has InputStream as constructor argument
-            return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+            final Provider ret = implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+            if (log.isDebugEnabled()) {
+                log.debug("Created JDK8 SUN PKCS11 provider: " + ret.getName());
+            }
+            return ret;
         } catch (IOException e) {
             // re-throw an IllegalArgumentException to avoid too invasive changes, maybe not so elegant...
             throw new IllegalArgumentException("Could not read InputStream", e);
@@ -443,11 +447,14 @@ public class Pkcs11SlotLabel {
     
     private static Provider getSunP11Provider(final Method configMethod, final String config) throws IllegalAccessException, IllegalArgumentException, 
         InvocationTargetException {
-        Provider prototype = Security.getProvider("SunPKCS11");
+        final Provider prototype = Security.getProvider("SunPKCS11");
         if (log.isDebugEnabled()) {
             log.debug("Using JDK9 (and later) SUN PKCS11 provider: SunPKCS11");
         }
-        Provider provider = (Provider) configMethod.invoke(prototype, config);
+        final Provider provider = (Provider) configMethod.invoke(prototype, config);
+        if (log.isDebugEnabled()) {
+            log.debug("Created JDK9 (and later) SUN PKCS11 provider: " + provider.getName());
+        }
         return provider;
     }
     
