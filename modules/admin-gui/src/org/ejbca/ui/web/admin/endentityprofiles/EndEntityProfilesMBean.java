@@ -74,6 +74,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private static final Logger log = Logger.getLogger(EndEntityProfilesMBean.class);
 
     public static final String PARAMETER_PROFILE_SAVED = "profileSaved";
+    private static final String PROFILE_ALREADY_EXISTS = "EEPROFILEALREADYEXISTS";
+    private static final String PROFILE_NOT_SELECTED= "EEPROFILENOTSELECTED";
+    private static final String YOU_CANT_EDIT_EMPTY_PROFILE= "YOUCANTEDITEMPTYPROFILE";
     /**
      * Maximum size of the profiles ZIP file upload.
      * <p>
@@ -151,7 +154,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
     }
     
-    public boolean isEmptyProfile() {
+    private boolean isEmptyProfile() {
         return selectedEndEntityProfileId != null && selectedEndEntityProfileId.equals(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
     }
     
@@ -195,7 +198,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 endEntityProfileName = null;
                 endEntityProfileItems = null;
             } catch (EndEntityProfileExistsException e) {
-                addErrorMessage("EEPROFILEALREADYEXISTS");
+                addErrorMessage(PROFILE_ALREADY_EXISTS);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
             }
@@ -212,9 +215,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionDelete() {
         if (!selectedProfileExists()) {
-            addErrorMessage("EEPROFILENOTSELECTED");
+            addErrorMessage(PROFILE_NOT_SELECTED);
         } else if (isEmptyProfile()) {
-            addErrorMessage("YOUCANTEDITEMPTYPROFILE");
+            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
         } else if (!canRemoveEndEntityProfile(getSelectedEndEntityProfileName())) {
             addErrorMessage("COULDNTDELETEEEPROFILE");
         } else {
@@ -228,11 +231,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     private boolean selectedProfileExists() {
-        if (selectedEndEntityProfileId != null) {
-            return endEntityProfileSession.getEndEntityProfile(selectedEndEntityProfileId) != null;
-        } else {
-            return false;
-        }
+        return selectedEndEntityProfileId != null && endEntityProfileSession.getEndEntityProfile(selectedEndEntityProfileId) != null;
     }
 
     public String getSelectedEndEntityProfileName() {
@@ -282,13 +281,13 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (authorizedUsers.size() > 100) {
             ret = false;
             addErrorMessage("EEPROFILEUSEDINENDENTITIESEXCESSIVE");
-        } else if (authorizedUsers.size() > 0) {
+        } else if (!authorizedUsers.isEmpty()) {
             ret = false;
             addErrorMessage("EESUSINGPROFILE");
             addNonTranslatedErrorMessage(StringUtils.join(authorizedUsers, ", "));
         }
         final List<String> rolesUsingProfile = getRulesWithEndEntityProfile(profileId);
-        if (rolesUsingProfile.size() > 0) {
+        if (!rolesUsingProfile.isEmpty()) {
             ret = false;
             // Only return the used administrator roles if the admin is authorized to view them to prevent information leaks
             if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.VIEWROLES.resource())) {
@@ -327,8 +326,12 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     
     public void actionExportProfile() {
         clearMessages();
-        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
-                "eep", "profileId", getSelectedEndEntityProfileId().toString());
+        if(getSelectedEndEntityProfileId() != null){
+            redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+                    "eep", "profileId", getSelectedEndEntityProfileId().toString());
+        } else {
+            addErrorMessage(PROFILE_NOT_SELECTED);
+        }
     }
 
     public void actionExportProfiles() {
@@ -362,7 +365,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 endEntityProfileSession.renameEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
                 reset();
             } catch (EndEntityProfileExistsException e) {
-                addErrorMessage("EEPROFILEALREADYEXISTS");
+                addErrorMessage(PROFILE_ALREADY_EXISTS);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to rename end entity profile.");
             }
@@ -372,10 +375,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private boolean validateRenameOrClone() {
         boolean ok = true;
         if (!selectedProfileExists()) {
-            addErrorMessage("EEPROFILENOTSELECTED");
+            addErrorMessage(PROFILE_NOT_SELECTED);
             ok = false;
         } else if (isEmptyProfile()) {
-            addErrorMessage("YOUCANTEDITEMPTYPROFILE");
+            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
             ok = false;
         }
         // validateEndEntityProfileName adds error messages
@@ -572,9 +575,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public void actionEdit() {
         clearMessages();
         if (!selectedProfileExists()) {
-            addErrorMessage("EEPROFILENOTSELECTED");
+            addErrorMessage(PROFILE_NOT_SELECTED);
         } else if (isEmptyProfile()) {
-            addErrorMessage("YOUCANTEDITEMPTYPROFILE");
+            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
         } else {
             redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
         }
@@ -587,7 +590,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
                 reset();
             } catch (EndEntityProfileExistsException e) {
-                addErrorMessage("EEPROFILEALREADYEXISTS");
+                addErrorMessage(PROFILE_ALREADY_EXISTS);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
             }
