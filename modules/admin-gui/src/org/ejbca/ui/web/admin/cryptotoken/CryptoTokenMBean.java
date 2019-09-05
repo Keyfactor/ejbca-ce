@@ -113,7 +113,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         
         public String getStatusImg() {
-            return getEjbcaWebBean().getImagefileInfix(isActive()?"status-ca-active.png":"status-ca-offline.png");
+            return getEjbcaWebBean().getImagefileInfix(isActive() ? "status-ca-active.png" : "status-ca-offline.png");
         }
         public String getAutoActivationYesImg() {
             return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
@@ -1060,12 +1060,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         try {
             cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), getNewKeyPairSpec());
         } catch (CryptoTokenOfflineException e) {
-            final String msg = "Token is off-line. KeyPair cannot be generated.";
+            final String msg = "Token is offline. Keypair cannot be generated.";
             log.debug(msg, e);
             addNonTranslatedErrorMessage(msg);
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e);
-            final String logMsg = getAdmin().toString() + " failed to generate a keypair:";
+            final String logMsg = getAdmin().toString() + " failed to generate a keypair: ";
             log.info(logMsg + e.getMessage());
         }
         flushCaches();
@@ -1085,10 +1085,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         try {
             cryptoTokenManagementSession.createKeyPairFromTemplate(getAdmin(), getCurrentCryptoTokenId(), alias, keyspec);
         } catch (CryptoTokenOfflineException e) {
-            addNonTranslatedErrorMessage("Token is off-line. KeyPair cannot be generated.");
+            addNonTranslatedErrorMessage("Token is offline. Keypair cannot be generated.");
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e);
-            final String logMsg = getAdmin().toString() + " failed to generate a keypair:";
+            final String logMsg = getAdmin().toString() + " failed to generate a keypair: ";
             log.info(logMsg + e.getMessage());
         }
         flushCaches();
@@ -1105,7 +1105,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             final String kakAlias = keyPairGuiInfo.getSelectedKakKeyAlias();
             final int kakTokenId = keyPairGuiInfo.getSelectedKakCryptoTokenId();
             if (kakTokenId == 0 || kakAlias == null) {
-                addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to initialize key");
+                addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to initialize key.");
                 return;
             }
             try {
@@ -1127,7 +1127,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final String kakAlias = keyPairGuiInfo.getSelectedKakKeyAlias();
         final int kakTokenId = keyPairGuiInfo.getSelectedKakCryptoTokenId();
         if (kakTokenId == 0 || kakAlias == null) {
-            addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to authorize key");
+            addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to authorize key.");
             return;
         }
         try {
