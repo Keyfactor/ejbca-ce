@@ -379,9 +379,11 @@ public class CryptokiDevice {
             }
             final long[] publicKeyRefs = findPublicKeyObjectsByID(session, publicKeyId);
             if (publicKeyRefs.length == 0) {
+                LOG.info("publicKeyRefs.length == 0"); // TODO REMOVE
                 // A missing public key is fine, since you can have a certificate + private key instead
                 return null;
             } else if (publicKeyRefs.length > 1) {
+                LOG.info("publicKeyRefs.length > 1"); //TODO REMOVE
                 LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(publicKeyId));
                 return null;
             }

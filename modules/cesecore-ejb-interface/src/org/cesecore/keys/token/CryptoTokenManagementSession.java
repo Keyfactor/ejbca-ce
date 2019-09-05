@@ -173,15 +173,31 @@ public interface CryptoTokenManagementSession {
     /**
      * Generate a new key pair in the specified CryptoToken with the requested alias and key specification.
      * 
+     * @deprecated use createKeyPair method with org.cesecore.keys.token.KeyGenParams parameter instead (providing more flexibility).
+     * @see org.cesecore.keys.token.KeyGenParams
      * @param keySpecification should be in the form "RSAnnnn", "DSAnnnn" or an known EC curve name.
      * 
      * @throws CryptoTokenOfflineException if the CryptoToken is unavailable or inactive.
      * @throws InvalidKeyException if key generation failed.
      * @throws InvalidAlgorithmParameterException if the keySpecification is not available for this CryptoToken.
      */
+    @Deprecated
     void createKeyPair(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 
+    /**
+     * Generate a new key pair in the specified CryptoToken with the requested alias and key parameters
+     * 
+     * @param KeyGenParams key generation parameters and attributes KeyGenParams.getKeySpecification should be in the form "RSAnnnn", 
+     * "DSAnnnn" or an known EC curve name.
+     * 
+     * @throws CryptoTokenOfflineException if the CryptoToken is unavailable or inactive.
+     * @throws InvalidKeyException if key generation failed.
+     * @throws InvalidAlgorithmParameterException if the keySpecification is not available for this CryptoToken.
+     */
+    void createKeyPair(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, KeyGenParams keyGenParams)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
+    
     /**
      * Generate a new key pair in the specified CryptoToken with the requested alias using the key specification from
      * another key in the same CryptoToken.
@@ -318,5 +334,6 @@ public interface CryptoTokenManagementSession {
      * @return Max operation count remaining for a CP5 key
      */
     long maxOperationCount(AuthenticationToken authenticationToken, int cryptoTokenId, String alias);
+
 
 }

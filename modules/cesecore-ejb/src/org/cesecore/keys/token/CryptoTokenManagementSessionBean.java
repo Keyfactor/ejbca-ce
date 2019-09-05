@@ -746,7 +746,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
-            final String keySpecificationParam) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
+            final KeyGenParams keyGenParams) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
             InvalidAlgorithmParameterException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.GENERATE_KEYS.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
@@ -755,10 +755,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
         // Support "RSAnnnn" and convert it to the legacy format "nnnn"
         final String keySpecification;
-        if (keySpecificationParam.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
-            keySpecification = keySpecificationParam.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+        if (keyGenParams.getKeySpecification().startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            keySpecification = keyGenParams.getKeySpecification().substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
         } else {
-            keySpecification = keySpecificationParam;
+            keySpecification = keyGenParams.getKeySpecification();
         }
         // Check if keySpec is valid
         KeyTools.checkValidKeyLength(keySpecification);
@@ -767,7 +767,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
-        cryptoToken.generateKeyPair(keySpecification, alias);
+        // Update with parsed value
+        keyGenParams.setKeySpecification(keySpecification);
+        // Generate key pair
+        cryptoToken.generateKeyPair(keyGenParams, alias);
+        // We don't want to test CP5 keys on creation since they're not authorized yet (would fail).
         if (!cryptoToken.getClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             cryptoToken.testKeyPair(alias);
         }
@@ -779,6 +783,15 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
+            final String keySpecificationParam) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
+            InvalidAlgorithmParameterException {
+        final KeyGenParams keyGenParams = new KeyGenParams(keySpecificationParam);
+        createKeyPair(authenticationToken, cryptoTokenId, alias, keyGenParams);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)

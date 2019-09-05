@@ -73,6 +73,11 @@ public class NullCryptoToken extends BaseCryptoToken {
     }
 
     @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        
+    }
+    
+    @Override
     public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException {
     }
@@ -105,5 +110,6 @@ public class NullCryptoToken extends BaseCryptoToken {
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
     }
+
 }
 
