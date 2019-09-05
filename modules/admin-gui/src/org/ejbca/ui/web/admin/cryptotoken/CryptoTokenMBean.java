@@ -56,11 +56,13 @@ import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
@@ -74,6 +76,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
+import org.pkcs11.jacknji11.CKA;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -254,6 +257,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return p11SlotLabelType.equals(Pkcs11SlotLabelType.SLOT_LABEL);
         }
         
+        // If CP5 crypto token
         public boolean isShowAuthorizationInfo() {
             return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
         }
@@ -365,6 +369,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private boolean authorizeInProgress = false;
     private boolean unlimitedOperations = true;
     private String maxOperationCount;
+    private String keyUsage; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
 
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
@@ -419,6 +424,23 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     public void setMaxOperationCount(final String maxOperationCount) {
         this.maxOperationCount = maxOperationCount;
+    }
+    
+    public String getKeyUsage() {
+        return keyUsage;
+    }
+
+    public void setKeyUsage(String keyUsage) {
+        this.keyUsage = keyUsage;
+    }
+
+    public List<SelectItem> getAvailableKeyUsages() {
+        final List<SelectItem> keyUsages = new ArrayList<>();
+        keyUsages.addAll(Arrays.asList(
+                new SelectItem(null, "-Key Usage-"),
+                new SelectItem(CryptoTokenConstants.SIGNKEYSPEC, "Sign / Verify"),
+                new SelectItem(CryptoTokenConstants.ENCKEYSPEC, "Encrypt / Decrypt")));
+        return keyUsages;
     }
     
     /** @return a List of all CryptoToken Identifiers referenced by CAs. */
@@ -1052,13 +1074,33 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public String getNewKeyPairAlias() { return newKeyPairAlias; }
     public void setNewKeyPairAlias(String newKeyPairAlias) { this.newKeyPairAlias = newKeyPairAlias; }
 
-    /** Invoked when admin requests a new key pair generation. */
-    public void generateNewKeyPair() {
+    /** Invoked when admin requests a new key pair generation. 
+     * @throws AuthorizationDeniedException */
+    public void generateNewKeyPair() throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">generateNewKeyPair");
         }
+        final KeyGenParams keyGenParams = new KeyGenParams(getNewKeyPairSpec());
+        if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getCurrentCryptoToken().getType()) ) {
+            if (keyUsage == null) {
+                addErrorMessage("Key Usage not selected");
+                return;
+            }
+            if (keyUsage.equals(CryptoTokenConstants.ENCKEYSPEC)) {
+                keyGenParams.addPrivateKeyAttribute(CKA.DECRYPT, true);
+                keyGenParams.addPrivateKeyAttribute(CKA.SIGN, false);
+                keyGenParams.addPublicKeyAttribute(CKA.ENCRYPT, true);
+                keyGenParams.addPublicKeyAttribute(CKA.VERIFY, false);
+            }
+            if (keyUsage.equals(CryptoTokenConstants.SIGNKEYSPEC)) {
+                keyGenParams.addPrivateKeyAttribute(CKA.DECRYPT, false);
+                keyGenParams.addPrivateKeyAttribute(CKA.SIGN, true);
+                keyGenParams.addPublicKeyAttribute(CKA.ENCRYPT, false);
+                keyGenParams.addPublicKeyAttribute(CKA.VERIFY, true);
+            }
+        }
         try {
-            cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), getNewKeyPairSpec());
+            cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), keyGenParams);
         } catch (CryptoTokenOfflineException e) {
             final String msg = "Token is offline. Keypair cannot be generated.";
             log.debug(msg, e);
