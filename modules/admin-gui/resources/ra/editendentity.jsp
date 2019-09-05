@@ -7,9 +7,9 @@
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
                  javax.ejb.CreateException, java.io.Serializable, org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation,
-                 java.math.BigInteger,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,
+                 java.math.BigInteger,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools, org.ejbca.ui.web.ParameterException,
                  org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils, org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.core.model.authorization.AccessRulesConstants,
-                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, org.ejbca.util.HTMLTools, org.cesecore.util.CertTools" %>
+                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, org.ejbca.util.HTMLTools, org.cesecore.util.CertTools" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -514,8 +514,13 @@
 				            } else {
 				            	ei.setQCEtsiPSD2RolesOfPSP(null);
 				            }
-				            value = request.getParameter(TEXTFIELD_CABFORGANIZATIONIDENTIFIER);
-				            ei.setCabfOrganizationIdentifier(StringUtils.trim(value));
+				            value = StringUtils.trim(request.getParameter(TEXTFIELD_CABFORGANIZATIONIDENTIFIER));
+				            if (profile.isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(value)) {
+				            	throw new ParameterException(ejbcawebbean.getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED"));
+				            } else if (value != null && !value.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
+				            	throw new ParameterException(ejbcawebbean.getText("EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT"));
+				            }
+				            ei.setCabfOrganizationIdentifier(value);
 				            newuser.setExtendedInformation(ei);
 		                    value = request.getParameter(TEXTAREA_NC_PERMITTED);
 		                    if (value != null && !value.trim().isEmpty()) {
@@ -790,6 +795,12 @@ function checkallfields(){
     <%    }
         }
       }
+       if (profile.isCabfOrganizationIdentifierUsed() && profile.isCabfOrganizationIdentifierRequired()) { %>
+           if((document.edituser.<%= TEXTFIELD_CABFORGANIZATIONIDENTIFIER %>.value == "")){
+    	      alert("<%= ejbcawebbean.getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED", true) %>");
+    	      illegalfields++;
+    	    }
+       <% }
        
        if(profile.getUse(EndEntityProfile.CARDNUMBER,0) ){%>
        if(!checkfieldfordecimalnumbers("document.edituser.<%=TEXTFIELD_CARDNUMBER%>", "<%= ejbcawebbean.getText("CARDNUMBER_MUSTBE", true) %>"))       
@@ -1715,7 +1726,7 @@ function checkUseInBatch(){
 			<td>
 				<input type="text" name="<%= TEXTFIELD_CABFORGANIZATIONIDENTIFIER %>" size="30" maxlength="256" tabindex="<%=tabindex++%>"  value="<c:out value="<%=ei.getCabfOrganizationIdentifier()%>"/>"
 					<% if (!profile.isCabfOrganizationIdentifierModifiable()) out.write(" readonly=\"true\" "); %>
-					pattern="[A-Z0-9]{5,5}(\+[A-Z0-9]+)?-.+"/>
+					pattern="[A-Z0-9]{5,5}(\+[A-Z0-9]+)?-.+" title="<c:out value="<%= ejbcawebbean.getText(\"EXT_CABF_ORGANIZATION_IDENTIFIER_FORMAT\") %>"/>"/>
 			</td>
 			<td>
 				<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"  <% if (profile.isCabfOrganizationIdentifierRequired()) out.write(" CHECKED "); %>/>
