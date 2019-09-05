@@ -84,6 +84,12 @@ public class DummyCryptoToken extends BaseCryptoToken {
     }
 
     @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        generateKeyPair(keyGenParams.getKeySpecification(), alias);
+        
+    }
+    
+    @Override
     public void generateKeyPair( final String keySpec, final String alias) throws InvalidAlgorithmParameterException {     
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         this.publicKey = keypair.getPublic();
@@ -127,5 +133,6 @@ public class DummyCryptoToken extends BaseCryptoToken {
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
     }
+
 }
 
