@@ -29,6 +29,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.tomahawk.classpath"/>
+		<path refid="lib.jacknji.classpath"/>
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.owaspcsrfguard.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>

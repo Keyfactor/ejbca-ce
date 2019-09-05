@@ -214,6 +214,15 @@ public interface CryptoToken extends Serializable {
      */
     void generateKeyPair(String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException;
+    
+    /** Generates a key pair (asymmetric keys) in the crypto token.
+    *
+    * @param keyGenParams all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
+    * @param alias the name of the key pair in the crypto token
+    * @see org.cesecore.keys.token.KeyGenParams
+    */
+    void generateKeyPair(final KeyGenParams keyGenParams, final String alias) throws InvalidAlgorithmParameterException,
+            CryptoTokenOfflineException;
 
     /** Generates a key pair (asymmetric keys) in the crypto token. This method is used when you have an existing PublicKey and
      * want to generate a key of the same type. You can use KeyTools to get the AlgorithmParameterSpec from an existing PublicKey.
