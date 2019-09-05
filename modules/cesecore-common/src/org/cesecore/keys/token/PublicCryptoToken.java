@@ -155,6 +155,11 @@ public class PublicCryptoToken implements CryptoToken {
 		// static do nothing
 	}
 
+    @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        // static do nothing
+    }
+	
 	@Override
 	public void generateKeyPair(String keySpec, String alias)
 			throws InvalidAlgorithmParameterException,
@@ -290,4 +295,5 @@ public class PublicCryptoToken implements CryptoToken {
     public void setTokenName(final String tokenName) {
         this.tokenName = tokenName;
     }
+
 }

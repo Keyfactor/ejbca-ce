@@ -35,6 +35,8 @@ import javax.crypto.NoSuchPaddingException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
+
 import java.nio.file.Path;
 
 
@@ -122,6 +124,11 @@ public class CachedCryptoToken implements CryptoToken {
         wrappedCryptoToken.generateKeyPair(keySpec, alias);
     }
 
+    @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        wrappedCryptoToken.generateKeyPair(keyGenParams.getKeySpecification(), alias);
+    }
+    
     @Override
     public void generateKeyPair(AlgorithmParameterSpec spec, String alias) throws InvalidAlgorithmParameterException, CertificateException,
             IOException, CryptoTokenOfflineException {
@@ -245,4 +252,5 @@ public class CachedCryptoToken implements CryptoToken {
     public boolean isAutoActivationPinPresent() {
         return wrappedCryptoToken.isAutoActivationPinPresent();
     }
+
 }
