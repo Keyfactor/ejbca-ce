@@ -36,6 +36,7 @@ import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
@@ -43,6 +44,7 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
+import org.pkcs11.jacknji11.CKA;
 
 /**
  * 
@@ -231,10 +233,10 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
     
     @Override
-    public void generateKeyPair(String keySpec, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
         log.info("Generating Key Pair...");
-        final Map<Long, Object> publicAttributesMap = new HashMap<>();
-        final Map<Long, Object> privateAttributesMap = new HashMap<>();
+        final String keySpec = keyGenParams.getKeySpecification();
+        
         String keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
         try {
             if (keySpec.toUpperCase().startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
@@ -247,7 +249,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
             }
             if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_RSA)) {
-                slot.generateRsaKeyPair(keySpec, alias, true, publicAttributesMap, privateAttributesMap, null, false);
+                slot.generateRsaKeyPair(keySpec, alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
@@ -262,23 +264,24 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         } catch (CertificateException | OperatorCreationException ex) {
             log.error("Dummy certificate generation failed. Objects might still have been created in the device: ", ex);
         }
+        
+    }
+    
+    @Override
+    public void generateKeyPair(String keySpec, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        // No attribute override used here
+        generateKeyPair(new KeyGenParams(keySpec), alias);
     }
     
     @Override
     public void generateKeyPair(AlgorithmParameterSpec spec, String alias)
             throws InvalidAlgorithmParameterException, CertificateException, IOException, CryptoTokenOfflineException {
-        log.info("Generating Key Pair (existing public key)");
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void generateKey(String algorithm, int keysize, String alias) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException, SignatureException, CertificateException,
             IOException, NoSuchPaddingException, IllegalBlockSizeException {
-        log.info("Generating Key...");
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -289,7 +292,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     
     @Override
     public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
-        log.info("Key Authorize...");
+        log.info("Key Authorize..."); //TODO remove
         slot.keyAuthorize(alias, kakPair, maxOperationCount, signProviderName);
     }
     
@@ -373,5 +376,5 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         }
         return ret;
     }
-    
+
 }

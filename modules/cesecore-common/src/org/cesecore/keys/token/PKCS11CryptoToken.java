@@ -223,6 +223,12 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     }
 
     @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        generateKeyPair(keyGenParams.getKeySpecification(), alias);
+        
+    }
+    
+    @Override
     public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
@@ -357,4 +363,5 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
     }
+
 }

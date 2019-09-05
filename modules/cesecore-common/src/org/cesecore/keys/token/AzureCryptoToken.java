@@ -452,6 +452,12 @@ public class AzureCryptoToken extends BaseCryptoToken {
     }
 
     @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        generateKeyPair(keyGenParams.getKeySpecification(), alias);
+        
+    }
+    
+    @Override
     public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException {
         if (log.isDebugEnabled()) {
@@ -790,4 +796,5 @@ public class AzureCryptoToken extends BaseCryptoToken {
             put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
         }
     }
+
 }
