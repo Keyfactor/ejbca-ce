@@ -20,6 +20,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.certificate.certextensions.standard.AuthorityInformationAccess;
 import org.cesecore.certificates.certificate.certextensions.standard.AuthorityKeyIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.BasicConstraint;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.CertificatePolicies;
 import org.cesecore.certificates.certificate.certextensions.standard.CrlDistributionPoints;
 import org.cesecore.certificates.certificate.certextensions.standard.DocumentTypeList;
@@ -59,7 +60,7 @@ public class CertificateExtensionFactory {
 	
 	private static CertificateExtensionFactory instance = null;
 	
-	private HashMap<String, String> standardCertificateExtensions = new HashMap<String, String>();
+	private HashMap<String, String> standardCertificateExtensions = new HashMap<>();
 	{
 		standardCertificateExtensions.put(Extension.basicConstraints.getId(), BasicConstraint.class.getName());
 		standardCertificateExtensions.put(Extension.subjectKeyIdentifier.getId(), SubjectKeyIdentifier.class.getName());
@@ -80,6 +81,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
 		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());
 		standardCertificateExtensions.put(Extension.privateKeyUsagePeriod.getId(), PrivateKeyUsagePeriod.class.getName());
+		standardCertificateExtensions.put(CabForumOrganizationIdentifier.OID, CabForumOrganizationIdentifier.class.getName());
 	}
 	
 	private CertificateExtensionFactory(){}
@@ -105,7 +107,7 @@ public class CertificateExtensionFactory {
 	 */
 	public CertificateExtension getStandardCertificateExtension(final String oid, final CertificateProfile certProf){
 		StandardCertificateExtension ret = null;
-		final String classPath = (String)standardCertificateExtensions.get(oid);
+		final String classPath = standardCertificateExtensions.get(oid);
 		if (classPath != null) {
 			try {
 				final Class<?> implClass = Class.forName(classPath);
