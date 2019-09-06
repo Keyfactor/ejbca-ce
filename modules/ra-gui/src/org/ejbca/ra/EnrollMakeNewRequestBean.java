@@ -566,7 +566,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isRenderOtherCertificateData() {
-        return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed();
+        return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() || isCabfOrganizationIdentifierRendered();
     }
     
     public void setRenderCsrDetailedInfo(boolean renderCsrDetailedInfo) {
