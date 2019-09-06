@@ -139,7 +139,7 @@ public class ParameterHandler {
                 parameterString = parameterString.substring(0, valueIndex - 1);
             }
             if (result.containsKey(parameterString)) {
-                log.info("ERROR: Multiple parameters of type " + parameterString + " encountered.");
+                log.info("ERROR: Multiple parameters of type " + parameterString + " encountered: " + result);
                 return null;
             }
             Parameter parameter = parameterMap.get(parameterString);
