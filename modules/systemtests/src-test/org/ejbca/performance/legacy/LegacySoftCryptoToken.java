@@ -42,6 +42,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
@@ -341,6 +342,11 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
         }
     }
 
+    @Override
+    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+        generateKeyPair(keyGenParams.getKeySpecification(), alias);
+    }
+    
     @Override
     public void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws InvalidAlgorithmParameterException, CertificateException,
     IOException, CryptoTokenOfflineException {
