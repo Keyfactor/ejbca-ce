@@ -320,7 +320,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             log.error("CLI user not authorized to create end entity.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (EndEntityProfileValidationException e) {
-            log.error("User doesn't fulfill End Entity Profile ");
+            log.error("User does not fulfill end entity profile: " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (WaitingForApprovalException e) {
             log.error("Approval is required to add End Entity.");
