@@ -732,8 +732,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   display: block; }
 
 /* Styling av felmeddelanden som dyker upp när man inte fyllt i lösenord i make request*/
-#requestInfoForm\:passwordFieldMessage,
-#requestInfoForm\:passwordConfirmFieldMessage,
+.validationErrorMessage,
 #enrollWithRequestIdForm\:passwordFieldMessage {
   display: none;
   margin: 1% 0 2% 0;
@@ -757,7 +756,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   #contentForm\:viewRequestDataTable {
     word-break: break-all; }
 
-  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage, .subjectErrorMessage {
+.validationErrorMessage, .subjectErrorMessage {
     word-break: break-all; } }
 #requestTemplateForm\:selectEEPOneMenuMessage,
 #requestTemplateForm\:selectCAOneMenuMessage,
@@ -811,8 +810,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   width: 100%;
   position: fixed; }
 
-#requestInfoForm\:passwordFieldMessage,
-#requestInfoForm\:passwordConfirmFieldMessage,
+.validationErrorMessage,
 #enrollWithRequestIdForm\:passwordFieldMessage,
 #requestTemplateForm\:selectEEPOneMenuMessage,
 #requestTemplateForm\:selectCAOneMenuMessage,
@@ -1291,7 +1289,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     position: fixed;
     margin: 8% 0 0 0; }
 
-  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
+  .validationErrorMessage {
     margin: 1% 0 2% 19%;
     width: auto; }
 
@@ -1781,7 +1779,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #contentForm\:viewRequestDataTable {
     word-break: break-all; }
 
-  #requestInfoForm\:passwordFieldMessage, #requestInfoForm\:passwordConfirmFieldMessage {
+  .validationErrorMessage {
     word-break: break-all; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
