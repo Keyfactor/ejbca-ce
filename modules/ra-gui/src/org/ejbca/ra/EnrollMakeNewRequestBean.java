@@ -66,6 +66,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -160,6 +161,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private List<String> selectedPsd2PspRoles;
     private String psd2NcaId;
     private String psd2NcaName;
+    private String cabfOrganizationIdentifier;
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
     private int selectedTokenType;
@@ -540,6 +542,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation = null;
         setRequestId(0);
     }
+    
+    private void setProfileDefaults() {
+        final EndEntityProfile endEntityProfile = getEndEntityProfile();
+        cabfOrganizationIdentifier = endEntityProfile != null ? endEntityProfile.getCabfOrganizationIdentifier() : null;
+    }
 
     //-----------------------------------------------------------------------------------------------
     //Action methods
@@ -760,6 +767,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             extendedInformation.setQCEtsiPSD2NcaId(psd2NcaId);
             extendedInformation.setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
         }
+        extendedInformation.setCabfOrganizationIdentifier(cabfOrganizationIdentifier);
         
         return extendedInformation;
     }
@@ -1287,6 +1295,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (!StringUtils.equals(selectedEndEntityProfile, this.selectedEndEntityProfile)) {
             // When ever the end entity profile changes this affects available request fields
             resetRequestInfo();
+            setProfileDefaults();
         }
         this.selectedEndEntityProfile = selectedEndEntityProfile;
     }
@@ -1676,7 +1685,33 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setPsd2PspRoles(List<String> roles) {
         selectedPsd2PspRoles = new ArrayList<>(roles);
     }
-    
+
+    public String getCabfOrganizationIdentifier() {
+        return cabfOrganizationIdentifier;
+    }
+
+    public void setCabfOrganizationIdentifier(final String cabfOrganizationIdentifier) {
+        this.cabfOrganizationIdentifier = cabfOrganizationIdentifier;
+    }
+
+    public boolean isCabfOrganizationIdentifierRendered() {
+        return getEndEntityProfile().isCabfOrganizationIdentifierUsed() &&
+                (isRenderNonModifiableFields() || isCabfOrganizationIdentifierModifiable());
+    }
+
+    public boolean isCabfOrganizationIdentifierModifiable() {
+        return getEndEntityProfile().isCabfOrganizationIdentifierModifiable();
+    }
+
+    public boolean isCabfOrganizationIdentifierRequired() {
+        return getEndEntityProfile().isCabfOrganizationIdentifierRequired();
+    }
+
+    /** @return validation regex for the CA/B Forum Organization Identifier field */
+    public String getCabfOrganizationIdentifierRegex() {
+        return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+
     /** @return the confirmPassword */
     public String getConfirmPassword() {
         return confirmPassword;
