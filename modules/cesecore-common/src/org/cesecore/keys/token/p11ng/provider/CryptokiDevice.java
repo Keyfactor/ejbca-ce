@@ -1592,11 +1592,18 @@ public class CryptokiDevice {
             }
         }
 
+        /**
+         * @return an alias derived from ckaLabel is it exists, or ckaID is label does not exist, or null if neither label nor ID exists
+         */
         private String toAlias(CKA ckaId, CKA ckaLabel) {
             final String result;
             // TODO: It could also happen that label or ID is not UTF-8 in which case we should use hex
             if (ckaLabel == null || ckaLabel.getValue() == null || ckaLabel.getValue().length == 0) {
-                result = new String(ckaId.getValue(), StandardCharsets.UTF_8);
+                if (ckaId == null || ckaId.getValue() == null || ckaId.getValue().length == 0) {
+                    result = null;
+                } else {
+                    result = new String(ckaId.getValue(), StandardCharsets.UTF_8);
+                }
             } else {
                 result = new String(ckaLabel.getValue(), StandardCharsets.UTF_8);
             }
@@ -1616,14 +1623,14 @@ public class CryptokiDevice {
                 }
                 for (long privkeyRef : privkeyRefs) {
                     CKA ckaId = c.GetAttributeValue(session, privkeyRef, CKA.ID);
-                    if (ckaId != null) {
+                    if (ckaId != null && ckaId.getValue() != null && ckaId.getValue().length > 0) {
                         long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, ckaId.getValue()), new CKA(CKA.CLASS, CKO.CERTIFICATE));
                         CKA ckaLabel = null;
                         if (certificateRefs != null && certificateRefs.length >= 1) {
                             // If a Certificate object exists, use its label. Otherwise, use the ID
                             ckaLabel = c.GetAttributeValue(session, certificateRefs[0], CKA.LABEL);
                         } else if (LOG.isDebugEnabled()) {
-                            LOG.debug("Private key does not have a corresponding certificate: " + Hex.toHexString(ckaId.getValue()));
+                            LOG.debug("Private key does not have a corresponding certificate, CKA_ID: " + Hex.toHexString(ckaId.getValue()));
                         }
                         result.add(new SlotEntry(toAlias(ckaId, ckaLabel), TokenEntry.TYPE_PRIVATEKEY_ENTRY));
                     }
