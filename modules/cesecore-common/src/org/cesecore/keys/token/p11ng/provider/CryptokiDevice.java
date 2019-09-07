@@ -1593,21 +1593,23 @@ public class CryptokiDevice {
         }
 
         /**
-         * @return an alias derived from ckaLabel is it exists, or ckaID is label does not exist, or null if neither label nor ID exists
+         * Compute an alias from the CKA_LABEL and CKA_ID of a key.
+         * 
+         * @param ckaId the CKA_ID of the key whose alias should be computed.
+         * @param ckaLabel the CKA_LABEL of the key whose alias should be computed.
+         * @return an alias derived from CKA_LABEL if it exists, or CKA_ID if CKA_LABEL does not exist, or null if neither CKA_LABEL nor CKA_ID exists.
          */
-        private String toAlias(CKA ckaId, CKA ckaLabel) {
-            final String result;
+        private String toAlias(final CKA ckaId, final CKA ckaLabel) {
             // TODO: It could also happen that label or ID is not UTF-8 in which case we should use hex
             if (ckaLabel == null || ckaLabel.getValue() == null || ckaLabel.getValue().length == 0) {
                 if (ckaId == null || ckaId.getValue() == null || ckaId.getValue().length == 0) {
-                    result = null;
+                    return null;
                 } else {
-                    result = new String(ckaId.getValue(), StandardCharsets.UTF_8);
+                    return new String(ckaId.getValue(), StandardCharsets.UTF_8);
                 }
             } else {
-                result = new String(ckaLabel.getValue(), StandardCharsets.UTF_8);
+                return new String(ckaLabel.getValue(), StandardCharsets.UTF_8);
             }
-            return result;
         }
         
         public Enumeration<SlotEntry> aliases() throws CryptoTokenOfflineException { // TODO: For now we just read all aliases but we should only read chunks and load the next one on demand to scale, see FindObjectsInit
