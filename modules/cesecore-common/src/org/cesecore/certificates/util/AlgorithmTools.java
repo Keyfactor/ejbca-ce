@@ -428,11 +428,7 @@ public abstract class AlgorithmTools {
                             if (log.isDebugEnabled()) {
                                 log.debug("a2=" + a2 + " b2=" + b2 + " fs2=" + fs2 + " ax2=" + ax2 + " ay2=" + ay2 + " h2=" + h2 + " n2=" + n2 + " " + ecNamedCurveBc);
                             }
-                            // Since this public key is a SUN PKCS#11 pub key if we get here, we only return an alias if it is recognized by the provider
-                            if (isNamedECKnownInDefaultProvider(ecNamedCurveBc)) {
-                                keyspec = ecNamedCurveBc;
-                                break;
-                            }
+                            keyspec = ecNamedCurveBc;
                         }
                     }
                 }
