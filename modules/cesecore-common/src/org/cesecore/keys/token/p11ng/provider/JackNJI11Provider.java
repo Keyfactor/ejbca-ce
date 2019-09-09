@@ -172,7 +172,7 @@ public class JackNJI11Provider extends Provider {
 
             if (algorithm.equals("NONEwithRSA")) {
                 type = T_RAW;
-            } else if (algorithm.equals("SHA256withECDSA")) {
+            } else if (algorithm.contains("ECDSA")) {
                 type = T_DIGEST;
             } else {
                 type = T_UPDATE;
