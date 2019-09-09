@@ -175,12 +175,12 @@ public abstract class BaseCryptoToken implements CryptoToken {
     
     @Override
     public boolean isKeyInitialized(final String alias) {
-        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+        return true;
     }
     
     @Override
     public long maxOperationCount(final String alias) {
-        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+        return Long.MAX_VALUE;
     }
     
     @Override

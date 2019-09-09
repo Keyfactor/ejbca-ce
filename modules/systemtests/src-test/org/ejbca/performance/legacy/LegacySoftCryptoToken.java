@@ -366,12 +366,12 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
 
     @Override
     public boolean isKeyInitialized(String alias) {
-        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+        return true;
     }
 
     @Override
     public long maxOperationCount(String alias) {
-        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+        return Long.MAX_VALUE;
     }
 
     @Override
