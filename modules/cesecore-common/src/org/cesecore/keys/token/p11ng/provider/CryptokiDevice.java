@@ -896,7 +896,6 @@ public class CryptokiDevice {
         public void restoreObject(final long objectHandle, final Path backupFilePath) {
             Long session = null;
             try {
-                //TODO: Check how to handle two users case here
                 session = aquireSession();
                 final byte[] bytes = Files.readAllBytes(backupFilePath);
                 final long flags = 0; // alternative value here would be something called "CXI_KEY_FLAG_VOLATILE" but this causes 0x00000054: FUNCTION_NOT_SUPPORTED
@@ -912,11 +911,11 @@ public class CryptokiDevice {
         }
         
         public boolean isKeyAuthorized(String alias) {
-            return false; // TODO: Call the actual check via native commands (if possible)
+            return true; // TODO: Call the actual check via native commands (if possible, waiting for reply from Utimaco Dev team)
         }
         
         public long maxOperationCount(String alias) {
-            return 0; // TODO: Call the actual check via native commands (if possible)
+            return Long.MAX_VALUE; // TODO: Call the actual check via native commands (if possible, waiting for reply from Utimaco Dev team)
         }
         
         /**
