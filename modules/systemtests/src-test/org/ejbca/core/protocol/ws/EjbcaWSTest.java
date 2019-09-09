@@ -152,6 +152,7 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
@@ -820,7 +821,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 } catch (AlreadyRevokedException_Exception e) {
                 }
             } finally {
-                endEntityManagementSession.deleteUser(intAdmin, username);
+                deleteUser(username);
             }
             try {
                 // Approve actions and verify success
@@ -907,18 +908,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 approvalExecutionSession.reject(approvingAdminToken, approvalRequest.generateApprovalId(), rejection);
                 assertEquals("Approval status should be -1", -1, ejbcaraws.getRemainingNumberOfApprovals(approvalId));
             } finally {
-                try {
-                    endEntityManagementSession.deleteUser(intAdmin, username);
-                } catch (NoSuchEndEntityException e) {
-                }
+                deleteUser(username);
                 internalCertificateStoreSession.removeCertificate(username);
                 approvalSession.removeApprovalRequest(intAdmin, approvalId);
             }
         } finally {
-            try {
-                endEntityManagementSession.deleteUser(intAdmin, adminUsername);
-            } catch (NoSuchEndEntityException e) {
-            }
+            deleteUser(adminUsername);
             internalCertificateStoreSession.removeCertificate(adminUsername);
             approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileId);
             caSession.removeCA(intAdmin, caId);
@@ -2289,11 +2284,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 // Make sure to delete the certificate since the default AdminCA wont have "Enforce unique DN: false", so next round works
                 internalCertificateStoreSession.removeCertificate(fingerprint);
             }
-            try {
-                endEntityManagementSession.deleteUser(intAdmin, username);
-            } catch (AuthorizationDeniedException | NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
-                log.debug("Error during cleanup: " + e.getMessage());
-            }
+            deleteUser(username);
             try {
                 endEntityProfileSession.removeEndEntityProfile(intAdmin, eepName);
             } catch (AuthorizationDeniedException e) {
@@ -2473,6 +2464,44 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
         log.trace("<test77ImportAndUpdateExternalCscaCaCertificate");
     }
+    
+    @Test
+    public void test78AddUserWithExtendedInformation() throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, AuthorizationDeniedException {
+        log.trace(">test78AddUserWithExtendedInformation");
+        final String testUser = "ejbcawstest_extdata";
+        final String testSubjectDn = "CN=" + testUser;
+        final String testOrgIdent = "NTRUS+CA-123-456+789";
+        deleteUser(testUser);
+        try {
+            // Given
+            final UserDataVOWS userData = new UserDataVOWS();
+            userData.setUsername(testUser);
+            userData.setPassword(PASSWORD);
+            userData.setClearPwd(true);
+            userData.setSubjectDN(testSubjectDn);
+            userData.setCaName(getAdminCAName());
+            userData.setEmail(null);
+            userData.setSubjectAltName(null);
+            userData.setStatus(EndEntityConstants.STATUS_NEW);
+            userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+            userData.setEndEntityProfileName("EMPTY");
+            userData.setCertificateProfileName("SERVER");
+            final List<ExtendedInformationWS> extendedInformation = new ArrayList<>();
+            extendedInformation.add(new ExtendedInformationWS("cabforganizationidentifier", testOrgIdent));
+            userData.setExtendedInformation(extendedInformation);
+            // When
+            ejbcaraws.editUser(userData);
+            // Then
+            final EndEntityInformation savedEndEntity = endEntityAccessSession.findUser(intAdmin, testUser);
+            assertEquals("Wrong Subject DN was returned", testSubjectDn, savedEndEntity.getDN());
+            final ExtendedInformation savedExtInfo = savedEndEntity.getExtendedInformation();
+            assertNotNull("ExtendedInformation was null", savedExtInfo);
+            assertEquals("CA/B Forum Organization Identifier was not set in ExtendedInormation", testOrgIdent, savedExtInfo.getCabfOrganizationIdentifier());
+        } finally {
+            deleteUser(testUser);
+            log.trace("<test78AddUserWithExtendedInformation");
+        }
+    }
 
     private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo)
             throws CertificateParsingException, CertificateEncodingException {
@@ -2553,11 +2582,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             log.debug("x500name:           " + resultingSubjectDN);
             assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);
         } finally {
-            try {
-                endEntityManagementSession.deleteUser(intAdmin, userName);
-            } catch (NoSuchEndEntityException e) {
-                // Ignore
-            }
+            deleteUser(userName);
             if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
                 certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
             }
@@ -2607,11 +2632,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                     resultingSubjectDN);
         }
 
-        try {
-            endEntityManagementSession.deleteUser(intAdmin, userName);
-        } catch (NoSuchEndEntityException e) {
-            // Ignore
-        }
+        deleteUser(userName);
     }
     
     /**
@@ -2668,5 +2689,15 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         final int id = approvalProfileSession.addApprovalProfile(intAdmin, profile);
         log.info( "Created approval profile '" + name + "' with ID " + id + ".");
         return id;
+    }
+    
+    private void deleteUser(final String username) {
+        try {
+            endEntityManagementSession.deleteUser(intAdmin, username);
+        } catch (NoSuchEndEntityException e) {
+            // Ignore
+        } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
+            log.warn("Error when deleting user ' " + username + "': " + e.getMessage(), e);
+        }
     }
 }
