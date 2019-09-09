@@ -418,6 +418,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isShowAuthorizationInfo() {
             return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
         }
+        
+        public boolean isShowPaddingSchemeInfo() {
+            return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
+        }
     }
 
     /**
@@ -433,6 +437,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean selected = false;
         private int selectedKakCryptoTokenId;
         private String selectedKakKeyAlias;
+        private String selectedPaddingScheme;
         private boolean initialized;
         private boolean authorized;
 
@@ -485,6 +490,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeyAliases.add(0, new SelectItem(null, "-Select Key Alias-"));
             return availableKeyAliases;
         }
+        
+        public List<SelectItem> getAvailablePaddingSchemes() {
+            availablePaddingSchemes = new ArrayList<>();
+            availablePaddingSchemes.add(0, new SelectItem("PKCS#1"));
+            availablePaddingSchemes.add(0, new SelectItem("PSS"));
+            return availablePaddingSchemes;
+        }
 
         public String getAlias() {
             return alias;
@@ -504,6 +516,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public String getSubjectKeyID() {
             return subjectKeyID;
+        }        
+
+        public String getSelectedKakKeyAlias() {
+            return selectedKakKeyAlias;
+        }
+        
+        public String getSelectedPaddingScheme() { 
+            return selectedPaddingScheme; 
         }
 
         public boolean isPlaceholder() {
@@ -526,12 +546,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             this.selectedKakCryptoTokenId = selectedKakCryptoTokenId;
         }
 
-        public String getSelectedKakKeyAlias() {
-            return selectedKakKeyAlias;
-        }
-
         public void setSelectedKakKeyAlias(String selectedKakKeyAlias) {
             this.selectedKakKeyAlias = selectedKakKeyAlias;
+        }
+        
+        public void setSelectedPaddingScheme(String selectedPaddingScheme) { 
+            this.selectedPaddingScheme = selectedPaddingScheme; 
         }
 
         public boolean isInitialized() {
@@ -549,6 +569,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private ListDataModel<CryptoTokenGuiInfo> cryptoTokenGuiList = null;
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<>();
     private ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
+    private List<SelectItem> availablePaddingSchemes;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
@@ -1399,8 +1420,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to initialize key.");
                 return;
             }
+            final String selectedPaddingScheme = keyPairGuiInfo.getSelectedPaddingScheme();
+            if (selectedPaddingScheme == null) {
+                addNonTranslatedErrorMessage("Signing algorithm was not chosen");
+                return;
+            }
             try {
-                cryptoTokenManagementSession.keyAuthorizeInit(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias);
+                cryptoTokenManagementSession.keyAuthorizeInit(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias, selectedPaddingScheme);
                 keyPairGuiInfo.initialized = true;
                 addNonTranslatedInfoMessage("Key '" + alias + "' initalized successfully.");
             } catch (CryptoTokenOfflineException e) {
@@ -1423,14 +1449,20 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("Key Authorization Key must be selected in order to authorize key.");
             return;
         }
+        final String selectedPaddingScheme = keyPairGuiInfo.getSelectedPaddingScheme();
+        if (selectedPaddingScheme == null) {
+            addNonTranslatedErrorMessage("Signing algorithm was not chosen");
+            return;
+        }
         try {
-            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId,
-                    kakAlias, Long.parseLong(getMaxOperationCount()));
+            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, 
+                    kakAlias, Long.parseLong(getMaxOperationCount()), selectedPaddingScheme);
             addNonTranslatedInfoMessage("Key '" + alias + "' authorized successfully.");
         } catch (CryptoTokenOfflineException e) {
             addNonTranslatedErrorMessage(e);
         }
     }
+    
 
     /**
      * Invoked when admin requests a test of a key pair.

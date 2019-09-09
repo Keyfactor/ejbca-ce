@@ -285,15 +285,15 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
 
     @Override
-    public void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName) {
+    public void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme) {
         log.info("Key Authorize Init..."); //TODO remove
-        slot.keyAuthorizeInit(alias, kakPair, signProviderName);
+        slot.keyAuthorizeInit(alias, kakPair, signProviderName, selectedPaddingScheme);
     }
     
     @Override
-    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
+    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
         log.info("Key Authorize..."); //TODO remove
-        slot.keyAuthorize(alias, kakPair, maxOperationCount, signProviderName);
+        slot.keyAuthorize(alias, kakPair, maxOperationCount, signProviderName, selectedPaddingScheme);
     }
     
     @Override

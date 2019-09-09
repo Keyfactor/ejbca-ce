@@ -184,12 +184,12 @@ public class PublicCryptoToken implements CryptoToken {
 	}
 
     @Override
-    public void keyAuthorizeInit(String alias, KeyPair kakKeyPair, String signProviderName) {
+    public void keyAuthorizeInit(String alias, KeyPair kakKeyPair, String signProviderName, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
 	
     @Override
-    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount) {
+    public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
     

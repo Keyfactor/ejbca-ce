@@ -158,7 +158,7 @@ public interface CryptoToken extends Serializable {
      * @param kakPair Key Authorization Key pair to associate key with.
      * @param signProviderName Name of the signature provider
      */
-    void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName);
+    void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme);
     
     /**
      * Operation specific for CP5 crypto tokens
@@ -168,7 +168,7 @@ public interface CryptoToken extends Serializable {
      * @param signProviderName Name of the signature provider
      * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
      */
-    void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount);
+    void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme);
     
     /**
      * Operation specific for CP5 crypto tokens
