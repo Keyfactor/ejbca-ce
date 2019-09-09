@@ -134,7 +134,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                         + "    OU - Use the first organizational unit in the subject distinguished name" + System.lineSeparator()
                         + System.lineSeparator() + "If the certificate does not contain the specified field, the UPN is used instead."));
         registerParameter(new Parameter(EE_PASSWORD, "End Entity Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "The password (enrollment code) to use for new end entities. If no passoword is specified, the default password 'foo123' is used."));
+                "The password (enrollment code) to use for new end entities. If no password is specified, the default password 'foo123' is used."));
     }
 
     @Override
@@ -212,7 +212,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 getLogger().info("All rows imported successfully. Enjoy!");
                 getLogger().info("");
                 getLogger().info("Processed " + processedCount + " certificates in " + SimpleTime.getInstance(duration).toString() + " ("
-                        + (processedCount / (duration / 1000)) + " certificates / second).");
+                        + (processedCount / ((duration + 1) / 1000)) + " certificates / second).");
             } else {
                 getLogger().info("No rows were imported.");
             }
