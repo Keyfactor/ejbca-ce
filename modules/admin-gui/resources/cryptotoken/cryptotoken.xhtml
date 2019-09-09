@@ -396,6 +396,14 @@
 					<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}"
 						rendered="#{keyPairGuiInfo.placeholder}" />
 				</h:column>
+                <h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showPaddingSchemeInfo}">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_PADDING_SCHEME}"/>
+                    </f:facet>
+                    <h:selectOneMenu id="selectPaddingSchemeMenu" value="#{keyPairGuiInfo.selectedPaddingScheme}">
+                        <f:selectItems value="#{keyPairGuiInfo.availablePaddingSchemes}"/>
+                    </h:selectOneMenu>
+                </h:column>
 				<h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}">
 					<f:facet name="header">
 						<h:outputText value="Key Authorization Key"/>
@@ -421,7 +429,7 @@
 							action="#{cryptoTokenMBean.actionAuthorizeStart}"
 							rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
 							disabled="#{keyPairGuiInfo.placeholder}">
-						<f:ajax execute="@this" render=":modalBlockContainer"/>
+						<f:ajax execute="@this selectPaddingSchemeMenu" render=":modalBlockContainer"/>
 					</h:commandButton>
 					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
 						action="#{cryptoTokenMBean.testKeyPair}"
