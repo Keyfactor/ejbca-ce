@@ -12,6 +12,30 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
+import java.io.File;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -37,6 +61,8 @@ import org.cesecore.keys.token.CryptoTokenManagementSession;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import org.cesecore.keys.token.KeyGenParams.KeyPairTemplate;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
@@ -50,30 +76,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
-import org.pkcs11.jacknji11.CKA;
-
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -579,7 +581,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private boolean authorizeInProgress = false;
     private boolean unlimitedOperations = true;
     private String maxOperationCount;
-    private String keyUsage; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
+    private KeyPairTemplate keyPairTemplate; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
 
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
@@ -645,21 +647,19 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         this.maxOperationCount = maxOperationCount;
     }
 
-    public String getKeyUsage() {
-        return keyUsage;
+    public KeyPairTemplate getKeyUsage() {
+        return keyPairTemplate;
     }
 
-    public void setKeyUsage(String keyUsage) {
-        this.keyUsage = keyUsage;
+    public void setKeyUsage(final KeyPairTemplate keyUsage) {
+        this.keyPairTemplate = keyUsage;
     }
 
     public List<SelectItem> getAvailableKeyUsages() {
-        final List<SelectItem> keyUsages = new ArrayList<>();
-        keyUsages.addAll(Arrays.asList(
+        return Arrays.asList(
                 new SelectItem(null, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU")),
-                new SelectItem(CryptoTokenConstants.SIGNKEYSPEC, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGN")),
-                new SelectItem(CryptoTokenConstants.ENCKEYSPEC, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC"))));
-        return keyUsages;
+                new SelectItem(KeyPairTemplate.SIGN, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGN")),
+                new SelectItem(KeyPairTemplate.ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC")));
     }
 
     /**
@@ -1346,27 +1346,21 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (log.isTraceEnabled()) {
             log.trace(">generateNewKeyPair");
         }
-        final KeyGenParams keyGenParams = new KeyGenParams(getNewKeyPairSpec());
+        final KeyGenParamsBuilder keyGenParamsBuilder = KeyGenParams.builder(getNewKeyPairSpec());
         if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
-            if (keyUsage == null) {
+            if (keyPairTemplate == null) {
                 addErrorMessage("Key Usage not selected");
                 return;
             }
-            if (keyUsage.equals(CryptoTokenConstants.ENCKEYSPEC)) {
-                keyGenParams.addPrivateKeyAttribute(CKA.DECRYPT, true);
-                keyGenParams.addPrivateKeyAttribute(CKA.SIGN, false);
-                keyGenParams.addPublicKeyAttribute(CKA.ENCRYPT, true);
-                keyGenParams.addPublicKeyAttribute(CKA.VERIFY, false);
+            if (keyPairTemplate.equals(CryptoTokenConstants.ENCKEYSPEC)) {
+                keyGenParamsBuilder.withKeyPairTemplate(KeyPairTemplate.ENCRYPT);
             }
-            if (keyUsage.equals(CryptoTokenConstants.SIGNKEYSPEC)) {
-                keyGenParams.addPrivateKeyAttribute(CKA.DECRYPT, false);
-                keyGenParams.addPrivateKeyAttribute(CKA.SIGN, true);
-                keyGenParams.addPublicKeyAttribute(CKA.ENCRYPT, false);
-                keyGenParams.addPublicKeyAttribute(CKA.VERIFY, true);
+            if (keyPairTemplate.equals(CryptoTokenConstants.SIGNKEYSPEC)) {
+                keyGenParamsBuilder.withKeyPairTemplate(KeyPairTemplate.SIGN);
             }
         }
         try {
-            cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), keyGenParams);
+            cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), keyGenParamsBuilder.build());
         } catch (CryptoTokenOfflineException e) {
             final String msg = "Token is offline. Keypair cannot be generated.";
             log.debug(msg, e);
