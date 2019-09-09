@@ -16,9 +16,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.crypto.IllegalBlockSizeException;
@@ -44,7 +42,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
-import org.pkcs11.jacknji11.CKA;
 
 /**
  * 
@@ -270,7 +267,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     @Override
     public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
         // No attribute override used here
-        generateKeyPair(new KeyGenParams(keySpec), alias);
+        generateKeyPair(KeyGenParams.builder(keySpec).build(), alias);
     }
     
     @Override
