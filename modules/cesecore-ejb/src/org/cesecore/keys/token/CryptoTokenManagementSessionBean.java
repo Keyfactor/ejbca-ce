@@ -236,8 +236,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public void keyAuthorizeInit(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias) 
-            throws CryptoTokenOfflineException {
+    public void keyAuthorizeInit(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias,
+            String selectedPaddingScheme) throws CryptoTokenOfflineException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
         if (cryptoToken == null || kakCryptoToken == null) {
@@ -247,12 +247,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
         final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
-        cryptoToken.keyAuthorizeInit(alias, kakPair, signProviderName );
+        cryptoToken.keyAuthorizeInit(alias, kakPair, signProviderName, selectedPaddingScheme);
     }
     
     @Override
-    public void keyAuthorize(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, final long maxOperationCount) 
-            throws CryptoTokenOfflineException {
+    public void keyAuthorize(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, 
+            final long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
         if (cryptoToken == null || kakCryptoToken == null) {
@@ -262,7 +262,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
         final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
-        cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount);
+        cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount, selectedPaddingScheme);
     }
     
     @Override
