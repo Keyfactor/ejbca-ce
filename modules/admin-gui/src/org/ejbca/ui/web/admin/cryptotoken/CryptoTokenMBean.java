@@ -635,9 +635,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableKeyUsages() {
         final List<SelectItem> keyUsages = new ArrayList<>();
         keyUsages.addAll(Arrays.asList(
-                new SelectItem(null, "-Key Usage-"),
-                new SelectItem(CryptoTokenConstants.SIGNKEYSPEC, "Sign / Verify"),
-                new SelectItem(CryptoTokenConstants.ENCKEYSPEC, "Encrypt / Decrypt")));
+                new SelectItem(null, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU")),
+                new SelectItem(CryptoTokenConstants.SIGNKEYSPEC, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGN")),
+                new SelectItem(CryptoTokenConstants.ENCKEYSPEC, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC"))));
         return keyUsages;
     }
 
