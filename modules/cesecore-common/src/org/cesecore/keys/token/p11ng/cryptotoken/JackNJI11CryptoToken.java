@@ -233,7 +233,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
     
     @Override
-    public void generateKeyPair(KeyGenParams keyGenParams, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+    public void generateKeyPair(final KeyGenParams keyGenParams, final String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
         log.info("Generating Key Pair...");
         final String keySpec = keyGenParams.getKeySpecification();
         
@@ -268,7 +268,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
     }
     
     @Override
-    public void generateKeyPair(String keySpec, String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
+    public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
         // No attribute override used here
         generateKeyPair(new KeyGenParams(keySpec), alias);
     }
