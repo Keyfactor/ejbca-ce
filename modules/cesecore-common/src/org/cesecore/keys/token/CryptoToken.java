@@ -157,6 +157,7 @@ public interface CryptoToken extends Serializable {
      * @param alias of the key to authorize init (i.e. associate with KAK)
      * @param kakPair Key Authorization Key pair to associate key with.
      * @param signProviderName Name of the signature provider
+     * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme);
     
@@ -167,6 +168,7 @@ public interface CryptoToken extends Serializable {
      * @param kakPair Key Authorization Key which is already associated with key
      * @param signProviderName Name of the signature provider
      * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
+     * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme);
     
