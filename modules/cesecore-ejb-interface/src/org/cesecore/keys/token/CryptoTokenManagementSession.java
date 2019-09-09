@@ -275,6 +275,7 @@ public interface CryptoTokenManagementSession {
      * @param alias of the key to authorize init (i.e. associate with KAK).
      * @param kakTokenId Id of the CryptoToken containing the KAK (Key Authorization Key)
      * @param kakTokenKeyAlias Alias of the key which will be used as KAK.
+     * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void keyAuthorizeInit(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenId, String kakTokenKeyAlias, String selectedPaddingScheme)
             throws CryptoTokenOfflineException;
@@ -288,6 +289,7 @@ public interface CryptoTokenManagementSession {
      * @param kakTokenId Id of the CryptoToken containing the KAK (Key Authorization Key)
      * @param kakTokenKeyAlias Alias of the key which will be used as KAK.
      * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
+     * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void keyAuthorize(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
             long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException;
