@@ -15,6 +15,7 @@ package org.cesecore.keys.token;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -63,7 +64,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
-import java.nio.file.Path;
 
 /**
  * @see CryptoTokenManagementSession
@@ -761,10 +761,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
-        // Update with parsed value
-        keyGenParams.setKeySpecification(keySpecification);
         // Generate key pair
-        cryptoToken.generateKeyPair(keyGenParams, alias);
+        cryptoToken.generateKeyPair(KeyGenParams.builder(keyGenParams).setKeySpecification(keySpecification).build(), alias);
         // We don't want to test CP5 keys on creation since they're not authorized yet (would fail).
         if (!cryptoToken.getClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             cryptoToken.testKeyPair(alias);
@@ -784,8 +782,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
             final String keySpecificationParam) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
             InvalidAlgorithmParameterException {
-        final KeyGenParams keyGenParams = new KeyGenParams(keySpecificationParam);
-        createKeyPair(authenticationToken, cryptoTokenId, alias, keyGenParams);
+        createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecificationParam).build());
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
