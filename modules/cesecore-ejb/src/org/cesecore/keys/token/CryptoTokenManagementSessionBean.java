@@ -280,19 +280,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public boolean isKeyInitialized(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        if ("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken".equals(cryptoToken.getClass().getName())) {
-            return cryptoToken.isKeyInitialized(alias);
-        }
-        return false;
+        return cryptoToken.isKeyInitialized(alias);
     }
     
     @Override
     public long maxOperationCount(AuthenticationToken authenticationToken, int cryptoTokenId, final String alias) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        if ("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken".equals(cryptoToken.getClass().getName())) {
-            return cryptoToken.maxOperationCount(alias);
-        }
-        return 0;
+        return cryptoToken.maxOperationCount(alias);
     }
     
     @Override
