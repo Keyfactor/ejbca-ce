@@ -721,7 +721,7 @@ public class CryptokiDevice {
             }
         }
 
-        public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName) {
+        public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
             final int HASH_SIZE = 32;
             Long session = null;
@@ -757,10 +757,13 @@ public class CryptokiDevice {
                 Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
                 kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
                 authData.pPublicExponent = kakPublicKeyExponentPointer;
-//                TODO make optional 
-//                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
-                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
-    
+
+                if ("PSS".equals(selectedPaddingScheme)) {
+                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+                } else {
+                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
+                }
+
                 params.authData = authData;
                 params.bAssigned = KEY_AUTHORIZATION_ASSIGNED;
                 
@@ -783,20 +786,21 @@ public class CryptokiDevice {
                 }
     
                 byte[] initSig = new byte[bitsToBytes(kakLength)];
-//                TODO make optional (sign PSS or PKCS1)
-//                try {
-//                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
-//                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-//                         | InvalidAlgorithmParameterException | SignatureException e) {
-//                    LOG.error("Error occurred while signing the hash!", e);
-//                }
-    
-                try {
-                    initSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
-                } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
-                    LOG.error("Error occurred while signing the hash!", e);
+                if ("PSS".equals(selectedPaddingScheme)) {
+                    try {
+                        initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
+                    } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+                            | InvalidAlgorithmParameterException | SignatureException e) {
+                        LOG.error("Error occurred while signing the hash!", e);
+                    }                    
+                } else {
+                    try {
+                        initSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
+                    } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
+                        LOG.error("Error occurred while signing the hash!", e);
+                    }
                 }
-                
+
                 long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
                     throw new CKRException(rvAuthorizeKey);
@@ -808,7 +812,7 @@ public class CryptokiDevice {
             }
         }
         
-        public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount, String signProviderName) {
+        public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount, String signProviderName, String selectedPaddingScheme) {
             Long session = null;
             try {
                 session = aquireSession();
@@ -842,18 +846,20 @@ public class CryptokiDevice {
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
                 byte[] authSig = new byte[bitsToBytes(kakLength)];
                 
-//                TODO make optional (sign PSS or PKCS1)
-                try {
-                    authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
-                } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
-                    LOG.error("Error occurred while signing the hash!", e);
+                if ("PSS".equals(selectedPaddingScheme)) {
+                    try {
+                        authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
+                    } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+                             | InvalidAlgorithmParameterException | SignatureException e) {
+                        LOG.error("Error occurred while signing the hash!", e);
+                    }
+                } else {
+                    try {
+                        authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
+                    } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
+                        LOG.error("Error occurred while signing the hash!", e);
+                    }
                 }
-//                try {
-//                    authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
-//                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-//                         | InvalidAlgorithmParameterException | SignatureException e) {
-//                    LOG.error("Error occurred while signing the hash!", e);
-//                }
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
