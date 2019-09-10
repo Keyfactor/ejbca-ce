@@ -57,7 +57,8 @@ public class ConfigDumpSetting implements Serializable {
     }
 
     /** Identifies an object in EJBCA */
-    public static final class ItemKey implements Comparable<ItemKey> {
+    public static final class ItemKey implements Comparable<ItemKey>, Serializable {
+        private static final long serialVersionUID = 1L;
         private final ItemType type;
         private final String name;
         public ItemKey(final ItemType type, final String name) {
