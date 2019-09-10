@@ -56,27 +56,40 @@ public abstract class CommandBase implements CliCommandPlugin {
      * @return True if "yes" was answered, false if "no" was answered.
      */
     protected static boolean readYesNo(final String prompt, final boolean defaultYes) {
-        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         final String promptLine = prompt + (defaultYes ? " (Y/n) " : " (y/N) ");
-        try {
-            while (true) { // until a valid response has been provided
-                System.out.print(promptLine);
-                System.out.flush();
-
-                final String input = bufferedReader.readLine().trim();
-                if (input.isEmpty()) {
-                    System.out.println(defaultYes ? "Yes." : "No.");
-                    return defaultYes;
-                } else if (input.equalsIgnoreCase("y")) {
-                    return true;
-                } else if (input.equalsIgnoreCase("n")) {
-                    return false;
-                } else {
-                    System.out.println("Input not recognized: '" + input + "'");
-                }
+        while (true) { // until a valid response has been provided
+            final String input = prompt(promptLine);
+            if (input.isEmpty()) {
+                System.out.println(defaultYes ? "Yes." : "No.");
+                return defaultYes;
+            } else if (input.equalsIgnoreCase("y")) {
+                return true;
+            } else if (input.equalsIgnoreCase("n")) {
+                return false;
+            } else {
+                System.out.println("Input not recognized: '" + input + "'");
             }
+        }
+    }
+    
+    /**
+     * Prompts for a string.
+     * 
+     * @param prompt Prompt string. It should explain to the user what should be entered.
+     * @return The entered string, minus leading/trailing whitespace. Never null.
+     * @throws IllegalArgumentException On End-Of-File.
+     */
+    protected static String prompt(final String promptLine) {
+        System.out.print(promptLine);
+        System.out.flush();
+        try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
+            final String reply = bufferedReader.readLine();
+            if (reply == null) {
+                throw new IllegalArgumentException("Got End-Of-File when trying to read answer from user");
+            }
+            return reply.trim();
         } catch (IOException e) {
-            throw new RuntimeException("Unknown IOException occurred.", e);
+            throw new IllegalStateException("Unknown IOException occurred.", e);
         }
     }
 
@@ -98,7 +111,7 @@ public abstract class CommandBase implements CliCommandPlugin {
     // Return an empty set for commands without aliases
     @Override
     public Set<String> getMainCommandAliases() {
-        return new HashSet<String>();
+        return new HashSet<>();
     }
 
     // Return an empty path for top level commands
@@ -110,7 +123,7 @@ public abstract class CommandBase implements CliCommandPlugin {
     // Return an empty set for commands without path aliases
     @Override
     public Set<String[]> getCommandPathAliases() {
-        return new HashSet<String[]>();
+        return new HashSet<>();
     }
 
     /**
@@ -160,7 +173,7 @@ public abstract class CommandBase implements CliCommandPlugin {
             if (standaloneParameters.size() > 0) {
                 //Only make this synopsis if there are standalone parameters
                 sb.append(TAB + getMainCommand());
-                Set<String> usedMandatories = new HashSet<String>();
+                Set<String> usedMandatories = new HashSet<>();
                 for (String parameterString : standaloneParameters) {
                     Parameter parameter = parameterHandler.getRegisteredParameter(parameterString);
                     sb.append(" <" + parameter.getName().toUpperCase().replaceAll(" ", "_") + ">");
@@ -261,7 +274,7 @@ public abstract class CommandBase implements CliCommandPlugin {
      * @return an list of strings, no longer than the given length
      */
     public static List<String> splitStringIntoLines(String input, int lineLength) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         while (input.length() > lineLength || input.contains("\n")) {
             int newline = input.indexOf("\n");
             if (newline != -1 && newline < lineLength) {

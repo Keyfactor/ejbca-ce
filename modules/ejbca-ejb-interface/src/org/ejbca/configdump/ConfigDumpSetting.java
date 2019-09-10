@@ -15,6 +15,7 @@ package org.ejbca.configdump;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,51 @@ public class ConfigDumpSetting implements Serializable {
         REPLACE,
         UPDATE,
         NO_OVERWRITE,
+        DRY_RUN,
+    }
+
+    /** Identifies an object in EJBCA */
+    public static final class ItemKey implements Comparable<ItemKey> {
+        private final ItemType type;
+        private final String name;
+        public ItemKey(final ItemType type, final String name) {
+            this.type = type;
+            this.name = name;
+        }
+        /** Returns the type, for example {@link ItemType#EEPROFILE} */
+        public ItemType getType() { return type; }
+        /** Returns the name of the object in EJBCA (for example End Entity Profile name) */
+        public String getName() { return name; }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (other instanceof ItemKey) {
+                return compareTo((ItemKey) other) == 0;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            // We use a sum of the fields hashcodes. The second hashcode is multiplied by some prime number. This is common practice in Java (see String.hashCode)
+            return type.hashCode() + 7*(name != null ? name.hashCode() : -1);
+        }
+
+        @Override
+        public int compareTo(final ItemKey o) {
+            if (o == this) {
+                return 0;
+            } else if (type != o.type) {
+                return type.ordinal() - o.type.ordinal();
+            } else if (name == null) {
+                return o.name == null ? 0 : -1;
+            } else if (o.name == null) {
+                return 1;
+            } else {
+                return name.compareTo(o.name);
+            }
+        }
     }
 
     private File location;
@@ -61,18 +107,8 @@ public class ConfigDumpSetting implements Serializable {
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
-    private ImportMode importMode = ImportMode.NO_OVERWRITE; // FIXME or should we have a dry-run flag + a list of objects to overwrite? like statedump 
-
-    public ConfigDumpSetting(final File location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
-            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors, final boolean ignoreWarnings) {
-        this.location = location;
-        this.included = included;
-        this.excluded = excluded;
-        this.includedAnyType = includedAnyType;
-        this.excludedAnyType = excludedAnyType;
-        this.ignoreErrors = ignoreErrors;
-        this.ignoreWarnings = ignoreWarnings;
-    }
+    private ImportMode importMode;
+    private Map<ItemKey,ImportMode> overwriteResolutions = Collections.emptyMap();
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
@@ -118,12 +154,36 @@ public class ConfigDumpSetting implements Serializable {
         return ignoreErrors;
     }
 
+    public void setIgnoreErrors(final boolean ignoreErrors) {
+        this.ignoreErrors = ignoreErrors;
+    }
+
     public boolean getIgnoreWarnings() {
         return ignoreWarnings;
     }
-    
+
+    public void setIgnoreWarnings(final boolean ignoreWarnings) {
+        this.ignoreWarnings = ignoreWarnings;
+    }
+
     public ImportMode getImportMode() {
         return importMode;
+    }
+
+    public void setImportMode(final ImportMode importMode) {
+        this.importMode = importMode;
+    }
+
+    public void setOverwriteResolutions(final Map<ItemKey,ImportMode> overwriteResolutions) {
+        this.overwriteResolutions = new HashMap<>(overwriteResolutions);
+    }
+    
+    public Map<ItemKey,ImportMode> getOverwriteResolutions() {
+        return overwriteResolutions;
+    }
+
+    public void addOverwriteResolution(final ItemKey item, final ImportMode resolution) {
+        overwriteResolutions.put(item, resolution);
     }
 
     public boolean isIncluded(final ItemType type, final String nameStr) {
