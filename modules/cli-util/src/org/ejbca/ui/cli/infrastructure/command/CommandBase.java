@@ -82,7 +82,8 @@ public abstract class CommandBase implements CliCommandPlugin {
     protected static String prompt(final String promptLine) {
         System.out.print(promptLine);
         System.out.flush();
-        try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
             final String reply = bufferedReader.readLine();
             if (reply == null) {
                 throw new IllegalArgumentException("Got End-Of-File when trying to read answer from user");
