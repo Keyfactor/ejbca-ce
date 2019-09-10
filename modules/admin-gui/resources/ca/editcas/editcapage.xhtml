@@ -1384,7 +1384,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
-					<h:inputSecret autocomplete="off" name="textfieldsharedcmprasecret"
+					<h:inputSecret for="textfieldsharedcmprasecret" autocomplete="off" name="textfieldsharedcmprasecret"
 						size="20" maxlength="64"
 						value="#{editCAsMBean.cmpRaAuthSecretValue}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
