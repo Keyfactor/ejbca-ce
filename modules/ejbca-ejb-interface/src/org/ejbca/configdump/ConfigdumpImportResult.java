@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.ejbca.configdump;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+
+import org.ejbca.configdump.ConfigDumpSetting.ItemKey;
 
 /**
  * Holds information about the status of a Configdump import operation.
@@ -22,8 +27,15 @@ public final class ConfigdumpImportResult extends ConfigdumpResult {
     
     private static final long serialVersionUID = 1L;
     
-    public ConfigdumpImportResult(final List<String> reportedErrors, final List<String> reportedWarnings) {
+    private final List<ItemKey> alreadyExistingItems;
+    
+    public ConfigdumpImportResult(final List<String> reportedErrors, final List<String> reportedWarnings, final Collection<ItemKey> alreadyExistingItems) {
         super(reportedErrors, reportedWarnings);
+        this.alreadyExistingItems = Collections.unmodifiableList(new ArrayList<>(alreadyExistingItems));
+    }
+    
+    public List<ItemKey> getAlreadyExistingItems() {
+        return alreadyExistingItems;
     }
     
 }
