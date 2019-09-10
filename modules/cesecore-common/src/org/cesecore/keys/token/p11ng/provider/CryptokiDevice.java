@@ -911,11 +911,11 @@ public class CryptokiDevice {
         }
         
         public boolean isKeyAuthorized(String alias) {
-            return true; // TODO: Call the actual check via native commands (if possible, waiting for reply from Utimaco Dev team)
+            return false; // TODO: Call the actual check via native commands (if possible, waiting for reply from Utimaco Dev team)
         }
         
         public long maxOperationCount(String alias) {
-            return Long.MAX_VALUE; // TODO: Call the actual check via native commands (if possible, waiting for reply from Utimaco Dev team)
+            return 0; // TODO: Call the actual check via native commands (if possible, waiting for reply from Utimaco Dev team)
         }
         
         /**
