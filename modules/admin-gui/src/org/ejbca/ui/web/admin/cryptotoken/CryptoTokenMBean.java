@@ -54,7 +54,6 @@ import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
@@ -1352,12 +1351,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("Key Usage not selected");
                 return;
             }
-            if (keyPairTemplate.equals(CryptoTokenConstants.ENCKEYSPEC)) {
-                keyGenParamsBuilder.withKeyPairTemplate(KeyPairTemplate.ENCRYPT);
-            }
-            if (keyPairTemplate.equals(CryptoTokenConstants.SIGNKEYSPEC)) {
-                keyGenParamsBuilder.withKeyPairTemplate(KeyPairTemplate.SIGN);
-            }
+            keyGenParamsBuilder.withKeyPairTemplate(keyPairTemplate);
         }
         try {
             cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), keyGenParamsBuilder.build());
