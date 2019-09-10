@@ -16,11 +16,7 @@ package org.cesecore.keys.token;
  * @version $Id$
  */
 public final class CryptoTokenConstants {
-
-    public static final String SIGNKEYSPEC       = "SIGNKEYSPEC";
-    public static final String ENCKEYSPEC        = "ENCKEYSPEC";
     public static final String SIGNKEYALGORITHM  = "SIGNKEYALGORITHM";
     public static final String ENCKEYALGORITHM   = "ENCKEYALGORITHM";
     public static final String KEYSTORE          = "KEYSTORE";
-
 }
