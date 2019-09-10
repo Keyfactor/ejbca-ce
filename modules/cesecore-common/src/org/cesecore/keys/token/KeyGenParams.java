@@ -49,6 +49,8 @@ public class KeyGenParams {
 
         protected KeyGenParamsBuilder(final String keySpecification) {
             this.keySpecification = keySpecification;
+            this.publicAttributesMap = new HashMap<>();
+            this.privateAttributesMap = new HashMap<>();
         }
 
         protected KeyGenParamsBuilder(final KeyGenParams keyGenParams) {
