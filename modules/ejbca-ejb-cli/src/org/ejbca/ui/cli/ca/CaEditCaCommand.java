@@ -124,7 +124,10 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
                 + "Fields that can be set are derived from setFieldName of the CA java code. If there is a 'setFieldName(type)' method, the values to use in this command should be 'fieldName value'\n"
                 + "Example: ca editca CAName CRLPeriod 2592000000\n"
                 + "Example: ca editca CAName CRLIssueInterval 100000\n"
-                + "Example: ca editca CAName includeInHealthCheck false\n";
+                + "Example: ca editca CAName includeInHealthCheck false\n"
+                + "Example: ca editca --caname CAName --field CRLPublishers --value \"1234\"\n"
+                + "Example: ca editca --caname CAName --field CRLPublishers --value \"1234;3456\"\n"
+                + "Example: ca editca --caname CAName --field CRLPublishers --value \"\"\n";
     }
     
     @Override
