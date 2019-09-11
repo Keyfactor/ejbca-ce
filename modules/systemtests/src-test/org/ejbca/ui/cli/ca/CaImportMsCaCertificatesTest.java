@@ -51,7 +51,7 @@ import org.junit.Test;
  * 
  * <pre>ant test:runone -Dtest.runone=CaImportMsCaCertificatesTest</pre>.
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class CaImportMsCaCertificatesTest {
     private AuthenticationToken getAuthenticationToken() {
