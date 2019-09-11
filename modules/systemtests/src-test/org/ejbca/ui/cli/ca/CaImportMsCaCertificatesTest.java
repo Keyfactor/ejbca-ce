@@ -297,6 +297,64 @@ public class CaImportMsCaCertificatesTest {
             }
         }
     }
+    
+    @Test
+    public void testImport1Unknown() throws Exception {
+        final File file = File.createTempFile("certutil_dump_", ".txt");
+        try {
+            final String testData = "\n" 
+                    + "Schema:\n" 
+                    + "  Column Name                   Localized Name                Type    MaxLength\n"
+                    + "  ----------------------------  ----------------------------  ------  ---------\n"
+                    + "  UPN                           User Principal Name           String  2048 -- Indexed\n"
+                    + "  CertificateTemplate           Certificate Template          String  254 -- Indexed\n"
+                    + "  Request.Disposition           Request Disposition           Long    4 -- Indexed\n"
+                    + "  RawCertificate                Binary Certificate            Binary  16384\n" 
+                    + "\n" 
+                    + "Row 1:\n"
+                    + "  User Principal Name: EMPTY\n"
+                    + "  Certificate Template: \"1.3.6.1.4.1.311.21.8.6486083.1737355.11158168.1694049.3365734.200.8197557.1333246\" MS_CA_CertificateTemplate\n"
+                    + "  Request Disposition: 0x0 (0) -- Foobar\n" 
+                    + "  Binary Certificate: EMPTY";
+
+            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            final String[] args = new String[] { "--caname", "Let's Encrypt Authority X3", "-f", file.getAbsolutePath(), };
+            assertEquals("Nothing imported should be successful.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
+            assertFalse("User should not be created.",
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser("DontCreateMe"));
+        } finally {
+            FileUtils.deleteQuietly(file);
+        }
+    }
+
+    @Test
+    public void testImport1Pending() throws Exception {
+        final File file = File.createTempFile("certutil_dump_", ".txt");
+        try {
+            final String testData = "\n" 
+                    + "Schema:\n" 
+                    + "  Column Name                   Localized Name                Type    MaxLength\n"
+                    + "  ----------------------------  ----------------------------  ------  ---------\n"
+                    + "  UPN                           User Principal Name           String  2048 -- Indexed\n"
+                    + "  CertificateTemplate           Certificate Template          String  254 -- Indexed\n"
+                    + "  Request.Disposition           Request Disposition           Long    4 -- Indexed\n"
+                    + "  RawCertificate                Binary Certificate            Binary  16384\n" 
+                    + "\n" 
+                    + "Row 1:\n"
+                    + "  User Principal Name: EMPTY\n"
+                    + "  Certificate Template: \"1.3.6.1.4.1.311.21.8.6486083.1737355.11158168.1694049.3365734.200.8197557.1333246\" MS_CA_CertificateTemplate\n"
+                    + "  Request Disposition: 0x15 (21) -- Pending\n" 
+                    + "  Binary Certificate:";
+
+            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            final String[] args = new String[] { "--caname", "Let's Encrypt Authority X3", "-f", file.getAbsolutePath(), };
+            assertEquals("Nothing imported should be successful.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
+            assertFalse("User should not be created.",
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser("DontCreateMe"));
+        } finally {
+            FileUtils.deleteQuietly(file);
+        }
+    }
 
     @Test
     public void testImport1Denied() throws Exception {
