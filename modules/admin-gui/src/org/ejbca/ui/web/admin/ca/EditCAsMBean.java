@@ -1601,6 +1601,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
             return resultList;    
         case "keyEncryptKey":
+            for (final String alias : availableCryptoTokenEncryptionAliases) {
+                resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
+            }
+            return resultList;
         default:
             return Collections.emptyList();
         }
