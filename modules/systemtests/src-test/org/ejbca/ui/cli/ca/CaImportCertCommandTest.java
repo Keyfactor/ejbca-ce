@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
@@ -55,9 +58,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @version $Id$
@@ -113,7 +113,6 @@ public class CaImportCertCommandTest {
         certificateSerialNumber = CertTools.getSerialNumber(certificate);
         try (FileOutputStream fileOutputStream = new FileOutputStream(certificateFile)) {
             fileOutputStream.write(CertTools.getPemFromCertificateChain(Collections.singletonList(certificate)));
-            fileOutputStream.close();
         }
         List<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(USERNAME));
         if (certs.size() > 0) {
