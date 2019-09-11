@@ -211,8 +211,12 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             if (processedCount > 0) {
                 getLogger().info("All rows imported successfully. Enjoy!");
                 getLogger().info("");
-                getLogger().info("Processed " + processedCount + " certificates in " + SimpleTime.getInstance(duration).toString() + " ("
-                        + (processedCount / ((duration + 1) / 1000)) + " certificates / second).");
+                if (duration / 1000 == 0) {
+                    getLogger().info("Processed " + processedCount + " certificates in " + duration + " ms.");
+                } else {
+                    getLogger().info("Processed " + processedCount + " certificates in " + SimpleTime.getInstance(duration).toString() + " ("
+                            + (processedCount / (duration / 1000)) + " certificates / second).");
+                }
             } else {
                 getLogger().info("No rows were imported.");
             }
