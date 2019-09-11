@@ -264,7 +264,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu
 						value="#{editCAsMBean.selectedCryptoTokenCertSignKey}">
-						<f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('certSignKey')}" />
+						<f:selectItems value="#{editCAsMBean.getKeyAliasesList('certSignKey')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
