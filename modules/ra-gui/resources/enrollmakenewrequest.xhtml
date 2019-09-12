@@ -412,7 +412,7 @@
 							<h3>
 								<h:outputText value="#{msg.enroll_other_cert_data}" />
 							</h3>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderCertExtensionDataField}">
 								<h:outputLabel for="certExtensionDataField" value="#{msg.enroll_cert_extension_data}"/>
 								<h:inputTextarea id="certExtensionDataField" value="#{enrollMakeNewRequestBean.extensionData}">
                                 	<f:validator validatorId="oidValidator"/>
@@ -420,15 +420,15 @@
 								</h:inputTextarea>
 								<h:message for="certExtensionDataField" id="certExtensionDataFieldMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderPsd2QcStatementField}">
 								<h:outputLabel for="psd2QcNcaName" value="#{msg.enroll_psd2_ncaname}"/>
 								<h:inputText id="psd2QcNcaName" value="#{enrollMakeNewRequestBean.psd2NcaName}"/>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderPsd2QcStatementField}">
 								<h:outputLabel for="psd2QcNcaId" value="#{msg.enroll_psd2_ncaid}"/>
 								<h:inputText id="psd2QcNcaId" value="#{enrollMakeNewRequestBean.psd2NcaId}"/>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderPsd2QcStatementField}">
 								<h:outputLabel for="psd2QcPspRoles" value="#{msg.enroll_psd2_psp_roles}"/>
 								<h:selectManyListbox id="psd2QcPspRoles" value="#{enrollMakeNewRequestBean.psd2PspRoles}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availablePsd2PspRoles}"/>
