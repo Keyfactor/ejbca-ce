@@ -41,6 +41,8 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaRoleMemberSearchRequest;
+import org.ejbca.core.model.era.RaRoleMemberSearchResponse;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.jsfext.AddRemoveListState;
 
@@ -324,7 +326,12 @@ public class RaRoleBean implements Serializable {
     }
 
     public String getDeleteConfirmationText() {
-        return raLocaleBean.getMessage("delete_role_page_confirm", role.getAccessRules().size());
+        // Find out how many role members this role has
+        final RaRoleMemberSearchRequest searchRequest = new RaRoleMemberSearchRequest();
+            searchRequest.setRoleIds(new ArrayList<>(Arrays.asList(role.getRoleId())));
+        //searchRequest.setGenericSearchString(genericSearchString);
+        final RaRoleMemberSearchResponse response = raMasterApiProxyBean.searchForRoleMembers(raAuthenticationBean.getAuthenticationToken(), searchRequest);
+        return raLocaleBean.getMessage("delete_role_page_confirm", response.getRoleMembers().size());
     }
 
     public String delete() throws AuthorizationDeniedException {
