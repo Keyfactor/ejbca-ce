@@ -80,7 +80,7 @@ public abstract class CommandBase implements CliCommandPlugin {
      * @throws IllegalArgumentException On End-Of-File.
      */
     protected static String prompt(final String promptLine) {
-        System.out.print(promptLine);
+        System.out.print(promptLine + " ");
         System.out.flush();
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         try {
