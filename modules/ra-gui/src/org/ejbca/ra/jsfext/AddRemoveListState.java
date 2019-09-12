@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.faces.model.SelectItem;
 
@@ -60,10 +61,19 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
     /** Internal method that returns the currently selected items in the available list. These can be added with the "Add" button. */
     public List<T> getSelectedInAvailableList() { return selectedInAvailableList; }
     public void setSelectedInAvailableList(final List<T> selectedInAvailableList) { this.selectedInAvailableList = selectedInAvailableList; }
+
     /** Internal method that returns the items that are currently enabled, that the user can remove */
-    public List<SelectItem> getEnabledSelectItems() { return enabledSelectItems; }
+    public List<SelectItem> getEnabledSelectItems() {
+        return enabledSelectItems.stream()
+                .sorted((i1, i2) -> i1.getLabel().compareTo(i2.getLabel()))
+                .collect(Collectors.toList());
+    }
     /** Internal method that returns the items that are currently available but not enabled, that the user can add */
-    public List<SelectItem> getAvailableSelectItems() { return availableSelectItems; }
+    public List<SelectItem> getAvailableSelectItems() {
+        return availableSelectItems.stream()
+                .sorted((i1, i2) -> i1.getLabel().compareTo(i2.getLabel()))
+                .collect(Collectors.toList());
+    }
     
     /** Returns the enabled items */
     @SuppressWarnings("unchecked")
