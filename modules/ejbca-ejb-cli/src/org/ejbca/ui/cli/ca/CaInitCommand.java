@@ -53,6 +53,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -452,6 +453,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     getLogger().info("Non default password used for soft CA token, auto activation disabled.");
                     cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
                 }
+            } else if (catokentype.equals(CryptoTokenFactory.JACKNJI_NAME)) {
+                // Don't reference by class.getName() since this class may not be available.
+                className = CryptoTokenFactory.JACKNJI_NAME;
             } else {
                 className = PKCS11CryptoToken.class.getName();
             }
