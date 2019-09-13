@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -1602,10 +1603,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public List<SelectItem> getAvailableTokenTypesSelectItems() {
         final List<SelectItem> ret = new ArrayList<>();
-        ret.add(new SelectItem(0, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
-        for (final Integer id : getAvilableTokenTypes()) {
-            ret.add(new SelectItem(id, raLocaleBean.getMessage("tokentype_" + id)));
+        if (selectedTokenType == 0) {
+            setSelectedTokenType(getDefaultTokenType());
         }
+        ret.add(new SelectItem(0, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+        ret.addAll(
+                getAvilableTokenTypes()
+                        .stream()
+                        .map(id -> new SelectItem(id, raLocaleBean.getMessage("tokentype_" + id)))
+                        .collect(Collectors.toList())
+        );
         return ret;
     }
 
@@ -1751,6 +1758,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public int getSelectedTokenType() {
         return this.selectedTokenType;
+    }
+
+    public int getDefaultTokenType() {
+        return getEndEntityProfile().getDefaultTokenType();
     }
 
     /**
