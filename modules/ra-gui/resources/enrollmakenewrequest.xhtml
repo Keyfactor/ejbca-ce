@@ -246,7 +246,7 @@
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="selectTokenOneMenu" value="#{msg.enroll_token}" />
 							<h:selectOneMenu id="selectTokenOneMenu" styleClass="jsAutoFocusLast"
-		                            value="#{enrollMakeNewRequestBean.selectedTokenType}" >
+		                            value="#{enrollMakeNewRequestBean.selectedTokenType == 0 ? enrollMakeNewRequestBean.defaultTokenType : enrollMakeNewRequestBean.selectedTokenType}" >
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableTokenTypesSelectItems}" />
 									<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
 							</h:selectOneMenu>
