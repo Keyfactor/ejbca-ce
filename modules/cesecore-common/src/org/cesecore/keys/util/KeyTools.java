@@ -82,6 +82,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
@@ -838,11 +839,66 @@ public final class KeyTools {
         return buffer.toByteArray();
     }
 
-    /** @return a buffer with the public key in PEM format */
+    /**
+     * Get a public key in PEM format.
+     * 
+     * <p>Example:
+     * <pre>
+     * -----BEGIN PUBLIC KEY-----
+     * MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAryQICCl6NZ5gDKrnSztO
+     * 3Hy8PEUcuyvg/ikC+VcIo2SFFSf18a3IMYldIugqqqZCs4/4uVW3sbdLs/6PfgdX
+     * 7O9D22ZiFWHPYA2k2N744MNiCD1UE+tJyllUhSblK48bn+v1oZHCM0nYQ2NqUkvS
+     * j+hwUU3RiWl7x3D2s9wSdNt7XUtW05a/FXehsPSiJfKvHJJnGOX0BgTvkLnkAOTd
+     * OrUZ/wK69Dzu4IvrN4vs9Nes8vbwPa/ddZEzGR0cQMt0JBkhk9kU/qwqUseP1QRJ
+     * 5I1jR4g8aYPL/ke9K35PxZWuDp3U0UPAZ3PjFAh+5T+fc7gzCs9dPzSHloruU+gl
+     * FQIDAQAB
+     * -----END PUBLIC KEY-----
+     * </pre>
+     * 
+     * @param publicKey the public key to PEM encode
+     * @return a string with the PEM encoded public key.
+     * @throws IOException if the key could not be encoded.
+     */
     public static String getAsPem(final PublicKey publicKey) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try ( final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos)) ) {
             pemWriter.writeObject(publicKey);
+        }
+        return new String(baos.toByteArray(), "UTF8");
+    }
+
+    /**
+     * Get a CRL in PEM format.
+     * 
+     * <p>Example:
+     * <pre>
+     * -----BEGIN X509 CRL-----
+     * MIICyjCBswIBATANBgkqhkiG9w0BAQsFADBPMQswCQYDVQQGEwJTRTEeMBwGA1UE
+     * CgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMSAwHgYDVQQDDBdDVCBMb2cgVGVzdCBJ
+     * c3N1aW5nIFN1YhcNMTkwOTEzMTMzMTU5WhcNMTkwOTE0MTMzMTU5WqAwMC4wHwYD
+     * VR0jBBgwFoAUk7mzIWib7jLH1mO79/7uK6InQ/cwCwYDVR0UBAQCAgEMMA0GCSqG
+     * SIb3DQEBCwUAA4ICAQB0LFaIsd5Kmg+wkBKFpSNasWMIpdnjXt7qLQ/L8n/R40Qy
+     * ZNtgOf/yPjVQclHP/gi0uV/eJvES1oPTwGiuxuNYB8TUUfiWNyuiOJY5bMBtSpKR
+     * SiV4GHsE5kfGnpII9fOqA8CDvNZnwg4BK2c1aUH8QUtP/W2/wL6QtopZTN4iwvWQ
+     * G4QvKcVbwH0aNenaSdt8A51bjf3K/GI03FP0pmyiAvTAiiho4CTSsUEjPhAI65d9
+     * P2k84UyAOiKRVpMq4PxHmQLCRf+ba3CfitJB3ZZ05GVQLqiiUFiSeaqdCb8NQZlM
+     * K2rDNgNFefpQvbClrEz1z7RbfbolFC5z2Q+40IoSM1gfgchiTRyie63p3OPeBweJ
+     * XTfUQVwN6rGGgbU6fDtFzdKA5ydbJmn0Ey/jUpiV/cQaCrzkHGlwYzvdo0Nktg50
+     * dkl2wYlNo1T+pIFShCwQz2DRJ/Bp5S3YQ/cmyXVS1mwWAGHEwwKNcsXqsQG71FJj
+     * cnCY5FEmRt1BGX/8VCCwPCMOeRYvQEiSj/UzxYIQHQq8VPnvcQpF1yy/YVoN5W5P
+     * LZKuZbOyMkVJb0erKggg74uNSrML1nVp7skS3+9Nnrw3tqoNqVTnDfAagGmZnvZU
+     * 3q+j0IbiB3IyD12nsjWNf5Bt0pwAO/KpA2ym6bPZmVjwEtdymJrEcXKuwjQXIw==
+     * -----END X509 CRL-----
+     * </pre>
+     * 
+     * @param crl the CRL to encode.
+     * @return a string with the PEM encoded CRL.
+     * @throws IOException if the CRL could not be encoded.
+     */
+    public static String getAsPem(final X509CRLHolder crl) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(baos))) {
+            pemWriter.writeObject(crl);
         }
         return new String(baos.toByteArray(), "UTF8");
     }

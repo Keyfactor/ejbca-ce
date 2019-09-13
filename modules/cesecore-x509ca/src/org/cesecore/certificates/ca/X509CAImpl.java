@@ -2102,6 +2102,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         try {
             final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(verifyKey);
             if (!crl.isSignatureValid(verifier)) {
+                if (log.isTraceEnabled()) {
+                    log.trace("The public key used to verify the CRL:" + System.lineSeparator() + KeyTools.getAsPem(verifyKey));
+                    log.trace("The CRL whose signature could not be verified:" + System.lineSeparator() + KeyTools.getAsPem(crl));
+                }
                 throw new SignatureException("Cannot verify the signature of the CRL for issuer " + "'" + issuer
                         + "' using the public key with SHA-1 fingerprint " + CertTools.createPublicKeyFingerprint(verifyKey, "SHA-1")
                         + ". The CRL signature was created with a private key stored in the token " + cryptoToken.getTokenName()
