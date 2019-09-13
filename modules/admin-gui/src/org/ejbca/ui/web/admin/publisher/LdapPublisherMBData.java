@@ -367,7 +367,7 @@ public final class LdapPublisherMBData implements Serializable {
         ldapPublisher.setAddMultipleCertificates(addMultipleCertificates);
         ldapPublisher.setRemoveRevokedCertificates(removeRevokedCertificates);
         ldapPublisher.setRemoveUsersWhenCertRevoked(removeUserOnCertRevoke);
-        ldapPublisher.setUserPassword(setUserPassword);
+        ldapPublisher.setSetUserPassword(setUserPassword);
         ldapPublisher.setUserObjectClass(userObjectClass);
         ldapPublisher.setCAObjectClass(caObjectClass);
         ldapPublisher.setUserCertAttribute(userCertificateAttr);

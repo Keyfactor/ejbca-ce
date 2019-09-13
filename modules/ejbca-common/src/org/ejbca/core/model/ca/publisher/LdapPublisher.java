@@ -1277,7 +1277,7 @@ public class LdapPublisher extends BasePublisher {
 		return createnodes;
 	}
 
-	public void setUserPassword( boolean userpassword ){
+	public void setSetUserPassword( boolean userpassword ){
 		data.put(SETUSERPASSWORD, Boolean.valueOf(userpassword));  
 	}
 
@@ -1764,7 +1764,7 @@ public class LdapPublisher extends BasePublisher {
 				setConnectionTimeOut(getConnectionTimeOut());	// v9
 			}
 			if(data.get(SETUSERPASSWORD) == null) {
-				setUserPassword(false);	// v10
+				setSetUserPassword(false);	// v10
 			}
 			if (data.get(READTIMEOUT) == null) {
 				setStoreTimeOut(getStoreTimeOut());	// v11

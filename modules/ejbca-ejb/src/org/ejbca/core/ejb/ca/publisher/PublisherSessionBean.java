@@ -955,4 +955,22 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         return false;
     }
+    
+    @Override
+    public BasePublisher createPublisherObjectFromTypeId(final int typeId) {
+        switch (typeId) {
+        case PublisherConst.TYPE_ADPUBLISHER:
+            return new ActiveDirectoryPublisher();
+        case PublisherConst.TYPE_LDAPPUBLISHER:
+            return new LdapPublisher();
+        case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
+            return new CustomPublisherContainer();
+        case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
+            return new LdapSearchPublisher();
+        case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
+            return new MultiGroupPublisher();
+        default:
+            throw new IllegalArgumentException("Invalid Publisher Type ID");
+        }
+    }
 }
