@@ -368,25 +368,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String changePublisherType(AjaxBehaviorEvent event) {
         int dashPos = selectedPublisherType.indexOf('-');
         if (dashPos == -1) {
-            switch (Integer.valueOf(selectedPublisherType)) {
-            case PublisherConst.TYPE_ADPUBLISHER:
-                publisher = new ActiveDirectoryPublisher();
-                break;
-            case PublisherConst.TYPE_LDAPPUBLISHER:
-                publisher = new LdapPublisher();
-                break;
-            case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
-                publisher = new CustomPublisherContainer();
-                break;
-            case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
-                publisher = new LdapSearchPublisher();
-                break;
-            case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
-                publisher = new MultiGroupPublisher();
-                break;
-            default:
-                break;
-            }
+            publisher = publisherSession.createPublisherObjectFromTypeId(Integer.valueOf(selectedPublisherType));
         } else {
             publisher = new CustomPublisherContainer();
             final String customClassName = selectedPublisherType.substring(dashPos + 1);
