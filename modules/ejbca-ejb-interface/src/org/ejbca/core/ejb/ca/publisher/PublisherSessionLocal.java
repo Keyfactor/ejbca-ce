@@ -103,4 +103,11 @@ public interface PublisherSessionLocal extends PublisherSession {
     
     /** @return return the query results as a List. */
     List<PublisherData> findAll();
+
+    /**
+     * Constructs a publisher object of the given type
+     * @param typeId One of the TYPE_ constants in {@link org.ejbca.core.model.ca.publisher.PublisherConst PublisherConst}
+     * @return Newly constructed publisher object (not initialized or persisted)
+     */
+    BasePublisher createPublisherObjectFromTypeId(int typeId);
 }
