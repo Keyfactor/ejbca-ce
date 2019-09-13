@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -192,6 +193,16 @@ public class CustomPublisherContainer extends BasePublisher {
         }
 		return properties;
 	}
+    
+    public void setProperties(final Properties properties) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            properties.store(baos, null);
+            setPropertyData(baos.toString("8859_1")); // the properties are stored as ISO-8859-1
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to encode properties", e);
+        }
+    }
   
 	@Override
 	public boolean isFullEntityPublishingSupported() {
@@ -222,7 +233,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
+	@Override
+    public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		return this.getCustomPublisher().storeCRL(admin,incrl,cafp,number,userDN);		
 	}
     
@@ -260,7 +272,7 @@ public class CustomPublisherContainer extends BasePublisher {
                 // publisher configured (Peer publisher for example)
                 log.info("Publisher class "+classPath+" is not available in this version/build of EJBCA.");
                 return null;
-            } catch (IllegalAccessException | InstantiationException iae) {
+            } catch (ReflectiveOperationException iae) {
                 throw new IllegalStateException(iae);
             } 
 		}
@@ -271,7 +283,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	/** 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object clone() throws CloneNotSupportedException {
 		CustomPublisherContainer clone = new CustomPublisherContainer();
         HashMap clonedata = (HashMap) clone.saveData();
@@ -289,7 +302,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	/* *
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#getLatestVersion()
 	 */
-	public float getLatestVersion() {		
+	@Override
+    public float getLatestVersion() {		
 		return LATEST_VERSION;
 	}
 
@@ -297,7 +311,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	 * Resets the current custom publisher
 	 * @see org.ejbca.core.model.UpgradeableDataHashMap#saveData()
 	 */
-	public Object saveData() {
+	@Override
+    public Object saveData() {
 		this.custompublisher = null;
 		return super.saveData();
 	}
