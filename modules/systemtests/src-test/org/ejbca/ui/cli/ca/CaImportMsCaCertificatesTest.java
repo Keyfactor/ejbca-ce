@@ -285,16 +285,11 @@ public class CaImportMsCaCertificatesTest {
                         "admin@ejbca.org");
             }
 
-            if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                    .findCertificateByFingerprint("c9e877ed59066011cf813ec2df270ac26c39840c") != null) {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
-                        .removeCertificate("c9e877ed59066011cf813ec2df270ac26c39840c");
-            }
-            if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                    .findCertificateByFingerprint("335bdc0a32f9e239e468fb79e1380e017fc5f8be") != null) {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
-                        .removeCertificate("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
-            }
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+                    .removeCertificate("c9e877ed59066011cf813ec2df270ac26c39840c");
+
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+                    .removeCertificate("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
         }
     }
     
@@ -312,7 +307,7 @@ public class CaImportMsCaCertificatesTest {
                     + "  RawCertificate                Binary Certificate            Binary  16384\n" 
                     + "\n" 
                     + "Row 1:\n"
-                    + "  User Principal Name: EMPTY\n"
+                    + "  User Principal Name: DontCreateMe\n"
                     + "  Certificate Template: \"1.3.6.1.4.1.311.21.8.6486083.1737355.11158168.1694049.3365734.200.8197557.1333246\" MS_CA_CertificateTemplate\n"
                     + "  Request Disposition: 0x0 (0) -- Foobar\n" 
                     + "  Binary Certificate: EMPTY";
@@ -341,7 +336,7 @@ public class CaImportMsCaCertificatesTest {
                     + "  RawCertificate                Binary Certificate            Binary  16384\n" 
                     + "\n" 
                     + "Row 1:\n"
-                    + "  User Principal Name: EMPTY\n"
+                    + "  User Principal Name: DontCreateMe\n"
                     + "  Certificate Template: \"1.3.6.1.4.1.311.21.8.6486083.1737355.11158168.1694049.3365734.200.8197557.1333246\" MS_CA_CertificateTemplate\n"
                     + "  Request Disposition: 0x15 (21) -- Pending\n" 
                     + "  Binary Certificate:";
@@ -458,11 +453,8 @@ public class CaImportMsCaCertificatesTest {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(),
                         "275574361793664725982328236281411623936956");
             }
-            if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                    .findCertificateByFingerprint("335bdc0a32f9e239e468fb79e1380e017fc5f8be") != null) {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
                         .removeCertificate("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
-            }
         }
     }
 
@@ -537,11 +529,8 @@ public class CaImportMsCaCertificatesTest {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(),
                         "admin@ejbca.org");
             }
-            if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                    .findCertificateByFingerprint("335bdc0a32f9e239e468fb79e1380e017fc5f8be") != null) {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
                         .removeCertificate("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
-            }
         }
     }
 }
