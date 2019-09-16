@@ -128,7 +128,7 @@ public class CAToken extends UpgradeableDataHashMap {
         		int foundKeys = 0;
                 // Loop that checks  if there all key aliases have keys
         		if (cryptoToken!=null) {
-                    final HashMap<String, PrivateKey> aliasMap = new HashMap<String, PrivateKey>();
+                    final HashMap<String, PrivateKey> aliasMap = new HashMap<>();
                     for (final String alias : aliases) {
                         PrivateKey privateKey = aliasMap.get(alias);
                         if (privateKey==null) {
@@ -139,7 +139,7 @@ public class CAToken extends UpgradeableDataHashMap {
                                     aliasMap.put(alias, privateKey);
                                 }
                             } catch (CryptoTokenOfflineException e) {
-                                privateKey = null;
+                                // Continue
                             }
                         }
                         if (privateKey==null) {
@@ -363,7 +363,7 @@ public class CAToken extends UpgradeableDataHashMap {
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            String msg = intres.getLocalizedMessage("token.upgrade", new Float(getVersion()));
+            String msg = intres.getLocalizedMessage("token.upgrade", getVersion());
             log.info(msg);
             // Put upgrade stuff here
             if (data.get(CAToken.SEQUENCE_FORMAT) == null) { // v7
@@ -411,7 +411,7 @@ public class CAToken extends UpgradeableDataHashMap {
                 data.put(CAToken.CLASSPATH, newclasspath);
             }
 
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
         }
     }
 
