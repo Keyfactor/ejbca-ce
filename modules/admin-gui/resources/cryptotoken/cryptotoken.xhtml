@@ -266,7 +266,7 @@
                     <h:outputLabel id="currentCryptoTokenKeyVaultTypeLabel"
                         for="currentCryptoTokenKeyVaultType"
                         value="#{web.text.CRYPTOTOKEN_KEYVAULT_TYPE} " />
-                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                    <h:outputText id="currentCryptoTokenKeyVaultType" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
                 </h:panelGroup>
                 <h:panelGroup
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
@@ -292,7 +292,7 @@
                     <h:outputLabel id="currentCryptoTokenKeyVaultNameLabel"
                         for="currentCryptoTokenKeyVaultName"
                         value="#{web.text.CRYPTOTOKEN_KEYVAULT_NAME} " />
-                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                    <h:outputText id="currentCryptoTokenKeyVaultName" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
                 </h:panelGroup>
                 <h:panelGroup
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
@@ -310,7 +310,7 @@
                     <h:outputLabel id="currentCryptoTokenKeyVaultClientIDLabel"
                         for="currentCryptoTokenKeyVaultClientID"
                         value="#{web.text.CRYPTOTOKEN_KEYVAULT_CLIENTID} " />
-                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                    <h:outputText id="currentCryptoTokenKeyVaultClientID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
                 </h:panelGroup>
                 <h:panelGroup
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
