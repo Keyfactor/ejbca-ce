@@ -201,6 +201,11 @@ public abstract class CAInfo implements Serializable {
         this.signedby = signedby;
     }
 
+    /** Returns true if the CA has a CA token. Used by Configdump */
+    public boolean hasCaToken() {
+        return status != CAConstants.CA_EXTERNAL && signedby != CAInfo.SIGNEDBYEXTERNALCA;
+    }
+
     public void setEncodedValidity(String encodedValidity) {
         this.encodedValidity = encodedValidity;
     }
@@ -407,9 +412,9 @@ public abstract class CAInfo implements Serializable {
 
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
         if(approvals == null) {
-            approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
+            approvals = new LinkedHashMap<>();
         }
-        this.approvals = new LinkedHashMap<ApprovalRequestType, Integer>(approvals);
+        this.approvals = new LinkedHashMap<>(approvals);
     }
 
     /**

@@ -109,7 +109,8 @@ public class ConfigDumpSetting implements Serializable {
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
     private ImportMode importMode;
-    private Map<ItemKey,ImportMode> overwriteResolutions = Collections.emptyMap();
+    private Map<ItemKey,ImportMode> overwriteResolutions = new HashMap<>();
+    private boolean initializeCas;
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
@@ -180,11 +181,19 @@ public class ConfigDumpSetting implements Serializable {
     }
     
     public Map<ItemKey,ImportMode> getOverwriteResolutions() {
-        return overwriteResolutions;
+        return Collections.unmodifiableMap(overwriteResolutions);
     }
 
     public void addOverwriteResolution(final ItemKey item, final ImportMode resolution) {
         overwriteResolutions.put(item, resolution);
+    }
+    
+    public boolean getInitializeCas() {
+        return initializeCas;
+    }
+
+    public void setInitializeCas(final boolean initializeCas) {
+        this.initializeCas = initializeCas;
     }
 
     public boolean isIncluded(final ItemType type, final String nameStr) {

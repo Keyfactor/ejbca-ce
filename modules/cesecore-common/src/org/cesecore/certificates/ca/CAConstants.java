@@ -17,7 +17,10 @@ import java.io.StringReader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Locale;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -89,6 +92,14 @@ public final class CAConstants {
 
     public static String getStatusText(int status) {
         return statustexts[status];
+    }
+    
+    /** Returns the integer constant for a given status string (case insensitive), or -1 if the string is incorrect. */
+    public static int getStatusFromText(final String statusText) {
+        if (StringUtils.isEmpty(statusText)) {
+            return -1;
+        }
+        return ArrayUtils.indexOf(statustexts, StringUtils.upperCase(statusText, Locale.ROOT));
     }
 
     // A hard coded key to sign certificate for presign validation. 
