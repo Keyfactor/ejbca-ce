@@ -65,13 +65,13 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
     /** Internal method that returns the items that are currently enabled, that the user can remove */
     public List<SelectItem> getEnabledSelectItems() {
         return enabledSelectItems.stream()
-                .sorted((i1, i2) -> i1.getLabel().compareTo(i2.getLabel()))
+                .sorted((i1, i2) -> i1.getLabel().compareToIgnoreCase(i2.getLabel()))
                 .collect(Collectors.toList());
     }
     /** Internal method that returns the items that are currently available but not enabled, that the user can add */
     public List<SelectItem> getAvailableSelectItems() {
         return availableSelectItems.stream()
-                .sorted((i1, i2) -> i1.getLabel().compareTo(i2.getLabel()))
+                .sorted((i1, i2) -> i1.getLabel().compareToIgnoreCase(i2.getLabel()))
                 .collect(Collectors.toList());
     }
     
