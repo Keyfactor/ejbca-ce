@@ -35,7 +35,10 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     private static final long serialVersionUID = -3430732247486886608L;
     public static final String CONFIGURATION_ID = "AVAILABLE_EXTENDED_KEY_USAGES";
 
-    /** Creates a new instance of AvailableExtendedKeyUsagesConfiguration without defaults */
+    /**
+     * Creates a new instance of AvailableExtendedKeyUsagesConfiguration without defaults
+     * @param ignored Ignored parameter. Used to distinguish from the other constructor.
+     */
     public AvailableExtendedKeyUsagesConfiguration(boolean ignored)  {
         super();
     }
@@ -145,7 +148,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
 
     public List<String> getAllOIDs() {
         Set<Object> keyset = data.keySet();
-        ArrayList<String> keys = new ArrayList<String>();
+        ArrayList<String> keys = new ArrayList<>();
         for(Object k : keyset) {
             if(!StringUtils.equalsIgnoreCase((String) k, "version")) {
                 keys.add( (String) k );
@@ -159,6 +162,12 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         Map<String, String> ret = (Map<String, String>) saveData();
         ret.remove("version");
         return ret;
+    }
+
+    public void setAllEKUOidsAndNames(final Map<String, String> extendedKeyUsageMap) {
+        final LinkedHashMap<Object, Object> newMap = new LinkedHashMap<>(extendedKeyUsageMap);
+        newMap.put("version", getLatestVersion());
+        data = newMap;
     }
 
     public Properties getAsProperties() {
