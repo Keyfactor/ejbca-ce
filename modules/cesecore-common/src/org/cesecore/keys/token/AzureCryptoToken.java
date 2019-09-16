@@ -328,7 +328,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 parameters.add(new BasicNameValuePair("client_id", clientID));
                 parameters.add(new BasicNameValuePair("client_secret", clientSecret));
                 if (log.isDebugEnabled()) {
-                    log.debug("Using client_id and client_secret: '" + clientID + ":<nologgingcleartextpasswords>'");
+                    log.debug("Using client_id and client_secret: '" + clientID + (StringUtils.isNotEmpty(clientSecret) ? ":<nologgingcleartextpasswords>'" : ":<empty pwd>"));
                 }
                 parameters.add(new BasicNameValuePair("resource", oauthResource));
                 request1.setEntity(new UrlEncodedFormEntity(parameters));
