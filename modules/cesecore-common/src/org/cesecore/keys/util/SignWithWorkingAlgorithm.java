@@ -64,14 +64,17 @@ public class SignWithWorkingAlgorithm {
         }
         return doSignTask(availableSignAlgorithms, provider, operation);
     }
+    
     /**
      * First time each algorithm in availableSignAlgorithms are tried until the 
-     * {@link ISignOperation#taskWithSigning(String, Provider) is successfully completed.
-     * The working algorithm is saved after the first time. Succeeding calls
-     * with same availableSignAlgorithms and provider will directly use the 
+     * {@link ISignOperation#taskWithSigning(String, Provider)} is successfully completed.
+     * 
+     * <p>The working algorithm is saved after the first time. Succeeding calls
+     * with same <code>availableSignAlgorithms</code> and provider will directly use the 
      * algorithm that was working the first time.
+     * 
      * @param availableSignAlgorithms algorithms to choose from.
-     * @param provider
+     * @param provider the provider
      * @param operation operation that performs the signing
      * @return true if the signing was done.
      * @throws TaskWithSigningException thrown if {@link ISignOperation#taskWithSigning(String, Provider)} is failing.
@@ -93,6 +96,7 @@ public class SignWithWorkingAlgorithm {
         }
         return instance.tryOutWorkingAlgorithm(operation);
     }
+
     private SignWithWorkingAlgorithm(
             final Provider _provider,
             final List<String> _availableSignAlgorithms) {
@@ -100,6 +104,7 @@ public class SignWithWorkingAlgorithm {
         this.lock = new ReentrantLock();
         this.availableSignAlgorithms = _availableSignAlgorithms;
     }
+
     private boolean tryOutWorkingAlgorithm(final ISignOperation operation) throws TaskWithSigningException {
         if ( this.signAlgorithm!=null ) {
             operation.taskWithSigning(this.signAlgorithm, this.provider);
