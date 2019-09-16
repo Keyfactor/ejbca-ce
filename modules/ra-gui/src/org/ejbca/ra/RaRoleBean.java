@@ -328,8 +328,7 @@ public class RaRoleBean implements Serializable {
     public String getDeleteConfirmationText() {
         // Find out how many role members this role has
         final RaRoleMemberSearchRequest searchRequest = new RaRoleMemberSearchRequest();
-            searchRequest.setRoleIds(new ArrayList<>(Arrays.asList(role.getRoleId())));
-        //searchRequest.setGenericSearchString(genericSearchString);
+            searchRequest.setRoleIds(Collections.singletonList(role.getRoleId()));
         final RaRoleMemberSearchResponse response = raMasterApiProxyBean.searchForRoleMembers(raAuthenticationBean.getAuthenticationToken(), searchRequest);
         return raLocaleBean.getMessage("delete_role_page_confirm", response.getRoleMembers().size());
     }
