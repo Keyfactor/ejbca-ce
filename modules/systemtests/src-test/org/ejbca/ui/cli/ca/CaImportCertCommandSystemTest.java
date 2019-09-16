@@ -61,16 +61,15 @@ import org.junit.Test;
 
 /**
  * @version $Id$
- *
  */
-public class CaImportCertCommandTest {
+public class CaImportCertCommandSystemTest {
 
-    private static final String CA_NAME = "CaImportCertCommandTest";
+    private static final String CA_NAME = "CaImportCertCommandSystemTest";
     private static final String CA_DN = "CN=" + CA_NAME;
-    private static final String USERNAME = "CaImportCertCommandTest";
+    private static final String USERNAME = "CaImportCertCommandSystemTest";
     private static final String CERTIFICATE_DN = "C=SE,O=foo,CN=" + USERNAME;
 
-    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CaImportCertCommandTest.class.getSimpleName());
+    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CaImportCertCommandSystemTest.class.getSimpleName());
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
