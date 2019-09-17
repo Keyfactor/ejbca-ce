@@ -266,18 +266,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
-    public void backupKey(int specId, Path backupFilePath, int cryptoTokenId) throws CryptoTokenOfflineException {
-        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        cryptoToken.backupKey(specId, backupFilePath);
-    }
-    
-    @Override
-    public void restoreKey(int specId, Path backupFilePath, int cryptoTokenId) throws CryptoTokenOfflineException {
-        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        cryptoToken.restoreKey(specId, backupFilePath);
-    }
-    
-    @Override
     public boolean isKeyInitialized(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         return cryptoToken.isKeyInitialized(alias);
