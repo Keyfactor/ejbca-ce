@@ -203,7 +203,7 @@ public abstract class CAInfo implements Serializable {
 
     /** Returns true if the CA has a CA token. Used by Configdump */
     public boolean hasCaToken() {
-        return status != CAConstants.CA_EXTERNAL && signedby != CAInfo.SIGNEDBYEXTERNALCA;
+        return status != CAConstants.CA_EXTERNAL;
     }
 
     public void setEncodedValidity(String encodedValidity) {

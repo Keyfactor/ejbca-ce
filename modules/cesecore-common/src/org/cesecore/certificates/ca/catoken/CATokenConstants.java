@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Purpose mapping constants to for CryptoToken aliases and related.
  * 
@@ -57,6 +60,15 @@ public final class CATokenConstants {
 	final static public String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
 	final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
 	
+	private static final Map<Integer,String> purposeConstantToString = new HashMap<>();
+	static {
+	    purposeConstantToString.put(CAKEYPURPOSE_CERTSIGN, CAKEYPURPOSE_CERTSIGN_STRING);
+	    purposeConstantToString.put(CAKEYPURPOSE_CRLSIGN, CAKEYPURPOSE_CRLSIGN_STRING);
+	    purposeConstantToString.put(CAKEYPURPOSE_KEYENCRYPT, CAKEYPURPOSE_KEYENCRYPT_STRING);
+	    purposeConstantToString.put(CAKEYPURPOSE_KEYTEST, CAKEYPURPOSE_TESTKEY_STRING);
+	    purposeConstantToString.put(CAKEYPURPOSE_DEFAULT, CAKEYPURPOSE_DEFAULT_STRING);
+	}
+	
 	@Deprecated
 	final static public String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = "hardTokenEncrypt";
 	
@@ -67,4 +79,13 @@ public final class CATokenConstants {
     public static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
     /** Next sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT key) that can be set in CA token properties */
     public static final String NEXT_SEQUENCE_PROPERTY = "nextSequence";
+    
+    /**
+     * Converts from CAKEYPURPOSE_* integer constants to CAKEYPURPOSE_*_STRING constants.
+     * @param purposeConstant CAKEYPURPOSE_* integer constant
+     * @return String constant, or null on invalid function argument.
+     */
+    public static String getPurposeStringFromInteger(final int purposeConstant) {
+        return purposeConstantToString.get(purposeConstant);
+    }
 }
