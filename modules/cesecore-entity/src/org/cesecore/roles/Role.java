@@ -255,4 +255,9 @@ public class Role extends UpgradeableDataHashMap implements Named, Comparable<Ro
     public void sortAccessRules() {
         AccessRulesHelper.sortAccessRules(getAccessRules());
     }
+
+    @Override
+    public String toString() {
+        return data.toString();
+    }
 }
