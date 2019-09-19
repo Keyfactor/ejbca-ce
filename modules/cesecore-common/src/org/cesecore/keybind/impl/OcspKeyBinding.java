@@ -219,6 +219,11 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public void setNonceEnabled(boolean enabled) {
         setProperty(PROPERTY_ENABLE_NONCE, Boolean.valueOf(enabled));
     }
+    
+    /** Helper method to check if the OCSP Archive CutOff extension is enabled. Used by Configdump */
+    public boolean isOcspArchiveCutOffExtensionEnabled() {
+        return getOcspExtensions().stream().anyMatch(enabledOcspExtension -> OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId().equals(enabledOcspExtension));
+    }
 
     /**
      * Get the retention period being enforced by the CA. The date obtained by subtracting this
