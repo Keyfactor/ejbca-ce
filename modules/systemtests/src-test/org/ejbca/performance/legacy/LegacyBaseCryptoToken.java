@@ -180,6 +180,11 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
         throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
     }
     
+    @Override
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
+    
     /**
      * Reads the public key object, does so from the certificate retrieved from the alias from the KeyStore.
      *
