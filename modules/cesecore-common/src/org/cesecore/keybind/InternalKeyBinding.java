@@ -50,7 +50,7 @@ public interface InternalKeyBinding extends Serializable {
     void setNextKeyPairAlias(String currentNextKeyPairAlias);
 
     /** Uses the next key alias as current key alias and updates the certificateId */
-    void updateCertificateIdAndCurrentKeyAlias(String certificateId);
+    void updateCertificateIdAndCurrentKeyAlias(String newCertificateId);
 
     /** Generates a next key pair alias based on the current one using a simple counter as postfix */
     void generateNextKeyPairAlias();
