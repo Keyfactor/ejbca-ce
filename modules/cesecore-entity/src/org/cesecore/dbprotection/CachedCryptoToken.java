@@ -90,6 +90,11 @@ public class CachedCryptoToken implements CryptoToken {
     public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
     }
+
+    @Override
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+        throw new UnsupportedOperationException("Operation not supported for this Cryoto Token type");
+    }
     
     @Override
     public boolean isKeyInitialized(final String alias) {

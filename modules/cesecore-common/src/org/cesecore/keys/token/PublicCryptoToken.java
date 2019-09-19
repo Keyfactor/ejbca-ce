@@ -194,6 +194,11 @@ public class PublicCryptoToken implements CryptoToken {
     }
     
     @Override
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+        throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
+    }
+    
+    @Override
     public boolean isKeyInitialized(final String alias) {
         return true;
     }

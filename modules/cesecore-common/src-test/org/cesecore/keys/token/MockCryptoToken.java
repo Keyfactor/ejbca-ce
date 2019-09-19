@@ -14,6 +14,7 @@ package org.cesecore.keys.token;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -98,6 +99,12 @@ public class MockCryptoToken extends BaseCryptoToken {
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
         return doPermitExtractablePrivateKey();
+    }
+
+    @Override
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

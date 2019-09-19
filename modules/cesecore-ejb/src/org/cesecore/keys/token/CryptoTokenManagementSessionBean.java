@@ -266,6 +266,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
+    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, 
+            final long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException {
+    }    
+    
+    @Override
     public boolean isKeyInitialized(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         return cryptoToken.isKeyInitialized(alias);

@@ -315,6 +315,8 @@ public interface CryptoTokenManagementSession {
      * @return Max operation count remaining for a CP5 key
      */
     long maxOperationCount(AuthenticationToken authenticationToken, int cryptoTokenId, String alias);
-
+    
+    void changeAuthData(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
+            long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException;
 
 }
