@@ -218,7 +218,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.IPADDRESS,0,"11.11.1.1");
 
         profile.setEmailRequired(true);
-        profile.setEmailDomainModifiable(false);
+        profile.setEmailModifiable(false);
         profile.setEmailDomain("test.com;primekey.se");
         
         // Test completely errornous Alt Name
@@ -1101,7 +1101,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.IPADDRESS,0,"11.11.1.1");
 
         profile.setEmailRequired(true);
-        profile.setEmailDomainModifiable(false);
+        profile.setEmailModifiable(false);
         profile.setEmailDomain("test.com;primekey.se");
         
         // Test with a mix of several rfc822name fields
