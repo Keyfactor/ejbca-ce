@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.Named;
 
 /**
  * A Role contains access rules and meta data about the Role (roleId, nameSpace, roleName).
@@ -34,7 +35,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  * 
  * @version $Id$
  */
-public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
+public class Role extends UpgradeableDataHashMap implements Named, Comparable<Role> {
     
     private static final long serialVersionUID = 1L;
 
@@ -106,9 +107,14 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         this.nameSpace = StringUtils.isEmpty(nameSpace) ? "" : nameSpace.trim();
     }
 
+    public String getName() {
+        return roleName;
+    }
+    
     public String getRoleName() {
         return roleName;
     }
+    
     public void setRoleName(final String roleName) {
         this.roleName = StringUtils.isEmpty(roleName) ? "" : roleName.trim();
     }
@@ -224,6 +230,10 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
             data.put(KEY_ACCESS_RULES, ret); // Make it "managed" in case caller want to modify it
         }
         return ret;
+    }
+    
+    public void setAccessRules(LinkedHashMap<String, Boolean> accessRule) {
+        data.put(KEY_ACCESS_RULES, accessRule);
     }
 
     /** @return true if this Role has access to the given resource */
