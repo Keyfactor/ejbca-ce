@@ -73,10 +73,10 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     @Override
-    public DynamicUiProperty<? extends Serializable> getProperty(final String name) {
-        DynamicUiProperty<? extends Serializable> property = propertyTemplates.get(name);
+    public DynamicUiProperty<? extends Serializable> getProperty(final String propertyName) {
+        DynamicUiProperty<? extends Serializable> property = propertyTemplates.get(propertyName);
         property = new DynamicUiProperty<>(property);
-        property.setValueGeneric(getData(name, property.getDefaultValue()));
+        property.setValueGeneric(getData(propertyName, property.getDefaultValue()));
         return property;
     }
 
@@ -95,7 +95,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         setKeyPairAlias(keyPairAlias);
         if (dataMap.get(VERSION) == null) {
             // If we are creating a new object we need a version
-            dataMap.put(VERSION, new Float(getLatestVersion()));
+            dataMap.put(VERSION, getLatestVersion());
         }
         loadData(dataMap);
     }
@@ -161,8 +161,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     @Override
-    public void updateCertificateIdAndCurrentKeyAlias(String certificateId) {
-        setCertificateId(certificateId);
+    public void updateCertificateIdAndCurrentKeyAlias(final String newCertificateId) {
+        setCertificateId(newCertificateId);
         setKeyPairAlias(getNextKeyPairAlias());
         setNextKeyPairAlias(null);
     }
@@ -208,16 +208,16 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
             trustedCertificateReferences = getDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, new ArrayList<InternalKeyBindingTrustEntry>());
         }
         // Return a shallow copy of the list
-        final ArrayList<InternalKeyBindingTrustEntry> trustedCertificateReferences = new ArrayList<InternalKeyBindingTrustEntry>();
-        trustedCertificateReferences.addAll(this.trustedCertificateReferences);
-        return trustedCertificateReferences;
+        final ArrayList<InternalKeyBindingTrustEntry> copy = new ArrayList<>();
+        copy.addAll(this.trustedCertificateReferences);
+        return copy;
     }
 
     @Override
     public void setTrustedCertificateReferences(final List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
         this.trustedCertificateReferences = trustedCertificateReferences;
         // Always save it as an ArrayList that we know is Serializable
-        final ArrayList<InternalKeyBindingTrustEntry> arrayList = new ArrayList<InternalKeyBindingTrustEntry>(trustedCertificateReferences.size());
+        final ArrayList<InternalKeyBindingTrustEntry> arrayList = new ArrayList<>(trustedCertificateReferences.size());
         arrayList.addAll(trustedCertificateReferences);
         putDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, arrayList);
     }

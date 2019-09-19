@@ -20,8 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -76,12 +74,12 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     @Override
     public void init(int id, String name, InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias,
             LinkedHashMap<Object, Object> dataMapToLoad) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public LinkedHashMap<Object, Object> getDataMapToPersist() {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -96,22 +94,22 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setNextKeyPairAlias(String nextKeyPairAlias) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateCertificateIdAndCurrentKeyAlias(String certificateId) {
-        throw new RuntimeException(new OperationNotSupportedException());
+    public void updateCertificateIdAndCurrentKeyAlias(final String newCertificateId) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void generateNextKeyPairAlias() {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void assertCertificateCompatability(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -126,7 +124,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setName(String name) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -136,7 +134,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setStatus(InternalKeyBindingStatus status) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -146,7 +144,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setOperationalStatus(InternalKeyBindingOperationalStatus opStatus) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
     
     @Override
@@ -156,7 +154,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setCertificateId(String certificateId) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -166,7 +164,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setCryptoTokenId(int cryptoTokenId) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -176,17 +174,17 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setKeyPairAlias(String keyPairAlias) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public DynamicUiProperty<? extends Serializable> getProperty(String name) {
-        return properties.get(name);
+    public DynamicUiProperty<? extends Serializable> getProperty(String propertyName) {
+        return properties.get(propertyName);
     }
 
     @Override
     public void setProperty(String name, Serializable value) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -201,7 +199,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setTrustedCertificateReferences(List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -211,7 +209,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setSignatureAlgorithm(String signatureAlgorithm) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -221,13 +219,13 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setOcspExtensions(List<String> ocspExtensions) {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
             throws IOException, OperatorCreationException {
-        throw new RuntimeException(new OperationNotSupportedException());
+        throw new UnsupportedOperationException();
     }
 
     public String getRetentionPeriod() {
