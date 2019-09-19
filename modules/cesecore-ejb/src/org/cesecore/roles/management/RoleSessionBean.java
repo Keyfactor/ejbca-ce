@@ -271,6 +271,9 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 throw new IllegalArgumentException("Role name cannot be empty.");
             }
             // Persist new role
+            if (log.isTraceEnabled()) {
+                log.trace("Creating new role with data: " + role);
+            }
             role.setRoleId(roleDataSession.persistRole(role).getRoleId());
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.roleadded", role.getRoleName());
             final Map<String, Object> details = new LinkedHashMap<>();
@@ -301,6 +304,9 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 }
             }
             // Persist data changes
+            if (log.isTraceEnabled()) {
+                log.trace("Updating existing role with new data: " + role);
+            }
             roleDataSession.persistRole(role);
         }
         // Audit log access rule changes (also for new roles)
