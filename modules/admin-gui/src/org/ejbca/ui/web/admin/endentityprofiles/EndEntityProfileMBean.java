@@ -481,7 +481,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     //
     public void setEmailModifiable(final boolean emailModifyable) {
-        profiledata.setEmailDomainModifiable(emailModifyable);
+        profiledata.setEmailModifiable(emailModifyable);
     }
     
     public String getDescription() {
