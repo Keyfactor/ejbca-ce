@@ -27,8 +27,9 @@ public interface ServiceSession {
     /**
      * Adds a Service to the database.
      * @throws ServiceExistsException if service already exists.
+     * @return ID of newly added service
      */
-    void addService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException;
+    int addService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException;
 
     /**
      * Adds a service to the database. Used for importing and exporting profiles
