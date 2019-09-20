@@ -160,4 +160,24 @@ public final class MapTools {
         }
     }
 
+    /**
+     * Creates a map from lists of keys and values (the name "zip" comes from various other programming languages).
+     * <p>
+     * <strong>Note:</strong> This method does not work with value types such as <cpde>int</code>. You need to convert to reference types like <code>Integer</code>.
+     *
+     * @param keys List of keys
+     * @param values List of values
+     * @return LinkedHashMap created from keys and values. Order is preserved.
+     */
+    public static <K,V> Map<K,V> zip(final K[] keys, final V[] values) {
+        final Map<K,V> map = new LinkedHashMap<>();
+        if (keys.length != values.length) {
+            throw new IllegalArgumentException("Differing number of key (" + keys.length + ") and values (" + values.length + ")");
+        }
+        for (int i = 0; i < keys.length; i++) {
+            map.put(keys[i], values[i]);
+        }
+        return map;
+    }
+
 }
