@@ -1285,6 +1285,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         } else if (OcspConfigurationCache.INSTANCE.isNonExistingRevoked(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
                                 OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "revoked";
+                            // When answering revoked for unknown (non issued) certificates RFC6960 section 2.2 specifies:
+                            // When a responder sends a "revoked" response to a status request for a non-issued certificate, the responder MUST include the extended
+                            // revoked definition response extension (Section 4.4.8) in the response, indicating that the OCSP responder supports the extended
+                            // definition of the "revoked" state to also cover non-issued certificates.  In addition, the SingleResponse related to this
+                            // non-issued certificate:
+                            // - MUST specify the revocation reason certificateHold (6),
+                            // - MUST specify the revocationTime January 1, 1970, and
+                            // - MUST NOT include a CRL references extension (Section 4.4.2) or any CRL entry extensions (Section 4.4.5).
                             certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
                                     CRLReason.lookup(CRLReason.certificateHold)));
                             if (transactionLogger.isEnabled()) {
