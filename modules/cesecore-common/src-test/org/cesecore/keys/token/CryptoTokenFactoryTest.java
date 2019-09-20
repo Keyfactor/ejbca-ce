@@ -36,7 +36,7 @@ public class CryptoTokenFactoryTest {
     @BeforeClass
     public static void beforeClass() {
         try {
-            Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken");
+            Class.forName("org.cesecore.keys.token.p11ng.cryptotoken.PKCS11NgCryptoToken");
             log.debug("Assuming we are running Enterprise Edition");
             numBuiltinCryptoTokenTypes = 5;
         } catch (ClassNotFoundException e) {
