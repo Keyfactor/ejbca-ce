@@ -1,3 +1,13 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           * 
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
+
 package org.cesecore.keys.token.p11ng.cryptotoken;
 
 import java.io.IOException;
@@ -47,12 +57,12 @@ import org.cesecore.keys.token.p11ng.provider.SlotEntry;
  * 
  * @version $Id$
  */
-public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser {
+public class PKCS11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
 
     private static final long serialVersionUID = 1L;
 
     /** Log4j instance */
-    private static final Logger log = Logger.getLogger(JackNJI11CryptoToken.class);
+    private static final Logger log = Logger.getLogger(PKCS11NgCryptoToken.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -66,7 +76,7 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     private String sSlotLabel = null;
 
-    public JackNJI11CryptoToken() throws InstantiationException {
+    public PKCS11NgCryptoToken() throws InstantiationException {
         super();
         try {
             Thread.currentThread().getContextClassLoader().loadClass(Pkcs11SlotLabel.JACKJNI_CLASS);
@@ -92,7 +102,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
         //        Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
         //        String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
-        //        CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFile.getName(), libDir); <-----------SignServer way of doing it
         String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
         String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());
 
@@ -287,25 +296,21 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public void keyAuthorizeInit(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme) {
-        log.info("Key Authorize Init..."); //TODO remove
         slot.keyAuthorizeInit(alias, kakPair, signProviderName, selectedPaddingScheme);
     }
     
     @Override
     public void keyAuthorize(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
-        log.info("Key Authorize..."); //TODO remove
         slot.keyAuthorize(alias, kakPair, maxOperationCount, signProviderName, selectedPaddingScheme);
     }
     
     @Override
     public void backupKey(final int keySpecId, final Path backupFilePath) {
-        log.info("Backup Object...");
         slot.backupObject(keySpecId, backupFilePath.toString());
     }
     
     @Override
     public void restoreKey(final int keySpecId, final Path backupFilePath) {
-        log.info("Restore Object...");
         slot.restoreObject(keySpecId, backupFilePath);
     }
     
@@ -340,7 +345,6 @@ public class JackNJI11CryptoToken extends BaseCryptoToken implements P11SlotUser
 
     @Override
     public boolean permitExtractablePrivateKeyForTest() {
-        // TODO Auto-generated method stub
         return false;
     }
 
