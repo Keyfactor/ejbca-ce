@@ -1115,27 +1115,23 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final StringBuilder failedHosts = new StringBuilder();
         final StringBuilder succeededHost = new StringBuilder();
         for (final String host : nodes) {
-            try {
-                if (host != null) {
-                    if (checkHost(host, excludeActiveCryptoTokens)) {
-                        succeededHost.append(' ').append(host);
-                    } else {
-                        if (isLocalHost(host)) {
-                            // If we are trying to clear the cache on this instance and failed,
-                            // we give it another chance using 127.0.0.1 (which is allowed by default)
-                            log.info("Failed to clear cache on local node using '" + host + "'. Will try with 'localhost'.");
-                            if (checkHost("localhost", excludeActiveCryptoTokens)) {
-                                succeededHost.append(' ').append(host);
-                            } else {
-                                failedHosts.append(' ').append(host);
-                            }
+            if (host != null) {
+                if (checkHost(host, excludeActiveCryptoTokens)) {
+                    succeededHost.append(' ').append(host);
+                } else {
+                    if (isLocalHost(host)) {
+                        // If we are trying to clear the cache on this instance and failed,
+                        // we give it another chance using 127.0.0.1 (which is allowed by default)
+                        log.info("Failed to clear cache on local node using '" + host + "'. Will try with 'localhost'.");
+                        if (checkHost("localhost", excludeActiveCryptoTokens)) {
+                            succeededHost.append(' ').append(host);
                         } else {
                             failedHosts.append(' ').append(host);
                         }
+                    } else {
+                        failedHosts.append(' ').append(host);
                     }
                 }
-            } catch (final IOException e) {
-                failedHosts.append(' ').append(host);
             }
         }
         // Invalidate local GUI cache
@@ -1150,26 +1146,32 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /** Perform HTTP connection to the cluster nodes clear-cache Servlet
-     * @throws IOException if any of the external hosts couldn't be contacted
+     * @param hostname hostname of the server to clear cache on
+     * @param excludeActiveCryptoTokens indicating if clearing cache should clear crypt token cache of active crypto tokens, which typically disabled non auto activated tokens
+     * @return true if the connection was successful and cache cleared, false if cache could not be cleared.
      */
-    private boolean checkHost(final String hostname, final boolean excludeActiveCryptoTokens) throws IOException {
-        // get http port of remote host, this requires that all cluster nodes uses the same public htt port
+    private boolean checkHost(final String hostname, final boolean excludeActiveCryptoTokens) {
+        // get http port of remote host, this requires that all cluster nodes uses the same public http port
         final int pubport = WebConfiguration.getPublicHttpPort();
         final String requestUrl = "http://" + hostname + ":" + pubport + "/ejbca/clearcache?command=clearcaches&excludeactivects="
                 + excludeActiveCryptoTokens;
-        final URL url = new URL(requestUrl);
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         if (log.isDebugEnabled()) {
             log.debug("Contacting host with url:" + requestUrl);
         }
-        try {
-            final int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                return true;
-            }
-            log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
-        } catch (final IOException e) {
-            log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
+        if (StringUtils.isNotEmpty(hostname)) {
+            try {
+                final URL url = new URL(requestUrl);
+                final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                final int responseCode = con.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    return true;
+                }
+                log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
+            } catch (final IOException e) {
+                log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
+            }            
+        } else {
+            log.info("Not clearing cache for host with empty hostname.");
         }
         return false;
     }
