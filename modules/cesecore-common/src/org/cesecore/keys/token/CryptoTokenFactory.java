@@ -33,8 +33,8 @@ public class CryptoTokenFactory {
     private static transient Logger log = Logger.getLogger(CryptoTokenFactory.class);
     
     // Used for references where EE version may not be available
-    public static final String JACKNJI_SIMPLE_NAME = "JackNJI11CryptoToken";
-    public static final String JACKNJI_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.JackNJI11CryptoToken";
+    public static final String JACKNJI_SIMPLE_NAME = "PKCS11NgCryptoToken";
+    public static final String JACKNJI_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.PKCS11NgCryptoToken";
     public static final String PRIME_CA_TOKEN_SIMPLE_NAME = "PrimeCAToken";
     public static final String PRIME_CA_TOKEN_NAME = "se.primeKey.caToken.card.PrimeCAToken";
 
