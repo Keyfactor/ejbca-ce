@@ -92,7 +92,7 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme) {
         throw new UnsupportedOperationException("Operation not supported for this Crypto Token type");
     }
     

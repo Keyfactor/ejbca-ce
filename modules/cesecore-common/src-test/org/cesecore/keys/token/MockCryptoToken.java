@@ -102,7 +102,7 @@ public class MockCryptoToken extends BaseCryptoToken {
     }
 
     @Override
-    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme) {
         // TODO Auto-generated method stub
         
     }

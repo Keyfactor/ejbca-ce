@@ -15,7 +15,6 @@ package org.cesecore.keys.token;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -267,7 +266,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     
     @Override
     public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, 
-            final long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException {
+            String selectedPaddingScheme) throws CryptoTokenOfflineException {
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
+        if (cryptoToken == null || kakCryptoToken == null) {
+            throw new RuntimeException("No such CryptoToken for id " + cryptoTokenId);
+        }
+        final PrivateKey kakPrivateKey = kakCryptoToken.getPrivateKey(kakTokenKeyAlias);
+        final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
+        final String signProviderName = kakCryptoToken.getSignProviderName();
+        final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
+        cryptoToken.changeAuthData(alias, kakPair, signProviderName, selectedPaddingScheme);
     }    
     
     @Override
