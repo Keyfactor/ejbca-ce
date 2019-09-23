@@ -57,8 +57,7 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
             cryptoTokenManagementSession.changeAuthData(getAdmin(), cryptoTokenId, alias, kakTokenId, kakTokenKeyAlias, selectedPaddingScheme);
             return CommandResult.SUCCESS;
         } catch (Exception e) {
-            getLogger().info("CryptoToken activation failed: " + e.getMessage());
-            getLogger().info("Key backup operation failed: " + e.getMessage());
+            getLogger().error("Changing authentication data for the key  "  + alias + " failed : "+ e);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
