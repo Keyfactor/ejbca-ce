@@ -870,6 +870,66 @@ public class CryptokiDevice {
             }
         }
         
+        public void changeAuthData(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount, String signProviderName, String selectedPaddingScheme) {
+            Long session = null;
+            try {
+                session = aquireSession();
+                CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
+                params.write(); // Write data before passing structure to function
+                CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
+
+                // Size of the hash returned from c.authorizeKeyInit. Initially this is an empty array, after c.authorizeKeyInit
+                // it's populated by hash value.
+                byte[] hash = new byte[32];
+                long hashLen = hash.length;                
+
+                // Getting the key to authorize if it exist on the slot with the provided alias
+                long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
+                if (privateKeyObjects.length == 0) {
+                    throw new IllegalStateException("No private key found for alias '" + alias + "'");
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+                }
+                
+                long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
+                if (rvAuthorizeKeyInit != CKR.OK) {
+                    throw new CKRException(rvAuthorizeKeyInit);
+                }
+                
+                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
+                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
+                byte[] authSig = new byte[bitsToBytes(kakLength)];
+                
+                if ("PSS".equals(selectedPaddingScheme)) {
+                    try {
+                        authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
+                    } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+                             | InvalidAlgorithmParameterException | SignatureException e) {
+                        LOG.error("Error occurred while signing the hash!", e);
+                    }
+                } else {
+                    try {
+                        authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
+                    } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
+                        LOG.error("Error occurred while signing the hash!", e);
+                    }
+                }
+                
+                long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
+                if (rvAuthorizeKey != CKR.OK) {
+                    throw new CKRException(rvAuthorizeKey);
+                }
+                
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+
+        }
+        
         public void backupObject(final long objectHandle, final String backupFile) {
             Long session = null;
             try {
