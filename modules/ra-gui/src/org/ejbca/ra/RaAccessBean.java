@@ -251,4 +251,12 @@ public class RaAccessBean implements Serializable {
         }
         return isBackendAvailable;
     }
+
+    public boolean hasCaAccess() {
+        return isAuthorized(StandardRules.CAACCESS.resource());
+    }
+
+    public boolean hasEndEntityProfileAccess() {
+        return isAuthorized(AccessRulesConstants.ENDENTITYPROFILEPREFIX);
+    }
 }
