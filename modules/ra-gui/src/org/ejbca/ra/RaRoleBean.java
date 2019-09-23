@@ -121,8 +121,8 @@ public class RaRoleBean implements Serializable {
     private AddRemoveListState<String> caListState = new AddRemoveListState<>();
     private AddRemoveListState<String> endEntityProfileListState = new AddRemoveListState<>();
     private Map<Integer,String> eeProfilesWithCustomPermissions = new HashMap<>();
-    private boolean allowAllCas;
-    private boolean allowAllEndEntityProfiles;
+    private boolean allowNewCas;
+    private boolean allowNewEndEntityProfiles;
     
     public void initialize() throws AuthorizationDeniedException {
         if (initialized) {
@@ -193,8 +193,8 @@ public class RaRoleBean implements Serializable {
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRulesConstants.REGULAR_VIEWCERTIFICATE), "role_page_access_viewendentity_and_certificates"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY), "role_page_access_viewendentityhistory"));
         
-        allowAllCas = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), StandardRules.CAACCESSBASE.resource());
-        allowAllEndEntityProfiles = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.ENDENTITYPROFILEBASE);
+        allowNewCas = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), StandardRules.CAACCESSBASE.resource());
+        allowNewEndEntityProfiles = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.ENDENTITYPROFILEBASE);
     }
     
     public String getDefaultNamespace() {
@@ -216,10 +216,30 @@ public class RaRoleBean implements Serializable {
     public void setNamespace(final String namespace) { this.namespace = namespace; }
     public String getNewNamespace() { return newNamespace; }
     public void setNewNamespace(final String newNamespace) { this.newNamespace = newNamespace; }
-    public void setAllowAllCas(final boolean allowAllCas) { this.allowAllCas = allowAllCas; }
-    public void setAllowAllEndEntityProfiles(final boolean allowAllEndEntityProfiles) { this.allowAllEndEntityProfiles = allowAllEndEntityProfiles; }
-    public boolean getAllowAllCas() { return this.allowAllCas; }
-    public boolean getAllowAllEndEntityProfiles() { return this.allowAllEndEntityProfiles; }
+
+    public void setAllowNewCas(final boolean allowAllCas) {
+        this.allowNewCas = allowAllCas;
+    }
+
+    public void setAllowNewEndEntityProfiles(final boolean allowAllEndEntityProfiles) {
+        this.allowNewEndEntityProfiles = allowAllEndEntityProfiles;
+    }
+
+    public boolean getAllowNewCas() {
+        return this.allowNewCas;
+    }
+
+    public boolean getAllowNewEndEntityProfiles() {
+        return this.allowNewEndEntityProfiles;
+    }
+
+    public boolean getHasCaAccess() {
+        return raAccessBean.hasCaAccess();
+    }
+
+    public boolean getHasEndEntityProfileAccess() {
+        return raAccessBean.hasEndEntityProfileAccess();
+    }
     
     public boolean isLimitedToOneNamespace() {
         return !hasAccessToEmptyNamespace && namespaces.size() == 1;
@@ -312,12 +332,12 @@ public class RaRoleBean implements Serializable {
         }
         accessMap.putAll(caListState.getItemStates());
         accessMap.putAll(endEntityProfileListState.getItemStates());
-        if (allowAllCas) {
+        if (allowNewCas) {
             accessMap.put(StandardRules.CAACCESS.resource(), true);
         } else {
             accessMap.remove(StandardRules.CAACCESS.resource());
         }
-        if (allowAllEndEntityProfiles) {
+        if (allowNewEndEntityProfiles) {
             accessMap.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX, true);
         } else {
             accessMap.remove(AccessRulesConstants.ENDENTITYPROFILEPREFIX);
