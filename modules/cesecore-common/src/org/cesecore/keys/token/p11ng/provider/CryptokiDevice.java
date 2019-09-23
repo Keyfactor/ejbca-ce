@@ -870,7 +870,7 @@ public class CryptokiDevice {
             }
         }
         
-        public void changeAuthData(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount, String signProviderName, String selectedPaddingScheme) {
+        public void changeAuthData(String alias, KeyPair keyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
             Long session = null;
             try {
                 session = aquireSession();
