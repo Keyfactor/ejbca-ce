@@ -328,6 +328,6 @@ public interface CryptoTokenManagementSession {
      * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void changeAuthData(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
-            long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException;
+            String selectedPaddingScheme) throws CryptoTokenOfflineException;
 
 }
