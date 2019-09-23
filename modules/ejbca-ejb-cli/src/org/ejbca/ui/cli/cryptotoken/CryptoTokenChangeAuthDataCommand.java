@@ -8,16 +8,16 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenChangeAuthDataCommand.class);
+    
     @Override
     public String getMainCommand() {
-        // TODO Auto-generated method stub
-        return null;
+        return "changeauthdata";
     }
 
     @Override
     public String getCommandDescription() {
-        // TODO Auto-generated method stub
-        return null;
+        return "Changes authentication data for a CP5 HSM key.";
     }
 
     @Override
@@ -29,14 +29,12 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
 
     @Override
     protected Logger getLogger() {
-        // TODO Auto-generated method stub
-        return null;
+        return log;
     }
 
     @Override
     public String getFullHelpText() {
-        // TODO Auto-generated method stub
-        return null;
+        return getCommandDescription();
     }
 
 }
