@@ -75,18 +75,16 @@
                             <h:outputText value="#{msg.role_page_section_cas}" styleClass="jsRuleHeaderText"/>
                         </h:panelGroup>
                         
-                        <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
-                            <h:selectBooleanCheckbox id="allowAllCas" value="#{raRoleBean.allowAllCas}" styleClass="checkboxWithSpacing">
-                                <f:ajax render="caListGroup"/>
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="allowAllCas" value="#{msg.role_page_allow_all_cas}"/>
+                        <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent" rendered="#{raRoleBean.hasCaAccess}">
+                            <h:selectBooleanCheckbox id="allowNewCas" value="#{raRoleBean.allowNewCas}" styleClass="checkboxWithSpacing"/>
+                            <h:outputLabel for="allowNewCas" value="#{msg.role_page_allow_new_cas}"/>
                         </h:panelGroup>
                         
                         <h:panelGroup id="caListGroup" layout="block" styleClass="collapsableSection jsSectionContent">
                             <component:addremovelist id="caList" 
                                 state="#{raRoleBean.caListState}" 
                                 enabledHeader="#{msg.role_page_allowed_label}" 
-                                editable="#{raRoleBean.canEdit and not raRoleBean.allowAllCas}"/>
+                                editable="#{raRoleBean.canEdit}"/>
                         </h:panelGroup>
                     </h:panelGroup>
                     
@@ -110,18 +108,16 @@
                             <h:outputText value="#{msg.role_page_section_endentityprofiles}" styleClass="jsRuleHeaderText"/>
                         </h:panelGroup>
                         
-                        <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
-                            <h:selectBooleanCheckbox id="allowAllEndEntityProfiles" value="#{raRoleBean.allowAllEndEntityProfiles}" styleClass="checkboxWithSpacing">
-                                <f:ajax render="endEntityProfileListGroup"/>
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="allowAllEndEntityProfiles" value="#{msg.role_page_allow_all_end_entity_profiles}"/>
+                        <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent" rendered="#{raRoleBean.hasEndEntityProfileAccess}">
+                            <h:selectBooleanCheckbox id="allowNewEndEntityProfiles" value="#{raRoleBean.allowNewEndEntityProfiles}" styleClass="checkboxWithSpacing"/>
+                            <h:outputLabel for="allowNewEndEntityProfiles" value="#{msg.role_page_allow_new_end_entity_profiles}"/>
                         </h:panelGroup>
                         
                         <h:panelGroup id="endEntityProfileListGroup" layout="block" styleClass="collapsableSection jsSectionContent">
                             <component:addremovelist id="endEntityProfileList" 
                                 state="#{raRoleBean.endEntityProfileListState}" 
                                 enabledHeader="#{msg.role_page_allowed_label}" 
-                                editable="#{raRoleBean.canEdit and not raRoleBean.allowAllEndEntityProfiles}"/>
+                                editable="#{raRoleBean.canEdit}"/>
                         </h:panelGroup>
                         
                         <h:panelGroup layout="block" styleClass="noticeText" rendered="#{raRoleBean.hasCustomEndEntityProfilePermissions}">
