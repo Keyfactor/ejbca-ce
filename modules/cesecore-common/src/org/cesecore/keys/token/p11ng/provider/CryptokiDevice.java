@@ -874,6 +874,7 @@ public class CryptokiDevice {
             Long session = null;
             try {
                 session = aquireSession();
+                //TODO: continue from here with the new structure!
                 CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
