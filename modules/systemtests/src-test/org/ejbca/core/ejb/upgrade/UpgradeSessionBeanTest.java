@@ -1149,7 +1149,7 @@ public class UpgradeSessionBeanTest {
     }
 
     @Test
-    public void testRemoveStaleAccesssRules730() throws Exception {
+    public void testRemoveStaleAccessRules730() throws Exception {
         Role persistedRole = null;
         try {
             final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession
@@ -1158,7 +1158,7 @@ public class UpgradeSessionBeanTest {
             globalConfiguration.setEnableKeyRecovery(false);
             final HashMap<String, Boolean> accessRules = new HashMap<>();
             accessRules.put(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW);
-            final Role role = new Role(null, "testRemoveStaleAccesssRules730", accessRules);
+            final Role role = new Role(null, "testRemoveStaleAccessRules730", accessRules);
             persistedRole = roleSession.persistRole(alwaysAllowtoken, role);
             final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
