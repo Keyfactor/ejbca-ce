@@ -305,6 +305,11 @@ public class PKCS11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     }
     
     @Override
+    public void changeAuthData(String alias, KeyPair kakPair, String signProviderName, long maxOperationCount, String selectedPaddingScheme) {
+        
+    }
+    
+    @Override
     public void backupKey(final int keySpecId, final Path backupFilePath) {
         slot.backupObject(keySpecId, backupFilePath.toString());
     }
