@@ -82,6 +82,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
+import org.cesecore.keys.token.p11ng.CK_CP5_CHANGEAUTHDATA_PARAMS;
 import org.cesecore.keys.token.p11ng.CK_CP5_INITIALIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.FindObjectsCallParamsHolder;
 import org.cesecore.keys.token.p11ng.GetAttributeValueCallParamsHolder;
@@ -875,7 +876,49 @@ public class CryptokiDevice {
             try {
                 session = aquireSession();
                 //TODO: continue from here with the new structure!
-                CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
+                CK_CP5_CHANGEAUTHDATA_PARAMS params = new CK_CP5_CHANGEAUTHDATA_PARAMS();
+                CK_CP5_AUTH_DATA authData = new CK_CP5_AUTH_DATA();
+                
+                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
+                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
+                RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
+                BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
+                BigInteger kakModulus = publicSpec.getModulus();
+
+                int kakModLen = kakModulus.toByteArray().length;
+                int kakPubExpLen = kakPublicExponent.toByteArray().length;
+                
+                byte[] kakModBuf = new byte[kakModLen];
+                byte[] kakPubExpBuf = new byte[kakPubExpLen];
+                
+                kakModBuf = kakModulus.toByteArray();
+                kakPubExpBuf = kakPublicExponent.toByteArray();
+
+                
+                authData.ulModulusLen = new NativeLong(kakModLen);
+                
+                // Allocate sufficient native memory to hold the java array Pointer ptr = new Memory(arr.length);
+                // Copy the java array's contents to the native memory ptr.write(0, arr, 0, arr.length);
+                Pointer kakModulusPointer = new Memory(kakModLen);
+                kakModulusPointer.write(0, kakModBuf, 0, kakModLen);
+                authData.pModulus = kakModulusPointer;
+                authData.ulPublicExponentLen = new NativeLong(kakPubExpLen);
+                
+                Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
+                kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
+                authData.pPublicExponent = kakPublicKeyExponentPointer;
+
+                if ("PSS".equals(selectedPaddingScheme)) {
+                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+                } else {
+                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
+                }
+
+                params.authData = authData;
+
+
+                
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
 
@@ -898,9 +941,6 @@ public class CryptokiDevice {
                     throw new CKRException(rvAuthorizeKeyInit);
                 }
                 
-                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
-                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
-                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
                 byte[] authSig = new byte[bitsToBytes(kakLength)];
                 
                 if ("PSS".equals(selectedPaddingScheme)) {
