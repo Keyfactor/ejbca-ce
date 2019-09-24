@@ -17,15 +17,12 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
     private static final Logger log = Logger.getLogger(CryptoTokenChangeAuthDataCommand.class);
 
     private static final String ALIAS = "--alias";
-    private static final String KAKTOKENID = "--kak_tokenid";
     private static final String KAKTOKENKEYALIAS = "--kak_tokenkey_alias";
     private static final String PADDING_SCHEME = "--pading_scheme";
     
     {
         registerParameter(
                 new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "HSM Key pair alias"));
-        registerParameter(
-                new Parameter(KAKTOKENID, "kak token id", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Kak token id"));
         registerParameter(
                 new Parameter(KAKTOKENKEYALIAS, "kak token key alias ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Alias of the kak token key"));
@@ -48,16 +45,18 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters)
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
         final String alias = parameters.get(ALIAS);
-        final int kakTokenId = Integer.parseInt(parameters.get(KAKTOKENID));
         final String kakTokenKeyAlias = parameters.get(KAKTOKENKEYALIAS);
         final String selectedPaddingScheme = parameters.get(PADDING_SCHEME);
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final int kakTokenId = cryptoTokenManagementSession.getIdFromName(parameters.get(CRYPTOTOKEN_NAME_KEY));
+
             cryptoTokenManagementSession.changeAuthData(getAdmin(), cryptoTokenId, alias, kakTokenId, kakTokenKeyAlias, selectedPaddingScheme);
             return CommandResult.SUCCESS;
         } catch (Exception e) {
-            getLogger().error("Changing authentication data for the key  "  + alias + " failed : "+ e);
+            e.printStackTrace();
+            getLogger().error("Changing authentication data for the key  "  + alias + " failed : " + e);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
