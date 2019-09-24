@@ -1720,10 +1720,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void migrateDatabase730() {
         migrateOcspKeyBindings730();
-        removeStaleAccesssRules730();
+        removeStaleAccessRules730();
     }
 
-    private void removeStaleAccesssRules730() {
+    private void removeStaleAccessRules730() {
         try {
             final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
