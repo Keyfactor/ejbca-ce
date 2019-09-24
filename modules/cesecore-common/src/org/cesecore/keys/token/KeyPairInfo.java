@@ -14,6 +14,8 @@ package org.cesecore.keys.token;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Representation of a KeyPair in a CryptoToken. Does not contain the actual keys.
  * 
@@ -72,46 +74,17 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        KeyPairInfo other = (KeyPairInfo) obj;
-        if (alias == null) {
-            if (other.alias != null) {
-                return false;
-            }
-        } else if (!alias.equals(other.alias)) {
-            return false;
-        }
-        if (keyAlgorithm == null) {
-            if (other.keyAlgorithm != null) {
-                return false;
-            }
-        } else if (!keyAlgorithm.equals(other.keyAlgorithm)) {
-            return false;
-        }
-        if (keySpecification == null) {
-            if (other.keySpecification != null) {
-                return false;
-            }
-        } else if (!keySpecification.equals(other.keySpecification)) {
-            return false;
-        }
-        if (subjectKeyID == null) {
-            if (other.subjectKeyID != null) {
-                return false;
-            }
-        } else if (!subjectKeyID.equals(other.subjectKeyID)) {
-            return false;
-        }
-        return true;
+        final KeyPairInfo other = (KeyPairInfo) obj;
+        return StringUtils.equals(alias, other.alias)
+                && StringUtils.equals(keyAlgorithm, other.keyAlgorithm)
+                && StringUtils.equals(keySpecification, other.keySpecification)
+                && StringUtils.equals(subjectKeyID, other.subjectKeyID);
     }
-
 }
