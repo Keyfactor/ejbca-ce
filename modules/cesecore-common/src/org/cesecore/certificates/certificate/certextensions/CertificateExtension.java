@@ -22,6 +22,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.Named;
 
 /**
  * Base class for a certificate extension.
@@ -31,7 +32,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * @version $Id$
  */
-public abstract class CertificateExtension implements Serializable {
+public abstract class CertificateExtension implements Named, Serializable {
 	
 	private static final long serialVersionUID = -7708267512352607118L;
 	
@@ -57,6 +58,15 @@ public abstract class CertificateExtension implements Serializable {
 	 */
 	public int getId() {
 		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	@Override
+	public String getName() {
+		return getDisplayName();
 	}
 
 	/**
@@ -113,7 +123,11 @@ public abstract class CertificateExtension implements Serializable {
     public void setRequiredFlag(final boolean requiredFlag) {
         this.requiredFlag = requiredFlag;
     }
-	
+
+
+	public void setProperties(Properties properties) {
+		this.properties = properties;
+	}
 
 	/**
 	 * The properties configured for this extension. The properties are stripped
@@ -125,7 +139,7 @@ public abstract class CertificateExtension implements Serializable {
 	public Properties getProperties() {
 		return properties;
 	}
-	
+
 	/**
 	 * Method that initializes the CertificateExtension
 	 * 
@@ -199,5 +213,13 @@ public abstract class CertificateExtension implements Serializable {
 		}
 		return result;
 	}
+
+	/**
+	 * Dummy method for configdump import. Usually for each getter we use to export, we use according setter
+	 * to import. getClass is an exclusion. But while it is the only one, it is easier to implement dummy getter,
+	 * instead of mechanism to ignore list of getters in case of import.
+	 * @param o
+	 */
+	public void setClass(Class o) {	}
 	
 }
