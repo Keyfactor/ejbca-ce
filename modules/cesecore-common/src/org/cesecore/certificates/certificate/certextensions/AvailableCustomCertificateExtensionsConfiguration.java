@@ -31,8 +31,7 @@ import org.cesecore.configuration.ConfigurationBase;
  * 
  * @version $Id$
  */
-public class AvailableCustomCertificateExtensionsConfiguration extends ConfigurationBase implements Serializable{
-
+public class AvailableCustomCertificateExtensionsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 7798273820046510706L;
     private static final Logger log = Logger.getLogger(AvailableCustomCertificateExtensionsConfiguration.class);
     
