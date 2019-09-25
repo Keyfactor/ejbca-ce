@@ -217,13 +217,14 @@ public class RaEndEntityBean implements Serializable {
                 raLocaleBean.addMessageError("editendentity_approval_exists");
             } catch (AuthorizationDeniedException e) {
                 raLocaleBean.addMessageError("editendentity_unauthorized");
-            } catch (EndEntityProfileValidationException
-                    | CADoesntExistsException
-                    | CertificateSerialNumberException
-                    | IllegalNameException
+            } catch (EndEntityProfileValidationException e) {
+                raLocaleBean.addMessageError("editendentity_validation_failed");
+            } catch (CADoesntExistsException e) {
+                raLocaleBean.addMessageError("editendentity_no_such_ca");
+            } catch (CertificateSerialNumberException | IllegalNameException
                     | NoSuchEndEntityException
                     | CustomFieldException e) {
-                raLocaleBean.addMessageError("editendentity_failure", e.getMessage());
+                raLocaleBean.addMessageError("editendentity_failure");
             }
         }
         editEditEndEntityCancel();
