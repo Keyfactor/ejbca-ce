@@ -223,7 +223,7 @@ public class RaEndEntityBean implements Serializable {
                     | IllegalNameException
                     | NoSuchEndEntityException
                     | CustomFieldException e) {
-                raLocaleBean.addMessageError("editendentity_failure");
+                raLocaleBean.addMessageError("editendentity_failure", e.getMessage());
             }
         }
         editEditEndEntityCancel();
