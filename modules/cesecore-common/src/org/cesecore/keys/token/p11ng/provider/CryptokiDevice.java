@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
+import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -141,6 +142,9 @@ public class CryptokiDevice {
         } catch (CKRException ex) {
             if (ex.getCKR() == CKR.CRYPTOKI_ALREADY_INITIALIZED) {
                 LOG.info("Cryptoki already initialized");
+            } else if (ex.getCKR() == CKR.GENERAL_ERROR) {
+                LOG.info("Cryptoki initialization failed");
+                throw new EJBException("Cryptoki initialization failed.", ex);
             } else {
                 throw ex;
             }
@@ -150,17 +154,21 @@ public class CryptokiDevice {
         if (LOG.isTraceEnabled()) {
             LOG.trace("c.GetSlotList(true)");
         }
-        final long[] slotsWithTokens = c.GetSlotList(true);
-        for (long slotId : slotsWithTokens) {
-            Slot s = new Slot(slotId);
-            slots.add(s);
-            slotMap.put(slotId, s);
-            final CK_TOKEN_INFO tokenInfo = c.GetTokenInfo(slotId);
-            try {
-                slotLabelMap.put(decodeUtf8(tokenInfo.label).trim(), s);
-            } catch (CharacterCodingException e) {
-                LOG.info("Label of slot " + slotId + " / index " + slots.size() + " could not be parsed as UTF-8. This slot/token must be referenced by index or ID");
+        try {
+            final long[] slotsWithTokens = c.GetSlotList(true);
+            for (long slotId : slotsWithTokens) {
+                Slot s = new Slot(slotId);
+                slots.add(s);
+                slotMap.put(slotId, s);
+                final CK_TOKEN_INFO tokenInfo = c.GetTokenInfo(slotId);
+                try {
+                    slotLabelMap.put(decodeUtf8(tokenInfo.label).trim(), s);
+                } catch (CharacterCodingException e) {
+                    LOG.info("Label of slot " + slotId + " / index " + slots.size() + " could not be parsed as UTF-8. This slot/token must be referenced by index or ID");
+                }
             }
+        } catch (CKRException ex) {
+            throw new EJBException("Slot list retrieval failed.", ex);
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("slots: " + slots);
@@ -231,9 +239,13 @@ public class CryptokiDevice {
                     LOG.trace("Popped session " + session);
                 }
             } else {
-                session = c.OpenSession(id, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("c.OpenSession : " + session);
+                try {
+                    session = c.OpenSession(id, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("c.OpenSession : " + session);
+                    }
+                } catch (CKRException ex) {
+                    throw new EJBException("Failed to open session.", ex);
                 }
             }
             activeSessions.add(session);
@@ -262,7 +274,11 @@ public class CryptokiDevice {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("c.CloseSession(" + session + ")");
             }
-            c.CloseSession(session);
+            try {
+                c.CloseSession(session);
+            } catch (CKRException ex) {
+                throw new EJBException("Could not close session.", ex);
+            }
             activeSessions.remove(session);
             if (idleSessions.contains(session)) {
                 LOG.error("Session that was closed is still marked as idle: " + session);
@@ -312,6 +328,8 @@ public class CryptokiDevice {
                     LOG.trace("c.Logout(" + loginSession + ")");
                 }
                 c.Logout(loginSession);
+            } catch (CKRException ex) {
+                throw new EJBException("Logout failed.", ex);
             } finally {
                 if (loginSession != null) {
                     releaseSession(loginSession);
@@ -437,7 +455,11 @@ public class CryptokiDevice {
 
                 // Unwrapped keys should be removed
                 if (priv.isRemovalOnRelease()) {
-                    c.DestroyObject(priv.getSession(), priv.getObject());
+                    try {
+                        c.DestroyObject(priv.getSession(), priv.getObject());
+                    } catch (CKRException ex) {
+                        throw new EJBException("Unwrapped key removal failed.", ex);
+                    }
                 }
 
                 // Release the session
@@ -477,6 +499,8 @@ public class CryptokiDevice {
                     return new NJI11ReleasebleSessionSecretKey(secretObjects[0], keyType, keySpec, this);
                 }
                 return null;
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to get secret key.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);   // XXX Shouldn't we use a static session instead, now the key can't be used!
@@ -608,8 +632,8 @@ public class CryptokiDevice {
                     }
                 }
                 return null;
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
-                throw new RuntimeException("Unable to fetch public key.", e);
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException | CKRException ex) {
+                throw new RuntimeException("Unable to fetch public key.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -621,8 +645,7 @@ public class CryptokiDevice {
             return provider;
         }
 
-        public GeneratedKeyData generateWrappedKey(String wrapKeyAlias, String keyAlgorithm, String keySpec, long wrappingCipher) {
-            
+        public GeneratedKeyData generateWrappedKey(String wrapKeyAlias, String keyAlgorithm, String keySpec, long wrappingCipher) {            
             if (!"RSA".equals(keyAlgorithm)) {
                 throw new IllegalArgumentException("Only RSA supported as key algorithm");
             }
@@ -710,8 +733,8 @@ public class CryptokiDevice {
                     PublicKey pubKey = keyFactory.generatePublic(new X509EncodedKeySpec(new SubjectPublicKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption), publicKey.getEncoded()).getEncoded())); // TODO: Maybe not the shortest
 
                     return new GeneratedKeyData(wrapped, pubKey);
-                } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException ex) {
-                    throw new RuntimeException(ex); // TODO
+                } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException | CKRException ex) {
+                    throw new RuntimeException("Failed to generate wrapped key.", ex);
                 }
             } finally {
                 if (session != null) {
@@ -781,7 +804,7 @@ public class CryptokiDevice {
                 }   
                 long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
                 if (rvAuthorizeKeyInit != CKR.OK) {
-                    throw new CKRException(rvAuthorizeKeyInit);
+                    throw new EJBException("Failed to initialize key.");
                 }
     
                 byte[] initSig = new byte[bitsToBytes(kakLength)];
@@ -791,18 +814,20 @@ public class CryptokiDevice {
                     } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
                             | InvalidAlgorithmParameterException | SignatureException e) {
                         LOG.error("Error occurred while signing the hash!", e);
+                        throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
                     }                    
                 } else {
                     try {
                         initSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
                     } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
                         LOG.error("Error occurred while signing the hash!", e);
+                        throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
                     }
                 }
 
                 long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
-                    throw new CKRException(rvAuthorizeKey);
+                    throw new EJBException("Failed to authorize key.");
                 }
             } finally {
                 if (session != null) {
@@ -837,7 +862,7 @@ public class CryptokiDevice {
                 
                 long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
                 if (rvAuthorizeKeyInit != CKR.OK) {
-                    throw new CKRException(rvAuthorizeKeyInit);
+                    throw new EJBException("Key authorization failed at the initialization step.");
                 }
                 
                 final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
@@ -851,18 +876,20 @@ public class CryptokiDevice {
                     } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
                              | InvalidAlgorithmParameterException | SignatureException e) {
                         LOG.error("Error occurred while signing the hash!", e);
+                        throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
                     }
                 } else {
                     try {
                         authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
                     } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
                         LOG.error("Error occurred while signing the hash!", e);
+                        throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
                     }
                 }
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
-                    throw new CKRException(rvAuthorizeKey);
+                    throw new EJBException("Key authorization failed.");
                 }
             } finally {
                 if (session != null) {
@@ -935,7 +962,7 @@ public class CryptokiDevice {
                 
                 long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
                 if (rvAuthorizeKeyInit != CKR.OK) {
-                    throw new CKRException(rvAuthorizeKeyInit);
+                    throw new EJBException("Failed to initialize key.");
                 }
                 
                 byte[] authSig = new byte[bitsToBytes(kakLength)];
@@ -946,18 +973,20 @@ public class CryptokiDevice {
                     } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
                              | InvalidAlgorithmParameterException | SignatureException e) {
                         LOG.error("Error occurred while signing the hash!", e);
+                        throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
                     }
                 } else {
                     try {
                         authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
                     } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
                         LOG.error("Error occurred while signing the hash!", e);
+                        throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
                     }
                 }
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
-                    throw new CKRException(rvAuthorizeKey);
+                    throw new EJBException("Failed to authorize key.");
                 }
                 
             } finally {
@@ -976,7 +1005,12 @@ public class CryptokiDevice {
                 PToPBackupObj ppBackupObj = new PToPBackupObj(null);
                 LongByReference backupObjectLength = new LongByReference();
                 
-                c.backupObject(session, objectHandle, ppBackupObj.getPointer(), backupObjectLength);
+                try {
+                    c.backupObject(session, objectHandle, ppBackupObj.getPointer(), backupObjectLength);
+                } catch (CKRException ex) {
+                    LOG.error("Error while backuping up key. ", ex);
+                    throw new EJBException("Backup operation returned with error.");
+                }
                 int length = (int) backupObjectLength.getValue();
                 byte[] resultBytes = ppBackupObj.getValue().getByteArray(0, length);
                 
@@ -999,7 +1033,10 @@ public class CryptokiDevice {
             
             } catch (IOException e) {
                 LOG.error("Error while restoring key from backup file ", e);
-            } finally {
+            } catch (CKRException e) {
+                throw new EJBException("Restore operation returned with error.");
+            }
+            finally {
                 if (session != null) {
                     releaseSession(session);
                 }
@@ -1099,6 +1136,8 @@ public class CryptokiDevice {
                 }
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to encode OID.", e);
+            } catch (CKRException e) {
+                throw new EJBException("Key pair generation failed.", e);
             } finally {
                 releaseSession(session);
             }
@@ -1118,11 +1157,15 @@ public class CryptokiDevice {
 
                 final int keyLength = Integer.parseInt(keySpec);
 
-                long[] mechanisms = c.GetMechanismList(id);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Mechanisms: " + toString(mechanisms));
+                try {
+                    long[] mechanisms = c.GetMechanismList(id);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Mechanisms: " + toString(mechanisms));
+                    }
+                } catch (CKRException ex) {
+                    throw new EJBException("Mechanism list retrieval failed.", ex);
                 }
-
+                
                 final HashMap<Long, Object> publicTemplate = new HashMap<>();
                 publicTemplate.put(CKA.TOKEN, publicKeyToken);
                 publicTemplate.put(CKA.ENCRYPT, false);
@@ -1158,24 +1201,29 @@ public class CryptokiDevice {
 
                 LongRef publicKeyRef = new LongRef();
                 LongRef privateKeyRef = new LongRef();
-
-                c.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicTemplateArray, privateTemplateArray, publicKeyRef, privateKeyRef);
-
+                
+                try {
+                    c.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicTemplateArray, privateTemplateArray, publicKeyRef, privateKeyRef);
+                } catch (CKRException ex) {
+                    throw new EJBException("Failed to generate RSA key pair.", ex);
+                }
+                
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated public key: " + publicKeyRef.value + " and private key: " + privateKeyRef.value);
                 }
 
                 if (certGenerator != null) {
-                    CKA publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.MODULUS);
-    
-                    final byte[] modulusBytes = publicValue.getValue();
-    
-                    publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.PUBLIC_EXPONENT);
-                    final byte[] publicExponentBytes = publicValue.getValue();
-    
-                    final BigInteger n = new BigInteger(1, modulusBytes);
-                    final BigInteger e = new BigInteger(1, publicExponentBytes);
                     try {
+                        CKA publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.MODULUS);
+        
+                        final byte[] modulusBytes = publicValue.getValue();
+        
+                        publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.PUBLIC_EXPONENT);
+                        final byte[] publicExponentBytes = publicValue.getValue();
+        
+                        final BigInteger n = new BigInteger(1, modulusBytes);
+                        final BigInteger e = new BigInteger(1, publicExponentBytes);
+
                         RSAPublicKey publicKey = new RSAPublicKey(n, e);
     
                         if (LOG.isDebugEnabled()) {
@@ -1203,6 +1251,8 @@ public class CryptokiDevice {
                         }
                     } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException ex) {
                         throw new RuntimeException(ex); // TODO
+                    } catch (CKRException ex) {
+                        throw new EJBException("Failed to get public key during RSA key pair generation", ex);
                     }
                 }
                 
@@ -1333,6 +1383,8 @@ public class CryptokiDevice {
                 if (useCache) {
                     cache.removeObjectsSearchResultByLabel(alias);
                 }
+            } catch (CKRException ex) {
+                throw new EJBException("Key generation failed.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -1413,6 +1465,8 @@ public class CryptokiDevice {
                     long[] objectsAfterDeletion = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
                     return objectsAfterDeletion.length == 0;
                 }
+            } catch (CKRException ex) {
+                throw new EJBException("Key removal failed.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -1427,16 +1481,20 @@ public class CryptokiDevice {
         }
 
         private void removeKeysByType(final long session, final long objectTypeCko, final long searchTypeCka, final byte[] alias) {
-            final long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, objectTypeCko), new CKA(searchTypeCka, alias));
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("removeKeysByType: Found objects of type " + CKO.L2S(objectTypeCko) + " by " + CKA.L2S(searchTypeCka) + ": " +  Arrays.toString(objs));
-            }
-            for (long object : objs) {
-                // Destroy secret key
-                removeKeyObject(session, object);
+            try {
+                final long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, objectTypeCko), new CKA(searchTypeCka, alias));
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Destroyed Key: " + object + " with alias " + alias);
+                    LOG.debug("removeKeysByType: Found objects of type " + CKO.L2S(objectTypeCko) + " by " + CKA.L2S(searchTypeCka) + ": " +  Arrays.toString(objs));
                 }
+                for (long object : objs) {
+                    // Destroy secret key
+                    removeKeyObject(session, object);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Destroyed Key: " + object + " with alias " + alias);
+                    }
+                }
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to remove keys.", ex);
             }
         }
                 
@@ -1452,39 +1510,43 @@ public class CryptokiDevice {
         private void removeCertificateAndChain(long session, long certRef, final Set<String> keptSubjects) {
             // Remove old certificate objects
              //keptSubjects: Subject DN of certificates that was not deleted
-            long[] certificateRefs;
-            int i = 0;
-            for (; i < MAX_CHAIN_LENGTH; i++) {
-                CKA ckaSubject = c.GetAttributeValue(session, certRef, CKA.SUBJECT);
-                CKA ckaIssuer = c.GetAttributeValue(session, certRef, CKA.ISSUER);
-
-                // 4. Find any certificate objects having this object as issuer, if no found delete the object
-                certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.ISSUER, ckaSubject.getValue()));
-                if (certificateRefs.length == 0 || (certificateRefs.length == 1 && certificateRefs[0] == certRef)) {
-                    removeCertificateObject(session, certRef);
-                } else {
-                    keptSubjects.add(StringTools.hex(ckaSubject.getValue()));
-                }
-
-                // 5. Unless the certificate is self-signed, find the issuer certificate object or if no found skip to 7
-                if (Arrays.equals(ckaSubject.getValue(), ckaIssuer.getValue())) {
-                    break;
-                } else {
-                    certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaIssuer.getValue()));
-
-                    if (certificateRefs.length == 0) {
-                        break;
-                    } else if (certificateRefs.length > 1) {
-                        LOG.warn("Multiple certificate objects sharing the same CKA_SUBJECT: " + StringTools.hex(ckaIssuer.getValue()));
+            try {
+                long[] certificateRefs;
+                int i = 0;
+                for (; i < MAX_CHAIN_LENGTH; i++) {
+                    CKA ckaSubject = c.GetAttributeValue(session, certRef, CKA.SUBJECT);
+                    CKA ckaIssuer = c.GetAttributeValue(session, certRef, CKA.ISSUER);
+    
+                    // 4. Find any certificate objects having this object as issuer, if no found delete the object
+                    certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.ISSUER, ckaSubject.getValue()));
+                    if (certificateRefs.length == 0 || (certificateRefs.length == 1 && certificateRefs[0] == certRef)) {
+                        removeCertificateObject(session, certRef);
+                    } else {
+                        keptSubjects.add(StringTools.hex(ckaSubject.getValue()));
                     }
-                    // 6. Do step 4 for that object
-                    certRef = certificateRefs[0];
+    
+                    // 5. Unless the certificate is self-signed, find the issuer certificate object or if no found skip to 7
+                    if (Arrays.equals(ckaSubject.getValue(), ckaIssuer.getValue())) {
+                        break;
+                    } else {
+                        certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaIssuer.getValue()));
+    
+                        if (certificateRefs.length == 0) {
+                            break;
+                        } else if (certificateRefs.length > 1) {
+                            LOG.warn("Multiple certificate objects sharing the same CKA_SUBJECT: " + StringTools.hex(ckaIssuer.getValue()));
+                        }
+                        // 6. Do step 4 for that object
+                        certRef = certificateRefs[0];
+                    }
                 }
-            }
-            // Either there was more than 100 certificates in the chain or there was some object having an issuer pointing to an earlier object,
-            // so lets bail out instead of looping forever if this happens.
-            if (i == MAX_CHAIN_LENGTH) {
-                LOG.warn("More than " + MAX_CHAIN_LENGTH + " certificates in chain (or circular subject/issuer chain). All certificates might not have been removed."); 
+                // Either there was more than 100 certificates in the chain or there was some object having an issuer pointing to an earlier object,
+                // so lets bail out instead of looping forever if this happens.
+                if (i == MAX_CHAIN_LENGTH) {
+                    LOG.warn("More than " + MAX_CHAIN_LENGTH + " certificates in chain (or circular subject/issuer chain). All certificates might not have been removed."); 
+                }
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to remove certificate chain.", ex);
             }
         }
 
@@ -1604,6 +1666,8 @@ public class CryptokiDevice {
                 }
             } catch (CertificateEncodingException ex) {
                 throw new IllegalArgumentException(ex);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to import certificate chain.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -1633,10 +1697,10 @@ public class CryptokiDevice {
                 CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
                 Certificate cert = cf.generateCertificate(new ByteArrayInputStream(ckaValue.getValue()));
                 return cert;
-            } catch (CertificateEncodingException ex) {
-                throw new IllegalArgumentException(ex);
             } catch (CertificateException | NoSuchProviderException ex) {
                 throw new IllegalArgumentException(ex);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to get certificate", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -1789,6 +1853,8 @@ public class CryptokiDevice {
                     return c.GetAttributeValue(session, privateKeyRef, cka);
                 }
                 return null;
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to get attribute.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -1881,20 +1947,22 @@ public class CryptokiDevice {
         */
         long[] findCertificateObjectsByLabel(Long session, String alias) {
             long[] certificateRefs;
-            
-            if (useCache) {
-                FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_CERTIFICATE, P11NGStoreConstants.CKA_LABEL, alias);
-                if (cache.objectsExists(key)) {
-                    certificateRefs = cache.getObjects(key);
+            try {
+                if (useCache) {
+                    FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_CERTIFICATE, P11NGStoreConstants.CKA_LABEL, alias);
+                    if (cache.objectsExists(key)) {
+                        certificateRefs = cache.getObjects(key);
+                    } else {
+                        certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
+                        // add search result to cache even if it is empty since this negative cached objects are cleared when key is generated
+                        cache.addObjectsSearchResult(key, certificateRefs);
+                    }
                 } else {
                     certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                    // add search result to cache even if it is empty since this negative cached objects are cleared when key is generated
-                    cache.addObjectsSearchResult(key, certificateRefs);
                 }
-            } else {
-                certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to find certificate objects.", ex);
             }
-            
             if (certificateRefs.length > 1) {
                 LOG.warn("More than one certificate object with label " + alias);
             }
@@ -1910,19 +1978,22 @@ public class CryptokiDevice {
         */
         long[] findCertificateObjectsBySubject(Long session, byte[] ckaSubjectValue) {
             long[] certificateRefs;
-
-            if (useCache) {
-                FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_CERTIFICATE, P11NGStoreConstants.CKA_SUBJECT, null, ckaSubjectValue);
-                if (cache.objectsExists(key)) {
-                    certificateRefs = cache.getObjects(key);
+            try {
+                if (useCache) {
+                    FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_CERTIFICATE, P11NGStoreConstants.CKA_SUBJECT, null, ckaSubjectValue);
+                    if (cache.objectsExists(key)) {
+                        certificateRefs = cache.getObjects(key);
+                    } else {
+                        certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaSubjectValue));
+                        cache.addObjectsSearchResult(key, certificateRefs);
+                    }
                 } else {
                     certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaSubjectValue));
-                    cache.addObjectsSearchResult(key, certificateRefs);
                 }
-            } else {
-                certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaSubjectValue));
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to find certificate objects.", ex);
             }
-
+                
             return certificateRefs;
         }
         
@@ -1935,16 +2006,20 @@ public class CryptokiDevice {
          */
         private long[] findPublicKeyObjectsByID(Long session, byte[] ckaIdValue) {
              long[] publicObjects;
-             if (useCache) {
-                 FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_PUBLIC_KEY, P11NGStoreConstants.CKA_ID, ckaIdValue, null);
-                 if (cache.objectsExists(key)) {
-                     publicObjects = cache.getObjects(key);
+             try {
+                 if (useCache) {
+                     FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_PUBLIC_KEY, P11NGStoreConstants.CKA_ID, ckaIdValue, null);
+                     if (cache.objectsExists(key)) {
+                         publicObjects = cache.getObjects(key);
+                     } else {
+                         publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
+                         cache.addObjectsSearchResult(key, publicObjects);
+                     }
                  } else {
                      publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
-                     cache.addObjectsSearchResult(key, publicObjects);
                  }
-             } else {
-                 publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
+             } catch (CKRException ex) {
+                 throw new EJBException("Failed to find public key objects.", ex);
              }
              
              return publicObjects;
@@ -1959,16 +2034,20 @@ public class CryptokiDevice {
          */
         public long[] findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
             long[] privateObjects;
-            if (useCache) {
-                FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_PRIVATE_KEY, P11NGStoreConstants.CKA_ID, ckaIdValue, null);
-                if (cache.objectsExists(key)) {
-                    privateObjects = cache.getObjects(key);
+            try {
+                if (useCache) {
+                    FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_PRIVATE_KEY, P11NGStoreConstants.CKA_ID, ckaIdValue, null);
+                    if (cache.objectsExists(key)) {
+                        privateObjects = cache.getObjects(key);
+                    } else {
+                        privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
+                        cache.addObjectsSearchResult(key, privateObjects);
+                    }
                 } else {
                     privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
-                    cache.addObjectsSearchResult(key, privateObjects);
                 }
-            } else {
-                privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to find private key objects.", ex);
             }
             return privateObjects;
         }
@@ -1983,6 +2062,8 @@ public class CryptokiDevice {
             try {
                 session = aquireSession();
                 results = c.FindObjects(session, new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to find private key objects.", ex);
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -2000,16 +2081,20 @@ public class CryptokiDevice {
         */
         long[] findSecretKeyObjectsByLabel(Long session, String alias) {
             long[] secretObjects;
-            if (useCache) {
-                FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_SECRET_KEY, P11NGStoreConstants.CKA_LABEL, alias);
-                if (cache.objectsExists(key)) {
-                    secretObjects = cache.getObjects(key);
+            try {
+                if (useCache) {
+                    FindObjectsCallParamsHolder key = new FindObjectsCallParamsHolder(P11NGStoreConstants.CKO_SECRET_KEY, P11NGStoreConstants.CKA_LABEL, alias);
+                    if (cache.objectsExists(key)) {
+                        secretObjects = cache.getObjects(key);
+                    } else {
+                        secretObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
+                        cache.addObjectsSearchResult(key, secretObjects);
+                    }
                 } else {
                     secretObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
-                    cache.addObjectsSearchResult(key, secretObjects);
                 }
-            } else {
-                secretObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to find secret key objects.", ex);
             }
 
             return secretObjects;
@@ -2024,20 +2109,23 @@ public class CryptokiDevice {
         */
         CKA getAttributeCertificateID(long session, long certificateObject) {
             CKA ckaId;
-
-            if (useCache) {
-                GetAttributeValueCallParamsHolder key = new GetAttributeValueCallParamsHolder(certificateObject, P11NGStoreConstants.CKA_ID);
-                if (cache.attributeValueExists(key)) {
-                    ckaId = cache.getAttributeValue(key);
+            try {
+                if (useCache) {
+                    GetAttributeValueCallParamsHolder key = new GetAttributeValueCallParamsHolder(certificateObject, P11NGStoreConstants.CKA_ID);
+                    if (cache.attributeValueExists(key)) {
+                        ckaId = cache.getAttributeValue(key);
+                    } else {
+                        ckaId = c.GetAttributeValue(session, certificateObject, CKA.ID);
+                        // Don't store in cache if ckaId or ckaId.getValue() is null
+                        if (ckaId != null && ckaId.getValue() != null) {
+                            cache.addAttributeValueSearchResult(key, ckaId);
+                        }
+                    }
                 } else {
                     ckaId = c.GetAttributeValue(session, certificateObject, CKA.ID);
-                    // Don't store in cache if ckaId or ckaId.getValue() is null
-                    if (ckaId != null && ckaId.getValue() != null) {
-                        cache.addAttributeValueSearchResult(key, ckaId);
-                    }
                 }
-            } else {
-                ckaId = c.GetAttributeValue(session, certificateObject, CKA.ID);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to get ID of certificate object.", ex);
             }
 
             return ckaId;
@@ -2052,20 +2140,23 @@ public class CryptokiDevice {
         */
         CKA getAttributeCertificateValue(long session, long certificateObject) {
             CKA ckaValue;
-
-            if (useCache) {
-                GetAttributeValueCallParamsHolder key = new GetAttributeValueCallParamsHolder(certificateObject, P11NGStoreConstants.CKA_VALUE);
-                if (cache.attributeValueExists(key)) {
-                    ckaValue = cache.getAttributeValue(key);
+            try {
+                if (useCache) {
+                    GetAttributeValueCallParamsHolder key = new GetAttributeValueCallParamsHolder(certificateObject, P11NGStoreConstants.CKA_VALUE);
+                    if (cache.attributeValueExists(key)) {
+                        ckaValue = cache.getAttributeValue(key);
+                    } else {
+                        ckaValue = c.GetAttributeValue(session, certificateObject, CKA.VALUE);
+                        // Don't store in cache if ckaValue or ckaValue.getValue() is null
+                        if (ckaValue != null && ckaValue.getValue() != null) {
+                            cache.addAttributeValueSearchResult(key, ckaValue);
+                        }
+                    }
                 } else {
                     ckaValue = c.GetAttributeValue(session, certificateObject, CKA.VALUE);
-                    // Don't store in cache if ckaValue or ckaValue.getValue() is null
-                    if (ckaValue != null && ckaValue.getValue() != null) {
-                        cache.addAttributeValueSearchResult(key, ckaValue);
-                    }
                 }
-            } else {
-                ckaValue = c.GetAttributeValue(session, certificateObject, CKA.VALUE);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to get value of certificate object.", ex);
             }
 
             return ckaValue;
@@ -2117,17 +2208,25 @@ public class CryptokiDevice {
         }
 
         void removeCertificateObject(long session, long certificateObject) {
-            if (useCache) {
-                cache.removeAllEntriesByObject(certificateObject);
+            try {
+                if (useCache) {
+                    cache.removeAllEntriesByObject(certificateObject);
+                }
+                c.DestroyObject(session, certificateObject);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to remove certificate object.", ex);
             }
-            c.DestroyObject(session, certificateObject);
         }
         
         void removeKeyObject(long session, long keyObject) {
-            if (useCache) {
-                cache.removeObjectsSearchResultByObject(keyObject);
+            try {
+                if (useCache) {
+                    cache.removeObjectsSearchResultByObject(keyObject);
+                }
+                c.DestroyObject(session, keyObject);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to remove key object.", ex);
             }
-            c.DestroyObject(session, keyObject);
         }
 
         private CKM getCKMForWrappingCipher(long wrappingCipher) {
@@ -2145,13 +2244,17 @@ public class CryptokiDevice {
         }
 
         private boolean isAliasUsed(final long session, final String alias) {
-            long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
-            if (objs.length != 0) {
-                return true;
-            }
-            objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
-            if (objs.length != 0) {
-                return true;
+            try {
+                long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
+                if (objs.length != 0) {
+                    return true;
+                }
+                objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
+                if (objs.length != 0) {
+                    return true;
+                }
+            } catch (CKRException ex) {
+                throw new EJBException("Error retrieveing objects to determine whether alias is used.", ex);
             }
             return false;
         }
