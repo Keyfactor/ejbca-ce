@@ -57,12 +57,12 @@ import org.cesecore.keys.token.p11ng.provider.SlotEntry;
  * 
  * @version $Id$
  */
-public class PKCS11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
+public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
 
     private static final long serialVersionUID = 1L;
 
     /** Log4j instance */
-    private static final Logger log = Logger.getLogger(PKCS11NgCryptoToken.class);
+    private static final Logger log = Logger.getLogger(Pkcs11NgCryptoToken.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -76,7 +76,7 @@ public class PKCS11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     private String sSlotLabel = null;
 
-    public PKCS11NgCryptoToken() throws InstantiationException {
+    public Pkcs11NgCryptoToken() throws InstantiationException {
         super();
         try {
             Thread.currentThread().getContextClassLoader().loadClass(Pkcs11SlotLabel.JACKJNI_CLASS);
