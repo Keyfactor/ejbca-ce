@@ -19,6 +19,7 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
     private static final String ALIAS = "--alias";
     private static final String KAKTOKENKEYALIAS = "--kak_tokenkey_alias";
     private static final String PADDING_SCHEME = "--pading_scheme";
+    private static final String NEW_KAK_TOKEN = "--new_kak_token";
     
     {
         registerParameter(
@@ -29,6 +30,9 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
         registerParameter(
                 new Parameter(PADDING_SCHEME, "Padding Scheme ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Padding scheme used to sign the hash of new kak with, must be same as the old padding scheme. "));
+        registerParameter(
+                new Parameter(NEW_KAK_TOKEN, "kak token name ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Token representing the new kak to be used."));
     }
 
     @Override
@@ -50,7 +54,7 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            final int kakTokenId = cryptoTokenManagementSession.getIdFromName(parameters.get(CRYPTOTOKEN_NAME_KEY));
+            final int kakTokenId = cryptoTokenManagementSession.getIdFromName(parameters.get(NEW_KAK_TOKEN));
 
             cryptoTokenManagementSession.changeAuthData(getAdmin(), cryptoTokenId, alias, kakTokenId, kakTokenKeyAlias, selectedPaddingScheme);
             return CommandResult.SUCCESS;
