@@ -265,18 +265,23 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
-    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, 
-            String selectedPaddingScheme) throws CryptoTokenOfflineException {
+    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int currentKakTokenId, int newKakTokenId, 
+            final String currentKakTokenKeyAlias, final String newKakTokenKeyAlias, final String selectedPaddingScheme) throws CryptoTokenOfflineException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
-        if (cryptoToken == null || kakCryptoToken == null) {
+        final CryptoToken currentKakCryptoToken = cryptoTokenSession.getCryptoToken(currentKakTokenId);
+        final CryptoToken newKakCryptoToken = cryptoTokenSession.getCryptoToken(newKakTokenId);
+        if (cryptoToken == null || currentKakCryptoToken == null || newKakCryptoToken == null) {
             throw new RuntimeException("No such CryptoToken for id " + cryptoTokenId);
         }
-        final PrivateKey kakPrivateKey = kakCryptoToken.getPrivateKey(kakTokenKeyAlias);
-        final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
-        final String signProviderName = kakCryptoToken.getSignProviderName();
-        final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
-        cryptoToken.changeAuthData(alias, kakPair, signProviderName, selectedPaddingScheme);
+        final PrivateKey kakPrivateKey = currentKakCryptoToken.getPrivateKey(currentKakTokenKeyAlias);
+        final PublicKey kakPublicKey = currentKakCryptoToken.getPublicKey(currentKakTokenKeyAlias);
+        final String signProviderName = currentKakCryptoToken.getSignProviderName();
+        final KeyPair currentkakPair = new KeyPair(kakPublicKey, kakPrivateKey);
+        final PrivateKey newKakPrivateKey = newKakCryptoToken.getPrivateKey(newKakTokenKeyAlias);
+        final PublicKey newKakPublicKey = currentKakCryptoToken.getPublicKey(newKakTokenKeyAlias);
+        final KeyPair newKakPair = new KeyPair(newKakPublicKey, newKakPrivateKey);
+        
+        cryptoToken.changeAuthData(alias, currentkakPair, newKakPair, signProviderName, selectedPaddingScheme);
     }    
     
     @Override
