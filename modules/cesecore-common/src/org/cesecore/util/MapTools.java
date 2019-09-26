@@ -163,7 +163,7 @@ public final class MapTools {
     /**
      * Creates a map from lists of keys and values (the name "zip" comes from various other programming languages).
      * <p>
-     * <strong>Note:</strong> This method does not work with value types such as <cpde>int</code>. You need to convert to reference types like <code>Integer</code>.
+     * <strong>Note:</strong> This method does not work with value types such as <code>int</code>. You need to convert to reference types like <code>Integer</code>.
      *
      * @param keys List of keys
      * @param values List of values
