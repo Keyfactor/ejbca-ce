@@ -322,12 +322,14 @@ public interface CryptoTokenManagementSession {
      * @param authenticationToken the administrator performing the action.
      * @param cryptoTokenId the CryptoToken to operate on.
      * @param alias of the key to authorize (Must be associate with KAK already).
-     * @param kakTokenId Id of the CryptoToken containing the KAK (Key Authorization Key)
-     * @param kakTokenKeyAlias Alias of the key which will be used as KAK.
+     * @param currentKakTokenId Id of the CryptoToken containing the current KAK (Key Authorization Key)
+     * @param newKakTokenId Id of the CryptoToken containing the new KAK (Key Authorization Key)
+     * @param currentkakTokenKeyAlias Alias of the current key which is used as KAK
+     * @param newkakTokenKeyAlias Alias of the new key which will be used as KAK
      * @param maxOperationCount Maximum number of operations which this may be performed. -1 for unlimited
      * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
-    void changeAuthData(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
-            String selectedPaddingScheme) throws CryptoTokenOfflineException;
+    void changeAuthData(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int currentKakTokenId, int newKakTokenId, String currentKakTokenKeyAlias,
+            String newKakTokenKeyAlias, String selectedPaddingScheme) throws CryptoTokenOfflineException;
 
 }
