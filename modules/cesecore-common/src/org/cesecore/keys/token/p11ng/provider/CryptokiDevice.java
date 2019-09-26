@@ -898,15 +898,15 @@ public class CryptokiDevice {
             }
         }
         
-        public void changeAuthData(String alias, KeyPair keyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
+        public void changeAuthData(String alias, KeyPair currentKeyAuthorizationKey, KeyPair newKeyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
             Long session = null;
             try {
                 session = aquireSession();
                 CK_CP5_CHANGEAUTHDATA_PARAMS params = new CK_CP5_CHANGEAUTHDATA_PARAMS();
                 CK_CP5_AUTH_DATA authData = new CK_CP5_AUTH_DATA();
                 
-                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
-                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final PublicKey kakPublicKey = newKeyAuthorizationKey.getPublic();
+                final PrivateKey kakPrivateKey = currentKeyAuthorizationKey.getPrivate();
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
                 RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
                 BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
