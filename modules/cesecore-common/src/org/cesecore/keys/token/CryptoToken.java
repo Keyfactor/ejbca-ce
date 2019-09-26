@@ -176,11 +176,12 @@ public interface CryptoToken extends Serializable {
      * Operation specific for CP5 crypto tokens
      * 
      * @param alias of the key to authorize  (i.e. associate with KAK)
-     * @param kakPair Key Authorization Key which is already associated with key
+     * @param currentKakPair Key Authorization Key which is already associated with key
+     * @param newKakPair Key Authorization Key which is going to be associated with key
      * @param signProviderName Name of the signature provider
      * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
-    void changeAuthData(String alias, KeyPair kakPair, String signProviderName, String selectedPaddingScheme);
+    void changeAuthData(String alias, KeyPair currentKakPair, KeyPair newKakPair, String signProviderName, String selectedPaddingScheme);
     
     
     /**
