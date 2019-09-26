@@ -112,6 +112,7 @@ public class ConfigDumpSetting implements Serializable {
     private Map<ItemKey,ImportMode> overwriteResolutions = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
+    private boolean exportExternalCas;
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
@@ -203,6 +204,14 @@ public class ConfigDumpSetting implements Serializable {
 
     public void setExportDefaults(final boolean exportDefaults) {
         this.exportDefaults = exportDefaults;
+    }
+
+    public boolean isExportExternalCas() {
+        return exportExternalCas;
+    }
+
+    public void setExportExternalCas(final boolean exportExternalCas) {
+        this.exportExternalCas = exportExternalCas;
     }
 
     public boolean isIncluded(final ItemType type, final String nameStr) {
