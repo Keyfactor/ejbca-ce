@@ -17,9 +17,9 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
     private static final Logger log = Logger.getLogger(CryptoTokenChangeAuthDataCommand.class);
 
     private static final String ALIAS = "--alias";
-    private static final String KAKTOKENKEYALIAS = "--kak_tokenkey_alias";
-    private static final String PADDING_SCHEME = "--pading_scheme";
-    private static final String NEW_KAK_TOKEN = "--new_kak_token";
+    private static final String KAKTOKENKEYALIAS = "--kak-tokenkey-alias";
+    private static final String PADDING_SCHEME = "--pading-scheme";
+    private static final String NEW_KAK_TOKEN = "--new-kak-token";
     
     {
         registerParameter(
