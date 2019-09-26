@@ -98,19 +98,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         String sharedLibrary = properties.getProperty(SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(ATTRIB_LABEL_KEY);
 
-        //        TODO Not sure if needed here...
         //        Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
         //        String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
         String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
         String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());
-
-        // TODO used during development remove when done
-        log.info("sSlotLabel: " + sSlotLabel);
-        log.info("sharedLibrary: " + sharedLibrary);
-        log.info("attributesFile: " + attributesFile);
-        log.info("libraryFileDir: " + libraryFileDir);
-        log.info("libraryFileName: " + libraryFileName);
 
         CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFileName, libraryFileDir);
         device.getSlots();
@@ -143,8 +135,6 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     @Override
     public void activate(char[] authenticationcode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
-        log.info("Activating CP5 token..."); //TODO remove
-        log.info("State before login: " + slot); //TODO remove
         if (slot == null) {
             throw new CryptoTokenOfflineException("Slot not initialized.");
         }
@@ -164,12 +154,10 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             authFailException.initCause(e);
             throw authFailException;
         }
-        log.info("State after login: " + slot.toString()); //TODO remove
     }
 
     @Override
     public void deactivate() {
-        log.info("Deactivating CP5 token..."); //TODO remove
         this.slot.logout();
     }
 
@@ -244,7 +232,6 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     
     @Override
     public void generateKeyPair(final KeyGenParams keyGenParams, final String alias) throws InvalidAlgorithmParameterException, CryptoTokenOfflineException {
-        log.info("Generating Key Pair...");
         final String keySpec = keyGenParams.getKeySpecification();
         
         String keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
@@ -362,10 +349,8 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     public int getTokenStatus() {
         autoActivate();
         if (this.slot == null || this.slot.getActiveSessions().size() == 0) {
-            log.info("Session Status: Slot unavilable"); //TODO remove
             return CryptoToken.STATUS_OFFLINE;
         }
-        log.info("Session Status: " + this.slot.toString()); //TODO remove
         return CryptoToken.STATUS_ACTIVE;
     }
 
