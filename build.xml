@@ -953,6 +953,10 @@
             <equals arg1="${edition}" arg2="ee" casesensitive="true"/>
         </condition>
 		
+		<condition property="build.contains.eidas">
+			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
+		</condition>
+		
         <condition property="build.contains.va" value="true">
             <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
         </condition>
@@ -979,10 +983,15 @@
         <condition property="variant.suffix" value="_VA">
             <equals arg1="${variant}" arg2="va" casesensitive="false"/>
         </condition>
+
+		<condition property="variant.suffix" value="_eIDAS">
+			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
+		</condition>
 		
 		<condition property="variant.suffix" value="">
 			<istrue value="${running.full.ejbca}" />
         </condition>
+		
 		
 		<convertdot/> <!-- convert dots to underscores in version string -->
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
@@ -1068,7 +1077,6 @@
                 <exclude unless="edition.is.ee" name="modules/externalra-gui/**"/>
                 <exclude unless="edition.is.ee" name="modules/externalra-scep/**"/>
                 <exclude unless="edition.is.ee" name="modules/cmpclient/**"/>
-                <exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
                 <exclude unless="edition.is.ee" name="modules/acme/**"/>
                 <exclude unless="edition.is.ee" name="lib/dnsjava-*.jar"/>
                 <exclude unless="edition.is.ee" name="lib/dnssecjava-*.jar"/>
@@ -1088,6 +1096,10 @@
                 <exclude unless="edition.is.ee" name="lib/ext/swagger docs/**"/>
                 <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
+		    	<!-- List of modules to exclude from non-eIDAS editions -->
+		    	<exclude unless="build.contains.eidas" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
+		    	<exclude unless="build.contains.eidas" name="modules/p11ng-cli/**"/>
+		    	<exclude unless="build.contains.eidas" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
 		    	
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerDownstreamImpl.java"/>
