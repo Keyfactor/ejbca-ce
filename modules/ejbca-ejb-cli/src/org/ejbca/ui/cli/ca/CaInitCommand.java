@@ -170,7 +170,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 MandatoryMode.MANDATORY,
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
-                "Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs."));
+                "Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys, 'org.cesecore.keys.token.PKCS11CryptoToken' "
+                + "for PKCS#11 HSMs and 'org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken' for Utimaco CP5 HSM"));
         //Password kept as a mandatory argument for legacy reasons
         registerParameter(new Parameter(
                 TOKEN_PASSWORD_KEY,
