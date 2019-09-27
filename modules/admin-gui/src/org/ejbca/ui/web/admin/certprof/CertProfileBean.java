@@ -951,7 +951,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
     
     public void setEnabledCtLabels(final List<String> selectedLabels) {
-        getCertificateProfile().setEnabledCTLabels(new LinkedHashSet<>(selectedLabels));
+        getCertificateProfile().setEnabledCtLabels(new LinkedHashSet<>(selectedLabels));
     }
     
     public void toggleUseMicrosoftTemplate() throws IOException {

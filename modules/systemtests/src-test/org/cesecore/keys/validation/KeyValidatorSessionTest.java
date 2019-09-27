@@ -869,15 +869,15 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     private CertificateProfile createTestCertificateProfile(final String name) throws Exception {
         final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 
-        final List<Integer> availableCaIds = new ArrayList<Integer>();
+        final List<Integer> availableCaIds = new ArrayList<>();
         availableCaIds.add(testCA.getCAId());
         profile.setAvailableCAs(availableCaIds);
 
-        final List<Integer> availableBitLengths = new ArrayList<Integer>();
+        final List<Integer> availableBitLengths = new ArrayList<>();
         availableBitLengths.add(2048);
-        profile.setAvailableBitLengths(availableBitLengths);
+        profile.setAvailableBitLengthsAsList(availableBitLengths);
 
-        final List<String> availableKeyAlgorithms = new ArrayList<String>();
+        final List<String> availableKeyAlgorithms = new ArrayList<>();
         availableKeyAlgorithms.add("RSA");
         profile.setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
         profile.setSignatureAlgorithm("SHA256WithRSA");
