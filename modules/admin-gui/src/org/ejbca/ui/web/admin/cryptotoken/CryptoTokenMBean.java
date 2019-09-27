@@ -1506,9 +1506,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      */
     private SlotList getP11SlotList() {
         String library = currentCryptoToken.getP11Library();
-        if (library == null) return null;
+        if (library == null) {
+            return null;
+        }
         WebConfiguration.P11LibraryInfo libinfo = WebConfiguration.getAvailableP11LibraryToAliasMap().get(library);
-        if (libinfo == null) return null;
+        if (libinfo == null) {
+            return null;
+        }
         return libinfo.getSlotList();
     }
 
