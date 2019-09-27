@@ -24,11 +24,12 @@ ca.dn=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # The token type the administrative CA will use.
 # Use soft for software generated keys (default) or enter a class path for the HSM class.
-# Normally the HSM class should be the PKCS11CryptoToken. 
+# Normally the HSM class should be the PKCS11CryptoToken. For Utimaco CP5, use Pkcs11NgCryptoToken.
 #
 # Possible values are:
 # soft
 # org.cesecore.keys.token.PKCS11CryptoToken
+# org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken
 # se.primeKey.caToken.card.PrimeCAToken
 # Note: If you use JBoss 7/EAP 6 and want to use PKCS#11 you have to configure JBoss to permit this. 
 #       See instructions in the Install Guide.
