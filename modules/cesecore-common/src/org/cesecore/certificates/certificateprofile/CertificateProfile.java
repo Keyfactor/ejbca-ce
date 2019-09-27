@@ -20,7 +20,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -457,7 +456,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCertificatePolicies(policies);
 
         setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
-        setAvailableEcCurvesAsList(Arrays.asList(ANY_EC_CURVE));
+        setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengths(DEFAULTBITLENGTHS);
         setSignatureAlgorithm(null);
 
@@ -467,18 +466,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setKeyUsageCritical(true);
 
         setUseExtendedKeyUsage(false);
-        setExtendedKeyUsage(new ArrayList<String>());
+        setExtendedKeyUsage(new ArrayList<>());
         setExtendedKeyUsageCritical(false);
 
         setUseDocumentTypeList(false);
         setDocumentTypeListCritical(false);
-        setDocumentTypeList(new ArrayList<String>());
+        setDocumentTypeList(new ArrayList<>());
 
         ArrayList<Integer> availablecas = new ArrayList<>();
-        availablecas.add(Integer.valueOf(ANYCA));
+        availablecas.add(ANYCA);
         setAvailableCAs(availablecas);
 
-        setPublisherList(new ArrayList<Integer>());
+        setPublisherList(new ArrayList<>());
 
         setUseOcspNoCheck(false);
 
@@ -493,9 +492,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCNPostfix("");
 
         setUseSubjectDNSubSet(false);
-        setSubjectDNSubSet(new ArrayList<String>());
+        setSubjectDNSubSet(new ArrayList<>());
         setUseSubjectAltNameSubSet(false);
-        setSubjectAltNameSubSet(new ArrayList<Integer>());
+        setSubjectAltNameSubSet(new ArrayList<>());
 
         setUsePathLengthConstraint(false);
         setPathLengthConstraint(0);
@@ -526,16 +525,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUseSubjectDirAttributes(false);
         setUseNameConstraints(false);
         setUseAuthorityInformationAccess(false);
-        setCaIssuers(new ArrayList<String>());
+        setCaIssuers(new ArrayList<>());
         setUseDefaultCAIssuer(false);
         setUseDefaultOCSPServiceLocator(false);
         setOCSPServiceLocatorURI("");
 
         // Default to have access to fingerprint and iris
-        setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
+        setCVCAccessRightsIS(CertificateProfile.CVC_ACCESS_DG3DG4);
 
-        setUsedCertificateExtensions(new ArrayList<Integer>());
-        setApprovals(new LinkedHashMap<ApprovalRequestType, Integer>());
+        setUsedCertificateExtensions(new ArrayList<>());
+        setApprovals(new LinkedHashMap<>());
 
         // PrivateKeyUsagePeriod extension
         setUsePrivateKeyUsagePeriodNotBefore(false);
@@ -545,8 +544,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setSingleActiveCertificateConstraint(false);
 
-        setOverridableExtensionOIDs(new LinkedHashSet<String>());
-        setNonOverridableExtensionOIDs(new LinkedHashSet<String>());
+        setOverridableExtensionOIDs(new LinkedHashSet<>());
+        setNonOverridableExtensionOIDs(new LinkedHashSet<>());
     }
 
     /**
@@ -644,14 +643,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @Deprecated
     public long getValidity() {
-        return ((Long) data.get(VALIDITY)).longValue();
+        return (Long) data.get(VALIDITY);
     }
 
     /**
      * Gets the encoded validity.
      * @return the validity as ISO8601 date or relative time.
-     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
-     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
+     * @see {@link org.cesecore.util.ValidityDate ValidityDate}
+     * @see {@link org.cesecore.util.SimpleTime SimpleTime}
      */
     @SuppressWarnings("deprecation")
     public String getEncodedValidity() {
@@ -666,8 +665,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Sets the encoded validity .
      * @param encodedValidity the validity as ISO8601 date or relative time.
-     * @See {@link org.cesecore.util.ValidityDate ValidityDate}
-     * @See {@link org.cesecore.util.SimpleTime SimpleTime}
+     * @see {@link org.cesecore.util.ValidityDate ValidityDate}
+     * @see {@link org.cesecore.util.SimpleTime SimpleTime}
      */
     public void setEncodedValidity(String encodedValidity) {
         data.put(ENCODED_VALIDITY, encodedValidity);
@@ -681,7 +680,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseCertificateValidityOffset() {
         // Extra null check to handle in-development upgrades
         if (data.get(USE_CERTIFICATE_VALIDITY_OFFSET) != null) {
-            return Boolean.valueOf((Boolean) data.get(USE_CERTIFICATE_VALIDITY_OFFSET));
+            return (Boolean) data.get(USE_CERTIFICATE_VALIDITY_OFFSET);
         } else {
             return false;
         }
@@ -689,10 +688,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /**
      * Use certificate validity offset.
-     * @param enabled
+     * @param enabled enabled
      */
     public void setUseCertificateValidityOffset(boolean enabled) {
-        data.put(USE_CERTIFICATE_VALIDITY_OFFSET, Boolean.valueOf(enabled));
+        data.put(USE_CERTIFICATE_VALIDITY_OFFSET, enabled);
     }
 
     /**
@@ -718,15 +717,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @see #setExpirationRestrictionWeekdays(boolean[])
      */
     public boolean getUseExpirationRestrictionForWeekdays() {
-        return Boolean.valueOf((Boolean) data.get(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS));
+        return (Boolean) data.get(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS);
     }
 
     /**
      * Use validity expiration restriction.
-     * @param enabled
+     * @param enabled enabled
      */
     public void setUseExpirationRestrictionForWeekdays(boolean enabled) {
-        data.put(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS, Boolean.valueOf(enabled));
+        data.put(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS, enabled);
     }
 
     /**
@@ -734,7 +733,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @see #setExpirationRestrictionWeekdays(boolean[])
      */
     public boolean getExpirationRestrictionForWeekdaysExpireBefore() {
-        return Boolean.valueOf((Boolean) data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE));
+        return (Boolean) data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE);
     }
 
     /**
@@ -744,7 +743,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param enabled true, otherwise false.
      */
     public void setExpirationRestrictionForWeekdaysExpireBefore(boolean enabled) {
-        data.put(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE, Boolean.valueOf(enabled));
+        data.put(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE, enabled);
     }
 
     /**
@@ -753,17 +752,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public boolean getExpirationRestrictionWeekday(int weekday) {
-        return ((ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS)).get(weekday-1).booleanValue();
+        return ((ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS)).get(weekday - 1);
     }
 
     /**
      * Include a weekday as validity expiration restriction.
      * @param weekday (see java.util.Calendar.MONDAY - SUNDAY)
-     * @param enabled
+     * @param enabled enabled
      */
     @SuppressWarnings("unchecked")
     public void setExpirationRestrictionWeekday(int weekday, boolean enabled) {
-        ((ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS)).set(weekday-1, Boolean.valueOf(enabled));
+        ((ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS)).set(weekday-1, enabled);
     }
 
     /**
@@ -776,15 +775,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         final ArrayList<Boolean> list = (ArrayList<Boolean>) data.get(EXPIRATION_RESTRICTION_WEEKDAYS);
         final boolean[] result = new boolean[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            result[i] = list.get(i).booleanValue();
+            result[i] = list.get(i);
         }
         return result;
     }
 
-    private void setExpirationRestrictionWeekdays(boolean[] weekdays) {
+    public void setExpirationRestrictionWeekdays(boolean[] weekdays) {
         final ArrayList<Boolean> list = new ArrayList<>(weekdays.length);
-        for (int i = 0; i < weekdays.length; i++) {
-            list.add(Boolean.valueOf(weekdays[i]));
+        for (boolean weekday : weekdays) {
+            list.add(weekday);
         }
         data.put(EXPIRATION_RESTRICTION_WEEKDAYS, list);
     }
@@ -804,7 +803,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @return true if validity override is allowed
      */
     public boolean getAllowValidityOverride() {
-        return ((Boolean) data.get(ALLOWVALIDITYOVERRIDE)).booleanValue();
+        return (Boolean) data.get(ALLOWVALIDITYOVERRIDE);
     }
 
     /**
@@ -812,7 +811,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * A certificate created with validity override can hava a starting point in the future.
      */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {
-        data.put(ALLOWVALIDITYOVERRIDE, Boolean.valueOf(allowvalidityoverride));
+        data.put(ALLOWVALIDITYOVERRIDE, allowvalidityoverride);
     }
 
     /**
@@ -821,16 +820,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * one defined in the profile will be used.
      */
     public boolean getAllowExtensionOverride() {
-        Object d = data.get(ALLOWEXTENSIONOVERRIDE);
-        if (d == null) {
-            return false;
-        }
-        return ((Boolean) d).booleanValue();
+        final Object d = data.get(ALLOWEXTENSIONOVERRIDE);
+        return d != null && (Boolean) d;
     }
 
     /** @see #getAllowExtensionOverride() */
     public void setAllowExtensionOverride(boolean allowextensionoverride) {
-        data.put(ALLOWEXTENSIONOVERRIDE, Boolean.valueOf(allowextensionoverride));
+        data.put(ALLOWEXTENSIONOVERRIDE, allowextensionoverride);
     }
 
     /**
@@ -839,16 +835,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * registered DN is used.
      */
     public boolean getAllowDNOverride() {
-        Object d = data.get(ALLOWDNOVERRIDE);
-        if (d == null) {
-            return false;
-        }
-        return ((Boolean) d).booleanValue();
+        final Object d = data.get(ALLOWDNOVERRIDE);
+        return d != null && (Boolean) d;
     }
 
     /** @see #getAllowDNOverride() */
     public void setAllowDNOverride(boolean allowdnoverride) {
-        data.put(ALLOWDNOVERRIDE, Boolean.valueOf(allowdnoverride));
+        data.put(ALLOWDNOVERRIDE, allowdnoverride);
     }
 
     /**
@@ -858,15 +851,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public boolean getAllowDNOverrideByEndEntityInformation() {
         Object d = data.get(ALLOWDNOVERRIDEBYEEI);
-        if (d == null) {
-            return false;
-        }
-        return ((Boolean) d).booleanValue();
+        return d != null && (Boolean) d;
     }
 
     /** @see #getAllowDNOverrideByEndEntityInformation() */
     public void setAllowDNOverrideByEndEntityInformation(final boolean value) {
-        data.put(ALLOWDNOVERRIDEBYEEI, Boolean.valueOf(value));
+        data.put(ALLOWDNOVERRIDEBYEEI, value);
     }
 
     /**
@@ -876,10 +866,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public boolean getAllowCertSerialNumberOverride() {
         Object d = data.get(ALLOWCERTSNOVERIDE);
-        if (d == null) {
-            return false;
-        }
-        return ((Boolean) d).booleanValue();
+        return d != null && (Boolean) d;
     }
 
     /**
@@ -888,79 +875,79 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      *            new value
      */
     public void setAllowCertSerialNumberOverride(boolean allowdnoverride) {
-        data.put(ALLOWCERTSNOVERIDE, Boolean.valueOf(allowdnoverride));
+        data.put(ALLOWCERTSNOVERIDE, allowdnoverride);
     }
 
     public boolean getUseBasicConstraints() {
-        return ((Boolean) data.get(USEBASICCONSTRAINTS)).booleanValue();
+        return (Boolean) data.get(USEBASICCONSTRAINTS);
     }
 
     public void setUseBasicConstraints(boolean usebasicconstraints) {
-        data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));
+        data.put(USEBASICCONSTRAINTS, usebasicconstraints);
     }
 
     public boolean getBasicConstraintsCritical() {
-        return ((Boolean) data.get(BASICCONSTRAINTSCRITICAL)).booleanValue();
+        return (Boolean) data.get(BASICCONSTRAINTSCRITICAL);
     }
 
     public void setBasicConstraintsCritical(boolean basicconstraintscritical) {
-        data.put(BASICCONSTRAINTSCRITICAL, Boolean.valueOf(basicconstraintscritical));
+        data.put(BASICCONSTRAINTSCRITICAL, basicconstraintscritical);
     }
 
     public boolean getUseKeyUsage() {
-        return ((Boolean) data.get(USEKEYUSAGE)).booleanValue();
+        return (Boolean) data.get(USEKEYUSAGE);
     }
 
     public void setUseKeyUsage(boolean usekeyusage) {
-        data.put(USEKEYUSAGE, Boolean.valueOf(usekeyusage));
+        data.put(USEKEYUSAGE, usekeyusage);
     }
 
     public boolean getKeyUsageCritical() {
-        return ((Boolean) data.get(KEYUSAGECRITICAL)).booleanValue();
+        return (Boolean) data.get(KEYUSAGECRITICAL);
     }
 
     public void setKeyUsageCritical(boolean keyusagecritical) {
-        data.put(KEYUSAGECRITICAL, Boolean.valueOf(keyusagecritical));
+        data.put(KEYUSAGECRITICAL, keyusagecritical);
     }
 
     public boolean getUseSubjectKeyIdentifier() {
-        return ((Boolean) data.get(USESUBJECTKEYIDENTIFIER)).booleanValue();
+        return (Boolean) data.get(USESUBJECTKEYIDENTIFIER);
     }
 
     public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) {
-        data.put(USESUBJECTKEYIDENTIFIER, Boolean.valueOf(usesubjectkeyidentifier));
+        data.put(USESUBJECTKEYIDENTIFIER, usesubjectkeyidentifier);
     }
 
     public boolean getSubjectKeyIdentifierCritical() {
-        return ((Boolean) data.get(SUBJECTKEYIDENTIFIERCRITICAL)).booleanValue();
+        return (Boolean) data.get(SUBJECTKEYIDENTIFIERCRITICAL);
     }
 
     public void setSubjectKeyIdentifierCritical(boolean subjectkeyidentifiercritical) {
-        data.put(SUBJECTKEYIDENTIFIERCRITICAL, Boolean.valueOf(subjectkeyidentifiercritical));
+        data.put(SUBJECTKEYIDENTIFIERCRITICAL, subjectkeyidentifiercritical);
     }
 
     public boolean getUseAuthorityKeyIdentifier() {
-        return ((Boolean) data.get(USEAUTHORITYKEYIDENTIFIER)).booleanValue();
+        return (Boolean) data.get(USEAUTHORITYKEYIDENTIFIER);
     }
 
     public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) {
-        data.put(USEAUTHORITYKEYIDENTIFIER, Boolean.valueOf(useauthoritykeyidentifier));
+        data.put(USEAUTHORITYKEYIDENTIFIER, useauthoritykeyidentifier);
     }
 
     public boolean getAuthorityKeyIdentifierCritical() {
-        return ((Boolean) data.get(AUTHORITYKEYIDENTIFIERCRITICAL)).booleanValue();
+        return (Boolean) data.get(AUTHORITYKEYIDENTIFIERCRITICAL);
     }
 
     public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) {
-        data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));
+        data.put(AUTHORITYKEYIDENTIFIERCRITICAL, authoritykeyidentifiercritical);
     }
 
     public boolean getUseSubjectAlternativeName() {
-        return ((Boolean) data.get(USESUBJECTALTERNATIVENAME)).booleanValue();
+        return (Boolean) data.get(USESUBJECTALTERNATIVENAME);
     }
 
     public void setUseSubjectAlternativeName(boolean usesubjectalternativename) {
-        data.put(USESUBJECTALTERNATIVENAME, Boolean.valueOf(usesubjectalternativename));
+        data.put(USESUBJECTALTERNATIVENAME, usesubjectalternativename);
     }
 
     public boolean getStoreCertificateData() {
@@ -971,12 +958,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setStoreCertificateData(true);
             return true;
         } else {
-            return value.booleanValue();
+            return value;
         }
     }
 
     public void setStoreCertificateData(boolean storeCertificateData) {
-        data.put(STORECERTIFICATEDATA, Boolean.valueOf(storeCertificateData));
+        data.put(STORECERTIFICATEDATA, storeCertificateData);
     }
 
     /** @return true if the CertificateData.subjectAltName column should be populated. */
@@ -988,60 +975,60 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setStoreSubjectAlternativeName(false);
             return false;
         } else {
-            return value.booleanValue();
+            return value;
         }
     }
 
     public void setStoreSubjectAlternativeName(final boolean storeSubjectAlternativeName) {
-        data.put(STORESUBJECTALTNAME, Boolean.valueOf(storeSubjectAlternativeName));
+        data.put(STORESUBJECTALTNAME, storeSubjectAlternativeName);
     }
 
     public boolean getSubjectAlternativeNameCritical() {
-        return ((Boolean) data.get(SUBJECTALTERNATIVENAMECRITICAL)).booleanValue();
+        return (Boolean) data.get(SUBJECTALTERNATIVENAMECRITICAL);
     }
 
     public void setSubjectAlternativeNameCritical(boolean subjectalternativenamecritical) {
-        data.put(SUBJECTALTERNATIVENAMECRITICAL, Boolean.valueOf(subjectalternativenamecritical));
+        data.put(SUBJECTALTERNATIVENAMECRITICAL, subjectalternativenamecritical);
     }
 
     public boolean getUseIssuerAlternativeName() {
-        return ((Boolean) data.get(USEISSUERALTERNATIVENAME)).booleanValue();
+        return (Boolean) data.get(USEISSUERALTERNATIVENAME);
     }
 
     public void setUseIssuerAlternativeName(boolean useissueralternativename) {
-        data.put(USEISSUERALTERNATIVENAME, Boolean.valueOf(useissueralternativename));
+        data.put(USEISSUERALTERNATIVENAME, useissueralternativename);
     }
 
     public boolean getIssuerAlternativeNameCritical() {
-        return ((Boolean) data.get(ISSUERALTERNATIVENAMECRITICAL)).booleanValue();
+        return (Boolean) data.get(ISSUERALTERNATIVENAMECRITICAL);
     }
 
     public void setIssuerAlternativeNameCritical(boolean issueralternativenamecritical) {
-        data.put(ISSUERALTERNATIVENAMECRITICAL, Boolean.valueOf(issueralternativenamecritical));
+        data.put(ISSUERALTERNATIVENAMECRITICAL, issueralternativenamecritical);
     }
 
     public boolean getUseCRLDistributionPoint() {
-        return ((Boolean) data.get(USECRLDISTRIBUTIONPOINT)).booleanValue();
+        return (Boolean) data.get(USECRLDISTRIBUTIONPOINT);
     }
 
     public void setUseCRLDistributionPoint(boolean usecrldistributionpoint) {
-        data.put(USECRLDISTRIBUTIONPOINT, Boolean.valueOf(usecrldistributionpoint));
+        data.put(USECRLDISTRIBUTIONPOINT, usecrldistributionpoint);
     }
 
     public boolean getUseDefaultCRLDistributionPoint() {
-        return ((Boolean) data.get(USEDEFAULTCRLDISTRIBUTIONPOINT)).booleanValue();
+        return (Boolean) data.get(USEDEFAULTCRLDISTRIBUTIONPOINT);
     }
 
     public void setUseDefaultCRLDistributionPoint(boolean usedefaultcrldistributionpoint) {
-        data.put(USEDEFAULTCRLDISTRIBUTIONPOINT, Boolean.valueOf(usedefaultcrldistributionpoint));
+        data.put(USEDEFAULTCRLDISTRIBUTIONPOINT, usedefaultcrldistributionpoint);
     }
 
     public boolean getCRLDistributionPointCritical() {
-        return ((Boolean) data.get(CRLDISTRIBUTIONPOINTCRITICAL)).booleanValue();
+        return (Boolean) data.get(CRLDISTRIBUTIONPOINTCRITICAL);
     }
 
     public void setCRLDistributionPointCritical(boolean crldistributionpointcritical) {
-        data.put(CRLDISTRIBUTIONPOINTCRITICAL, Boolean.valueOf(crldistributionpointcritical));
+        data.put(CRLDISTRIBUTIONPOINTCRITICAL, crldistributionpointcritical);
     }
 
     public String getCRLDistributionPointURI() {
@@ -1069,29 +1056,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseFreshestCRL() {
-        Object obj = data.get(USEFRESHESTCRL);
-        if (obj == null) {
-            return false;
-        } else {
-            return ((Boolean) obj).booleanValue();
-        }
+        final Object obj = data.get(USEFRESHESTCRL);
+        return obj != null && (Boolean) obj;
     }
 
     public void setUseFreshestCRL(boolean usefreshestcrl) {
-        data.put(USEFRESHESTCRL, Boolean.valueOf(usefreshestcrl));
+        data.put(USEFRESHESTCRL, usefreshestcrl);
     }
 
     public boolean getUseCADefinedFreshestCRL() {
         Object obj = data.get(USECADEFINEDFRESHESTCRL);
-        if (obj == null) {
-            return false;
-        } else {
-            return ((Boolean) obj).booleanValue();
-        }
+        return obj != null && (Boolean) obj;
     }
 
     public void setUseCADefinedFreshestCRL(boolean usecadefinedfreshestcrl) {
-        data.put(USECADEFINEDFRESHESTCRL, Boolean.valueOf(usecadefinedfreshestcrl));
+        data.put(USECADEFINEDFRESHESTCRL, usecadefinedfreshestcrl);
     }
 
     public String getFreshestCRLURI() {
@@ -1107,11 +1086,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseCertificatePolicies() {
-        return ((Boolean) data.get(USECERTIFICATEPOLICIES)).booleanValue();
+        return (Boolean) data.get(USECERTIFICATEPOLICIES);
     }
 
     public void setUseCertificatePolicies(boolean usecertificatepolicies) {
-        data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));
+        data.put(USECERTIFICATEPOLICIES, usecertificatepolicies);
     }
 
     public boolean getUseCertificateStorage() {
@@ -1122,20 +1101,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setUseCertificateStorage(true);
             return true;
         } else {
-            return value.booleanValue();
+            return value;
         }
     }
 
     public void setUseCertificateStorage(boolean useCertificateStorage) {
-        data.put(USECERTIFICATESTORAGE, Boolean.valueOf(useCertificateStorage));
+        data.put(USECERTIFICATESTORAGE, useCertificateStorage);
     }
 
     public boolean getCertificatePoliciesCritical() {
-        return ((Boolean) data.get(CERTIFICATEPOLICIESCRITICAL)).booleanValue();
+        return (Boolean) data.get(CERTIFICATEPOLICIESCRITICAL);
     }
 
     public void setCertificatePoliciesCritical(boolean certificatepoliciescritical) {
-        data.put(CERTIFICATEPOLICIESCRITICAL, Boolean.valueOf(certificatepoliciescritical));
+        data.put(CERTIFICATEPOLICIESCRITICAL, certificatepoliciescritical);
     }
 
     public List<CertificatePolicy> getCertificatePolicies() {
@@ -1158,9 +1137,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     List<Object> oldl = (List<Object>) data.get(CERTIFICATE_POLICIES);
                     // In worst case they can have mixed old and new classes, therefore we use a "normal" iterator so we can verify the cast
                     l = new ArrayList<>();
-                    for (int i = 0; i < oldl.size(); i++) {
+                    for (Object anOldl : oldl) {
                         try {
-                            org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy oldPol = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)oldl.get(i);
+                            org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy oldPol = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy) anOldl;
                             CertificatePolicy newPol = new CertificatePolicy(oldPol.getPolicyID(), oldPol.getQualifierId(), oldPol.getQualifier());
                             if (log.isTraceEnabled()) {
                                 log.trace("Adding converted policy");
@@ -1168,7 +1147,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                             l.add(newPol);
                         } catch (ClassCastException e2) {
                             // This was already a new class, there are mixed policies here...
-                            CertificatePolicy newPol = (CertificatePolicy)oldl.get(i);
+                            CertificatePolicy newPol = (CertificatePolicy) anOldl;
                             if (log.isTraceEnabled()) {
                                 log.trace("Adding non-converted policy");
                             }
@@ -1208,53 +1187,60 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @see {@link CertificateConstants#CERTTYPE_ROOTCA}, etc
      */
     public int getType() {
-        return ((Integer) data.get(TYPE)).intValue();
+        return (Integer) data.get(TYPE);
     }
 
     /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity
      * @see {@link CertificateConstants#CERTTYPE_ROOTCA}, etc
      */
     public void setType(int type) {
-        data.put(TYPE, Integer.valueOf(type));
+        data.put(TYPE, type);
     }
 
     public boolean isTypeSubCA() {
-        return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_SUBCA;
+        return (Integer) data.get(TYPE) == CertificateConstants.CERTTYPE_SUBCA;
     }
 
     public boolean isTypeRootCA() {
-        return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_ROOTCA;
+        return (Integer) data.get(TYPE) == CertificateConstants.CERTTYPE_ROOTCA;
     }
 
     public boolean isTypeEndEntity() {
-        return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_ENDENTITY;
+        return (Integer) data.get(TYPE) == CertificateConstants.CERTTYPE_ENDENTITY;
     }
 
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
     }
+
     @SuppressWarnings("unchecked")
     public List<String> getAvailableKeyAlgorithmsAsList() {
         return (ArrayList<String>) data.get(AVAILABLEKEYALGORITHMS);
     }
+
     public void setAvailableKeyAlgorithms(final String[] availableKeyAlgorithms) {
         setAvailableKeyAlgorithmsAsList(Arrays.asList(availableKeyAlgorithms));
     }
+
     public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
         data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
     }
+
     public String[] getAvailableEcCurves() {
         final List<String> availableEcCurves = getAvailableEcCurvesAsList();
         return availableEcCurves.toArray(new String[availableEcCurves.size()]);
     }
+
     @SuppressWarnings("unchecked")
     public List<String> getAvailableEcCurvesAsList() {
         return (ArrayList<String>) data.get(AVAILABLEECCURVES);
     }
+
     public void setAvailableEcCurves(final String[] availableEcCurves) {
         setAvailableEcCurvesAsList(Arrays.asList(availableEcCurves));
     }
+
     public void setAvailableEcCurvesAsList(final List<String> availableEcCurves) {
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
@@ -1263,48 +1249,53 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
         for (int i = 0; i < availablebitlengths.size(); i++) {
-            returnval[i] = availablebitlengths.get(i).intValue();
+            returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
     }
+
     @SuppressWarnings("unchecked")
     public List<Integer> getAvailableBitLengthsAsList() {
         return (ArrayList<Integer>) data.get(AVAILABLEBITLENGTHS);
+    }
+
+    public void setAvailableBitLengthsAsList(final List<Integer> availableBitLengths) {
+        log.debug("setAvailableBitLengthsAsList");
+        log.debug("[" + availableBitLengths + "]");
+        setAvailableBitLengths(availableBitLengths);
     }
 
     public void setAvailableBitLengths(List<Integer> availablebitlengths) {
         // Strange values here, but it makes the <> below work for sure
         int minimumavailablebitlength = 99999999;
         int maximumavailablebitlength = 0;
-
-        for (int i = 0; i < availablebitlengths.size(); i++) {
-            if (availablebitlengths.get(i) > maximumavailablebitlength) {
-                maximumavailablebitlength = availablebitlengths.get(i);
+        for (Integer availablebitlength : availablebitlengths) {
+            if (availablebitlength > maximumavailablebitlength) {
+                maximumavailablebitlength = availablebitlength;
             }
-            if (availablebitlengths.get(i) < minimumavailablebitlength) {
-                minimumavailablebitlength = availablebitlengths.get(i);
+            if (availablebitlength < minimumavailablebitlength) {
+                minimumavailablebitlength = availablebitlength;
             }
         }
         data.put(AVAILABLEBITLENGTHS, availablebitlengths);
-        data.put(MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(minimumavailablebitlength));
-        data.put(MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(maximumavailablebitlength));
+        data.put(MINIMUMAVAILABLEBITLENGTH, minimumavailablebitlength);
+        data.put(MAXIMUMAVAILABLEBITLENGTH, maximumavailablebitlength);
     }
 
     public void setAvailableBitLengths(int[] availablebitlengths) {
         ArrayList<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
-
-        for (int i = 0; i < availablebitlengths.length; i++) {
-            availbitlengths.add(Integer.valueOf(availablebitlengths[i]));
+        for (int availablebitlength : availablebitlengths) {
+            availbitlengths.add(availablebitlength);
         }
         setAvailableBitLengths(availbitlengths);
     }
 
     public int getMinimumAvailableBitLength() {
-        return ((Integer) data.get(MINIMUMAVAILABLEBITLENGTH)).intValue();
+        return (Integer) data.get(MINIMUMAVAILABLEBITLENGTH);
     }
 
     public int getMaximumAvailableBitLength() {
-        return ((Integer) data.get(MAXIMUMAVAILABLEBITLENGTH)).intValue();
+        return (Integer) data.get(MAXIMUMAVAILABLEBITLENGTH);
     }
 
     /**
@@ -1355,7 +1346,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         ArrayList<Boolean> keyusage = (ArrayList<Boolean>) data.get(KEYUSAGE);
         boolean[] returnval = new boolean[keyusage.size()];
         for (int i = 0; i < keyusage.size(); i++) {
-            returnval[i] = keyusage.get(i).booleanValue();
+            returnval[i] = keyusage.get(i);
         }
         return returnval;
     }
@@ -1367,14 +1358,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public boolean getKeyUsage(int keyusageconstant) {
-        return ((ArrayList<Boolean>) data.get(KEYUSAGE)).get(keyusageconstant).booleanValue();
+        return ((ArrayList<Boolean>) data.get(KEYUSAGE)).get(keyusageconstant);
     }
 
     public void setKeyUsage(boolean[] keyusage) {
         ArrayList<Boolean> keyuse = new ArrayList<>(keyusage.length);
-
-        for (int i = 0; i < keyusage.length; i++) {
-            keyuse.add(Boolean.valueOf(keyusage[i]));
+        for (boolean aKeyusage : keyusage) {
+            keyuse.add(aKeyusage);
         }
         data.put(KEYUSAGE, keyuse);
     }
@@ -1387,39 +1377,40 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public void setKeyUsage(int keyusageconstant, boolean value) {
-        ((ArrayList<Boolean>) data.get(KEYUSAGE)).set(keyusageconstant, Boolean.valueOf(value));
+        ((ArrayList<Boolean>) data.get(KEYUSAGE)).set(keyusageconstant, value);
     }
 
     public void setAllowKeyUsageOverride(boolean override) {
-        data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.valueOf(override));
+        data.put(ALLOWKEYUSAGEOVERRIDE, override);
     }
 
     public boolean getAllowKeyUsageOverride() {
-        return ((Boolean) data.get(ALLOWKEYUSAGEOVERRIDE)).booleanValue();
+        return (Boolean) data.get(ALLOWKEYUSAGEOVERRIDE);
     }
 
     public void setAllowBackdatedRevocation(boolean override) {
-        this.data.put(ALLOWBACKDATEDREVOCATION, Boolean.valueOf(override));
+        this.data.put(ALLOWBACKDATEDREVOCATION, override);
     }
+
     public boolean getAllowBackdatedRevocation() {
         final Object value = this.data.get(ALLOWBACKDATEDREVOCATION);
-        return value!=null && value instanceof Boolean && ((Boolean)value).booleanValue();
+        return value!=null && value instanceof Boolean && (Boolean) value;
     }
 
     public void setUseDocumentTypeList(boolean use) {
-        data.put(USEDOCUMENTTYPELIST, Boolean.valueOf(use));
+        data.put(USEDOCUMENTTYPELIST, use);
     }
 
     public boolean getUseDocumentTypeList() {
-        return ((Boolean) data.get(USEDOCUMENTTYPELIST)).booleanValue();
+        return (Boolean) data.get(USEDOCUMENTTYPELIST);
     }
 
     public void setDocumentTypeListCritical(boolean critical) {
-        data.put(DOCUMENTTYPELISTCRITICAL, Boolean.valueOf(critical));
+        data.put(DOCUMENTTYPELISTCRITICAL, critical);
     }
 
     public boolean getDocumentTypeListCritical() {
-        return ((Boolean) data.get(DOCUMENTTYPELISTCRITICAL)).booleanValue();
+        return (Boolean) data.get(DOCUMENTTYPELISTCRITICAL);
     }
 
     public void setDocumentTypeList(ArrayList<String> docTypes) {
@@ -1432,19 +1423,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setUseExtendedKeyUsage(boolean use) {
-        data.put(USEEXTENDEDKEYUSAGE, Boolean.valueOf(use));
+        data.put(USEEXTENDEDKEYUSAGE, use);
     }
 
     public boolean getUseExtendedKeyUsage() {
-        return ((Boolean) data.get(USEEXTENDEDKEYUSAGE)).booleanValue();
+        return (Boolean) data.get(USEEXTENDEDKEYUSAGE);
     }
 
     public void setExtendedKeyUsageCritical(boolean critical) {
-        data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.valueOf(critical));
+        data.put(EXTENDEDKEYUSAGECRITICAL, critical);
     }
 
     public boolean getExtendedKeyUsageCritical() {
-        return ((Boolean) data.get(EXTENDEDKEYUSAGECRITICAL)).booleanValue();
+        return (Boolean) data.get(EXTENDEDKEYUSAGECRITICAL);
     }
 
     /**
@@ -1466,14 +1457,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setUseCustomDnOrder(boolean use) {
-        data.put(USECUSTOMDNORDER, Boolean.valueOf(use));
+        data.put(USECUSTOMDNORDER, use);
     }
 
     public boolean getUseCustomDnOrder() {
         boolean ret = false; // Default value is false here
         Object o = data.get(USECUSTOMDNORDER);
         if (o != null) {
-            ret = ((Boolean) o).booleanValue();
+            ret = (Boolean) o;
         }
         return ret;
     }
@@ -1483,7 +1474,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param useldap true or false
      */
     public void setUseCustomDnOrderWithLdap(boolean useldap) {
-        data.put(USECUSTOMDNORDERLDAP, Boolean.valueOf(useldap));
+        data.put(USECUSTOMDNORDERLDAP, useldap);
     }
 
     /** 
@@ -1494,7 +1485,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         boolean ret = true; // Default value is true here
         Object o = data.get(USECUSTOMDNORDERLDAP);
         if (o != null) {
-            ret = ((Boolean) o).booleanValue();
+            ret = (Boolean) o;
         } else if (getCustomDnOrder().isEmpty()) {
             // We have not set a value for this checkbox, and we have no custom DN order defined
             // in this case we default to false (new usage)
@@ -1524,21 +1515,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         boolean ret = true; // Default value is true here
         Object o = data.get(USELDAPDNORDER);
         if (o != null) {
-            ret = ((Boolean) o).booleanValue();
+            ret = (Boolean) o;
         }
         return ret;
     }
 
     public void setUseLdapDnOrder(boolean use) {
-        data.put(USELDAPDNORDER, Boolean.valueOf(use));
+        data.put(USELDAPDNORDER, use);
     }
 
     public boolean getUseMicrosoftTemplate() {
-        return ((Boolean) data.get(USEMICROSOFTTEMPLATE)).booleanValue();
+        return (Boolean) data.get(USEMICROSOFTTEMPLATE);
     }
 
     public void setUseMicrosoftTemplate(boolean use) {
-        data.put(USEMICROSOFTTEMPLATE, Boolean.valueOf(use));
+        data.put(USEMICROSOFTTEMPLATE, use);
     }
 
     public String getMicrosoftTemplate() {
@@ -1550,19 +1541,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseCardNumber() {
-        return ((Boolean) data.get(USECARDNUMBER)).booleanValue();
+        return (Boolean) data.get(USECARDNUMBER);
     }
 
     public void setUseCardNumber(boolean use) {
-        data.put(USECARDNUMBER, Boolean.valueOf(use));
+        data.put(USECARDNUMBER, use);
     }
 
     public boolean getUseCNPostfix() {
-        return ((Boolean) data.get(USECNPOSTFIX)).booleanValue();
+        return (Boolean) data.get(USECNPOSTFIX);
     }
 
     public void setUseCNPostfix(boolean use) {
-        data.put(USECNPOSTFIX, Boolean.valueOf(use));
+        data.put(USECNPOSTFIX, use);
     }
 
     public String getCNPostfix() {
@@ -1575,11 +1566,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseSubjectDNSubSet() {
-        return ((Boolean) data.get(USESUBJECTDNSUBSET)).booleanValue();
+        return (Boolean) data.get(USESUBJECTDNSUBSET);
     }
 
     public void setUseSubjectDNSubSet(boolean use) {
-        data.put(USESUBJECTDNSUBSET, Boolean.valueOf(use));
+        data.put(USESUBJECTDNSUBSET, use);
     }
 
     /**
@@ -1603,13 +1594,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             convertedList.add(Integer.valueOf(value));
         }
         data.put(SUBJECTDNSUBSET, convertedList);
+    }
 
+    // Method name alias for ConfigDump
+    @SuppressWarnings("unchecked")
+    public List<Integer> getSubjectDNSubSets() {
+        return (List<Integer>) data.get(SUBJECTDNSUBSET);
+    }
+
+    // Method name alias for ConfigDump
+    public void setSubjectDNSubSets(final List<Integer> subjectDns) {
+        final List<Integer> subjectDnIds = (subjectDns == null || subjectDns.isEmpty() ? new ArrayList<>() : subjectDns);
+        data.put(SUBJECTDNSUBSET, subjectDnIds);
     }
 
     /**
      * Overridable Extension OIDs is an Set of oid Strings.
      * It is used to list what are the extensions that can be overridden when allow extension override is enabled in the Certificate Profile.
-     * @param Set of oids (strings), or an empty set, should not be null
+     * @param overridableextensionoids Set of oids (strings), or an empty set, should not be null
      */
     public void setOverridableExtensionOIDs(Set<String> overridableextensionoids) {
         data.put(OVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<>(overridableextensionoids));
@@ -1631,7 +1633,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Non Overridable Extension OIDs is a Set of oid Strings.
      * It is used to list what are the extensions that can not be overridden when allow extension override is enabled in the Certificate Profile..
-     * @param Set of oids (strings) that are not allowed to be overridden, or empty set to not disallow anything, not null
+     * @param nonoverridableextensionoids Set of oids (strings) that are not allowed to be overridden, or empty set to not disallow anything, not null
      */
     public void setNonOverridableExtensionOIDs(Set<String> nonoverridableextensionoids) {
         data.put(NONOVERRIDABLEEXTENSIONOIDS, new LinkedHashSet<>(nonoverridableextensionoids));
@@ -1653,7 +1655,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Method taking a full user dn and returns a DN only containing the DN fields specified in the subjectdn sub set array.
      *
-     * @param dn
+     * @param dn DN
      * @return a subset of original DN
      */
 
@@ -1663,11 +1665,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseSubjectAltNameSubSet() {
-        return ((Boolean) data.get(USESUBJECTALTNAMESUBSET)).booleanValue();
+        return (Boolean) data.get(USESUBJECTALTNAMESUBSET);
     }
 
     public void setUseSubjectAltNameSubSet(boolean use) {
-        data.put(USESUBJECTALTNAMESUBSET, Boolean.valueOf(use));
+        data.put(USESUBJECTALTNAMESUBSET, use);
     }
 
     /**
@@ -1691,7 +1693,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Method taking a full user dn and returns a AltName only containing the AltName fields specified in the subjectaltname sub set array.
      *
-     * @param dn
+     * @param subjectaltname subject alt name
      * @return a subset of original DN
      */
     public String createSubjectAltNameSubSet(String subjectaltname) {
@@ -1702,9 +1704,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Help method converting a full DN or Subject Alt Name to one usng only specified fields
      *
-     * @param extractor
-     * @param usefields
-     * @return
+     * @param extractor extractor
+     * @param usefields usefields
      */
     private static String constructUserData(final DNFieldExtractor extractor, final Collection<Integer> usefields) {
         String retval = "";
@@ -1714,7 +1715,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         String dnField = null;
         for (Integer next : usefields) {
-            dnField = extractor.getFieldString(next.intValue());
+            dnField = extractor.getFieldString(next);
             if (StringUtils.isNotEmpty(dnField)) {
                 if (retval.length() == 0) {
                     retval += dnField; // first item, don't start with a comma
@@ -1752,7 +1753,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     @SuppressWarnings("unchecked")
     public boolean isApplicableToAnyCA() {
-        return ((List<Integer>) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
+        return ((List<Integer>) data.get(AVAILABLECAS)).contains(ANYCA);
     }
 
     /**
@@ -1771,34 +1772,33 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Saves the CertificateProfile's list of publishers that certificates created with this profile should be published to.
      *
-     * @param publishers
-     *            a List<Integer> of publisher Ids
+     * @param publishers a List<Integer> of publisher Ids
      */
 
-    public void setPublisherList(List<Integer> publisher) {
-        data.put(USEDPUBLISHERS, publisher);
+    public void setPublisherList(List<Integer> publishers) {
+        data.put(USEDPUBLISHERS, publishers);
     }
 
     /**
      * Method indicating that Path Length Constraint should be used in the BasicConstaint
      */
     public boolean getUsePathLengthConstraint() {
-        return ((Boolean) data.get(USEPATHLENGTHCONSTRAINT)).booleanValue();
+        return (Boolean) data.get(USEPATHLENGTHCONSTRAINT);
     }
 
     /**
-     * Method indicating that Path Length Constraint should be used in the BasicConstaint
+     * Method indicating that Path Length Constraint should be used in the BasicConstraint
      */
     public void setUsePathLengthConstraint(boolean use) {
-        data.put(USEPATHLENGTHCONSTRAINT, Boolean.valueOf(use));
+        data.put(USEPATHLENGTHCONSTRAINT, use);
     }
 
     public int getPathLengthConstraint() {
-        return ((Integer) data.get(PATHLENGTHCONSTRAINT)).intValue();
+        return (Integer) data.get(PATHLENGTHCONSTRAINT);
     }
 
     public void setPathLengthConstraint(int pathlength) {
-        data.put(PATHLENGTHCONSTRAINT, Integer.valueOf(pathlength));
+        data.put(PATHLENGTHCONSTRAINT, pathlength);
     }
 
     public void setCaIssuers(List<String> caIssuers) {
@@ -1836,43 +1836,37 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseOcspNoCheck() {
-        if (data.get(USEOCSPNOCHECK) == null) {
-            return false;
-        } else {
-            return ((Boolean) data.get(USEOCSPNOCHECK)).booleanValue();
-        }
+        return data.get(USEOCSPNOCHECK) != null && (Boolean) data.get(USEOCSPNOCHECK);
     }
 
     public void setUseOcspNoCheck(boolean useocspnocheck) {
-        data.put(USEOCSPNOCHECK, Boolean.valueOf(useocspnocheck));
+        data.put(USEOCSPNOCHECK, useocspnocheck);
     }
 
     public boolean getUseAuthorityInformationAccess() {
-        return ((Boolean) data.get(USEAUTHORITYINFORMATIONACCESS)).booleanValue();
+        return (Boolean) data.get(USEAUTHORITYINFORMATIONACCESS);
     }
 
     public void setUseAuthorityInformationAccess(boolean useauthorityinformationaccess) {
-        data.put(USEAUTHORITYINFORMATIONACCESS, Boolean.valueOf(useauthorityinformationaccess));
+        data.put(USEAUTHORITYINFORMATIONACCESS, useauthorityinformationaccess);
     }
 
     public boolean getUseDefaultCAIssuer() {
-        //Lazy instantiation in case upgrade for some reason fails
-        if(data.get(USEDEFAULTCAISSUER) == null) {
-            data.put(USEDEFAULTCAISSUER, false);
-        }
-        return ((Boolean) data.get(USEDEFAULTCAISSUER)).booleanValue();
+        // Lazy instantiation in case upgrade for some reason fails
+        data.putIfAbsent(USEDEFAULTCAISSUER, false);
+        return (Boolean) data.get(USEDEFAULTCAISSUER);
     }
 
     public void setUseDefaultCAIssuer(boolean usedefaultcaissuer) {
-        data.put(USEDEFAULTCAISSUER, Boolean.valueOf(usedefaultcaissuer));
+        data.put(USEDEFAULTCAISSUER, usedefaultcaissuer);
     }
 
     public boolean getUseDefaultOCSPServiceLocator() {
-        return ((Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR)).booleanValue();
+        return (Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR);
     }
 
     public void setUseDefaultOCSPServiceLocator(boolean usedefaultocspservicelocator) {
-        data.put(USEDEFAULTOCSPSERVICELOCATOR, Boolean.valueOf(usedefaultocspservicelocator));
+        data.put(USEDEFAULTOCSPSERVICELOCATOR, usedefaultocspservicelocator);
     }
 
     public String getOCSPServiceLocatorURI() {
@@ -1900,27 +1894,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseQCStatement() {
-        return ((Boolean) data.get(USEQCSTATEMENT)).booleanValue();
+        return (Boolean) data.get(USEQCSTATEMENT);
     }
 
     public void setUseQCStatement(boolean useqcstatement) {
-        data.put(USEQCSTATEMENT, Boolean.valueOf(useqcstatement));
+        data.put(USEQCSTATEMENT, useqcstatement);
     }
 
     public boolean getUsePkixQCSyntaxV2() {
-        return ((Boolean) data.get(USEPKIXQCSYNTAXV2)).booleanValue();
+        return (Boolean) data.get(USEPKIXQCSYNTAXV2);
     }
 
     public void setUsePkixQCSyntaxV2(boolean pkixqcsyntaxv2) {
-        data.put(USEPKIXQCSYNTAXV2, Boolean.valueOf(pkixqcsyntaxv2));
+        data.put(USEPKIXQCSYNTAXV2, pkixqcsyntaxv2);
     }
 
     public boolean getQCStatementCritical() {
-        return ((Boolean) data.get(QCSTATEMENTCRITICAL)).booleanValue();
+        return (Boolean) data.get(QCSTATEMENTCRITICAL);
     }
 
     public void setQCStatementCritical(boolean qcstatementcritical) {
-        data.put(QCSTATEMENTCRITICAL, Boolean.valueOf(qcstatementcritical));
+        data.put(QCSTATEMENTCRITICAL, qcstatementcritical);
     }
 
     /** @return String with RAName or empty string */
@@ -1950,35 +1944,35 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseQCEtsiQCCompliance() {
-        return ((Boolean) data.get(USEQCETSIQCCOMPLIANCE)).booleanValue();
+        return (Boolean) data.get(USEQCETSIQCCOMPLIANCE);
     }
 
     public void setUseQCEtsiQCCompliance(boolean useqcetsiqccompliance) {
-        data.put(USEQCETSIQCCOMPLIANCE, Boolean.valueOf(useqcetsiqccompliance));
+        data.put(USEQCETSIQCCOMPLIANCE, useqcetsiqccompliance);
     }
 
     public boolean getUseQCEtsiValueLimit() {
-        return ((Boolean) data.get(USEQCETSIVALUELIMIT)).booleanValue();
+        return (Boolean) data.get(USEQCETSIVALUELIMIT);
     }
 
     public void setUseQCEtsiValueLimit(boolean useqcetsivaluelimit) {
-        data.put(USEQCETSIVALUELIMIT, Boolean.valueOf(useqcetsivaluelimit));
+        data.put(USEQCETSIVALUELIMIT, useqcetsivaluelimit);
     }
 
     public int getQCEtsiValueLimit() {
-        return ((Integer) data.get(QCETSIVALUELIMIT)).intValue();
+        return (Integer) data.get(QCETSIVALUELIMIT);
     }
 
     public void setQCEtsiValueLimit(int qcetsivaluelimit) {
-        data.put(QCETSIVALUELIMIT, Integer.valueOf(qcetsivaluelimit));
+        data.put(QCETSIVALUELIMIT, qcetsivaluelimit);
     }
 
     public int getQCEtsiValueLimitExp() {
-        return ((Integer) data.get(QCETSIVALUELIMITEXP)).intValue();
+        return (Integer) data.get(QCETSIVALUELIMITEXP);
     }
 
     public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp) {
-        data.put(QCETSIVALUELIMITEXP, Integer.valueOf(qcetsivaluelimitexp));
+        data.put(QCETSIVALUELIMITEXP, qcetsivaluelimitexp);
     }
 
     /** @return String with Currency or empty string */
@@ -1995,27 +1989,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseQCEtsiRetentionPeriod() {
-        return ((Boolean) data.get(USEQCETSIRETENTIONPERIOD)).booleanValue();
+        return (Boolean) data.get(USEQCETSIRETENTIONPERIOD);
     }
 
     public void setUseQCEtsiRetentionPeriod(boolean useqcetsiretentionperiod) {
-        data.put(USEQCETSIRETENTIONPERIOD, Boolean.valueOf(useqcetsiretentionperiod));
+        data.put(USEQCETSIRETENTIONPERIOD, useqcetsiretentionperiod);
     }
 
     public int getQCEtsiRetentionPeriod() {
-        return ((Integer) data.get(QCETSIRETENTIONPERIOD)).intValue();
+        return (Integer) data.get(QCETSIRETENTIONPERIOD);
     }
 
     public void setQCEtsiRetentionPeriod(int qcetsiretentionperiod) {
-        data.put(QCETSIRETENTIONPERIOD, Integer.valueOf(qcetsiretentionperiod));
+        data.put(QCETSIRETENTIONPERIOD, qcetsiretentionperiod);
     }
 
     public boolean getUseQCEtsiSignatureDevice() {
-        return ((Boolean) data.get(USEQCETSISIGNATUREDEVICE)).booleanValue();
+        return (Boolean) data.get(USEQCETSISIGNATUREDEVICE);
     }
 
     public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) {
-        data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));
+        data.put(USEQCETSISIGNATUREDEVICE, useqcetsisignaturedevice);
     }
 
     /** @return String with Type OID or null (or empty string) if it's not to be used (EN 319 412-05)
@@ -2070,22 +2064,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public boolean getUseQCPSD2() {
         Boolean ret = ((Boolean) data.get(USEQCPSD2));
-        if (ret == null) {
-            return false; // default value
-        }
-        return ret.booleanValue();
+        // default value
+        return ret != null && ret;
     }
 
     public void setUseQCPSD2(boolean useqcpsd2) {
-        data.put(USEQCPSD2, Boolean.valueOf(useqcpsd2));
+        data.put(USEQCPSD2, useqcpsd2);
     }
 
     public boolean getUseQCCustomString() {
-        return ((Boolean) data.get(USEQCCUSTOMSTRING)).booleanValue();
+        return (Boolean) data.get(USEQCCUSTOMSTRING);
     }
 
     public void setUseQCCustomString(boolean useqccustomstring) {
-        data.put(USEQCCUSTOMSTRING, Boolean.valueOf(useqccustomstring));
+        data.put(USEQCCUSTOMSTRING, useqccustomstring);
     }
 
     /** @return String with oid or empty string */
@@ -2131,32 +2123,32 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public boolean getUseNameConstraints() {
         Boolean b = (Boolean) data.get(USENAMECONSTRAINTS);
-        return b != null && b.booleanValue();
+        return b != null && b;
     }
 
     public void setUseNameConstraints(boolean use) {
-        data.put(USENAMECONSTRAINTS, Boolean.valueOf(use));
+        data.put(USENAMECONSTRAINTS, use);
     }
 
     public boolean getNameConstraintsCritical() {
         Boolean b = (Boolean) data.get(NAMECONSTRAINTSCRITICAL);
-        return b != null && b.booleanValue();
+        return b != null && b;
     }
 
     public void setNameConstraintsCritical(boolean use) {
-        data.put(NAMECONSTRAINTSCRITICAL, Boolean.valueOf(use));
+        data.put(NAMECONSTRAINTSCRITICAL, use);
     }
 
     public boolean getUseSubjectDirAttributes() {
-        return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue();
+        return (Boolean) data.get(USESUBJECTDIRATTRIBUTES);
     }
 
     public void setUseSubjectDirAttributes(boolean use) {
-        data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));
+        data.put(USESUBJECTDIRATTRIBUTES, use);
     }
 
     public void setSingleActiveCertificateConstraint(final boolean enabled) {
-        data.put(USERSINGLEACTIVECERTIFICATECONSTRAINT, Boolean.valueOf(enabled));
+        data.put(USERSINGLEACTIVECERTIFICATECONSTRAINT, enabled);
     }
 
     public boolean isSingleActiveCertificateConstraint() {
@@ -2166,10 +2158,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setSingleActiveCertificateConstraint(false);
             return false;
         } else {
-            return ((Boolean) data.get(USERSINGLEACTIVECERTIFICATECONSTRAINT)).booleanValue();
+            return (Boolean) data.get(USERSINGLEACTIVECERTIFICATECONSTRAINT);
         }
     }
-
 
     /**
      * Returns which type of terminals are used in this ca/certificate hierarchy.
@@ -2179,11 +2170,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (data.get(CVCTERMINALTYPE) == null) {
             return CertificateProfile.CVC_TERMTYPE_IS;
         }
-        return ((Integer) data.get(CVCTERMINALTYPE)).intValue();
+        return (Integer) data.get(CVCTERMINALTYPE);
     }
 
     public void setCVCTerminalType(int termtype) {
-        data.put(CVCTERMINALTYPE, Integer.valueOf(termtype));
+        data.put(CVCTERMINALTYPE, termtype);
     }
     
     public boolean isCvcTerminalTypeIs() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_IS; }
@@ -2194,11 +2185,31 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (data.get(CVCACCESSRIGHTS) == null) {
             return CertificateProfile.CVC_ACCESS_NONE;
         }
-        return ((Integer) data.get(CVCACCESSRIGHTS)).intValue();
+        return (Integer) data.get(CVCACCESSRIGHTS);
     }
 
     public void setCVCAccessRights(int access) {
-        data.put(CVCACCESSRIGHTS, Integer.valueOf(access));
+        data.put(CVCACCESSRIGHTS, access);
+    }
+
+    // Method name alias for ConfigDump
+    public int getCVCAccessRightsIS() {
+        return getCVCAccessRights();
+    }
+
+    // Method name alias for ConfigDump
+    public void setCVCAccessRightsIS(int access) {
+        setCVCAccessRights(access);
+    }
+
+    // Method name alias for ConfigDump
+    public int getCVCAccessRightsST() {
+        return getCVCAccessRights();
+    }
+
+    // Method name alias for ConfigDump
+    public void setCVCAccessRightsST(int access) {
+        setCVCAccessRights(access);
     }
 
     /**
@@ -2227,11 +2238,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (data.get(CVCSIGNTERMDVTYPE) == null) {
             return CertificateProfile.CVC_SIGNTERM_DV_CSP;
         }
-        return ((Integer) data.get(CVCSIGNTERMDVTYPE)).intValue();
+        return (Integer) data.get(CVCSIGNTERMDVTYPE);
     }
 
     public void setCVCSignTermDVType(int type) {
-        data.put(CVCSIGNTERMDVTYPE, Integer.valueOf(type));
+        data.put(CVCSIGNTERMDVTYPE, type);
     }
 
     /**
@@ -2251,7 +2262,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Method setting a list of used certificate extensions a list of Integers containing CertificateExtension Id is expected
      *
-     * @param usedCertificateExtensions
+     * @param usedCertificateExtensions used certificate extensions
      */
     public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
         if (usedCertificateExtensions == null) {
@@ -2269,10 +2280,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public List<String> getUsedStandardCertificateExtensions() {
         ArrayList<String> ret = new ArrayList<>();
-        Iterator<String> iter = useStandardCertificateExtensions.keySet().iterator();
-        while (iter.hasNext()) {
-            String s = iter.next();
-            if ((data.get(s) != null) && ((Boolean) data.get(s)).booleanValue()) {
+        for (String s : useStandardCertificateExtensions.keySet()) {
+            if ((data.get(s) != null) && (Boolean) data.get(s)) {
                 ret.add(useStandardCertificateExtensions.get(s));
                 if (log.isDebugEnabled()) {
                     log.debug("Using standard certificate extension: " + s);
@@ -2322,7 +2331,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public int getNumOfReqApprovals() {
         Integer result = (Integer) data.get(NUMOFREQAPPROVALS);
         if(result != null) {
-            return result.intValue();
+            return result;
         } else {
             return 1;
         }
@@ -2336,7 +2345,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @Deprecated
     public void setNumOfReqApprovals(int numOfReqApprovals) {
-        data.put(NUMOFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
+        data.put(NUMOFREQAPPROVALS, numOfReqApprovals);
     }
 
     /**
@@ -2348,7 +2357,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public int getApprovalProfileID() {
         Integer approvalProfileId = (Integer) data.get(APPROVALPROFILE);
         if(approvalProfileId != null) {
-            return approvalProfileId.intValue();
+            return approvalProfileId;
         } else {
             return -1;
         }
@@ -2360,7 +2369,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @Deprecated
     public void setApprovalProfileID(int approvalProfileID) {
-        data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
+        data.put(APPROVALPROFILE, approvalProfileID);
     }
 
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
@@ -2393,10 +2402,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @return If the PrivateKeyUsagePeriod extension should be used and with the notBefore component.
      */
     public boolean isUsePrivateKeyUsagePeriodNotBefore() {
-        if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) {
-            return false;
-        }
-        return ((Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTBEFORE)).booleanValue();
+        return data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) != null && (Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTBEFORE);
     }
 
     /**
@@ -2419,10 +2425,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @return If the PrivateKeyUsagePeriod extension should be used and with the notAfter component.
      */
     public boolean isUsePrivateKeyUsagePeriodNotAfter() {
-        if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) {
-            return false;
-        }
-        return ((Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTAFTER)).booleanValue();
+        return data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) != null && (Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTAFTER);
     }
 
     /**
@@ -2437,8 +2440,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param use True if the notAfter component should be used.
      */
     public void setUsePrivateKeyUsagePeriodNotAfter(final boolean use) {
-            data.put(USEPRIVKEYUSAGEPERIODNOTAFTER, use);
-            data.put(USEPRIVKEYUSAGEPERIOD, use || isUsePrivateKeyUsagePeriodNotBefore());
+        data.put(USEPRIVKEYUSAGEPERIODNOTAFTER, use);
+        data.put(USEPRIVKEYUSAGEPERIOD, use || isUsePrivateKeyUsagePeriodNotBefore());
     }
 
     /**
@@ -2446,7 +2449,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * PrivateKeyUsagePeriod's notBefore date should be.
      */
     public long getPrivateKeyUsagePeriodStartOffset() {
-            return ((Long) data.get(PRIVKEYUSAGEPERIODSTARTOFFSET)).longValue();
+        return (Long) data.get(PRIVKEYUSAGEPERIODSTARTOFFSET);
     }
 
     /**
@@ -2462,7 +2465,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @return The private key usage period (private key validity) length (in seconds).
      */
     public long getPrivateKeyUsagePeriodLength() {
-        return ((Long) data.get(PRIVKEYUSAGEPERIODLENGTH)).longValue();
+        return (Long) data.get(PRIVKEYUSAGEPERIODLENGTH);
     }
 
     /**
@@ -2478,10 +2481,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Whether Certificate Transparency (CT) should be used when generating new certificates. CT is specified in RFC 6962
      */
     public boolean isUseCertificateTransparencyInCerts() {
-        if (data.get(USECERTIFICATETRANSPARENCYINCERTS) == null) {
-            return false;
-        }
-        return ((Boolean)data.get(USECERTIFICATETRANSPARENCYINCERTS)).booleanValue();
+        return data.get(USECERTIFICATETRANSPARENCYINCERTS) != null && (Boolean) data.get(USECERTIFICATETRANSPARENCYINCERTS);
     }
 
     public void setUseCertificateTransparencyInCerts(boolean use) {
@@ -2492,10 +2492,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Whether Certificate Transparency (CT) should be used in OCSP responses. CT is specified in RFC 6962
      */
     public boolean isUseCertificateTransparencyInOCSP() {
-        if (data.get(USECERTIFICATETRANSPARENCYINOCSP) == null) {
-            return false;
-        }
-        return ((Boolean)data.get(USECERTIFICATETRANSPARENCYINOCSP)).booleanValue();
+        return data.get(USECERTIFICATETRANSPARENCYINOCSP) != null && (Boolean) data.get(USECERTIFICATETRANSPARENCYINOCSP);
     }
 
     public void setUseCertificateTransparencyInOCSP(boolean use) {
@@ -2511,7 +2508,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // Default to being enabled if CT in OCSP was enabled
             return isUseCertificateTransparencyInOCSP();
         }
-        return ((Boolean)data.get(USECERTIFICATETRANSPARENCYINPUBLISHERS)).booleanValue();
+        return (Boolean) data.get(USECERTIFICATETRANSPARENCYINPUBLISHERS);
     }
 
     public void setUseCertificateTransparencyInPublishers(boolean use) {
@@ -2610,10 +2607,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Whether existing certificates should be submitted by the CT publisher and the CT OCSP extension class.
      */
     public boolean isUseCTSubmitExisting() {
-        if (data.get(CTSUBMITEXISTING) == null) {
-            return true;
-        }
-        return ((Boolean)data.get(CTSUBMITEXISTING)).booleanValue();
+        return data.get(CTSUBMITEXISTING) == null || (Boolean) data.get(CTSUBMITEXISTING);
     }
 
     public void setUseCTSubmitExisting(boolean use) {
@@ -2646,9 +2640,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Set<String>)data.get(CTLABELS);
     }
-    
-    public void setEnabledCTLabels(LinkedHashSet<String> ctLabels) {
-        data.put(CTLABELS, ctLabels);
+
+    public void setEnabledCtLabels(final Set<String> ctLabels) {
+        data.put(CTLABELS, new LinkedHashSet<>(ctLabels));
     }
     
     /**
@@ -2856,8 +2850,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.remove(CT_MAX_NONMANDATORY_SCTS_OCSP);
         }
     }
-    
-    
 
     /**
      * Checks that a public key fulfills the policy in the CertificateProfile
@@ -2897,7 +2889,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
         }
         if ((keyLength < (getMinimumAvailableBitLength() - 1)) || (keyLength > (getMaximumAvailableBitLength()))) {
-            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", Integer.valueOf(keyLength)));
+            throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeylength", keyLength));
         }
     }
 
@@ -2938,7 +2930,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Function setting the current version of the class data. Used for JUnit testing
      */
     protected void setVersion(float version) {
-        data.put(VERSION, Float.valueOf(version));
+        data.put(VERSION, version);
     }
 
     /**
@@ -2952,29 +2944,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         if (Float.compare(getLatestVersion(), getVersion()) != 0) {
             // New version of the class, upgrade
-            String msg = intres.getLocalizedMessage("certprofile.upgrade", new Float(getVersion()));
+            String msg = intres.getLocalizedMessage("certprofile.upgrade", getVersion());
             log.info(msg);
 
-            if (data.get(ALLOWKEYUSAGEOVERRIDE) == null) {
-                data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-            }
-            if (data.get(USEEXTENDEDKEYUSAGE) == null) {
-                data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-            }
-            if (data.get(EXTENDEDKEYUSAGE) == null) {
-                data.put(EXTENDEDKEYUSAGE, new ArrayList<String>());
-            }
-            if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
-                data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-            }
-            if (data.get(AVAILABLECAS) == null) {
-                ArrayList<Integer> availablecas = new ArrayList<>();
-                availablecas.add(Integer.valueOf(ANYCA));
-                data.put(AVAILABLECAS, availablecas);
-            }
-            if (data.get(USEDPUBLISHERS) == null) {
-                data.put(USEDPUBLISHERS, new ArrayList<Integer>());
-            }
+            data.putIfAbsent(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+            data.putIfAbsent(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+            data.computeIfAbsent(EXTENDEDKEYUSAGE, k -> new ArrayList<String>());
+            data.putIfAbsent(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
+            data.computeIfAbsent(AVAILABLECAS, k -> Collections.singletonList(ANYCA));
+            data.computeIfAbsent(USEDPUBLISHERS, k -> new ArrayList<Integer>());
             if ( (data.get(USEOCSPSERVICELOCATOR) == null) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
                 // Only set this flag if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 // setUseOCSPServiceLocator(false);
@@ -2994,9 +2972,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
             if (data.get(USESUBJECTDNSUBSET) == null) {
                 setUseSubjectDNSubSet(false);
-                setSubjectDNSubSet(new ArrayList<String>());
+                setSubjectDNSubSet(new ArrayList<>());
                 setUseSubjectAltNameSubSet(false);
-                setSubjectAltNameSubSet(new ArrayList<Integer>());
+                setSubjectAltNameSubSet(new ArrayList<>());
             }
 
             if (data.get(USEPATHLENGTHCONSTRAINT) == null) {
@@ -3092,17 +3070,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 // Only set this flag if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 // setUseCaIssuers(false); // v24
                 data.put(USECAISSUERS, Boolean.FALSE); // v24
-                setCaIssuers(new ArrayList<String>());
+                setCaIssuers(new ArrayList<>());
             }
             if ( ((data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null)) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
                 // Only do this if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 boolean ocsp = false;
                 if ((data.get(USEOCSPSERVICELOCATOR) != null)) {
-                    ocsp = ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue();
+                    ocsp = (Boolean) data.get(USEOCSPSERVICELOCATOR);
                 }
                 boolean caissuers = false;
                 if ((data.get(USECAISSUERS) != null)) {
-                    caissuers = ((Boolean) data.get(USECAISSUERS)).booleanValue();
+                    caissuers = (Boolean) data.get(USECAISSUERS);
                 }
                 if (ocsp || caissuers) {
                     setUseAuthorityInformationAccess(true); // v25
@@ -3142,7 +3120,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setNumOfReqApprovals(1);
             }
             if (data.get(APPROVALSETTINGS) == null) { // v 33
-                setApprovalSettings(new ArrayList<Integer>());
+                setApprovalSettings(new ArrayList<>());
             }
 
             if (data.get(SIGNATUREALGORITHM) == null) { // v 34
@@ -3174,7 +3152,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setDocumentTypeListCritical(false);
             }
             if(data.get(DOCUMENTTYPELIST) == null) { // v 37
-            	setDocumentTypeList(new ArrayList<String>());
+            	setDocumentTypeList(new ArrayList<>());
             }
             if(data.get(AVAILABLEKEYALGORITHMS) == null) { // v 39
                 // Make some intelligent guesses what key algorithm this profile is used for
@@ -3249,8 +3227,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v46: approvals changed type to LinkedHashMap
             setApprovals(getApprovals());
 
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
     }
+
 }
