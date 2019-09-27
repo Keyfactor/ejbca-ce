@@ -1278,7 +1278,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         labelsToSelect.add(updatedCtLogs.get(ctLog).getLabel());
                     }
                 }
-                certProfile.setEnabledCTLabels(labelsToSelect);
+                certProfile.setEnabledCtLabels(labelsToSelect);
                 
                 // This means there were some mandatory- or Google logs selected before upgrade, i.e. it would be ideal to comply to Chrome CT policy
                 if (labelsToSelect.size() > 1) {
