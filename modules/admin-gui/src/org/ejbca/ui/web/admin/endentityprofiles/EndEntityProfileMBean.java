@@ -1378,7 +1378,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             cleanUpUnused();
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.debug("Successfully edited End Entity Profile");
-            redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, true);
+            redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, profileName);
             log.trace("<saveProfile: success");
         } else {
             for (final String errorMessage : editerrors) {
