@@ -77,6 +77,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private static final String PROFILE_ALREADY_EXISTS = "EEPROFILEALREADYEXISTS";
     private static final String PROFILE_NOT_SELECTED = "EEPROFILENOTSELECTED";
     private static final String YOU_CANT_EDIT_EMPTY_PROFILE = "YOUCANTEDITEMPTYPROFILE";
+
     /**
      * Maximum size of the profiles ZIP file upload.
      * <p>
@@ -114,27 +115,34 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     private Integer selectedEndEntityProfileId = null;
     private boolean deleteInProgress = false;
-    private boolean profileSaved;
     private String endEntityProfileName;
     private Part uploadFile;
+    private boolean profileSaved;
     private String uploadFilename;
     private List<SelectItem> endEntityProfileItems = null;
 
 
     @PostConstruct
-    private void postConstruct() {
-        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+    private void postConstruct() { 
         try {
+            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
+            profileSaved = null != FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getRequestParameterMap()
+                    .get(PARAMETER_PROFILE_SAVED);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        profileSaved = "true".equals(FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_SAVED));
     }
 
     public void preRenderView() {
         if (profileSaved) {
-            addInfoMessage("ENDENTITYPROFILESAVED");
+            final String nameOfSavedEndEntityProfile = FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getRequestParameterMap()
+                    .get(PARAMETER_PROFILE_SAVED);
+            addInfoMessage("ENDENTITYPROFILESAVED", nameOfSavedEndEntityProfile);
         }
     }
 
