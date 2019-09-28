@@ -263,7 +263,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
                 // Modify the profile
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
-                addInfoMessage("CERTIFICATEPROFILESAVED");
+                addInfoMessage("CERTIFICATEPROFILESAVED", getSelectedCertProfileName());
                 reset();
                 return "done";  // Outcome defined in faces-config.xml
             }

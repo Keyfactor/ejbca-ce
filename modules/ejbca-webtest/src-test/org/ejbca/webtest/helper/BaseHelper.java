@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.ejbca.webtest.util.WebTestUtil;
@@ -864,22 +865,19 @@ public class BaseHelper {
     }
 
     /**
-     * Asserts error Message appears with correct message text
+     * Asserts that the element {@link Page.TEXT_MESSAGE} appears on the screen and matches the given regular expression.
      *
-     * @param expectedInfoMessage
-     * @param noElementMessage
-     * @param assertMessage
+     * @param regex a regular expression which must match the actual message shown on the screen.
+     * @param noSuchElementAssertionMessage the assertion error message to display if the message was not shown on the screen.
+     * @param notMatchingRegexAssertionMessage the assertion error message to display if the message was shown on the screen but did not match the given regular expression.
      */
-    protected void assertInfoMessageAppears(String expectedInfoMessage, String noElementMessage, String assertMessage) {
+    protected void assertInfoMessageAppears(final String regex, final String noSuchElementAssertionMessage,
+            final String notMatchingRegexAssertionMessage) {
         final WebElement message = findElement(Page.TEXT_MESSAGE);
-        if(message == null) {
-            fail(noElementMessage);
+        if (message == null) {
+            fail(noSuchElementAssertionMessage);
         }
-        assertEquals(
-                assertMessage,
-                expectedInfoMessage,
-                message.getText()
-        );
+        assertTrue(notMatchingRegexAssertionMessage, Pattern.matches(regex, message.getText()));
     }
 
     /**
