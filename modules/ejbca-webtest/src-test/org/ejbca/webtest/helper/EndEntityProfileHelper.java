@@ -255,7 +255,7 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void saveEndEntityProfile(final boolean withAssertion) {
         clickLink(Page.BUTTON_SAVE_PROFILE);
         if (withAssertion) {
-            assertInfoMessageAppears("End Entity Profile saved.",
+            assertInfoMessageAppears("End Entity Profile '.*' saved\\.",
                     "End Entity Profile save message was not found.",
                     "Expected profile save message was not displayed");
         }
