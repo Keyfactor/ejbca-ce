@@ -12,17 +12,17 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * Certificate Profile helper class for EJBCA Web Tests.
@@ -1487,7 +1487,7 @@ public class CertificateProfileHelper extends BaseHelper {
 
     // Asserts the 'Certificate Profile' save title exists.
     private void assertCertificateProfileSaved() {
-        assertInfoMessageAppears("Certificate Profile saved.",
+        assertInfoMessageAppears("Certificate Profile '.*' saved \\.",
                 "Certificate Profile save message was not found.",
                 "Expected profile save message was not displayed");
     }
