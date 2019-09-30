@@ -19,7 +19,7 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
     private static final String ALIAS = "--alias";
     private static final String CURRENTKAKTOKENKEYALIAS = "--current-kak-tokenkey-alias";
     private static final String NEWKAKTOKENKEYALIAS = "--new-kak-tokenkey-alias";
-    private static final String PADDING_SCHEME = "--pading-scheme";
+    private static final String PADDING_SCHEME = "--padding-scheme";
     private static final String NEW_KAK_TOKEN = "--new-kak-token";
     private static final String CURRENT_KAK_TOKEN = "--current-kak-token";
     
