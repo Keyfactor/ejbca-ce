@@ -20,19 +20,24 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Test;
 
 /**
+ * Combined test of CMP and EST configuration management via the EJB CLI.
+ * 
  * @version $Id$
- *
  */
 public class CmpEstConfigCommandTest {
 
+    private static final Logger log = Logger.getLogger(CmpEstConfigCommandTest.class);
+    
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
 
@@ -62,15 +67,13 @@ public class CmpEstConfigCommandTest {
     @Test
     public void testEstAliasOperations() throws IOException {
         final String aliasName = "estfoo";
-        EstConfiguration estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-        if(estConfiguration.aliasExists(aliasName)) {
-            throw new RuntimeException("Test can't continue, EST alias "+aliasName+" already exists.");
-        }
         final String newAliasName = "estbar";
+        assertUnusedAlias("Test can't proceed on this system.", aliasName);
+        assertUnusedAlias("Test can't proceed on this system.", newAliasName);
         try {
             final String[] addAliasArgs = new String[] { aliasName };
             new org.ejbca.ui.cli.config.est.AddAliasCommand().execute(addAliasArgs);
-            estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            EstConfiguration estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
             assertTrue("No alias was added", estConfiguration.aliasExists(aliasName));
 
             String[] renameAliasArgs = new String[] { aliasName, newAliasName };
@@ -100,9 +103,8 @@ public class CmpEstConfigCommandTest {
             CommandResult removeResult = new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute(removeAliasArgs);
             assertEquals("Remove command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), removeResult.getReturnCode());
         }
-        estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-        assertFalse("EST alias was not removed: "+aliasName, estConfiguration.aliasExists(aliasName));
-        assertFalse("EST alias was not removed: "+newAliasName, estConfiguration.aliasExists(newAliasName));
+        assertUnusedAlias("EST alias should have been removed when renamed.", aliasName);
+        assertUnusedAlias("EST alias was not removed.", newAliasName);
 
         // Test to upload a file to create an alias
         File f = File.createTempFile("estconfigtest", "txt");
@@ -119,15 +121,53 @@ public class CmpEstConfigCommandTest {
             final String[] uploadFileArgs = new String[] { aliasName, f.getAbsolutePath()};
             CommandResult uploadResult = new org.ejbca.ui.cli.config.est.UploadFileCommand().execute(uploadFileArgs);
             assertEquals("Upload command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), uploadResult.getReturnCode());
-            estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            final EstConfiguration estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
             assertTrue("No alias was added: "+aliasName, estConfiguration.aliasExists(aliasName));
         } finally {
             String[] removeAliasArgs = new String[] { aliasName };
             new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute(removeAliasArgs);
         }
-        estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-        assertFalse("EST alias was not removed: "+aliasName, estConfiguration.aliasExists(aliasName));
-
+        assertUnusedAlias("Clean up failed.", aliasName);
     }
 
+    @Test
+    public void estConfigurationUpdateOfRaNameGeneration() {
+        final String methodName = new Object(){}.getClass().getEnclosingMethod().getName();
+        log.trace(">" + methodName);
+        final String alias = methodName;
+        assertUnusedAlias("Test can't proceed on this system.", alias);
+        try {
+            new org.ejbca.ui.cli.config.est.AddAliasCommand().execute("--alias", alias);
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.DN, "CN", "", "");
+            new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONPREFIX, "--value", "prefix");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.DN, "CN", "prefix", "");
+            new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONPOSTFIX, "--value", "postfix");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.DN, "CN", "prefix", "postfix");
+            new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "--value", UsernameGeneratorParams.RANDOM);
+            // If the next line ever fails due to expectedParams being "", this is not a bug
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.RANDOM, "CN", "prefix", "postfix");
+            new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "--value", "");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.RANDOM, "", "prefix", "postfix");
+        } finally {
+            new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute("--alias", alias);
+        }
+        assertUnusedAlias("Clean up failed.", alias);
+        log.trace("<" + methodName);
+    }
+    
+    private void assertEstConfigurationRaNameGenerationParameters(final String alias, final String expectedScheme, final String expectedParams, final String expectedPrefix, final String expectedPostfix) {
+        final EstConfiguration estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        assertTrue("Expected alias '" + alias + " was not present'", estConfiguration.aliasExists(alias));
+        assertEquals(expectedScheme, estConfiguration.getRANameGenScheme(alias));
+        assertEquals(expectedParams, estConfiguration.getRANameGenParams(alias));
+        assertEquals(expectedPrefix, estConfiguration.getRANameGenPrefix(alias));
+        assertEquals(expectedPostfix, estConfiguration.getRANameGenPostfix(alias));
+    }
+
+    /** Verify that the alisa is not currently in use on the system where this test is run. */
+    private void assertUnusedAlias(final String errorMsg, final String alias) throws IllegalStateException {
+        if (((EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID)).aliasExists(alias)) {
+            throw new IllegalStateException("EST configuation alias '" + errorMsg + "' exists. " + errorMsg);
+        }
+    }
 }
