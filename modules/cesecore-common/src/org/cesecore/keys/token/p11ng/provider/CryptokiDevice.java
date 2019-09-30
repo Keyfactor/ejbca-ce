@@ -126,6 +126,7 @@ public class CryptokiDevice {
     private final HashMap<Long, Slot> slotMap = new HashMap<>();
     private final HashMap<String, Slot> slotLabelMap = new HashMap<>();
     
+    private static final int SIGN_HASH_SIZE = 32;
     private static final int MAX_CHAIN_LENGTH = 100;
     
     CryptokiDevice(CEi c, JackNJI11Provider provider) {
@@ -745,7 +746,6 @@ public class CryptokiDevice {
 
         public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
-            final int HASH_SIZE = 32;
             Long session = null;
             try {
                 session = aquireSession();
@@ -792,38 +792,7 @@ public class CryptokiDevice {
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
                 
-                byte[] hash = new byte[HASH_SIZE];
-                long hashLen = hash.length;
-                // Getting the key to initialize and associate with KAK if it exist on the HSM slot with the provided alias.
-                long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
-                if (privateKeyObjects.length == 0) {
-                    throw new IllegalStateException("No private key found for alias '" + alias + "'");
-                }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
-                }   
-                long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
-                if (rvAuthorizeKeyInit != CKR.OK) {
-                    throw new EJBException("Failed to initialize key.");
-                }
-    
-                byte[] initSig = new byte[bitsToBytes(kakLength)];
-                if ("PSS".equals(selectedPaddingScheme)) {
-                    try {
-                        initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
-                    } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-                            | InvalidAlgorithmParameterException | SignatureException e) {
-                        LOG.error("Error occurred while signing the hash!", e);
-                        throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
-                    }                    
-                } else {
-                    try {
-                        initSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
-                    } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
-                        LOG.error("Error occurred while signing the hash!", e);
-                        throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
-                    }
-                }
+                byte[] initSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
 
                 long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
@@ -920,7 +889,6 @@ public class CryptokiDevice {
                 
                 kakModBuf = kakModulus.toByteArray();
                 kakPubExpBuf = kakPublicExponent.toByteArray();
-
                 
                 authData.ulModulusLen = new NativeLong(kakModLen);
                 
@@ -945,56 +913,18 @@ public class CryptokiDevice {
                 
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
-
-                // Size of the hash returned from c.authorizeKeyInit. Initially this is an empty array, after c.authorizeKeyInit
-                // it's populated by hash value.
-                byte[] hash = new byte[32];
-                long hashLen = hash.length;                
-
-                // Getting the key to authorize if it exist on the slot with the provided alias
-                long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
-                if (privateKeyObjects.length == 0) {
-                    throw new IllegalStateException("No private key found for alias '" + alias + "'");
-                }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
-                }
                 
-                long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
-                if (rvAuthorizeKeyInit != CKR.OK) {
-                    throw new EJBException("Failed to initialize key.");
-                }
-                
-                byte[] authSig = new byte[bitsToBytes(kakLength)];
-                
-                if ("PSS".equals(selectedPaddingScheme)) {
-                    try {
-                        authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
-                    } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-                             | InvalidAlgorithmParameterException | SignatureException e) {
-                        LOG.error("Error occurred while signing the hash!", e);
-                        throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
-                    }
-                } else {
-                    try {
-                        authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
-                    } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
-                        LOG.error("Error occurred while signing the hash!", e);
-                        throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
-                    }
-                }
+                byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
                     throw new EJBException("Failed to authorize key.");
                 }
-                
             } finally {
                 if (session != null) {
                     releaseSession(session);
                 }
             }
-
         }
         
         public void backupObject(final long objectHandle, final String backupFile) {
@@ -1266,6 +1196,43 @@ public class CryptokiDevice {
                     releaseSession(session);
                 }
             }
+        }
+        
+        private byte[] getSignatureByteArray(final String alias, final String signProviderName, final String selectedPaddingScheme, 
+                final Long session, final PrivateKey kakPrivateKey, final int kakLength, CKM mechanism) {
+            byte[] hash = new byte[SIGN_HASH_SIZE];
+            long hashLen = hash.length;
+            // Getting the key to initialize and associate with KAK if it exist on the HSM slot with the provided alias.
+            long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
+            if (privateKeyObjects.length == 0) {
+                throw new IllegalStateException("No private key found for alias '" + alias + "'");
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
+            }   
+            long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
+            if (rvAuthorizeKeyInit != CKR.OK) {
+                throw new EJBException("Failed to initialize key.");
+            }
+   
+            byte[] initSig = new byte[bitsToBytes(kakLength)];
+            if ("PSS".equals(selectedPaddingScheme)) {
+                try {
+                    initSig = signHashPss(hash, hashLen, initSig.length, kakPrivateKey, signProviderName);
+                } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+                        | InvalidAlgorithmParameterException | SignatureException e) {
+                    LOG.error("Error occurred while signing the hash!", e);
+                    throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
+                }                    
+            } else {
+                try {
+                    initSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
+                } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
+                    LOG.error("Error occurred while signing the hash!", e);
+                    throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
+                }
+            }
+            return initSig;
         }
         
         private void write2File(byte[] bytes, String filePath) {
