@@ -18,7 +18,8 @@ import java.util.List;
 
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
-/** Parameters used in UsernameGenerator
+/**
+ * Parameters used in UsernameGenerator
  * 
  * @version $Id$
  * @see UsernameGenerator
@@ -39,7 +40,7 @@ public class UsernameGeneratorParams {
 	public static final String DN = "DN";
 	public static final String FIXED = "FIXED";
 	
-	private String[] modes = {"RANDOM", "USERNAME", "DN", "FIXED"};
+	private static final List<String> modeList = Arrays.asList(RANDOM, USERNAME, DN, FIXED);
 
 	// Generator configuration parameters, with good default values
 	private int mode = MODE_RANDOM;
@@ -100,12 +101,9 @@ public class UsernameGeneratorParams {
 	}
 
 	public void setMode(String mode) {
-	    final List<String> modeList = Arrays.asList(modes);
 		if (!modeList.contains(mode)) {
 			throw new IllegalArgumentException("Mode " + mode + " is not supported");
 		}
 		this.mode = modeList.indexOf(mode);
 	}
-	
-
 }
