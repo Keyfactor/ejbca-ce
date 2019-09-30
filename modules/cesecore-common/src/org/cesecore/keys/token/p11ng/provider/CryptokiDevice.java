@@ -752,43 +752,10 @@ public class CryptokiDevice {
                 final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
                 final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
-                RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
-                BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
-                BigInteger kakModulus = publicSpec.getModulus();
 
-                int kakModLen = kakModulus.toByteArray().length;
-                int kakPubExpLen = kakPublicExponent.toByteArray().length;
-                
-                byte[] kakModBuf = new byte[kakModLen];
-                byte[] kakPubExpBuf = new byte[kakPubExpLen];
-                
-                kakModBuf = kakModulus.toByteArray();
-                kakPubExpBuf = kakPublicExponent.toByteArray();
-    
                 CK_CP5_INITIALIZE_PARAMS params = new CK_CP5_INITIALIZE_PARAMS();
-                CK_CP5_AUTH_DATA authData = new CK_CP5_AUTH_DATA();
-                authData.ulModulusLen = new NativeLong(kakModLen);
-                
-                // Allocate sufficient native memory to hold the java array Pointer ptr = new Memory(arr.length);
-                // Copy the java array's contents to the native memory ptr.write(0, arr, 0, arr.length);
-                Pointer kakModulusPointer = new Memory(kakModLen);
-                kakModulusPointer.write(0, kakModBuf, 0, kakModLen);
-                authData.pModulus = kakModulusPointer;
-                authData.ulPublicExponentLen = new NativeLong(kakPubExpLen);
-                
-                Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
-                kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
-                authData.pPublicExponent = kakPublicKeyExponentPointer;
-
-                if ("PSS".equals(selectedPaddingScheme)) {
-                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
-                } else {
-                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
-                }
-
-                params.authData = authData;
+                params.authData = getAuthData(kakPublicKey, selectedPaddingScheme);
                 params.bAssigned = KEY_AUTHORIZATION_ASSIGNED;
-                
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
                 
@@ -810,51 +777,16 @@ public class CryptokiDevice {
             try {
                 session = aquireSession();
 
+                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
+                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
+                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
+                
                 CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
                 params.ulCount = authorizedoperationCount;
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_AUTHORIZE, params.getPointer(), params.size());
-    
-                // Size of the hash returned from c.authorizeKeyInit. Initially this is an empty array, after c.authorizeKeyInit
-                // it's populated by hash value.
-                byte[] hash = new byte[32];
-                long hashLen = hash.length;
                 
-                // Getting the key to authorize if it exist on the slot with the provided alias
-                long[] privateKeyObjects = findPrivateKeyObjectsByID(session, new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)).getValue());
-                if (privateKeyObjects.length == 0) {
-                    throw new IllegalStateException("No private key found for alias '" + alias + "'");
-                }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Private key  with Id: '" + privateKeyObjects[0] + "' found for key alias '" + alias + "'");
-                }
-                
-                long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects[0], hash, new LongRef(hashLen));
-                if (rvAuthorizeKeyInit != CKR.OK) {
-                    throw new EJBException("Key authorization failed at the initialization step.");
-                }
-                
-                final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
-                final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
-                final int kakLength = KeyTools.getKeyLength(kakPublicKey);
-                byte[] authSig = new byte[bitsToBytes(kakLength)];
-                
-                if ("PSS".equals(selectedPaddingScheme)) {
-                    try {
-                        authSig = signHashPss(hash, hashLen, authSig.length, kakPrivateKey, signProviderName);
-                    } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
-                             | InvalidAlgorithmParameterException | SignatureException e) {
-                        LOG.error("Error occurred while signing the hash!", e);
-                        throw new EJBException("An error occurred while signing the hash using the PSS padding scheme.");
-                    }
-                } else {
-                    try {
-                        authSig = signHashPkcs1(hash, kakPrivateKey, signProviderName);
-                    } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException | DigestException | NoSuchProviderException e) {
-                        LOG.error("Error occurred while signing the hash!", e);
-                        throw new EJBException("An error occurred while signing the hash using the PKCS#1 padding scheme.");
-                    }
-                }
+                byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
@@ -871,46 +803,12 @@ public class CryptokiDevice {
             Long session = null;
             try {
                 session = aquireSession();
-                CK_CP5_CHANGEAUTHDATA_PARAMS params = new CK_CP5_CHANGEAUTHDATA_PARAMS();
-                CK_CP5_AUTH_DATA authData = new CK_CP5_AUTH_DATA();
-                
                 final PublicKey kakPublicKey = newKeyAuthorizationKey.getPublic();
                 final PrivateKey kakPrivateKey = currentKeyAuthorizationKey.getPrivate();
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
-                RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
-                BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
-                BigInteger kakModulus = publicSpec.getModulus();
 
-                int kakModLen = kakModulus.toByteArray().length;
-                int kakPubExpLen = kakPublicExponent.toByteArray().length;
-                
-                byte[] kakModBuf = new byte[kakModLen];
-                byte[] kakPubExpBuf = new byte[kakPubExpLen];
-                
-                kakModBuf = kakModulus.toByteArray();
-                kakPubExpBuf = kakPublicExponent.toByteArray();
-                
-                authData.ulModulusLen = new NativeLong(kakModLen);
-                
-                // Allocate sufficient native memory to hold the java array Pointer ptr = new Memory(arr.length);
-                // Copy the java array's contents to the native memory ptr.write(0, arr, 0, arr.length);
-                Pointer kakModulusPointer = new Memory(kakModLen);
-                kakModulusPointer.write(0, kakModBuf, 0, kakModLen);
-                authData.pModulus = kakModulusPointer;
-                authData.ulPublicExponentLen = new NativeLong(kakPubExpLen);
-                
-                Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
-                kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
-                authData.pPublicExponent = kakPublicKeyExponentPointer;
-
-                if ("PSS".equals(selectedPaddingScheme)) {
-                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
-                } else {
-                    authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
-                }
-
-                params.authData = authData;
-                
+                CK_CP5_CHANGEAUTHDATA_PARAMS params = new CK_CP5_CHANGEAUTHDATA_PARAMS();
+                params.authData = getAuthData(kakPublicKey, selectedPaddingScheme);
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
                 
@@ -926,7 +824,7 @@ public class CryptokiDevice {
                 }
             }
         }
-        
+
         public void backupObject(final long objectHandle, final String backupFile) {
             Long session = null;
             try {
@@ -1196,6 +1094,42 @@ public class CryptokiDevice {
                     releaseSession(session);
                 }
             }
+        }
+        
+        private CK_CP5_AUTH_DATA getAuthData(final PublicKey kakPublicKey, final String selectedPaddingScheme) {
+            CK_CP5_AUTH_DATA authData = new CK_CP5_AUTH_DATA();
+            RSAPublicKeySpec publicSpec = (RSAPublicKeySpec) generateKeySpec(kakPublicKey);
+            BigInteger kakPublicExponent  = publicSpec.getPublicExponent();
+            BigInteger kakModulus = publicSpec.getModulus();
+
+            int kakModLen = kakModulus.toByteArray().length;
+            int kakPubExpLen = kakPublicExponent.toByteArray().length;
+            
+            byte[] kakModBuf = new byte[kakModLen];
+            byte[] kakPubExpBuf = new byte[kakPubExpLen];
+            
+            kakModBuf = kakModulus.toByteArray();
+            kakPubExpBuf = kakPublicExponent.toByteArray();
+            
+            authData.ulModulusLen = new NativeLong(kakModLen);
+            
+            // Allocate sufficient native memory to hold the java array Pointer ptr = new Memory(arr.length);
+            // Copy the java array's contents to the native memory ptr.write(0, arr, 0, arr.length);
+            Pointer kakModulusPointer = new Memory(kakModLen);
+            kakModulusPointer.write(0, kakModBuf, 0, kakModLen);
+            authData.pModulus = kakModulusPointer;
+            authData.ulPublicExponentLen = new NativeLong(kakPubExpLen);
+            
+            Pointer kakPublicKeyExponentPointer = new Memory(kakPubExpLen);
+            kakPublicKeyExponentPointer.write(0, kakPubExpBuf, 0, kakPubExpLen);
+            authData.pPublicExponent = kakPublicKeyExponentPointer;
+
+            if ("PSS".equals(selectedPaddingScheme)) {
+                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+            } else {
+                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
+            }
+            return authData;
         }
         
         private byte[] getSignatureByteArray(final String alias, final String signProviderName, final String selectedPaddingScheme, 
