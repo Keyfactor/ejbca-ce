@@ -159,7 +159,7 @@ public class UsernameGenerator {
             // when the pattern is ${identifier}, group 0 is 'identifier'
             String key = m.group(1);
             String value = null;
-            if (StringUtils.equals(key, "RANDOM")) {
+            if (StringUtils.equals(key, UsernameGeneratorParams.RANDOM)) {
             	value = getRandomString(params.getRandomPrefixLength());
             }
             // if the pattern does exists, replace it by its value

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.est;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -33,8 +35,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
+ * Update command for EST configuration.
+ * 
  * @version $Id$
- *
  */
 public class UpdateCommand extends BaseEstConfigCommand {
 
@@ -122,6 +125,11 @@ public class UpdateCommand extends BaseEstConfigCommand {
         sb.append("    " + EstConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY + " - possible values: true | false" + "\n");
         sb.append("    " + EstConfiguration.CONFIG_REQUSERNAME + " - possible values: a username you define" + "\n");
         sb.append("    " + EstConfiguration.CONFIG_REQPASSWORD + " - possible values: a password you define" + "\n");
+        sb.append("    " + EstConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME + " - possible values: one of " + Arrays.asList(
+                UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UsernameGeneratorParams.USERNAME) + "\n");
+        sb.append("    " + EstConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS + " - possible values: DN: ;-separated DN part(s), RANDOM: empty, FIXED: any string that is part of a valid username, USERNAME: empty" + "\n");
+        sb.append("    " + EstConfiguration.CONFIG_RA_NAMEGENERATIONPREFIX + " - possible values: any string that is part of a valid username" + "\n");
+        sb.append("    " + EstConfiguration.CONFIG_RA_NAMEGENERATIONPOSTFIX + " - possible values: any string that is part of a valid username" + "\n");
         return sb.toString();
 
     }
