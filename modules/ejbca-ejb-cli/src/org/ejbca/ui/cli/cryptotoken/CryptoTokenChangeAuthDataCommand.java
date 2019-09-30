@@ -28,20 +28,20 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
         registerParameter(
                 new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "HSM Key pair alias"));
         registerParameter(
-                new Parameter(CURRENTKAKTOKENKEYALIAS, "Current kak token key alias ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Alias of the current kak token key"));
+                new Parameter(CURRENTKAKTOKENKEYALIAS, "Current kak token key alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Alias of the current kak token key."));
         registerParameter(
-                new Parameter(NEWKAKTOKENKEYALIAS, "New kak token key alias ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Alias of the new kak token key"));
+                new Parameter(NEWKAKTOKENKEYALIAS, "New kak token key alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Alias of the new kak token key."));
         registerParameter(
-                new Parameter(PADDING_SCHEME, "Padding Scheme ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Padding scheme used to sign the hash of new kak with, must be same as the old padding scheme. "));
+                new Parameter(PADDING_SCHEME, "Padding Scheme", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Padding scheme used to sign the hash of new kak with, must be same as the old padding scheme."));
         registerParameter(
-                new Parameter(NEW_KAK_TOKEN, "New kak token name ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                new Parameter(NEW_KAK_TOKEN, "New kak token name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Token representing the new kak to be used."));
         registerParameter(
-                new Parameter(CURRENT_KAK_TOKEN, "Current kak token name ", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Token representing the current kak to be used."));
+                new Parameter(CURRENT_KAK_TOKEN, "Current kak token name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Token representing the current kak in use."));
     }
 
     @Override
