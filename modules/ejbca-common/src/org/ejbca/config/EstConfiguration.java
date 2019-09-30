@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 
 /**
@@ -72,7 +73,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_REQUSERNAME = "";
     private static final String DEFAULT_REQPASSWORD = "";
     private static final String DEFAULT_ALLOWUPDATEWITHSAMEKEY = "true";
-    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = "DN";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.DN;
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
     private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
@@ -495,7 +496,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         //Set default to RANDOM for aliases greated before RA name generation was added
         String value = getValue(key, alias);
         if (value == null) {
-            value = "RANDOM";
+            value = UsernameGeneratorParams.RANDOM;
         }
         return value;
     }
