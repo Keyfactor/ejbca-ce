@@ -265,8 +265,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
-    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int currentKakTokenId, int newKakTokenId, 
-            final String currentKakTokenKeyAlias, final String newKakTokenKeyAlias, final String selectedPaddingScheme) throws CryptoTokenOfflineException {
+    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, 
+            final int currentKakTokenId, int newKakTokenId, final String currentKakTokenKeyAlias, 
+            final String newKakTokenKeyAlias, final String selectedPaddingScheme) throws CryptoTokenOfflineException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken currentKakCryptoToken = cryptoTokenSession.getCryptoToken(currentKakTokenId);
         final CryptoToken newKakCryptoToken = cryptoTokenSession.getCryptoToken(newKakTokenId);
@@ -278,7 +279,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String signProviderName = currentKakCryptoToken.getSignProviderName();
         final KeyPair currentkakPair = new KeyPair(kakPublicKey, kakPrivateKey);
         final PrivateKey newKakPrivateKey = newKakCryptoToken.getPrivateKey(newKakTokenKeyAlias);
-        final PublicKey newKakPublicKey = currentKakCryptoToken.getPublicKey(newKakTokenKeyAlias);
+        final PublicKey newKakPublicKey = newKakCryptoToken.getPublicKey(newKakTokenKeyAlias);
         final KeyPair newKakPair = new KeyPair(newKakPublicKey, newKakPrivateKey);
         
         cryptoToken.changeAuthData(alias, currentkakPair, newKakPair, signProviderName, selectedPaddingScheme);
