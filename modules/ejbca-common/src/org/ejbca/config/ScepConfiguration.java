@@ -25,13 +25,13 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 /**
+ * Configuration of the SCEP protocol.
  * 
  * @version $Id$
- *
  */
-
 public class ScepConfiguration extends ConfigurationBase implements Serializable {
     
     private static final long serialVersionUID = -2051789798029184421L;
@@ -95,7 +95,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_ENTITYPROFILE = "EMPTY";
     public static final String DEFAULT_RA_DEFAULTCA = "";
     public static final String DEFAULT_RA_AUTHPWD = "";
-    public static final String DEFAULT_RA_NAME_GENERATION_SCHEME = "DN";
+    public static final String DEFAULT_RA_NAME_GENERATION_SCHEME = UsernameGeneratorParams.DN;
     public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
