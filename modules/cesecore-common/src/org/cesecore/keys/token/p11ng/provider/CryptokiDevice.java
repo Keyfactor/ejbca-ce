@@ -759,7 +759,7 @@ public class CryptokiDevice {
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
                 
-                byte[] initSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
+                final byte[] initSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
 
                 long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
@@ -776,7 +776,6 @@ public class CryptokiDevice {
             Long session = null;
             try {
                 session = aquireSession();
-
                 final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
                 final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
                 final int kakLength = KeyTools.getKeyLength(kakPublicKey);
@@ -786,7 +785,7 @@ public class CryptokiDevice {
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_AUTHORIZE, params.getPointer(), params.size());
                 
-                byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
+                final byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
@@ -812,7 +811,7 @@ public class CryptokiDevice {
                 params.write(); // Write data before passing structure to function
                 CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
                 
-                byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
+                final byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
                 long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
