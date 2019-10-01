@@ -178,6 +178,13 @@ ejbca.cli.defaultpassword=ejbca
 # Default: true
 #publish.parallel.enabled=true
 
+# By default, EJBCA keeps a list of every EJBCA instance's hostname that has started in this cluster
+# and allows for example Services to be pinned to a specific set of hostnames.
+# In environments that has many short-lived instances with different hostnames this should be disabled.
+#
+# Default: true
+#ejbca.nodetracking=true
+
 # ------------------- Peer Connector settings (Enterprise Edition only) -------------------
 # These settings are never expected to be used and should be considered deprecated. If you do need
 # to tweak this, please inform the EJBCA developers how and why this was necessary.
