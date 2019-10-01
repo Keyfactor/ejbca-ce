@@ -61,7 +61,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             return CommandResult.SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
-            getLogger().error("Changing authentication data for the key  "  + alias + " failed : " + e);
+            getLogger().error("Creating key pair with the alias  "  + alias + " failed : " + e);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
