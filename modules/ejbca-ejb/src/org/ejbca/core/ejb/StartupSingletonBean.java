@@ -305,22 +305,24 @@ public class StartupSingletonBean {
             log.error("Error initializing end entity profiles: ", e);
         }
         
-        // Add this node's hostname to list of nodes
-        log.debug(">startup checking if this node is in the list of nodes");
-        try {
-            // Requires a transaction in order to create the initial global configuration
-            final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            final Set<String> nodes = config.getNodesInCluster();
-            final String hostname = getHostName();
-            if (hostname != null && !nodes.contains(hostname)) {
-                log.debug("Adding this node ("+hostname+") to the list of nodes");
-                nodes.add(hostname);
-                config.setNodesInCluster(nodes);
-                globalConfigurationSession.saveConfiguration(authenticationToken, config);
-            }
-        } catch (Exception e) {
-            log.error("Error adding host to node list in global configuration: ", e);
-        } 
+        if (EjbcaConfiguration.getIsNodeTrackingEnabled()) {
+            // Add this node's hostname to list of nodes
+            log.debug(">startup checking if this node is in the list of nodes");
+            try {
+                // Requires a transaction in order to create the initial global configuration
+                final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                final Set<String> nodes = config.getNodesInCluster();
+                final String hostname = getHostName();
+                if (hostname != null && !nodes.contains(hostname)) {
+                    log.debug("Adding this node ("+hostname+") to the list of nodes");
+                    nodes.add(hostname);
+                    config.setNodesInCluster(nodes);
+                    globalConfigurationSession.saveConfiguration(authenticationToken, config);
+                }
+            } catch (Exception e) {
+                log.error("Error adding host to node list in global configuration: ", e);
+            } 
+        }
 
         log.debug(">startup checking for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
