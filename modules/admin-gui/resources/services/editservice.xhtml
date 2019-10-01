@@ -136,11 +136,11 @@
 			<f:selectItems value="#{editService.serviceConfigurationView.nodesInCluster}"/>
 		</h:selectManyListbox>
 	</h:panelGroup>
-	<h:panelGroup rendered="#{! empty editService.serviceConfigurationView.nodesInCluster}">
+	<h:panelGroup>
 		<h:outputLabel value="#{web.text.RUNONALLNODES}"/>
 		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Services.html#Run_on_all_Nodes')}" escape="false"/>
 	</h:panelGroup>
-	<h:panelGroup rendered="#{! empty editService.serviceConfigurationView.nodesInCluster}">
+	<h:panelGroup>
 		<h:selectBooleanCheckbox id="runOnAllNodesCheckbox" value="#{editService.serviceConfigurationView.runOnAllNodes}" disabled="#{not editService.hasEditRights}"/>
 		<h:outputLabel for="runOnAllNodesCheckbox" value="#{web.text.RUNONALLNODES}" />
 	</h:panelGroup>
