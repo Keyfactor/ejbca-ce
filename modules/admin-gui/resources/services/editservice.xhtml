@@ -128,19 +128,19 @@
 		<h:selectBooleanCheckbox id="activeCheckbox" value="#{editService.serviceConfigurationView.active}" disabled="#{not editService.hasEditRights}"/>
 		<h:outputLabel for="activeCheckbox" value="#{web.text.ACTIVE}" />
 	</h:panelGroup>
-	<h:panelGroup>
+	<h:panelGroup rendered="#{! empty editService.serviceConfigurationView.nodesInCluster}">
 		<h:outputText value="#{web.text.PINTONODES}"/>
 	</h:panelGroup>
-	<h:panelGroup>
+	<h:panelGroup rendered="#{! empty editService.serviceConfigurationView.nodesInCluster}">
 		<h:selectManyListbox id="pinToNodesListbox" value="#{editService.serviceConfigurationView.pinToNodes}" disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.serviceConfigurationView.nodesInCluster}"/>
 		</h:selectManyListbox>
 	</h:panelGroup>
-	<h:panelGroup>
+	<h:panelGroup rendered="#{! empty editService.serviceConfigurationView.nodesInCluster}">
 		<h:outputLabel value="#{web.text.RUNONALLNODES}"/>
 		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Services.html#Run_on_all_Nodes')}" escape="false"/>
 	</h:panelGroup>
-	<h:panelGroup>
+	<h:panelGroup rendered="#{! empty editService.serviceConfigurationView.nodesInCluster}">
 		<h:selectBooleanCheckbox id="runOnAllNodesCheckbox" value="#{editService.serviceConfigurationView.runOnAllNodes}" disabled="#{not editService.hasEditRights}"/>
 		<h:outputLabel for="runOnAllNodesCheckbox" value="#{web.text.RUNONALLNODES}" />
 	</h:panelGroup>
