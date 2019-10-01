@@ -242,7 +242,12 @@ public final class EjbcaConfiguration {
         }
         return time;
     }
-    
+
+    /** @return true if EJBCA should maintain a list of started instances */
+    public static boolean getIsNodeTrackingEnabled() {
+        return getBooleanProperty("ejbca.nodetracking", true);
+    }
+
     public static String getCliDefaultUser() {
         return EjbcaConfigurationHolder.getString("ejbca.cli.defaultusername");
     }
@@ -350,5 +355,4 @@ public final class EjbcaConfiguration {
         }
         return ret;
     }
-   
 }
