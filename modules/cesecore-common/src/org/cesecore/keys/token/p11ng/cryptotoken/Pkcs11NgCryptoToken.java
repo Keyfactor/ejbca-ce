@@ -130,7 +130,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         }
         
         setJCAProvider(slot.getProvider());
-
+        slot.setUseCache(true);
     }
 
     @Override

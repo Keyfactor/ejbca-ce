@@ -1854,8 +1854,9 @@ public class CryptokiDevice {
                         certificateRefs = cache.getObjects(key);
                     } else {
                         certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
-                        // add search result to cache even if it is empty since this negative cached objects are cleared when key is generated
-                        cache.addObjectsSearchResult(key, certificateRefs);
+                        if (certificateRefs.length > 0) {
+                            cache.addObjectsSearchResult(key, certificateRefs);
+                        }
                     }
                 } else {
                     certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
