@@ -1,3 +1,12 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           * 
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
 import org.apache.log4j.Logger;
@@ -12,6 +21,12 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
+/**
+ * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
+ * 
+ * @version $Id$
+ *
+ */
 public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
 
     private static final Logger log = Logger.getLogger(CryptoTokenChangeAuthDataCommand.class);
