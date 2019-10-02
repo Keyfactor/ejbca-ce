@@ -122,7 +122,6 @@ public class UpdateCommand extends BaseEstConfigCommand {
         sb.append("    " + EstConfiguration.CONFIG_CERTPROFILE + " - possible values: ProfileDefault | " + existingCps + "\n");
         sb.append("    " + EstConfiguration.CONFIG_REQCERT + " - possible values: true | false" + "\n");
         sb.append("    " + EstConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY + " - possible values: true | false" + "\n");
-        sb.append("    " + EstConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY + " - possible values: true | false" + "\n");
         sb.append("    " + EstConfiguration.CONFIG_REQUSERNAME + " - possible values: a username you define" + "\n");
         sb.append("    " + EstConfiguration.CONFIG_REQPASSWORD + " - possible values: a password you define" + "\n");
         sb.append("    " + EstConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME + " - possible values: one of " + Arrays.asList(
