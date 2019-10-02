@@ -65,6 +65,18 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private static final String ALIAS = "--alias";
     private static final String PRIVKEYPASS = "--privkey-pass";
 
+    private static final String PRIV_KEY_HEADER = "-----BEGIN PRIVATE KEY-----\n";
+    private static final String PRIV_KEY_FOOTER = "-----END PRIVATE KEY-----";
+
+    private static final String RSA_KEY_HEADER = "-----BEGIN RSA PRIVATE KEY-----\n";
+    private static final String RSA_KEY_FOOTER = "-----END RSA PRIVATE KEY-----";
+
+    private static final String EC_KEY_HEADER = "-----BEGIN EC PRIVATE KEY-----\n";
+    private static final String EC_KEY_FOOTER = "-----END EC PRIVATE KEY-----";
+    
+    private static final String DSA_KEY_HEADER = "-----BEGIN DSA PRIVATE KEY-----\n";
+    private static final String DSA_KEY_FOOTER = "-----END DSA PRIVATE KEY-----";
+    
     {
         registerParameter(new Parameter(PRIVATEKEYFILEPATH, "Private key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Path to the file containing private key."));
@@ -96,6 +108,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         final String alias = parameters.get(ALIAS);
         String keyAlgorithm = parameters.get(KEYALGORITHM);
         char[] privateKeyPass = null; 
+        
         if (keyAlgorithm == null) {
             keyAlgorithm = "RSA";
         }
@@ -115,11 +128,24 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
 
             PrivateKey privateKey = loadPrivateKey(parameters.get(PRIVATEKEYFILEPATH), keyAlgorithm);
             PublicKey publicKey = loadPublicKey(parameters.get(PUBLICKEYFILEPATH), keyAlgorithm);
-
+            
             // Dummy certificate chain to hold keys
             final Certificate[] certchain = new Certificate[1];
+            String signatureAlgorithm = null;
+            switch (keyAlgorithm) {
+            case "EC":
+                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+                break;
+            case "DSA":
+                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+                break;
+            default:
+                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+                break;
+            }
+            
             certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privateKey, publicKey,
-                    AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+                    signatureAlgorithm, true);
             keystore.setKeyEntry(alias, privateKey, privateKeyPass, certchain);
 
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -152,8 +178,25 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private PrivateKey loadPrivateKey(final String filename, final String algorithm)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String privateKey = getKey(filename);
-        privateKey = privateKey.replace("-----BEGIN RSA PRIVATE KEY-----\n", "");
-        privateKey = privateKey.replace("-----END RSA PRIVATE KEY-----", "");
+        switch (algorithm) {
+        case "EC":
+            privateKey = privateKey.replace(EC_KEY_HEADER, "");
+            privateKey = privateKey.replace(EC_KEY_FOOTER, "");
+            break;
+        case "DSA":
+            privateKey = privateKey.replace(DSA_KEY_HEADER, "");
+            privateKey = privateKey.replace(DSA_KEY_FOOTER, "");
+            break;
+        default:
+            privateKey = privateKey.replace(RSA_KEY_HEADER, "");
+            privateKey = privateKey.replace(RSA_KEY_FOOTER, "");
+            break;
+        }
+        
+        // Sometimes key file contains just these headers
+        privateKey = privateKey.replace(PRIV_KEY_HEADER, "");
+        privateKey = privateKey.replace(PRIV_KEY_FOOTER, "");
+        
         final byte[] keyBytes = Base64.decode(privateKey.getBytes());
         final KeyFactory kf = KeyFactory.getInstance(algorithm);
         final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
