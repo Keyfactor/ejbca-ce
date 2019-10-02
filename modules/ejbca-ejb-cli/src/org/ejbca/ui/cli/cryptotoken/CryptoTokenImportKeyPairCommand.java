@@ -63,6 +63,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private static final String KEYALGORITHM = "--key-algorithm";
     private static final String AUTHENTICATIONCODE = "--auth-code";
     private static final String ALIAS = "--alias";
+    private static final String PRIVKEYPASS = "--privkey-pass";
 
     {
         registerParameter(new Parameter(PRIVATEKEYFILEPATH, "Private key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
@@ -75,6 +76,8 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
                 "Algorithm the key is generated with, if not provided RSA will be assumed."));
         registerParameter(new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
                 ParameterMode.PASSWORD, "Authentication code for the crypto token."));
+        registerParameter(new Parameter(PRIVKEYPASS, "Privatekey password", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Password used to protect private key (if any)."));
     }
 
     @Override
@@ -92,8 +95,12 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
         final String alias = parameters.get(ALIAS);
         String keyAlgorithm = parameters.get(KEYALGORITHM);
+        char[] privateKeyPass = null; 
         if (keyAlgorithm == null) {
             keyAlgorithm = "RSA";
+        }
+        if (parameters.get(PRIVKEYPASS) != null) {
+            privateKeyPass = parameters.get(PRIVKEYPASS).toCharArray();
         }
         try {
             final CryptoTokenSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenSessionRemote.class);
@@ -109,10 +116,11 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             PrivateKey privateKey = loadPrivateKey(parameters.get(PRIVATEKEYFILEPATH), keyAlgorithm);
             PublicKey publicKey = loadPublicKey(parameters.get(PUBLICKEYFILEPATH), keyAlgorithm);
 
+            // Dummy certificate chain to hold keys
             final Certificate[] certchain = new Certificate[1];
             certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privateKey, publicKey,
                     AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
-            keystore.setKeyEntry(alias, privateKey, null, certchain);
+            keystore.setKeyEntry(alias, privateKey, privateKeyPass, certchain);
 
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keystore.store(baos, parameters.get(AUTHENTICATIONCODE).toCharArray());
