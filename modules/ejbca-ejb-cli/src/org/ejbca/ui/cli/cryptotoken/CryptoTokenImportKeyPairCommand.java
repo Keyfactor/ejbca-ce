@@ -85,7 +85,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         registerParameter(new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Alias for the key pair which will be created."));
         registerParameter(new Parameter(KEYALGORITHM, "Key algorithm", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Algorithm the key is generated with, if not provided RSA will be assumed."));
+                "Algorithm the key is generated with (RSA, EC, DSA), if not provided RSA will be assumed."));
         registerParameter(new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
                 ParameterMode.PASSWORD, "Authentication code for the crypto token."));
         registerParameter(new Parameter(PRIVKEYPASS, "Privatekey password", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
