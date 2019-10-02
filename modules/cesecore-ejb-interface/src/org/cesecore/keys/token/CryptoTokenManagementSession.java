@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.List;
