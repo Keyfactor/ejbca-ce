@@ -93,6 +93,13 @@
 # Default: deploy
 #jboss.farm.name=farm
 
+# By default, EJBCA keeps a list of every EJBCA instance's hostname that has started in this cluster
+# and allows for example Services to be pinned to a specific set of hostnames.
+# In environments that has many short-lived instances with different hostnames this should be disabled.
+#
+# Default: true
+#ejbca.nodetracking=true
+
 #------------------- EJBCA Healthcheck settings -------------
 # Specifies the basic settings of the EJBCA Healthcheck servlet
 # for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
@@ -177,13 +184,6 @@ ejbca.cli.defaultpassword=ejbca
 #
 # Default: true
 #publish.parallel.enabled=true
-
-# By default, EJBCA keeps a list of every EJBCA instance's hostname that has started in this cluster
-# and allows for example Services to be pinned to a specific set of hostnames.
-# In environments that has many short-lived instances with different hostnames this should be disabled.
-#
-# Default: true
-#ejbca.nodetracking=true
 
 # ------------------- Peer Connector settings (Enterprise Edition only) -------------------
 # These settings are never expected to be used and should be considered deprecated. If you do need
