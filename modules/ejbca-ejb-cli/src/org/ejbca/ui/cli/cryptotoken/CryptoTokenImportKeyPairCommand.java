@@ -55,25 +55,28 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  *
  */
 public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
-    
+
     private static final Logger log = Logger.getLogger(CryptoTokenImportKeyPairCommand.class);
 
-    private static final String KEYFILEPATH = "--key-file-path";
+    private static final String PRIVATEKEYFILEPATH = "--privkey-file";
+    private static final String PUBLICKEYFILEPATH = "--pubkey-file";
     private static final String KEYALGORITHM = "--key-algorithm";
-    private static final String AUTHENTICATIONCODE = "--authentication-code"; 
+    private static final String AUTHENTICATIONCODE = "--auth-code";
     private static final String ALIAS = "--alias";
 
     {
-        registerParameter(
-                new Parameter(KEYFILEPATH, "Key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Path to the directory containing key files."));
-        registerParameter(
-                new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Alias for the key pair which will be created."));
-        registerParameter(
-                new Parameter(KEYALGORITHM, "Key algorithm", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Algorithm the key is generated with, if not provided RSA will be assumed."));
-        registerParameter(
-                new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.PASSWORD, "Authentication code for the crypto token."));
+        registerParameter(new Parameter(PRIVATEKEYFILEPATH, "Private key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Path to the file containing private key."));
+        registerParameter(new Parameter(PUBLICKEYFILEPATH, "Public key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Path to the file containing public key."));
+        registerParameter(new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Alias for the key pair which will be created."));
+        registerParameter(new Parameter(KEYALGORITHM, "Key algorithm", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Algorithm the key is generated with, if not provided RSA will be assumed."));
+        registerParameter(new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
+                ParameterMode.PASSWORD, "Authentication code for the crypto token."));
     }
-    
+
     @Override
     public String getMainCommand() {
         return "importkeypair";
@@ -93,9 +96,8 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             keyAlgorithm = "RSA";
         }
         try {
-            final CryptoTokenSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE
-                    .getRemoteSession(CryptoTokenSessionRemote.class);
-            // Currently only RSA keys are supported
+            final CryptoTokenSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenSessionRemote.class);
+
             KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
 
             final CryptoToken currentCryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
@@ -103,26 +105,28 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
 
             InputStream targetStream = new ByteArrayInputStream(currentTokendata);
             keystore.load(targetStream, parameters.get(AUTHENTICATIONCODE).toCharArray());
-            
-            PrivateKey privateKey = loadPrivateKey(parameters.get(KEYFILEPATH) + "/" + "key.pem", keyAlgorithm);
-            PublicKey publicKey = loadPublicKey(parameters.get(KEYFILEPATH) + "/" + "public.pem", keyAlgorithm);
-            // import sign keys.
+
+            PrivateKey privateKey = loadPrivateKey(parameters.get(PRIVATEKEYFILEPATH), keyAlgorithm);
+            PublicKey publicKey = loadPublicKey(parameters.get(PUBLICKEYFILEPATH), keyAlgorithm);
+
             final Certificate[] certchain = new Certificate[1];
-            certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privateKey, publicKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privateKey, publicKey,
+                    AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
             keystore.setKeyEntry(alias, privateKey, null, certchain);
 
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keystore.store(baos, parameters.get(AUTHENTICATIONCODE).toCharArray());
 
-            CryptoToken newCryptoToken = new SoftCryptoToken();
-            
             final Properties properties = currentCryptoToken.getProperties();
-            newCryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), properties, baos.toByteArray(), cryptoTokenId, currentCryptoToken.getTokenName());
+            CryptoToken newCryptoToken = new SoftCryptoToken();
+
+            newCryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), properties, baos.toByteArray(), cryptoTokenId,
+                    currentCryptoToken.getTokenName());
             cryptoTokenSession.mergeCryptoToken(newCryptoToken);
             return CommandResult.SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
-            getLogger().error("Creating key pair with the alias  "  + alias + " failed : " + e);
+            getLogger().error("Creating key pair with the alias  " + alias + " failed : " + e);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
@@ -136,7 +140,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     public String getFullHelpText() {
         return getCommandDescription();
     }
-    
+
     private PrivateKey loadPrivateKey(final String filename, final String algorithm)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String privateKey = getKey(filename);
@@ -147,7 +151,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         return kf.generatePrivate(spec);
     }
-    
+
     private PublicKey loadPublicKey(final String filename, final String algorithm)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKey = getKey(filename);
@@ -158,7 +162,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         return kf.generatePublic(spec);
     }
-    
+
     private String getKey(final String filename) throws IOException {
         // Read key from file
         String strKeyPEM = "";
