@@ -164,7 +164,7 @@ public class CmpEstConfigCommandTest {
         assertEquals(expectedPostfix, estConfiguration.getRANameGenPostfix(alias));
     }
 
-    /** Verify that the alisa is not currently in use on the system where this test is run. */
+    /** Verify that the alias is not currently in use on the system where this test is run. */
     private void assertUnusedAlias(final String errorMsg, final String alias) throws IllegalStateException {
         if (((EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID)).aliasExists(alias)) {
             throw new IllegalStateException("EST configuation alias '" + errorMsg + "' exists. " + errorMsg);
