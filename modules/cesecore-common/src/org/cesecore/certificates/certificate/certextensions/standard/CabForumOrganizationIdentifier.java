@@ -29,6 +29,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 
 /**
+ * Represents the CA/B Forum Organization Identifier, including additional information about
+ * an organization to comply with EU regulations. Introduced in <a href="https://cabforum.org/pipermail/servercert-wg/2019-March/000691.html">
+ * Ballot SC17 version 2: Alternative registration numbers for EU certificates.</a>
+ * 
  * @version $Id$
  */
 public class CabForumOrganizationIdentifier extends StandardCertificateExtension {
