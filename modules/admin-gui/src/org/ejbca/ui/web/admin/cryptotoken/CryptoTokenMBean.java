@@ -1300,10 +1300,21 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             if (getCurrentCryptoToken().isActive()) {
                 // Add existing key pairs
                 try {
-                    ret.addAll(cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())
-                            .stream()
-                            .map(KeyPairGuiInfo::new)
-                            .collect(Collectors.toList()));
+                    final Properties tokenProperties = cryptoTokenManagementSession.getCryptoToken(getCurrentCryptoTokenId()).getProperties();
+                    for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())) {
+                        final KeyPairGuiInfo keyPairGuiInfo = new KeyPairGuiInfo(keyPairInfo);
+                        // If CP5 HSM, add KAK association for each key
+                        if (getCurrentCryptoToken().isShowAuthorizationInfo()) {
+                            String kakProperties = tokenProperties.getProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + keyPairInfo.getAlias());
+                            if (kakProperties != null) {
+                                // {cryptoTokenId, alias}
+                                String[] kakAssociation = kakProperties.split(";");
+                                keyPairGuiInfo.setSelectedKakCryptoTokenId(Integer.parseInt(kakAssociation[0]));
+                                keyPairGuiInfo.setSelectedKakKeyAlias(kakAssociation[1]);
+                            }
+                        }
+                        ret.add(keyPairGuiInfo);
+                    }
                     keyPairGuiListError = null; // if we had an error last time we loaded but it has been fixed.
                 } catch (CryptoTokenOfflineException ctoe) {
                     keyPairGuiListError = "Failed to load key pairs from CryptoToken: " + ctoe.getMessage();

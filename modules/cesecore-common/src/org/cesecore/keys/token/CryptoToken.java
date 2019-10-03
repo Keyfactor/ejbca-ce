@@ -62,6 +62,12 @@ public interface CryptoToken extends Serializable {
     /** Whether non-existent slots should be allowed or throw an NoSuchSlotException */
     static final String ALLOW_NONEXISTING_SLOT_PROPERTY = "allow.nonexisting.slot";
 
+    /** 
+     * CP5 specific property used to store an assocation from a Key Authorization Key to a HSM Key.
+     * Should be followed by a key alias, resulting in the format like "KAK_certSignKey".
+     */
+    public static final String KAK_ASSOCIATION_PREFIX = "KAK_";
+    
     /**
      * Method called after creation of instance. Gives the object it's properties.
      *
