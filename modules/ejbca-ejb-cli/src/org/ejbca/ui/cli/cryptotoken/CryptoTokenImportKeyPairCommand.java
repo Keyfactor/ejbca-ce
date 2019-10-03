@@ -29,6 +29,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -61,6 +62,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private static final String PRIVATEKEYFILEPATH = "--privkey-file";
     private static final String PUBLICKEYFILEPATH = "--pubkey-file";
     private static final String KEYALGORITHM = "--key-algorithm";
+    private static final String KEYSPEC = "--key-spec";
     private static final String AUTHENTICATIONCODE = "--auth-code";
     private static final String ALIAS = "--alias";
     private static final String PRIVKEYPASS = "--privkey-pass";
@@ -86,6 +88,9 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
                 "Alias for the key pair which will be created."));
         registerParameter(new Parameter(KEYALGORITHM, "Key algorithm", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Algorithm the key is generated with (RSA, EC, DSA), if not provided RSA will be assumed."));
+        registerParameter(new Parameter(KEYSPEC, "Key specification", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Specification used to generated the key, if not provided SHA256 will be assumed. Format could be any of the followings: "
+                + "SHA1, SHA256, SHA384, SHA512, SHA3-256, SHA3-384, SHA3-512."));
         registerParameter(new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
                 ParameterMode.PASSWORD, "Authentication code for the crypto token."));
         registerParameter(new Parameter(PRIVKEYPASS, "Privatekey password", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -107,23 +112,27 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
         final String alias = parameters.get(ALIAS);
         String keyAlgorithm = parameters.get(KEYALGORITHM);
+        String keySpec = parameters.get(KEYSPEC);                
         char[] privateKeyPass = null; 
         
         if (keyAlgorithm == null) {
             keyAlgorithm = "RSA";
         }
+        if (keySpec == null) {
+            keySpec = "SHA256";
+        }
+        
         if (parameters.get(PRIVKEYPASS) != null) {
             privateKeyPass = parameters.get(PRIVKEYPASS).toCharArray();
         }
         try {
             final CryptoTokenSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenSessionRemote.class);
-
-            KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-
             final CryptoToken currentCryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
             final byte[] currentTokendata = currentCryptoToken.getTokenData();
 
-            InputStream targetStream = new ByteArrayInputStream(currentTokendata);
+            final InputStream targetStream = new ByteArrayInputStream(currentTokendata);
+
+            KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(targetStream, parameters.get(AUTHENTICATIONCODE).toCharArray());
 
             PrivateKey privateKey = loadPrivateKey(parameters.get(PRIVATEKEYFILEPATH), keyAlgorithm);
@@ -131,18 +140,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             
             // Dummy certificate chain to hold keys
             final Certificate[] certchain = new Certificate[1];
-            String signatureAlgorithm = null;
-            switch (keyAlgorithm) {
-            case "EC":
-                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-                break;
-            case "DSA":
-                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-                break;
-            default:
-                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-                break;
-            }
+            final String signatureAlgorithm = getSignatureAlgorithm(keyAlgorithm + "-" + keySpec);
             
             certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privateKey, publicKey,
                     signatureAlgorithm, true);
@@ -180,22 +178,22 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         String privateKey = getKey(filename);
         switch (algorithm) {
         case "EC":
-            privateKey = privateKey.replace(EC_KEY_HEADER, "");
-            privateKey = privateKey.replace(EC_KEY_FOOTER, "");
+            privateKey = privateKey.replace(EC_KEY_HEADER, StringUtils.EMPTY);
+            privateKey = privateKey.replace(EC_KEY_FOOTER, StringUtils.EMPTY);
             break;
         case "DSA":
-            privateKey = privateKey.replace(DSA_KEY_HEADER, "");
-            privateKey = privateKey.replace(DSA_KEY_FOOTER, "");
+            privateKey = privateKey.replace(DSA_KEY_HEADER, StringUtils.EMPTY);
+            privateKey = privateKey.replace(DSA_KEY_FOOTER, StringUtils.EMPTY);
             break;
         default:
-            privateKey = privateKey.replace(RSA_KEY_HEADER, "");
-            privateKey = privateKey.replace(RSA_KEY_FOOTER, "");
+            privateKey = privateKey.replace(RSA_KEY_HEADER, StringUtils.EMPTY);
+            privateKey = privateKey.replace(RSA_KEY_FOOTER, StringUtils.EMPTY);
             break;
         }
         
         // Sometimes key file contains just these headers
-        privateKey = privateKey.replace(PRIV_KEY_HEADER, "");
-        privateKey = privateKey.replace(PRIV_KEY_FOOTER, "");
+        privateKey = privateKey.replace(PRIV_KEY_HEADER, StringUtils.EMPTY);
+        privateKey = privateKey.replace(PRIV_KEY_FOOTER, StringUtils.EMPTY);
         
         final byte[] keyBytes = Base64.decode(privateKey.getBytes());
         final KeyFactory kf = KeyFactory.getInstance(algorithm);
@@ -206,8 +204,8 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private PublicKey loadPublicKey(final String filename, final String algorithm)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKey = getKey(filename);
-        publicKey = publicKey.replace("-----BEGIN PUBLIC KEY-----\n", "");
-        publicKey = publicKey.replace("-----END PUBLIC KEY-----", "");
+        publicKey = publicKey.replace("-----BEGIN PUBLIC KEY-----\n", StringUtils.EMPTY);
+        publicKey = publicKey.replace("-----END PUBLIC KEY-----", StringUtils.EMPTY);
         final byte[] keyBytes = Base64.decode(publicKey.getBytes());
         final KeyFactory kf = KeyFactory.getInstance(algorithm);
         final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
@@ -216,7 +214,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
 
     private String getKey(final String filename) throws IOException {
         // Read key from file
-        String strKeyPEM = "";
+        String strKeyPEM = StringUtils.EMPTY;
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String line;
         while ((line = br.readLine()) != null) {
@@ -225,4 +223,57 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         br.close();
         return strKeyPEM;
     }
+    
+    private String getSignatureAlgorithm(final String keyAlgorithm) {
+        String signatureAlgorithm = null;
+        switch (keyAlgorithm) {
+        case "DSA-SHA1":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+            break;
+        case "RSA-SHA256":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+            break;
+        case "RSA-SHA384":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_RSA;
+            break;
+        case "RSA-SHA512":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_RSA;
+            break;
+        case "RSA-SHA3-256":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+            break;
+        case "RSA-SHA3-384":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA;
+            break;
+        case "RSA-SHA3-512":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+            break;
+        case "EC-SHA1":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
+            break;
+        case "EC-SHA256":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+            break;
+        case "EC-SHA384":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;
+            break;
+        case "EC-SHA512":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
+            break; 
+        case "EC-SHA3-256":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
+            break;
+        case "EC-SHA3-384":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA;
+            break;
+        case "EC-SHA3-512":
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
+            break;
+        default:
+            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+            break;
+        }
+        return signatureAlgorithm;
+    }
+    
 }
