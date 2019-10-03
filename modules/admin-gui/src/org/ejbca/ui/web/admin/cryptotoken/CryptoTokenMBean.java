@@ -420,10 +420,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isShowAuthorizationInfo() {
             return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
         }
-        
-        public boolean isShowPaddingSchemeInfo() {
-            return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
-        }
     }
 
     /**

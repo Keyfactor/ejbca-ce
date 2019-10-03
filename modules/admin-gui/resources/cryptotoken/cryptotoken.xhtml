@@ -398,7 +398,7 @@
 					<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}"
 						rendered="#{keyPairGuiInfo.placeholder}" />
 				</h:column>
-                <h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showPaddingSchemeInfo}">
+                <h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_PADDING_SCHEME}"/>
                     </f:facet>
