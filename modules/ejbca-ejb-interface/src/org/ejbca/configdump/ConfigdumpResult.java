@@ -22,9 +22,7 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class ConfigdumpResult implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private final List<String> reportedErrors;
     private final List<String> reportedWarnings;
 
@@ -44,5 +42,4 @@ public abstract class ConfigdumpResult implements Serializable {
     public boolean isSuccessful() {
         return reportedErrors.isEmpty();
     }
-
 }
