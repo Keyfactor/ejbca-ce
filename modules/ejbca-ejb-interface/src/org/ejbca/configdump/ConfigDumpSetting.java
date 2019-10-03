@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Data class containing settings for configuration dump.
@@ -28,7 +31,6 @@ import java.util.Map;
  *
  */
 public class ConfigDumpSetting implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public enum ItemType {
@@ -81,8 +83,7 @@ public class ConfigDumpSetting implements Serializable {
 
         @Override
         public int hashCode() {
-            // We use a sum of the fields hashcodes. The second hashcode is multiplied by some prime number. This is common practice in Java (see String.hashCode)
-            return type.hashCode() + 7*(name != null ? name.hashCode() : -1);
+            return new HashCodeBuilder().append(type).append(name).toHashCode();
         }
 
         @Override
@@ -109,7 +110,8 @@ public class ConfigDumpSetting implements Serializable {
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
     private ImportMode importMode;
-    private Map<ItemKey,ImportMode> overwriteResolutions = new HashMap<>();
+    private Map<ItemKey, ImportMode> overwriteResolutions = new HashMap<>();
+    private Map<ItemKey, String> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas;
@@ -255,5 +257,12 @@ public class ConfigDumpSetting implements Serializable {
         // Didn't match anything. Default is to include.
         return true;
     }
-    
+
+    public void putPassword(final ItemKey itemKey, final String password) {
+        passwords.put(itemKey, password);
+    }
+
+    public Optional<String> getPasswordFor(final ItemKey itemKey) {
+        return Optional.ofNullable(passwords.get(itemKey));
+    }
 }
