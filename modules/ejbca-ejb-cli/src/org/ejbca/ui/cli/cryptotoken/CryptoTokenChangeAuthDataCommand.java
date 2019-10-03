@@ -32,31 +32,30 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
     private static final Logger log = Logger.getLogger(CryptoTokenChangeAuthDataCommand.class);
 
     private static final String ALIAS = "--alias";
+    private static final String CURRENT_KAK_TOKEN = "--current-kak-token";
     private static final String CURRENTKAKTOKENKEYALIAS = "--current-kak-tokenkey-alias";
+    private static final String NEW_KAK_TOKEN = "--new-kak-token";
     private static final String NEWKAKTOKENKEYALIAS = "--new-kak-tokenkey-alias";
     private static final String PADDING_SCHEME = "--padding-scheme";
-    private static final String NEW_KAK_TOKEN = "--new-kak-token";
-    private static final String CURRENT_KAK_TOKEN = "--current-kak-token";
-    
     
     {
         registerParameter(
-                new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "HSM Key pair alias"));
+                new Parameter(ALIAS, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Alias of the HSM key to change authorization data for"));
+        registerParameter(
+                new Parameter(CURRENT_KAK_TOKEN, "Current kak token name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Token representing the current kak in use."));
         registerParameter(
                 new Parameter(CURRENTKAKTOKENKEYALIAS, "Current kak token key alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Alias of the current kak token key."));
+        registerParameter(
+                new Parameter(NEW_KAK_TOKEN, "New kak token name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "Token representing the new kak to be used."));
         registerParameter(
                 new Parameter(NEWKAKTOKENKEYALIAS, "New kak token key alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Alias of the new kak token key."));
         registerParameter(
                 new Parameter(PADDING_SCHEME, "Padding Scheme", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Padding scheme used to sign the hash of new kak with, must be same as the old padding scheme."));
-        registerParameter(
-                new Parameter(NEW_KAK_TOKEN, "New kak token name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Token representing the new kak to be used."));
-        registerParameter(
-                new Parameter(CURRENT_KAK_TOKEN, "Current kak token name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Token representing the current kak in use."));
     }
 
     @Override
@@ -66,7 +65,7 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Changes authentication data for a CP5 HSM key.";
+        return "Changes authorization data for a CP5 HSM key.";
     }
 
     @Override
@@ -84,6 +83,7 @@ public class CryptoTokenChangeAuthDataCommand extends BaseCryptoTokenCommand {
             final int currentKakTokenId = cryptoTokenManagementSession.getIdFromName(parameters.get(CURRENT_KAK_TOKEN));
 
             cryptoTokenManagementSession.changeAuthData(getAdmin(), cryptoTokenId, alias, currentKakTokenId, newKakTokenId, currentKakTokenKeyAlias, newKakTokenKeyAlias, selectedPaddingScheme);
+            getLogger().info("Authorization data changed successfully for the key with alias " + alias);
             return CommandResult.SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
