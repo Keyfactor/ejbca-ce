@@ -63,9 +63,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(Pkcs11NgCryptoToken.class);
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
+    /** Keys, specific to PKCS#11, that can be defined in CA token properties */
     public static final String SLOT_LABEL_VALUE = "slotLabelValue";
     public static final String SLOT_LABEL_TYPE = "slotLabelType";
     public static final String SHLIB_LABEL_KEY = "sharedLibrary";
