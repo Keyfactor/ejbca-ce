@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -442,5 +443,26 @@ public class CaHierarchyTest {
         assertTrue(cas.indexOf("rootCa2") < cas.indexOf("center"));
         assertTrue(cas.indexOf("center") < cas.indexOf("bottom1"));
         assertTrue(cas.indexOf("center") < cas.indexOf("bottom2"));
+    }
+
+    @Test
+    public void testIterator() {
+        final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
+            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "rootCa")) {
+                return true;
+            }
+            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "issuingCa")) {
+                return true;
+            }
+            return false;
+        };
+        final CaHierarchy<String> caHierarchy = CaHierarchy.singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "issuingCa")),
+                isSignedBy);
+        final List<String> cas = new ArrayList<>();
+        for (final String ca : caHierarchy) {
+            cas.add(ca);
+        }
+        assertEquals("rootCa", cas.get(0));
+        assertEquals("issuingCa", cas.get(1));
     }
 }
