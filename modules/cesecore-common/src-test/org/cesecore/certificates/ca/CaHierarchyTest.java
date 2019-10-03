@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.StringUtils;
 import org.junit.Test;
@@ -113,40 +114,67 @@ public class CaHierarchyTest {
     }
 
     @Test
-    public void test2CaHierarchiesWithOnlyRoot() throws Exception {
+    public void test2SmallCaHierarchies() throws Exception {
         final Certificate rootCa1Certificate = createMock(Certificate.class);
         final Certificate rootCa2Certificate = createMock(Certificate.class);
+        final Certificate issuingCa2Certificate = createMock(Certificate.class);
         final PublicKey rootCa1PublicKey = createMock(PublicKey.class);
         final PublicKey rootCa2PublicKey = createMock(PublicKey.class);
+        final PublicKey issuingCa2PublicKey = createMock(PublicKey.class);
 
         expect(rootCa1Certificate.getPublicKey()).andReturn(rootCa1PublicKey).anyTimes();
         expect(rootCa2Certificate.getPublicKey()).andReturn(rootCa2PublicKey).anyTimes();
+        expect(issuingCa2Certificate.getPublicKey()).andReturn(issuingCa2PublicKey).anyTimes();
 
         rootCa1Certificate.verify(rootCa1PublicKey);
         expectLastCall().andVoid();
         rootCa1Certificate.verify(rootCa2PublicKey);
+        expectLastCall().andThrow(new SignatureException());
+        rootCa1Certificate.verify(issuingCa2PublicKey);
         expectLastCall().andThrow(new SignatureException());
 
         rootCa2Certificate.verify(rootCa2PublicKey);
         expectLastCall().andVoid();
         rootCa2Certificate.verify(rootCa1PublicKey);
         expectLastCall().andThrow(new SignatureException());
+        rootCa2Certificate.verify(issuingCa2PublicKey);
+        expectLastCall().andThrow(new SignatureException());
+
+        issuingCa2Certificate.verify(rootCa1PublicKey);
+        expectLastCall().andThrow(new SignatureException());
+        issuingCa2Certificate.verify(rootCa2PublicKey);
+        expectLastCall().andVoid();
+        issuingCa2Certificate.verify(issuingCa2PublicKey);
+        expectLastCall().andThrow(new SignatureException());
 
         replay(rootCa1Certificate);
         replay(rootCa1PublicKey);
         replay(rootCa2Certificate);
         replay(rootCa2PublicKey);
+        replay(issuingCa2Certificate);
+        replay(issuingCa2PublicKey);
 
         final List<CaHierarchy<Certificate>> caHierarchies = CaHierarchy
-                .caHierarchiesFrom(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate)));
+                .caHierarchiesFrom(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate, issuingCa2Certificate)))
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
         assertEquals("Two CA hierarchies should be created.", 2, caHierarchies.size());
-        assertEquals(Arrays.asList(rootCa1Certificate), caHierarchies.get(0).toList());
-        assertEquals(Arrays.asList(rootCa2Certificate), caHierarchies.get(1).toList());
+        final List<Certificate> caHierarchy1Certificates = caHierarchies.get(0).toList();
+        final List<Certificate> caHierarchy2Certificates = caHierarchies.get(1).toList();
+        System.out.println(caHierarchy1Certificates);
+        System.out.println(caHierarchy2Certificates);
+        assertEquals("Wrong number of CAs in CA hierarchy.", 1, caHierarchy1Certificates.size());
+        assertEquals("Wrong number of CAs in CA hierarchy.", 2, caHierarchy2Certificates.size());
+        assertTrue("Root must appear before issuing CA.",
+                caHierarchy2Certificates.indexOf(rootCa2Certificate) < caHierarchy2Certificates.indexOf(issuingCa2Certificate));
 
         verify(rootCa1Certificate);
         verify(rootCa1PublicKey);
         verify(rootCa2Certificate);
         verify(rootCa2PublicKey);
+        verify(issuingCa2Certificate);
+        verify(issuingCa2PublicKey);
     }
 
     @Test(expected = IllegalArgumentException.class)
