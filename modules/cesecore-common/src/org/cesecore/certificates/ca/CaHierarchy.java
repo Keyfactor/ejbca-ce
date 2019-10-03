@@ -69,7 +69,7 @@ import java.util.stream.Collectors;
  * 
  * @version $Id$
  */
-public class CaHierarchy<T> {
+public class CaHierarchy<T> implements Comparable<CaHierarchy<T>> {
     /**
      * Represents an edge <code>(A -> B)</code> in a graph, where A and B are CAs and A has signed B.
      * 
@@ -294,5 +294,17 @@ public class CaHierarchy<T> {
                 .sorted(compareAscending())
                 .map(entry -> entry.getKey())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Compares two CA hierarchies based on size in ascending order.
+     * 
+     * @param anotherCaHierarchy another CA hierarchy to compare with.
+     * @return a negative number if this CA hierarchy is smaller than the other CA hierarchy, zero if they have
+     * the same size, and a positive number of this CA hierarchy is larger than the other CA hierarchy.
+     */
+    @Override
+    public int compareTo(final CaHierarchy<T> anotherCaHierarchy) {
+        return Integer.compare(toList().size(), anotherCaHierarchy.toList().size());
     }
 }
