@@ -19,6 +19,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -69,7 +70,7 @@ import java.util.stream.Collectors;
  * 
  * @version $Id$
  */
-public class CaHierarchy<T> implements Comparable<CaHierarchy<T>> {
+public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
     /**
      * Represents an edge <code>(A -> B)</code> in a graph, where A and B are CAs and A has signed B.
      * 
@@ -306,5 +307,16 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>> {
     @Override
     public int compareTo(final CaHierarchy<T> anotherCaHierarchy) {
         return Integer.compare(toList().size(), anotherCaHierarchy.toList().size());
+    }
+
+    /**
+     * Get an iterator for this CA hierarchy, iterating over the CAs in this CA hierarchy in the order
+     * returned by {@link #toList()}.
+     * 
+     * @return an iterator for this CA hierarchy.
+     */
+    @Override
+    public Iterator<T> iterator() {
+        return toList().iterator();
     }
 }
