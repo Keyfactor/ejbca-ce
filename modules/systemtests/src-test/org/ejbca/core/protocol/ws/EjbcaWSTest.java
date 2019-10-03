@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,13 +182,6 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -2496,7 +2496,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertEquals("Wrong Subject DN was returned", testSubjectDn, savedEndEntity.getDN());
             final ExtendedInformation savedExtInfo = savedEndEntity.getExtendedInformation();
             assertNotNull("ExtendedInformation was null", savedExtInfo);
-            assertEquals("CA/B Forum Organization Identifier was not set in ExtendedInormation", testOrgIdent, savedExtInfo.getCabfOrganizationIdentifier());
+            assertEquals("CA/B Forum Organization Identifier was not set in ExtendedInformation", testOrgIdent,
+                    savedExtInfo.getCabfOrganizationIdentifier());
         } finally {
             deleteUser(testUser);
             log.trace("<test78AddUserWithExtendedInformation");

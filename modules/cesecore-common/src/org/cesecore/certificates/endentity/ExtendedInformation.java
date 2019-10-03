@@ -362,7 +362,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
-     * Returns the PSD2 Role Of PSP (TS 119 495) used in this profile, or null if none are present.
+     * @return the PSD2 Role Of PSP (TS 119 495) used in this profile, or null if none are present.
      */
     public List<PSD2RoleOfPSPStatement> getQCEtsiPSD2RolesOfPSP() {
         String value = (String) data.get(QCETSIPSD2ROLESOFPSP);
@@ -405,8 +405,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return (String) data.get(QCETSIPSD2NCANAME);
     }
 
-    /** Sets NCA Name (TS 119 495)
-     * @param qcpsd2ncaname NCA Name (TS 119 495) max 256 chars */
+    /** 
+     * Sets NCA Name (TS 119 495).
+     * @param qcpsd2ncaname NCA Name (TS 119 495) max 256 chars 
+     */
     public void setQCEtsiPSD2NcaName(String qcpsd2ncaname) {
         if (qcpsd2ncaname == null) {
             data.remove(QCETSIPSD2NCANAME);
@@ -420,8 +422,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return (String) data.get(QCETSIPSD2NCAID);
     }
 
-    /** Sets NCA Id (TS 119 495)
-     * @param qcpsd2ncaid NCA Id (TS 119 495) max 256 chars */
+    /** 
+     * Sets NCA Id (TS 119 495)
+     * @param qcpsd2ncaid NCA Id (TS 119 495) max 256 chars 
+     */
     public void setQCEtsiPSD2NcaId(String qcpsd2ncaid) {
         if (qcpsd2ncaid == null) {
             data.remove(QCETSIPSD2NCAID);
@@ -436,12 +440,15 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * where III is the Registration Scheme Identifier, CC is the country code,
      * PP is an optional state/province code and RRR is the coutry/state specific
      * registration reference.
+     * @return the CA/B Forum Organization Identifier string.
      */
     public String getCabfOrganizationIdentifier() {
         return StringUtils.defaultString((String) data.get(CABFORGANIZATIONIDENTIFIER));
     }
 
-    /** Sets the full CA/B Forum Organization Identifier string */
+    /** 
+     * Sets the full CA/B Forum Organization Identifier string
+     */
     public void setCabfOrganizationIdentifier(final String value) {
         if (StringUtils.isEmpty(value)) {
             data.remove(CABFORGANIZATIONIDENTIFIER);
@@ -512,6 +519,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Gets generic string data from the ExtendedInformation map.
+     * @return a string from the ExtendedInformation map.
      */
     public String getMapData(String key) {
         String ret = null;
