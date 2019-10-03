@@ -244,9 +244,19 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         final PrivateKey kakPrivateKey = kakCryptoToken.getPrivateKey(kakTokenKeyAlias);
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
-        final String signProviderName = kakCryptoToken.getSignProviderName();
+        final String signProviderName = kakCryptoToken.getSignProviderName(); 
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
         cryptoToken.keyAuthorizeInit(alias, kakPair, signProviderName, selectedPaddingScheme);
+        
+        // Persist KAK association for this key alias
+        final String kakAssociation =  kakTokenid + ";" + kakTokenKeyAlias;
+        cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
+        }
+        
     }
     
     @Override
@@ -281,8 +291,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PrivateKey newKakPrivateKey = newKakCryptoToken.getPrivateKey(newKakTokenKeyAlias);
         final PublicKey newKakPublicKey = newKakCryptoToken.getPublicKey(newKakTokenKeyAlias);
         final KeyPair newKakPair = new KeyPair(newKakPublicKey, newKakPrivateKey);
-        
+        // Update authoriztion data on HSM
         cryptoToken.changeAuthData(alias, currentkakPair, newKakPair, signProviderName, selectedPaddingScheme);
+        
+        // Persist new KAK association for this key alias
+        final String kakAssociation =  newKakTokenId + ";" + newKakTokenKeyAlias;
+        cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
+        }
     }    
     
     @Override
@@ -865,6 +884,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         } 
         
         assertAliasNotInUse(cryptoToken, alias);
+
+        // If CP5, remove KAK association from database
+        if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoToken.getClass().getSimpleName())) {
+            cryptoToken.getProperties().remove(CryptoToken.KAK_ASSOCIATION_PREFIX + alias);
+        }
+        
         log.debug("cryptoTokenSession.mergeCryptoToken");
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
         try {
