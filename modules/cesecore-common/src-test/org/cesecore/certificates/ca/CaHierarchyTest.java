@@ -163,8 +163,6 @@ public class CaHierarchyTest {
         assertEquals("Two CA hierarchies should be created.", 2, caHierarchies.size());
         final List<Certificate> caHierarchy1Certificates = caHierarchies.get(0).toList();
         final List<Certificate> caHierarchy2Certificates = caHierarchies.get(1).toList();
-        System.out.println(caHierarchy1Certificates);
-        System.out.println(caHierarchy2Certificates);
         assertEquals("Wrong number of CAs in CA hierarchy.", 1, caHierarchy1Certificates.size());
         assertEquals("Wrong number of CAs in CA hierarchy.", 2, caHierarchy2Certificates.size());
         assertTrue("Root must appear before issuing CA.",
