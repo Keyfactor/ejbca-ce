@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
+
 /**
  * This class represents a CA hierarchy as an immutable graph. Each node in the graph contains
  * a CA of type <code>T</code>.
@@ -116,7 +118,9 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         }
     }
     
+    private static final Logger log = Logger.getLogger(CaHierarchy.class);
     private final List<Edge<T>> edges;
+    private final List<T> nodes;
 
     /**
      * Create a single CA hierarchy from a set of certificates. Use {@link #caHierarchiesFrom(Set)} if your
@@ -149,6 +153,9 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
      * @return a single CA hierarchy.
      */
     public static <T> CaHierarchy<T> singleCaHierarchyFrom(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
+        if (log.isTraceEnabled()) {
+            log.trace("Creating a single CA hierarchy from: " + cas);
+        }
         final List<CaHierarchy<T>> caHierarchies = caHierarchiesFrom(cas, isSignedBy);
         if (caHierarchies.size() > 1) {
             throw new IllegalArgumentException("More than one CA hierarchy found.");
@@ -165,6 +172,9 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
      * @return one or more CA hierarchies.
      */
     public static <T> List<CaHierarchy<T>> caHierarchiesFrom(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
+        if (log.isTraceEnabled()) {
+            log.trace("Creating CA hierarchies from: " + cas);
+        }
         final List<CaHierarchy<T>> caHierarchies = computeCaHierarchies(cas, isSignedBy);
         if (caHierarchies.size() == 0) {
             throw new IllegalArgumentException("No CA hierarchies found.");
@@ -176,6 +186,9 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         final List<Edge<T>> allEdges = cas.stream()
                 .flatMap(a -> cas.stream().filter(b -> isSignedBy.test(a, b)).map(b -> new Edge<T>(a, b)))
                 .collect(Collectors.toList());
+        if (log.isTraceEnabled()) {
+            log.trace("Computed edges: " + allEdges);
+        }
         final List<CaHierarchy<T>> caHierarchies = new ArrayList<>();
         final Set<Edge<T>> edgesToProcess = new HashSet<>(allEdges);
         while (!edgesToProcess.isEmpty()) {
@@ -189,6 +202,9 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
                 .filter(edge -> edge.isSelfLoop())
                 .findAny();
         if (!selfLoop.isPresent()) {
+            if (log.isTraceEnabled()) {
+                log.trace("Remaining edges: " + edgesToProcess);
+            }
             throw new IllegalArgumentException("CA hierarchy without a root found.");
         }
         final List<Edge<T>> edgesInCaHierarchy = new ArrayList<>();
@@ -227,6 +243,17 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
 
     private CaHierarchy(final List<Edge<T>> edges) {
         this.edges = edges;
+        this.nodes = edges.stream()
+                .map(edge -> edge.getB())
+                .distinct()
+                .map(ca -> new AbstractMap.SimpleImmutableEntry<T, Integer>(ca, computeLevel(ca)))
+                .sorted(compareAscending())
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
+        if (log.isTraceEnabled()) {
+            log.trace("Initialized CA hierarchy with edges: " + this.edges);
+            log.trace("Initialized CA hierarchy with nodes: " + this.nodes);
+        }
     }
 
     /**
@@ -288,13 +315,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
      * @return a topologically sorted list of all CAs in this CA hierarchy.
      */
     public List<T> toList() {
-        return edges.stream()
-                .map(edge -> edge.getB())
-                .distinct()
-                .map(ca -> new AbstractMap.SimpleImmutableEntry<T, Integer>(ca, computeLevel(ca)))
-                .sorted(compareAscending())
-                .map(entry -> entry.getKey())
-                .collect(Collectors.toList());
+        return new ArrayList<>(nodes);
     }
 
     /**
