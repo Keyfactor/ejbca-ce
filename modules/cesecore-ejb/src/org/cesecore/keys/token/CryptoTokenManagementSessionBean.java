@@ -246,8 +246,16 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
         final String signProviderName = kakCryptoToken.getSignProviderName(); 
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Initialized key in CryptoToken " + cryptoTokenId);
+        details.put("keyAlias", alias);
+        details.put("keyAuthorizationKeyToken", kakTokenid);
+        details.put("keyAuthorizationKeyAlias", kakTokenKeyAlias);
+
         cryptoToken.keyAuthorizeInit(alias, kakPair, signProviderName, selectedPaddingScheme);
-        
+        // Audit log immediatly. Change has already occured in HSM.
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_INITIALIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), null, null, null, details);
         // Persist KAK association for this key alias
         final String kakAssociation =  kakTokenid + ";" + kakTokenKeyAlias;
         cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);
@@ -256,7 +264,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         } catch (CryptoTokenNameInUseException e) {
             throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
-        
     }
     
     @Override
@@ -271,7 +278,16 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
         final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Authorized key in CryptoToken " + cryptoTokenId);
+        details.put("keyAlias", alias);
+        details.put("keyAuthorizationKeyToken", kakTokenid);
+        details.put("keyAuthorizationKeyAlias", kakTokenKeyAlias);
+        
         cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount, selectedPaddingScheme);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_AUTHORIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), null, null, null, details);
+        
     }
     
     @Override
@@ -291,9 +307,19 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PrivateKey newKakPrivateKey = newKakCryptoToken.getPrivateKey(newKakTokenKeyAlias);
         final PublicKey newKakPublicKey = newKakCryptoToken.getPublicKey(newKakTokenKeyAlias);
         final KeyPair newKakPair = new KeyPair(newKakPublicKey, newKakPrivateKey);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Changed Authorization key in CryptoToken " + cryptoTokenId);
+        details.put("keyAlias", alias);
+        details.put("previousKeyAuthorizationKeyToken", currentKakTokenId);
+        details.put("previousKeyAuthorizationKeyAlias", currentKakTokenKeyAlias);
+        details.put("newKeyAuthorizationKeyToken", newKakTokenId);
+        details.put("newKeyAuthorizationKeyAlias", newKakTokenKeyAlias);
+        
         // Update authoriztion data on HSM
         cryptoToken.changeAuthData(alias, currentkakPair, newKakPair, signProviderName, selectedPaddingScheme);
-        
+        // Audit log immediatly. Change has already occured in HSM.
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CHANGE_AUTH_DATA, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), null, null, null, details);
         // Persist new KAK association for this key alias
         final String kakAssociation =  newKakTokenId + ";" + newKakTokenKeyAlias;
         cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);

@@ -73,6 +73,10 @@ public enum EventTypes implements EventType {
     CRL_DELETED,
     /** Issuance of a Certificate Revocation List by a Certificate Authority. */
     CRL_CREATION,
+    /** Authorization of a CP5 HSM Key */
+    CRYPTOTOKEN_AUTHORIZE_KEY,
+    /** Key Authorization Key change of a CP5 HSM key*/
+    CRYPTOTOKEN_CHANGE_AUTH_DATA,
     /** Creation of a Crypto Token. */
     CRYPTOTOKEN_CREATE,
     /** Modification of a Crypto Token. */
@@ -93,6 +97,8 @@ public enum EventTypes implements EventType {
     CRYPTOTOKEN_GEN_KEY,
     /** <i>Event type is currently not used in EJBCA.</i> */
     CRYPTOTOKEN_GEN_EXTRACT_KEYPAIR,
+    /** Initialization of a HSM CP5 Key */
+    CRYPTOTOKEN_INITIALIZE_KEY,
     /** Modification of the Crypto Token's auto-activation PIN. For soft key stores, this also implies changes of the protection of the key material. */
     CRYPTOTOKEN_UPDATEPIN,
     /** Modification of an existing validator. */
