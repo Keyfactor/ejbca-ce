@@ -627,5 +627,5 @@ public abstract class CryptoTokenTestBase {
     }
     */
     
-    abstract String getProvider();
+    protected abstract String getProvider();
 }
