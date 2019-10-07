@@ -72,7 +72,7 @@
         <ant antfile="${mod.va.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
     
-    <target name="ra-gui-clean" if="${mod.ra.exists}">
+    <target name="ra-gui-clean" if="${variant.ra.enabled}">
         <echo message="Cleaning ra"/>
         <ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
