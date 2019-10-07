@@ -38,6 +38,7 @@
 
     <target name="clean">
         <delete dir="${batchenrollment-gui.dist.dir}/"/>
+        <delete dir="${batchenrollment-gui.build.dir}/"/>
     </target>
 
     <target name="jar" depends="build"/>
