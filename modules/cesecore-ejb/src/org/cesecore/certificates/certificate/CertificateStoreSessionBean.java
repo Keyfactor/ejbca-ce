@@ -1097,7 +1097,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             // Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
             int status = CertificateConstants.CERT_ACTIVE;
             certificateData.setStatus(status);
-            certificateData.setRevocationDate(revokeDate);
+            certificateData.setRevocationDate(now.getTime());
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
 
