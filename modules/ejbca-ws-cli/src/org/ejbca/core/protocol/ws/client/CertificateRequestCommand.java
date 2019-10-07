@@ -145,19 +145,19 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
         }
     }
 
-	private String getRequestData(String regestDataPath) {
+	private String getRequestData(String requestDataPath) {
 		String retval=null;
 		try {
-			FileInputStream fis = new FileInputStream(regestDataPath);
+			FileInputStream fis = new FileInputStream(requestDataPath);
 			byte[] contents = new byte[fis.available()];
 			fis.read(contents);			
 			fis.close();
 			retval = new String(contents);
 		} catch (FileNotFoundException e) {
-			getPrintStream().println("Error : request data file could not be found.");
+			getPrintStream().println("Error : request data file could not be found: " + e.getMessage());
 			System.exit(-1); // NOPMD, it's not a JEE app		
 		} catch (IOException e) {
-			getPrintStream().println("Error reading content of request data file.");
+			getPrintStream().println("Error reading content of request data file: " + e.getMessage());
 			System.exit(-1); // NOPMD, it's not a JEE app	
 		}
 		
@@ -168,15 +168,15 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	private String getOutputPath(String outputpath) {
 		File dir = new File(outputpath);
 		if(!dir.exists()){
-			getPrintStream().println("Error : Output directory doesn't seem to exist.");
+			getPrintStream().println("Error : Output directory does not exist: " + outputpath);
 			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if(!dir.isDirectory()){
-			getPrintStream().println("Error : Output directory doesn't seem to be a directory.");
+			getPrintStream().println("Error : Output directory is not a directory: " + outputpath);
 			System.exit(-1); // NOPMD, it's not a JEE app			
 		}
 		if(!dir.canWrite()){
-			getPrintStream().println("Error : Output directory isn't writeable.");
+			getPrintStream().println("Error : Output directory is not writeable: " + outputpath);
 			System.exit(-1); // NOPMD, it's not a JEE app
 
 		}
