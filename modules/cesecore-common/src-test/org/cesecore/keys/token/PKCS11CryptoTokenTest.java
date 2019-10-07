@@ -140,7 +140,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
     }
 
 	@Override
-	String getProvider() {
+    protected String getProvider() {
 		return PKCS11TestUtils.getHSMProvider();
 	}
 
