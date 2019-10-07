@@ -253,7 +253,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("keyAuthorizationKeyAlias", kakTokenKeyAlias);
 
         cryptoToken.keyAuthorizeInit(alias, kakPair, signProviderName, selectedPaddingScheme);
-        // Audit log immediately. Change has already occured in HSM.
+        // Audit log immediately. Change has already occurred in HSM.
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_INITIALIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
         // Persist KAK association for this key alias
@@ -317,7 +317,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         
         // Update authorization data on HSM
         cryptoToken.changeAuthData(alias, currentkakPair, newKakPair, signProviderName, selectedPaddingScheme);
-        // Audit log immediately. Change has already occured in HSM.
+        // Audit log immediately. Change has already occurred in HSM.
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CHANGE_AUTH_DATA, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
         // Persist new KAK association for this key alias
