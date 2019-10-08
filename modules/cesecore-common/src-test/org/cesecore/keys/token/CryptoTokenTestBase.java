@@ -185,7 +185,7 @@ public abstract class CryptoTokenTestBase {
         cryptoToken.testKeyPair("dsatest00001");
 
         // Generate new keys again
-        cryptoToken.generateKeyPair("DSA2048", "dsatest00002");
+        cryptoToken.generateKeyPair("DSA1024", "dsatest00002");
         priv = cryptoToken.getPrivateKey("dsatest00002");
         pub = cryptoToken.getPublicKey("dsatest00002");
         KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
