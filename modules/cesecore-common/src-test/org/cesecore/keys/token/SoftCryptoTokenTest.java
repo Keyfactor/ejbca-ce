@@ -112,7 +112,7 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 	}
 
 	@Override
-	String getProvider() {
+	public String getProvider() {
 		return BouncyCastleProvider.PROVIDER_NAME;
 	}
 
