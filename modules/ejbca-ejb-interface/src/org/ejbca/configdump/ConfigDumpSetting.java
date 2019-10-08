@@ -14,14 +14,20 @@ package org.ejbca.configdump;
 
 import java.io.File;
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Data class containing settings for configuration dump.
@@ -31,54 +37,137 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  *
  */
 public class ConfigDumpSetting implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     public enum ItemType {
-        ACMECONFIG("acme-config"), CA("certification-authorities"), CRYPTOTOKEN("crypto-tokens"), PUBLISHER("publishers"),
-        APPROVALPROFILE("approval-profiles"), CERTPROFILE("certificate-profiles"), EEPROFILE("end-entity-profiles"),
-        SERVICE("services"), ROLE("admin-roles"), KEYBINDING("internal-key-bindings"), ADMINPREFS("admin-preferences"),
-        OCSPCONFIG("ocsp-configuration"), PEERCONNECTOR("peer-connectors"), SCEPCONFIG("scep-config"), ESTCONFIG("est-config"),
-        VALIDATOR("validators"), CTLOG("ct-logs"), EXTENDEDKEYUSAGE("extended-key-usage"), CERTEXTENSION("custom-certificate-extensions");
+
+        ACMECONFIG("acme-config", "ACMECONFIG"),
+        CA("certification-authorities", "CA"),
+        CRYPTOTOKEN("crypto-tokens", "CRYPTOTOKEN"),
+        PUBLISHER("publishers", "PUBLISHER"),
+        APPROVALPROFILE("approval-profiles", "Approval Profile"),
+        CERTPROFILE("certificate-profiles", "CERTPROFILE"),
+        EEPROFILE("end-entity-profiles", "EEPROFILE"),
+        SERVICE("services", "Services"),
+        ROLE("admin-roles", "ROLE"),
+        KEYBINDING("internal-key-bindings", "KEYBINDING"),
+        ADMINPREFS("admin-preferences", "Admin Preference"),
+        OCSPCONFIG("ocsp-configuration", "OCSP Configuration"),
+        PEERCONNECTOR("peer-connectors", "Peer Connector"),
+        SCEPCONFIG("scep-config", "SCEPCONFIG"),
+        ESTCONFIG("est-config", "ESTCONFIG"),
+        VALIDATOR("validators", "Validator"),
+        CTLOG("ct-logs", "CT Log"),
+        EXTENDEDKEYUSAGE("extended-key-usage", "EXTENDEDKEYUSAGE"),
+        CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION");
         // Unimplemented:
-        //ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
+        // ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
 
         private final String subdirectory;
+        private final String name;
 
-        private ItemType(final String subdirectory) {
+        ItemType(final String subdirectory, String name) {
             this.subdirectory = subdirectory;
+            this.name = name;
         }
 
         public String getSubdirectory() { return subdirectory; }
-    };
-    
-    public enum ImportMode {
-        REPLACE,
-        UPDATE,
-        NO_OVERWRITE,
-        DRY_RUN,
+
+        public String getName() {
+            return name;
+        }
     }
 
-    /** Identifies an object in EJBCA */
-    public static final class ItemKey implements Comparable<ItemKey>, Serializable {
+    public enum ProcessingMode {
+        DRY_RUN,            // Process without persistence
+        RUN                 // Process with persistence
+    }
+
+    public enum OverwriteMode {
+        NONE,
+        REPLACE,
+        UPDATE,
+        SKIP;
+
+        public static OverwriteMode parseOverwriteMode(final String option) throws ParseException {
+            if (option == null) {
+                return null; // = prompt user
+            }
+            switch (StringUtils.lowerCase(option, Locale.ROOT)) {
+                case "skip":
+                    return SKIP;
+                case "replace":
+                    return REPLACE;
+                case "update":
+                    return UPDATE;
+                default:
+                    throw new ParseException("Invalid overwrite mode '" + option + "'", 0);
+            }
+        }
+    }
+
+    public enum ResolveReferenceMode {
+
+        NO_RESOLUTION_SET,      // Doesn't have a reference problem
+        USE_DEFAULT,            // Try to use default
+        SKIP;                   // Exclude from import
+
+        public static ResolveReferenceMode parseResolveReferenceMode(final String option) throws ParseException {
+            if (option == null) {
+                return null; // = prompt user
+            }
+            switch (StringUtils.lowerCase(option, Locale.ROOT)) {
+                case "skip":
+                    return SKIP;
+                case "default":
+                    return USE_DEFAULT;
+                default:
+                    throw new ParseException("Invalid resolve-reference mode '" + option + "'", 0);
+            }
+        }
+    }
+
+    public enum ItemProblem {
+        NO_PROBLEM,
+        EXISTING,
+        MISSING_REFERENCE,
+        EXISTING_AND_MISSING_REFERENCE
+    }
+
+    /** Identifies an object reference in EJBCA */
+    public static final class ConfigDumpImportItem implements Comparable<ConfigDumpImportItem>, Serializable {
+
         private static final long serialVersionUID = 1L;
+
         private final ItemType type;
         private final String name;
-        public ItemKey(final ItemType type, final String name) {
+        // Problems enum: NO_PROBLEM, EXISTING, MISSING_REFERENCE, EXISTING_AND_MISSING_REFERENCE
+        private ItemProblem problem;
+
+        public ConfigDumpImportItem(final ItemType type, final String name) {
             this.type = type;
             this.name = name;
+            this.problem = ItemProblem.NO_PROBLEM;
         }
+
         /** Returns the type, for example {@link ItemType#EEPROFILE} */
         public ItemType getType() { return type; }
+
         /** Returns the name of the object in EJBCA (for example End Entity Profile name) */
         public String getName() { return name; }
 
+        public ItemProblem getProblem() {
+            return problem;
+        }
+
+        public void setProblem(ItemProblem problem) {
+            this.problem = problem;
+        }
+
         @Override
         public boolean equals(final Object other) {
-            if (other instanceof ItemKey) {
-                return compareTo((ItemKey) other) == 0;
-            } else {
-                return false;
-            }
+            return other instanceof ConfigDumpImportItem && compareTo((ConfigDumpImportItem) other) == 0;
         }
 
         @Override
@@ -87,7 +176,7 @@ public class ConfigDumpSetting implements Serializable {
         }
 
         @Override
-        public int compareTo(final ItemKey o) {
+        public int compareTo(final ConfigDumpImportItem o) {
             if (o == this) {
                 return 0;
             } else if (type != o.type) {
@@ -107,11 +196,15 @@ public class ConfigDumpSetting implements Serializable {
     private Map<ItemType, List<ConfigdumpPattern>> excluded = new HashMap<>();
     private List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
+    private Set<String> overwriteExceptions = new HashSet<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
-    private ImportMode importMode;
-    private Map<ItemKey, ImportMode> overwriteResolutions = new HashMap<>();
-    private Map<ItemKey, String> passwords = new HashMap<>();
+    private ProcessingMode processingMode;
+    private OverwriteMode overwriteMode;
+    private ResolveReferenceMode resolveReferenceMode;
+    private Map<ConfigDumpImportItem, OverwriteMode> overwriteResolutions = new HashMap<>();
+    private Map<ConfigDumpImportItem, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
+    private Map<ConfigDumpImportItem, String> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas;
@@ -155,7 +248,15 @@ public class ConfigDumpSetting implements Serializable {
     public Map<ItemType, List<ConfigdumpPattern>> getExcluded() {
         return excluded;
     }
-    
+
+    public Set<String> getOverwriteExceptions() {
+        return overwriteExceptions;
+    }
+
+    public void setOverwriteExceptions(Set<String> overwriteExceptions) {
+        this.overwriteExceptions = overwriteExceptions;
+    }
+
     public boolean getIgnoreErrors() {
         return ignoreErrors;
     }
@@ -172,26 +273,50 @@ public class ConfigDumpSetting implements Serializable {
         this.ignoreWarnings = ignoreWarnings;
     }
 
-    public ImportMode getImportMode() {
-        return importMode;
+    public ProcessingMode getProcessingMode() {
+        return processingMode;
     }
 
-    public void setImportMode(final ImportMode importMode) {
-        this.importMode = importMode;
+    public void setProcessingMode(ProcessingMode processingMode) {
+        this.processingMode = processingMode;
     }
 
-    public void setOverwriteResolutions(final Map<ItemKey,ImportMode> overwriteResolutions) {
+    public OverwriteMode getOverwriteMode() {
+        return overwriteMode;
+    }
+
+    public void setOverwriteMode(final OverwriteMode overwriteMode) {
+        this.overwriteMode = overwriteMode;
+    }
+
+    public ResolveReferenceMode getResolveReferenceMode() {
+        return resolveReferenceMode;
+    }
+
+    public void setResolveReferenceMode(ResolveReferenceMode resolveReferenceMode) {
+        this.resolveReferenceMode = resolveReferenceMode;
+    }
+
+    public void setOverwriteResolutions(final Map<ConfigDumpImportItem,OverwriteMode> overwriteResolutions) {
         this.overwriteResolutions = new HashMap<>(overwriteResolutions);
     }
     
-    public Map<ItemKey,ImportMode> getOverwriteResolutions() {
+    public Map<ConfigDumpImportItem,OverwriteMode> getOverwriteResolutions() {
         return Collections.unmodifiableMap(overwriteResolutions);
     }
 
-    public void addOverwriteResolution(final ItemKey item, final ImportMode resolution) {
+    public void addOverwriteResolution(final ConfigDumpImportItem item, final OverwriteMode resolution) {
         overwriteResolutions.put(item, resolution);
     }
-    
+
+    public Map<ConfigDumpImportItem, ResolveReferenceMode> getReferenceModeResolutions() {
+        return Collections.unmodifiableMap(resolveReferenceModeResolutions);
+    }
+
+    public void addResolveReferenceModeResolution(final ConfigDumpImportItem item, final ResolveReferenceMode resolveReferenceMode) {
+        resolveReferenceModeResolutions.put(item, resolveReferenceMode);
+    }
+
     public boolean getInitializeCas() {
         return initializeCas;
     }
@@ -258,11 +383,11 @@ public class ConfigDumpSetting implements Serializable {
         return true;
     }
 
-    public void putPassword(final ItemKey itemKey, final String password) {
-        passwords.put(itemKey, password);
+    public void putPassword(final ConfigDumpImportItem configDumpImportItem, final String password) {
+        passwords.put(configDumpImportItem, password);
     }
 
-    public Optional<String> getPasswordFor(final ItemKey itemKey) {
-        return Optional.ofNullable(passwords.get(itemKey));
+    public Optional<String> getPasswordFor(final ConfigDumpImportItem configDumpImportItem) {
+        return Optional.ofNullable(passwords.get(configDumpImportItem));
     }
 }
