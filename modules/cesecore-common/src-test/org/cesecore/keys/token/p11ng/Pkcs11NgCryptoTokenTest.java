@@ -9,24 +9,42 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11ng;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestBase;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -37,6 +55,8 @@ import static org.junit.Assume.assumeTrue;
  */
 public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
 
+    CryptoToken token = null;
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -53,12 +73,25 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     public void tearDown() {
         // Make sure we remove the provider after one test, so it is not still there affecting the next test
         Security.removeProvider(getProvider());
+        token.deactivate();
     }
     
     @Test
     public void testCryptoTokenRSA() throws Exception {
-        CryptoToken catoken = createPkcs11NgToken();
-        doCryptoTokenRSA(catoken);
+        token = createPkcs11NgToken();
+        doCryptoTokenRSA(token);
+    }
+    
+    @Test
+    public void testCryptoTokenECC() throws Exception {
+        token = createPkcs11NgToken();
+        doCryptoTokenECC(token, "secp256r1", 256, "secp384r1", 384);
+    }
+    
+    @Test(expected = InvalidAlgorithmParameterException.class)
+    public void testCryptoTokenDSA() throws Exception {
+        token = createPkcs11NgToken();
+        doCryptoTokenDSA(token);
     }
     
     private static CryptoToken createPkcs11NgToken() throws NoSuchSlotException {
@@ -84,5 +117,18 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     protected String getProvider() {
         return JackNJI11Provider.NAME;
     }
+    
+    @Override
+    protected void doCryptoTokenDSA(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException  {
+        // We have not activated the token so status should be offline
+        assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
+        assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
+        cryptoToken.activate(tokenpin.toCharArray());
+        // Should still be ACTIVE now, because we run activate
+        assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+
+        // Generate a DSA key and wait for exception because DSA keys are not supported with this token type.
+        cryptoToken.generateKeyPair("DSA1024", "dsatest00001");
+    }
 }
