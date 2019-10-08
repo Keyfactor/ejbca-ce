@@ -9,18 +9,8 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11ng;
 
-import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.Security;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
@@ -33,8 +23,6 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Before;
@@ -42,9 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
