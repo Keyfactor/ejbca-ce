@@ -75,7 +75,7 @@ public abstract class CommandBase implements CliCommandPlugin {
     /**
      * Prompts for a string.
      * 
-     * @param prompt Prompt string. It should explain to the user what should be entered.
+     * @param promptLine Prompt string. It should explain to the user what should be entered.
      * @return The entered string, minus leading/trailing whitespace. Never null.
      * @throws IllegalArgumentException On End-Of-File.
      */
