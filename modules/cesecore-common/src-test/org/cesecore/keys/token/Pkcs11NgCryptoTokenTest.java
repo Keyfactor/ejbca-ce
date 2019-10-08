@@ -7,7 +7,7 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.token.p11ng;
+package org.cesecore.keys.token;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Security;
@@ -17,8 +17,6 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.CryptoTokenTestBase;
-import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
