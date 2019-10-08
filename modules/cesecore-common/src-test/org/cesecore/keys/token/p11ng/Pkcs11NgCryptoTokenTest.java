@@ -7,7 +7,11 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.token;
+package org.cesecore.keys.token.p11ng;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Security;
@@ -17,24 +21,21 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenTestBase;
+import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Test class for Pkcs11Ng functions.
  * 
- * @version $Id$
+ * @version $Id: Pkcs11NgCryptoTokenTest.java 33540 2019-10-08 14:49:57Z aminkh $
  *
  */
 public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
@@ -43,14 +44,9 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     
     @BeforeClass
     public static void beforeClass() {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-    }
-
-    @Before
-    public void checkPkcs11DriverAvailable() {
-        // Skip test if no PKCS11 driver is installed
         assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
         assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     @After
