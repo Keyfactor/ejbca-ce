@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +34,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -71,6 +73,8 @@ import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
@@ -82,7 +86,6 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
@@ -1284,17 +1287,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isRenderCaLifeCycle() {
-        return isEditCA && revokable && isHasEditRight();
+        return isEditCA && isHasEditRight() && revokable;
     }
     
     public List<SelectItem> getRevokeReasonList() {
-        final List<SelectItem> result = new ArrayList<>();
-        for (int i = 0; i < SecConst.reasontexts.length; i++) {
-            if (i != 7) {
-                result.add(new SelectItem(i, getEjbcaWebBean().getText(SecConst.reasontexts[i]), ""));
-            }
-        }
-        return result;
+        return Arrays.asList(RevocationReasons.values())
+                .stream()
+                .filter(reason -> reason != RevocationReasons.CERTIFICATEHOLD)
+                .filter(reason -> reason != RevocationReasons.REMOVEFROMCRL)
+                .filter(reason -> reason != RevocationReasons.NOT_REVOKED)
+                .map(reason -> new SelectItem(reason.getDatabaseValue(), reason.getHumanReadable()))
+                .collect(Collectors.toList());
     }
 
     public int getCaRevokeReason() {
@@ -2402,7 +2405,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         isCaexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
         isCaRevoked = cainfo.getStatus() == CAConstants.CA_REVOKED || cadatahandler.isCARevoked(cainfo);
         revokable = cainfo.getStatus() != CAConstants.CA_REVOKED && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE
-                && !cadatahandler.isCARevoked(cainfo);
+                && cainfo.getStatus() != CAConstants.CA_EXTERNAL && !RevokedCertInfo.isPermanentlyRevoked(cainfo.getRevocationReason());
         waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
         isCaUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
         catype = cainfo.getCAType();
