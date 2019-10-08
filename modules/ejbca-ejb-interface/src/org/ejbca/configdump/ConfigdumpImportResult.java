@@ -17,29 +17,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.ejbca.configdump.ConfigDumpSetting.ItemKey;
+import org.ejbca.configdump.ConfigDumpSetting.ConfigDumpImportItem;
 
 /**
  * Holds information about the status of a Configdump import operation.
  * @version $Id$
  */
 public final class ConfigdumpImportResult extends ConfigdumpResult {
-    private static final long serialVersionUID = 1L;
-    private final List<ItemKey> alreadyExistingItems;
-    private final List<ItemKey> itemsRequiringPassword;
     
-    public ConfigdumpImportResult(final List<String> reportedErrors, final List<String> reportedWarnings, final Set<ItemKey> alreadyExistingItems,
-            final Set<ItemKey> itemsRequiringPassword) {
+    private static final long serialVersionUID = 1L;
+
+    private final List<ConfigDumpImportItem> problematicItems;
+    private final List<ConfigDumpImportItem> itemsRequiringPassword;
+    
+    public ConfigdumpImportResult(final List<String> reportedErrors, final List<String> reportedWarnings, final Set<ConfigDumpImportItem> problematicItems, final Set<ConfigDumpImportItem> itemsRequiringPassword) {
         super(reportedErrors, reportedWarnings);
-        this.alreadyExistingItems = Collections.unmodifiableList(new ArrayList<>(alreadyExistingItems));
+        this.problematicItems = Collections.unmodifiableList(new ArrayList<>(problematicItems));
         this.itemsRequiringPassword = Collections.unmodifiableList(new ArrayList<>(itemsRequiringPassword));
     }
-    
-    public List<ItemKey> getAlreadyExistingItems() {
-        return alreadyExistingItems;
+
+    public List<ConfigDumpImportItem> getProblematicItems() {
+        return problematicItems;
     }
     
-    public List<ItemKey> getItemsRequiringPassword() {
+    public List<ConfigDumpImportItem> getItemsRequiringPassword() {
         return itemsRequiringPassword;
     }
 }
