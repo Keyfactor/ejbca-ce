@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -42,6 +37,11 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -81,13 +81,6 @@ public abstract class CryptoTokenTestBase {
                 assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
                 assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
-                // First we start by deleting all old entries
-                try {
-                    cryptoToken.deleteEntry("rsatest00001");
-                    assertTrue("Should throw", false);
-                } catch (CryptoTokenOfflineException e) {
-                    // NOPMD
-                }
                 cryptoToken.activate(tokenpin.toCharArray());
                 // Should still be ACTIVE now, because we run activate
                 assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
@@ -146,17 +139,19 @@ public abstract class CryptoTokenTestBase {
                     assertEquals(2048, KeyTools.getKeyLength(pub));
                     String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
                     assertEquals(newkeyhash, newkeyhash2);
-
-                    // Create keys using AlgorithmParameterSpec
-                    AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
-                    cryptoToken.generateKeyPair(paramspec, "rsatest00003");
-                    priv = cryptoToken.getPrivateKey("rsatest00003");
-                    pub = cryptoToken.getPublicKey("rsatest00003");
-                    KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-                    assertEquals(2048, KeyTools.getKeyLength(pub));
-                    String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
-                    // Make sure it's not the same key
-                    assertFalse(newkeyhash2.equals(newkeyhash3));
+                    
+                    if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
+                        // Create keys using AlgorithmParameterSpec
+                        AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
+                        cryptoToken.generateKeyPair(paramspec, "rsatest00003");
+                        priv = cryptoToken.getPrivateKey("rsatest00003");
+                        pub = cryptoToken.getPublicKey("rsatest00003");
+                        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+                        assertEquals(2048, KeyTools.getKeyLength(pub));
+                        String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
+                        // Make sure it's not the same key
+                        assertFalse(newkeyhash2.equals(newkeyhash3));
+                    }
                 } finally {
                     // Clean up and delete our generated keys
                     cryptoToken.deleteEntry("rsatest00002");
