@@ -133,6 +133,10 @@ JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c <<EOF
 /subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)
 EOF
 
+echo '=================== Adding Database Indexes =============='
+mysql -u ejbca -pejbca -h mariadb_wf14_1 ejbca < doc/sql-scripts/create-index-ejbca.sql
+
+# Reload to update HTTP protocol configuration & for EJBCA to detect presence of the serial number index (detected at startup)
 JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 sleep 10
 wait_for_deployment
