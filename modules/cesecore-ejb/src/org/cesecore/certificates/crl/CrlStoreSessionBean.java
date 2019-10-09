@@ -157,68 +157,61 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public CRLInfo getLastCRLInfo(final String issuerdn, final int crlPartitionIndex, final boolean deltaCRL) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getLastCRLInfo(" + issuerdn + ", " + deltaCRL + ")");
-        }
-        int crlnumber = 0;
+    public CRLInfo getLastCRLInfo(final String issuerDn, final int crlPartitionIndex, final boolean deltaCRL) {
         try {
-            crlnumber = getLastCRLNumber(issuerdn, crlPartitionIndex, deltaCRL);
-            CRLInfo crlinfo = null;
-            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlPartitionIndex, crlnumber);
-            if (data != null) {
-                crlinfo = new CRLInfo(data.getIssuerDN(), crlPartitionIndex, crlnumber, data.getThisUpdate(), data.getNextUpdate());
-            } else {
-                if (deltaCRL && (crlnumber == 0)) {
+            if (log.isTraceEnabled()) {
+                log.trace(">getLastCRLInfo(" + issuerDn + ", " + deltaCRL + ")");
+            }
+            final int crlNumber = getLastCRLNumber(issuerDn, crlPartitionIndex, deltaCRL);
+            final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerDn, crlPartitionIndex, crlNumber);
+            if (data == null) {
+                if (deltaCRL && crlNumber == 0) {
                     if (log.isDebugEnabled()) {
-                        log.debug("No delta CRL exists for CA with dn '" + issuerdn + "'");
+                        log.debug("No delta CRL exists for CA with subject DN '" + issuerDn + "'.");
                     }
-                } else if (crlnumber == 0) {
+                } else if (crlNumber == 0) {
                     if (log.isDebugEnabled()) {
-                        log.debug("No CRL exists for CA with dn '" + issuerdn + "'");
+                        log.debug("No CRL exists for CA with subject DN '" + issuerDn + "'.");
                     }
                 } else {
-                    final String msg = getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerdn, Integer.valueOf(crlnumber));
-                    log.error(msg);
+                    log.error(getMessageWithPartitionIndex(crlPartitionIndex, "store.errorgetcrl", issuerDn, crlNumber));
                 }
+                return null;
             }
+            return new CRLInfo(data);
+        } catch (final Exception e) {
+            log.info(intres.getLocalizedMessage("store.errorgetcrlinfo", issuerDn));
+            throw new EJBException(e);
+        } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<getLastCRLInfo()");
             }
-            return crlinfo;
-        } catch (Exception e) {
-            final String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);
-            log.info(msg);
-            throw new EJBException(e);
         }
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public CRLInfo getCRLInfo(String fingerprint) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getCRLInfo(" + fingerprint + ")");
-        }
+    public CRLInfo getCRLInfo(final String fingerprint) {
         try {
-            CRLInfo crlinfo = null;
-            final CRLData data = CRLData.findByFingerprint(entityManager, fingerprint);
-            if (data != null) {
-                crlinfo = new CRLInfo(data.getIssuerDN(), data.getCrlPartitionIndex(), data.getCrlNumber(), data.getThisUpdate(), data.getNextUpdate());
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("No CRL exists with fingerprint '" + fingerprint + "'");
-                }
-                final String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, Integer.valueOf(0));
-                log.info(msg);
+            if (log.isTraceEnabled()) {
+                log.trace(">getCRLInfo(" + fingerprint + ")");
             }
+            final CRLData data = CRLData.findByFingerprint(entityManager, fingerprint);
+            if (data == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("No CRL exists with fingerprint '" + fingerprint + "'.");
+                }
+                log.info(intres.getLocalizedMessage("store.errorgetcrl", fingerprint, 0));
+                return null;
+            }
+            return new CRLInfo(data);
+        } catch (final Exception e) {
+            log.info(intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint));
+            throw new EJBException(e);
+        } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<getCRLInfo()");
             }
-            return crlinfo;
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint);
-            log.info(msg);
-            throw new EJBException(e);
         }
     }
 

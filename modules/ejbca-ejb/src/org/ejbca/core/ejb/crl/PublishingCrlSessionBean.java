@@ -62,6 +62,7 @@ import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLo
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -682,8 +683,19 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 // Go through them and create a CRL, i.e. add to cert list to be included in CRL
                 certs = new CompressedCollection<>();
                 for (final RevokedCertInfo ci : revcertinfos) {
+                    final boolean certificateIsReleasedFromHold = ci.getReason() == RevocationReasons.REMOVEFROMCRL.getDatabaseValue();
+                    final boolean certificateAppearsOnBaseCrl = lastBaseCrlInfo.getCrl().getRevokedCertificate(ci.getUserCertificate()) != null;
+                    if (certificateIsReleasedFromHold && !certificateAppearsOnBaseCrl) {
+                        if (log.isTraceEnabled()) {
+                            log.trace("Not adding " + ci + " to CRL.");
+                        }
+                        continue;
+                    }
                     if (ci.getRevocationDate() == null) {
                         ci.setRevocationDate(new Date());
+                    }
+                    if (log.isTraceEnabled()) {
+                        log.trace("Adding " + ci + " to CRL.");
                     }
                     certs.add(ci);
                 }
