@@ -35,6 +35,7 @@ pipeline {
 			        sh "docker cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ${env.DOCKER_NAME_DB}:/app/"
 			        sh "docker exec -i ${env.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -U sa -P '${env.DB_PASSWORD}' -i '/app/create-tables-ejbca-mssql.sql'"
 			        sh "docker exec -i ${env.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -U sa -P '${env.DB_PASSWORD}' -i '/app/create-index-ejbca.sql'"
+			        sh "docker exec -i ${env.DOCKER_NAME_DB} /opt/mssql-tools/bin/sqlcmd -U sa -P '${env.DB_PASSWORD}' -Q 'CREATE INDEX userdata_idx_test1 ON UserData (cAId)'"
 			    }
 			}
 		}
