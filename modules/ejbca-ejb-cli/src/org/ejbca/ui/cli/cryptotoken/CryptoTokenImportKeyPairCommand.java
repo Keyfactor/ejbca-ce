@@ -91,8 +91,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         registerParameter(new Parameter(KEYSPEC, "Key specification", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Specification used to generated the key, if not provided SHA256 will be assumed. Format could be any of the followings: "
                 + "SHA1, SHA256, SHA384, SHA512, SHA3-256, SHA3-384, SHA3-512."));
-        registerParameter(new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
-                ParameterMode.PASSWORD, "Authentication code for the crypto token."));
+        registerParameter(new Parameter(AUTHENTICATIONCODE, "Authentication code", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "Authentication code for the crypto token."));
         registerParameter(new Parameter(PRIVKEYPASS, "Privatekey password", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Password used to protect private key (if any)."));
     }
@@ -133,7 +132,15 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             final InputStream targetStream = new ByteArrayInputStream(currentTokendata);
 
             KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-            keystore.load(targetStream, parameters.get(AUTHENTICATIONCODE).toCharArray());
+            
+            String authCode = parameters.get(AUTHENTICATIONCODE);
+            if (authCode == null) {
+                log.info("Enter authentication code for the crypto token: ");
+                // Read the password, but mask it so we don't display it on the console
+                authCode = String.valueOf(System.console().readPassword());
+            }
+            
+            keystore.load(targetStream, authCode.toCharArray());
 
             PrivateKey privateKey = loadPrivateKey(parameters.get(PRIVATEKEYFILEPATH), keyAlgorithm);
             PublicKey publicKey = loadPublicKey(parameters.get(PUBLICKEYFILEPATH), keyAlgorithm);
