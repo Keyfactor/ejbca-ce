@@ -64,9 +64,6 @@ echo '=================== Starting keystore deployment =========================
 ant deploy-keystore
 echo '=================== ant deploy-keystore done! =============================='
 
-echo '=================== Adding Database Indexes ==============================='
-sqlcmd -U sa -P MyEjbcaPass1100 -S db_ee_cos7_openjdk8_wf10_nohsm_mssql2017,1433 -d ejbca -i doc/sql-scripts/create-index-ejbca.sql
-
 echo '=================== Replacing Configuration and Reloading =================='
 cp /opt/standalone2.xml $JBOSS_STANDALONE_CONF/standalone.xml
 JAVA_OPTS="$JBOSSCLI_OPTS" $JBOSS_CLI -c --command=:reload
