@@ -9,40 +9,95 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
+
 package org.cesecore.certificates.crl;
 
 import java.io.Serializable;
+import java.security.cert.X509CRL;
 import java.util.Date;
 
 /**
- * Holds information about a CRL but not he CRL itself.
+ * Holds information about a CRL stored in the database.
  *
  * @version $Id$
  */
 public final class CRLInfo implements Serializable {
-
     private static final long serialVersionUID = 4942836797714142516L;
-    private final String subjectdn;
+    private final String subjectDn;
     private final int crlPartitionIndex;
-    private final int lastcrlnumber;
-    private final Date thisupdate;
-    private final Date nextupdate;
+    private final int crlNumber;
+    private final Date thisUpdate;
+    private final Date nextUpdate;
+    private final CRLData crlData;
 
-    public CRLInfo(final String subjectdn, final int crlPartitionIndex, final int lastcrlnumber, final long thisupdate, final long nextupdate) {
-      this.subjectdn = subjectdn;
-      this.crlPartitionIndex = crlPartitionIndex;
-      this.lastcrlnumber = lastcrlnumber;
-      this.thisupdate = new Date(thisupdate);
-      this.nextupdate = new Date(nextupdate);
+    /**
+     * Create information about a CRL stored in the database. The CRL itself is read lazily.
+     * 
+     * @param crlData ORM data object representing a CRL.
+     * @param crlPartitionIndex the partition index.
+     * @param crlNumber the CRL number.
+     */
+    public CRLInfo(final CRLData crlData) {
+        this.subjectDn = crlData.getIssuerDN();
+        this.crlPartitionIndex = crlData.getCrlPartitionIndex();
+        this.crlNumber = crlData.getCrlNumber();
+        this.thisUpdate = new Date(crlData.getThisUpdate());
+        this.nextUpdate = new Date(crlData.getNextUpdate());
+        this.crlData = crlData;
     }
 
-    /** Subject DN of CA that we have queried information for */
-    public String getSubjectDN() {return subjectdn;}
-    /** CRL partition that we have queried information for, or CertificateConstants.NO_CRL_PARTITION for the main CRL */
-    public int getCrlPartitionIndex() { return crlPartitionIndex; }
+    /**
+     * Get the subject DN of the CA who signed the CRL.
+     * 
+     * @return the subject DN of the CA who signed the CRL.
+     */
+    public String getSubjectDN() {
+        return subjectDn;
+    }
 
-    public int getLastCRLNumber() { return lastcrlnumber; }
-    public Date getCreateDate() { return thisupdate; }
-    public Date getExpireDate() { return nextupdate; }
+    /** 
+     * Get the CRL partition index or {@link #CertificateConstants.NO_CRL_PARTITION} if this object holds the main CRL.
+     * 
+     * @return the CRL partition index.
+     */
+    public int getCrlPartitionIndex() {
+        return crlPartitionIndex;
+    }
+
+    /**
+     * Get the CRL number.
+     * 
+     * @return the CRL number.
+     */
+    public int getLastCRLNumber() {
+        return crlNumber;
+    }
+
+    /**
+     * Get the date when the CRL was signed.
+     * 
+     * @return the creation date of the CRL.
+     */
+    public Date getCreateDate() {
+        return thisUpdate;
+    }
+
+    /**
+     * Get the date when the CRL expires.
+     * 
+     * @return the expiration date of the CRL.
+     */
+    public Date getExpireDate() {
+        return nextUpdate;
+    }
+
+    /**
+     * Get the actual CRL as a {@link X509CRL} object.
+     * 
+     * @return the CRL itself.
+     */
+    public X509CRL getCrl() {
+        return crlData.getCRL();
+    }
 }

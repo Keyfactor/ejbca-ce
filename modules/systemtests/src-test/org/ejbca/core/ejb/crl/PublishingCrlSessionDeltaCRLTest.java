@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509CRL;
@@ -59,11 +64,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests Delta CRLs.
@@ -223,6 +223,35 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         } finally {
             internalCertificateStoreSession.removeCertificate(CertTools.getSerialNumber(cert));
         }
+    }
+
+    /**
+     * Ensure a certificate released from hold after a base CRL lists it as "on hold" is listed on subsequent
+     * delta CRLs with reason code removeFromCRL as required by RFC 5280 section 5.2.4.
+     */
+    @Test
+    public void testRemoveFromCrl() throws Exception {
+        X509Certificate cert = createCert();
+        internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+
+        assertTrue(publishingCrlSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+        Thread.sleep(1000);
+        internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
+        Thread.sleep(1000);
+
+        final byte[] crl1 = getLastCrl(testx509ca.getSubjectDN(), true);
+        assertNotNull("Could not get CRL", crl1);
+        final X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
+        assertNotNull(x509crl1.getRevokedCertificates());
+        assertTrue(isCertificatePresentInCrl(x509crl1.getRevokedCertificates(), cert));
+
+        assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
+        final byte[] crl2 = getLastCrl(testx509ca.getSubjectDN(), true);
+        assertNotNull("Could not get CRL", crl2);
+        final X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
+        assertNotNull(x509crl2.getRevokedCertificates());
+        assertTrue(isCertificatePresentInCrl(x509crl2.getRevokedCertificates(), cert));
     }
 
     @Test

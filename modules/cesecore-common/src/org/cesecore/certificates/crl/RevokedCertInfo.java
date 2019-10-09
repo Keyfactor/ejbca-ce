@@ -179,7 +179,9 @@ public class RevokedCertInfo implements Serializable {
 
     @Override
     public String toString() {
-        return this.userCertificate == null ? "null" : new BigInteger(userCertificate).toString();
+        return String.format("(serial = %s, reason = %s)", 
+                userCertificate == null ? "null" : new BigInteger(userCertificate).toString(),
+                getReason());
     }
     
     /**
