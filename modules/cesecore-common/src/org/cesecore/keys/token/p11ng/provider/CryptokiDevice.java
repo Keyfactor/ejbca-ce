@@ -1886,7 +1886,9 @@ public class CryptokiDevice {
                         certificateRefs = cache.getObjects(key);
                     } else {
                         certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaSubjectValue));
-                        cache.addObjectsSearchResult(key, certificateRefs);
+                        if (certificateRefs.length > 0) {
+                            cache.addObjectsSearchResult(key, certificateRefs);
+                        }
                     }
                 } else {
                     certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaSubjectValue));
@@ -1914,7 +1916,9 @@ public class CryptokiDevice {
                          publicObjects = cache.getObjects(key);
                      } else {
                          publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
-                         cache.addObjectsSearchResult(key, publicObjects);
+                         if (publicObjects.length > 0) {
+                             cache.addObjectsSearchResult(key, publicObjects);
+                         }
                      }
                  } else {
                      publicObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
@@ -1942,7 +1946,9 @@ public class CryptokiDevice {
                         privateObjects = cache.getObjects(key);
                     } else {
                         privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
-                        cache.addObjectsSearchResult(key, privateObjects);
+                        if (privateObjects.length > 0) {
+                            cache.addObjectsSearchResult(key, privateObjects);
+                        }
                     }
                 } else {
                     privateObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
@@ -1989,7 +1995,9 @@ public class CryptokiDevice {
                         secretObjects = cache.getObjects(key);
                     } else {
                         secretObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
-                        cache.addObjectsSearchResult(key, secretObjects);
+                        if (secretObjects.length > 0) {
+                            cache.addObjectsSearchResult(key, secretObjects);
+                        }
                     }
                 } else {
                     secretObjects = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
