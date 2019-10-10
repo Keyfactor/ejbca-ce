@@ -33,7 +33,7 @@ public abstract class BaseProtocolsUpdateCommand extends BaseProtocolsConfigComm
 
     {
         registerParameter(new Parameter(KEY_NAME, "Protocol", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Name of the protocol to enable."));
+                "Name of the protocol."));
     }
     
     protected abstract boolean getNewStatus();
