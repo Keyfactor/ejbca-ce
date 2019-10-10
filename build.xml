@@ -1100,6 +1100,7 @@
 		    	<exclude unless="build.contains.eidas" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
 		    	<exclude unless="build.contains.eidas" name="modules/p11ng-cli/**"/>
 		    	<exclude unless="build.contains.eidas" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
+                <exclude unless="build.contains.eidas" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
 		    	
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerDownstreamImpl.java"/>
