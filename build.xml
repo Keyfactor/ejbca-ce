@@ -922,7 +922,7 @@
 		   <not><equals arg1="${doc.update}" arg2="false"/></not>
 	</condition>
 	
-	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default) -Dvariant=ra or va">
+	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default) -Dvariant='ra', 'va' or 'eidas'">
 		<antcall target="clean" />
 		<!-- Always retrieve current version from Confluence -->
 		<antcall target="doc" inheritAll="true">
