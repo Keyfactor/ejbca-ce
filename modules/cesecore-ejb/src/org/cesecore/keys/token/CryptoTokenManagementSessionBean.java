@@ -256,6 +256,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Audit log immediately. Change has already occurred in HSM.
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_INITIALIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
+        
         // Persist KAK association for this key alias
         final String kakAssociation =  kakTokenid + ";" + kakTokenKeyAlias;
         cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);
@@ -283,11 +284,21 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("keyAlias", alias);
         details.put("keyAuthorizationKeyToken", kakTokenid);
         details.put("keyAuthorizationKeyAlias", kakTokenKeyAlias);
-        
+        // Audit log immediately. Change has already occurred in HSM.
         cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount, selectedPaddingScheme);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_AUTHORIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
         
+        // Persist KAK association for this key alias if not done already. Will occur e.g. if initiliaze was done "outside of" EJBCA.
+        if (StringUtils.isEmpty(cryptoToken.getProperties().getProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias))) {
+            final String kakAssociation =  kakTokenid + ";" + kakTokenKeyAlias;
+            cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);
+            try {
+                cryptoTokenSession.mergeCryptoToken(cryptoToken);
+            } catch (CryptoTokenNameInUseException e) {
+                throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
+            }
+        }
     }
     
     @Override
