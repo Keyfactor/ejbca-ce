@@ -154,7 +154,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             keystore.setKeyEntry(alias, privateKey, privateKeyPass, certchain);
 
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            keystore.store(baos, parameters.get(AUTHENTICATIONCODE).toCharArray());
+            keystore.store(baos, authCode.toCharArray());
 
             final Properties properties = currentCryptoToken.getProperties();
             CryptoToken newCryptoToken = new SoftCryptoToken();
