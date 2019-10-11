@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import javax.ejb.NoSuchEJBException;
+
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -32,9 +34,7 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
  * A library class to register and interface with commands. 
  * 
  * @version $Id$
- *
  */
-
 public enum CommandLibrary {
     INSTANCE;
 
@@ -62,13 +62,12 @@ public enum CommandLibrary {
                         }
                     }
                 } catch (ServiceConfigurationError e) {
-                    if (e.getCause() instanceof IllegalStateException && e.getCause().getLocalizedMessage().contains("No EJB receiver")) {
+                    if (e.getCause() instanceof NoSuchEJBException) {
                         log.error("Error: CLI could not contact EJBCA instance. Either your application server is not up and running,"
-                                + " EJBCA has not been deployed successfully, or some firewall rule is blocking the CLI from the application server.");
+                            + " EJBCA has not been deployed successfully, or some firewall rule is blocking the CLI from the application server.");
                         System.exit(1);
-                    } else {
-                        throw e;
                     }
+                    throw e;
                 }
             }
         }
@@ -138,13 +137,13 @@ public enum CommandLibrary {
             if (path.length == 0) {
                 Iterator<String> aliases = command.getMainCommandAliases().iterator();
                 while (aliases.hasNext()) {
-                    String alias = aliases.next();             
+                    String alias = aliases.next();
                     if (commands.containsKey(alias)) {
-                        throw new CliCommandLibraryConflictException("Command alias" + alias + " for command " + command.getMainCommand()
-                                + " has been added twice.");
+                        throw new CliCommandLibraryConflictException(
+                                "Command alias" + alias + " for command " + command.getMainCommand() + " has been added twice.");
                     } else if (alternateCommands.containsKey(alias)) {
-                        throw new CliCommandLibraryConflictException("Command alias" + alias + " for command " + command.getMainCommand()
-                                + " has been added twice.");
+                        throw new CliCommandLibraryConflictException(
+                                "Command alias" + alias + " for command " + command.getMainCommand() + " has been added twice.");
                     } else {
                         alternateCommands.put(alias, command);
                     }
@@ -162,7 +161,7 @@ public enum CommandLibrary {
                     throw new CliCommandLibraryConflictException("Naming conflict when attempting to construct command library: " + childName);
                 }
                 if (subBranches.containsKey(childName)) {
-                    childBranch = (Branch) subBranches.get(path[0]);
+                    childBranch = subBranches.get(path[0]);
                 } else {
                     childBranch = new Branch(childName, isAlternatePath);
                     subBranches.put(childBranch.getKey(), childBranch);
@@ -267,8 +266,9 @@ public enum CommandLibrary {
             if (parameters.length == 0) {
                 //We only got to a branch
                 if (isAlternate) {
-                    INSTANCE.log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
-                            + " Please start using the updated path as soon as possible.\n");
+                    INSTANCE.log
+                            .warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
+                                    + " Please start using the updated path as soon as possible.\n");
                 }
                 printManPage();
                 return CommandResult.SUCCESS;
@@ -276,20 +276,24 @@ public enum CommandLibrary {
                 String key = parameters[0].toLowerCase(Locale.ENGLISH);
                 if (commands.containsKey(key) || alternateCommands.containsKey(key)) {
                     if (isAlternate) {
-                        INSTANCE.log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
-                                + " Please start using the updated path as soon as possible.\n");
+                        INSTANCE.log.warn(
+                                "WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
+                                        + " Please start using the updated path as soon as possible.\n");
                     }
-                    if(alternateCommands.containsKey(key)) {
-                        INSTANCE.log.warn("WARNING: The command \"" + key + "\" used is an unlisted alternate command and may be deprecated, and may cease to exist at any point."
-                                + " Please start using the updated command \"" + alternateCommands.get(key).getMainCommand() + "\" as soon as possible.\n");
+                    if (alternateCommands.containsKey(key)) {
+                        INSTANCE.log.warn("WARNING: The command \"" + key
+                                + "\" used is an unlisted alternate command and may be deprecated, and may cease to exist at any point."
+                                + " Please start using the updated command \"" + alternateCommands.get(key).getMainCommand()
+                                + "\" as soon as possible.\n");
                         return alternateCommands.get(key).execute(Arrays.copyOfRange(parameters, 1, parameters.length));
                     } else {
                         return commands.get(key).execute(Arrays.copyOfRange(parameters, 1, parameters.length));
                     }
                 } else if (!subBranches.containsKey(key)) {
                     if (isAlternate) {
-                        INSTANCE.log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
-                                + " Please start using the updated path as soon as possible.\n");
+                        INSTANCE.log.warn(
+                                "WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
+                                        + " Please start using the updated path as soon as possible.\n");
                     }
                     printManPage();
                     return CommandResult.SUCCESS;
@@ -314,7 +318,5 @@ public enum CommandLibrary {
         private final boolean isAlternate() {
             return isAlternate;
         }
-
     }
-
 }
