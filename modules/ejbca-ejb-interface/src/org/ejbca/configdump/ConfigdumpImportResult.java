@@ -30,7 +30,12 @@ public final class ConfigdumpImportResult extends ConfigdumpResult {
     private final List<ConfigDumpImportItem> problematicItems;
     private final List<ConfigDumpImportItem> itemsRequiringPassword;
     
-    public ConfigdumpImportResult(final List<String> reportedErrors, final List<String> reportedWarnings, final Set<ConfigDumpImportItem> problematicItems, final Set<ConfigDumpImportItem> itemsRequiringPassword) {
+    public ConfigdumpImportResult(
+            final List<String> reportedErrors,
+            final List<String> reportedWarnings,
+            final Set<ConfigDumpImportItem> problematicItems,
+            final Set<ConfigDumpImportItem> itemsRequiringPassword
+    ) {
         super(reportedErrors, reportedWarnings);
         this.problematicItems = Collections.unmodifiableList(new ArrayList<>(problematicItems));
         this.itemsRequiringPassword = Collections.unmodifiableList(new ArrayList<>(itemsRequiringPassword));
