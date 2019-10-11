@@ -1168,12 +1168,39 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // We could not find certificate for this request so get certificate for default responder
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
                     if (ocspSigningCacheEntry != null) {
-                        String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()));
+                        // We could not find the CA
+                        final OcspKeyBinding defaultKeyBind = OcspSigningCache.INSTANCE.getDefaultEntry().getOcspKeyBinding();
+                        // If not overridden in the default key binding, answer UnknowStatus
+                        org.bouncycastle.cert.ocsp.CertificateStatus status = new UnknownStatus();
+                        String statusName = "UnknownStatus";
+                        int statusLogCode = OCSPResponseItem.OCSP_UNKNOWN;
+                        if (defaultKeyBind != null) {
+                            if (defaultKeyBind.getNonExistingRevoked()) {
+                                // See NonExistingRevoked handling below for an explanation.
+                                // We return certificateHold just to be safe, in case the CA certificate is not yet available for some reason.
+                                status = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
+                                        CRLReason.lookup(CRLReason.certificateHold)));
+                                statusName = "RevokedStatus";
+                                statusLogCode = OCSPResponseItem.OCSP_REVOKED;
+                            } else if (defaultKeyBind.getNonExistingUnauthorized()) {
+                                // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
+                                ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
+                                if (auditLogger.isEnabled()) {
+                                    auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
+                                }
+                                if (transactionLogger.isEnabled()) {
+                                    transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
+                                }
+                                log.info(intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()), "Unauthorized"));
+                                // Return early here
+                                return new OcspResponseInformation(ocspResponse, maxAge, null);
+                            }
+                        }
+                        responseList.add(new OCSPResponseItem(certId, status, nextUpdate));
+                        String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()), statusName);
                         log.info(errMsg);
-                        // If we can not find the CA, answer UnknowStatus
-                        responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), nextUpdate));
                         if (transactionLogger.isEnabled()) {
-                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
+                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, statusLogCode);
                         }
                         continue;
                     } else {
