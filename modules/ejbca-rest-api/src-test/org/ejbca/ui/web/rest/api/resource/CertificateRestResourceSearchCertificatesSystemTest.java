@@ -11,6 +11,7 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,7 @@ import java.util.TimeZone;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
@@ -64,10 +66,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CertificateStatus;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -408,9 +412,23 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
     public void shouldFindByCertificateStatus() throws Exception {
         ///given
         String expectedCn = "searchCertCn";
+        // Create a new certificate, will have status active (20)
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
         certificates.add(certificate);
+        assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_ACTIVE.name(), 1);
+        // Change status to notified about expiration, this is a special status (21 instead of 20). We should still find it by a search for active certificates
+        setCertificateStatus(CertTools.getFingerprintAsString(certificate), CertificateStatus.CERT_NOTIFIEDABOUTEXPIRATION.getStatusValue());
+        assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_ACTIVE.name(), 1); 
+        // Search for revoked certificates instead, we should not find it
+        assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_REVOKED.name(), 0);
+        // Set status to revoked, not we should find it again
+        setCertificateStatus(CertTools.getFingerprintAsString(certificate), CertificateStatus.CERT_REVOKED.getStatusValue());
+        assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_REVOKED.name(), 1);
+    }
+
+    private void assertFindByCertificateStatus(String expectedCn, String expectedSerialNumber, String searchedStatus, int expectedSearchResult)
+            throws Exception, JsonProcessingException, ParseException, CertificateParsingException {
         String expectedCertificateFormat = "DER";
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.END_ENTITY_PROFILE.name())
@@ -419,7 +437,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .build();
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest2 = SearchCertificateCriteriaRestRequest.builder()
                 .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.STATUS.name())
-                .value(SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_ACTIVE.name())
+                .value(searchedStatus)
                 .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
                 .build();
         List<SearchCertificateCriteriaRestRequest> criterias = new ArrayList<SearchCertificateCriteriaRestRequest>();
@@ -436,6 +454,12 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        assertNotNull("Returned certificate should not be null", actualCertificates);
+        assertEquals("The certificate search is expected to return a specified number of certificates", expectedSearchResult, actualCertificates.size());
+        if (expectedSearchResult == 0) {
+            // We can not go ahead and check the result if we expected to find 0 results, so break here
+            return;
+        }
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
         final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
@@ -689,7 +713,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
     }
 
-    public X509Certificate createCertificate(String username, String subjectDn, PublicKey publicKey) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
+    private X509Certificate createCertificate(String username, String subjectDn, PublicKey publicKey) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDn, x509TestCa.getCAId(), null,
                 "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
@@ -702,7 +726,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         return cert;
     }
 
-    public X509Certificate createCertificate(String username, String subjectDn, Date notAfter) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
+    private X509Certificate createCertificate(String username, String subjectDn, Date notAfter) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDn, x509TestCa.getCAId(), null,
                 "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
@@ -715,7 +739,12 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         return cert;
     }
 
-    public void removeCertificate(String fingerprint){
+    private void removeCertificate(String fingerprint) {
         internalCertStoreSession.removeCertificate(fingerprint);
     }
+
+    private void setCertificateStatus(String fingerprint, int status) throws AuthorizationDeniedException {
+        internalCertStoreSession.setStatus(INTERNAL_ADMIN_TOKEN, fingerprint, status);
+    }
+
 }
