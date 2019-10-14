@@ -93,6 +93,7 @@ public class SearchCertificateCriteriaRestRequestUnitTest {
         // then
         assertEquals("Should have proper enum set.", CertificateConstants.CERT_ACTIVE, CertificateStatus.CERT_ACTIVE.getStatusValue());
         assertEquals("Should have proper enum set.", CertificateConstants.CERT_REVOKED, CertificateStatus.CERT_REVOKED.getStatusValue());
+        assertEquals("Should have proper enum set.", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, CertificateStatus.CERT_NOTIFIEDABOUTEXPIRATION.getStatusValue());        
         assertEquals("Should have proper enum set.", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CertificateStatus.REVOCATION_REASON_UNSPECIFIED.getStatusValue());
         assertEquals("Should have proper enum set.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, CertificateStatus.REVOCATION_REASON_KEYCOMPROMISE.getStatusValue());
         assertEquals("Should have proper enum set.", RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, CertificateStatus.REVOCATION_REASON_CACOMPROMISE.getStatusValue());
