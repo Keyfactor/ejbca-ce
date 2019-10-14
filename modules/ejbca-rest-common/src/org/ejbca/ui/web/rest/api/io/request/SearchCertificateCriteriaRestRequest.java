@@ -202,6 +202,7 @@ public class SearchCertificateCriteriaRestRequest {
      */
     public enum CertificateStatus {
         CERT_ACTIVE(CertificateConstants.CERT_ACTIVE),
+        CERT_NOTIFIEDABOUTEXPIRATION(CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION), // Special status code, active but has sent an email that it's about to expire soon
         CERT_REVOKED(CertificateConstants.CERT_REVOKED),
         REVOCATION_REASON_UNSPECIFIED(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED),
         REVOCATION_REASON_KEYCOMPROMISE(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE),

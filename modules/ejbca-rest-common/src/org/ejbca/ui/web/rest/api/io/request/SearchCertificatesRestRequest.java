@@ -10,6 +10,8 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.annotations.ApiModelProperty;
+
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
@@ -156,6 +158,9 @@ public class SearchCertificatesRestRequest {
                         }
                         if (certificateStatus == SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_ACTIVE) {
                             raCertificateSearchRequest.getStatuses().add(certificateStatus.getStatusValue());
+                            // ECA-8579: when searching for active certificates we need to include certificates that are notified about expiration.
+                            // Add this automatically to the search conditions.
+                            raCertificateSearchRequest.getStatuses().add(CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
                         }
                         if (certificateStatus == SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_REVOKED) {
                             raCertificateSearchRequest.getStatuses().add(certificateStatus.getStatusValue());
