@@ -135,62 +135,6 @@ public class ConfigDumpSetting implements Serializable {
         EXISTING_AND_MISSING_REFERENCE
     }
 
-    /** Identifies an object reference in EJBCA */
-    public static final class ConfigDumpImportItem implements Comparable<ConfigDumpImportItem>, Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        private final ItemType type;
-        private final String name;
-        // Problems enum: NO_PROBLEM, EXISTING, MISSING_REFERENCE, EXISTING_AND_MISSING_REFERENCE
-        private ItemProblem problem;
-
-        public ConfigDumpImportItem(final ItemType type, final String name) {
-            this.type = type;
-            this.name = name;
-            this.problem = ItemProblem.NO_PROBLEM;
-        }
-
-        /** Returns the type, for example {@link ItemType#EEPROFILE} */
-        public ItemType getType() { return type; }
-
-        /** Returns the name of the object in EJBCA (for example End Entity Profile name) */
-        public String getName() { return name; }
-
-        public ItemProblem getProblem() {
-            return problem;
-        }
-
-        public void setProblem(ItemProblem problem) {
-            this.problem = problem;
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            return other instanceof ConfigDumpImportItem && compareTo((ConfigDumpImportItem) other) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder().append(type).append(name).toHashCode();
-        }
-
-        @Override
-        public int compareTo(final ConfigDumpImportItem o) {
-            if (o == this) {
-                return 0;
-            } else if (type != o.type) {
-                return type.ordinal() - o.type.ordinal();
-            } else if (name == null) {
-                return o.name == null ? 0 : -1;
-            } else if (o.name == null) {
-                return 1;
-            } else {
-                return name.compareTo(o.name);
-            }
-        }
-    }
-
     private File location;
     private Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
     private Map<ItemType, List<ConfigdumpPattern>> excluded = new HashMap<>();
@@ -202,9 +146,9 @@ public class ConfigDumpSetting implements Serializable {
     private ProcessingMode processingMode;
     private OverwriteMode overwriteMode;
     private ResolveReferenceMode resolveReferenceMode;
-    private Map<ConfigDumpImportItem, OverwriteMode> overwriteResolutions = new HashMap<>();
-    private Map<ConfigDumpImportItem, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
-    private Map<ConfigDumpImportItem, String> passwords = new HashMap<>();
+    private Map<ConfigdumpItem, OverwriteMode> overwriteResolutions = new HashMap<>();
+    private Map<ConfigdumpItem, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
+    private Map<ConfigdumpItem, String> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas;
@@ -297,23 +241,23 @@ public class ConfigDumpSetting implements Serializable {
         this.resolveReferenceMode = resolveReferenceMode;
     }
 
-    public void setOverwriteResolutions(final Map<ConfigDumpImportItem,OverwriteMode> overwriteResolutions) {
+    public void setOverwriteResolutions(final Map<ConfigdumpItem, OverwriteMode> overwriteResolutions) {
         this.overwriteResolutions = new HashMap<>(overwriteResolutions);
     }
-    
-    public Map<ConfigDumpImportItem,OverwriteMode> getOverwriteResolutions() {
+
+    public Map<ConfigdumpItem, OverwriteMode> getOverwriteResolutions() {
         return Collections.unmodifiableMap(overwriteResolutions);
     }
 
-    public void addOverwriteResolution(final ConfigDumpImportItem item, final OverwriteMode resolution) {
+    public void addOverwriteResolution(final ConfigdumpItem item, final OverwriteMode resolution) {
         overwriteResolutions.put(item, resolution);
     }
 
-    public Map<ConfigDumpImportItem, ResolveReferenceMode> getReferenceModeResolutions() {
+    public Map<ConfigdumpItem, ResolveReferenceMode> getReferenceModeResolutions() {
         return Collections.unmodifiableMap(resolveReferenceModeResolutions);
     }
 
-    public void addResolveReferenceModeResolution(final ConfigDumpImportItem item, final ResolveReferenceMode resolveReferenceMode) {
+    public void addResolveReferenceModeResolution(final ConfigdumpItem item, final ResolveReferenceMode resolveReferenceMode) {
         resolveReferenceModeResolutions.put(item, resolveReferenceMode);
     }
 
@@ -383,11 +327,11 @@ public class ConfigDumpSetting implements Serializable {
         return true;
     }
 
-    public void putPassword(final ConfigDumpImportItem configDumpImportItem, final String password) {
-        passwords.put(configDumpImportItem, password);
+    public void putPassword(final ConfigdumpItem configdumpItem, final String password) {
+        passwords.put(configdumpItem, password);
     }
 
-    public Optional<String> getPasswordFor(final ConfigDumpImportItem configDumpImportItem) {
-        return Optional.ofNullable(passwords.get(configDumpImportItem));
+    public Optional<String> getPasswordFor(final ConfigdumpItem configdumpItem) {
+        return Optional.ofNullable(passwords.get(configdumpItem));
     }
 }
