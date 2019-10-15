@@ -26,9 +26,7 @@ import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -40,7 +38,6 @@ import static org.junit.Assume.assumeTrue;
  * @version $Id: Pkcs11NgCryptoTokenTest.java 33540 2019-10-08 14:49:57Z aminkh $
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
 
     CryptoToken token = null;
@@ -91,6 +88,13 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
         token = createPkcs11NgToken();
         token.deactivate();
         doAutoActivate(token);
+    }
+    
+    @Test
+    public void testStoreAndLoad() throws Exception {
+        token = createPkcs11NgToken();
+        token.deactivate();
+        doStoreAndLoad(token);
     }
     
     private static CryptoToken createPkcs11NgToken() throws NoSuchSlotException {
