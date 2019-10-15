@@ -442,7 +442,7 @@ public abstract class CryptoTokenTestBase {
             IOException, InvalidKeyException, SignatureException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException, InterruptedException {
         try {
             Properties prop = cryptoToken.getProperties();
-            prop.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
+            prop.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
             cryptoToken.setProperties(prop);
 
             // We have autoactivation, so status should be ACTIVE
