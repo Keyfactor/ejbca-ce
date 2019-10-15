@@ -91,7 +91,7 @@ public abstract class EstTestCase extends CaTestCase {
     protected final static AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken("EstTestCase");
 
     public EstTestCase() {
-        final String httpServerPubHttps = SystemTestsConfiguration.getRemotePortHttp(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTPS));
+        final String httpServerPubHttps = SystemTestsConfiguration.getRemotePortHttps(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTPS));
         this.EST_HOST = SystemTestsConfiguration.getRemoteHost(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         this.httpReqPath = "https://" + this.EST_HOST + ":" + httpServerPubHttps + "/.well-known/est/";
     }
