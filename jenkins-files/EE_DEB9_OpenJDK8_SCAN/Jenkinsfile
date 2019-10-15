@@ -109,7 +109,7 @@ pipeline {
             steps {
                 sh '/opt/imports/bin/run-pmd.sh'
                 // Gather the results
-                recordIssues enabledForFailure: false, tool: pmd(pattern: 'ejbca/**/report-pmd.xml')
+                recordIssues enabledForFailure: false, tool: pmdParser(pattern: 'ejbca/**/report-pmd.xml')
                 // Archive artifact for import in external tool
                 archiveArtifacts artifacts: 'ejbca/**/report-pmd.xml', fingerprint: true
                 // Clean up
