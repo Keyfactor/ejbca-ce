@@ -16,10 +16,8 @@ package org.ejbca.ui.web.pub;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -30,28 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.validation.KeyValidatorSessionLocal;
-import org.cesecore.roles.management.RoleDataSessionLocal;
-import org.cesecore.roles.member.RoleMemberDataSessionLocal;
-import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.ScepConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 
 /**
  * Servlet used to clear all caches (Global Configuration Cache, End Entity Profile Cache, 
@@ -66,37 +45,11 @@ public class ClearCacheServlet extends HttpServlet {
 	
 	private static final Set<String> LOCALHOST_IPS = new HashSet<>(Arrays.asList("127.0.0.1", "0:0:0:0:0:0:0:1", "::1"));
 	
-	@EJB
-	private ApprovalProfileSessionLocal approvalprofilesession;
-	@EJB
-	private AuthorizationSessionLocal authorizationSession;
-	@EJB
-	private CaSessionLocal caSession;
-	@EJB
-	private CAAdminSessionLocal caAdminSession;
-	@EJB
-	private CertificateProfileSessionLocal certificateprofilesession;
-	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private CryptoTokenSessionLocal cryptoTokenSession;
-    @EJB
-    private EndEntityProfileSessionLocal endentitysession;
+    private ClearCacheSessionLocal clearCacheSession;
     @EJB
     private GlobalConfigurationSessionLocal globalconfigurationsession;
-    @EJB
-    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
-    @EJB
-    private KeyValidatorSessionLocal keyValidatorSession;
-    @EJB
-    private PublisherSessionLocal publisherSession;
-    @EJB
-    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
-    @EJB
-    private RoleDataSessionLocal roleDataSession;
-    @EJB
-    private RoleMemberDataSessionLocal roleMemberDataSession;
-	
+
     public void doPost(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)	throws IOException, ServletException {
     	doGet(httpServletRequest,httpServletResponse);
     }
@@ -108,7 +61,7 @@ public class ClearCacheServlet extends HttpServlet {
         if (StringUtils.equals(httpServletRequest.getParameter("command"), "clearcaches")) {
             final boolean excludeActiveCryptoTokens = StringUtils.equalsIgnoreCase("true", httpServletRequest.getParameter("excludeactivects"));
             if (isLocalhostAddress(httpServletRequest.getRemoteAddr()) || acceptedHost(httpServletRequest.getRemoteHost())) {
-                clearCaches(excludeActiveCryptoTokens);
+                clearCacheSession.clearCaches(excludeActiveCryptoTokens);
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Clear cache request denied from host "+httpServletRequest.getRemoteHost());
@@ -125,113 +78,6 @@ public class ClearCacheServlet extends HttpServlet {
             log.trace("<doGet()");
         }
     }
-
-	private void clearCaches(final boolean excludeActiveCryptoTokens) {
-	    // Clear all known global configuration caches
-	    for (final String globalConfigurationId : globalconfigurationsession.getIds()) {
-	        globalconfigurationsession.flushConfigurationCache(globalConfigurationId);
-	        if(log.isDebugEnabled()){
-	            if (GlobalConfiguration.GLOBAL_CONFIGURATION_ID.equals(globalConfigurationId)) {
-	                log.debug("Global Configuration cache cleared.");
-	            } else if (CmpConfiguration.CMP_CONFIGURATION_ID.equals(globalConfigurationId)) {
-	                log.debug("CMP Configuration cache cleared.");
-	            } else if (ScepConfiguration.SCEP_CONFIGURATION_ID.equals(globalConfigurationId)) {
-	                log.debug("SCEP Configuration cache cleared.");
-	            } else if (AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID.equals(globalConfigurationId)) {
-	                log.debug("Available Extended Key Usages Configuration cache cleared.");
-	            } else if (AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID.equals(globalConfigurationId)) {
-	                log.debug("Available Custom Certificate Extensions Configuration cache cleared.");
-	            } else {
-	                log.debug(globalConfigurationId + " Configuration cache cleared.");
-	            }
-	        }
-	    }
-	    endentitysession.flushProfileCache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("RA Profile cache cleared");
-	    }
-
-	    certificateprofilesession.flushProfileCache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Certificate Profile cache cleared");
-	    }
-
-	    approvalprofilesession.forceProfileCacheRebuild();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Approval Profile cache cleared");
-	    }
-
-	    authorizationSession.forceCacheExpire();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Authorization Rule cache cleared");
-	    }
-	    caSession.flushCACache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("CA cache cleared");
-	    }
-
-	    flushCryptoTokenCache(excludeActiveCryptoTokens);
-
-	    publisherSession.flushPublisherCache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Publisher cache cleared");
-	    }
-	    keyValidatorSession.flushKeyValidatorCache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Key Validator cache cleared");
-	    }
-	    internalKeyBindingDataSession.flushCache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("InternalKeyBinding cache cleared");
-	    }
-	    ocspResponseGeneratorSession.reloadOcspSigningCache();
-	    if(log.isDebugEnabled()) {
-	        log.debug("OCSP signing cache cleared.");
-	    }
-	    ocspResponseGeneratorSession.reloadOcspExtensionsCache(); // clear CT OCSP response extension cache
-	    log.debug("OCSP extensions cache cleared.");
-	    if (CertificateTransparencyFactory.isCTAvailable()) {
-	        ocspResponseGeneratorSession.clearCTFailFastCache();
-	        log.debug("CT caches cleared");
-	    }
-	    ocspResponseGeneratorSession.clearOcspRequestSignerRevocationStatusCache();
-	    if (log.isDebugEnabled()) {
-	        log.debug("OCSP request signer revocation status cache cleared.");
-	    }
-	    certificateStoreSession.reloadCaCertificateCache(); 
-	    if(log.isDebugEnabled()) {
-	        log.debug("Certificate Store cache cleared and reloaded.");
-	    }
-	    roleDataSession.forceCacheExpire();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Role cache cleared.");
-	    }
-	    roleMemberDataSession.forceCacheExpire();
-	    if(log.isDebugEnabled()) {
-	        log.debug("Role member cache cleared.");
-	    }
-    }
-	
-	private void flushCryptoTokenCache(boolean withExclusion) {
-        if (withExclusion) {
-            final List<Integer> excludeIDs = new ArrayList<Integer>();
-            for (final Integer cryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
-                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-                if (cryptoToken.getTokenStatus()==CryptoToken.STATUS_ACTIVE && !cryptoToken.isAutoActivationPinPresent()) {
-                    excludeIDs.add(cryptoTokenId);
-                }
-            }
-            cryptoTokenSession.flushExcludingIDs(excludeIDs);
-            if(log.isDebugEnabled()) {
-                log.debug("CryptoToken cache cleared except for " + excludeIDs.size() + " specific entries.");
-            }
-        } else {
-            cryptoTokenSession.flushCache();
-            if(log.isDebugEnabled()) {
-                log.debug("CryptoToken cache cleared");
-            }
-        }
-	}
 	
 	/** @return true if the provided IP address matches one of commonly knwon localhost IP addresses */
 	private boolean isLocalhostAddress(final String remoteAddress) {
