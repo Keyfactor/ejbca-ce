@@ -86,7 +86,6 @@ public class ConfigDumpSetting implements Serializable {
 
     public enum OverwriteMode {
         NONE,
-        REPLACE,
         UPDATE,
         SKIP;
 
@@ -97,8 +96,6 @@ public class ConfigDumpSetting implements Serializable {
             switch (StringUtils.lowerCase(option, Locale.ROOT)) {
                 case "skip":
                     return SKIP;
-                case "replace":
-                    return REPLACE;
                 case "update":
                     return UPDATE;
                 default:
