@@ -18,7 +18,7 @@ import javax.ejb.ApplicationException;
  * @version $Id$
  */
 @ApplicationException(rollback = true)
-public class ConfigdumpException extends Exception {
+public class ConfigdumpException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
