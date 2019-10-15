@@ -88,6 +88,22 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
     	CryptoToken token = createPKCS11Token();
     	doGenerateSymKey(token);
 	}
+	
+    @Test(expected = CryptoTokenOfflineException.class)
+    public void testDeleteKeyWhileTokenOffline() throws Exception {
+        CryptoToken token = createPKCS11Token();
+        token.deactivate();
+        assertEquals(CryptoToken.STATUS_OFFLINE, token.getTokenStatus());
+        token.deleteEntry(PKCS11TestUtils.NON_EXISTING_KEY);
+    }
+    
+    @Test(expected = CryptoTokenOfflineException.class)
+    public void testGenerateKeyWhileTokenOffline() throws Exception {
+        CryptoToken token = createPKCS11Token();
+        token.deactivate();
+        assertEquals(CryptoToken.STATUS_OFFLINE, token.getTokenStatus());
+        token.generateKeyPair(PKCS11TestUtils.KEY_SIZE_1024, PKCS11TestUtils.RSA_TEST_KEY_1);
+    }
 
     @Test
     public void testPKCS11TokenCreation() throws Exception {
