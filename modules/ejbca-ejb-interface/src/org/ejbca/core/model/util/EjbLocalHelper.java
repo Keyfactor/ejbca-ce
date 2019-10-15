@@ -55,6 +55,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -145,6 +146,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return getEjbLocal().getCertificateProfileSession(); }
 	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return getEjbLocal().getCertificateStoreSession(); }
 	@Override public CertReqHistorySessionLocal getCertReqHistorySession() { return getEjbLocal().getCertReqHistorySession(); }
+    @Override public ClearCacheSessionLocal getClearCacheSession() { return getEjbLocal().getClearCacheSession(); }
 	@Override public RevocationSessionLocal getRevocationSession() { return getEjbLocal().getRevocationSession(); }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return getEjbLocal().getCmpMessageDispatcherSession(); }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return getEjbLocal().getCrlCreateSession(); }
@@ -233,6 +235,4 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
             return null; // this is the common case, since unidfnr is an special module and is not included with EJBCA
         }
     }
-
-
 }

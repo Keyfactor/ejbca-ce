@@ -89,6 +89,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -136,6 +137,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private final UpgradeSessionLocal upgradeSession = ejbLocalHelper.getUpgradeSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
+    private final ClearCacheSessionLocal clearCacheSession = ejbLocalHelper.getClearCacheSession();
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -1111,29 +1113,26 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (log.isTraceEnabled()) {
             log.trace(">clearClusterCache");
         }
-        final Set<String> nodes = globalconfiguration.getNodesInCluster();
+        // Clear local caches by direct EJB invocation
+        clearCacheSession.clearCaches(excludeActiveCryptoTokens);
+        String localhostName = "localhost";
         final StringBuilder failedHosts = new StringBuilder();
         final StringBuilder succeededHost = new StringBuilder();
-        for (final String host : nodes) {
+        for (final String host : globalconfiguration.getNodesInCluster()) {
             if (host != null) {
-                if (checkHost(host, excludeActiveCryptoTokens)) {
-                    succeededHost.append(' ').append(host);
+                if (isLocalHost(host)) {
+                    // Show hostname as in previous EJBCA versions if node tracking is enabled
+                    localhostName = host;
                 } else {
-                    if (isLocalHost(host)) {
-                        // If we are trying to clear the cache on this instance and failed,
-                        // we give it another chance using 127.0.0.1 (which is allowed by default)
-                        log.info("Failed to clear cache on local node using '" + host + "'. Will try with 'localhost'.");
-                        if (checkHost("localhost", excludeActiveCryptoTokens)) {
-                            succeededHost.append(' ').append(host);
-                        } else {
-                            failedHosts.append(' ').append(host);
-                        }
+                    if (checkHost(host, excludeActiveCryptoTokens)) {
+                        succeededHost.append(' ').append(host);
                     } else {
                         failedHosts.append(' ').append(host);
                     }
                 }
             }
         }
+        succeededHost.append(' ').append(localhostName);
         // Invalidate local GUI cache
         initialized = false;
         if (failedHosts.length() > 0) {

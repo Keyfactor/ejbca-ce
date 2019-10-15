@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -92,6 +93,7 @@ public interface EjbBridgeSessionLocal {
 	CertificateProfileSessionLocal getCertificateProfileSession();
 	CertificateStoreSessionLocal getCertificateStoreSession();
 	CertReqHistorySessionLocal getCertReqHistorySession();
+    ClearCacheSessionLocal getClearCacheSession();
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlCreateSessionLocal getCrlCreateSession();
     CrlStoreSessionLocal getCrlStoreSession();

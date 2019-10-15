@@ -52,6 +52,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -96,6 +97,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CertificateProfileSessionLocal certificateProfileSession;
 	@EJB CertificateStoreSessionLocal certificateStoreSession;
 	@EJB CertReqHistorySessionLocal certReqHistorySession;
+    @EJB ClearCacheSessionLocal clearCacheSession;
 	@EJB CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB CrlStoreSessionLocal crlStoreSession;
@@ -147,6 +149,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return certificateProfileSession; }
 	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return certificateStoreSession; }
 	@Override public CertReqHistorySessionLocal getCertReqHistorySession() { return certReqHistorySession; }
+    @Override public ClearCacheSessionLocal getClearCacheSession() { return clearCacheSession; }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
 	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
