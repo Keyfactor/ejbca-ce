@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.ejbca.configdump;
 
+import javax.ejb.ApplicationException;
+
 /**
  * @version $Id$
  */
+@ApplicationException(rollback = true)
 public class ConfigdumpException extends Exception {
 
     private static final long serialVersionUID = 1L;
