@@ -24,7 +24,7 @@ public interface ClearCacheSessionLocal {
 
     /**
      * Clear all caches of the local instance.
-     * @param excludeActiveCryptoTokens when true the active and autoactivation CryptoTokens will be excluded from the clear operation. 
+     * @param excludeActiveCryptoTokens when true the active and auto-activated CryptoTokens will be excluded from the clear operation. 
      */
     void clearCaches(boolean excludeActiveCryptoTokens);
 }
