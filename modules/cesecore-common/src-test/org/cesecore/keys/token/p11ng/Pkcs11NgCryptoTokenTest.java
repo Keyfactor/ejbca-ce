@@ -56,31 +56,40 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     public void tearDown() {
         // Make sure we remove the provider after one test, so it is not still there affecting the next test
         Security.removeProvider(getProvider());
-        token.deactivate();
     }
     
-    @Test
+    //@Test
     public void testCryptoTokenRSA() throws Exception {
         token = createPkcs11NgToken();
+        token.deactivate();
         doCryptoTokenRSA(token);
     }
     
-    @Test
+    //@Test
     public void testCryptoTokenECC() throws Exception {
         token = createPkcs11NgToken();
+        token.deactivate();
         doCryptoTokenECC(token, "secp256r1", 256, "secp384r1", 384);
     }
     
-    @Test(expected = InvalidAlgorithmParameterException.class)
+    //@Test(expected = InvalidAlgorithmParameterException.class)
     public void testCryptoTokenDSA() throws Exception {
         token = createPkcs11NgToken();
+        token.deactivate();
         doCryptoTokenDSA(token);
     }
     
-    @Test
+    //@Test
     public void testActivateDeactivate() throws Exception {
         token = createPkcs11NgToken();
+        token.deactivate();
         doActivateDeactivate(token);
+    }
+    
+    @Test
+    public void testAutoActivate() throws Exception {
+        token = createPkcs11NgToken();
+        doAutoActivate(token);
     }
     
     private static CryptoToken createPkcs11NgToken() throws NoSuchSlotException {

@@ -46,6 +46,17 @@ public class PKCS11TestUtils {
     private static final String PROTECTSERVER_PKCS11_LINUX32_LIB = "/opt/ETcpsdk/lib/linux-i386/libcryptoki.so";
     private static final String PROTECTSERVER_PKCS11_WINDOWS_LIB = "C:/Program Files/SafeNet/ProtectToolkit C SDK/bin/sw/cryptoki.dll";
 
+    public static final String RSA_TEST_KEY_1 = "rsatest00001";
+    public static final String RSA_TEST_KEY_2 = "rsatest00002";
+    public static final String RSA_TEST_KEY_3 = "rsatest00003";
+    public static final String ECC_TEST_KEY_1 = "ecctest00001";
+    public static final String ECC_TEST_KEY_2 = "ecctest00002";
+    public static final String ECC_TEST_KEY_3 = "ecctest00003";
+    
+    public static final String NON_EXISTING_KEY = "sdkfjhsdkfjhsd777";
+    
+    public static final String KEY_SIZE_1024 = "1024";
+    public static final String KEY_SIZE_2048 = "2048";
     
     public static String getHSMProvider() {
         final File utimacoCSLinux = new File(UTIMACO_PKCS11_LINUX_LIB);

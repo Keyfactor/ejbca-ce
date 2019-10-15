@@ -85,65 +85,56 @@ public abstract class CryptoTokenTestBase {
         cryptoToken.activate(tokenpin.toCharArray());
         // Should still be ACTIVE now, because we run activate
         assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-        cryptoToken.deleteEntry("rsatest00001");
-        cryptoToken.deleteEntry("rsatest00002");
-        cryptoToken.deleteEntry("rsatest00003");
+        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
+        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_3);
 
         // Try to delete something that surely does not exist, it should work without error
-        cryptoToken.deleteEntry("sdkfjhsdkfjhsd777");
+        cryptoToken.deleteEntry(PKCS11TestUtils.NON_EXISTING_KEY);
 
         // Generate the first key
-        cryptoToken.generateKeyPair("1024", "rsatest00001");
-        PrivateKey priv = cryptoToken.getPrivateKey("rsatest00001");
-        PublicKey pub = cryptoToken.getPublicKey("rsatest00001");
-        if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
-            KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-        }
+        cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_1024, PKCS11TestUtils.RSA_TEST_KEY_1);
+        PrivateKey priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+        PublicKey pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(1024, KeyTools.getKeyLength(pub));
         String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 
         // Make sure keys are or are not extractable, according to what is allowed by the token
-        
-        if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
-            cryptoToken.testKeyPair("rsatest00001");
-        }
+        cryptoToken.testKeyPair(PKCS11TestUtils.RSA_TEST_KEY_1);
         // Generate new keys again
-        cryptoToken.generateKeyPair("2048", "rsatest00002");
-        priv = cryptoToken.getPrivateKey("rsatest00002");
-        pub = cryptoToken.getPublicKey("rsatest00002");
+        cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_2);
+        priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_2);
+        pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_2);
         KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(2048, KeyTools.getKeyLength(pub));
         String newkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
         assertFalse("New keys are same as old keys, should not be...", keyhash.equals(newkeyhash));
-        priv = cryptoToken.getPrivateKey("rsatest00001");
-        pub = cryptoToken.getPublicKey("rsatest00001");
-        if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
-            KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-        }
+        priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+        pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(1024, KeyTools.getKeyLength(pub));
         String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
         assertEquals(keyhash, previouskeyhash);
 
         // Delete a key pair
-        cryptoToken.deleteEntry("rsatest00001");
-        if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
-            try {
-                priv = cryptoToken.getPrivateKey("rsatest00001");
-                assertTrue("Should throw", false);
-            } catch (CryptoTokenOfflineException e) {
-                // NOPMD
-            }
-            try {
-                pub = cryptoToken.getPublicKey("rsatest00001");
-                assertTrue("Should throw", false);
-            } catch (CryptoTokenOfflineException e) {
-                // NOPMD
-            }
+        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+        try {
+            priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            assertTrue("Should throw", false);
+        } catch (CryptoTokenOfflineException e) {
+            // NOPMD
+        }
+        try {
+            pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            assertTrue("Should throw", false);
+        } catch (CryptoTokenOfflineException e) {
+            // NOPMD
         }
         try {
             // the other keys should still be there
-            priv = cryptoToken.getPrivateKey("rsatest00002");
-            pub = cryptoToken.getPublicKey("rsatest00002");
+            priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_2);
+            pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_2);
             KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
             assertEquals(2048, KeyTools.getKeyLength(pub));
             String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
@@ -152,9 +143,9 @@ public abstract class CryptoTokenTestBase {
             if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
                 // Create keys using AlgorithmParameterSpec
                 AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
-                cryptoToken.generateKeyPair(paramspec, "rsatest00003");
-                priv = cryptoToken.getPrivateKey("rsatest00003");
-                pub = cryptoToken.getPublicKey("rsatest00003");
+                cryptoToken.generateKeyPair(paramspec, PKCS11TestUtils.RSA_TEST_KEY_3);
+                priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_3);
+                pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_3);
                 KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
                 assertEquals(2048, KeyTools.getKeyLength(pub));
                 String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
@@ -163,9 +154,9 @@ public abstract class CryptoTokenTestBase {
             }
         } finally {
             // Clean up and delete our generated keys
-            cryptoToken.deleteEntry("rsatest00001");
-            cryptoToken.deleteEntry("rsatest00002");
-            cryptoToken.deleteEntry("rsatest00003");
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_3);
         }
     }
 
@@ -184,7 +175,7 @@ public abstract class CryptoTokenTestBase {
         cryptoToken.deleteEntry("dsatest00003");
 
         // Try to delete something that surely does not exist, it should work without error
-        cryptoToken.deleteEntry("sdkfjhsdkfjhsd777");
+        cryptoToken.deleteEntry(PKCS11TestUtils.NON_EXISTING_KEY);
 
         // Generate the first key
         cryptoToken.generateKeyPair("DSA1024", "dsatest00001");
@@ -272,69 +263,59 @@ public abstract class CryptoTokenTestBase {
         assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
         assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
-        if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
-            // First we start by deleting all old entries
-
-            try {
-                cryptoToken.deleteEntry("ecctest00001");
-                assertTrue("Should throw", false);
-            } catch (CryptoTokenOfflineException e) {
-                // NOPMD
-            }
-        }
         cryptoToken.activate(tokenpin.toCharArray());
         // Should still be ACTIVE now, because we run activate
         assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-        cryptoToken.deleteEntry("ecctest00001");
-        cryptoToken.deleteEntry("ecctest00002");
-        cryptoToken.deleteEntry("ecctest00003");
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_3);
 
         // Try to delete something that surely does not exist, it should work without error
-        cryptoToken.deleteEntry("sdkfjhsdkfjhsd777");
+        cryptoToken.deleteEntry(PKCS11TestUtils.NON_EXISTING_KEY);
 
         // Generate the first key
-        cryptoToken.generateKeyPair(curve1, "ecctest00001");
-        PrivateKey priv = cryptoToken.getPrivateKey("ecctest00001");
-        PublicKey pub = cryptoToken.getPublicKey("ecctest00001");
+        cryptoToken.generateKeyPair(curve1, PKCS11TestUtils.ECC_TEST_KEY_1);
+        PrivateKey priv = cryptoToken.getPrivateKey(PKCS11TestUtils.ECC_TEST_KEY_1);
+        PublicKey pub = cryptoToken.getPublicKey(PKCS11TestUtils.ECC_TEST_KEY_1);
         KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(keyLen1, KeyTools.getKeyLength(pub));
         String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 
         // Make sure keys are or are not extractable, according to what is allowed by the token
-        cryptoToken.testKeyPair("ecctest00001");
+        cryptoToken.testKeyPair(PKCS11TestUtils.ECC_TEST_KEY_1);
 
         // Generate new keys again
-        cryptoToken.generateKeyPair(curve2, "ecctest00002");
-        priv = cryptoToken.getPrivateKey("ecctest00002");
-        pub = cryptoToken.getPublicKey("ecctest00002");
+        cryptoToken.generateKeyPair(curve2, PKCS11TestUtils.ECC_TEST_KEY_2);
+        priv = cryptoToken.getPrivateKey(PKCS11TestUtils.ECC_TEST_KEY_2);
+        pub = cryptoToken.getPublicKey(PKCS11TestUtils.ECC_TEST_KEY_2);
         KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(keyLen2, KeyTools.getKeyLength(pub));
         String newkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
         assertFalse("New keys are same as old keys, should not be...", keyhash.equals(newkeyhash));
-        priv = cryptoToken.getPrivateKey("ecctest00001");
-        pub = cryptoToken.getPublicKey("ecctest00001");
+        priv = cryptoToken.getPrivateKey(PKCS11TestUtils.ECC_TEST_KEY_1);
+        pub = cryptoToken.getPublicKey(PKCS11TestUtils.ECC_TEST_KEY_1);
         KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(keyLen1, KeyTools.getKeyLength(pub));
         String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
         assertEquals(keyhash, previouskeyhash);
 
         // Delete a key pair
-        cryptoToken.deleteEntry("ecctest00001");
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
         try {
-            priv = cryptoToken.getPrivateKey("ecctest00001");
+            priv = cryptoToken.getPrivateKey(PKCS11TestUtils.ECC_TEST_KEY_1);
             assertTrue("Should throw", false);
         } catch (CryptoTokenOfflineException e) {
             // NOPMD
         }
         try {
-            pub = cryptoToken.getPublicKey("ecctest00001");
+            pub = cryptoToken.getPublicKey(PKCS11TestUtils.ECC_TEST_KEY_1);
             assertTrue("Should throw", false);
         } catch (CryptoTokenOfflineException e) {
             // NOPMD
         }
         // the other keys should still be there
-        priv = cryptoToken.getPrivateKey("ecctest00002");
-        pub = cryptoToken.getPublicKey("ecctest00002");
+        priv = cryptoToken.getPrivateKey(PKCS11TestUtils.ECC_TEST_KEY_2);
+        pub = cryptoToken.getPublicKey(PKCS11TestUtils.ECC_TEST_KEY_2);
         KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
         assertEquals(keyLen2, KeyTools.getKeyLength(pub));
         String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
@@ -343,9 +324,9 @@ public abstract class CryptoTokenTestBase {
         // Create keys using AlgorithmParameterSpec
         if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
-            cryptoToken.generateKeyPair(paramspec, "ecctest00003");
-            priv = cryptoToken.getPrivateKey("ecctest00003");
-            pub = cryptoToken.getPublicKey("ecctest00003");
+            cryptoToken.generateKeyPair(paramspec, PKCS11TestUtils.ECC_TEST_KEY_3);
+            priv = cryptoToken.getPrivateKey(PKCS11TestUtils.ECC_TEST_KEY_3);
+            pub = cryptoToken.getPublicKey(PKCS11TestUtils.ECC_TEST_KEY_3);
             KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
             assertEquals(keyLen2, KeyTools.getKeyLength(pub));
             String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
@@ -354,8 +335,10 @@ public abstract class CryptoTokenTestBase {
         }
 
         // Clean up and delete our generated keys
-        cryptoToken.deleteEntry("ecctest00002");
-        cryptoToken.deleteEntry("ecctest00003");
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_3);
+        
     }
 
     /**
@@ -377,16 +360,6 @@ public abstract class CryptoTokenTestBase {
         // We have not activated the token so status should be offline
         assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
         assertEquals(getProvider(), cryptoToken.getSignProviderName());
-
-        // First we start by deleting all old entries
-        if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
-            try {
-                cryptoToken.deleteEntry("rsatest00001");
-                assertTrue("Should throw", false);
-            } catch (CryptoTokenOfflineException e) {
-                // NOPMD
-            }
-        }
         
         if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             try {
@@ -462,40 +435,45 @@ public abstract class CryptoTokenTestBase {
      * @throws SignatureException
      * @throws CryptoTokenAuthenticationFailedException
      * @throws InvalidAlgorithmParameterException
+     * @throws InterruptedException 
      */
     protected void doAutoActivate(CryptoToken cryptoToken)
             throws CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException,
-            IOException, InvalidKeyException, SignatureException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
-        Properties prop = cryptoToken.getProperties();
-        prop.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
-        cryptoToken.setProperties(prop);
+            IOException, InvalidKeyException, SignatureException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException, InterruptedException {
+        try {
+            Properties prop = cryptoToken.getProperties();
+            prop.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
+            cryptoToken.setProperties(prop);
 
-        // We have autoactivation, so status should be ACTIVE
-        assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-        assertEquals(getProvider(), cryptoToken.getSignProviderName());
+            // We have autoactivation, so status should be ACTIVE
+            assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+            assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
-        cryptoToken.deactivate();
-        // It should autoactivate getting status
-        assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-        cryptoToken.activate(tokenpin.toCharArray());
-        assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+            cryptoToken.deactivate();
+            // It should autoactivate getting status
+            assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+            cryptoToken.activate(tokenpin.toCharArray());
+            assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
 
-        // Generate a key
-        cryptoToken.generateKeyPair("1024", "rsatest00001");
-        PrivateKey priv = cryptoToken.getPrivateKey("rsatest00001");
-        PublicKey pub = cryptoToken.getPublicKey("rsatest00001");
-        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-        assertEquals(1024, KeyTools.getKeyLength(pub));
-        // Deactivate
-        cryptoToken.deactivate();
-        // It should autoactivate trying to get keys
-        priv = cryptoToken.getPrivateKey("rsatest00001");
-        pub = cryptoToken.getPublicKey("rsatest00001");
-        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-        assertEquals(1024, KeyTools.getKeyLength(pub));
+            // Generate a key
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+            cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_1);
+            PrivateKey priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            PublicKey pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+            assertEquals(2048, KeyTools.getKeyLength(pub));
+            // Deactivate
+            cryptoToken.deactivate();
+            // It should autoactivate trying to get keys
+            priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
+            assertEquals(2048, KeyTools.getKeyLength(pub));
 
-        // End by deleting all old entries
-        cryptoToken.deleteEntry("rsatest00001");
+        } finally {
+            // End by deleting all old entries
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+        }
     }
 
     protected void doStoreAndLoad(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
