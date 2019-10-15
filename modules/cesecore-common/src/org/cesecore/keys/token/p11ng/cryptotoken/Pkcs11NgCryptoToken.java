@@ -161,6 +161,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     @Override
     public void deactivate() {
         this.slot.logout();
+        autoActivate();
     }
 
     @Override

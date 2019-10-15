@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.pkcs11.jacknji11.CKA;
 
@@ -24,7 +25,7 @@ import org.pkcs11.jacknji11.CKA;
 public class P11NGSlotStore {
     private final Map<FindObjectsCallParamsHolder, long[]> findObjectsCallParams2ResultMap = new HashMap<>();
     private final Map<GetAttributeValueCallParamsHolder, CKA> getAttributeValueCallParams2ResultMap = new HashMap<>();
-
+    
     public synchronized boolean objectsExists(FindObjectsCallParamsHolder key) {
         return findObjectsCallParams2ResultMap.containsKey(key);
     }
@@ -85,6 +86,11 @@ public class P11NGSlotStore {
                 itr.remove();
             }
         }
+    }
+    
+    public synchronized void clearCache() {
+        findObjectsCallParams2ResultMap.clear();
+        getAttributeValueCallParams2ResultMap.clear();
     }
 
 }
