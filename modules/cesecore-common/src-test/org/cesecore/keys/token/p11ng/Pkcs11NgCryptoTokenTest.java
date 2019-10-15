@@ -58,28 +58,28 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
         Security.removeProvider(getProvider());
     }
     
-    //@Test
+    @Test
     public void testCryptoTokenRSA() throws Exception {
         token = createPkcs11NgToken();
         token.deactivate();
         doCryptoTokenRSA(token);
     }
     
-    //@Test
+    @Test
     public void testCryptoTokenECC() throws Exception {
         token = createPkcs11NgToken();
         token.deactivate();
         doCryptoTokenECC(token, "secp256r1", 256, "secp384r1", 384);
     }
     
-    //@Test(expected = InvalidAlgorithmParameterException.class)
+    @Test(expected = InvalidAlgorithmParameterException.class)
     public void testCryptoTokenDSA() throws Exception {
         token = createPkcs11NgToken();
         token.deactivate();
         doCryptoTokenDSA(token);
     }
     
-    //@Test
+    @Test
     public void testActivateDeactivate() throws Exception {
         token = createPkcs11NgToken();
         token.deactivate();
@@ -89,6 +89,7 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
     @Test
     public void testAutoActivate() throws Exception {
         token = createPkcs11NgToken();
+        token.deactivate();
         doAutoActivate(token);
     }
     
