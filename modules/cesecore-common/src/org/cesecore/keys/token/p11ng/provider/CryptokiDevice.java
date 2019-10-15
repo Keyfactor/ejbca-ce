@@ -322,6 +322,7 @@ public class CryptokiDevice {
         
         public synchronized void logout() {
             try {
+                cache.clearCache();
                 if (loginSession == null) {
                     loginSession = aquireSession();
                 }
