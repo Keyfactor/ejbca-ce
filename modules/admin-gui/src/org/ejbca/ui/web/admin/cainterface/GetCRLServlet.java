@@ -122,7 +122,7 @@ public class GetCRLServlet extends HttpServlet {
         // Keep this for logging.
         final String remoteAddr = req.getRemoteAddr();
         try {
-            final byte[] crl = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false);
+            final byte[] crl = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, deltaCrl);
             if (crl == null) {
                 String errMsg = intres.getLocalizedMessage("certreq.errorsendcrl", remoteAddr, "CRL does not exist for CA");
                 log.info(errMsg);
