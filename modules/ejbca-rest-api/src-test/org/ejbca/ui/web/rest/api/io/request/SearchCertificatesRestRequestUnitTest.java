@@ -286,7 +286,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getExpiresBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getRevokedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getRevokedBefore());
-        assertEquals("Should properly convert.", 1, actualRaCertificateSearchRequest.getStatuses().size());
+        assertEquals("Should properly convert.", 2, actualRaCertificateSearchRequest.getStatuses().size()); // Both active and notified about expiration
         assertEquals("Should properly convert.", expectedCertificateStatus, actualRaCertificateSearchRequest.getStatuses().get(0));
         assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getRevocationReasons().size());
     }
