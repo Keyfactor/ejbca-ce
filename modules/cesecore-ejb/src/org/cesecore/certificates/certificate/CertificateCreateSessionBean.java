@@ -560,12 +560,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
                                 crlPartitionIndex, tag, updateTime);
                     } else {
+                        // Store pre-certificate using a new transaction. We don't want CertificateData rolled back even though issuance failed.
                         result = certificateStoreSession.storeCertificateNoAuthNewTransaction(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
                                 crlPartitionIndex, tag, updateTime);
                     }
-                    
-                    
                     storeEx = null;
                     break;
                 } catch (CertificateSerialNumberException e) {
