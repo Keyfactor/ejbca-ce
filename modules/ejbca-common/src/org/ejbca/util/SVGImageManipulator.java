@@ -29,12 +29,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.batik.anim.dom.SVGDOMImplementation;
+import org.apache.batik.anim.dom.SVGOMDocument;
+import org.apache.batik.anim.dom.SVGOMImageElement;
+import org.apache.batik.anim.dom.SVGOMTSpanElement;
 import org.apache.batik.dom.GenericText;
-import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
-import org.apache.batik.dom.svg.SVGDOMImplementation;
-import org.apache.batik.dom.svg.SVGOMDocument;
-import org.apache.batik.dom.svg.SVGOMImageElement;
-import org.apache.batik.dom.svg.SVGOMTSpanElement;
 import org.apache.batik.svggen.ImageHandlerBase64Encoder;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SimpleImageHandler;
