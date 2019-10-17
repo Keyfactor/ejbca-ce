@@ -422,7 +422,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_ACTIVE.name(), 1); 
         // Search for revoked certificates instead, we should not find it
         assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_REVOKED.name(), 0);
-        // Set status to revoked, not we should find it again
+        // Set status to revoked, now we should find it again
         setCertificateStatus(CertTools.getFingerprintAsString(certificate), CertificateStatus.CERT_REVOKED.getStatusValue());
         assertFindByCertificateStatus(expectedCn, expectedSerialNumber, SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_REVOKED.name(), 1);
     }
