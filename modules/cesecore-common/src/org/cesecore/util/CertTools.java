@@ -3736,9 +3736,11 @@ public abstract class CertTools {
      */
     public static List<String> getX500NameComponents(String dn) {
         List<String> ret = new ArrayList<String>();
-        X509NameTokenizer tokenizer = new X509NameTokenizer(dn);
-        while (tokenizer.hasMoreTokens()) {
-            ret.add(tokenizer.nextToken());
+        if (StringUtils.isNotEmpty(dn)) {
+            X509NameTokenizer tokenizer = new X509NameTokenizer(dn);
+            while (tokenizer.hasMoreTokens()) {
+                ret.add(tokenizer.nextToken());
+            }            
         }
         return ret;
     }
@@ -3775,7 +3777,7 @@ public abstract class CertTools {
         }
 
         public boolean hasMoreTokens() {
-            return (index != value.length());
+            return (value != null && index != value.length());
         }
 
         public String nextToken() {
