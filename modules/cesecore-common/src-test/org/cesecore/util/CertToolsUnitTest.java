@@ -2787,4 +2787,28 @@ public class CertToolsUnitTest {
             log.debug(infoMessage, e);
         }
     }
+    
+    @Test
+    public void testGetX500NameComponents() {
+        List<String> ret = CertTools.getX500NameComponents("CN=foo,O=bar,C=SE");
+        assertEquals("Should be 3 DN components", 3, ret.size());
+        assertEquals("component should be the one we passed in", "CN=foo", ret.get(0));
+        assertEquals("component should be the one we passed in", "O=bar", ret.get(1));
+        assertEquals("component should be the one we passed in", "C=SE", ret.get(2));
+        ret = CertTools.getX500NameComponents("CN=foo,O=bar\\,inc,C=SE");
+        assertEquals("Should be 3 DN components", 3, ret.size());
+        assertEquals("component should be the one we passed in", "CN=foo", ret.get(0));
+        assertEquals("component should be the one we passed in", "O=bar,inc", ret.get(1));
+        assertEquals("component should be the one we passed in", "C=SE", ret.get(2));
+        ret = CertTools.getX500NameComponents("CN=foo,O=bar,C=SE, rfc822Name=foo@example.com");
+        assertEquals("Should be 4 DN components", 4, ret.size());
+        ret = CertTools.getX500NameComponents("");
+        assertEquals("Should be 0 DN components", 0, ret.size());
+        ret = CertTools.getX500NameComponents(null);
+        assertEquals("Should be 0 DN components", 0, ret.size());
+        // This is a bit funky as it is not a X500 name component, but it is how it works..
+        ret = CertTools.getX500NameComponents("foo");
+        assertEquals("Should be 0 DN components", 1, ret.size());
+        assertEquals("component should be the one we passed in", "foo", ret.get(0));        
+    }
 }
