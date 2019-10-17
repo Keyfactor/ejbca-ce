@@ -65,6 +65,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
      * the CA issuing the certificate has already been checked. For efficiency this method can then be used.
      * 
+     * @param admin authentication token of the admin performing the operation
      * @param incert The certificate to be stored.
      * @param cafp Fingerprint (hex) of the CAs certificate.
      * @param username username of end entity owning the certificate.
@@ -79,6 +80,29 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username, String cafp, String certificateRequest, 
             int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime);
 
+    /**
+     * Stores a certificate without checking authorization. This should be used from other methods where authorization to
+     * the CA issuing the certificate has already been checked. For efficiency this method can then be used.
+     * 
+     * This method creates a new transaction which may be used e.g. to avoid a rollback of certificate storage during rollback of an
+     * overlaying transaction.
+     * 
+     * @param admin authentication token of the admin performing the operation
+     * @param incert The certificate to be stored.
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param username username of end entity owning the certificate.
+     * @param status the status from the CertificateConstants.CERT_ constants
+     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
+     * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @param tag a custom string tagging this certificate for some purpose
+     * 
+     */
+    CertificateDataWrapper storeCertificateNoAuthNewTransaction(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp,
+            String certificateRequest, int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag,
+            long updateTime);
+    
     /** 
      * Retrieve the full wrapped CertificateData and Base64CertData objects.
      * @return the sought certificate, or null if no data for the specified fingerprint exists
@@ -266,4 +290,5 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return one of the {@link CertificateConstants} statuses or -1 if the certificate does not exist in the database.
      */
     int getFirstStatusByIssuerAndSerno(String issuerDN, BigInteger serno);
+
 }
