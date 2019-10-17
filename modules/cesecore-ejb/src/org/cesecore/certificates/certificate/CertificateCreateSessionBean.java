@@ -88,6 +88,7 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
+import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.SctData;
 import org.cesecore.certificates.certificatetransparency.SctDataCallback;
 import org.cesecore.certificates.certificatetransparency.SctDataSessionLocal;
@@ -108,6 +109,7 @@ import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 
 /**
  * Session bean for creating certificates.
@@ -154,7 +156,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final RequestMessage requestMessage, final Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams,
             final long updateTime) throws CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException, IllegalNameException,
             CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
-            AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
+            AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, CTLogException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage, CA)");
         }
@@ -295,7 +297,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage)");
         }
-        return createCertificate(admin, userData, ca, req, responseClass, certGenParams, updateTime);
+        try {
+            return createCertificate(admin, userData, ca, req, responseClass, certGenParams, updateTime);
+        } catch (CTLogException e) {
+            throw new CertificateCreateException(e);
+        }
     }
 
     /**
@@ -331,7 +337,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final long updateTime)
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
-            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
+            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CTLogException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
         }
@@ -468,6 +474,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             
+            CTLogException ctLogException = null;
             CertificateSerialNumberException storeEx = null; // this will not be null if stored == false after the below passage
             String serialNo = "unknown";
             for (int retrycounter = 0; retrycounter < maxRetrys; retrycounter++) {
@@ -483,9 +490,26 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
                 certGenParams.setAuthenticationToken(admin);
                 certGenParams.setCertificateValidationDomainService(keyValidatorSession);
-
+                
                 // Validate ValidatorPhase.PRE_CERTIFICATE_VALIDATION (X.509 CA only)
-                cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, certGenParams, cceConfig);
+                try {
+                    cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, certGenParams, cceConfig);
+                } catch (CertificateCreateException e) {
+                    if (e.getCause() instanceof CTLogException) {
+                        // Issuance will eventually be aborted but we have to store the pre-certificate.
+                        final CTLogException ctException = (CTLogException) e.getCause();
+                        if (ctException.getPreCertificate() == null) {
+                            // Shouldn't happen. If it does, throw as CertificateCreateException causing a rollback.
+                            throw e;
+                        }
+                        cert = EJBTools.unwrap(ctException.getPreCertificate());
+                        ctLogException = ctException;
+                        
+                    } else {
+                        // If not CTLogException --> business as usual.
+                        throw e;
+                    }
+                }
                 // Set null required here?
                 certGenParams.setCertificateValidationDomainService(null);
                 
@@ -531,9 +555,17 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
-                    result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
-                            CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                            crlPartitionIndex, tag, updateTime);
+                    if (ctLogException == null) {
+                        result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
+                                CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
+                                crlPartitionIndex, tag, updateTime);
+                    } else {
+                        result = certificateStoreSession.storeCertificateNoAuthNewTransaction(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
+                                CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
+                                crlPartitionIndex, tag, updateTime);
+                    }
+                    
+                    
                     storeEx = null;
                     break;
                 } catch (CertificateSerialNumberException e) {
@@ -557,6 +589,14 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 throw storeEx;
             }
 
+            if (ctLogException != null) {
+                // Keep the stored certificate data. We need it to publish the pre-certificate later on.
+                ctLogException.setPreCertificate(result);
+                log.info(ctLogException.getMessage());
+                auditFailure(admin, ctLogException, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+                throw ctLogException;
+            }
+            
             // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance
             int revreason = RevokedCertInfo.NOT_REVOKED;
             

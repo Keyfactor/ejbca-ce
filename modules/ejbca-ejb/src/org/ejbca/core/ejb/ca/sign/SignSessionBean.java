@@ -108,6 +108,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -486,8 +487,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
                         singleActiveCertificateConstraint(admin, endEntityInformation);
                         // Issue the certificate from the request
-                        ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(),
-                                updateTime);
+                        try {
+                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(),
+                                    updateTime);
+                        } catch (CTLogException e) {
+                            if (e.getPreCertificate() != null) {
+                                CertificateDataWrapper certWrapper = (CertificateDataWrapper) e.getPreCertificate();
+                                // Publish pre-certificate and abort issuance
+                                postCreateCertificate(admin, endEntityInformation, ca,
+                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()));
+                            }
+                            throw new CertificateCreateException(e);
+                        }
                         postCreateCertificate(admin, endEntityInformation, ca,
                                 new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()));
                     }
@@ -1277,8 +1288,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
         singleActiveCertificateConstraint(admin, endEntityInformation);
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final CertificateDataWrapper certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                notBefore, notAfter, extensions, sequence, fetchCertGenParams(), updateTime);
+        CertificateDataWrapper certWrapper;
+        try {
+            certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
+                    notBefore, notAfter, extensions, sequence, fetchCertGenParams(), updateTime);
+        } catch (CTLogException e) {
+            if (e.getPreCertificate() != null) {
+                certWrapper = (CertificateDataWrapper) e.getPreCertificate();
+                // Publish pre-certificate and abort issuance
+                postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
+            }
+            throw new CertificateCreateException(e);
+        }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");

@@ -158,6 +158,7 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -1578,31 +1579,34 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     }
                 }
 
-                 if (certGenParams.getCTSubmissionConfigParams() == null) {
-                     log.debug("Not logging to CT. CT submission configuration parameters was null.");
-                 } else if (MapUtils.isEmpty(certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs())) {
-                     log.debug("Not logging to CT. There are no CT logs configured in System Configuration.");
-                 } else if (certGenParams.getCTAuditLogCallback() == null) {
-                     log.debug("Not logging to CT. No CT audit logging callback was passed to X509CA.");
-                 } else if (certGenParams.getSctDataCallback() == null) {
-                     log.debug("Not logging to CT. No sctData persistance callback was passed.");
-                 } else {
-                    // Get certificate chain
-                    final List<Certificate> chain = new ArrayList<>();
-                    chain.add(cert);
-                    chain.addAll(getCertificateChain());
-                    // Submit to logs and get signed timestamps
-                    byte[] sctlist = null;
-                    try {
-                        sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(), certGenParams.getSctDataCallback());
-                    }  finally {
-                        // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
-                        certGenParams.getCTAuditLogCallback().logPreCertSubmission(this, subject, cert, sctlist != null);
-                    }
-                    if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
-                        ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
-                        certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
-                    }
+                if (certGenParams.getCTSubmissionConfigParams() == null) {
+                    log.debug("Not logging to CT. CT submission configuration parameters was null.");
+                } else if (MapUtils.isEmpty(certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs())) {
+                    log.debug("Not logging to CT. There are no CT logs configured in System Configuration.");
+                } else if (certGenParams.getCTAuditLogCallback() == null) {
+                    log.debug("Not logging to CT. No CT audit logging callback was passed to X509CA.");
+                } else if (certGenParams.getSctDataCallback() == null) {
+                    log.debug("Not logging to CT. No sctData persistance callback was passed.");
+                } else {
+                   // Get certificate chain
+                   final List<Certificate> chain = new ArrayList<>();
+                   chain.add(cert);
+                   chain.addAll(getCertificateChain());
+                   // Submit to logs and get signed timestamps
+                   byte[] sctlist = null;
+                   try {
+                       sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(), certGenParams.getSctDataCallback());
+                   } catch (CTLogException e) {
+                       e.setPreCertificate(EJBTools.wrap(cert));
+                       throw e;
+                   } finally {
+                       // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
+                       certGenParams.getCTAuditLogCallback().logPreCertSubmission(this, subject, cert, sctlist != null);
+                   }
+                   if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
+                       ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
+                       certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
+                   }
                 }
             } else {
                 if (log.isDebugEnabled()) {

@@ -13,6 +13,8 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import org.cesecore.CesecoreException;
+//import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 
 
 
@@ -24,6 +26,8 @@ import org.cesecore.CesecoreException;
 public class CTLogException extends CesecoreException {
 
     private static final long serialVersionUID = 1L;
+    
+    private transient CertificateWrapper preCertificate;
     
     /**
      * Constructor used to create exception with an error message. Calls the same constructor in
@@ -42,5 +46,13 @@ public class CTLogException extends CesecoreException {
      */
     public CTLogException(final Exception exception) {
         super(exception);
+    }
+    
+    public void setPreCertificate(final CertificateWrapper preCert) {
+        this.preCertificate = preCert;
+    }
+    
+    public CertificateWrapper getPreCertificate() {
+        return preCertificate;
     }
 }

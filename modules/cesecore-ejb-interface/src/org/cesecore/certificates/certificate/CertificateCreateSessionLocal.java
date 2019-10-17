@@ -35,6 +35,7 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
@@ -83,12 +84,13 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
      * @throws CAOfflineException if the CA was offline
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+	 * @throws CTLogException TODO javadoc
      *
 	 */
     CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, CA ca, RequestMessage req,
             Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams, long updateTime) throws CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException,
             IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException,
-            CertificateSerialNumberException, AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException;
+            CertificateSerialNumberException, AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, CTLogException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -173,13 +175,14 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
      * @throws CAOfflineException if the CA was offline
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * @throws CTLogException //TODO doc 
      * 
      */
     CertificateDataWrapper createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage,
             Date notBefore, Date notAfter, Extensions extensions, String sequence, CertificateGenerationParams certGenParams, long updateTime)
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
-            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException;
+            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CTLogException;
 
     /**
      * Performs SubjectDN checks

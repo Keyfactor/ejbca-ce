@@ -176,6 +176,21 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         return ret;
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public CertificateDataWrapper storeCertificateNoAuthNewTransaction(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest, 
+            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime) {
+        if (log.isTraceEnabled()) {
+            log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
+        }
+        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, true);
+        if (log.isTraceEnabled()) {
+            log.trace("<storeCertificateNoAuth()");
+        }
+        return ret;
+    }
+    
     /** same as storeCertificateNoAuth but with a flag to not audit log certificate storage.
      * The only reason to not audit log is when called from checkForUniqueCertificateSerialNumberIndexInTransaction
      *
