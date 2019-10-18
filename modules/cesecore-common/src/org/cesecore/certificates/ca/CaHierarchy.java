@@ -74,6 +74,11 @@ import org.apache.log4j.Logger;
  */
 public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
     /**
+     * The maximum permitted depth of a CA hierarchy.
+     */
+    private final int MAX_DEPTH = 100;
+
+    /**
      * Represents an edge <code>(A -> B)</code> in a graph, where A and B are CAs and A has signed B.
      * 
      * <p>Used as a helper class when performing computations on the CA hierarchy.
@@ -189,12 +194,39 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         if (log.isTraceEnabled()) {
             log.trace("Computed edges: " + allEdges);
         }
+        if (caHierarchyContainsDuplicateRoot(allEdges)) {
+            throw new UnsupportedOperationException("CA hierarchy with duplicate root found.");
+        }
         final List<CaHierarchy<T>> caHierarchies = new ArrayList<>();
         final Set<Edge<T>> edgesToProcess = new HashSet<>(allEdges);
         while (!edgesToProcess.isEmpty()) {
             caHierarchies.add(computeCaHierarchy(edgesToProcess));
         }
         return caHierarchies;
+    }
+
+    /**
+     * Look for an edge (A -> B) where A ≠ B and both A and B are roots. This can happen if A and B both represent the
+     * same CA, which would be the case if A has been renewed.
+     *  
+     * @param allEdges a list of edges describing one or more CA hierarchies.
+     * @return true if a duplicate root was found, false otherwise.
+     */
+    private static <T> boolean caHierarchyContainsDuplicateRoot(final List<Edge<T>> allEdges) {
+        return allEdges.stream()
+                .filter(candidate -> !candidate.isSelfLoop())
+                .filter(candidate -> allEdges.stream()
+                        .filter(edge -> edge.isSelfLoop())
+                        .filter(edge -> edge.getA() == candidate.getA())
+                        .findAny()
+                        .isPresent())
+                .filter(candidate -> allEdges.stream()
+                        .filter(edge -> edge.isSelfLoop())
+                        .filter(edge -> edge.getB() == candidate.getB())
+                        .findAny()
+                        .isPresent())
+                .findAny()
+                .isPresent();
     }
 
     private static <T> CaHierarchy<T> computeCaHierarchy(final Set<Edge<T>> edgesToProcess) {
@@ -217,6 +249,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
             final List<Edge<T>> moreNeighbouringEdges = edgesToProcess.stream()
                     .filter(x -> Edge.isAdjacent(x, nextEdgeInCaHierarchy))
                     .filter(x -> !edgesInCaHierarchy.contains(x))
+                    .filter(x -> !neighbouringEdges.contains(x))
                     .collect(Collectors.toList());
             neighbouringEdges.addAll(moreNeighbouringEdges);
         }
@@ -283,10 +316,16 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         final List<Edge<T>> incomingEdges = edges.stream()
                 .filter(edge -> edge.getB() == ca)
                 .collect(Collectors.toList());
-        return traverseEdgesUpstream(incomingEdges);
+        return traverseEdgesUpstream(incomingEdges, 1);
     }
 
-    private int traverseEdgesUpstream(final List<Edge<T>> incomingEdges) {
+    private int traverseEdgesUpstream(final List<Edge<T>> incomingEdges, final int currentDepth) {
+        if (currentDepth >= MAX_DEPTH) {
+            if (log.isTraceEnabled()) {
+                log.trace("Next set of edges to traverse: " + incomingEdges);
+            }
+            throw new IllegalStateException("The CA hierarchy is too deep.");
+        }
         if (incomingEdges.get(0).isSelfLoop()) {
             return 0;
         }
@@ -295,8 +334,8 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
             final List<Edge<T>> newIncomingEdges = edges.stream()
                     .filter(x -> x.getB() == incomingEdge.getA())
                     .collect(Collectors.toList());
-            final int nextLevel = traverseEdgesUpstream(newIncomingEdges) + 1;
-            maxLevel = Math.max(nextLevel, maxLevel);
+            final int nextLevel = traverseEdgesUpstream(newIncomingEdges, currentDepth + 1);
+            maxLevel = Math.max(nextLevel + 1, maxLevel);
         }
         return maxLevel;
     }
@@ -316,6 +355,25 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
      */
     public List<T> toList() {
         return new ArrayList<>(nodes);
+    }
+
+    /**
+     * Get the number of certificate authorities in this CA hierarchy.
+     * 
+     * @return the number of certificate authorities in this CA hierarchy.
+     */
+    public int size() {
+        return nodes.size();
+    }
+
+    /**
+     * Get the edges in this CA hierarchy. An edge (A -> B) is constructed for each pair of CAs, such
+     * that A has signed B.
+     * 
+     * @return a list of edges describing this CA hierarchy.
+     */
+    protected List<Edge<T>> getEdges() {
+        return new ArrayList<>(edges);
     }
 
     /**
