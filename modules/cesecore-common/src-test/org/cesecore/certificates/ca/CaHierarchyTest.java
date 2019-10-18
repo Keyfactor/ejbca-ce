@@ -29,10 +29,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -41,6 +46,11 @@ import org.junit.Test;
  * @version $Id$
  */
 public class CaHierarchyTest {
+
+    @BeforeClass
+    public static void enableTrace() {
+        Logger.getRootLogger().setLevel(Level.TRACE);
+    }
 
     /**
      * Try to create a single CA hierarchy with no CAs.
@@ -90,6 +100,126 @@ public class CaHierarchyTest {
             return false;
         };
         CaHierarchy.singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "issuingCa1", "issuingCa2")), isSignedBy).toList();
+    }
+
+    /**
+     * Try to create CA hierarchies from two root CA certificates, both representing the same CA.
+     * 
+     * <p>This could happen if the root CA has been renewed.
+     * 
+     * <p><b>Implementation note:</b> Creating a CA hierarchy with a renewed root is currently not supported. However,
+     * technically it would be possibly to support this.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCaHierarchyWithRenewedRoot() throws Exception {
+        final Certificate rootCa1Certificate = createMock(Certificate.class);
+        final Certificate rootCa2Certificate = createMock(Certificate.class);
+        final PublicKey rootCaPublicKey = createMock(PublicKey.class);
+
+        expect(rootCa1Certificate.getPublicKey()).andReturn(rootCaPublicKey).anyTimes();
+        expect(rootCa2Certificate.getPublicKey()).andReturn(rootCaPublicKey).anyTimes();
+
+        rootCa1Certificate.verify(rootCaPublicKey);
+        expectLastCall().andVoid().anyTimes();
+        rootCa2Certificate.verify(rootCaPublicKey);
+        expectLastCall().andVoid().anyTimes();
+
+        replay(rootCa1Certificate);
+        replay(rootCa2Certificate);
+        replay(rootCaPublicKey);
+
+        CaHierarchy.caHierarchiesFrom(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate)));
+    }
+
+    /**
+     * Try to construct a CA hierarchy with a very deep certificate chain.
+     * 
+     * <p><b>Implementation note:</b> This limitation is mostly here to guard against infinite recursion which
+     * could happen if there is a bug in the implementation.
+     */
+    @Test(expected = IllegalStateException.class)
+    public void testTooDeepCaHierarchy() {
+        final Set<Integer> cas = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toSet());
+        // 1 has signed 1, 1 has signed 2, 2 has signed 3 ect.
+        final BiPredicate<Integer, Integer> isSignedBy = (a, b) -> {
+            if (a == 1 && b == 1) {
+                return true;
+            }
+            if (a + 1 == b) {
+                return true;
+            }
+            return false;
+        };
+        CaHierarchy.singleCaHierarchyFrom(cas, isSignedBy);
+    }
+
+    /**
+     * Ensure a CA hierarchy with a depth of 99 can be constructed (this is the maximum permitted depth of any CA hierarchy).
+     */
+    public void testMaxDepthCaHierarchy() {
+        final Set<Integer> cas = IntStream.rangeClosed(1, 99).boxed().collect(Collectors.toSet());
+        // 1 has signed 1, 1 has signed 2, 2 has signed 3 ect.
+        final BiPredicate<Integer, Integer> isSignedBy = (a, b) -> {
+            if (a == 1 && b == 1) {
+                return true;
+            }
+            if (a + 1 == b) {
+                return true;
+            }
+            return false;
+        };
+        CaHierarchy.singleCaHierarchyFrom(cas, isSignedBy);
+    }
+
+    /**
+     * Try to create CA hierarchies from one root and two issuing CA certificates, 
+     * where the issuing CA certificates both represent the same CA.
+     * 
+     * <p>This could happen if the issuing CA has been renewed.
+     */
+    @Test
+    public void testCaHierarchyWithRenewedIssuingCa() throws Exception {
+        final Certificate rootCaCertificate = createMock(Certificate.class);
+        final Certificate issuingCa1Certificate = createMock(Certificate.class);
+        final Certificate issuingCa2Certificate = createMock(Certificate.class);
+        final PublicKey rootCaPublicKey = createMock(PublicKey.class);
+        final PublicKey issuingCaPublicKey = createMock(PublicKey.class);
+
+        expect(rootCaCertificate.getPublicKey()).andReturn(rootCaPublicKey).anyTimes();
+        expect(issuingCa1Certificate.getPublicKey()).andReturn(issuingCaPublicKey).anyTimes();
+        expect(issuingCa2Certificate.getPublicKey()).andReturn(issuingCaPublicKey).anyTimes();
+
+        rootCaCertificate.verify(rootCaPublicKey);
+        expectLastCall().andVoid().atLeastOnce();
+        rootCaCertificate.verify(issuingCaPublicKey);
+        expectLastCall().andThrow(new SignatureException()).atLeastOnce();
+
+        issuingCa1Certificate.verify(rootCaPublicKey);
+        expectLastCall().andVoid().atLeastOnce();
+        issuingCa1Certificate.verify(issuingCaPublicKey);
+        expectLastCall().andThrow(new SignatureException()).atLeastOnce();
+
+        issuingCa2Certificate.verify(rootCaPublicKey);
+        expectLastCall().andVoid().atLeastOnce();
+        issuingCa2Certificate.verify(issuingCaPublicKey);
+        expectLastCall().andThrow(new SignatureException()).atLeastOnce();
+
+        replay(rootCaCertificate);
+        replay(issuingCa1Certificate);
+        replay(issuingCa2Certificate);
+        replay(rootCaPublicKey);
+        replay(issuingCaPublicKey);
+
+        final CaHierarchy<Certificate> caHierarchy = CaHierarchy.singleCaHierarchyFrom(new HashSet<>(
+                Arrays.asList(issuingCa1Certificate, issuingCa2Certificate, rootCaCertificate)));
+        
+        verify(rootCaCertificate);
+        verify(issuingCa1Certificate);
+        verify(issuingCa2Certificate);
+        verify(issuingCaPublicKey);
+        verify(rootCaPublicKey);
+        
+        assertEquals(3, caHierarchy.toList().size());
     }
 
     /**
@@ -395,20 +525,21 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        final List<String> cas = CaHierarchy.singleCaHierarchyFrom(
+        final CaHierarchy<String> caHierarchy = CaHierarchy.singleCaHierarchyFrom(
                 new HashSet<String>(Arrays.asList("rootCa", "civilCa", "govCa", "govSerCa", "secCa", "finCa", "issuingCa", "etsiIssuingCa")),
-                isSignedBy).toList();
-        assertEquals("Eight CAs expected in CA hierarchy.", 8, cas.size());
-        assertEquals("Root CA must be first.", "rootCa", cas.get(0));
-        assertTrue(cas.indexOf("rootCa") < cas.indexOf("govCa"));
-        assertTrue(cas.indexOf("rootCa") < cas.indexOf("civilCa"));
-        assertTrue(cas.indexOf("govCa") < cas.indexOf("govSerCa"));
-        assertTrue(cas.indexOf("govCa") < cas.indexOf("finCa"));
-        assertTrue(cas.indexOf("govCa") < cas.indexOf("secCa"));
-        assertTrue(cas.indexOf("govCa") < cas.indexOf("issuingCa"));
-        assertTrue(cas.indexOf("govCa") < cas.indexOf("etsiIssuingCa"));
-        assertTrue(cas.indexOf("govSerCa") < cas.indexOf("issuingCa"));
-        assertTrue(cas.indexOf("govSerCa") < cas.indexOf("etsiIssuingCa"));
+                isSignedBy);
+        assertEquals(8, caHierarchy.getEdges().size());
+        assertEquals("Eight CAs expected in CA hierarchy.", 8, caHierarchy.size());
+        assertEquals("Root CA must be first.", "rootCa", caHierarchy.toList().get(0));
+        assertTrue(caHierarchy.toList().indexOf("rootCa") < caHierarchy.toList().indexOf("govCa"));
+        assertTrue(caHierarchy.toList().indexOf("rootCa") < caHierarchy.toList().indexOf("civilCa"));
+        assertTrue(caHierarchy.toList().indexOf("govCa") < caHierarchy.toList().indexOf("govSerCa"));
+        assertTrue(caHierarchy.toList().indexOf("govCa") < caHierarchy.toList().indexOf("finCa"));
+        assertTrue(caHierarchy.toList().indexOf("govCa") < caHierarchy.toList().indexOf("secCa"));
+        assertTrue(caHierarchy.toList().indexOf("govCa") < caHierarchy.toList().indexOf("issuingCa"));
+        assertTrue(caHierarchy.toList().indexOf("govCa") < caHierarchy.toList().indexOf("etsiIssuingCa"));
+        assertTrue(caHierarchy.toList().indexOf("govSerCa") < caHierarchy.toList().indexOf("issuingCa"));
+        assertTrue(caHierarchy.toList().indexOf("govSerCa") < caHierarchy.toList().indexOf("etsiIssuingCa"));
     }
 
     @Test
@@ -434,13 +565,44 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        final List<String> cas = CaHierarchy
-                .singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "center", "bottom1", "bottom2")), isSignedBy).toList();
-        assertEquals(5, cas.size());
-        assertTrue(cas.indexOf("rootCa1") < cas.indexOf("center"));
-        assertTrue(cas.indexOf("rootCa2") < cas.indexOf("center"));
-        assertTrue(cas.indexOf("center") < cas.indexOf("bottom1"));
-        assertTrue(cas.indexOf("center") < cas.indexOf("bottom2"));
+        final CaHierarchy<String> caHierarchy = CaHierarchy
+                .singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "center", "bottom1", "bottom2")), isSignedBy);
+        assertEquals(6, caHierarchy.getEdges().size());
+        assertEquals(5, caHierarchy.size());
+        assertTrue(caHierarchy.toList().indexOf("rootCa1") < caHierarchy.toList().indexOf("center"));
+        assertTrue(caHierarchy.toList().indexOf("rootCa2") < caHierarchy.toList().indexOf("center"));
+        assertTrue(caHierarchy.toList().indexOf("center") < caHierarchy.toList().indexOf("bottom1"));
+        assertTrue(caHierarchy.toList().indexOf("center") < caHierarchy.toList().indexOf("bottom2"));
+    }
+
+    @Test
+    public void testInvertedStarCaHierarchy() {
+        final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
+            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "rootCa")) {
+                return true;
+            }
+            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "intermediate1")) {
+                return true;
+            }
+            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "intermediate2")) {
+                return true;
+            }
+            if (StringUtils.equals(ca1, "intermediate1") && StringUtils.equals(ca2, "issuingCa")) {
+                return true;
+            }
+            if (StringUtils.equals(ca1, "intermediate2") && StringUtils.equals(ca2, "issuingCa")) {
+                return true;
+            }
+            return false;
+        };
+        final CaHierarchy<String> caHierarchy = CaHierarchy
+                .singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "intermediate1", "intermediate2", "issuingCa")), isSignedBy);
+        assertEquals(5, caHierarchy.getEdges().size());
+        assertEquals(4, caHierarchy.size());
+        assertTrue(caHierarchy.toList().indexOf("rootCa") < caHierarchy.toList().indexOf("intermediate1"));
+        assertTrue(caHierarchy.toList().indexOf("rootCa") < caHierarchy.toList().indexOf("intermediate2"));
+        assertTrue(caHierarchy.toList().indexOf("intermediate1") < caHierarchy.toList().indexOf("issuingCa"));
+        assertTrue(caHierarchy.toList().indexOf("intermediate2") < caHierarchy.toList().indexOf("issuingCa"));
     }
 
     @Test
