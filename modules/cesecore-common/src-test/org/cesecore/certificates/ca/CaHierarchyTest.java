@@ -57,7 +57,7 @@ public class CaHierarchyTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSingleCaHierarchyWithNoCas() {
-        CaHierarchy.singleCaHierarchyFrom(Collections.emptySet());
+        CaHierarchy.fromCertificates(Collections.emptySet()).buildSingleCaHierarchy();
     }
 
     /**
@@ -65,7 +65,7 @@ public class CaHierarchyTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testMultipleCaHierarchyWithNoCas() {
-        CaHierarchy.caHierarchiesFrom(Collections.emptySet());
+        CaHierarchy.fromCertificates(Collections.emptySet()).buildCaHierarchies();
     }
 
     /**
@@ -79,7 +79,8 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        CaHierarchy.singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "issuingCa")), isSignedBy).toList();
+        CaHierarchy.from(new HashSet<String>(Arrays.asList("rootCa", "issuingCa")), isSignedBy)
+            .buildCaHierarchies();
     }
 
     /**
@@ -99,7 +100,8 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        CaHierarchy.singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "issuingCa1", "issuingCa2")), isSignedBy).toList();
+        CaHierarchy.from(new HashSet<String>(Arrays.asList("rootCa", "issuingCa1", "issuingCa2")), isSignedBy)
+            .buildCaHierarchies();
     }
 
     /**
@@ -128,7 +130,7 @@ public class CaHierarchyTest {
         replay(rootCa2Certificate);
         replay(rootCaPublicKey);
 
-        CaHierarchy.caHierarchiesFrom(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate)));
+        CaHierarchy.fromCertificates(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate))).buildCaHierarchies();
     }
 
     /**
@@ -150,7 +152,7 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        CaHierarchy.singleCaHierarchyFrom(cas, isSignedBy);
+        CaHierarchy.from(cas, isSignedBy).buildCaHierarchies();
     }
 
     /**
@@ -168,7 +170,7 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        CaHierarchy.singleCaHierarchyFrom(cas, isSignedBy);
+        assertEquals(99, CaHierarchy.from(cas, isSignedBy).buildSingleCaHierarchy().toList().size());
     }
 
     /**
@@ -210,8 +212,10 @@ public class CaHierarchyTest {
         replay(rootCaPublicKey);
         replay(issuingCaPublicKey);
 
-        final CaHierarchy<Certificate> caHierarchy = CaHierarchy.singleCaHierarchyFrom(new HashSet<>(
-                Arrays.asList(issuingCa1Certificate, issuingCa2Certificate, rootCaCertificate)));
+        final CaHierarchy<Certificate> caHierarchy = CaHierarchy
+                .fromCertificates(new HashSet<>(
+                        Arrays.asList(issuingCa1Certificate, issuingCa2Certificate, rootCaCertificate)))
+                .buildSingleCaHierarchy();
         
         verify(rootCaCertificate);
         verify(issuingCa1Certificate);
@@ -237,7 +241,8 @@ public class CaHierarchyTest {
         replay(rootCaCertificate);
         replay(rootCaPublicKey);
 
-        final CaHierarchy<Certificate> caHierarchy = CaHierarchy.singleCaHierarchyFrom(new HashSet<>(Arrays.asList(rootCaCertificate)));
+        final CaHierarchy<Certificate> caHierarchy = CaHierarchy.fromCertificates(new HashSet<>(Arrays.asList(rootCaCertificate)))
+                .buildSingleCaHierarchy();
         assertEquals(Arrays.asList(rootCaCertificate), caHierarchy.toList());
 
         verify(rootCaCertificate);
@@ -286,7 +291,8 @@ public class CaHierarchyTest {
         replay(issuingCa2PublicKey);
 
         final List<CaHierarchy<Certificate>> caHierarchies = CaHierarchy
-                .caHierarchiesFrom(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate, issuingCa2Certificate)))
+                .fromCertificates(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate, issuingCa2Certificate)))
+                .buildCaHierarchies()
                 .stream()
                 .sorted()
                 .collect(Collectors.toList());
@@ -307,7 +313,7 @@ public class CaHierarchyTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSingleCaHierarchyWithMultipleCaHierarchies() throws Exception {
+    public void testSingleCaHierarchyFromMultipleCaHierarchies() throws Exception {
         final Certificate rootCa1Certificate = createMock(Certificate.class);
         final Certificate rootCa2Certificate = createMock(Certificate.class);
         final PublicKey rootCa1PublicKey = createMock(PublicKey.class);
@@ -331,7 +337,7 @@ public class CaHierarchyTest {
         replay(rootCa2Certificate);
         replay(rootCa2PublicKey);
 
-        CaHierarchy.singleCaHierarchyFrom(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate)));
+        CaHierarchy.fromCertificates(new HashSet<>(Arrays.asList(rootCa1Certificate, rootCa2Certificate))).buildSingleCaHierarchy();
     }
 
     /**
@@ -380,7 +386,8 @@ public class CaHierarchyTest {
         replay(issuingCa2PublicKey);
 
         final CaHierarchy<Certificate> caHierarchy = CaHierarchy
-                .singleCaHierarchyFrom(new HashSet<>(Arrays.asList(rootCaCertificate, issuingCa1Certificate, issuingCa2Certificate)));
+                .fromCertificates(new HashSet<>(Arrays.asList(rootCaCertificate, issuingCa1Certificate, issuingCa2Certificate)))
+                .buildSingleCaHierarchy();
         assertEquals("Three CAs expected in the CA hierarchy.", 3, caHierarchy.toList().size());
         assertEquals("Root CA certificate should be first.", rootCaCertificate, caHierarchy.toList().get(0));
 
@@ -419,8 +426,10 @@ public class CaHierarchyTest {
             return false;
         };
 
-        final List<String> cas = CaHierarchy.singleCaHierarchyFrom(
-                new HashSet<String>(Arrays.asList("rootCa", "intermediary1", "intermediary2", "issuingCa1", "issuingCa2", "issuingCa3")), isSignedBy).toList();
+        final List<String> cas = CaHierarchy
+                .from(new HashSet<String>(Arrays.asList("rootCa", "intermediary1", "intermediary2", "issuingCa1", "issuingCa2", "issuingCa3")),
+                        isSignedBy)
+                .buildSingleCaHierarchy().toList();
         assertEquals("Six CAs expected in the CA hierarchy.", 6, cas.size());
         assertEquals("Root CA must be first.", "rootCa", cas.get(0));
         assertTrue("Intermediary must come before issuing CA.", cas.indexOf("intermediary1") < cas.indexOf("issuingCa1"));
@@ -452,8 +461,9 @@ public class CaHierarchyTest {
             return false;
         };
 
-        final List<String> cas = CaHierarchy.singleCaHierarchyFrom(
+        final List<String> cas = CaHierarchy.from(
                 new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "issuingCa1", "issuingCa2")), isSignedBy)
+                .buildSingleCaHierarchy()
                 .toList();
         assertEquals("Four CAs expected in CA hierarchy.", 4, cas.size());
         assertTrue("Root CA 1 must come before issuing CA 1.", cas.indexOf("rootCa1") < cas.indexOf("issuingCa1"));
@@ -486,7 +496,9 @@ public class CaHierarchyTest {
         };
 
         final List<String> cas = CaHierarchy
-                .singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "issuingCa1", "issuingCa2")), isSignedBy).toList();
+                .from(new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "issuingCa1", "issuingCa2")), isSignedBy)
+                .buildSingleCaHierarchy()
+                .toList();
         assertEquals("Four CAs expected in CA hierarchy.", 4, cas.size());
         assertTrue("Root CA 1 must come before issuing CA 1.", cas.indexOf("rootCa1") < cas.indexOf("issuingCa1"));
         assertTrue("Root CA 2 must come before issuing CA 2.", cas.indexOf("rootCa2") < cas.indexOf("issuingCa2"));
@@ -525,9 +537,9 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        final CaHierarchy<String> caHierarchy = CaHierarchy.singleCaHierarchyFrom(
+        final CaHierarchy<String> caHierarchy = CaHierarchy.from(
                 new HashSet<String>(Arrays.asList("rootCa", "civilCa", "govCa", "govSerCa", "secCa", "finCa", "issuingCa", "etsiIssuingCa")),
-                isSignedBy);
+                isSignedBy).buildSingleCaHierarchy();
         assertEquals(8, caHierarchy.getEdges().size());
         assertEquals("Eight CAs expected in CA hierarchy.", 8, caHierarchy.size());
         assertEquals("Root CA must be first.", "rootCa", caHierarchy.toList().get(0));
@@ -566,7 +578,7 @@ public class CaHierarchyTest {
             return false;
         };
         final CaHierarchy<String> caHierarchy = CaHierarchy
-                .singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "center", "bottom1", "bottom2")), isSignedBy);
+                .from(new HashSet<String>(Arrays.asList("rootCa1", "rootCa2", "center", "bottom1", "bottom2")), isSignedBy).buildSingleCaHierarchy();
         assertEquals(6, caHierarchy.getEdges().size());
         assertEquals(5, caHierarchy.size());
         assertTrue(caHierarchy.toList().indexOf("rootCa1") < caHierarchy.toList().indexOf("center"));
@@ -596,7 +608,8 @@ public class CaHierarchyTest {
             return false;
         };
         final CaHierarchy<String> caHierarchy = CaHierarchy
-                .singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "intermediate1", "intermediate2", "issuingCa")), isSignedBy);
+                .from(new HashSet<String>(Arrays.asList("rootCa", "intermediate1", "intermediate2", "issuingCa")), isSignedBy)
+                .buildSingleCaHierarchy();
         assertEquals(5, caHierarchy.getEdges().size());
         assertEquals(4, caHierarchy.size());
         assertTrue(caHierarchy.toList().indexOf("rootCa") < caHierarchy.toList().indexOf("intermediate1"));
@@ -616,8 +629,8 @@ public class CaHierarchyTest {
             }
             return false;
         };
-        final CaHierarchy<String> caHierarchy = CaHierarchy.singleCaHierarchyFrom(new HashSet<String>(Arrays.asList("rootCa", "issuingCa")),
-                isSignedBy);
+        final CaHierarchy<String> caHierarchy = CaHierarchy.from(new HashSet<String>(Arrays.asList("rootCa", "issuingCa")), isSignedBy)
+                .buildSingleCaHierarchy();
         final List<String> cas = new ArrayList<>();
         for (final String ca : caHierarchy) {
             cas.add(ca);
