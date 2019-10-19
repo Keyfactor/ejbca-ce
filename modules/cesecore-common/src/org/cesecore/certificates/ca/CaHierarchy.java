@@ -48,11 +48,12 @@ import org.apache.log4j.Logger;
  * To create an instance of this class, you need to provide a set containing the three CAs, and a predicate which takes
  * a pair of CAs <code>(A, B)</code> and outputs true iff A has signed B.
  * 
- * <p>You can then call the the factory method {@link #singleCaHierarchyFrom(Set, BiPredicate)} to build the CA hierarchy, like this:
+ * <p>You can then call the the factory method {@link #from(Set, BiPredicate)} to get a builder, and build the CA hierarchy like this:
  * <pre>
  * final Set&#60;T&#62; cas = Set.of(rootCa, issuingCa1, issuingCa2);
  * final BiPredicate&#60;T, T&#62; isSignedBy = createSomePredicate();
- * final CaHierarchy&#60;T&#62; caHierarchy = CaHierarchy.singleCaHierarchyFrom(cas, isSignedBy);
+ * final CaHierarchy&#60;T&#62; caHierarchy = CaHierarchy.from(cas, isSignedBy)
+ *     .buildSingleCaHierarchy();
  * System.out.println(caHierarchy);
  * </pre>
  * 
@@ -64,19 +65,140 @@ import org.apache.log4j.Logger;
  * (rootCa -> issuingCa2)
  * </pre>
  * 
- * If we represent the CAs with {@link Certificate} objects, we can use the factory method {@link #singleCaHierarchyFrom(Set)}
- * to conveniently create a CA hierarchy with a built-in predicate.
+ * If we represent the CAs with {@link Certificate} objects, we can use the factory method {@link #fromCertificates(Set)}
+ * to conveniently create a builder with a built-in predicate.
  * <pre>
- * final CaHierarchy&#60;T&#62; caHierarchy = CaHierarchy.fromCertificates(cas);
+ * final CaHierarchy&#60;T&#62; caHierarchy = CaHierarchy.fromCertificates(cas)
+ *     .buildSingleCaHierarchy();
  * </pre>
  * 
  * @version $Id$
  */
 public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
+    private static final Logger log = Logger.getLogger(CaHierarchy.class);
+
     /**
      * The maximum permitted depth of a CA hierarchy.
      */
-    private final int MAX_DEPTH = 100;
+    private static final int MAX_DEPTH = 100;
+
+    /**
+     * A builder of {@link CaHierarchy} objects.
+     */
+    public static final class Builder<T> {
+        private Set<T> cas;
+        private BiPredicate<T, T> isSignedBy;
+
+        /**
+         * Create a new builder.
+         * 
+         * @param cas a set of CAs in the CA hierarchy.
+         * @param isSignedBy a predicate taking a pair of CAs (A, B), outputting true iff A has signed B.
+         */
+        public Builder(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
+            this.cas = cas;
+            this.isSignedBy = isSignedBy;
+        }
+
+        /**
+         * Build a single CA hierarchy. Use {@link #buildCaHierarchies()} if your input may represent
+         * multiple CA hierarchies.
+         * 
+         * @return a single CA hierarchy.
+         */
+        public CaHierarchy<T> buildSingleCaHierarchy() {
+            if (log.isTraceEnabled()) {
+                log.trace("Creating a single CA hierarchy from: " + cas);
+            }
+            final List<CaHierarchy<T>> caHierarchies = buildCaHierarchies();
+            if (caHierarchies.size() > 1) {
+                throw new IllegalArgumentException("More than one CA hierarchy found.");
+            }
+            return caHierarchies.get(0);
+        }
+
+        /**
+         * Build one or more CA hierarchies.
+         * 
+         * @return one or more CA hierarchies.
+         */
+        public List<CaHierarchy<T>> buildCaHierarchies() {
+            if (log.isTraceEnabled()) {
+                log.trace("Creating CA hierarchies from: " + cas);
+            }
+            final List<CaHierarchy<T>> caHierarchies = computeCaHierarchies(cas, isSignedBy);
+            if (caHierarchies.size() == 0) {
+                throw new IllegalArgumentException("No CA hierarchies found.");
+            }
+            return caHierarchies;
+        }
+        
+        private static <T> CaHierarchy<T> computeCaHierarchy(final Set<Edge<T>> edgesToProcess) {
+            final Optional<Edge<T>> selfLoop = edgesToProcess.stream()
+                    .filter(edge -> edge.isSelfLoop())
+                    .findAny();
+            if (!selfLoop.isPresent()) {
+                if (log.isTraceEnabled()) {
+                    log.trace("Remaining edges: " + edgesToProcess);
+                }
+                throw new IllegalArgumentException("CA hierarchy without a root found.");
+            }
+            final List<Edge<T>> edgesInCaHierarchy = new ArrayList<>();
+            final List<Edge<T>> neighbouringEdges = new ArrayList<>();
+            neighbouringEdges.add(selfLoop.get());
+            while (!neighbouringEdges.isEmpty()) {
+                final Edge<T> nextEdgeInCaHierarchy = neighbouringEdges.remove(0);
+                edgesInCaHierarchy.add(nextEdgeInCaHierarchy);
+                edgesToProcess.remove(nextEdgeInCaHierarchy);
+                final List<Edge<T>> moreNeighbouringEdges = edgesToProcess.stream()
+                        .filter(x -> Edge.isAdjacent(x, nextEdgeInCaHierarchy))
+                        .filter(x -> !edgesInCaHierarchy.contains(x))
+                        .filter(x -> !neighbouringEdges.contains(x))
+                        .collect(Collectors.toList());
+                neighbouringEdges.addAll(moreNeighbouringEdges);
+            }
+            return new CaHierarchy<>(edgesInCaHierarchy);
+        }
+
+        private List<CaHierarchy<T>> computeCaHierarchies(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
+            final List<Edge<T>> allEdges = cas.stream().flatMap(a -> cas.stream().filter(b -> isSignedBy.test(a, b)).map(b -> new Edge<T>(a, b)))
+                    .collect(Collectors.toList());
+            if (log.isTraceEnabled()) {
+                log.trace("Computed edges: " + allEdges);
+            }
+            if (caHierarchyContainsDuplicateRoot(allEdges)) {
+                throw new UnsupportedOperationException("CA hierarchy with duplicate root found.");
+            }
+            final List<CaHierarchy<T>> caHierarchies = new ArrayList<>();
+            final Set<Edge<T>> edgesToProcess = new HashSet<>(allEdges);
+            while (!edgesToProcess.isEmpty()) {
+                caHierarchies.add(computeCaHierarchy(edgesToProcess));
+            }
+            return caHierarchies;
+        }
+
+        /**
+         * Look for an edge (A -> B) where A ≠ B and both A and B are roots. This can happen if A and B both represent the
+         * same CA, which would be the case if A has been renewed.
+         *  
+         * @param allEdges a list of edges describing one or more CA hierarchies.
+         * @return true if a duplicate root was found, false otherwise.
+         */
+        private boolean caHierarchyContainsDuplicateRoot(final List<Edge<T>> allEdges) {
+            return allEdges.stream().filter(candidate -> !candidate.isSelfLoop())
+                    .filter(candidate -> allEdges.stream()
+                            .filter(edge -> edge.isSelfLoop())
+                            .filter(edge -> edge.getA() == candidate.getA())
+                            .findAny()
+                            .isPresent())
+                    .filter(candidate -> allEdges.stream()
+                            .filter(edge -> edge.isSelfLoop())
+                            .filter(edge -> edge.getB() == candidate.getB())
+                            .findAny()
+                            .isPresent())
+                    .findAny().isPresent();
+        }
+    }
 
     /**
      * Represents an edge <code>(A -> B)</code> in a graph, where A and B are CAs and A has signed B.
@@ -123,137 +245,27 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         }
     }
     
-    private static final Logger log = Logger.getLogger(CaHierarchy.class);
     private final List<Edge<T>> edges;
     private final List<T> nodes;
 
     /**
-     * Create a single CA hierarchy from a set of certificates. Use {@link #caHierarchiesFrom(Set)} if your
-     * input may represent multiple CA hierarchies.
+     * Get a builder for building one or more CA hierarchies given a set of CAs of type <code>T</code> and a predicate.
      * 
-     * @param certificates a set of certificates, where each certificate represents a CA in the CA hierarchy.
-     * @return a single CA hierarchy.
-     */
-    public static CaHierarchy<Certificate> singleCaHierarchyFrom(final Set<Certificate> certificates) {
-        return singleCaHierarchyFrom(certificates, isCertificateSignedBy());
-    }
-
-    /**
-     * Create one or more CA hierarchies from a set of certificates.
-     * 
-     * @param certificates a set of certificates, where each certificate represents a CA in the CA hierarchy.
-     * @return one or more CA hierarchies.
-     */
-    public static List<CaHierarchy<Certificate>> caHierarchiesFrom(final Set<Certificate> certificates) {
-        return caHierarchiesFrom(certificates, isCertificateSignedBy());
-    }
-
-    /**
-     * Create a single CA hierarchy from a set of objects of type <code>T</code> and a predicate. Use 
-     * {@link #caHierarchiesFrom(Set)} if your input may represent multiple CA hierarchies.
-     * 
-     * @param <T> the type representing a CA.
      * @param cas a set of CAs in the CA hierarchy.
      * @param isSignedBy a predicate taking a pair of CAs (A, B), outputting true iff A has signed B.
-     * @return a single CA hierarchy.
      */
-    public static <T> CaHierarchy<T> singleCaHierarchyFrom(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
-        if (log.isTraceEnabled()) {
-            log.trace("Creating a single CA hierarchy from: " + cas);
-        }
-        final List<CaHierarchy<T>> caHierarchies = caHierarchiesFrom(cas, isSignedBy);
-        if (caHierarchies.size() > 1) {
-            throw new IllegalArgumentException("More than one CA hierarchy found.");
-        }
-        return caHierarchies.get(0);
+    public static <T> Builder<T> from(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
+        return new Builder<T>(cas, isSignedBy);
     }
 
     /**
-     * Create one or more CA hierarchies from a set of objects of type <code>T</code> and a predicate.
+     * Get a builder for building one or more CA hierarchies given a set of certificates.
      * 
-     * @param <T> the type representing a CA.
-     * @param cas a set of CAs in the CA hierarchy.
-     * @param isSignedBy a predicate taking a pair of CAs (A, B), outputting true iff A has signed B.
-     * @return one or more CA hierarchies.
+     * @param certificates a set of certificates, where each certificate represents a CA in the CA hierarchy.
+     * @return a builder.
      */
-    public static <T> List<CaHierarchy<T>> caHierarchiesFrom(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
-        if (log.isTraceEnabled()) {
-            log.trace("Creating CA hierarchies from: " + cas);
-        }
-        final List<CaHierarchy<T>> caHierarchies = computeCaHierarchies(cas, isSignedBy);
-        if (caHierarchies.size() == 0) {
-            throw new IllegalArgumentException("No CA hierarchies found.");
-        }
-        return caHierarchies;
-    }
-    
-    private static <T> List<CaHierarchy<T>> computeCaHierarchies(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
-        final List<Edge<T>> allEdges = cas.stream()
-                .flatMap(a -> cas.stream().filter(b -> isSignedBy.test(a, b)).map(b -> new Edge<T>(a, b)))
-                .collect(Collectors.toList());
-        if (log.isTraceEnabled()) {
-            log.trace("Computed edges: " + allEdges);
-        }
-        if (caHierarchyContainsDuplicateRoot(allEdges)) {
-            throw new UnsupportedOperationException("CA hierarchy with duplicate root found.");
-        }
-        final List<CaHierarchy<T>> caHierarchies = new ArrayList<>();
-        final Set<Edge<T>> edgesToProcess = new HashSet<>(allEdges);
-        while (!edgesToProcess.isEmpty()) {
-            caHierarchies.add(computeCaHierarchy(edgesToProcess));
-        }
-        return caHierarchies;
-    }
-
-    /**
-     * Look for an edge (A -> B) where A ≠ B and both A and B are roots. This can happen if A and B both represent the
-     * same CA, which would be the case if A has been renewed.
-     *  
-     * @param allEdges a list of edges describing one or more CA hierarchies.
-     * @return true if a duplicate root was found, false otherwise.
-     */
-    private static <T> boolean caHierarchyContainsDuplicateRoot(final List<Edge<T>> allEdges) {
-        return allEdges.stream()
-                .filter(candidate -> !candidate.isSelfLoop())
-                .filter(candidate -> allEdges.stream()
-                        .filter(edge -> edge.isSelfLoop())
-                        .filter(edge -> edge.getA() == candidate.getA())
-                        .findAny()
-                        .isPresent())
-                .filter(candidate -> allEdges.stream()
-                        .filter(edge -> edge.isSelfLoop())
-                        .filter(edge -> edge.getB() == candidate.getB())
-                        .findAny()
-                        .isPresent())
-                .findAny()
-                .isPresent();
-    }
-
-    private static <T> CaHierarchy<T> computeCaHierarchy(final Set<Edge<T>> edgesToProcess) {
-        final Optional<Edge<T>> selfLoop = edgesToProcess.stream()
-                .filter(edge -> edge.isSelfLoop())
-                .findAny();
-        if (!selfLoop.isPresent()) {
-            if (log.isTraceEnabled()) {
-                log.trace("Remaining edges: " + edgesToProcess);
-            }
-            throw new IllegalArgumentException("CA hierarchy without a root found.");
-        }
-        final List<Edge<T>> edgesInCaHierarchy = new ArrayList<>();
-        final List<Edge<T>> neighbouringEdges = new ArrayList<>();
-        neighbouringEdges.add(selfLoop.get());
-        while (!neighbouringEdges.isEmpty()) {
-            final Edge<T> nextEdgeInCaHierarchy = neighbouringEdges.remove(0);
-            edgesInCaHierarchy.add(nextEdgeInCaHierarchy);
-            edgesToProcess.remove(nextEdgeInCaHierarchy);
-            final List<Edge<T>> moreNeighbouringEdges = edgesToProcess.stream()
-                    .filter(x -> Edge.isAdjacent(x, nextEdgeInCaHierarchy))
-                    .filter(x -> !edgesInCaHierarchy.contains(x))
-                    .filter(x -> !neighbouringEdges.contains(x))
-                    .collect(Collectors.toList());
-            neighbouringEdges.addAll(moreNeighbouringEdges);
-        }
-        return new CaHierarchy<>(edgesInCaHierarchy);
+    public static Builder<Certificate> fromCertificates(final Set<Certificate> certificates) {
+        return new Builder<Certificate>(certificates, isCertificateSignedBy());
     }
 
     /**
@@ -284,25 +296,10 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
                 .map(entry -> entry.getKey())
                 .collect(Collectors.toList());
         if (log.isTraceEnabled()) {
-            log.trace("Initialized CA hierarchy with edges: " + this.edges);
-            log.trace("Initialized CA hierarchy with nodes: " + this.nodes);
+            log.trace("Initialized CA hierarchy with edges: " + edges + " and nodes: " + nodes);
         }
     }
 
-    /**
-     * Returns a textual representation of this CA hierarchy as a list of edges <code>(A -> B)</code>
-     * where A and B are CAs, such that A has signed B.
-     * 
-     * <p>Example output for a CA hierarchy with one root CA and one issuing CA:
-     * <pre>
-     * [(rootCa -> rootCa), (rootCa, issuingCa)]
-     * </pre>
-     */
-    @Override
-    public String toString() {
-        return edges.toString();
-    }
-    
     /**
      * Computes the level of a CA in this CA hierarchy, where the level of a root CA is 0.
      * 
@@ -344,6 +341,20 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         return (a, b) -> {
             return a.getValue().compareTo(b.getValue());
         };
+    }
+
+    /**
+     * Returns a textual representation of this CA hierarchy as a list of edges <code>(A -> B)</code>
+     * where A and B are CAs, such that A has signed B.
+     * 
+     * <p>Example output for a CA hierarchy with one root CA and one issuing CA:
+     * <pre>
+     * [(rootCa -> rootCa), (rootCa, issuingCa)]
+     * </pre>
+     */
+    @Override
+    public String toString() {
+        return edges.toString();
     }
 
     /**
