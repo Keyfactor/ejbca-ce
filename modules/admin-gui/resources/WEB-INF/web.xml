@@ -257,7 +257,7 @@
     </error-page>
 
     <session-config>
-        <session-timeout>30</session-timeout>
+        <session-timeout>15</session-timeout>
         <tracking-mode>COOKIE</tracking-mode>
         <cookie-config>
             <http-only>true</http-only>
