@@ -123,6 +123,7 @@ public class RaCertificateDetails {
     private final List<String> extendedKeyUsages = new ArrayList<>();
     private boolean hasNameConstraints = false;
     private boolean hasQcStatements = false;
+    private boolean isPreCertificate = false;
     private boolean hasCertificateTransparencyScts = false;
     private String signatureAlgorithm;
     private String password;
@@ -250,6 +251,7 @@ public class RaCertificateDetails {
                 final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
                 this.hasCertificateTransparencyScts = ct != null ? ct.hasSCTs(certificate) : false;
                 this.hasQcStatements = QCStatementExtension.hasQcStatement(certificate);
+                isPreCertificate = x509Certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID) == null ? false : true;
             } else if (certificate instanceof CardVerifiableCertificate) {
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);
@@ -626,5 +628,9 @@ public class RaCertificateDetails {
     
     public boolean isDownloadCsrRendered() {
         return cdw.getCertificateData() != null && StringUtils.isNotEmpty(cdw.getCertificateData().getCertificateRequest());
+    }
+    
+    public boolean isPreCertificate() {
+        return isPreCertificate;
     }
 }
