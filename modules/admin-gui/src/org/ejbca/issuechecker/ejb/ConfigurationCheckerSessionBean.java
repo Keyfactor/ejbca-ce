@@ -22,14 +22,18 @@ import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
+import org.ejbca.issuechecker.issues.InternalKeyBindingValidityCheck;
 import org.ejbca.issuechecker.issues.NotInProductionMode;
 import org.ejbca.issuechecker.issuesets.CertificateTransparencyConfigurationIssueSet;
 import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
@@ -54,6 +58,12 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
 
     /**
      * A set of all implemented issue sets. If you create a new issue set, add it to this set.
@@ -70,6 +80,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
         allConfigurationIssues = new ImmutableSet.Builder<ConfigurationIssue>()
                 .add(new NotInProductionMode())
                 .add(new EccWithKeyEncipherment(certificateProfileSession))
+                .add(new InternalKeyBindingValidityCheck(internalKeyBindingSession, certificateSession, authorizationSession))
                 .build();
         allConfigurationIssueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
                 .add(new EjbcaCommonIssueSet())

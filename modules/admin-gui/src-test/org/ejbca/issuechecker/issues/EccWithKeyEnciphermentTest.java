@@ -119,7 +119,7 @@ public class EccWithKeyEnciphermentTest {
 
     @Test
     public void databaseValue() {
-        assertEquals("The database value is not allowed to change since.", "EccWithKeyEncipherment",
+        assertEquals("The database value is not allowed to change.", "EccWithKeyEncipherment",
                 new EccWithKeyEncipherment(null).getDatabaseValue());
     }
 }
