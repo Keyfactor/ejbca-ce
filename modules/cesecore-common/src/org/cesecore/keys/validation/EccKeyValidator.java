@@ -36,8 +36,8 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * Default ECC key validator using the Bouncy Castle BCECPublicKey implementation 
  * (see org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey). 
  * 
- * The key validator is used to implement the CA/B-Forum requirements for RSA public 
- * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
+ * The key validator is used to implement the CA/B-Forum requirements for EC public 
+ * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A, who both originate from X9.62)
  * requirements. See: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf section 6.1.6
  * 
  * @version $Id$
