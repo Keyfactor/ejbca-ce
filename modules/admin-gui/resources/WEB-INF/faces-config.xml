@@ -99,15 +99,6 @@
     	    <value>#{peerConnectorsMBean}</value>
     	</managed-property>
   </managed-bean>
-  <managed-bean>
-    	<managed-bean-name>peerMgmtMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.peerconnector.PeerMgmtMBean</managed-bean-class>
-    	<managed-bean-scope>request</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>peerConnectorsMBean</property-name>
-    	    <value>#{peerConnectorsMBean}</value>
-    	</managed-property>
-  </managed-bean>
 
   <managed-bean>
         <managed-bean-name>myPreferencesMBean</managed-bean-name>
