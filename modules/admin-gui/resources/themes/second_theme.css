@@ -1344,7 +1344,7 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 .card:hover { box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); }
 .card.prio-info { background-color: #b3ecff; }
 .card.prio-warn { background-color: #ffcc00; }
-.card.prio-error { background-color: ff8566; }
+.card.prio-error { background-color: #ff8566; }
 
 /*--------------------------------------------------------------------------*/
 /* EOF */
