@@ -2804,6 +2804,8 @@ public class CertToolsUnitTest {
         assertEquals("Should be 4 DN components", 4, ret.size());
         ret = CertTools.getX500NameComponents("");
         assertEquals("Should be 0 DN components", 0, ret.size());
+        ret = CertTools.getX500NameComponents(" ");
+        assertEquals("Should be 0 DN components", 0, ret.size());
         ret = CertTools.getX500NameComponents(null);
         assertEquals("Should be 0 DN components", 0, ret.size());
         // This is a bit funky as it is not a X500 name component, but it is how it works..

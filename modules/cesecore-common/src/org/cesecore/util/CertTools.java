@@ -3736,7 +3736,7 @@ public abstract class CertTools {
      */
     public static List<String> getX500NameComponents(String dn) {
         List<String> ret = new ArrayList<String>();
-        if (StringUtils.isNotEmpty(dn)) {
+        if (StringUtils.isNotBlank(dn)) {
             X509NameTokenizer tokenizer = new X509NameTokenizer(dn);
             while (tokenizer.hasMoreTokens()) {
                 ret.add(tokenizer.nextToken());
