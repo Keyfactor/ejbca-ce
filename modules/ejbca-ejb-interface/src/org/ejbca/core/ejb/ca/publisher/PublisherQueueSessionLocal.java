@@ -76,12 +76,21 @@ public interface PublisherQueueSessionLocal {
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a
      * specific publisherId.
      * 
-     * @param orderBy
-     *            order by clause for the SQL to the database, for example
-     *            "order by timeCreated desc".
      * @return Collection of PublisherQueueData, never null
      */
-    Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy);
+    Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit);
+
+    /**
+     * Finds all entries with status {@link PublisherQueueData.STATUS_PENDING} for a
+     * specific <code>publisherId</code>. The results are ordered in descending order
+     * by time created.
+     * 
+     * @param publisherId the id of a publisher to fetch pending entries for.
+     * @param limit if <offset>limit > 0</offset>, limits the number of results.
+     * @param offset skips the first <code>offset</offset> items, <code>offset = 0</code> disables this behavior.
+     * @return Collection of PublisherQueueData, never null
+     */
+    Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimitAndOffset(int publisherId, int limit, int offset);
 
     /**
      * Finds all entries for a specific fingerprint.
