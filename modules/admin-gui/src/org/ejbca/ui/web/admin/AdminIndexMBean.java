@@ -144,4 +144,7 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
         return publisherQueueSession.getPendingEntriesCountForPublisher(publisherId);
     }
     
+    public String getPublisherQueueInspectionLink(final String publisherName) {
+        return "ca/inspectpublisherqueue.xhtml?publisherId=" + publisherSession.getPublisher(publisherName).getPublisherId();
+    }
 }

@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     $Id$
+     -->
+</ui:remove>
+
+
+<body>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <f:metadata>
+                <f:viewParam name="publisherId"
+                    value="#{inspectPublisherQueue.publisherId}" />
+            </f:metadata>
+            <h1>
+                <h:outputText
+                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_TITLE}" />
+            </h1>
+            <h:form id="resultsForm">
+                <div style="display: inline-block;">
+                    <h:dataTable id="queuedItems"
+                        value="#{inspectPublisherQueue.items}"
+                        var="item" styleClass="grid"
+                        rendered="#{inspectPublisherQueue.items.size() gt 0}">
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText
+                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_DESCRIPTION_HEADER}" />
+                            </f:facet>
+                            <div>
+                                <h:outputLink value="#{item.link}"  target="_blank">
+                                    <h:outputText
+                                        value="#{item.fingerprint}" />
+                                </h:outputLink>
+                                <br />
+                                <h:outputText
+                                    value="#{item.description}" />
+                            </div>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText
+                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_STATUS_HEADER}" />
+                            </f:facet>
+                            <div>
+                                <h:graphicImage
+                                    rendered="#{item.statusOk}"
+                                    url="#{adminMenuBean.adminWebUrl}/images/verify-log-failed.png"
+                                    height="12" width="12"
+                                    style="border-width:0" />
+                                <h:graphicImage
+                                    rendered="#{item.statusNotOk}"
+                                    url="#{adminMenuBean.adminWebUrl}/images/verify-log-success.png"
+                                    height="12" width="12"
+                                    style="border-width:0" />
+                                <h:graphicImage
+                                    rendered="#{item.statusPending}"
+                                    url="#{adminMenuBean.adminWebUrl}/images/status-ca-pending.png"
+                                    height="12" width="12"
+                                    style="border-width:0" />
+                                <h:outputText value="#{item.status}" />
+                            </div>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText
+                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_CREATED_HEADER}" />
+                            </f:facet>
+                            <div>
+                                <h:outputText
+                                    value="#{item.timeCreated}" />
+                            </div>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText
+                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_LAST_UPDATED_HEADER}" />
+                            </f:facet>
+                            <div>
+                                <h:outputText
+                                    value="#{item.timeLastUpdated}" />
+                            </div>
+                        </h:column>
+                    </h:dataTable>
+                    <h:outputText
+                        value="#{web.text.INSPECT_PUBLISHER_QUEUE_EMPTY}"
+                        rendered="#{inspectPublisherQueue.items.size() eq 0}" />
+                    <div class="commandButton">
+                        <h:commandButton
+                            value="#{web.text.INSPECT_PUBLISHER_QUEUE_PREVIOUS_PAGE}"
+                            type="submit"
+                            rendered="#{not inspectPublisherQueue.firstPage}"
+                            action="#{inspectPublisherQueue.previousPage}">
+                            <f:ajax render="@form" />
+                        </h:commandButton>
+                        <div style="float: right;">
+                            <h:commandButton
+                                value="#{web.text.INSPECT_PUBLISHER_QUEUE_NEXT_PAGE}"
+                                type="submit"
+                                rendered="#{not inspectPublisherQueue.lastPage}"
+                                action="#{inspectPublisherQueue.nextPage}">
+                                <f:ajax render="@form" />
+                            </h:commandButton>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</body>
+</html>

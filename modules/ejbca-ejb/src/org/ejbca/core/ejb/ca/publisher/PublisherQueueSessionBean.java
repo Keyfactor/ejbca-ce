@@ -163,7 +163,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
         }
         Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
-                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, 0);
+                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, 0, 0);
         if (datas.isEmpty()) {
             log.debug("No publisher queue entries found for publisher " + publisherId);
         }
@@ -205,14 +205,19 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     @Override
-    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy) {
+    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit) {
+        return getPendingEntriesForPublisherWithLimitAndOffset(publisherId, limit, 0);
+    }
+
+    @Override
+    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimitAndOffset(int publisherId, int limit, int offset) {
         if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
         }
         Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
         //TODO: This code has been modified from JDBC to JPA fetching, which might negatively affect performance. Investigate. 
         List<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> publisherQueueDataList = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
-                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, limit);
+                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, limit, offset);
         for (org.ejbca.core.ejb.ca.publisher.PublisherQueueData publisherQueueData : publisherQueueDataList) {
             PublisherQueueData pqd = new PublisherQueueData(publisherQueueData.getPk(), new Date(publisherQueueData.getTimeCreated()), new Date(
                     publisherQueueData.getLastUpdate()), PublisherConst.STATUS_PENDING, publisherQueueData.getTryCounter(),
@@ -290,7 +295,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher) {
-        final Collection<PublisherQueueData> publisherQueueDatas = getPendingEntriesForPublisherWithLimit(publisher.getPublisherId(), 100, 60, "order by timeCreated");
+        final Collection<PublisherQueueData> publisherQueueDatas = getPendingEntriesForPublisherWithLimit(publisher.getPublisherId(), 100);
         return doPublish(admin, publisher, publisherQueueDatas);
     }
 
