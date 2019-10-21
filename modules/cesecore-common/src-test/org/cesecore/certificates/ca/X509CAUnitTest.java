@@ -147,7 +147,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     private static final Logger log = Logger.getLogger(X509CAUnitTest.class);
 
     // We define this here for compilation, since CT jar is not always available. This is the same as org.certificatetransparency.ctlog.serialization.CTConstants.POISON_EXTENSION_OID
-    final private static String POISON_EXTENSION_OID = "1.3.6.1.4.1.11129.2.4.3";
 
     @Test
     public void testX509CABasicOperationsRSA() throws Exception {
@@ -690,7 +689,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(x509ca.getCACertificate().getPublicKey());
             assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
             // No poison extension in final certificate
-            assertNull("There must not be a CT poison extension in the final certificate.", ((X509Certificate)cert).getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+            assertNull("There must not be a CT poison extension in the final certificate.", ((X509Certificate)cert).getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
         }
 
         // The order of certificate validations executed on a CA should be
@@ -731,7 +730,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(pubK);
                     assertEquals("authority key identifier should be from the hardcoded presign key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
                     // No poison extension in presign certificate
-                    assertNull("There must not be a CT poison extension in the presign certificate.", certificate.getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+                    assertNull("There must not be a CT poison extension in the presign certificate.", certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
                     throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");                    
                 default:
                     throw new ValidationException("default");                    
@@ -769,7 +768,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                         fail("CT pre-certificate should validate using the CA public key");
                     }
                     // There must be a poison extension in CT pre-certificate
-                    assertNotNull("There must be a CT poison extension in the CT pre-certificate.", certificate.getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+                    assertNotNull("There must be a CT poison extension in the CT pre-certificate.", certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
                     // CT pre-certificate should have CA key authority key identifier
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
@@ -787,7 +786,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             Certificate cert = x509ca.generateCertificate(cryptoToken, user, request, userKeyPair.getPublic(), 0, notBefore, notAfter, cp, extensions, "00000", certGenParams, cceConfig);
             assertNotNull("A certificate should have been created", cert);
             // No poison extension in final certificate
-            assertNull("Final certificate should not contain CT poison extension", ((X509Certificate)cert).getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+            assertNull("Final certificate should not contain CT poison extension", ((X509Certificate)cert).getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
             try {
                 cert.verify(x509ca.getCACertificate().getPublicKey());
             } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
@@ -808,7 +807,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 log.info("EJBCA Community does not include CT so certificate is issued since no PRE_CERTIFICATE_VALIDATION can be done");
                 assertNotNull("Certificate should have been issued", issuedcert);
                 // No poison extension in final certificate
-                assertNull("There must not be a CT poison extension in the final certificate.", ((X509Certificate)issuedcert).getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+                assertNull("There must not be a CT poison extension in the final certificate.", ((X509Certificate)issuedcert).getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
             }
         } catch (CertificateCreateException e) {
             if (e.getCause() instanceof ValidationException) {
@@ -838,7 +837,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                         fail("CT pre-certificate should validate using the CA public key");
                     }
                     // There must be a poison extension in CT pre-certificate
-                    assertNotNull("There must be a CT poison extension in the CT pre-certificate.", certificate.getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+                    assertNotNull("There must be a CT poison extension in the CT pre-certificate.", certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
                     // CT pre-certificate should have CA key authority key identifier
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
@@ -856,7 +855,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             Certificate cert = x509ca.generateCertificate(cryptoToken, user, request, userKeyPair.getPublic(), 0, notBefore, notAfter, cp, extensions, "00000", certGenParams, cceConfig);
             assertNotNull("A certificate should have been created", cert);
             // No poison extension in final certificate
-            assertNull("Final certificate should not contain CT poison extension", ((X509Certificate)cert).getExtensionValue(X509CAUnitTest.POISON_EXTENSION_OID));
+            assertNull("Final certificate should not contain CT poison extension", ((X509Certificate)cert).getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
             try {
                 cert.verify(x509ca.getCACertificate().getPublicKey());
             } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
