@@ -281,17 +281,27 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     }
 
     /**
+     * Lookup publisher queue data items with the specified status in the database, for the publisher specified. The results are ordered
+     * by the time they were created in descending order (i.e. newest items first).
+     * 
+     * @param entityManager the entity manager used to create the query.
+     * @param publisherId the id of a publisher, only publisher queue data items for this publisher is returned.
+     * @param publishStatus one of the constants in {@link PublisherConst}, only publisher queue data items with this status is returned.
      * @param maxRows If set > 0, limits the number of rows fetched.
-     *
-     * @return return the query results as a List. */
+     * @param offset the number of entries to skip, <code>offset = 0</code> disables this behavior.
+     * @return return a list of publisher queue data items. 
+     */
     @SuppressWarnings("unchecked")
-    public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus, int maxRows) {
-    	final Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
+    public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus,
+            int maxRows, int offset) {
+        final Query query = entityManager.createQuery(
+                "SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus ORDER BY a.timeCreated DESC");
     	query.setParameter("publisherId", publisherId);
     	query.setParameter("publishStatus", publishStatus);
     	if(maxRows > 0 ) {
     		query.setMaxResults(maxRows);
     	}
+        query.setFirstResult(offset);
     	return query.getResultList();
     }
 

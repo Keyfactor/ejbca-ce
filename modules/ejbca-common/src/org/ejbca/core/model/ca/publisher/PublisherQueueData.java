@@ -42,7 +42,6 @@ public class PublisherQueueData implements Serializable {
     /** PublisherQueueData.STATUS_SUCCESS etc */
     private int publishStatus;
     private int tryCounter;
-    /** PublisherQueueData.PUBLISH_TYPE_CERT etc */
     private int publishType;
     private String fingerprint;
     private int publisherId;
@@ -68,6 +67,11 @@ public class PublisherQueueData implements Serializable {
 		this.volatileData = volatileData;
 	}
     
+    /**
+     * Get the type of publisher queue item, either a certificate or a CRL.
+     * 
+     * @return one of the constants in {@link PublisherConst}.
+     */
     public int getPublishType() {
 		return publishType;
 	}
