@@ -126,6 +126,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean storeCertificateNewTransaction(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
+            String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        return storeCertificate(admin, publisherids, certWrapper, password, userDN, extendedinformation);
+    }
+    
+    @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
         final BaseCertificateData certificateData = certWrapper.getBaseCertificateData();
