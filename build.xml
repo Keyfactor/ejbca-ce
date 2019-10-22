@@ -586,10 +586,10 @@
 			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
 			-->
 			<zipfileset prefix="lib" dir="${lib}/ext/jackson2" erroronmissingdir="false">
-				<include name="jackson-annotations-2.9.8.jar"/>
-				<include name="jackson-core-2.9.8.jar"/>
-				<include name="jackson-databind-2.9.8.jar"/>
-				<include name="jackson-dataformat-yaml-2.9.8.jar"/>
+				<include name="jackson-annotations-2.*.jar"/>
+				<include name="jackson-core-2.*.jar"/>
+				<include name="jackson-databind-2.*.jar"/>
+				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
