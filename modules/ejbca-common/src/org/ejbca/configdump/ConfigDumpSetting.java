@@ -84,6 +84,26 @@ public class ConfigDumpSetting implements Serializable {
         RUN                 // Process with persistence
     }
 
+    public enum NonInteractiveMode {
+        NONE,
+        ABORT,            
+        CONTINUE;
+        
+        public static NonInteractiveMode parseNonInteractiveMode(final String option) throws ParseException {
+            if (option == null) {
+                return NONE;
+            }
+            switch (StringUtils.lowerCase(option, Locale.ROOT)) {
+                case "abort":
+                    return ABORT;
+                case "continue":
+                    return CONTINUE;
+                default:
+                    throw new ParseException("Invalid non-interactive mode '" + option + "'", 0);
+            }
+        }
+    }
+        
     public enum OverwriteMode {
         NONE,
         UPDATE,
@@ -91,7 +111,7 @@ public class ConfigDumpSetting implements Serializable {
 
         public static OverwriteMode parseOverwriteMode(final String option) throws ParseException {
             if (option == null) {
-                return null; // = prompt user
+                return null; // = use default
             }
             switch (StringUtils.lowerCase(option, Locale.ROOT)) {
                 case "skip":
@@ -112,7 +132,7 @@ public class ConfigDumpSetting implements Serializable {
 
         public static ResolveReferenceMode parseResolveReferenceMode(final String option) throws ParseException {
             if (option == null) {
-                return null; // = prompt user
+                return null; // = use default
             }
             switch (StringUtils.lowerCase(option, Locale.ROOT)) {
                 case "skip":
@@ -140,9 +160,10 @@ public class ConfigDumpSetting implements Serializable {
     private Set<String> overwriteExceptions = new HashSet<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
+    private NonInteractiveMode nonInteractiveMode = NonInteractiveMode.NONE;
     private ProcessingMode processingMode;
-    private OverwriteMode overwriteMode;
-    private ResolveReferenceMode resolveReferenceMode;
+    private OverwriteMode overwriteMode = OverwriteMode.NONE;
+    private ResolveReferenceMode resolveReferenceMode = ResolveReferenceMode.NO_RESOLUTION_SET;
     private Map<ConfigdumpItem, OverwriteMode> overwriteResolutions = new HashMap<>();
     private Map<ConfigdumpItem, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
     private Map<ConfigdumpItem, String> passwords = new HashMap<>();
@@ -213,7 +234,15 @@ public class ConfigDumpSetting implements Serializable {
     public void setIgnoreWarnings(final boolean ignoreWarnings) {
         this.ignoreWarnings = ignoreWarnings;
     }
+    
+    public NonInteractiveMode getNonInteractiveMode() {
+        return nonInteractiveMode;
+    }
 
+    public void setNonInteractiveMode(final NonInteractiveMode nonInteractiveMode) {
+        this.nonInteractiveMode = nonInteractiveMode;
+    }
+        
     public ProcessingMode getProcessingMode() {
         return processingMode;
     }
