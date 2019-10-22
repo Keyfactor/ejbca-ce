@@ -210,7 +210,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     @Override
-    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimitAndOffset(int publisherId, int limit, int offset) {
+    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimitAndOffset(final int publisherId, int limit, int offset) {
         if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
         }
