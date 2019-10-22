@@ -255,10 +255,10 @@
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="geronimo-osgi-locator-1.1.jar"/>
-			<include name="resteasy-jackson2-provider-3.0.26.Final.jar"/>
-			<include name="resteasy-jaxrs-3.0.26.Final.jar"/>
+			<include name="resteasy-jackson2-provider-3.*.jar"/>
+			<include name="resteasy-jaxrs-3.*.jar"/>
 			<include name="scannotation-1.0.3.jar"/>
-			<include name="tjws-3.0.26.Final.jar"/>
+			<include name="tjws-3.*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="jackson-jaxrs-base-2.*.jar"/>
