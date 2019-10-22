@@ -109,9 +109,6 @@ public final class CertificateConstants {
      */
     public static final int NO_CRL_PARTITION = 0;
     
-    // Ceritciate tags
-    /** Certificate is a pre-certificate */
+    /** Certificate is a pre-certificate. Used as tag in CertificateData. Do not change! */
     public static final String CERT_TAG_PRECERT = "P";
-
-
 }
