@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.ca;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,11 +26,16 @@ import javax.faces.bean.ViewScoped;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -51,6 +57,10 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     private CertificateDataSessionLocal certificateSession;
     @EJB
     private CrlStoreSessionLocal crlSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
 
     private int pageNumber;
     private String publisherId;
@@ -68,15 +78,23 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
 
         public String getDescription() {
             if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CERT) {
-                final CertificateInfo certificate = certificateSession.getCertificateInfo(publisherQueueData.getFingerprint());
-                return StringUtils.abbreviate("Certificate: '" + certificate.getSubjectDN() + "'", DESCRIPTION_MAX_LENGTH);
+                final CertificateInfo certificateInfo = certificateSession.getCertificateInfo(publisherQueueData.getFingerprint());
+                if (isAuthorizedToViewCertificate(certificateInfo)) {
+                    return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CERTIFICATE_DESCRIPTION", /* unescape */ false,
+                            certificateInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
+                } else {
+                    return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
+                }
             } else if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CRL) {
-                final int crlNumber = crlSession.getCRLInfo(publisherQueueData.getFingerprint()).getLastCRLNumber();
-                final String crlIssuer = crlSession.getCRLInfo(publisherQueueData.getFingerprint()).getSubjectDN();
-                return StringUtils.abbreviate(String.format("CRL: #%d. Issued by '%s'", crlNumber, crlIssuer), DESCRIPTION_MAX_LENGTH);
-            } else {
-                return publisherQueueData.getFingerprint() + " (" + publisherQueueData.getPublishType() + ")";
+                final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
+                if (isAuthorizedToViewCrl(crlInfo)) {
+                    return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CRL_DESCRIPTION", /* unescape */ false,
+                            crlInfo.getLastCRLNumber(), crlInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
+                } else {
+                    return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
+                }
             }
+            return publisherQueueData.getFingerprint() + " (" + publisherQueueData.getPublishType() + ")";
         }
 
         public String getFingerprint() {
@@ -85,14 +103,18 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
 
         public String getLink() {
             if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CERT) {
-                return getEjbcaWebBean().getBaseUrl() + "ra/viewcert.xhtml?fp=" + publisherQueueData.getFingerprint();
+                final CertificateInfo certificateInfo = certificateSession.getCertificateInfo(getFingerprint());
+                if (isAuthorizedToViewCertificate(certificateInfo)) {
+                    return getEjbcaWebBean().getBaseUrl() + "ra/viewcert.xhtml?fp=" + publisherQueueData.getFingerprint();
+                }
             } else if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CRL) {
                 final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
-                return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrlPublic(),
-                        StringEscapeUtils.escapeHtml(crlInfo.getSubjectDN()), crlInfo.getLastCRLNumber());
-            } else {
-                return "#";
+                if (isAuthorizedToViewCrl(crlInfo)) {
+                    return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrlPublic(),
+                            StringEscapeUtils.escapeHtml(crlInfo.getSubjectDN()), crlInfo.getLastCRLNumber());
+                }
             }
+            return "#";
         }
 
         public String getStatus() {
@@ -130,6 +152,38 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 return new SimpleDateFormat("dd MMMM yyyy hh:mm:ss").format(publisherQueueData.getLastUpdate());
             }
         }
+
+        public boolean isCanView() {
+            if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CERT) {
+                final CertificateInfo certificateInfo = certificateSession.getCertificateInfo(publisherQueueData.getFingerprint());
+                return isAuthorizedToViewCertificate(certificateInfo);
+            }
+            if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CRL) {
+                final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
+                return isAuthorizedToViewCrl(crlInfo);
+            }
+            return true;
+        }
+    }
+
+    private boolean isAuthorizedToViewCertificate(final CertificateInfo certificateInfo) {
+        if (!caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(certificateInfo.getIssuerDN()).hashCode())) {
+            return false;
+        }
+        final Collection<Integer> authorizedEepIds = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(),
+                AccessRulesConstants.VIEW_END_ENTITY);
+        final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
+        if (authorizedEepIds.contains(EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
+            authorizedEepIds.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
+        }
+        if (!accessAnyEepAvailable && !authorizedEepIds.contains(Integer.valueOf(certificateInfo.getEndEntityProfileIdOrZero()))) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isAuthorizedToViewCrl(final CRLInfo crlInfo) {
+        return caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(crlInfo.getSubjectDN()).hashCode());
     }
 
     public String getPublisherId() {
