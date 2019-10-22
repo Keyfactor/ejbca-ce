@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,8 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 
@@ -110,4 +113,21 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @return Newly constructed publisher object (not initialized or persisted)
      */
     BasePublisher createPublisherObjectFromTypeId(int typeId);
+
+    
+    /**
+     * Stores the certificate in a new transaction to the given collection of publishers. See
+     * BasePublisher class for further documentation about function. Use this method to avoid rollback from
+     * overlaying method.
+     * 
+     * @param publisherids
+     *            a Collection (Integer) of publisher IDs.
+     * @return true if successful result on all given publishers, if the publisher is configured to not publish the certificate 
+     * (for example publishing an active certificate when the publisher only publishes revoked), true is still returned because 
+     * the publishing operation succeeded even though the publisher did not publish the certificate.
+     * @throws AuthorizationDeniedException if access is denied to the CA issuing incert
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher
+     */
+    boolean storeCertificateNewTransaction(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
+            String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException;
 }
