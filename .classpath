@@ -138,8 +138,8 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-3.6.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jaxrs-3.9.0.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.9.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jaxrs-3.0.26.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.0.26.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-firefox-driver-3.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-java-3.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-support-3.7.1.jar"/>
