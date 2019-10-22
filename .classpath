@@ -192,10 +192,10 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.5.22.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.5.22.jar"/>
 	<classpathentry kind="lib" path="lib/guava-28.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.9.8.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.9.8.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.9.8.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.9.8.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.9.9.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.9.9.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.9.9.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.9.9.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-161.jar"/>
