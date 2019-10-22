@@ -47,13 +47,12 @@
                                     value="#{web.text.INSPECT_PUBLISHER_QUEUE_DESCRIPTION_HEADER}" />
                             </f:facet>
                             <div>
-                                <h:outputLink value="#{item.link}"  target="_blank">
-                                    <h:outputText
-                                        value="#{item.fingerprint}" />
+                                <h:outputLink rendered="#{item.canView}" value="#{item.link}"  target="_blank">
+                                    <h:outputText value="#{item.fingerprint}" />
                                 </h:outputLink>
+                                <h:outputText rendered="#{not item.canView}" value="#{item.fingerprint}" />
                                 <br />
-                                <h:outputText
-                                    value="#{item.description}" />
+                                <h:outputText value="#{item.description}" />
                             </div>
                         </h:column>
                         <h:column>
