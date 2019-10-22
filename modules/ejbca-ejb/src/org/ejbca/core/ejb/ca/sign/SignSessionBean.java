@@ -495,12 +495,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                                 CertificateDataWrapper certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                                 // Publish pre-certificate and abort issuance
                                 postCreateCertificate(admin, endEntityInformation, ca,
-                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()));
+                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true);
                             }
                             throw new CertificateCreateException(e);
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
-                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()));
+                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false);
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -1296,11 +1296,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                 // Publish pre-certificate and abort issuance
-                postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
+                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true);
             }
             throw new CertificateCreateException(e);
         }
-        postCreateCertificate(admin, endEntityInformation, ca, certWrapper);
+        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
@@ -1370,7 +1370,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final CertificateDataWrapper certificateWrapper) throws AuthorizationDeniedException {
+            final CertificateDataWrapper certificateWrapper, final boolean storePreCert) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
@@ -1379,8 +1379,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         final Collection<Integer> publishers = certProfile.getPublisherList();
         if (!publishers.isEmpty()) {
-            publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(),
-                    endEntity.getCertificateDN(), endEntity.getExtendedInformation());
+            if (storePreCert) {
+                // CTLogException occurred store pre-cert in new transaction to avoid rollback.
+                publisherSession.storeCertificateNewTransaction(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(),
+                        endEntity.getCertificateDN(), endEntity.getExtendedInformation());
+            } else {
+                publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(),
+                        endEntity.getCertificateDN(), endEntity.getExtendedInformation());
+            }
         }
     }
 
