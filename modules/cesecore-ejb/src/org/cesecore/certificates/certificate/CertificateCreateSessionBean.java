@@ -551,7 +551,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // Remember for CVC serialNo can be alphanumeric, so we can't just try to decode that using normal Java means (BigInteger.valueOf)...
                     assertSerialNumberForIssuerOk(ca, CertTools.getSerialNumber(cert));
                     // Tag is reserved for future use, currently only null
-                    final String tag = null;
+                    String tag = null;
                     
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
@@ -560,6 +560,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
                                 crlPartitionIndex, tag, updateTime);
                     } else {
+                        tag = CertificateConstants.CERT_TAG_PRECERT;
                         // Store pre-certificate using a new transaction. We don't want CertificateData rolled back even though issuance failed.
                         result = certificateStoreSession.storeCertificateNoAuthNewTransaction(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
