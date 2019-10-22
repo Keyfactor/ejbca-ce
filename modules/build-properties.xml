@@ -261,9 +261,9 @@
 			<include name="tjws-3.0.26.Final.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
-			<include name="jackson-jaxrs-base-2.9.8.jar"/>
-			<include name="jackson-jaxrs-json-provider-2.9.8.jar"/>
-			<include name="jackson-module-jaxb-annotations-2.9.8.jar"/>
+			<include name="jackson-jaxrs-base-2.*.jar"/>
+			<include name="jackson-jaxrs-json-provider-2.*.jar"/>
+			<include name="jackson-module-jaxb-annotations-2.*.jar"/>
 		</fileset>
 	</path>
 
@@ -275,10 +275,10 @@
     <mkdir dir="${ejbca.home}/lib/ext/jackson2"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.jackson2.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
-			<include name="jackson-annotations-2.9.8.jar"/>
-			<include name="jackson-databind-2.9.8.jar"/>
-			<include name="jackson-core-2.9.8.jar"/>
-			<include name="jackson-dataformat-yaml-2.9.8.jar"/>
+			<include name="jackson-annotations-2.*.jar"/>
+			<include name="jackson-databind-2.*.jar"/>
+			<include name="jackson-core-2.*.jar"/>
+			<include name="jackson-dataformat-yaml-2.*.jar"/>
 		</fileset>
 	</path>
 
