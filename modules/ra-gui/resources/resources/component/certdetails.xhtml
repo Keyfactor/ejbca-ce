@@ -36,6 +36,13 @@
         </composite:interface>
 
         <composite:implementation>
+         	<h:outputLabel for="note" value="" 
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
+            <h:outputText id="note" value="#{msg.component_certdetails_field_precert}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                style="color: black"
+                rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
             <h:outputLabel for="caname" value="#{msg.component_certdetails_field_caname}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="caname" value="#{cc.attrs.raCertificateDetails.caName}"
@@ -243,13 +250,6 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="cp" value="#{cc.attrs.raCertificateDetails.cpName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-		    <h:outputLabel for="note" value="#{msg.component_certdetails_note_warning}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
-            <h:outputText id="note" value="#{msg.component_certdetails_field_precert}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
-			
 			
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
