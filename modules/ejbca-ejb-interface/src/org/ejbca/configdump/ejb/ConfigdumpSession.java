@@ -16,7 +16,7 @@ import java.io.IOException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.configdump.ConfigDumpSetting;
+import org.ejbca.configdump.ConfigdumpSetting;
 import org.ejbca.configdump.ConfigdumpException;
 import org.ejbca.configdump.ConfigdumpExportResult;
 import org.ejbca.configdump.ConfigdumpImportResult;
@@ -40,7 +40,7 @@ public interface ConfigdumpSession {
      * @throws IOException On failure to create the YAML files etc.
      * @throws AuthorizationDeniedException If the given authentication token is not authorized to /system_functionality/edit_systemconfiguration, or not authorized to any of the CAs, crypto tokens, etc.
      */
-    ConfigdumpExportResult performExport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
+    ConfigdumpExportResult performExport(final AuthenticationToken admin, final ConfigdumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
 
     /**
      * Imports from scratch or updates EJBCA data from a set of YAML files in the format created by {@link #performExport}.
@@ -51,6 +51,6 @@ public interface ConfigdumpSession {
      * @throws IOException On failure to read the YAML files etc.
      * @throws AuthorizationDeniedException If the given authentication token is not authorized to create/update/delete the items to import.
      */
-    ConfigdumpImportResult performImport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
+    ConfigdumpImportResult performImport(final AuthenticationToken admin, final ConfigdumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
 
 }
