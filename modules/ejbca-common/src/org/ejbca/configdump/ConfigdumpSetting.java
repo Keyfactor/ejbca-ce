@@ -157,6 +157,7 @@ public class ConfigdumpSetting implements Serializable {
 
         NO_RESOLUTION_SET,      // Doesn't have a reference problem
         USE_DEFAULT,            // Try to use default
+        TEMPORARILY_USE_DEFAULT,// Try to use default without warning and add to problematic items (used internally)
         SKIP;                   // Exclude from import
 
         public static ResolveReferenceMode parseResolveReferenceMode(final String option) throws ParseException {
