@@ -136,6 +136,6 @@ public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem>, Serializab
 
     @Override
     public String toString() {
-        return "[ConfigdumpItem: " + name + " (" + id + ")]";
+        return "[ConfigdumpItem: " + type + " " + name + " (" + id + ")]";
     }
 }
