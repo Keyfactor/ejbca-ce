@@ -14,8 +14,8 @@ package org.ejbca.configdump;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.cesecore.util.Named;
-import org.ejbca.configdump.ConfigDumpSetting.ItemProblem;
-import org.ejbca.configdump.ConfigDumpSetting.ItemType;
+import org.ejbca.configdump.ConfigdumpSetting.ItemProblem;
+import org.ejbca.configdump.ConfigdumpSetting.ItemType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem>, Serializab
     //is a reference to an EJBCA item. The item can be in the database or in a YAML dump.
     private T dumpObject;
 
-    public ConfigdumpItem(String name, ConfigDumpSetting.ItemType type, Integer id, T dumpObject) {
+    public ConfigdumpItem(String name, ConfigdumpSetting.ItemType type, Integer id, T dumpObject) {
         this.name = name;
         this.type = type;
         this.problem = ItemProblem.NO_PROBLEM;
