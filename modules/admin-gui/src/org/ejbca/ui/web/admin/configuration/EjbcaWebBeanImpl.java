@@ -929,7 +929,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public List<String> getAuthorizedPublisherNames() {
-        return new ArrayList<String>(getAuthorizedPublisherNamesAndIds().keySet());
+        return new ArrayList<>(getAuthorizedPublisherNamesAndIds().keySet());
     }
 
     /**
@@ -940,6 +940,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final TreeMap<String,Integer> result = new TreeMap<>();
         final Map<Integer, String> idToNameMap = publisherSession.getPublisherIdToNameMap();
         for(final int id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
+            if (idToNameMap.get(id) == null) {
+                log.warn("Publisher with ID " + id + " exists but can not be accessed. There may be a duplicate name. Please rename or delete.");
+                continue; // prevent NPE below
+            }
             result.put(idToNameMap.get(id), id);
         }
         return result;
