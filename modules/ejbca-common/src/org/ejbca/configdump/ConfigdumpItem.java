@@ -41,7 +41,7 @@ public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem>, Serializab
     //is a reference to an EJBCA item. The item can be in the database or in a YAML dump.
     private T dumpObject;
 
-    public ConfigdumpItem(final String name, final ItemType type, Integer id, T dumpObject) {
+    public ConfigdumpItem(final String name, final ItemType type, final Integer id, final T dumpObject) {
         this.name = name;
         this.type = type;
         this.problem = ItemProblem.NO_PROBLEM;
