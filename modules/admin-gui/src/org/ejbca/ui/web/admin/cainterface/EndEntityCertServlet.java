@@ -119,7 +119,7 @@ public class EndEntityCertServlet extends HttpServlet {
         if ((command.equalsIgnoreCase(COMMAND_NSCERT) || command.equalsIgnoreCase(COMMAND_IECERT) || command.equalsIgnoreCase(COMMAND_CERT)) 
         	 && issuerdn != null && certificatesn != null) {
         	
-        	BigInteger certsn = new BigInteger(certificatesn,16);
+            BigInteger certsn = CertTools.getSerialNumberFromString(certificatesn);
         	        	        
         	// Fetch the certificate and at the same time check that the user is authorized to it.
         	
