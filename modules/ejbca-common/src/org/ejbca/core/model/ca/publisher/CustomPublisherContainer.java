@@ -118,8 +118,7 @@ public class CustomPublisherContainer extends BasePublisher {
 	                //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
 	                try {
                         value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key));
-                    } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException
-                            | InvalidKeySpecException e) {
+                    } catch (InvalidKeySpecException e) {
                         throw new IllegalStateException("Could not encrypt private key password!", e);
                     }
 	            } else {
