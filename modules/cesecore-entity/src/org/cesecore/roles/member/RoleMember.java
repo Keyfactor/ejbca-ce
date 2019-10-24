@@ -17,13 +17,14 @@ import java.io.Serializable;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.roles.Role;
+import org.cesecore.util.StringTools;
 
 /**
  * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely.
  *
  * @version $Id$
  */
-public class RoleMember implements Serializable {
+public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public static int ROLE_MEMBER_ID_UNASSIGNED = 0;
     public static int NO_ROLE = Role.ROLE_ID_UNASSIGNED;
@@ -161,5 +162,37 @@ public class RoleMember implements Serializable {
                 && this.getTokenMatchOperator() == roleMember.getTokenMatchOperator()
                 && StringUtils.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
                 && StringUtils.equals(this.getTokenType(), roleMember.getTokenType());
+    }
+
+    @Override
+    public int compareTo(final RoleMember o) {
+        if (roleId != o.roleId) {
+            return roleId - o.roleId;
+        }
+        int diff;
+        diff = StringTools.compare(tokenType, o.tokenType);
+        if (diff != 0) {
+            return diff;
+        }
+        if (tokenIssuerId != o.tokenIssuerId) {
+            return tokenIssuerId - o.tokenIssuerId;
+        }
+        diff = StringTools.compare(tokenMatchKey, o.tokenMatchKey);
+        if (diff != 0) {
+            return diff;
+        }
+        diff = StringTools.compare(tokenMatchOperator, o.tokenMatchOperator);
+        if (diff != 0) {
+            return diff;
+        }
+        diff = StringTools.compare(tokenMatchValue, o.tokenMatchValue);
+        if (diff != 0) {
+            return diff;
+        }
+        diff = StringTools.compare(description, o.description);
+        if (diff != 0) {
+            return diff;
+        }
+        return 0;
     }
 }

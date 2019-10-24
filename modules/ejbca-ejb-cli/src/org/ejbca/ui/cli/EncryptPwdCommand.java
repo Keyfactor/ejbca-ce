@@ -13,12 +13,7 @@
 
 package org.ejbca.ui.cli;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
@@ -84,8 +79,7 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
             } else {
                 enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
             }
-        } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException
-                | InvalidKeySpecException e) {
+        } catch (InvalidKeySpecException e) {
             log.error(e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }

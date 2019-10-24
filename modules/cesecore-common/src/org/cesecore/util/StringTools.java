@@ -20,7 +20,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -98,7 +98,7 @@ public final class StringTools {
          * @param array
          */
         private CharSet(char[] array) {
-            final Set<Character> set = new HashSet<Character>();
+            final Set<Character> set = new HashSet<>();
             for (final char c : array) {
                 set.add(Character.valueOf(c));
             }
@@ -145,7 +145,7 @@ public final class StringTools {
      * @return all strings converted to lower case
      */
     public static List<String> toLowerCase(final List<String> strings) {
-        final List<String> lowerCaseStrings = new ArrayList<String>();
+        final List<String> lowerCaseStrings = new ArrayList<>();
         for (final String string : strings) {
             lowerCaseStrings.add(string.toLowerCase());
         }
@@ -725,7 +725,7 @@ public final class StringTools {
      * @throws InvalidKeySpecException
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in)
-            throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+            throws InvalidKeySpecException {
         char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
         return pbeEncryptStringWithSha256Aes192(in, p);
     }
@@ -736,8 +736,7 @@ public final class StringTools {
      * @param p encryption passphrase
      * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
      */
-    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p)
-            throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
@@ -749,18 +748,21 @@ public final class StringTools {
         final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
         final Cipher c;
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
+        final byte[] enc;
         try {
             c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
             final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
             c.init(Cipher.ENCRYPT_MODE, fact.generateSecret(keySpec));
+            enc = c.doFinal(in.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Hard coded algorithm " + algorithm + " was not found.", e);
         } catch(NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle provider was not installed.", e);
         } catch (NoSuchPaddingException e) {
             throw new IllegalStateException("Padding for hard coded algorithm " + algorithm + " was not found.", e);
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Password-Based Encryption (PBE) failed.", e);
         }
-        final byte[] enc = c.doFinal(in.getBytes(StandardCharsets.UTF_8));
         // Create a return value which is "encryption_version:salt:count:encrypted_data"
         StringBuilder ret = new StringBuilder(64);
         final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
@@ -998,7 +1000,7 @@ public final class StringTools {
 
         String dispPoints = dPoints.trim();
 
-        final LinkedList<String> result = new LinkedList<String>();
+        final LinkedList<String> result = new LinkedList<>();
         for (int i = 0; i < dispPoints.length(); i++) {
             int nextQ = dispPoints.indexOf('"', i);
             if (nextQ == i) {
@@ -1243,6 +1245,19 @@ public final class StringTools {
             return null;
         }
         return Hex.toHexString(data);
+    }
+
+    /**
+     * Compares two values (for example strings) using compareTo. Null is considered to come before all other values.
+     */
+    public static <T extends Comparable<T>> int compare(final T a, final T b) {
+        if (a == null) {
+            return -1;
+        } else if (b == null) {
+            return 1;
+        } else {
+            return a.compareTo(b);
+        }
     }
 
 }

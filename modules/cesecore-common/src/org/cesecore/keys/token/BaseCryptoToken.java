@@ -27,6 +27,7 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -343,7 +344,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             if (encrypt) {
                 try {
                     authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin);
-                } catch (Exception e) {
+                } catch (InvalidKeySpecException e) {
                     log.error(intres.getLocalizedMessage("token.nopinencrypt"), e);
                     authcode = pin;
                 }
