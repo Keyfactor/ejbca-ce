@@ -13,9 +13,7 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import org.cesecore.CesecoreException;
-//import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
-
 
 
 /**
