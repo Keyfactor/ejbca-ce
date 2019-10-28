@@ -199,7 +199,7 @@ public class ConfigdumpSetting implements Serializable {
     private Map<ConfigdumpItem, String> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
-    private boolean exportExternalCas;
+    private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
