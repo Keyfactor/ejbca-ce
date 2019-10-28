@@ -187,7 +187,6 @@ public class ConfigdumpSetting implements Serializable {
     private Map<ItemType, List<ConfigdumpPattern>> excluded = new HashMap<>();
     private List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
-    private Set<String> overwriteExceptions = new HashSet<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
     private NonInteractiveMode nonInteractiveMode = NonInteractiveMode.NONE;
@@ -239,14 +238,6 @@ public class ConfigdumpSetting implements Serializable {
 
     public Map<ItemType, List<ConfigdumpPattern>> getExcluded() {
         return excluded;
-    }
-
-    public Set<String> getOverwriteExceptions() {
-        return overwriteExceptions;
-    }
-
-    public void setOverwriteExceptions(Set<String> overwriteExceptions) {
-        this.overwriteExceptions = overwriteExceptions;
     }
 
     public boolean getIgnoreErrors() {
