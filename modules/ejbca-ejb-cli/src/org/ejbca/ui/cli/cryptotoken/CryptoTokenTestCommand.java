@@ -37,7 +37,7 @@ public class CryptoTokenTestCommand extends BaseCryptoTokenCommand {
 
     {
         registerParameter(new Parameter(ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Alias of the keypair to remove."));
+                "Alias of the keypair to test."));
     }
 
     @Override
@@ -56,16 +56,17 @@ public class CryptoTokenTestCommand extends BaseCryptoTokenCommand {
             getLogger().info(e.getMessage());
             return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CryptoTokenOfflineException e) {
-            getLogger().info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
+            getLogger().info(
+                    "Crypto token is not active or the key you are looking for does not exist. You need to activate the crypto token before you can interact with its content.");
         } catch (Exception e) {
-            getLogger().info("Key pair test failed: " + e.getMessage());
+            getLogger().info("Keypair test failed: " + e.getMessage());
         }
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 
     @Override
     public String getCommandDescription() {
-        return "Test key pair";
+        return "Test keypair";
     }
 
     @Override
