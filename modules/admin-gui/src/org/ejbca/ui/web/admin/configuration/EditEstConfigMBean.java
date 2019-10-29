@@ -209,7 +209,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         String alias = estAliasGui.getName();
         EstConfiguration estConfiguration = getEjbcaWebBean().getEstConfigForEdit(alias);
         if (StringUtils.isEmpty(estAliasGui.getCaId())) {
-            estConfiguration.setDefaultCAID(alias, 0);
+            estConfiguration.setDefaultCAID(alias);
         } else {
             estConfiguration.setDefaultCAID(alias, Integer.valueOf(estAliasGui.getCaId()));
         }
