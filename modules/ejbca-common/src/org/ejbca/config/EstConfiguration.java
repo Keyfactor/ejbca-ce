@@ -156,6 +156,11 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, String.valueOf(defaultCAID), alias);
     }
 
+    public void setDefaultCAID(String alias) {
+        String key = alias + "." + CONFIG_DEFAULTCA;
+        setValue(key, DEFAULT_DEFAULTCA, alias);
+    }
+
     /**
      * @param alias the EST alias to get value from
      * @return Certificate Profile ID in String format, String format to be backwards compatible with EJBCA 6.11 when it was stored as CP Name instead of ID
