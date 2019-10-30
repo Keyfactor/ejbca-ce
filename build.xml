@@ -1537,7 +1537,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<ant dir="modules" target="statedump" />
     </target>
 	
-	<target name="configdump" depends="deprecated:check" description="Build EJBCA ConfigDump tool">
+	<target name="configdump" depends="deprecated:check" description="Build EJBCA Configdump tool">
 		<ant dir="modules" target="configdump" />
     </target>
 	
