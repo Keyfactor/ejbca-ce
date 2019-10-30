@@ -47,11 +47,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 @Local
 public interface CertificateCreateSessionLocal extends CertificateCreateSession {
 
-	/** Helper method to check if there is a unique issuerDN/serialNumber index in the database 
-	 * 
-	 * @return true if the index exists, false if not
-	 */
-	boolean isUniqueCertificateSerialNumberIndex();
 	
 	/** Creates the certificate. This is the same method as createCertificate(AuthenticationToken admin, EndEntityInformation userData, RequestMessage req, Class<? extends ResponseMessage> responseClass)
 	 * but also taking a CA as argument. the reason for this is that if we already have fetched the CA, going through access control etc there is no need to do the same thing again.

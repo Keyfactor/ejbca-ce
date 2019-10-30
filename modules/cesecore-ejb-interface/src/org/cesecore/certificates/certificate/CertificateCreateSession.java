@@ -39,6 +39,13 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  * @version $Id$
  */
 public interface CertificateCreateSession {
+    
+    /** Helper method to check if there is a unique issuerDN/serialNumber index in the database 
+     * 
+     * @return true if the index exists, false if not
+     */
+    boolean isUniqueCertificateSerialNumberIndex();
+
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
