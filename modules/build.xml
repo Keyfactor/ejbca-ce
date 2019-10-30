@@ -589,7 +589,7 @@
     </target>
 	
 	<target name="configdump" depends="ejbca-ejb-interface, ejbca-ejb-cli, plugins-ee, peerconnector, caa">
-		<fail message="ConfigDump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
+		<fail message="Configdump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
 		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
