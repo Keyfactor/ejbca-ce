@@ -1596,13 +1596,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(SUBJECTDNSUBSET, convertedList);
     }
 
-    // Method name alias for ConfigDump
+    // Method name alias for Configdump
     @SuppressWarnings("unchecked")
     public List<Integer> getSubjectDNSubSets() {
         return (List<Integer>) data.get(SUBJECTDNSUBSET);
     }
 
-    // Method name alias for ConfigDump
+    // Method name alias for Configdump
     public void setSubjectDNSubSets(final List<Integer> subjectDns) {
         final List<Integer> subjectDnIds = (subjectDns == null || subjectDns.isEmpty() ? new ArrayList<>() : subjectDns);
         data.put(SUBJECTDNSUBSET, subjectDnIds);
@@ -2192,22 +2192,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CVCACCESSRIGHTS, access);
     }
 
-    // Method name alias for ConfigDump
+    // Method name alias for Configdump
     public int getCVCAccessRightsIS() {
         return getCVCAccessRights();
     }
 
-    // Method name alias for ConfigDump
+    // Method name alias for Configdump
     public void setCVCAccessRightsIS(int access) {
         setCVCAccessRights(access);
     }
 
-    // Method name alias for ConfigDump
+    // Method name alias for Configdump
     public int getCVCAccessRightsST() {
         return getCVCAccessRights();
     }
 
-    // Method name alias for ConfigDump
+    // Method name alias for Configdump
     public void setCVCAccessRightsST(int access) {
         setCVCAccessRights(access);
     }
