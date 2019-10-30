@@ -29,9 +29,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
  * 
  * @version $Id$
  */
-public class ConfigDumpCommand extends ConfigBaseCommand {
+public class ConfigdumpCommand extends ConfigBaseCommand {
 
-    private static final Logger log = Logger.getLogger(ConfigDumpCommand.class);
+    private static final Logger log = Logger.getLogger(ConfigdumpCommand.class);
 
     @Override
     public String getMainCommand() {
