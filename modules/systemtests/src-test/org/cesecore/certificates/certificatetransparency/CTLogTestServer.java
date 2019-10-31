@@ -71,7 +71,7 @@ import org.cesecore.util.CertTools;
 /**
  * A mock CT Log server for use from {@link CTLogTest}
  * 
- * @version $Id: CTLogTestServer.java 27504 2017-12-09 16:58:47Z samuellb $
+ * @version $Id$
  */
 public class CTLogTestServer {
     
