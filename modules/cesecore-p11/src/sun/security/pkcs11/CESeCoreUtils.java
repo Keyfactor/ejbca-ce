@@ -118,7 +118,7 @@ public class CESeCoreUtils {
             }
             final P11Key sunP11Key = (P11Key)key;
             final Token token = sunP11Provider.getToken();
-            final long keyID = sunP11Key.keyID;
+            final long keyID = sunP11Key.getKeyID();
             final long sessionID = token.getObjSession().id();
             final PKCS11 p11 = token.p11;
             return new KeyData( keyID, sessionID, p11);
