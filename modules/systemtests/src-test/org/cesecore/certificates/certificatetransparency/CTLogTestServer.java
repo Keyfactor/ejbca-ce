@@ -69,7 +69,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /**
- * A mock CT Log server for use from {@link CTLogTest}
+ * A mock CT Log server for use from {@link CertificateTransparencyTest}
  * 
  * @version $Id$
  */
