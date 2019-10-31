@@ -149,7 +149,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
             if (new Date(0L).equals(publisherQueueData.getLastUpdate())) {
                 return "Never";
             } else {
-                return new SimpleDateFormat("dd MMMM yyyy hh:mm:ss").format(publisherQueueData.getLastUpdate());
+                return new SimpleDateFormat("dd MMMM yyyy HH:mm:ss").format(publisherQueueData.getLastUpdate());
             }
         }
 
