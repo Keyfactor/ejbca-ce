@@ -66,7 +66,7 @@ public class UploadFileCommand extends BaseEstConfigCommand {
             pc.setReloadingStrategy(new FileChangedReloadingStrategy());
             config = new CompositeConfiguration();
             config.addConfiguration(pc);
-            log.info("Reading CMP configuration from file: " + f.getAbsolutePath());
+            log.info("Reading EST configuration from file: " + f.getAbsolutePath());
         } catch (ConfigurationException e) {
             log.error("Failed to load configuration from file " + f.getAbsolutePath());
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -78,7 +78,7 @@ public class UploadFileCommand extends BaseEstConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Reads CMP configuration from a file.";
+        return "Reads EST configuration from a file.";
     }
 
     @Override
