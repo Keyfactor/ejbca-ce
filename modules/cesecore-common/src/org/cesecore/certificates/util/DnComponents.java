@@ -335,7 +335,7 @@ public class DnComponents {
             log.error("No dn id mapping from profile id " + profileId);
             // We allow it to fail here
         }
-        return val.intValue();
+        return val;
     }
 
     /**

@@ -303,8 +303,8 @@ public class CertificateProfileTest {
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
     	ArrayList<Integer> altnamesubset = new ArrayList<>();
-    	altnamesubset.add(Integer.valueOf(DNFieldExtractor.RFC822NAME));
-    	altnamesubset.add(Integer.valueOf(DNFieldExtractor.UPN));    	
+    	altnamesubset.add(DNFieldExtractor.RFC822NAME);
+    	altnamesubset.add(DNFieldExtractor.UPN);    	
     	profile.setSubjectAltNameSubSet(altnamesubset);
     	
     	String inaltname1 = "RFC822NAME=test@test.se,UPN=testacc@test.se,IPADDRESS=10.1.1.0";

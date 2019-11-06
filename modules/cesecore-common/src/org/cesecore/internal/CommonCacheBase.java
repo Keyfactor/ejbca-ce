@@ -94,7 +94,7 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             // Cache is disabled, caller should check db
             return true;
         }
-        final Integer key = Integer.valueOf(id);
+        final Integer key = id;
         final CacheEntry cacheEntry = cache.get(key);
         if (cacheEntry == null) {
             // No such object in cache, caller should check db
@@ -123,8 +123,7 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     @Override
     public boolean willUpdate(int id, int digest) {
         // Same version in cache as provided Object?
-        final Integer key = Integer.valueOf(id);
-        final CacheEntry cacheEntry = getCacheEntry(key);
+        final CacheEntry cacheEntry = getCacheEntry(id);
         if (cacheEntry == null || cacheEntry.digest != digest) {
             return true;
         } else {
@@ -137,7 +136,7 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     
     @Override
     public void updateWith(int id, int digest, String name, T object) {
-        final Integer key = Integer.valueOf(id);
+        final Integer key = id;
         if (name==null || object == null || getCacheTime()<0) {
             // Remove from cache
             setCacheEntry(key, null);
