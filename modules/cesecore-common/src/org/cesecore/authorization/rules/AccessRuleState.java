@@ -45,8 +45,8 @@ public enum AccessRuleState {
     
     private String name;
     private int databaseValue;
-    private static Map<Integer, AccessRuleState> databaseValueToRuleMap = new HashMap<Integer, AccessRuleState>();
-    private static Map<String, AccessRuleState> nameToRuleMap = new HashMap<String, AccessRuleState>();
+    private static Map<Integer, AccessRuleState> databaseValueToRuleMap = new HashMap<>();
+    private static Map<String, AccessRuleState> nameToRuleMap = new HashMap<>();
     
     static {
         for(AccessRuleState state : AccessRuleState.values()) {

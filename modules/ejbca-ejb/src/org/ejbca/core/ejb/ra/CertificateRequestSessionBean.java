@@ -143,9 +143,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         } catch (NoSuchAlgorithmException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
-        } catch (InvalidKeySpecException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
         } catch (NoSuchProviderException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
@@ -262,7 +259,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @throws CertificateExtensionException if the request message contained invalid extensions
      */
     private byte[] getCertResponseFromPublicKey(AuthenticationToken admin, RequestMessage msg, int responseType,
-            EndEntityInformation userData) throws EjbcaException, CesecoreException, CertificateEncodingException, CertificateException, IOException,
+            EndEntityInformation userData) throws EjbcaException, CesecoreException, CertificateEncodingException, CertificateException,
             AuthorizationDeniedException, CertificateExtensionException {
         byte[] retval = null;
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;

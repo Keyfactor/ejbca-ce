@@ -62,27 +62,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     /** Internal localization of logs and errors */
 
     // protected fields.
-    protected static final String SUBJECTDN = "subjectdn";
-    protected static final String CAID = "caid";
-    public static final String NAME = "name";
-    protected static final String CERTIFICATECHAIN = "certificatechain";
-    protected static final String RENEWEDCERTIFICATECHAIN = "renewedcertificatechain";
-    protected static final String ROLLOVERCERTIFICATECHAIN = "rollovercertificatechain";
-    public static final String CATOKENDATA = "catoken";
-
-    protected static final String CERTIFICATEPROFILEID = "certificateprofileid";
-    protected static final String DEFAULTCERTIFICATEPROFILEID = "defaultcertificateprofileid";
-
-    protected static final String CRLISSUEINTERVAL = "crlIssueInterval";
-    protected static final String CRLOVERLAPTIME = "crlOverlapTime";
-    protected static final String CRLPUBLISHERS = "crlpublishers";
-    protected static final String VALIDATORS = "keyvalidators";
     private static final String FINISHUSER = "finishuser";
-    protected static final String REQUESTCERTCHAIN = "requestcertchain";
-    protected static final String EXTENDEDCASERVICES = "extendedcaservices";
-    protected static final String EXTENDEDCASERVICE = "extendedcaservice";
-    protected static final String USENOCONFLICTCERTIFICATEDATA = "usenoconflictcertificatedata";
-    protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
 
     /**
      * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
@@ -95,18 +75,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
     private static final String KEEPEXPIREDCERTSONCRL = "keepExpiredCertsOnCRL";
-    
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
-    protected static final String APPROVALSETTINGS = "approvalsettings";
-    /**
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Deprecated
-    protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
 
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String USE_USER_STORAGE = "useUserStorage";
@@ -157,8 +125,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     /** Constructor used when retrieving existing CA from database. */
     @Override
-    public void init(HashMap<Object, Object> data) {
-        super.init(data);
+    public void init(HashMap<Object, Object> loadedData) {
+        super.init(loadedData);
     }
 
     @Override

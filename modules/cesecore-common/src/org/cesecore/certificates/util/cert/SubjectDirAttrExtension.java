@@ -140,7 +140,7 @@ public class SubjectDirAttrExtension extends CertTools {
      * @see #getSubjectDirectoryAttributes(Certificate)
      */
     public static Collection<Attribute> getSubjectDirectoryAttributes(String dirAttr) {
-    	ArrayList<Attribute> ret = new ArrayList<Attribute>();
+    	ArrayList<Attribute> ret = new ArrayList<>();
     	Attribute attr = null;
         String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
         if (!StringUtils.isEmpty(value)) {

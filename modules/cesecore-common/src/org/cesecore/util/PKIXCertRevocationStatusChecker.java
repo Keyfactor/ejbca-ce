@@ -137,10 +137,10 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
     @Override
     public Set<String> getSupportedExtensions() {
-        ArrayList<String> exts = new ArrayList<String>();
+        ArrayList<String> exts = new ArrayList<>();
         exts.add(Extension.cRLDistributionPoints.getId());
         exts.add(Extension.authorityInfoAccess.getId());
-        return new HashSet<String>(exts);
+        return new HashSet<>(exts);
     }
     
     /**
@@ -327,10 +327,10 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         try {
             final URL url = new URL(uri);
             final URLConnection con = url.openConnection();
-            final InputStream is = con.getInputStream();
-            final CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            crl = cf.generateCRL(is);
-            is.close();
+            try (final InputStream is = con.getInputStream()) {
+                final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                crl = cf.generateCRL(is);
+            }
             log.info("Downloaded CRL from " + url);
         } catch (MalformedURLException e) {
             if (log.isDebugEnabled()) {
@@ -389,25 +389,25 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
             // POST it
             con.setRequestProperty("Content-Type", "application/ocsp-request");
-            OutputStream os = con.getOutputStream();
-            os.write(ocspRequest.getEncoded());
-            os.close();
+            try (final OutputStream os = con.getOutputStream()) {
+                os.write(ocspRequest.getEncoded());
+            }
         
         
-            final int httpRespCode = ((HttpURLConnection)con).getResponseCode();
+            final int httpRespCode = con.getResponseCode();
             if (httpRespCode != expectedHttpRespCode) {
                 log.info("HTTP response from OCSP request was " + httpRespCode + ". Expected " + expectedHttpRespCode );
                 handleContentOfErrorStream(con.getErrorStream());
                 return null; // if it is an http error code we don't need to test any more
             }
 
-            InputStream is = con.getInputStream();
-            response = new OCSPResp(IOUtils.toByteArray(is));
-            is.close();
+            try (final InputStream is = con.getInputStream()) {
+                response = new OCSPResp(IOUtils.toByteArray(is));
+            }
         
         } catch(IOException e) {
             log.info("Unable to get an OCSP response. " + e.getLocalizedMessage());
-            if(con != null) {
+            if (con != null) {
                 handleContentOfErrorStream(con.getErrorStream());
             }
             return null;
@@ -459,9 +459,10 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         }
         
         try {
-            ASN1InputStream ain = new ASN1InputStream(noncerep);
-            ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
-            ain.close();
+            final ASN1OctetString oct;
+            try (final ASN1InputStream ain = new ASN1InputStream(noncerep)) {
+                oct = ASN1OctetString.getInstance(ain.readObject());
+            }
             if(!Arrays.equals(nonce, oct.getOctets())) {
                 log.warn("The nonce in the OCSP request and the OCSP response do not match");
                 return null;
@@ -502,21 +503,21 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
     private void handleContentOfErrorStream(final InputStream httpErrorStream) {
         if (httpErrorStream != null) {
             try {
-                OutputStream os = new NullOutputStream();
-                IOUtils.copy(httpErrorStream, os);
-                httpErrorStream.close();
-                os.close();
+                try (final OutputStream os = new NullOutputStream()) {
+                    IOUtils.copy(httpErrorStream, os);
+                    httpErrorStream.close();
+                }
             } catch(IOException ex) {}
         }
     }
     
     private ArrayList<String> getOcspUrls(Certificate cert) {
-        ArrayList<String> urls = new ArrayList<String>();
+        ArrayList<String> urls = new ArrayList<>();
         if(StringUtils.isNotEmpty(this.ocspUrl)) {
             urls.add(this.ocspUrl);
         }
         
-        urls.addAll(CertTools.getAuthorityInformationAccessOcspUrls((X509Certificate)cert));
+        urls.addAll(CertTools.getAuthorityInformationAccessOcspUrls(cert));
         
         return urls;
     }

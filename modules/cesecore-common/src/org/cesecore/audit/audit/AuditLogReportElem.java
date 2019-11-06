@@ -27,7 +27,7 @@ public class AuditLogReportElem implements Serializable {
     
     private Long first;
     private Long second;
-    private final List<String> reasons = new ArrayList<String>();
+    private final List<String> reasons = new ArrayList<>();
     
     public AuditLogReportElem() {
     }

@@ -21,7 +21,6 @@ import static org.junit.Assume.assumeTrue;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ public class SernoGeneratorTest {
 
     /** Test min and max values for different serial number sizes. */
     @Test
-    public void testSernoValidationChecker() throws NoSuchAlgorithmException {
+    public void testSernoValidationChecker() {
         // Default serno size 20 bytes (160 bits)
         SernoGeneratorRandom gen = new SernoGeneratorRandom(20);
         BigInteger lowest = new BigInteger("0080000000000000000000000000000000000000", 16);
@@ -185,7 +184,7 @@ public class SernoGeneratorTest {
         // this will actually create a default RNG first (depending on configuration in cesecore.properties), which will be changed by setAlgorithm below
         SernoGenerator gen = SernoGeneratorRandom.instance(nrOctets);
         gen.setAlgorithm(algorithm);
-        HashMap<String, String> map = new HashMap<String, String>(100000);
+        HashMap<String, String> map = new HashMap<>(100000);
         String hex = null;
 
         int duplicates = 0;
@@ -261,6 +260,7 @@ public class SernoGeneratorTest {
         public SernoTester(int noOctets) {
             this.noOctets = noOctets;
         }
+        @Override
         public void run() {
             for (int i=0; i<100000;i++) {
                 SernoGenerator gen = SernoGeneratorRandom.instance(noOctets);
@@ -276,6 +276,7 @@ public class SernoGeneratorTest {
         }
     }
     private static class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
+        @Override
         public void uncaughtException(Thread t, Throwable e) { // NOPMD, this is not a JEE app, only a test
             SernoGeneratorTest.threadException = e;
         }

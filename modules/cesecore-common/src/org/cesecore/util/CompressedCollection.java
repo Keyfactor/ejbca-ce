@@ -51,7 +51,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
     private ObjectOutputStream oos = null;
     private byte[] compressedData = null;
     private int size = 0;
-    private final List<ObjectInputStream> oiss = new ArrayList<ObjectInputStream>();
+    private final List<ObjectInputStream> oiss = new ArrayList<>();
 
     public CompressedCollection() {
         clear();

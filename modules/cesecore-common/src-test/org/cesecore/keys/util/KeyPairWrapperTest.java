@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
-import java.security.spec.InvalidKeySpecException;
 
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.CryptoProviderTools;
@@ -35,7 +34,7 @@ public class KeyPairWrapperTest {
     }
         
     @Test
-    public void testGetKeyPair() throws InvalidAlgorithmParameterException, InvalidKeySpecException {
+    public void testGetKeyPair() throws InvalidAlgorithmParameterException {
         KeyPair testKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         KeyPairWrapper testWrapper = new KeyPairWrapper(testKeys);
         assertEquals("Decoded public key was not identical to encoded.", testKeys.getPublic(), testWrapper.getKeyPair().getPublic());

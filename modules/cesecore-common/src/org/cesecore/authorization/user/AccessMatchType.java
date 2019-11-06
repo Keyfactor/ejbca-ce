@@ -50,14 +50,23 @@ public enum AccessMatchType {
         this.numericValue = numericValue;
     }
 
+    /** Returns the database value for this match type */
     public int getNumericValue() {
         return numericValue;
     }
 
+    /**
+     * Looks up the correct AccessMatchType enum value from the given database value.
+     * @return Matching AccessMatchType or null
+     */
     public static AccessMatchType matchFromDatabase(int numericValue) {
         return databaseLookup.get(numericValue);
     }
-    
+
+    /**
+     * Looks up the correct AccessMatchType for the given name (enum identifier).
+     * @return Matching AccessMatchType or null
+     */
     public static AccessMatchType matchFromName(String name) {
         return nameLookup.get(name);
     }
@@ -67,8 +76,8 @@ public enum AccessMatchType {
     private static Map<String, AccessMatchType> nameLookup;
 
     static {
-        databaseLookup = new HashMap<Integer, AccessMatchType>();
-        nameLookup = new HashMap<String, AccessMatchType>();
+        databaseLookup = new HashMap<>();
+        nameLookup = new HashMap<>();
         for (AccessMatchType accessMatchType : AccessMatchType.values()) {
             databaseLookup.put(accessMatchType.numericValue, accessMatchType);
             nameLookup.put(accessMatchType.name(), accessMatchType);

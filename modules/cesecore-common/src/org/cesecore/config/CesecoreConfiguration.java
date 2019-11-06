@@ -450,7 +450,7 @@ public final class CesecoreConfiguration {
      *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
      */
     public static String[] getAvailableCipherSuites() {
-        final List<String> availableCipherSuites = new ArrayList<String>();
+        final List<String> availableCipherSuites = new ArrayList<>();
         for (int i=0; i<255; i++) {
             final String key = "authkeybind.ciphersuite." + i;
             final String value = ConfigurationHolder.getString(key);

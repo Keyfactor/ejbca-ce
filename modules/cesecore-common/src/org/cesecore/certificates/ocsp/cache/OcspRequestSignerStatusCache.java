@@ -38,7 +38,7 @@ public enum OcspRequestSignerStatusCache {
         }
     }
 
-    private final Map<String, OcspSignerStatus> cache = new ConcurrentHashMap<String, OcspSignerStatus>();
+    private final Map<String, OcspSignerStatus> cache = new ConcurrentHashMap<>();
 
     /**
      * Create a cache lookup key with very low probability of collision.

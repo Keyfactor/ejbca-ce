@@ -29,9 +29,9 @@ import java.util.Map;
  */
 public class InternalKeyBindingPropertyValidationWrapper {
 
-    private Map<String, Class<?>> invalidValues = new HashMap<String, Class<?>>();
-    private List<String> unknownProperties = new ArrayList<String>();
-    private Map<String, Serializable> propertiesCopy = new LinkedHashMap<String, Serializable>();
+    private Map<String, Class<?>> invalidValues = new HashMap<>();
+    private List<String> unknownProperties = new ArrayList<>();
+    private Map<String, Serializable> propertiesCopy = new LinkedHashMap<>();
 
     public boolean arePropertiesValid() {
         return invalidValues.isEmpty() && unknownProperties.isEmpty();

@@ -324,7 +324,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         //DEROctetString ostr = (DEROctetString)obj;
 
         // Create a delta CRL
-        revcerts = new ArrayList<RevokedCertInfo>();
+        revcerts = new ArrayList<>();
         crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
@@ -461,7 +461,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNull(ca.getExtendedCAServiceInfo(1));
 
         CAInfo info = ca.getCAInfo();
-        Collection<ExtendedCAServiceInfo> infos = new ArrayList<ExtendedCAServiceInfo>();
+        Collection<ExtendedCAServiceInfo> infos = new ArrayList<>();
         infos.add(new MyExtendedCAServiceInfo(0));
         info.setExtendedCAServiceInfos(infos);
         ca.updateCA(cryptoToken, info, cceConfig);
@@ -923,7 +923,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     e.getMessage());
         } 
         try {
-            Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+            Collection<RevokedCertInfo> revcerts = new ArrayList<>();
             x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
             fail("should not work to issue this CRL");
         } catch (SignatureException e) {
@@ -941,12 +941,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         PrivateKey privateKey = cryptoToken.getPrivateKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         X509Certificate cacert = CertTools.genSelfCert(CADN, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true);
         assertNotNull(cacert);
-        List<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
         x509ca.setCertificateChain(cachain);
         usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertNotNull(usercert);
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+        Collection<RevokedCertInfo> revcerts = new ArrayList<>();
         X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
         assertNotNull(crl);
     }
@@ -1010,16 +1010,16 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     @Test
     public void testAuthorityInformationAccessCertificateExtension() throws Exception {
         // test data for CA - level
-        final List<String> caIssuerUris = new ArrayList<String>();
+        final List<String> caIssuerUris = new ArrayList<>();
         caIssuerUris.add( "http://ca-defined.ca.issuer.uri1.sw");
         caIssuerUris.add( "http://ca-defined.ca.issuer.uri2.sw");
-        final List<String> ocspUrls = new ArrayList<String>();
+        final List<String> ocspUrls = new ArrayList<>();
         ocspUrls.add("http://ca-defined.ocsp.service.locator.url.sw");
         // test data for certificate profile - level
-        final List<String> cpCaIssuerUris = new ArrayList<String>();
+        final List<String> cpCaIssuerUris = new ArrayList<>();
         cpCaIssuerUris.add( "http://certificate-profile.ca.issuer.uri1.sw");
         cpCaIssuerUris.add( "http://certificate-profile.ca.issuer.uri2.sw");
-        final List<String> cpOcspUrls = new ArrayList<String>();
+        final List<String> cpOcspUrls = new ArrayList<>();
         cpOcspUrls.add("http://certificate-profile.ocsp.service.locator.url.sw");
         // set up test CA, end entity and certificate profile
         final CryptoToken cryptoToken = getNewCryptoToken();
@@ -1135,7 +1135,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     public void testCustomCertificateExtension() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         X509CA testCa = createTestCA(cryptoToken, "CN=foo");
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+        Collection<RevokedCertInfo> revcerts = new ArrayList<>();
         X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
@@ -1173,7 +1173,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(cceConfig.getCustomCertificateExtension(2).getOID(), "1.2.3.4");
         assertEquals(cceConfig.getCustomCertificateExtension(3).getOID(), "1.2.3.5");
         // Configure to use the custom extensions in the certificate profile
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(2);
         list.add(3);
@@ -1367,7 +1367,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         String desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SERIALNUMBER=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
         assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
         // Now set a DN order where the EV fields (and serialnumber and businesscategory) comes before C and in other aspects are x500 order
-        final ArrayList<String> order = new ArrayList<String>(Arrays.asList("jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality","businesscategory","serialnumber","c","dc","st","l","o","ou","t","surname","initials","givenname","gn","sn","name","cn","uid","dn","email","e","emailaddress","unstructuredname","unstructuredaddress","postalcode","postaladdress","telephonenumber","pseudonym","street"));
+        final ArrayList<String> order = new ArrayList<>(Arrays.asList("jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality","businesscategory","serialnumber","c","dc","st","l","o","ou","t","surname","initials","givenname","gn","sn","name","cn","uid","dn","email","e","emailaddress","unstructuredname","unstructuredaddress","postalcode","postaladdress","telephonenumber","pseudonym","street"));
         certProfile.setCustomDnOrder(order);
         certProfile.setUseCustomDnOrder(true);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);

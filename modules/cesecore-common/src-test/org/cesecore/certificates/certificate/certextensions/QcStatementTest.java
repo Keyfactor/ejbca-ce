@@ -97,7 +97,7 @@ public class QcStatementTest {
         assertEquals("[http://qcs.localhost/QcPDS, en]", QCStatementExtension.getStatementStringValue(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId(), 0));
 
         // Add PSD2 attributes
-        ArrayList<PSD2RoleOfPSPStatement> roles = new ArrayList<PSD2RoleOfPSPStatement>();
+        ArrayList<PSD2RoleOfPSPStatement> roles = new ArrayList<>();
         roles.add(new PSD2RoleOfPSPStatement(QcStatement.id_etsi_psd2_role_psp_as, "PSP_AS"));
         roles.add(new PSD2RoleOfPSPStatement(QcStatement.id_etsi_psd2_role_psp_ic, "PSP_IC"));
         // THe PSD2 attributes are subject specific, so kept in ExtendedInformation
