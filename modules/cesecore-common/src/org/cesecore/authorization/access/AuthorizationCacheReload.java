@@ -21,7 +21,7 @@ import java.io.Serializable;
  * {@link org.cesecore.authorization.cache.AccessTreeUpdateSessionBean#signalForAccessTreeUpdate()})
  * 
  * Currently we can't use JEE events, because it requires that we use CDI.
- * Instead the method {@link org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal.addReloadEvent(AuthorizationCacheReloadListener)} can be used
+ * Instead the method {@link org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal#addReloadEvent(AuthorizationCacheReloadListener)} can be used
  * 
  * @version $Id$
  */

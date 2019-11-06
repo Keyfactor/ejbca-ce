@@ -823,7 +823,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             return EJBTools.wrapCertCollection(result);
         } catch ( NoSuchEndEntityException | ParseException | ConstructionException | NoSuchFieldException
                 | InvalidKeyException | CertificateException // | CertificateEncodingException
-                | CertificateExtensionException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
+                | CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
                 | IOException e) {
             ejbcaWSHelperSession.resetUserPasswordAndStatus(authenticationToken, username, oldUserStatus);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
@@ -908,7 +908,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final String username, final String password, final String req,
             final int reqType, final String responseType)
             throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
-            InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+            InvalidKeyException, SignatureException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
             IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException {
         byte[] result = null;
         // Check user exists.

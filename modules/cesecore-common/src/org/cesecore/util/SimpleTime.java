@@ -52,7 +52,7 @@ public class SimpleTime {
     public static final List<String> AVAILABLE_PRECISIONS = Arrays.asList( new String[] { 
             PRECISION_MILLISECONDS, PRECISION_SECONDS, PRECISION_DAYS });
 	    
-	private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<String, Long>();
+	private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<>();
 	static {
 	    MILLISECONDS_FACTOR.put(TYPE_YEARS, MILLISECONDS_PER_YEAR);
 	    MILLISECONDS_FACTOR.put(TYPE_MONTHS, MILLISECONDS_PER_MONTH);
@@ -249,6 +249,7 @@ public class SimpleTime {
      * Get nicely formatted form of this object using seconds as default type.
      * @return time in the format AdBhCmDsEu meaning A days, B hours, C minutes, D seconds and E milliseconds or "0s" if time is 0.
      */
+	@Override
     public String toString() {
         return toString(TYPE_SECONDS);
     }

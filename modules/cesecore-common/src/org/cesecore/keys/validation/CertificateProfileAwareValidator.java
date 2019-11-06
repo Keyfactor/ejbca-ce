@@ -37,7 +37,7 @@ public interface CertificateProfileAwareValidator extends Profile {
     /** 
      * Sets if validation should be performed for all certificate profile ids.
      * 
-     * @param isAll, true if validation should be done for all certificate profiles.
+     * @param isAll true if validation should be done for all certificate profiles.
      */
     void setAllCertificateProfileIds(boolean isAll);
 

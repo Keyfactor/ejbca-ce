@@ -85,9 +85,9 @@ public class SimpleRequestMessage implements RequestMessage {
     private Date validityNotBefore = null;
     private Date validityNotAfter = null;
 
-    private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
+    private List<Certificate> additionalCaCertificates = new ArrayList<>();
 
-    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
+    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
     
     /**
      * Constructs a new Simple message handler object.

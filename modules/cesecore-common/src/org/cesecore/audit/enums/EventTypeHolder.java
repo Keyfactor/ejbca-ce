@@ -14,11 +14,8 @@
 package org.cesecore.audit.enums;
 
 /**
- * 
  * @version $Id$
- *
  */
-
 public class EventTypeHolder implements EventType {
     private static final long serialVersionUID = 1955829966673283680L;
 
@@ -34,11 +31,11 @@ public class EventTypeHolder implements EventType {
     }
 
     @Override
-    public boolean equals(EventType value) {
-        if(value == null) {
+    public boolean equals(EventType otherValue) {
+        if (otherValue == null) {
             return false;
         }
-        return this.value.equals(value.toString());
+        return value.equals(otherValue.toString());
     }
 
 }

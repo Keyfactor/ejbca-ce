@@ -199,9 +199,9 @@ public class KeyToolsTest {
         assertTrue(KeyTools.isPrivateKeyExtractable(keys.getPrivate()));
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(out);
-        KeyTools.printPublicKeyInfo(keys.getPublic(), ps);
-        ps.close();
+        try (PrintStream ps = new PrintStream(out)) {
+            KeyTools.printPublicKeyInfo(keys.getPublic(), ps);
+        }
         String str = out.toString();
         assertTrue(str.contains("RSA key"));
     }
@@ -287,9 +287,9 @@ public class KeyToolsTest {
         assertTrue(KeyTools.isPrivateKeyExtractable(keys.getPrivate()));
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(out);
-        KeyTools.printPublicKeyInfo(keys.getPublic(), ps);
-        ps.close();
+        try (PrintStream ps = new PrintStream(out)) {
+            KeyTools.printPublicKeyInfo(keys.getPublic(), ps);
+        }
         String str = out.toString();
         assertTrue(str.contains("Elliptic curve key"));
     }
@@ -374,9 +374,9 @@ public class KeyToolsTest {
         assertTrue(KeyTools.isPrivateKeyExtractable(keys.getPrivate()));
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(out);
-        KeyTools.printPublicKeyInfo(keys.getPublic(), ps);
-        ps.close();
+        try (PrintStream ps = new PrintStream(out)) {
+            KeyTools.printPublicKeyInfo(keys.getPublic(), ps);
+        }
         String str = out.toString();
         assertTrue(str.contains("DSA key"));
     }

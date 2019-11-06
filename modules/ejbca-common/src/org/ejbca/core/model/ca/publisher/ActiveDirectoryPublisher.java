@@ -13,7 +13,6 @@
  
 package org.ejbca.core.model.ca.publisher;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
@@ -147,10 +146,11 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      * @param extra if we should add extra attributes except the objectclass to the attributeset.
      * @param pserson true if this is a person-entry, false if it is a CA.
      * @param password to set for the user, if null no password is set.
-     * @param extendedinformation, for future use...
+     * @param extendedinformation for future use...
      *
      * @return LDAPAtributeSet created...
      */
+    @Override
     protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person, 
     		                                   String password, ExtendedInformation extendedinformation) {
     	log.debug("ADPublisher : getAttributeSet");
@@ -164,9 +164,8 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
         if(cert!= null && cert instanceof X509Certificate){
           String upn = null;
 		try {
-			upn = CertTools.getUPNAltName((X509Certificate) cert);
+			upn = CertTools.getUPNAltName(cert);
 		} catch (CertificateParsingException e) {}
-		  catch (IOException e) {}
 		String samaccountname = upn;
 		if(upn != null && upn.indexOf('@') != -1){
 		  // only use name part of UPN.
@@ -245,6 +244,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 	/** 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
+    @Override
 	public Object clone() throws CloneNotSupportedException {
 		ActiveDirectoryPublisher clone = new ActiveDirectoryPublisher();
 		@SuppressWarnings("unchecked")
@@ -263,6 +263,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 	/* *
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#getLatestVersion()
 	 */
+	@Override
 	public float getLatestVersion() {		
 		return LATEST_VERSION;
 	}
