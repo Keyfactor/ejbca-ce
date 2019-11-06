@@ -327,7 +327,7 @@ public class CAToken extends UpgradeableDataHashMap {
     public int getKeySequenceFormat() {
         Object seqF = data.get(SEQUENCE_FORMAT);
         if (seqF == null) {
-            seqF = Integer.valueOf(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            seqF = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
         }
         return (Integer) seqF;
     }

@@ -83,7 +83,7 @@ public class SignWithWorkingAlgorithm {
             final List<String> availableSignAlgorithms,
             final Provider provider,
             final ISignOperation operation) throws TaskWithSigningException {
-        final Integer mapKey = Integer.valueOf(availableSignAlgorithms.hashCode()^provider.hashCode());
+        final Integer mapKey = availableSignAlgorithms.hashCode()^provider.hashCode();
         final SignWithWorkingAlgorithm instance;
         synchronized (instanceMap) {
             final SignWithWorkingAlgorithm waitInstance = instanceMap.get(mapKey);
@@ -98,11 +98,11 @@ public class SignWithWorkingAlgorithm {
     }
 
     private SignWithWorkingAlgorithm(
-            final Provider _provider,
-            final List<String> _availableSignAlgorithms) {
-        this.provider = _provider;
+            final Provider provider,
+            final List<String> availableSignAlgorithms) {
+        this.provider = provider;
         this.lock = new ReentrantLock();
-        this.availableSignAlgorithms = _availableSignAlgorithms;
+        this.availableSignAlgorithms = availableSignAlgorithms;
     }
 
     private boolean tryOutWorkingAlgorithm(final ISignOperation operation) throws TaskWithSigningException {

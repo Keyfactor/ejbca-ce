@@ -92,7 +92,7 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
 
     @Override
     public int getNotBeforeCondition() {
-        return ((Integer) data.get(NOT_BEFORE_CONDITION)).intValue();
+        return (int) data.get(NOT_BEFORE_CONDITION);
     }
 
     @Override
@@ -117,7 +117,7 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
 
     @Override
     public int getNotAfterCondition() {
-        return ((Integer) data.get(NOT_AFTER_CONDITION)).intValue();
+        return (int) data.get(NOT_AFTER_CONDITION);
     }
 
     

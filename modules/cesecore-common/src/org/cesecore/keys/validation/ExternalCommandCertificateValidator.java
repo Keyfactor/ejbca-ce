@@ -293,7 +293,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @param state true if enabled.
      */
     public void setLogStandardOut(final boolean state) {
-        data.put(LOG_STANDARD_OUT, Boolean.valueOf(state));
+        data.put(LOG_STANDARD_OUT, state);
     }
 
     /**
@@ -301,7 +301,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return true if enabled.
      */
     public boolean isLogStandardOut() {
-        return ((Boolean) data.get(LOG_STANDARD_OUT)).booleanValue();
+        return (boolean) data.get(LOG_STANDARD_OUT);
     }
 
     /**
@@ -309,7 +309,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @param state true if enabled.
      */
     public void setLogErrorOut(final boolean state) {
-        data.put(LOG_ERROR_OUT, Boolean.valueOf(state));
+        data.put(LOG_ERROR_OUT, state);
     }
 
     /**
@@ -317,7 +317,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return true if enabled.
      */
     public boolean isLogErrorOut() {
-        return ((Boolean) data.get(LOG_ERROR_OUT)).booleanValue();
+        return (boolean) data.get(LOG_ERROR_OUT);
     }
 
     /**
@@ -325,7 +325,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @param state true if enabled.
      */
     public void setFailOnErrorCode(final boolean state) {
-        data.put(FAIL_ON_ERROR_CODE, Boolean.valueOf(state));
+        data.put(FAIL_ON_ERROR_CODE, state);
     }
 
     /**
@@ -333,7 +333,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return true if enabled.
      */
     public boolean isFailOnErrorCode() {
-        return ((Boolean) data.get(FAIL_ON_ERROR_CODE)).booleanValue();
+        return (boolean) data.get(FAIL_ON_ERROR_CODE);
     }
 
     /**
@@ -341,7 +341,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @param state true if enabled.
      */
     public void setFailOnStandardError(final boolean state) {
-        data.put(FAIL_ON_STANDARD_ERROR, Boolean.valueOf(state));
+        data.put(FAIL_ON_STANDARD_ERROR, state);
     }
 
     /**
@@ -349,7 +349,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return true if enabled.
      */
     public boolean isFailOnStandardError() {
-        return ((Boolean) data.get(FAIL_ON_STANDARD_ERROR)).booleanValue();
+        return (boolean) data.get(FAIL_ON_STANDARD_ERROR);
     }
 
     /**

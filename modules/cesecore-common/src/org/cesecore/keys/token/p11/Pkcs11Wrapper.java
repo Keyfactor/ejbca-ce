@@ -134,10 +134,10 @@ public class Pkcs11Wrapper {
             log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
-        this.labelMap = new HashMap<>();
-        this.slotList = C_GetSlotList();
-        for( long id : this.slotList) {
-            this.labelMap.put(Long.valueOf(id), getTokenLabelLocal(id));
+        labelMap = new HashMap<>();
+        slotList = C_GetSlotList();
+        for (long id : this.slotList) {
+            labelMap.put(id, getTokenLabelLocal(id));
         }
     }
 
