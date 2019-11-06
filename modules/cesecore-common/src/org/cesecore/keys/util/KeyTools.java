@@ -1284,12 +1284,12 @@ public final class KeyTools {
             // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
             // will ever use that to we will allow it.
             if ((len > 0) && (len < 224)) {
-                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", Integer.valueOf(len));
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", len);
                 throw new InvalidKeyException(msg);
             }                            
         } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(keyAlg) || AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlg)) {
             if (len < 1024) {
-                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", Integer.valueOf(len));
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", len);
                 throw new InvalidKeyException(msg);
             }
         }

@@ -109,7 +109,7 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
 
     @Override
     public int getNotBeforeCondition() {
-        return ((Integer) data.get(NOT_BEFORE_CONDITION)).intValue();
+        return (int) data.get(NOT_BEFORE_CONDITION);
     }
 
     @Override
@@ -134,7 +134,7 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
 
     @Override
     public int getNotAfterCondition() {
-        return ((Integer) data.get(NOT_AFTER_CONDITION)).intValue();
+        return (int) data.get(NOT_AFTER_CONDITION);
     }
 
     @Override
