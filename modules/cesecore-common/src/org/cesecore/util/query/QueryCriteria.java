@@ -35,7 +35,7 @@ import java.util.List;
 public final class QueryCriteria implements Serializable {
     
     private static final long serialVersionUID = 1823996498624633259L;
-    private List<Elem> elements = new ArrayList<Elem>();
+    private List<Elem> elements = new ArrayList<>();
 
 
     private QueryCriteria() {

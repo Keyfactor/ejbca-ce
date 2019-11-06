@@ -37,6 +37,7 @@ public class PropertiesWithHiddenPIN extends Properties {
         super(defaults);
     }
 
+    @Override
     public synchronized String toString() {
         int max = size() - 1;
         if (max == -1) {
@@ -48,7 +49,7 @@ public class PropertiesWithHiddenPIN extends Properties {
 
         sb.append('{');
         for (int i = 0;; i++) {
-            final Map.Entry<Object, Object> e = (Map.Entry<Object, Object>) it.next();
+            final Map.Entry<Object, Object> e = it.next();
             final String key = (String) e.getKey();
             final String readValue = (String) e.getValue();
             final String value = readValue != null && readValue.length() > 0 && key.trim().equalsIgnoreCase(CryptoToken.AUTOACTIVATE_PIN_PROPERTY) ? "xxxx"

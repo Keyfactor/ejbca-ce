@@ -208,7 +208,6 @@ public final class ConfigurationHolder {
      */
     public static Properties getAsProperties() {
         final Properties properties = new Properties();
-        @SuppressWarnings("unchecked")
         final Iterator<String> i = instance().getKeys();
         while (i.hasNext()) {
             final String key = i.next();
@@ -321,7 +320,7 @@ public final class ConfigurationHolder {
      * unique names (the NAME part only) in sorted order.
      */
     public static List<String> getPrefixedPropertyNames(String prefix) {
-        Set<String> algs = new HashSet<String>();
+        Set<String> algs = new HashSet<>();
         // Just get the keys from configuration that starts with prefix, we assume below that it has a . following the prefix
         Iterator<String> iterator = config.getKeys(prefix);
         while (iterator.hasNext()) {
@@ -329,7 +328,7 @@ public final class ConfigurationHolder {
             final int dot = key.indexOf(".", prefix.length()+1); // +1 to skip the . directly following prefix
             algs.add(key.substring(prefix.length()+1, dot));
         }
-        ArrayList<String> list = new ArrayList<String>(algs);
+        ArrayList<String> list = new ArrayList<>(algs);
         Collections.sort(list);
         return list;
     }

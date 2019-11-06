@@ -51,13 +51,12 @@ public abstract class QueryResultWrapper {
      * @return single result or defaultValue
      */
     public static <T> T getSingleResult(final Query query, final T defaultValue) {
-        @SuppressWarnings("unchecked")
         final List<T> resultList = query.getResultList();
         switch (resultList.size()) {
         case 0:
             return defaultValue;
         case 1:
-            final T value = (T) resultList.get(0);
+            final T value = resultList.get(0);
             if (value == null) {
                 return defaultValue;
             } else {
@@ -70,7 +69,6 @@ public abstract class QueryResultWrapper {
 
     /** @return the first result of the query or null */
     public static <T> T getLastResult(final Query query) {
-        @SuppressWarnings("unchecked")
         final List<T> resultList = query.getResultList();
         switch (resultList.size()) {
         case 0:

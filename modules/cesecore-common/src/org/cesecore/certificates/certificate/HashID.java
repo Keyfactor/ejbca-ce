@@ -136,7 +136,7 @@ public class HashID {
 		}
 		return id;
 	}
-	public static HashID getFromAuthorityKeyId(X509Certificate cert) throws IOException {
+	public static HashID getFromAuthorityKeyId(X509Certificate cert) {
 		final byte hash[]  = CertTools.getAuthorityKeyId(cert);
 		if ( hash==null ) {
 			return null;

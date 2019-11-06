@@ -69,7 +69,7 @@ public final class ValidatorTestUtil {
         if (-1 < failedAction) {
             result.setFailedAction(failedAction);
         }
-        final List<Integer> ids = new ArrayList<Integer>();
+        final List<Integer> ids = new ArrayList<>();
         for (Integer id : certificateProfileIds) {
             ids.add(id);
         }

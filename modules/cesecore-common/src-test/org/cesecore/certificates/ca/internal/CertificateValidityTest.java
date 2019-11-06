@@ -12,18 +12,13 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -285,7 +280,7 @@ public class CertificateValidityTest {
     }
 	
 	@Test
-	public void test03TestCheckPrivateKeyUsagePeriod() throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException, CAOfflineException, ParseException {
+	public void test03TestCheckPrivateKeyUsagePeriod() throws InvalidAlgorithmParameterException, IllegalStateException, OperatorCreationException, CertificateException, CAOfflineException {
 	    final KeyPair pair = KeyTools.genKeys("512", "RSA");
 	    /// A certificate without private key usage period
 	    X509Certificate cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
@@ -384,11 +379,6 @@ public class CertificateValidityTest {
 	}
 	
     private void testBaseTestCertificateValidity(String encodedValidity) throws Exception {
-		final Date caFrom = new Date();
-		caFrom.setTime(caFrom.getTime() - 20L*(24L*60L*60L*1000L));
-		final Date caTo = new Date();
-		caTo.setTime(caTo.getTime() + 100L*(24L * 60L * 60L * 1000L));
-		
     	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
     			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign,
     			null, null, "BC", true, null);
@@ -404,7 +394,6 @@ public class CertificateValidityTest {
     	CertificateValidity cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
     	Date notBefore = cv.getNotBefore();
     	Date notAfter = cv.getNotAfter();
-    	Date now = new Date();
         Calendar cal1 = Calendar.getInstance();
         cal1.add(Calendar.DAY_OF_MONTH, 49);
         Calendar cal2 = Calendar.getInstance();

@@ -40,8 +40,8 @@ public class P11Slot {
     /** Used for library key map when a sun configuration file is used to specify a token (slot). In this case only one lib could be used. */
     private static final String ONLY_ONE = "onlyOne";
     
-    private final static Map<String,P11Slot> slotMap = new HashMap<String, P11Slot>();
-    private final Map<Integer, P11SlotUser> p11SlotUserMap = new HashMap<Integer, P11SlotUser>();
+    private final static Map<String,P11Slot> slotMap = new HashMap<>();
+    private final Map<Integer, P11SlotUser> p11SlotUserMap = new HashMap<>();
     private final Pkcs11SlotLabelType slotLabelType;
     private final String slotLabel;
     private final String sharedLibrary;
@@ -50,7 +50,7 @@ public class P11Slot {
     private final String libraryFileName;
     
     private P11Slot(final Pkcs11SlotLabelType slotLabelType, final String slotLabel, final String sharedLibrary, final String attributesFile,
-            final String friendlyName, boolean addProvider) throws NoSuchSlotException {
+            boolean addProvider) throws NoSuchSlotException {
         this.slotLabelType = slotLabelType;
         this.slotLabel = slotLabel;
         this.sharedLibrary = sharedLibrary;
@@ -245,7 +245,7 @@ public class P11Slot {
                     if (Pkcs11SlotLabelType.SUN_FILE.equals(slotLabelType)) {
                         p11Slot = new P11Slot(sunP11ConfigFileName, addProvider);
                     } else {
-                        p11Slot = new P11Slot(slotLabelType, slotLabel, sharedLibrary, attributesFile, friendlyName, addProvider);
+                        p11Slot = new P11Slot(slotLabelType, slotLabel, sharedLibrary, attributesFile, addProvider);
                     }
                     slotMap.put(slotMapKey, p11Slot);
                 }

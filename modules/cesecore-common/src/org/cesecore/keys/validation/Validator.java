@@ -44,7 +44,8 @@ public interface Validator extends PhasedValidator, CertificateProfileAwareValid
     void setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate template);
     
     /**
-     * Gets the failed action index {@see #setFailedAction(int)}.
+     * Gets the failed action index
+     * @see #setFailedAction(int)
      * @return the index.
      */
     int getFailedAction();
@@ -58,7 +59,8 @@ public interface Validator extends PhasedValidator, CertificateProfileAwareValid
 
     
     /**
-     * Gets the not_applicable action index {@see #setNotApplicableAction(int).
+     * Gets the not_applicable action index
+     * @see #setNotApplicableAction(int)
      * @return the index.
      */
     int getNotApplicableAction();

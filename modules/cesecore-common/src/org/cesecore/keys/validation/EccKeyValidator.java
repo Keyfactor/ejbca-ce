@@ -38,7 +38,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * 
  * The key validator is used to implement the CA/B-Forum requirements for EC public 
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A, who both originate from X9.62)
- * requirements. See: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf section 6.1.6
+ * requirements. See: <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR section 6.1.6 (PDF)</a>
  * 
  * @version $Id$
  */
@@ -88,7 +88,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModel(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
-        final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<Integer>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
+        final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
         settingsTemplate.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
         settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
         settingsTemplate.setRequired(true);
@@ -106,7 +106,7 @@ public class EccKeyValidator extends KeyValidatorBase {
         });
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> curves = new DynamicUiProperty<String>(String.class, CURVES, getCurvesAsString(), 
-                new ArrayList<String>(AlgorithmTools.getFlatNamedEcCurvesMap(false).keySet())) {
+                new ArrayList<>(AlgorithmTools.getFlatNamedEcCurvesMap(false).keySet())) {
                     @Override
                     public boolean isDisabled() { return isCurvesDisabled(); }
         };
@@ -157,7 +157,7 @@ public class EccKeyValidator extends KeyValidatorBase {
 
     /**
      * Sets the CA/B Forum requirements chapter 6.1.6 for RSA public keys.
-     * @see {@link https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf}
+     * @see <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR (PDF)</a>
      * @param keyValidator
      */
     public void setCABForumBaseLineRequirements142Settings() {
@@ -203,14 +203,14 @@ public class EccKeyValidator extends KeyValidatorBase {
         }
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
-            log.info(intres.getLocalizedMessage("ecckeyvalidator.upgrade", new Float(getVersion())));
+            log.info(intres.getLocalizedMessage("ecckeyvalidator.upgrade", getVersion()));
             init();
         }
     }
 
     @Override
     public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, ValidationException {
-        List<String> messages = new ArrayList<String>();
+        List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
                     + publicKey.getClass().getName());
@@ -314,7 +314,7 @@ public class EccKeyValidator extends KeyValidatorBase {
 
     /**
      * Sets the CA/B Forum requirements chapter 6.1.6 for ECC public keys.
-     * @see {@link https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf}
+     * @see <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR (PDF)</a>
      */
     public final void setCABForumBaseLineRequirements142() {
         setUseFullPublicKeyValidationRoutine(true);

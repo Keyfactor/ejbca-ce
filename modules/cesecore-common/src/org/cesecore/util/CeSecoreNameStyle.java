@@ -52,11 +52,6 @@ public class CeSecoreNameStyle extends BCStyle {
      * https://cabforum.org/wp-content/uploads/EV-V1_5_2Libre.pdf
      */
     public static final ASN1ObjectIdentifier JURISDICTION_LOCALITY = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.1");
-    /**
-     * X.520 organizationIdentifier, used by ETSI TS 319 412 (eIDAS).
-     * https://www.itu.int/rec/dologin.asp?lang=e&id=T-REC-X.520-201210-S!Cor3!PDF-E&type=items
-     */
-    public static final ASN1ObjectIdentifier ORGANIZATION_IDENTIFIER = new ASN1ObjectIdentifier("2.5.4.97");
 
     /**
      * 

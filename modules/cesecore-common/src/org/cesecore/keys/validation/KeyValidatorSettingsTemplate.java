@@ -50,7 +50,6 @@ public enum KeyValidatorSettingsTemplate {
 
     /**
      * Gets the option index.
-     * @return
      */
     public int getOption() {
         return option;
@@ -58,7 +57,6 @@ public enum KeyValidatorSettingsTemplate {
 
     /**
      * Gets the resource key or label.
-     * @return
      */
     public String getLabel() {
         return label;
@@ -66,10 +64,9 @@ public enum KeyValidatorSettingsTemplate {
 
     /**
      * Gets an Integer list instance containing all options.
-     * @return
      */
     public static final List<Integer> types() {
-        final List<Integer> result = new ArrayList<Integer>();
+        final List<Integer> result = new ArrayList<>();
         for (KeyValidatorSettingsTemplate option : values()) {
             result.add(option.getOption());
         }
@@ -78,10 +75,9 @@ public enum KeyValidatorSettingsTemplate {
     
     /**
      * Gets a String list instance containing all I18N label keys.
-     * @return
      */
     public static final Map<Integer,String> map() {
-        final Map<Integer,String> result = new LinkedHashMap<Integer,String>();
+        final Map<Integer,String> result = new LinkedHashMap<>();
         for (KeyValidatorSettingsTemplate option : values()) {
             result.put(option.getOption(), option.getLabel());
         }

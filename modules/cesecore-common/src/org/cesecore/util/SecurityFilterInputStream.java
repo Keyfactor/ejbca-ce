@@ -28,7 +28,7 @@ import java.io.InputStream;
  */
 public class SecurityFilterInputStream extends FilterInputStream{
 
-    private long len = 0;
+    private long currentLength = 0;
     private long maxBytes = DEFAULT_MAX_BYTES;
     
     public static final long DEFAULT_MAX_BYTES = 0xFFFFF;
@@ -46,7 +46,7 @@ public class SecurityFilterInputStream extends FilterInputStream{
     public int read() throws IOException {
         int val = super.read();
         if (val != -1) {
-            len++;
+            currentLength++;
             checkLength();
         }
         return val;
@@ -56,23 +56,22 @@ public class SecurityFilterInputStream extends FilterInputStream{
     public int read(byte[] b, int off, int len) throws IOException {
         int val = super.read(b, off, len);
         if (val > 0) {
-            this.len += val;
+            currentLength += val;
             checkLength();
         }
         return val;
     }
     
     
-    private void checkLength() throws IOException {
-        if (len > maxBytes) {
+    private void checkLength() {
+        if (currentLength > maxBytes) {
             throw new SecurityException("Security violation: attempt to deserialize too many bytes from stream. Limit is " + maxBytes);
         }
     }
 
     /**
      * Returns max bytes that can be read from serialized object.
-     * @param 
-     *      max bytes that can be read from serialized object. Default: 0xFFFFF 
+     * @return max bytes that can be read from serialized object. Default: 0xFFFFF (1 MiB minus one byte)
      */
     public long getMaxBytes() {
         return maxBytes;
@@ -80,8 +79,7 @@ public class SecurityFilterInputStream extends FilterInputStream{
 
     /**
      * Set max bytes that can be read from serialized object
-     * @return 
-     *      max bytes that can be read from serialized object.
+     * @param maxBytes max bytes that can be read from serialized object.
      */
     public void setMaxBytes(long maxBytes) {
         this.maxBytes = maxBytes;

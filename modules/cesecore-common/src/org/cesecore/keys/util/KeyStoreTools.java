@@ -117,8 +117,6 @@ public class KeyStoreTools {
     /** Deletes an entry in the keystore
      * 
      * @param alias is a reference to the entry in the KeyStore that should be deleted, if alias is null, all entries are deleted.
-     * @return keystore identifier
-     * 
      * @throws KeyStoreException 
      */
     public void deleteEntry(final String alias) throws KeyStoreException {
