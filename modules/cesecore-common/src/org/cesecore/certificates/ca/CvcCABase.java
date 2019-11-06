@@ -52,7 +52,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	@Override
     public void init(CVCCAInfo cainfo) {
 	    super.init(cainfo);
-        data.put(CABase.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
+        data.put(CABase.CATYPE, CAInfo.CATYPE_CVC);
         data.put(VERSION, LATEST_VERSION);
 	}
 
@@ -104,7 +104,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
             //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
             //for instantiation. 
             if (externalCAServiceType != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType.intValue());
+                final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType);
                 if (info != null) {
                     externalcaserviceinfos.add(info);
                 }

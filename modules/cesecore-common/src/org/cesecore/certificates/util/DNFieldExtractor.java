@@ -13,6 +13,7 @@
 
 package org.cesecore.certificates.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ import org.ietf.ldap.LDAPDN;
  * 
  * @version $Id$
  */
-public class DNFieldExtractor implements java.io.Serializable {
+public class DNFieldExtractor implements Serializable {
 
     private static final long serialVersionUID = -1313839342568999844L;
 
@@ -264,15 +265,15 @@ public class DNFieldExtractor implements java.io.Serializable {
                         Integer number = fieldnumbers.get(id);
                         String field;
                         if (type == TYPE_SUBJECTDN) {
-                            field = DnComponents.getDnExtractorFieldFromDnId(id.intValue());
+                            field = DnComponents.getDnExtractorFieldFromDnId(id);
                         } else if (type == TYPE_SUBJECTALTNAME) {
-                            field = DnComponents.getAltNameExtractorFieldFromDnId(id.intValue());
+                            field = DnComponents.getAltNameExtractorFieldFromDnId(id);
                         } else {
-                            field = DnComponents.getDirAttrExtractorFieldFromDnId(id.intValue());
+                            field = DnComponents.getDirAttrExtractorFieldFromDnId(id);
                         }
                         final String dnex = dnexploded[i];
                         final String dnexupper = dnex.toUpperCase();
-                        if (id.intValue() == DNFieldExtractor.URI) {
+                        if (id == DNFieldExtractor.URI) {
                             // Fix up URI, which can have several forms
                             if (dnexupper.indexOf(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=") > -1) {
                                 field = CertTools.URI.toUpperCase(Locale.ENGLISH) + "=";
@@ -302,9 +303,9 @@ public class DNFieldExtractor implements java.io.Serializable {
 
                             // Same code for TYPE_SUBJECTDN, TYPE_SUBJECTALTNAME and TYPE_SUBJECTDIRATTR and we will never get here
                             // if it is not one of those types
-                            dnfields.put(Integer.valueOf((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
+                            dnfields.put((id * BOUNDRARY) + number, rdn);
 
-                            number = Integer.valueOf(number.intValue() + 1);
+                            number++;
                             fieldnumbers.put(id, number);
                         }
                     }
@@ -316,11 +317,11 @@ public class DNFieldExtractor implements java.io.Serializable {
                 log.warn("setDN: ", e);
                 illegal = true;
                 if (type == TYPE_SUBJECTDN) {
-                    dnfields.put(Integer.valueOf((CN * BOUNDRARY)), "Illegal DN : " + dn);
+                    dnfields.put(CN * BOUNDRARY, "Illegal DN : " + dn);
                 } else if (type == TYPE_SUBJECTALTNAME) {
-                    dnfields.put(Integer.valueOf((RFC822NAME * BOUNDRARY)), "Illegal Subjectaltname : " + dn);
+                    dnfields.put(RFC822NAME * BOUNDRARY, "Illegal Subjectaltname : " + dn);
                 } else if (type == TYPE_SUBJECTDIRATTR) {
-                    dnfields.put(Integer.valueOf((PLACEOFBIRTH * BOUNDRARY)), "Illegal Subjectdirectory attribute : " + dn);
+                    dnfields.put(PLACEOFBIRTH * BOUNDRARY, "Illegal Subjectdirectory attribute : " + dn);
                 }
             }
         }
@@ -338,7 +339,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      *         DNFieldExtractor.DC and 1 was passed. Returns an empty String "", if no such field with the number exists.
      */
     public String getField(final int field, final int number) {
-        String returnval = dnfields.get(Integer.valueOf((field * BOUNDRARY) + number));
+        String returnval = dnfields.get((field * BOUNDRARY) + number);
 
         if (returnval == null) {
             returnval = "";
@@ -390,12 +391,12 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @return number of components available for a field, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(final int field) {
-        Integer ret = fieldnumbers.get(Integer.valueOf(field));
+        Integer ret = fieldnumbers.get(field);
         if (ret == null) {
             log.error("Not finding fieldnumber value for " + field);
-            ret = Integer.valueOf(0);
+            return 0;
         }
-        return ret.intValue();
+        return ret;
     }
 
     /**

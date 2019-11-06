@@ -150,7 +150,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     
     @Override
     public int getPhase() {
-        return ((Integer) data.get(PHASE)).intValue();
+        return (int) data.get(PHASE);
     }
 
     @Override
@@ -184,12 +184,12 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
 
     @Override
     public boolean isAllCertificateProfileIds() {
-        return ((Boolean) data.get(ALL_CERTIFICATE_PROFILE_IDS)).booleanValue();
+        return (boolean) data.get(ALL_CERTIFICATE_PROFILE_IDS);
     }
     
     @Override 
     public void setAllCertificateProfileIds(boolean isAll) {
-        data.put(ALL_CERTIFICATE_PROFILE_IDS, Boolean.valueOf(isAll));
+        data.put(ALL_CERTIFICATE_PROFILE_IDS, isAll);
     }
     
     @Override
@@ -226,7 +226,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
 
     @Override
     public int getFailedAction() {
-        return ((Integer) data.get(FAILED_ACTION)).intValue();
+        return (int) data.get(FAILED_ACTION);
     }
 
     @Override
@@ -236,7 +236,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
 
     @Override
     public int getNotApplicableAction() {
-        return ((Integer) data.get(NOT_APPLICABLE_ACTION)).intValue();
+        return (int) data.get(NOT_APPLICABLE_ACTION);
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */

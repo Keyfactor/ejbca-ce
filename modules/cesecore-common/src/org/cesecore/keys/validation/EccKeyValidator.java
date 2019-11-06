@@ -183,7 +183,7 @@ public class EccKeyValidator extends KeyValidatorBase {
      * @return true if has to be used.
      */
     public boolean isUseFullPublicKeyValidationRoutine() {
-        return ((Boolean) data.get(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE)).booleanValue();
+        return (boolean) data.get(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE);
     }
 
     /**
@@ -192,7 +192,7 @@ public class EccKeyValidator extends KeyValidatorBase {
      * @param use
      */
     public void setUseFullPublicKeyValidationRoutine(boolean allowed) {
-        data.put(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, Boolean.valueOf(allowed));
+        data.put(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, allowed);
     }
 
     @Override

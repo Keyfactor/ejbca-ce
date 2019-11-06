@@ -94,7 +94,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         super.init(cainfo);
         data.put(USENOCONFLICTCERTIFICATEDATA, cainfo.isUseNoConflictCertificateData());
         if (!cainfo.isUseCertificateStorage()) {
-            data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
+            data.put(DEFAULTCERTIFICATEPROFILEID, cainfo.getDefaultCertificateProfileId());
         }
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
@@ -132,15 +132,15 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo, cceConfig);
-        data.put(CRLPERIOD, Long.valueOf(cainfo.getCRLPeriod()));
-        data.put(DELTACRLPERIOD, Long.valueOf(cainfo.getDeltaCRLPeriod()));
-        data.put(CRLISSUEINTERVAL, Long.valueOf(cainfo.getCRLIssueInterval()));
-        data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
+        data.put(CRLPERIOD, cainfo.getCRLPeriod());
+        data.put(DELTACRLPERIOD, cainfo.getDeltaCRLPeriod());
+        data.put(CRLISSUEINTERVAL, cainfo.getCRLIssueInterval());
+        data.put(CRLOVERLAPTIME, cainfo.getCRLOverlapTime());
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
         data.put(VALIDATORS, cainfo.getValidators());
         data.put(USENOCONFLICTCERTIFICATEDATA, cainfo.isUseNoConflictCertificateData());
         if (cainfo.getDefaultCertificateProfileId() > 0 && !cainfo.isUseCertificateStorage()) {
-            data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
+            data.put(DEFAULTCERTIFICATEPROFILEID, cainfo.getDefaultCertificateProfileId());
         }
         setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
         setFinishUser(cainfo.getFinishUser());
@@ -187,18 +187,18 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     @Override
     public long getCRLPeriod() {
-        return ((Long) data.get(CRLPERIOD)).longValue();
+        return (long) data.get(CRLPERIOD);
     }
 
     @Override
     public void setCRLPeriod(long crlperiod) {
-        data.put(CRLPERIOD, Long.valueOf(crlperiod));
+        data.put(CRLPERIOD, crlperiod);
     }
 
     @Override
     public long getDeltaCRLPeriod() {
         if (data.containsKey(DELTACRLPERIOD)) {
-            return ((Long) data.get(DELTACRLPERIOD)).longValue();
+            return (long) data.get(DELTACRLPERIOD);
         } else {
             return 0;
         }
@@ -206,34 +206,34 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     @Override
     public void setDeltaCRLPeriod(long deltacrlperiod) {
-        data.put(DELTACRLPERIOD, Long.valueOf(deltacrlperiod));
+        data.put(DELTACRLPERIOD, deltacrlperiod);
     }
 
     @Override
     public long getCRLIssueInterval() {
-        return ((Long) data.get(CRLISSUEINTERVAL)).longValue();
+        return (long) data.get(CRLISSUEINTERVAL);
     }
 
     @Override
     public void setCRLIssueInterval(long crlIssueInterval) {
-        data.put(CRLISSUEINTERVAL, Long.valueOf(crlIssueInterval));
+        data.put(CRLISSUEINTERVAL, crlIssueInterval);
     }
 
     @Override
     public long getCRLOverlapTime() {
-        return ((Long) data.get(CRLOVERLAPTIME)).longValue();
+        return (long) data.get(CRLOVERLAPTIME);
     }
 
     @Override
     public void setCRLOverlapTime(long crlOverlapTime) {
-        data.put(CRLOVERLAPTIME, Long.valueOf(crlOverlapTime));
+        data.put(CRLOVERLAPTIME, crlOverlapTime);
     }
 
     @Override
     public int getDefaultCertificateProfileId() {
         Integer defaultCertificateProfileId = (Integer) data.get(DEFAULTCERTIFICATEPROFILEID);
         if (defaultCertificateProfileId != null) {
-            return defaultCertificateProfileId.intValue();
+            return defaultCertificateProfileId;
         } else {
             return 0;
         }
@@ -390,16 +390,12 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     @Override
     public boolean getKeepExpiredCertsOnCRL() {
-        if(data.containsKey(KEEPEXPIREDCERTSONCRL)) {
-            return ((Boolean)data.get(KEEPEXPIREDCERTSONCRL)).booleanValue();
-        } else {
-            return false;
-        }
+        return getBoolean(KEEPEXPIREDCERTSONCRL, false);
     }
 
     @Override
     public void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl) {
-        data.put(KEEPEXPIREDCERTSONCRL, Boolean.valueOf(keepexpiredcertsoncrl));
+        data.put(KEEPEXPIREDCERTSONCRL, keepexpiredcertsoncrl);
     }
     
     /** whether users should be stored or not, default true as was the case before 3.10.x */

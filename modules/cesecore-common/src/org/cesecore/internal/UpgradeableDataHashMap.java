@@ -232,7 +232,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
 
     /** Set the value for the specified key as a primitive (never null) boolean */
     protected void putBoolean(final String key, final boolean value) {
-        data.put(key, Boolean.valueOf(value));
+        data.put(key, value);
     }
 
     /**

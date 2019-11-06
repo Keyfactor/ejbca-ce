@@ -402,11 +402,11 @@ public class RsaKeyValidator extends KeyValidatorBase {
     }
 
     public boolean isPublicKeyExponentOnlyAllowOdd() {
-        return ((Boolean) data.get(PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD)).booleanValue();
+        return (boolean) data.get(PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD);
     }
 
     public void setPublicKeyExponentOnlyAllowOdd(boolean allowed) {
-        data.put(PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD, Boolean.valueOf(allowed));
+        data.put(PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD, allowed);
     }
 
     public BigInteger getPublicKeyExponentMin() {
@@ -496,28 +496,28 @@ public class RsaKeyValidator extends KeyValidatorBase {
     }
 
     public boolean isPublicKeyModulusOnlyAllowOdd() {
-        return ((Boolean) data.get(PUBLIC_KEY_MODULUS_ONLY_ALLOW_ODD)).booleanValue();
+        return (boolean) data.get(PUBLIC_KEY_MODULUS_ONLY_ALLOW_ODD);
     }
 
     public void setPublicKeyModulusOnlyAllowOdd(boolean allowed) {
-        data.put(PUBLIC_KEY_MODULUS_ONLY_ALLOW_ODD, Boolean.valueOf(allowed));
+        data.put(PUBLIC_KEY_MODULUS_ONLY_ALLOW_ODD, allowed);
     }
 
     public boolean isPublicKeyModulusDontAllowPowerOfPrime() {
-        return ((Boolean) data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_POWER_OF_PRIME)).booleanValue();
+        return (boolean) data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_POWER_OF_PRIME);
     }
 
     public boolean isPublicKeyModulusDontAllowRocaWeakKeys() {
         Boolean ret = (Boolean) data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS);
-        return ret != null ? ret.booleanValue() : false; // upgraded value, we must be null safe, default false
+        return ret != null ? ret : false; // upgraded value, we must be null safe, default false
     }
 
     public void setPublicKeyModulusDontAllowPowerOfPrime(boolean allowed) {
-        data.put(PUBLIC_KEY_MODULUS_DONT_ALLOW_POWER_OF_PRIME, Boolean.valueOf(allowed));
+        data.put(PUBLIC_KEY_MODULUS_DONT_ALLOW_POWER_OF_PRIME, allowed);
     }
 
     public void setPublicKeyModulusDontAllowRocaWeakKeys(boolean allowed) {
-        data.put(PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS, Boolean.valueOf(allowed));
+        data.put(PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS, allowed);
     }
 
     public Integer getPublicKeyModulusMinFactor() {
@@ -664,7 +664,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         final int keyLength = KeyTools.getKeyLength(publicKey);
         if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption() == settingsOption) {
             final List<Integer> bitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            if (!bitLengths.contains(Integer.valueOf(keyLength))) {
+            if (!bitLengths.contains(keyLength)) {
                 // Invalid Key in request: Illegal key length, not authorized by certificate profile: 2048.. Please supply a correct request.
                 messages.add("Invalid: RSA key size/strength: Use one of the following " + bitLengths + ".");
             }

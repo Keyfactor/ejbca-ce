@@ -151,8 +151,8 @@ public class ExtendedInformationTest {
         final String maxFailedLoginAttempts = "2";
         extendedInformation.getRawData().put("remainingloginattempts", remainingLoginAttempts);
         extendedInformation.getRawData().put("maxfailedloginattempts", maxFailedLoginAttempts);
-        assertEquals(Integer.valueOf(remainingLoginAttempts), (Integer) extendedInformation.getRemainingLoginAttempts());
-        assertEquals(Integer.valueOf(maxFailedLoginAttempts), (Integer) extendedInformation.getMaxLoginAttempts());
+        assertEquals(remainingLoginAttempts, extendedInformation.getRemainingLoginAttempts());
+        assertEquals(maxFailedLoginAttempts, extendedInformation.getMaxLoginAttempts());
     }
 
     @Test

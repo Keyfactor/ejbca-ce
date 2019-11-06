@@ -53,7 +53,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         if(num == null){
             return 500;
         } else {
-            return ((Integer) num).intValue();
+            return (int) num;
         }
     }
     
@@ -70,13 +70,13 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         if (maximumQueryCount < 1) {
             throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolow"));
         }
-        data.put(MAXIMUM_QUERY_COUNT_KEY, Integer.valueOf(maximumQueryCount));
+        data.put(MAXIMUM_QUERY_COUNT_KEY, maximumQueryCount);
     }
 
     /** @return database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public long getMaximumQueryTimeout() {
         final Object num = data.get(MAXIMUM_QUERY_TIMEOUT_KEY);
-        return num==null ? 10000L : ((Long) num).longValue();
+        return num==null ? 10000L : (long) num;
     }
 
     /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */

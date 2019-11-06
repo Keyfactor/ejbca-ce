@@ -561,7 +561,7 @@ public abstract class CertTools {
                 if (x509cert.getSubjectAlternativeNames() != null) {
                     for (List<?> item : x509cert.getSubjectAlternativeNames()) {
                         Integer type = (Integer) item.get(0);
-                        if (type.intValue() == 1) {
+                        if (type == 1) {
                             return (String) item.get(1);
                         }
                     }
@@ -2425,7 +2425,7 @@ public abstract class CertTools {
      */
     private static ASN1Sequence getAltnameSequence(List<?> listitem) {
         Integer no = (Integer) listitem.get(0);
-        if (no.intValue() == 0) {
+        if (no == 0) {
             byte[] altName = (byte[]) listitem.get(1);
             return getAltnameSequence(altName);
         }

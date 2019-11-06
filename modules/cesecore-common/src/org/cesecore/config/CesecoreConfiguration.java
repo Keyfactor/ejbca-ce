@@ -401,7 +401,7 @@ public final class CesecoreConfiguration {
 
     /** @return the number of rows that should be fetched at the time when creating CRLs. */
     public static int getDatabaseRevokedCertInfoFetchSize() {
-        return Long.valueOf(getLongValue("database.crlgenfetchsize", 500000L, "rows")).intValue();
+        return (int) getLongValue("database.crlgenfetchsize", 500000L, "rows");
     }
 
     /**

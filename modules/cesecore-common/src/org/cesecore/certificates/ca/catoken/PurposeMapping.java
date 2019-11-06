@@ -98,8 +98,8 @@ public final class PurposeMapping {
         if (alias!=null) {
             alias = alias.trim();
             if (!alias.isEmpty()) {
-                map.put(Integer.valueOf(purpose), alias);
-                keymap.put(Integer.valueOf(purpose), keyPurposeString);
+                map.put(purpose, alias);
+                keymap.put(purpose, keyPurposeString);
             }
         }
     }
@@ -110,7 +110,7 @@ public final class PurposeMapping {
     public String getAlias(final int purpose) {
         String alias;
         try {
-            alias = map.get(Integer.valueOf(purpose));
+            alias = map.get(purpose);
         } catch (Exception e) {
             alias = null;
         }
@@ -132,7 +132,7 @@ public final class PurposeMapping {
     public String getPurposeProperty(final int purpose) {
         String s;
         try {
-            s = keymap.get(Integer.valueOf(purpose));
+            s = keymap.get(purpose);
         } catch(Exception e) {
             s = null;
         }

@@ -310,7 +310,7 @@ public class EndEntityInformation implements Serializable {
             try (final java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)));) {
             	final HashMap<?, ?> data = (HashMap<?, ?>) decoder.readObject();
             	// No need to b64 decode Integer value, just read it
-            	final int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
+            	final int type = (int) data.get(ExtendedInformation.TYPE);
             	switch (type) {
             	case ExtendedInformation.TYPE_BASIC :
             	    returnval = new ExtendedInformation();

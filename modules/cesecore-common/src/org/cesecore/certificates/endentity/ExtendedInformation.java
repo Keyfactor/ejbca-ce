@@ -225,7 +225,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      *            The number to set
      */
     public void setRemainingLoginAttempts(int remainingLoginAttempts) {
-        data.put(REMAININGLOGINATTEMPTS, Integer.valueOf(remainingLoginAttempts));
+        data.put(REMAININGLOGINATTEMPTS, remainingLoginAttempts);
     }
 
     /**
@@ -272,7 +272,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      *            The number to set
      */
     public void setMaxLoginAttempts(int maxLoginAttempts) {
-        data.put(MAXFAILEDLOGINATTEMPTS, Integer.valueOf(maxLoginAttempts));
+        data.put(MAXFAILEDLOGINATTEMPTS, maxLoginAttempts);
     }
 
     /**
@@ -694,7 +694,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
                 // QCETSIPSD2NCAID
             }
 
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
         }
     }
 
@@ -709,7 +709,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @return String containing the classpath.
      */
     public int getType() {
-        return ((Integer) data.get(TYPE)).intValue();
+        return (int) data.get(TYPE);
     }
 
     /**

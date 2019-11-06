@@ -212,12 +212,12 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
                     return certificateExtension;
 
                 }else{
-                    throw new CertificateExtentionConfigurationException("Certificate Extension " + Integer.valueOf(id) + " seems to be misconfigured in the certextensions.properties");
+                    throw new CertificateExtentionConfigurationException("Certificate Extension " + id + " seems to be misconfigured in the certextensions.properties");
                 }
             }
             
         }catch(Exception e){
-            throw new CertificateExtentionConfigurationException("Certificate Extension " + Integer.valueOf(id) + " seems to be misconfigured in the certextensions.properties",e);
+            throw new CertificateExtentionConfigurationException("Certificate Extension " + id + " seems to be misconfigured in the certextensions.properties", e);
         }
         return null;
     }

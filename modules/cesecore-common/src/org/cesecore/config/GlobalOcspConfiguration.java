@@ -61,8 +61,8 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
      * @return true if CA's replying to their own OCSP requests should include NONCE's in the replies. 
      */
     public boolean getNonceEnabled() {
-        //Lady upgrade
-        if(data.get(DEFAULT_NONCE_ENABLED_REFERENCE) == null) {
+        // Lazy upgrade
+        if (data.get(DEFAULT_NONCE_ENABLED_REFERENCE) == null) {
             setNonceEnabled(true);
         }
         return (Boolean) data.get(DEFAULT_NONCE_ENABLED_REFERENCE);
@@ -73,13 +73,13 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
      * @param enabled to true if CA's replying to their own OCSP requests should include NONCE's in the replies. 
      */
     public void setNonceEnabled(boolean enabled) {
-        data.put(DEFAULT_NONCE_ENABLED_REFERENCE, Boolean.valueOf(enabled));
+        data.put(DEFAULT_NONCE_ENABLED_REFERENCE, enabled);
     }
     
     @Override
     public void upgrade() {
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
+            data.put(VERSION, LATEST_VERSION);          
         }
     }
 

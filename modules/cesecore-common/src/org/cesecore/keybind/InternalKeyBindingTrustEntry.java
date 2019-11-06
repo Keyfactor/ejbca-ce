@@ -79,9 +79,9 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     public String toString() {
         final BigInteger certificateSerialNumber = fetchCertificateSerialNumber();
         if (certificateSerialNumber==null) {
-            return Integer.valueOf(caId).toString();
+            return String.valueOf(caId);
         } else {
-            return Integer.valueOf(caId).toString() + ";" + certificateSerialNumber.toString(16);
+            return String.valueOf(caId) + ";" + certificateSerialNumber.toString(16);
         }
     }
 

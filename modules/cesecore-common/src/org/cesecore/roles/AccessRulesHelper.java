@@ -60,9 +60,9 @@ public abstract class AccessRulesHelper {
             }
             if (state!=null) {
             	if (log.isTraceEnabled()) {
-            	    log.trace("hasAccessToResource: "+resource+", "+state.booleanValue());
+            	    log.trace("hasAccessToResource: "+resource+", "+state);
             	}
-                return state.booleanValue();
+                return state;
             }
         }
         if (log.isTraceEnabled()) {
@@ -121,7 +121,7 @@ public abstract class AccessRulesHelper {
         // Remove all top level deny rules (if nothing is explicitly permitted, we don't need to deny it)
         for (final String resourceWithTrailingSlash : new ArrayList<>(accessRules.keySet())) {
             final Boolean currentState = accessRules.get(resourceWithTrailingSlash);
-            if (currentState!=null && !currentState.booleanValue()) {
+            if (currentState!=null && !currentState) {
                 boolean needed = false;
                 int lastSlashIndex = resourceWithTrailingSlash.length()+1;
                 while ((lastSlashIndex = resourceWithTrailingSlash.lastIndexOf('/', lastSlashIndex-1))!=-1) {
@@ -161,13 +161,13 @@ public abstract class AccessRulesHelper {
          */
         // Keep allow rules from accessRules1 and deny rules from accessRules1 that are not granted by accessRules2
         for (final Entry<String, Boolean> entry : accessRules1.entrySet()) {
-            if (entry.getValue().booleanValue() || !hasAccessToResource(accessRules2, entry.getKey())) {
+            if (entry.getValue() || !hasAccessToResource(accessRules2, entry.getKey())) {
                 accessRules.put(entry.getKey(), entry.getValue());
             }
         }
         // Keep allow rules from accessRules1 and deny rules from accessRules1 that are not granted by accessRules2
         for (final Entry<String, Boolean> entry : accessRules2.entrySet()) {
-            if (entry.getValue().booleanValue() || !hasAccessToResource(accessRules1, entry.getKey())) {
+            if (entry.getValue() || !hasAccessToResource(accessRules1, entry.getKey())) {
                 accessRules.put(entry.getKey(), entry.getValue());
             }
         }
@@ -198,17 +198,17 @@ public abstract class AccessRulesHelper {
          */
         // Keep deny rules from accessRules1 and allow rules from accessRules1 and that are also granted by accessRules2
         for (final Entry<String, Boolean> entry : accessRules1.entrySet()) {
-            if (!entry.getValue().booleanValue() || hasAccessToResource(accessRules2, entry.getKey())) {
+            if (!entry.getValue() || hasAccessToResource(accessRules2, entry.getKey())) {
                 accessRules.put(entry.getKey(), entry.getValue());
             }
         }
         // Keep deny rules from accessRules2 and allow rules from accessRules2 and that are also granted by accessRules1
         for (final Entry<String, Boolean> entry : accessRules2.entrySet()) {
-            if (!entry.getValue().booleanValue()) {
+            if (!entry.getValue()) {
                 accessRules.put(entry.getKey(), entry.getValue());
             } else if (hasAccessToResource(accessRules1, entry.getKey())) {
                 final Boolean currentValue = accessRules.get(entry.getKey());
-                if (currentValue==null || currentValue.booleanValue()) {
+                if (currentValue==null || currentValue) {
                     // Only overwrite empty or allow rules
                     accessRules.put(entry.getKey(), entry.getValue());
                 }

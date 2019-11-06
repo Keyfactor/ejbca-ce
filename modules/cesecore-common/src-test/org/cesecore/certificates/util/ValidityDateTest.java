@@ -33,6 +33,7 @@ public class ValidityDateTest {
     private static final String ABSOLUTE = "absolute";
     
     public static final String ISO8601_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
+    private static final long LONG_VALUE = ((long) Integer.MAX_VALUE)+1;
 
     
     /** Since the test will run in different time zones we will test combined operations. */
@@ -105,7 +106,7 @@ public class ValidityDateTest {
         // Test absolute time (==Integer.MAX_VALUE)
         getStringInternalAbsBeforeVersion661(Integer.MAX_VALUE, "1970-01-25 20:31:23+00:00");
         // Test absolute times (>Integer.MAX_VALUE)
-        getStringInternalAbsBeforeVersion661(Long.valueOf(Integer.MAX_VALUE)+1, "1970-01-25 20:31:23+00:00");
+        getStringInternalAbsBeforeVersion661(LONG_VALUE, "1970-01-25 20:31:23+00:00");
         getStringInternalAbsBeforeVersion661(1304960280000L, "2011-05-09 16:58:00+00:00");
         LOG.trace("<testGetStringBeforeVersion661");
     }
@@ -134,7 +135,7 @@ public class ValidityDateTest {
         // Test absolute time (==Integer.MAX_VALUE)
         getDateInternalBeforeVersion661(Integer.MAX_VALUE, now, new Date(Integer.MAX_VALUE));
         // Test absolute times (>Integer.MAX_VALUE)
-        getDateInternalBeforeVersion661(Long.valueOf(Integer.MAX_VALUE)+1, now, new Date(Long.valueOf(Integer.MAX_VALUE)+1));
+        getDateInternalBeforeVersion661(LONG_VALUE, now, new Date(LONG_VALUE));
         LOG.trace("<testGetDateBeforeVersion661");
     }
 

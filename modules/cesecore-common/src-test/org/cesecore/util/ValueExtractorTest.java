@@ -20,7 +20,7 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 /**
- * Tests value extraction in jdbc utility class
+ * Tests value extraction in JDBC utility class
  * 
  * @version $Id$
  */
@@ -28,7 +28,7 @@ public class ValueExtractorTest {
 
     @Test
     public void testValueExtractorSimple() throws Exception {
-        Integer integer = Integer.valueOf(1);
+        Integer integer = 1;
         BigInteger bi = new BigInteger("2");
         BigDecimal bd = new BigDecimal(3);
         assertEquals(1, ValueExtractor.extractIntValue(integer));
@@ -41,7 +41,7 @@ public class ValueExtractorTest {
 
     @Test
     public void testValueExtractorArray() throws Exception {
-        Integer intval = Integer.valueOf(1);
+        Integer intval = 1;
         BigInteger birow = new BigInteger("2");
         BigDecimal bdval = new BigDecimal(3);
         BigDecimal bdrow = new BigDecimal(4);

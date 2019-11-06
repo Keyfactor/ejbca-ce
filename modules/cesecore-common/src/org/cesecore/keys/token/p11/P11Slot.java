@@ -249,7 +249,7 @@ public class P11Slot {
                     }
                     slotMap.put(slotMapKey, p11Slot);
                 }
-                p11Slot.p11SlotUserMap.put(Integer.valueOf(id), p11SlotUser);
+                p11Slot.p11SlotUserMap.put(id, p11SlotUser);
             }
             return p11Slot;
         } catch (NoSuchSlotException e) {

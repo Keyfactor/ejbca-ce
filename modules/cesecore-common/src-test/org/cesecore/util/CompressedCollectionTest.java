@@ -80,7 +80,7 @@ public class CompressedCollectionTest {
     @Test
     public void testNoAddAfterClose() {
         final CompressedCollection<Integer> compressedCollection = new CompressedCollection<>();
-        compressedCollection.add(Integer.valueOf(4711));
+        compressedCollection.add(4711);
         assertEquals("Compressed collection with single entry should have size 1.", 1, compressedCollection.size());
         // For loop with invoke compressedCollection.iterator() that will invoke closeForWrite() making it impossible for future changes
         for (final Integer i : compressedCollection) {
@@ -88,7 +88,7 @@ public class CompressedCollectionTest {
         }
         // Try to add new element
         try {
-            compressedCollection.add(Integer.valueOf(5));
+            compressedCollection.add(5);
             fail("CompressedCollection should not allow add after closeForWrite().");
         } catch (IllegalStateException e) {
             log.debug(e.getMessage());
@@ -96,7 +96,7 @@ public class CompressedCollectionTest {
         assertEquals("Nothing more should have been added after closeForWrite().", 1, compressedCollection.size());
         compressedCollection.clear();
         assertEquals("Cleared compressed collection should have size 0.", 0, compressedCollection.size());
-        compressedCollection.add(Integer.valueOf(4711));
+        compressedCollection.add(4711);
         assertEquals("Compressed collection with single entry should have size 1.", 1, compressedCollection.size());
         final Iterator<Integer> iter = compressedCollection.iterator();
         assertTrue(iter.hasNext());
