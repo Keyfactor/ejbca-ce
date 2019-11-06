@@ -148,7 +148,7 @@ public class ValidityDate {
                     if (isDeltaTimeBeforeVersion661(days)) {
                         result = days;
                     } else {
-                        result = Long.valueOf(Integer.MAX_VALUE-1);
+                        result = Integer.MAX_VALUE-1;
                         log.info(validity + " is relative time format, but too far in the future. Limiting to " + result + " days.");
                     }
                 }
