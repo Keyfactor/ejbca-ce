@@ -49,11 +49,11 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
     }
 
     protected void setStatus(int status) {
-        this.data.put(STATUS, Integer.valueOf(status));
+        data.put(STATUS, status);
     }
 
     protected int getStatus() {
-        return ((Integer) data.get(STATUS)).intValue();
+        return (int) data.get(STATUS);
     }
 
     /**

@@ -39,13 +39,13 @@ public class TrustedTime implements Serializable {
     public Integer getStratum() { return stratum; }
     public void setStratum(final Integer stratum) { this.stratum = stratum; }
 
-    public Long getPreviousUpdate() { return this.previousUpdate; }
-    public Long getNextUpdate() { return this.nextUpdate; }
+    public Long getPreviousUpdate() { return previousUpdate; }
+    public Long getNextUpdate() { return nextUpdate; }
 
     public void setNextUpdate(Integer when, Integer poll) {
-        Long nextUpdate = Long.valueOf(((poll - when) + delta)*1000);
-        if(nextUpdate.longValue() <= 0) { 
-            nextUpdate = Long.valueOf(1); 
+        Long nextUpdate = (((long) poll - when) + delta)*1000;
+        if (nextUpdate <= 0L) { 
+            nextUpdate = 1L; 
         }
 
         if(this.nextUpdate != null) {
@@ -55,12 +55,12 @@ public class TrustedTime implements Serializable {
         this.nextUpdate = nextUpdate;
     }
 
-    public boolean isSync() { return this.sync; }
+    public boolean isSync() { return sync; }
     public void setSync(boolean sync) { this.sync = sync; }
 
     public Date getTime() { return new Date(); }
 
-    public String getSource() { return this.source; }
+    public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
 
 
@@ -74,9 +74,9 @@ public class TrustedTime implements Serializable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(this.accuracy).append(";").append(this.stratum).append(";").
-            append(this.previousUpdate).append(";").append(this.nextUpdate).
-            append(";").append(this.sync).append(this.source);
+        sb.append(accuracy).append(";").append(stratum).append(";").
+            append(previousUpdate).append(";").append(nextUpdate).
+            append(";").append(sync).append(source);
         return sb.toString();
     }
 }

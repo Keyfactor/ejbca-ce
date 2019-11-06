@@ -55,10 +55,10 @@ public class PKCS11Utils {
     private final Method isKeyModifiable;
     private final Method securityInfo;
 
-    private PKCS11Utils( final Method _makeKeyUnmodifiable, final Method _isKeyModifiable, final Method _securityInfo ) {
-        this.makeKeyUnmodifiable = _makeKeyUnmodifiable;
-        this.isKeyModifiable = _isKeyModifiable;
-        this.securityInfo = _securityInfo;
+    private PKCS11Utils( final Method makeKeyUnmodifiable, final Method isKeyModifiable, final Method securityInfo ) {
+        this.makeKeyUnmodifiable = makeKeyUnmodifiable;
+        this.isKeyModifiable = isKeyModifiable;
+        this.securityInfo = securityInfo;
     }
 
     /**
@@ -110,7 +110,7 @@ public class PKCS11Utils {
             final Object oResult = this.makeKeyUnmodifiable.invoke(null, new Object[]{providerName, key});
             assert oResult instanceof Boolean;
             if ( log.isDebugEnabled() ) {
-                if ( ((Boolean)oResult).booleanValue() ) {
+                if ((boolean)oResult) {
                     log.debug(String.format("CKA_MODIFIABLE attribute set to false for key '%s'.", key));
                 } else {
                     log.debug(String.format("CKA_MODIFIABLE attribute not changed for key '%s'. It was already set to false, or could not be changed", key));
@@ -135,8 +135,7 @@ public class PKCS11Utils {
         }
         try {
             final Object oResult = this.isKeyModifiable.invoke(null, new Object[]{providerName, key});
-            assert oResult instanceof Boolean;
-            return ((Boolean)oResult).booleanValue();
+            return (boolean)oResult;
         } catch (ReflectiveOperationException e) {
             throw new P11RuntimeException(sError, e);
         }

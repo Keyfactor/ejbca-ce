@@ -170,7 +170,7 @@ public class AccessRulesHelperTest {
     private void debugLogAccessRules(final HashMap<String, Boolean> accessRules) {
         final List<Entry<String, Boolean>> accessRulesList = AccessRulesHelper.getAsListSortedByKey(accessRules);
         for (final Entry<String,Boolean> entry : accessRulesList) {
-            log.debug(" " + entry.getKey() + ":" + (entry.getValue().booleanValue()?"allow":"deny"));
+            log.debug(" " + entry.getKey() + ":" + (entry.getValue()?"allow":"deny"));
         }
     }
 }
