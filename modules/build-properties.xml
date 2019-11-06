@@ -557,7 +557,7 @@
     </condition>
     
     <condition property="variant.ra.enabled">
-        <available file="${mod.peerconnector.path}/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
+		<available file="${mod.ra-gui.path}/build.xml"/>
     </condition>
     
     <condition property="status.war.enabled" value="true">
