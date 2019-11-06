@@ -46,6 +46,7 @@ public enum AuditLogRules {
         return this.resource;
     }
 
+    @Override
     public String toString() {
         return this.resource;
     }

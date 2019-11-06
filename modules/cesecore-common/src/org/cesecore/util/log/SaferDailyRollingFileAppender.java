@@ -35,7 +35,7 @@ public class SaferDailyRollingFileAppender extends DailyRollingFileAppender {
         File logfile;
         try {
             logfile = new File(super.getFile());
-            if ((subscriber != null) && (logfile != null)) {
+            if (subscriber != null) {
                 if (logfile.canWrite()) {
                     subscriber.setCanlog(true);
                 } else {

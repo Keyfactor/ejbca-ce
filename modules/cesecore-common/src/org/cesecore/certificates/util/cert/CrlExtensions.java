@@ -32,7 +32,7 @@ import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
@@ -108,7 +108,7 @@ public class CrlExtensions {
             final byte[] extensionValue = crlEntry.getExtensionValue(Extension.reasonCode.getId());
             if (extensionValue!=null) {
                 try {
-                    final ASN1Enumerated reasonCodeExtension = ASN1Enumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionValue));
+                    final ASN1Enumerated reasonCodeExtension = ASN1Enumerated.getInstance(JcaX509ExtensionUtils.parseExtensionValue(extensionValue));
                     if (reasonCodeExtension!=null) {
                         reasonCode = reasonCodeExtension.getValue().intValue();
                     }
@@ -122,7 +122,7 @@ public class CrlExtensions {
 
     /** @return a list of URLs in String format with present freshest CRL extensions or an empty List */
     public static List<String> extractFreshestCrlDistributionPoints(final X509CRL crl) {
-        final List<String> freshestCdpUrls = new ArrayList<String>();
+        final List<String> freshestCdpUrls = new ArrayList<>();
         final byte[] extensionValue = crl.getExtensionValue(Extension.freshestCRL.getId());
         if (extensionValue!=null) {
             final ASN1OctetString asn1OctetString = getAsn1ObjectFromBytes(extensionValue, ASN1OctetString.class);
@@ -140,14 +140,13 @@ public class CrlExtensions {
     }
     
     /** @return the first object found when treating the provided byte array as an ASN1InputStream */
-    @SuppressWarnings("unchecked")
     private static <T> T getAsn1ObjectFromBytes(final byte[] bytes, final Class<T> clazz) {
         T ret = null;
         ASN1InputStream asn1InputStream = null;
         try {
             if (bytes!=null) {
                 asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(bytes));
-                ret = (T) asn1InputStream.readObject();
+                ret = clazz.cast(asn1InputStream.readObject());
             }
         } catch (ClassCastException e) {
             // Ignore

@@ -39,7 +39,7 @@ public class CryptoTokenFactory {
     public static final String PRIME_CA_TOKEN_NAME = "se.primeKey.caToken.card.PrimeCAToken";
 
     /** Registry of available hard ca token classes that can be instantiated. */
-    private Map<String, AvailableCryptoToken> availabletokens = new HashMap<String, AvailableCryptoToken>(4);
+    private Map<String, AvailableCryptoToken> availabletokens = new HashMap<>(4);
 
     /** Implementing the Singleton pattern */
     private static CryptoTokenFactory instance = null;
@@ -81,7 +81,7 @@ public class CryptoTokenFactory {
         if (classname == null) {
             return null;
         }
-	    return (AvailableCryptoToken)availabletokens.get(classname);
+	    return availabletokens.get(classname);
 	}
 	
 	/**

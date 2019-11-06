@@ -27,7 +27,6 @@ public interface DynamicUiPropertyValidator<T extends Serializable> extends Seri
     /**
      * 
      * @param value the value to be validated
-     * @return true if the value passes validation
      * 
      * @throws PropertyValidationException if the validation failed, including a detailed error message.
      */

@@ -53,8 +53,8 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      * Creates a new UpgradeableDataHashMap object.
      */
     public UpgradeableDataHashMap() {
-        data = new LinkedHashMap<Object, Object>();
-        data.put(VERSION, new Float(getLatestVersion()));
+        data = new LinkedHashMap<>();
+        data.put(VERSION, getLatestVersion());
     }
 
     /**
@@ -68,7 +68,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
     @Override
     public float getVersion() {
-        return ((Float) data.get(VERSION)).floatValue();
+        return (Float) data.get(VERSION);
     }
 
     /**
@@ -88,11 +88,11 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
     @Override
     @SuppressWarnings("unchecked")
-    public void loadData(final Object data) {
+    public void loadData(final Object savedData) {
     	// By creating a new LinkedHashMap (Base64GetHashMap) here we slip through a possible upgrade issue when upgrading
     	// from older implementation that used a plain HashMap instead.
     	// Both newer and older versions can be casted to HashMap.
-    	this.data = new Base64GetHashMap((HashMap<?, ?>)data);
+    	data = new Base64GetHashMap((HashMap<?, ?>)savedData);
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
     		upgrade();
     		upgraded = true;
@@ -137,7 +137,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
 	 * @return Map<Object, Object> with difference
 	 */
 	public static Map<Object, Object> diffMaps(Map<Object, Object> oldmap, Map<Object, Object> newmap) {
-		Map<Object, Object> result = new LinkedHashMap<Object, Object>();
+		Map<Object, Object> result = new LinkedHashMap<>();
     	for (Object key : oldmap.keySet()) {
 			if (newmap.containsKey(key)) {
 				// Check if the value is the same

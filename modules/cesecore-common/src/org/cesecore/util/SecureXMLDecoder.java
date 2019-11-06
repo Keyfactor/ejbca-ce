@@ -117,7 +117,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     if (parser.next() != XmlPullParser.END_DOCUMENT) {
                         throw new IOException("Data after end of root element");
                     }
-                    // NOPMD: Fall through
+                    throw new EOFException("Reached end of XML document");
                 case XmlPullParser.END_DOCUMENT:
                     throw new EOFException("Reached end of XML document");
                 default:
@@ -276,8 +276,8 @@ public class SecureXMLDecoder implements AutoCloseable {
                 try {
                     // EJBCA class, so not available in CESeCore.
                     // In the long run we should consider whitelisting parts of the org.ejbca and org.cesecore package namespaces (ECA-4916)
-                    value = parseObject(Class.forName(className).newInstance());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    value = parseObject(Class.forName(className).getConstructor().newInstance());
+                } catch (IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
                     throw new IOException(errorMessage("Deserialization of class '" + className + "' failed: " + e.getMessage()), e);
                 }
                 break;

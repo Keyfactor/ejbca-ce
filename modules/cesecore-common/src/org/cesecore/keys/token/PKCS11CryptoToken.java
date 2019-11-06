@@ -138,8 +138,8 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
             throw new CryptoTokenOfflineException("Slot not initialized.");
         }
         try {
-            final KeyStore keyStore = createKeyStore(authCode);
-            setKeyStore(keyStore);
+            final KeyStore newKeyStore = createKeyStore(authCode);
+            setKeyStore(newKeyStore);
         } catch (Throwable t) { // NOPMD: when dealing with HSMs we need to catch everything
             log.warn("Failed to initialize PKCS11 provider slot '" + this.sSlotLabel + "'.", t);
             CryptoTokenAuthenticationFailedException authfe = new CryptoTokenAuthenticationFailedException(
@@ -154,7 +154,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     private KeyStore createKeyStore(final char[] authCode) throws NoSuchAlgorithmException, CertificateException, UnsupportedEncodingException,
             IOException, KeyStoreException {
         final Provider provider = this.p11slot.getProvider();
-        final KeyStore keyStore = KeyStore.getInstance( "PKCS11", provider );
+        final KeyStore newKeyStore = KeyStore.getInstance( "PKCS11", provider );
         log.debug("Loading key from slot '" + this.sSlotLabel + "' using pin.");
         // See ECA-1395 for an explanation of this special handling for the IAIK provider.
         // If the application uses several instances of the IAIKPkcs11 provider, it has two options to get an initialized key store. First, it can get
@@ -176,12 +176,12 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         // null). If it is null, the default login manager will use the configured method for prompting the PIN on demand. If the application just
         // provides the instance number as a string instead of the complete provider name, the key store will also accept it.
         if (provider.getClass().getName().equals(Pkcs11SlotLabel.IAIK_PKCS11_CLASS)) {
-            keyStore.load(new ByteArrayInputStream(getSignProviderName().getBytes("UTF-8")), authCode);
+            newKeyStore.load(new ByteArrayInputStream(getSignProviderName().getBytes("UTF-8")), authCode);
         } else {
             // For the Sun provider no provider name is used.
-            keyStore.load(null, authCode);
+            newKeyStore.load(null, authCode);
         }
-        return keyStore;
+        return newKeyStore;
     }
 
     @Override

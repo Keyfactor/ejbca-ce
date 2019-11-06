@@ -80,7 +80,7 @@ public class DynamicUiModel {
     public DynamicUiModel(final LinkedHashMap<Object, Object> data, final LinkedHashMap<Object, Object> filteredDataToLog) {
         super();
         propertyChangeSupport = new PropertyChangeSupport(this);
-        viewComponents = new HashMap<String,List<DynamicUiComponent>>();
+        viewComponents = new HashMap<>();
         this.data = data;
         if (log.isDebugEnabled()) {
             log.debug("Create dynamic UI model with data: " + filteredDataToLog);
@@ -136,7 +136,7 @@ public class DynamicUiModel {
      * @return the raw data map.
      */
     public Map<String,Object> getRawData() {
-        final LinkedHashMap<String,Object> result = new LinkedHashMap<String,Object>();
+        final LinkedHashMap<String,Object> result = new LinkedHashMap<>();
         for (Entry<String,DynamicUiProperty<?>> entry : properties.entrySet()) {
             if (entry.getValue().isTransientValue()) {
                 continue;
@@ -165,12 +165,12 @@ public class DynamicUiModel {
 
     /**
      * Writes the properties to the data map (does conversions, i.e. in case of BigInteger etc.).
-     * @param data the data map of the entity.
+     * @param dataMap the data map of the entity.
      */
-    public void writeProperties(Map<Object, Object> data) {
-        data.putAll(getRawData());
+    public void writeProperties(final Map<Object, Object> dataMap) {
+        dataMap.putAll(getRawData());
         if (log.isDebugEnabled()) {
-            log.debug("Dynamic UI properties was written into data map: " + data);
+            log.debug("Dynamic UI properties was written into data map: " + dataMap);
         }
     }
 
@@ -210,7 +210,7 @@ public class DynamicUiModel {
      * @return the list of dynamic UI components for this property.
      */
     public List<DynamicUiComponent> getViewComponents(String name) {
-        final List<DynamicUiComponent> result = new ArrayList<DynamicUiComponent>();
+        final List<DynamicUiComponent> result = new ArrayList<>();
         if (viewComponents.get(name) != null) {
             result.addAll(viewComponents.get(name));
         }

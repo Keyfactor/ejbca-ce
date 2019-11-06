@@ -33,15 +33,13 @@ public class XmlSerializer {
     public static Map<String, Object> decode(final String input) {
 		Map<String, Object> ret = null;
 		if (input != null) {
-			try {
-				XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes("UTF8")));
+			try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes("UTF8")))) {
                 final LinkedHashMap<String,Object> h = (LinkedHashMap<String,Object>) decoder.readObject();
-				decoder.close();
 				// Handle Base64 encoded string values
 				ret = new Base64GetHashMap(h);
 			} catch (UnsupportedEncodingException e) {
 				// Fatal. No point in handling the lack of UTF-8
-				throw new RuntimeException(e);
+				throw new IllegalStateException(e);
 			}
 		}
 		return ret;
@@ -51,19 +49,19 @@ public class XmlSerializer {
 		String ret = null;
 		if (input != null) {
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			final XMLEncoder encoder = new XMLEncoder(baos);
-			final LinkedHashMap<Object,Object> linkedHashMap = encodeNonPrintableWithBase64 ? new Base64PutHashMap() : new LinkedHashMap<>();
-			// Copy one by one through the get() method, so the values get transformed if needed
-			for (String key : input.keySet()) {
-                linkedHashMap.put(key, input.get(key));
-            }
-			encoder.writeObject(linkedHashMap);
-			encoder.close();
+			try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+    			final LinkedHashMap<Object,Object> linkedHashMap = encodeNonPrintableWithBase64 ? new Base64PutHashMap() : new LinkedHashMap<>();
+    			// Copy one by one through the get() method, so the values get transformed if needed
+    			for (String key : input.keySet()) {
+                    linkedHashMap.put(key, input.get(key));
+                }
+    			encoder.writeObject(linkedHashMap);
+			}
 			try {
 				ret = baos.toString("UTF8");
 			} catch (UnsupportedEncodingException e) {
 				// Fatal. No point in handling the lack of UTF-8
-				throw new RuntimeException(e);
+				throw new IllegalStateException(e);
 			}
 		}
 		return ret;

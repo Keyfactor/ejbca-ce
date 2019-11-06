@@ -143,8 +143,8 @@ public abstract class CertificateExtension implements Named, Serializable {
 	/**
 	 * Method that initializes the CertificateExtension
 	 * 
-	 * @param id, the uniqueID of the extension
-	 * @param oID, the OID 
+	 * @param id the uniqueID of the extension
+	 * @param oID the OID 
 	 * @param criticalFlag if the extension should be marked as critical or not.
 	 * @param requiredFlag if the extension should be marked as required or not. 
 	 * @param config the complete configuration property file.

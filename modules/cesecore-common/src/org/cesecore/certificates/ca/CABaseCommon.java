@@ -135,15 +135,15 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         setSignedBy(cainfo.getSignedBy());
         setValidators(cainfo.getValidators());
         data.put(DESCRIPTION, cainfo.getDescription());
-        data.put(REVOCATIONREASON, Integer.valueOf(-1));
-        data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
+        data.put(REVOCATIONREASON, -1);
+        data.put(CERTIFICATEPROFILEID, cainfo.getCertificateProfileId());
 
     }
 
     /** Constructor used when retrieving existing CA from database. */
     @Override
-    public void init(HashMap<Object, Object> data) {
-        loadData(data);
+    public void init(HashMap<Object, Object> loadedData) {
+        loadData(loadedData);
         extendedcaservicemap = new HashMap<>();
     }
 
