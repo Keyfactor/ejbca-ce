@@ -118,8 +118,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
                 Arrays.asList(ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name())));
         addProperty(new DynamicUiProperty<>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
-        addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
+        addProperty(new DynamicUiProperty<>(PROPERTY_UNTIL_NEXT_UPDATE, 0L));
+        addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
     }
 
@@ -148,13 +148,13 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         return (Boolean) getProperty(PROPERTY_NON_EXISTING_GOOD).getValue();
     }
     public void setNonExistingGood(boolean nonExistingGood) {
-        setProperty(PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(nonExistingGood));
+        setProperty(PROPERTY_NON_EXISTING_GOOD, nonExistingGood);
     }
     public boolean getNonExistingRevoked() {
         return (Boolean) getProperty(PROPERTY_NON_EXISTING_REVOKED).getValue();
     }
     public void setNonExistingRevoked(boolean nonExistingRevoked) {
-        setProperty(PROPERTY_NON_EXISTING_REVOKED, Boolean.valueOf(nonExistingRevoked));
+        setProperty(PROPERTY_NON_EXISTING_REVOKED, nonExistingRevoked);
     }
     public boolean getNonExistingUnauthorized() {
         if(getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED) == null) {
@@ -163,19 +163,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         return (Boolean) getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED).getValue();
     }
     public void setNonExistingUnauthorized(boolean nonExistingUnauthorized) {
-        setProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.valueOf(nonExistingUnauthorized));
+        setProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED, nonExistingUnauthorized);
     }
     public boolean getIncludeCertChain() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_CERT_CHAIN).getValue();
     }
     public void setIncludeCertChain(boolean includeCertChain) {
-        setProperty(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.valueOf(includeCertChain));
+        setProperty(PROPERTY_INCLUDE_CERT_CHAIN, includeCertChain);
     }
     public boolean getIncludeSignCert() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_SIGN_CERT).getValue();
     }
     public void setIncludeSignCert(boolean includeCertChain) {
-        setProperty(PROPERTY_INCLUDE_SIGN_CERT, Boolean.valueOf(includeCertChain));
+        setProperty(PROPERTY_INCLUDE_SIGN_CERT, includeCertChain);
     }
     public ResponderIdType getResponderIdType() {
         return ResponderIdType.valueOf((String) getProperty(PROPERTY_RESPONDER_ID_TYPE).getValue());
@@ -187,7 +187,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         return (Boolean) getProperty(PROPERTY_REQUIRE_TRUSTED_SIGNATURE).getValue();
     }
     public void setRequireTrustedSignature(boolean requireTrustedSignature) {
-        setProperty(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(requireTrustedSignature));
+        setProperty(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, requireTrustedSignature);
     }
     /** @return the value in seconds (granularity defined in RFC 5019) */
     public long getUntilNextUpdate() {
@@ -195,7 +195,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     /** Set the value in seconds (granularity defined in RFC 5019) */
     public void setUntilNextUpdate(long untilNextUpdate) {
-        setProperty(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(untilNextUpdate));
+        setProperty(PROPERTY_UNTIL_NEXT_UPDATE, untilNextUpdate);
     }
     /** @return the value in seconds (granularity defined in RFC 5019) */
     public long getMaxAge() {
@@ -203,7 +203,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     /** Set the value in seconds (granularity defined in RFC 5019) */
     public void setMaxAge(long maxAge) {
-        setProperty(PROPERTY_MAX_AGE, Long.valueOf(maxAge));
+        setProperty(PROPERTY_MAX_AGE, maxAge);
     }
     
     /** @return true if NONCE's are to be used in replies */
@@ -217,7 +217,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      * @param enabled as true of NONCE's are to be included in replies
      *  */
     public void setNonceEnabled(boolean enabled) {
-        setProperty(PROPERTY_ENABLE_NONCE, Boolean.valueOf(enabled));
+        setProperty(PROPERTY_ENABLE_NONCE, enabled);
     }
     
     /** Helper method to check if the OCSP Archive CutOff extension is enabled. Used by Configdump */

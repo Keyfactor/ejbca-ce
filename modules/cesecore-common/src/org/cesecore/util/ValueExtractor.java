@@ -40,11 +40,11 @@ public abstract class ValueExtractor {
         try {
             final Object o = getObject(object, Integer.class);
             final Class<?> c = o.getClass();
-            return ((Integer) c.getMethod("intValue").invoke(o)).intValue();
+            return (int) c.getMethod("intValue").invoke(o);
         } catch (Exception e) {
             final Class<?> c = object.getClass();
             LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -57,11 +57,11 @@ public abstract class ValueExtractor {
         try {
             final Object o = getObject(object, Long.class);
             final Class<?> c = o.getClass();
-            return ((Long) c.getMethod("longValue").invoke(o)).longValue();
+            return (long) c.getMethod("longValue").invoke(o);
         } catch (Exception e) {
             final Class<?> c = object.getClass();
             LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
     
@@ -92,9 +92,9 @@ public abstract class ValueExtractor {
                 ret = objects[0];
             } else {
                 if (objects.length > 1) {
-                    throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName()+": "+objects[0]+", objects[1] is a "+objects[1].getClass().getName()+": "+objects[1]);                    
+                    throw new IllegalStateException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName()+": "+objects[0]+", objects[1] is a "+objects[1].getClass().getName()+": "+objects[1]);                    
                 } else {
-                    throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName()+": "+objects[0]);                    
+                    throw new IllegalStateException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName()+": "+objects[0]);                    
                 }
             }
         }
