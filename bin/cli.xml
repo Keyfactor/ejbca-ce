@@ -257,7 +257,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumAuditorRole" />
             <param name="userName" value="SeleniumAuditor" />
             <param name="dnName" value="CN=SeleniumAuditor" />
-            <param name="caName" value="ManagementCA" />
+            <param name="caName" value="${target.clientcert.ca}" />
             <param name="typeValue" value="1" />
             <param name="tokenValue" value="P12" />
             <param name="passwordValue" value="ejbca" />
@@ -268,7 +268,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumCaAdminRole" />
             <param name="userName" value="SeleniumCaAdmin" />
             <param name="dnName" value="CN=SeleniumCaAdmin" />
-            <param name="caName" value="ManagementCA" />
+            <param name="caName" value="${target.clientcert.ca}" />
             <param name="typeValue" value="1" />
             <param name="tokenValue" value="P12" />
             <param name="passwordValue" value="ejbca" />
@@ -279,7 +279,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumRaAdminRole" />
             <param name="userName" value="SeleniumRaAdmin" />
             <param name="dnName" value="CN=SeleniumRaAdmin" />
-            <param name="caName" value="ManagementCA" />
+            <param name="caName" value="${target.clientcert.ca}" />
             <param name="typeValue" value="1" />
             <param name="tokenValue" value="P12" />
             <param name="passwordValue" value="ejbca" />
@@ -290,7 +290,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumRaAdminRole" />
             <param name="userName" value="SeleniumRaAdmin1" />
             <param name="dnName" value="CN=SeleniumRaAdmin1" />
-            <param name="caName" value="ManagementCA" />
+            <param name="caName" value="${target.clientcert.ca}" />
             <param name="typeValue" value="1" />
             <param name="tokenValue" value="P12" />
             <param name="passwordValue" value="ejbca" />
@@ -301,7 +301,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumSuperAdminRole" />
             <param name="userName" value="SeleniumSuperAdmin" />
             <param name="dnName" value="CN=SeleniumSuperAdmin" />
-            <param name="caName" value="ManagementCA" />
+            <param name="caName" value="${target.clientcert.ca}" />
             <param name="typeValue" value="1" />
             <param name="tokenValue" value="P12" />
             <param name="passwordValue" value="ejbca" />
@@ -312,7 +312,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumSupervisorRole" />
             <param name="userName" value="SeleniumSupervisor" />
             <param name="dnName" value="CN=SeleniumSupervisor" />
-            <param name="caName" value="ManagementCA" />
+            <param name="caName" value="${target.clientcert.ca}" />
             <param name="typeValue" value="1" />
             <param name="tokenValue" value="P12" />
             <param name="passwordValue" value="ejbca" />
