@@ -379,6 +379,11 @@ public class CertificateValidityTest {
 	}
 	
     private void testBaseTestCertificateValidity(String encodedValidity) throws Exception {
+        final Date caFrom = new Date();
+        caFrom.setTime(caFrom.getTime() - 20L*(24L*60L*60L*1000L));
+        final Date caTo = new Date();
+        caTo.setTime(caTo.getTime() + 100L*(24L * 60L * 60L * 1000L));
+
     	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
     			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign,
     			null, null, "BC", true, null);
@@ -392,9 +397,9 @@ public class CertificateValidityTest {
     	// First see that when we don't have a specified time requested and validity override is not allowed, the end time should be ruled by the certificate profile.
     	
     	CertificateValidity cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
-    	Date now = new Date();
     	Date notBefore = cv.getNotBefore();
     	Date notAfter = cv.getNotAfter();
+    	Date now = new Date();
         Calendar cal1 = Calendar.getInstance();
         cal1.add(Calendar.DAY_OF_MONTH, 49);
         Calendar cal2 = Calendar.getInstance();
