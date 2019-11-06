@@ -266,7 +266,7 @@ public class DnComponents {
     }
 
     protected static String getDnExtractorFieldFromDnId(int field) {
-        return dnIdToExtractorFieldMap.get(Integer.valueOf(field));
+        return dnIdToExtractorFieldMap.get(field);
     }
 
     // Used only by DNFieldExtractor, don't USE
@@ -275,7 +275,7 @@ public class DnComponents {
     }
 
     protected static String getAltNameExtractorFieldFromDnId(int field) {
-        return altNameIdToExtractorFieldMap.get(Integer.valueOf(field));
+        return altNameIdToExtractorFieldMap.get(field);
     }
 
     // Used only by DNFieldExtractor, don't USE
@@ -284,15 +284,15 @@ public class DnComponents {
     }
 
     protected static String getDirAttrExtractorFieldFromDnId(int field) {
-        return dirAttrIdToExtractorFieldMap.get(Integer.valueOf(field));
+        return dirAttrIdToExtractorFieldMap.get(field);
     }
 
     public static String dnIdToProfileName(int dnid) {
-        return dnIdToProfileNameMap.get(Integer.valueOf(dnid));
+        return dnIdToProfileNameMap.get(dnid);
     }
 
     public static int dnIdToProfileId(int dnid) {
-        return dnIdToProfileIdMap.get(Integer.valueOf(dnid));
+        return dnIdToProfileIdMap.get(dnid);
     }
 
     /**
@@ -306,14 +306,14 @@ public class DnComponents {
      * Method to get a language error constant for the admin-GUI from a profile id
      */
     public static String getLanguageConstantFromProfileId(int id) {
-        return profileIdLanguageMap.get(Integer.valueOf(id));
+        return profileIdLanguageMap.get(id);
     }
 
     /**
      * Method to get a clear text error msg for the admin-GUI from a dn id
      */
     public static String getErrTextFromDnId(int id) {
-        return dnIdErrorMap.get(Integer.valueOf(id));
+        return dnIdErrorMap.get(id);
     }
 
     /** This method is only used to initialize EndEntityProfile, because of legacy baggage.
@@ -329,10 +329,10 @@ public class DnComponents {
      *
      *  Should only be used with subjectDN, Subject Alternative Names and subject directory attribute fields.
      */
-    public static int profileIdToDnId(int profileid) {
-        final Integer val = profileIdToDnIdMap.get(Integer.valueOf(profileid));
+    public static int profileIdToDnId(int profileId) {
+        final Integer val = profileIdToDnIdMap.get(profileId);
         if (val == null) {
-            log.error("No dn id mapping from profile id " + profileid);
+            log.error("No dn id mapping from profile id " + profileId);
             // We allow it to fail here
         }
         return val.intValue();
