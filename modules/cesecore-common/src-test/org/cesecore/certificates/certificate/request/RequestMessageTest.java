@@ -22,9 +22,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERSequence;
@@ -55,13 +53,13 @@ public class RequestMessageTest {
     private static KeyPair keyPair;
 
     @BeforeClass
-    public static void beforeClass() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public static void beforeClass() throws InvalidAlgorithmParameterException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         keyPair = KeyTools.genKeys("512", null, "RSA");
     }
 
     @Test
-    public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, OperatorCreationException {
+    public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, IOException, OperatorCreationException {
 
         PKCS10CertificationRequest basicpkcs10 = createP10("CN=Test,OU=foo");
 

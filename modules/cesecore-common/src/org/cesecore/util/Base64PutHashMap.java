@@ -34,7 +34,8 @@ public class Base64PutHashMap extends LinkedHashMap<Object, Object> {
         super(m);
     }
 
-    public Object put(Object key, Object value) {
+    @Override
+    public Object put(final Object key, final Object value) {
         if (value == null) {
             return super.put(key, value);
         }

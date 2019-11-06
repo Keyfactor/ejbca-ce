@@ -76,7 +76,7 @@ public class ClientX509TrustManager implements X509TrustManager {
             return new X509Certificate[0];
         }
         
-        ArrayList<X509Certificate> acceptedIssuers = new ArrayList<X509Certificate>();
+        ArrayList<X509Certificate> acceptedIssuers = new ArrayList<>();
         for(Collection<X509Certificate> certChain : trustedCertificatesChains) {
             Iterator<X509Certificate> itr = certChain.iterator();
             X509Certificate cert = itr.next();

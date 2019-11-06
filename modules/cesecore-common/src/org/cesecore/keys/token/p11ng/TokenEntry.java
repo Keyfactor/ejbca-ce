@@ -67,7 +67,7 @@ public class TokenEntry implements Serializable {
             this.parsedChain = new Certificate[this.chain.length];
             int i = 0;
             for (byte[] certBytes : this.chain) {
-                this.parsedChain[i] = CertTools.getCertfromByteArray(certBytes, "BC");
+                this.parsedChain[i] = CertTools.getCertfromByteArray(certBytes, "BC", Certificate.class);
                 i++;
             }
         }
@@ -103,7 +103,7 @@ public class TokenEntry implements Serializable {
 
     public Certificate getParsedTrustedCertificate() throws CertificateException {
         if (this.parsedTrustedCertificate == null && this.trustedCertificate != null) {
-            this.parsedTrustedCertificate = CertTools.getCertfromByteArray(this.trustedCertificate, "BC");
+            this.parsedTrustedCertificate = CertTools.getCertfromByteArray(this.trustedCertificate, "BC", Certificate.class);
         }
         return this.parsedTrustedCertificate;
     }

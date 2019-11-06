@@ -19,6 +19,8 @@ import java.security.PrivateKey;
  */
 public class NJI11ReleasebleSessionPrivateKey extends NJI11Object implements Key, PrivateKey {
     
+    private static final long serialVersionUID = -1293160515130067674L;
+
     public NJI11ReleasebleSessionPrivateKey(long object, CryptokiDevice.Slot slot) {
         super(object, slot);
     }

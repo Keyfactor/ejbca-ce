@@ -33,8 +33,8 @@ public class AuditLogValidationReport implements Serializable{
     private final List<AuditLogReportElem> warns;
     
     public AuditLogValidationReport() {
-        this.errors = new ArrayList<AuditLogReportElem>();
-        this.warns = new ArrayList<AuditLogReportElem>();
+        this.errors = new ArrayList<>();
+        this.warns = new ArrayList<>();
     }
 
     /** @return list of errors in this report. */

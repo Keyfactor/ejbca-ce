@@ -67,7 +67,7 @@ public class EccKeyValidatorTest {
                 "ecc-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         // Set custom curve
-        List<String> curves = new ArrayList<String>();
+        List<String> curves = new ArrayList<>();
         curves.add("secp256r1");
         keyValidator.setCurves(curves);
         List<String> messages = keyValidator.validate(keys.getPublic(), null);
@@ -95,7 +95,7 @@ public class EccKeyValidatorTest {
                 "ecc-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         // Set custom curve
-        List<String> curves = new ArrayList<String>();
+        List<String> curves = new ArrayList<>();
         curves.add("secp256r1");
         keyValidator.setCurves(curves);
         List<String> messages = keyValidator.validate(keys.getPublic(), null);

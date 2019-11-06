@@ -61,7 +61,7 @@ public class CtLogManager {
      * @return a list of all unique labels
      */
     public List<String> getLabels() {
-        List<String> ret = new ArrayList<String>(getCtLogGroups().keySet());
+        List<String> ret = new ArrayList<>(getCtLogGroups().keySet());
         Collections.sort(ret, new Comparator<String>() {
             @Override
             public int compare(String label1, String label2) {
@@ -89,7 +89,7 @@ public class CtLogManager {
     public List<CTLogInfo> getCtLogsByLabel(final String label) {
         final List<CTLogInfo> ctLogGroup = getCtLogGroups().get(label);
         if (ctLogGroup == null) {
-            return new ArrayList<CTLogInfo>();
+            return new ArrayList<>();
         }
         return ctLogGroup;
     }

@@ -18,9 +18,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
- * @version $Id$
+ * Indicates that an exception does not contain sensitive data, and that data should not be removed.
+ * For example, it is used for WaitingForApprovalException, which contains an ID that should not be removed.
  *
+ * @version $Id$
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

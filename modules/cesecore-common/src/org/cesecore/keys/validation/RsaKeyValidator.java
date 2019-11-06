@@ -41,7 +41,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  *
  * The key validator is used to implement the CA/B-Forum requirements for RSA public
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
- * requirements. See: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf section 6.1.6
+ * requirements. See: <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR section 6.1.6 (PDF)</a>
  *
  * @version $Id$
  */
@@ -235,7 +235,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModel(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
-        final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<Integer>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
+        final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
         settingsTemplate.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
         settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
         settingsTemplate.setRequired(true);
@@ -335,7 +335,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
 
     /**
      * Sets the CA/B Forum requirements chapter 6.1.6 for RSA public keys.
-     * @see {@link https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf}
+     * @see <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR (PDF)</a>
      * @param keyValidator
      */
     private void setCertProfileSettings() {
@@ -354,7 +354,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
 
     /**
      * Sets the CA/B Forum requirements chapter 6.1.6 for RSA public keys.
-     * @see {@link https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf}
+     * @see <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR (PDF)</a>
      * @param keyValidator
      */
     public void setCABForumBaseLineRequirements142Settings() {
@@ -634,14 +634,14 @@ public class RsaKeyValidator extends KeyValidatorBase {
         }
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
-            log.info(intres.getLocalizedMessage("rsakeyvalidator.upgrade", new Float(getVersion())));
+            log.info(intres.getLocalizedMessage("rsakeyvalidator.upgrade", getVersion()));
             init();
         }
     }
 
     @Override
     public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, ValidationException {
-        List<String> messages = new ArrayList<String>();
+        List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
                     + publicKey.getClass().getName());
@@ -749,7 +749,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @return the list of available bit lengths.
      */
     public List<String> getAvailableBitLengths() {
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
             result.add(Integer.toString(length));
         }
@@ -761,7 +761,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @return the list of available bit lengths.
      */
     public static List<String> getAvailableBitLengths(final int minLength) {
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
             if (length >= minLength) {
                 result.add(Integer.toString(length));
@@ -775,7 +775,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @return the map of available bit lengths.
      */
     public static Map<String,String> getAvailableBitLengthsAsMap(final int minLength) {
-        final Map<String,String> result = new LinkedHashMap<String,String>();
+        final Map<String,String> result = new LinkedHashMap<>();
         for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
             if (length >= minLength) {
                 result.put(Integer.toString(length), Integer.toString(length));

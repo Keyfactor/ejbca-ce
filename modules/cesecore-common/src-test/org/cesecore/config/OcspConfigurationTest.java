@@ -82,9 +82,9 @@ public class OcspConfigurationTest {
     private void createCustonOcspConfigurations(String configurations) throws IOException {
         File f = File.createTempFile("testocspconf", "properties");
         f.deleteOnExit();
-        FileWriter fos = new FileWriter(f);
-        fos.write(configurations);
-        fos.close();
+        try (FileWriter fos = new FileWriter(f)) {
+            fos.write(configurations);
+        }
         ConfigurationHolder.addConfigurationFile(f.getAbsolutePath());
     }
 

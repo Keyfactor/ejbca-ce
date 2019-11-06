@@ -335,8 +335,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 if (log.isDebugEnabled()) {
                     log.debug("Authorization request: " + request1.toString());
                 }
-                final CloseableHttpResponse authResponse = authHttpClient.execute(request1);
-                try {
+                try (final CloseableHttpResponse authResponse = authHttpClient.execute(request1)) {
                     final int authStatusCode = authResponse.getStatusLine().getStatusCode();
                     if (log.isDebugEnabled()) {
                         log.debug("Status code for authorization request is: " + authStatusCode);
@@ -363,8 +362,6 @@ public class AzureCryptoToken extends BaseCryptoToken {
                     } else {
                         throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization failed with unknown response code " + authStatusCode + ", JSON response: " + s);
                     }
-                } finally {
-                    authResponse.close();
                 }
             }
             return response;
