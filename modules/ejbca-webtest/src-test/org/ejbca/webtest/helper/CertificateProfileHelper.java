@@ -1487,7 +1487,7 @@ public class CertificateProfileHelper extends BaseHelper {
 
     // Asserts the 'Certificate Profile' save title exists.
     private void assertCertificateProfileSaved() {
-        assertInfoMessageAppears("Certificate Profile '.*' saved \\.",
+        assertInfoMessageAppears("Certificate Profile '.*' saved\\.",
                 "Certificate Profile save message was not found.",
                 "Expected profile save message was not displayed");
     }
