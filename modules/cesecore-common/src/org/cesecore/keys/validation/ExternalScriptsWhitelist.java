@@ -93,7 +93,7 @@ public class ExternalScriptsWhitelist {
      * @param scripts a list of path strings
      */
     public ExternalScriptsWhitelist(final String... paths) {
-        this.scripts = new ArrayList<File>();
+        this.scripts = new ArrayList<>();
         this.isEnabled = true;
         for (final String path : paths) {
             scripts.add(new File(path));
@@ -137,7 +137,7 @@ public class ExternalScriptsWhitelist {
      * @return the paths to the scripts in this whitelist
      */
     public List<String> getScriptsPaths() {
-        final List<String> paths = new ArrayList<String>();
+        final List<String> paths = new ArrayList<>();
         for (final File script : scripts) {
             paths.add(script.getPath());
         }

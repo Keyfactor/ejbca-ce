@@ -67,7 +67,7 @@ public enum OcspExtensionsCache {
     }
     
     private static Map<String, OCSPExtension> buildExtensionsMap() {
-        Map<String, OCSPExtension> result = new HashMap<String, OCSPExtension>();
+        Map<String, OCSPExtension> result = new HashMap<>();
         ServiceLoader<OCSPExtension> extensionLoader = ServiceLoader.load(OCSPExtension.class);
         for (OCSPExtension extension : extensionLoader) {
             result.put(extension.getOid(), extension);

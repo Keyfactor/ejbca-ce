@@ -29,7 +29,7 @@ public class GUIDGeneratorTest {
 
     @Test
     public void testGenerateGUIDs() throws Exception {
-        HashMap<String, String> map = new HashMap<String, String>(500000);
+        HashMap<String, String> map = new HashMap<>(500000);
         String guid;
         for (int j = 1; j < 500001; j++) {
             // Ensure we don't generate all GUIDs within the same millisecond, so pause 1ms for every 1000 GUIDs generated.

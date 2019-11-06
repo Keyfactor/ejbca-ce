@@ -32,7 +32,7 @@ import org.junit.Test;
 public class AccessMatchValueReverseLookupRegistryTest {
 
     @Test
-    public void testVanillaMatchValue() throws SecurityException {
+    public void testVanillaMatchValue() {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.register(new VanillaAuthenticationTokenMetaData());
         } catch (InvalidMatchValueException e) {

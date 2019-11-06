@@ -116,7 +116,7 @@ public class CaCertificateCacheTest {
 	@Test
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
-		Collection<Certificate> certs = new ArrayList<Certificate>();
+		Collection<Certificate> certs = new ArrayList<>();
 		X509Certificate testrootcert = CertTools.getCertfromByteArray(testroot, X509Certificate.class);
 		certs.add(testrootcert);
 		X509Certificate testrootnewcert = CertTools.getCertfromByteArray(testrootnew, X509Certificate.class);
@@ -153,7 +153,7 @@ public class CaCertificateCacheTest {
 	public static Throwable threadException = null;
 	@Test
 	public void test02loadCertificates() throws Exception {
-		Collection<Certificate> certs = new ArrayList<Certificate>();
+		Collection<Certificate> certs = new ArrayList<>();
 		X509Certificate testrootcert = CertTools.getCertfromByteArray(testroot, X509Certificate.class);
 		certs.add(testrootcert);
 		X509Certificate testrootnewcert = CertTools.getCertfromByteArray(testrootnew, X509Certificate.class);
@@ -232,7 +232,8 @@ public class CaCertificateCacheTest {
 	        this.cache = cache;
 	        this.dn = lookfor;
 	    }
-	    public void run() {
+	    @Override
+        public void run() {
 	        for (int i=0; i<1000;i++) {
 	            X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString(dn));
 	            // The cache tests will not return any CV Certificates because this OCSP cache 
@@ -245,7 +246,8 @@ public class CaCertificateCacheTest {
 	}
 
 	private static class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
-	    public void uncaughtException(Thread t, Throwable e) { // NOPMD, this is not a JEE app, only a test
+	    @Override
+        public void uncaughtException(Thread t, Throwable e) { // NOPMD, this is not a JEE app, only a test
 	        CaCertificateCacheTest.threadException = e;
 	    }
 	}

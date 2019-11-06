@@ -45,7 +45,7 @@ public class ProfileIDTest {
 		}
 	}
 	private class DBTestReal implements ProfileID.DB {
-		private final Set<Integer> ids = new HashSet<Integer>();
+		private final Set<Integer> ids = new HashSet<>();
 
 		public DBTestReal() {
 			// do nothing

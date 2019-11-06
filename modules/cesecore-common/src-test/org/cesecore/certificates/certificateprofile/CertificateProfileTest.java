@@ -171,7 +171,7 @@ public class CertificateProfileTest {
         assertEquals(true, prof.getCRLDistributionPointCritical());
         assertEquals("http://foo.bar/crl.crl", prof.getCRLDistributionPointURI());
 
-        final ArrayList<Integer> publishers = new ArrayList<Integer>();
+        final ArrayList<Integer> publishers = new ArrayList<>();
         publishers.add(1);
         publishers.add(2);
         
@@ -194,7 +194,7 @@ public class CertificateProfileTest {
         assertEquals("SHA256WithRSA", prof.getSignatureAlgorithm());
         
         assertTrue(prof.isApplicableToAnyCA());
-        ArrayList<Integer> cas = new ArrayList<Integer>();
+        ArrayList<Integer> cas = new ArrayList<>();
         cas.add(1);
         prof.setAvailableCAs(cas);
         assertFalse(prof.isApplicableToAnyCA());
@@ -280,7 +280,7 @@ public class CertificateProfileTest {
     public void test04createSubjectDNSubSet() throws Exception{
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
-    	ArrayList<String> dnsubset = new ArrayList<String>();
+    	ArrayList<String> dnsubset = new ArrayList<>();
     	dnsubset.add(Integer.toString(DNFieldExtractor.CN));
     	dnsubset.add(Integer.toString(DNFieldExtractor.UID));
     	dnsubset.add(Integer.toString(DNFieldExtractor.GIVENNAME));
@@ -302,7 +302,7 @@ public class CertificateProfileTest {
     public void test05createSubjectAltNameSubSet() throws Exception{
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
-    	ArrayList<Integer> altnamesubset = new ArrayList<Integer>();
+    	ArrayList<Integer> altnamesubset = new ArrayList<>();
     	altnamesubset.add(Integer.valueOf(DNFieldExtractor.RFC822NAME));
     	altnamesubset.add(Integer.valueOf(DNFieldExtractor.UPN));    	
     	profile.setSubjectAltNameSubSet(altnamesubset);
@@ -438,7 +438,7 @@ public class CertificateProfileTest {
         assertEquals("", profile.getFreshestCRLURI());
         List<String> issuers = profile.getCaIssuers();
         assertEquals(0, issuers.size());
-        List<String> caissuers = new ArrayList<String>();
+        List<String> caissuers = new ArrayList<>();
         caissuers.add("foo");
         profile.setCaIssuers(caissuers);
         issuers = profile.getCaIssuers();

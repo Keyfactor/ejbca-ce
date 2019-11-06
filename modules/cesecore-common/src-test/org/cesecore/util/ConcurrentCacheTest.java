@@ -280,7 +280,7 @@ public final class ConcurrentCacheTest {
             Thread.sleep(100);
             
             // Access the cache once more to trigger a cleanup
-            entry = cache.openCacheEntry(String.valueOf("x"), 1);
+            entry = cache.openCacheEntry("x", 1);
             assertNotNull("openCacheEntry timed out", entry);
             assertFalse("isInCache should return false for non-existent entry", entry.isInCache());
             entry.putValue(-123456);

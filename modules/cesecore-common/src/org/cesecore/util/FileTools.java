@@ -132,17 +132,15 @@ public abstract class FileTools {
      *
      */
     public static byte[] readInputStreamtoBuffer(final InputStream in)  {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try {
-        int len = 0;
-        final byte[] buf = new byte[1024];
-        while ((len = in.read(buf)) > 0) {
-            os.write(buf, 0, len);
-        }
-        in.close();
-        os.close();
-        return os.toByteArray();
-        } catch(IOException e) {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            int len = 0;
+            final byte[] buf = new byte[1024];
+            while ((len = in.read(buf)) > 0) {
+                os.write(buf, 0, len);
+            }
+            in.close();
+            return os.toByteArray();
+        } catch (IOException e) {
             throw new RuntimeException("Caught IOException for unknown reason", e);      
         }
     }
