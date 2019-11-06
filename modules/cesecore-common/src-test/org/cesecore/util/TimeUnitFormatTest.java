@@ -14,7 +14,6 @@
 package org.cesecore.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.LinkedHashMap;
@@ -45,7 +44,7 @@ public class TimeUnitFormatTest {
     public static final String TYPE_SECONDS = "s";
     public static final String TYPE_MILLISECONDS = "ms";
 
-    private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<String, Long>();
+    private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<>();
     static {
         MILLISECONDS_FACTOR.put(TYPE_YEARS, MILLISECONDS_PER_YEAR);
         MILLISECONDS_FACTOR.put(TYPE_MONTHS, MILLISECONDS_PER_MONTH);
@@ -134,8 +133,7 @@ public class TimeUnitFormatTest {
             parser.parseMillis("5m  3d 7z -6s -4h 5m 10ms");
             fail("NumberFormatException ('Illegal characters.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Illegal characters.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Illegal characters.", e.getMessage());
         }
 
         // test other illegal characters (start|end)
@@ -143,8 +141,7 @@ public class TimeUnitFormatTest {
             parser.parseMillis("iiii5m 3d -6s -4h 5m");
             fail("NumberFormatException ('Illegal characters.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Illegal characters.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Illegal characters.", e.getMessage());
         }
 
         // test other illegal characters (start|end)
@@ -152,8 +149,7 @@ public class TimeUnitFormatTest {
             parser.parseMillis("5m 3d -6s -4h 5miiii");
             fail("NumberFormatException ('Illegal characters.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Illegal characters.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Illegal characters.", e.getMessage());
         }
 
         // test null or empty string (=blank)
@@ -161,15 +157,13 @@ public class TimeUnitFormatTest {
             parser.parseMillis(null);
             fail("NumberFormatException ('Cannot parse a blank string.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Cannot parse a blank string.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Cannot parse a blank string.", e.getMessage());
         }
         try {
             parser.parseMillis("   ");
             fail("NumberFormatException ('Cannot parse a blank string.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Cannot parse a blank string.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Cannot parse a blank string.", e.getMessage());
         }
     }
     
@@ -193,8 +187,7 @@ public class TimeUnitFormatTest {
             parser.parseMillis("1y2mo3d4h5m6s7ms");
             fail("NumberFormatException ('Illegal characters.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Illegal characters.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Illegal characters.", e.getMessage());
         }
     }
     
@@ -218,8 +211,7 @@ public class TimeUnitFormatTest {
             parser.parseMillis("1y2mo3d4h");
             fail("NumberFormatException ('Illegal characters.') expected!");
         } catch (NumberFormatException e) {
-            assertTrue("Expected NumberFormatException: " + e.toString(),
-                    e instanceof NumberFormatException && "Illegal characters.".equals(e.getMessage()));
+            assertEquals("Wrong NumberFormatException message", "Illegal characters.", e.getMessage());
         }
     }
 }

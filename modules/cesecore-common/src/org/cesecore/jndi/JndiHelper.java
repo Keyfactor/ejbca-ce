@@ -52,7 +52,7 @@ public abstract class JndiHelper {
 	 * @param <T>
      * @param module the module where the bean is deployed, i.e. ejbca-ejb or systemtests-ejb.
 	 * @param remoteInterface
-	 * @return
+	 * @return Reference to remote SSB
 	 */
     @SuppressWarnings("unchecked")
 	public static <T> T getRemoteSession(final Class<T> remoteInterface, final String module) {

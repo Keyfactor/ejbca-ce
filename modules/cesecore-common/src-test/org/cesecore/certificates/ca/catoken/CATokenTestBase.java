@@ -12,15 +12,19 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Properties;
@@ -31,17 +35,10 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * 
@@ -55,12 +52,9 @@ public abstract class CATokenTestBase {
 	private static final String DEFAULT_KEY = "defaultKey ÅaÄÖbåäöc«»©“”nµA";
 	protected static final String ENCRYPTION_KEY = "encryptionKey ÅaÄbbÖcccäâãêëẽć©A";
 
-	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
-	NoSuchAlgorithmException, CertificateException, IOException,
-	CryptoTokenOfflineException, NoSuchProviderException,
-	InvalidKeyException, SignatureException,
-	CryptoTokenAuthenticationFailedException,
-	InvalidAlgorithmParameterException {
+	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+	        CertificateException, IOException,CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
+	        InvalidAlgorithmParameterException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		try {
@@ -248,12 +242,9 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	}
 
-	protected void doCaTokenDSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
-	NoSuchAlgorithmException, CertificateException, IOException,
-	CryptoTokenOfflineException, NoSuchProviderException,
-	InvalidKeyException, SignatureException,
-	CryptoTokenAuthenticationFailedException,
-	InvalidAlgorithmParameterException {
+	protected void doCaTokenDSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+	        CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
+	        InvalidAlgorithmParameterException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
@@ -310,12 +301,8 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	}
 
-	protected void doCaTokenECC(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
-	NoSuchAlgorithmException, CertificateException, IOException,
-	CryptoTokenOfflineException, NoSuchProviderException,
-	InvalidKeyException, SignatureException,
-	CryptoTokenAuthenticationFailedException,
-	InvalidAlgorithmParameterException {
+	protected void doCaTokenECC(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+	        CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 		final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		try {
@@ -460,12 +447,9 @@ public abstract class CATokenTestBase {
 
 	abstract String getProvider();
 
-	protected void doActivateDeactivate(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties)
-	throws KeyStoreException, NoSuchAlgorithmException,
-	CertificateException, IOException, CryptoTokenOfflineException,
-	NoSuchProviderException, InvalidKeyException, SignatureException,
-	CryptoTokenAuthenticationFailedException,
-	InvalidAlgorithmParameterException {
+	protected void doActivateDeactivate(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException,
+	        NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException,
+	        CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 		// Remove auto activate
 		Properties prop = cryptoToken.getProperties();
@@ -529,7 +513,9 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	}
 
-	protected void doSaveAndLoad(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws InvalidKeyException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IOException, IllegalCryptoTokenException {
+	protected void doSaveAndLoad(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws InvalidKeyException,
+	        CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, NoSuchAlgorithmException, CertificateException, KeyStoreException,
+	        InvalidAlgorithmParameterException, IOException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		try {

@@ -67,7 +67,7 @@ public class Criteria implements Serializable {
     public static Elem between(final String name, final Object after,
             final Object before) {
         return new Term(RelationalOperator.BETWEEN, name,
-                new  AbstractMap.SimpleEntry<Object, Object>(after, before));
+                new  AbstractMap.SimpleEntry<>(after, before));
 
     }
     

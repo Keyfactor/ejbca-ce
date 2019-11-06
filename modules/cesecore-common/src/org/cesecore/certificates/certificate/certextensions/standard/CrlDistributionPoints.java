@@ -75,7 +75,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
             log.debug("Certificate '" + subject.getCertificateDN() + "' was assigned to CRL partition " + crlPartitionIndex);
         }
 		// Multiple CDPs are separated with the ';' sign        	         	 
-		final ArrayList<DistributionPointName> dpns = new ArrayList<DistributionPointName>();
+		final ArrayList<DistributionPointName> dpns = new ArrayList<>();
 		if (StringUtils.isNotEmpty(crldistpoint)) {
 			final Iterator<String> it = StringTools.splitURIs(crldistpoint).iterator();
 			while (it.hasNext()) {
@@ -94,7 +94,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		}
 		// CRL issuer works much like Dist point URI. If separated by ; it is put in the same global distPoint as the URI, 
 		// if there is more of one of them, the one with more is put in an own global distPoint.
-		final ArrayList<GeneralNames> issuers = new ArrayList<GeneralNames>();
+		final ArrayList<GeneralNames> issuers = new ArrayList<>();
 		if (StringUtils.isNotEmpty(crlissuer)) {
 			final StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
 			while (tokenizer.hasMoreTokens()) {
@@ -109,7 +109,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 				issuers.add(gns);
 			}            	
 		}
-		final ArrayList<DistributionPoint> distpoints = new ArrayList<DistributionPoint>();
+		final ArrayList<DistributionPoint> distpoints = new ArrayList<>();
 		if ( (!issuers.isEmpty()) || (!dpns.isEmpty()) ) {
 			int i = dpns.size();
 			if (issuers.size() > i) {
@@ -119,10 +119,10 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 				DistributionPointName dpn = null;
 				GeneralNames issuer = null;
 				if (dpns.size() > j) {
-					dpn = (DistributionPointName)dpns.get(j);
+					dpn = dpns.get(j);
 				}
 				if (issuers.size() > j) {
-					issuer = (GeneralNames)issuers.get(j);
+					issuer = issuers.get(j);
 				}
 				if ( (dpn != null) || (issuer != null) ) {
 					distpoints.add(new DistributionPoint(dpn, null, issuer));            	            			
@@ -131,7 +131,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		}
 		CRLDistPoint ret = null;
 		if (!distpoints.isEmpty()) {
-			ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[distpoints.size()]));			
+			ret = new CRLDistPoint(distpoints.toArray(new DistributionPoint[distpoints.size()]));			
 		} 
 		if (ret == null) {
 			log.error("CrlDistributionPoints missconfigured, no distribution points available.");

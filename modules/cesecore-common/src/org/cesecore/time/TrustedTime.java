@@ -71,6 +71,7 @@ public class TrustedTime implements Serializable {
         this.accuracy = accuracy;
     }
 
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append(this.accuracy).append(";").append(this.stratum).append(";").

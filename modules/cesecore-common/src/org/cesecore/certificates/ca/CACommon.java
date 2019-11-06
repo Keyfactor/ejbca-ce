@@ -39,7 +39,7 @@ public interface CACommon extends IUpgradeableData {
     void init(CAInfo cainfo);
 
     /** Constructor used when retrieving existing CA from database. */
-    void init(HashMap<Object, Object> data);
+    void init(HashMap<Object, Object> loadedData);
 
     void setCAInfo(CAInfo cainfo);
 
@@ -255,5 +255,6 @@ public interface CACommon extends IUpgradeableData {
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
+    @Override
     void upgrade();
 }

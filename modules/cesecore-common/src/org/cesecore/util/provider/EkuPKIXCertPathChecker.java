@@ -40,7 +40,6 @@ import org.cesecore.util.CertTools;
 public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
     
     private static final Logger log = Logger.getLogger(EkuPKIXCertPathChecker.class);
-    private static final List<String> EMPTY = new ArrayList<String>(0);
     private final List<String> requiredKeyPurposeOids;
 
     /**
@@ -53,7 +52,7 @@ public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
     public EkuPKIXCertPathChecker(final String...requiredKeyPurposeOids) {
         super();
         if (requiredKeyPurposeOids==null) {
-            this.requiredKeyPurposeOids = EMPTY;
+            this.requiredKeyPurposeOids = Collections.emptyList();
         } else {
             this.requiredKeyPurposeOids = Arrays.asList(requiredKeyPurposeOids);
         }
@@ -69,7 +68,7 @@ public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
     public EkuPKIXCertPathChecker(final List<String> requiredKeyPurposeOids) {
         super();
         if (requiredKeyPurposeOids==null) {
-            this.requiredKeyPurposeOids = EMPTY;
+            this.requiredKeyPurposeOids = Collections.emptyList();
         } else {
             this.requiredKeyPurposeOids = requiredKeyPurposeOids;
         }
@@ -82,13 +81,13 @@ public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
             try {
                 List<String> ekus = x509Certificate.getExtendedKeyUsage();
                 if (ekus==null) {
-                    ekus = EMPTY;
+                    ekus = Collections.emptyList();
                 }
                 if (ekus.containsAll(requiredKeyPurposeOids)) {
                     // All the required EKUs are present, so mark the EKU extension as processed
                     unresolvedCritExts.remove(Extension.extendedKeyUsage.getId());
                 } else {
-                    final List<String> ekusMissing = new ArrayList<String>(requiredKeyPurposeOids);
+                    final List<String> ekusMissing = new ArrayList<>(requiredKeyPurposeOids);
                     ekusMissing.removeAll(ekus);
                     if (log.isDebugEnabled()) {
                         log.debug("EKUs in certificate: " +Arrays.toString(ekus.toArray()) + " EKUs required: " +Arrays.toString(requiredKeyPurposeOids.toArray()));

@@ -44,8 +44,8 @@ import org.cesecore.util.CertTools;
 public enum OcspSigningCache {
     INSTANCE;
     
-    private Map<Integer, OcspSigningCacheEntry> cache = new HashMap<Integer, OcspSigningCacheEntry>();
-    private Map<Integer, OcspSigningCacheEntry> staging = new HashMap<Integer, OcspSigningCacheEntry>();
+    private Map<Integer, OcspSigningCacheEntry> cache = new HashMap<>();
+    private Map<Integer, OcspSigningCacheEntry> staging = new HashMap<>();
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
     private final ReentrantLock lock = new ReentrantLock(false);
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
@@ -71,7 +71,7 @@ public enum OcspSigningCache {
 
     public void stagingStart() {
         lock.lock();
-        staging = new HashMap<Integer, OcspSigningCacheEntry>();
+        staging = new HashMap<>();
     }
 
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
@@ -82,34 +82,34 @@ public enum OcspSigningCache {
     }
 
     public void stagingCommit(final String defaultResponderSubjectDn) {
-        OcspSigningCacheEntry defaultResponderCacheEntry = null;
+        OcspSigningCacheEntry stagedDefaultResponder = null;
         for (final OcspSigningCacheEntry entry : staging.values()) {
             if (entry.getOcspSigningCertificate() != null) {
                 final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
                 if (CertTools.getIssuerDN(signingCertificate).equals(defaultResponderSubjectDn)) {
-                    defaultResponderCacheEntry = entry;
+                    stagedDefaultResponder = entry;
                     break;
                 }
             } else if (entry.getCaCertificateChain() != null && !entry.getCaCertificateChain().isEmpty()) {
                 final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
                 if (CertTools.getSubjectDN(signingCertificate).equals(defaultResponderSubjectDn)) {
-                    defaultResponderCacheEntry = entry;
+                    stagedDefaultResponder = entry;
                     break;
                 }
             }
         }
         //Lastly, walk through the list of entries and replace all placeholders with the default responder
-        Map<Integer, OcspSigningCacheEntry> modifiedEntries = new HashMap<Integer, OcspSigningCacheEntry>();
-        List<Integer> removedEntries = new ArrayList<Integer>();
+        Map<Integer, OcspSigningCacheEntry> modifiedEntries = new HashMap<>();
+        List<Integer> removedEntries = new ArrayList<>();
         for (Integer key : staging.keySet()) {
             OcspSigningCacheEntry entry = staging.get(key);
             //If entry has been created without a private key, replace it with the default responder.
             if (entry.isPlaceholder()) {
-                if (defaultResponderCacheEntry != null) {
+                if (stagedDefaultResponder != null) {
                     entry = new OcspSigningCacheEntry(entry.getIssuerCaCertificate(), entry.getIssuerCaCertificateStatus(),
-                            defaultResponderCacheEntry.getCaCertificateChain(), defaultResponderCacheEntry.getOcspSigningCertificate(),
-                            defaultResponderCacheEntry.getPrivateKey(), defaultResponderCacheEntry.getSignatureProviderName(),
-                            defaultResponderCacheEntry.getOcspKeyBinding(), defaultResponderCacheEntry.getResponderIdType());
+                            stagedDefaultResponder.getCaCertificateChain(), stagedDefaultResponder.getOcspSigningCertificate(),
+                            stagedDefaultResponder.getPrivateKey(), stagedDefaultResponder.getSignatureProviderName(),
+                            stagedDefaultResponder.getOcspKeyBinding(), stagedDefaultResponder.getResponderIdType());
                     modifiedEntries.put(key, entry);
                 } else {
                     //If no default responder is defined, remove placeholder. 
@@ -121,9 +121,9 @@ public enum OcspSigningCache {
         for (Integer removedKey : removedEntries) {
             staging.remove(removedKey);
         }
-        logDefaultResponderChanges(this.defaultResponderCacheEntry, defaultResponderCacheEntry, defaultResponderSubjectDn);
+        logDefaultResponderChanges(defaultResponderCacheEntry, stagedDefaultResponder, defaultResponderSubjectDn);
         cache = staging;
-        this.defaultResponderCacheEntry = defaultResponderCacheEntry;
+        defaultResponderCacheEntry = stagedDefaultResponder;
         if (log.isDebugEnabled()) {
             log.debug("Committing the following to OCSP cache:");
             for (final Integer key : staging.keySet()) {
@@ -238,7 +238,7 @@ public enum OcspSigningCache {
             if (log.isTraceEnabled()) {
                 log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
             }
-            List<CertificateID> ret = new ArrayList<CertificateID>();
+            List<CertificateID> ret = new ArrayList<>();
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
             return ret;

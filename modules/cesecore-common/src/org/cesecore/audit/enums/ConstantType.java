@@ -10,5 +10,4 @@ import java.io.Serializable;
  */
 public interface ConstantType<T extends ConstantType<T>> extends Serializable {
     boolean equals(final T value);
-    String toString();
 }

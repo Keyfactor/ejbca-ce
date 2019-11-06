@@ -95,7 +95,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     }
     
     public List<CertificateExtension> getAllAvailableCustomCertificateExtensions() {
-        List<CertificateExtension> ret = new ArrayList<CertificateExtension>();
+        List<CertificateExtension> ret = new ArrayList<>();
         for(Entry<Object, Object> entry : data.entrySet()) {
             Object value = entry.getValue();
             if(value instanceof CertificateExtension) {
@@ -109,7 +109,6 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     /**
      * Returns a list of the available CertificateExtensions as Properties. Each property contains the extension OID 
      * as its 'key' and the extension's label as its 'value'
-     * @return
      */
     public Properties getAsProperties() {
         Properties properties = new Properties();

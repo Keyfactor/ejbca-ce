@@ -64,7 +64,7 @@ public class FreshestCrl extends StandardCertificateExtension {
         CRLDistPoint ret = null;
         if (freshestcrldistpoint != null) {
         	final StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
-        	final ArrayList<DistributionPoint> distpoints = new ArrayList<DistributionPoint>();
+        	final ArrayList<DistributionPoint> distpoints = new ArrayList<>();
             while (tokenizer.hasMoreTokens()) {
             	final String uri = tokenizer.nextToken();
                 final GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
@@ -78,7 +78,7 @@ public class FreshestCrl extends StandardCertificateExtension {
                 distpoints.add(new DistributionPoint(dpn, null, null));
             }
             if (!distpoints.isEmpty()) {
-                ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[distpoints.size()]));
+                ret = new CRLDistPoint(distpoints.toArray(new DistributionPoint[distpoints.size()]));
             }            	 
         } 
 		if (ret == null) {

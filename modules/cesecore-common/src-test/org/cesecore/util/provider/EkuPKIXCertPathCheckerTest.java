@@ -72,14 +72,14 @@ public class EkuPKIXCertPathCheckerTest {
          * When no EKU is present in the certificate, the PKIXCertPathChecker should never be invoked.
          * This just documents the actual behavior in such a case.
          */
-        assertTrue(validateCert(keyPair, LEAF, null, null));
-        assertFalse(validateCert(keyPair, CA, null, null));
-        assertTrue(validateCert(keyPair, LEAF, null, ekusEmpty));
-        assertFalse(validateCert(keyPair, CA, null, ekusEmpty));
-        assertFalse(validateCert(keyPair, LEAF, null, ekus2));
-        assertFalse(validateCert(keyPair, CA, null, ekus2));
-        assertFalse(validateCert(keyPair, LEAF, null, ekus3));
-        assertFalse(validateCert(keyPair, CA, null, ekus3));
+        assertTrue(validateCert(LEAF, null, null));
+        assertFalse(validateCert(CA, null, null));
+        assertTrue(validateCert(LEAF, null, ekusEmpty));
+        assertFalse(validateCert(CA, null, ekusEmpty));
+        assertFalse(validateCert(LEAF, null, ekus2));
+        assertFalse(validateCert(CA, null, ekus2));
+        assertFalse(validateCert(LEAF, null, ekus3));
+        assertFalse(validateCert(CA, null, ekus3));
         log.trace("<testNoEkuInCert");
     }
 
@@ -89,50 +89,50 @@ public class EkuPKIXCertPathCheckerTest {
          * When an empty EKU is present in the certificate, the PKIXCertPathChecker will perform the check for required.
          * However, it is not clear if it should be invoked in such a case.
          */
-        assertTrue(validateCert(keyPair, LEAF, ekusEmpty, null));
-        assertFalse(validateCert(keyPair, CA, ekusEmpty, null));
-        assertTrue(validateCert(keyPair, LEAF, ekusEmpty, ekusEmpty));
-        assertFalse(validateCert(keyPair, CA, ekusEmpty, ekusEmpty));
-        assertFalse(validateCert(keyPair, LEAF, ekusEmpty, ekus2));
-        assertFalse(validateCert(keyPair, CA, ekusEmpty, ekus2));
-        assertFalse(validateCert(keyPair, LEAF, ekusEmpty, ekus3));
-        assertFalse(validateCert(keyPair, CA, ekusEmpty, ekus3));
+        assertTrue(validateCert(LEAF, ekusEmpty, null));
+        assertFalse(validateCert(CA, ekusEmpty, null));
+        assertTrue(validateCert(LEAF, ekusEmpty, ekusEmpty));
+        assertFalse(validateCert(CA, ekusEmpty, ekusEmpty));
+        assertFalse(validateCert(LEAF, ekusEmpty, ekus2));
+        assertFalse(validateCert(CA, ekusEmpty, ekus2));
+        assertFalse(validateCert(LEAF, ekusEmpty, ekus3));
+        assertFalse(validateCert(CA, ekusEmpty, ekus3));
     }
 
     @Test
     public void testCriticalEkuWithOneInCert() throws Exception {
-        assertTrue(validateCert(keyPair, LEAF, ekus5, null));
-        assertFalse(validateCert(keyPair, CA, ekus5, null));
-        assertTrue(validateCert(keyPair, LEAF, ekus5, ekusEmpty));
-        assertFalse(validateCert(keyPair, CA, ekus5, ekusEmpty));
-        assertTrue(validateCert(keyPair, LEAF, ekus5, ekus5));
-        assertFalse(validateCert(keyPair, CA, ekus5, ekus5));
-        assertFalse(validateCert(keyPair, LEAF, ekus5, ekus4));
-        assertFalse(validateCert(keyPair, CA, ekus5, ekus4));
-        assertFalse(validateCert(keyPair, LEAF, ekus5, ekus6));
-        assertFalse(validateCert(keyPair, CA, ekus5, ekus6));
+        assertTrue(validateCert(LEAF, ekus5, null));
+        assertFalse(validateCert(CA, ekus5, null));
+        assertTrue(validateCert(LEAF, ekus5, ekusEmpty));
+        assertFalse(validateCert(CA, ekus5, ekusEmpty));
+        assertTrue(validateCert(LEAF, ekus5, ekus5));
+        assertFalse(validateCert(CA, ekus5, ekus5));
+        assertFalse(validateCert(LEAF, ekus5, ekus4));
+        assertFalse(validateCert(CA, ekus5, ekus4));
+        assertFalse(validateCert(LEAF, ekus5, ekus6));
+        assertFalse(validateCert(CA, ekus5, ekus6));
     }
 
     @Test
     public void testCriticalEkuWithTwoInCert() throws Exception {
-        assertTrue(validateCert(keyPair, LEAF, ekus4, null));
-        assertFalse(validateCert(keyPair, CA, ekus4, null));
-        assertTrue(validateCert(keyPair, LEAF, ekus4, ekusEmpty));
-        assertFalse(validateCert(keyPair, CA, ekus4, ekusEmpty));
-        assertTrue(validateCert(keyPair, LEAF, ekus4, ekus5));
-        assertFalse(validateCert(keyPair, CA, ekus4, ekus5));
-        assertTrue(validateCert(keyPair, LEAF, ekus4, ekus4));
-        assertFalse(validateCert(keyPair, CA, ekus4, ekus4));
-        assertFalse(validateCert(keyPair, LEAF, ekus4, ekus6));
-        assertFalse(validateCert(keyPair, CA, ekus4, ekus6));
+        assertTrue(validateCert(LEAF, ekus4, null));
+        assertFalse(validateCert(CA, ekus4, null));
+        assertTrue(validateCert(LEAF, ekus4, ekusEmpty));
+        assertFalse(validateCert(CA, ekus4, ekusEmpty));
+        assertTrue(validateCert(LEAF, ekus4, ekus5));
+        assertFalse(validateCert(CA, ekus4, ekus5));
+        assertTrue(validateCert(LEAF, ekus4, ekus4));
+        assertFalse(validateCert(CA, ekus4, ekus4));
+        assertFalse(validateCert(LEAF, ekus4, ekus6));
+        assertFalse(validateCert(CA, ekus4, ekus6));
     }
 
     /** @return true if the extendedKeyUsage was accepted */
-    private boolean validateCert(KeyPair keyPair, boolean isCa, List<String> actualOids, List<String> requiredOids) throws Exception {
+    private boolean validateCert(boolean isCa, List<String> actualOids, List<String> requiredOids) throws Exception {
         final long now = System.currentTimeMillis();
-        final List<Extension> additionalExtensions = new ArrayList<Extension>();
+        final List<Extension> additionalExtensions = new ArrayList<>();
         if (actualOids!=null) {
-            List<KeyPurposeId> actual = new ArrayList<KeyPurposeId>();
+            List<KeyPurposeId> actual = new ArrayList<>();
             for (final String oid : actualOids) {
                 actual.add(KeyPurposeId.getInstance(new ASN1ObjectIdentifier(oid)));
             }
@@ -150,7 +150,7 @@ public class EkuPKIXCertPathCheckerTest {
         final X509Certificate cert = CertTools.genSelfCertForPurpose("CN=dummy", new Date(now-3600000L), new Date(now+3600000L), null, keyPair.getPrivate(), keyPair.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, isCa, ku, null, null, BouncyCastleProvider.PROVIDER_NAME, true, additionalExtensions);
         final PKIXCertPathChecker pkixCertPathChecker = new EkuPKIXCertPathChecker(requiredOids);
-        final Collection<String> unresolvedCritExts = new ArrayList<String>(Arrays.asList(new String[] {Extension.extendedKeyUsage.getId()}));
+        final Collection<String> unresolvedCritExts = new ArrayList<>(Arrays.asList(new String[] {Extension.extendedKeyUsage.getId()}));
         pkixCertPathChecker.check(cert, unresolvedCritExts);
         return !unresolvedCritExts.contains(Extension.extendedKeyUsage.getId());
     }

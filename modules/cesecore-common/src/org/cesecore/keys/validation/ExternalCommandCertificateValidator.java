@@ -119,15 +119,15 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModel(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
-        final DynamicUiProperty<String> cmd = new DynamicUiProperty<String>(String.class, EXTERNAL_COMMAND, getExternalCommand());
+        final DynamicUiProperty<String> cmd = new DynamicUiProperty<>(String.class, EXTERNAL_COMMAND, getExternalCommand());
         cmd.setRequired(true);
         uiModel.add(cmd);
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_ERROR_CODE, isFailOnErrorCode()));
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_STANDARD_ERROR, isFailOnStandardError()));
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_STANDARD_OUT, isLogStandardOut()));
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_ERROR_OUT, isLogErrorOut()));
-        uiModel.add(new DynamicUiProperty<String>("test"));
-        final DynamicUiProperty<File> testPath = new DynamicUiProperty<File>(File.class, "testPath", null);
+        uiModel.add(new DynamicUiProperty<>(Boolean.class, FAIL_ON_ERROR_CODE, isFailOnErrorCode()));
+        uiModel.add(new DynamicUiProperty<>(Boolean.class, FAIL_ON_STANDARD_ERROR, isFailOnStandardError()));
+        uiModel.add(new DynamicUiProperty<>(Boolean.class, LOG_STANDARD_OUT, isLogStandardOut()));
+        uiModel.add(new DynamicUiProperty<>(Boolean.class, LOG_ERROR_OUT, isLogErrorOut()));
+        uiModel.add(new DynamicUiProperty<>("test"));
+        final DynamicUiProperty<File> testPath = new DynamicUiProperty<>(File.class, "testPath", null);
         testPath.setTransientValue(true);
         uiModel.add(testPath);
         // ECA-6320 Bug. MyFaces HtmlOutputText and HtmlOutputLabel throw NPE in JSF life cycle -> use disabled text field.
@@ -135,11 +135,11 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 //        testOut.setLabelOnly(false);
 //        testOut.setRenderingHint(DynamicUiProperty.RENDER_LABEL);
 //        uiModel.add(testOut);
-        final DynamicUiProperty<String> testOut = new DynamicUiProperty<String>("testOut");
+        final DynamicUiProperty<String> testOut = new DynamicUiProperty<>("testOut");
         testOut.setLabelOnly(false);
         testOut.setRenderingHint(DynamicUiProperty.RENDER_TEXTFIELD);
         testOut.setDisabled(true);
-        final DynamicUiProperty<String> testButton = new DynamicUiProperty<String>(String.class, "testCommand", "testCommand");
+        final DynamicUiProperty<String> testButton = new DynamicUiProperty<>(String.class, "testCommand", "testCommand");
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setActionCallback(new DynamicUiActionCallback() {
             @Override
@@ -175,7 +175,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         }
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
-            log.info(intres.getLocalizedMessage("validator.implementation.certificate.external", new Float(getVersion())));
+            log.info(intres.getLocalizedMessage("validator.implementation.certificate.external", getVersion()));
             init();
         }
     }
@@ -183,16 +183,16 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @Override
     public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsWhitelist externalScriptsWhitelist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
-        final List<String> messages = new ArrayList<String>();
+        final List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
             log.debug("Validating certificate with external command: " + getExternalCommand());
             log.debug("Validating certificate with external command (cert):" + certificate);
         }
         // Add CA certificate chain, that may be processed.
-        final List<Certificate> certificates = new ArrayList<Certificate>();
+        final List<Certificate> certificates = new ArrayList<>();
         certificates.add(certificate);
         final String cmd = getExternalCommand();
-        final List<String> out = new ArrayList<String>();
+        final List<String> out = new ArrayList<>();
         // Run external scripts (is used by publishers as well, writes certificate to disk!).
         try {
             out.addAll(runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates));
@@ -361,7 +361,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     public List<String> testCommand() throws DynamicUiCallbackException {
         log.info("Test external command certificate validator: " + getProfileName());
         final DynamicUiProperty<File> property = (DynamicUiProperty<File>) uiModel.getProperties().get("testPath");
-        final List<String> out = new ArrayList<String>();
+        final List<String> out = new ArrayList<>();
         File file = null;
         String message = null;
         if (property != null && (file=property.getValue()) != null && file.exists()) {
@@ -467,7 +467,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         }
         // Extract arguments and run external script.
         final List<String> arguments = extractArguments(externalCommand);
-        final List<String> out = new ArrayList<String>();
+        final List<String> out = new ArrayList<>();
         try {
             out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(),
                     isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, this.getClass().getSimpleName()));
@@ -509,7 +509,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      */
     private final List<String> extractArguments(String cmd) {
         cmd = cmd.trim();
-        final List<String> arguments = new ArrayList<String>();
+        final List<String> arguments = new ArrayList<>();
         final int index = cmd.indexOf(" ");
         if (index > 0) {
             arguments.addAll( Arrays.asList(StringUtils.split( cmd.substring(index, cmd.length()).trim(), " ")));

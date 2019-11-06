@@ -121,7 +121,7 @@ public class AuthorizationCacheTest {
 
     /** Test already cached entries are reloaded if there is an update to the authorization system */
     @Test
-    public void testSubscribeToAuthorizationCacheReload() throws InterruptedException, AuthenticationFailedException {
+    public void testSubscribeToAuthorizationCacheReload() throws AuthenticationFailedException {
         log.trace(">testSubscribeToAuthorizationCacheReload");
         AuthorizationCache.INSTANCE.reset();
         final AtomicInteger updateNumber = new AtomicInteger(0);
@@ -186,7 +186,7 @@ public class AuthorizationCacheTest {
 
     /** Test cache refresh similar to what AuthorizationSessionBean timeout performs on the cache */
     @Test
-    public void testAuthorizationCacheRefresh() throws InterruptedException, AuthenticationFailedException {
+    public void testAuthorizationCacheRefresh() throws AuthenticationFailedException {
         log.trace(">testAuthorizationCacheRefresh");
         AuthorizationCache.INSTANCE.reset();
         final AtomicInteger updateNumber = new AtomicInteger(0);

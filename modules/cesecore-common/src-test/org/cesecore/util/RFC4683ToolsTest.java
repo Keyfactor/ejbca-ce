@@ -34,7 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * (see {@link https://tools.ietf.org/html/rfc4683}).
+ * See <a href="https://tools.ietf.org/html/rfc4683">RFC 4683</a>
  * 
  * @version $Id$
  */
@@ -46,16 +46,16 @@ public class RFC4683ToolsTest {
         CryptoProviderTools.installBCProvider();
     }
 
-    @Test
     @SuppressWarnings("unchecked")
+    @Test
     public void testGetAllowedHashAlgorithms() {
-        assertEquals(RFC4683Tools.getAllowedHashAlgorithms(), new ArrayList<ASN1ObjectIdentifier>(TSPAlgorithms.ALLOWED));
+        assertEquals(RFC4683Tools.getAllowedHashAlgorithms(), new ArrayList<>(TSPAlgorithms.ALLOWED));
     }
 
     @Test
     public void testGetAllowedHashAlgorithmOidStrings() {
         final List<ASN1ObjectIdentifier> identifiers = RFC4683Tools.getAllowedHashAlgorithms();
-        final List<String> oids = new ArrayList<String>(identifiers.size());
+        final List<String> oids = new ArrayList<>(identifiers.size());
         for (ASN1ObjectIdentifier identifier : identifiers) {
             oids.add(identifier.getId());
         }
@@ -134,8 +134,7 @@ public class RFC4683ToolsTest {
         testGetSimStringSequence(internalSimString, generalName);
     }
 
-    private ASN1Primitive testCreateSimGeneralName(final String[] simParameters, final String[] simTokens)
-            throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    private ASN1Primitive testCreateSimGeneralName(final String[] simParameters, final String[] simTokens) throws IOException {
         final ASN1Primitive generalName = RFC4683Tools.createSimGeneralName(simTokens[0], simTokens[1], simTokens[2]);
         final DERSequence simSequence = ((DERSequence) ((DERTaggedObject) ((DERSequence) ((DERTaggedObject) generalName.toASN1Primitive())
                 .getObjectParser(0, true)).getObjectAt(1)).getObjectParser(0, true));

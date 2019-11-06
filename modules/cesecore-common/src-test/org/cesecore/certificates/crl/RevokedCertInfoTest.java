@@ -28,13 +28,13 @@ import org.junit.Test;
  */
 public class RevokedCertInfoTest {
 
-    private static final RevokedCertInfo REVINFO_1_NOTREVOKED = revCertInfo(0x1234ABCDL, "2017-01-15", RevocationReasons.NOT_REVOKED);
-    private static final RevokedCertInfo REVINFO_2_ONHOLD = revCertInfo(0x1234ABCDL, "2017-01-31", RevocationReasons.CERTIFICATEHOLD);
-    private static final RevokedCertInfo REVINFO_3_UNSPECIFIED = revCertInfo(0x1234ABCDL, "2017-02-20", RevocationReasons.UNSPECIFIED);
-    private static final RevokedCertInfo REVINFO_4_UNSPECIFIED = revCertInfo(0x1234ABCDL, "2017-03-31", RevocationReasons.UNSPECIFIED);
-    private static final RevokedCertInfo REVINFO_5_REMOVEFROMCRL = revCertInfo(0x1234ABCDL, "2017-05-31", RevocationReasons.REMOVEFROMCRL);
+    private static final RevokedCertInfo REVINFO_1_NOTREVOKED = revCertInfo("2017-01-15", RevocationReasons.NOT_REVOKED);
+    private static final RevokedCertInfo REVINFO_2_ONHOLD = revCertInfo("2017-01-31", RevocationReasons.CERTIFICATEHOLD);
+    private static final RevokedCertInfo REVINFO_3_UNSPECIFIED = revCertInfo("2017-02-20", RevocationReasons.UNSPECIFIED);
+    private static final RevokedCertInfo REVINFO_4_UNSPECIFIED = revCertInfo("2017-03-31", RevocationReasons.UNSPECIFIED);
+    private static final RevokedCertInfo REVINFO_5_REMOVEFROMCRL = revCertInfo("2017-05-31", RevocationReasons.REMOVEFROMCRL);
     
-    private static final RevokedCertInfo revCertInfo(final long serial, final String revocationDate, final RevocationReasons reason) {
+    private static final RevokedCertInfo revCertInfo(final String revocationDate, final RevocationReasons reason) {
         return new RevokedCertInfo(new byte[] { 1,2,3,4 }, BigInteger.valueOf(0x1234ABCDL).toByteArray(), date(revocationDate), reason.getDatabaseValue(), date("2017-12-31"));
     }
     

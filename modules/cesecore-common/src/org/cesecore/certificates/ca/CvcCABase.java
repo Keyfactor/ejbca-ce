@@ -53,7 +53,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
     public void init(CVCCAInfo cainfo) {
 	    super.init(cainfo);
         data.put(CABase.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
-        data.put(VERSION, new Float(LATEST_VERSION));   
+        data.put(VERSION, LATEST_VERSION);
 	}
 
 	public static CvcCABase getInstance(CVCCAInfo cainfo) {
@@ -96,8 +96,8 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
-		super.init(data);
+    public void init(HashMap<Object, Object> loadedData, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
+		super.init(loadedData);
 		setExpireTime(expireTime);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {

@@ -157,7 +157,7 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject(new ExploitClass());
             o.close();
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodClass1.class);
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
@@ -219,7 +219,7 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject(new GoodClass2[3]);
             o.close();
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodClass1.class);
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
@@ -249,7 +249,7 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject(new ExploitClass[3]);
             o.close();
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodClass1.class);
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
@@ -286,7 +286,7 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject(mixedObjects);
             o.close();
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodClass1.class);
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
@@ -352,7 +352,7 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject(new GoodClass2(3));
             o.close();
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodClass1.class);
             acceptedClasses.add(GoodClass2.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
@@ -389,17 +389,17 @@ public class LookAheadObjectInputStreamTest {
             ObjectOutputStream o = new ObjectOutputStream(buf);
             o.writeObject((byte) 0);
             o.writeObject((short) 1);
-            o.writeObject((int) 2);
+            o.writeObject(2);
             o.writeObject((long) 3);
             o.writeObject((float) 4);
             o.writeObject((double) 5);
             // These should be exactly the same as above, due to auto-boxing 
             o.writeObject(Byte.valueOf((byte) 6));
             o.writeObject(Short.valueOf((short) 7));
-            o.writeObject(Integer.valueOf((int) 8));
-            o.writeObject(Long.valueOf((long) 9));
-            o.writeObject(Float.valueOf((float) 10));
-            o.writeObject(Double.valueOf((double) 11));
+            o.writeObject(Integer.valueOf(8));
+            o.writeObject(Long.valueOf(9));
+            o.writeObject(Float.valueOf(10));
+            o.writeObject(Double.valueOf(11));
             o.writeObject(false);
             o.writeObject(Boolean.valueOf(true));
             o.writeObject('c');
@@ -418,10 +418,10 @@ public class LookAheadObjectInputStreamTest {
 
             assertEquals("Data 0 corrupted during testDeserializingPrimitiveTypes", (byte) 0, (byte) lookAheadObjectInputStream.readObject());
             assertEquals("Data 1 corrupted during testDeserializingPrimitiveTypes", (short) 1, (short) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 2 corrupted during testDeserializingPrimitiveTypes", (int) 2, (int) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 3 corrupted during testDeserializingPrimitiveTypes", (long) 3, (long) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 4 corrupted during testDeserializingPrimitiveTypes", (float) 4, (float) lookAheadObjectInputStream.readObject(), 0);
-            assertEquals("Data 5 corrupted during testDeserializingPrimitiveTypes", (double) 5, (double) lookAheadObjectInputStream.readObject(), 0);
+            assertEquals("Data 2 corrupted during testDeserializingPrimitiveTypes", 2, (int) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 3 corrupted during testDeserializingPrimitiveTypes", 3L, (long) lookAheadObjectInputStream.readObject());
+            assertEquals("Data 4 corrupted during testDeserializingPrimitiveTypes", 4.0F, (float) lookAheadObjectInputStream.readObject(), 0);
+            assertEquals("Data 5 corrupted during testDeserializingPrimitiveTypes", 5.0, (double) lookAheadObjectInputStream.readObject(), 0);
             assertEquals("Data 6 corrupted during testDeserializingPrimitiveTypes", 6, ((Byte) lookAheadObjectInputStream.readObject()).byteValue());
             assertEquals("Data 7 corrupted during testDeserializingPrimitiveTypes", 7, ((Short) lookAheadObjectInputStream.readObject()).shortValue());
             assertEquals("Data 8 corrupted during testDeserializingPrimitiveTypes", 8, ((Integer) lookAheadObjectInputStream.readObject()).intValue());
@@ -431,8 +431,7 @@ public class LookAheadObjectInputStreamTest {
             assertEquals("Data 12 corrupted during testDeserializingPrimitiveTypes", false, (boolean) lookAheadObjectInputStream.readObject());
             assertEquals("Data 13 corrupted during testDeserializingPrimitiveTypes", true, ((Boolean) lookAheadObjectInputStream.readObject()).booleanValue());
             assertEquals("Data 14 corrupted during testDeserializingPrimitiveTypes", 'c', (char) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 15 corrupted during testDeserializingPrimitiveTypes", "String", 
-                    ((String) lookAheadObjectInputStream.readObject()));
+            assertEquals("Data 15 corrupted during testDeserializingPrimitiveTypes", "String", lookAheadObjectInputStream.readObject());
             assertEquals("Data 16 corrupted during testDeserializingPrimitiveTypes", 1, ((byte[]) lookAheadObjectInputStream.readObject()).length);
             assertEquals("Data 17 corrupted during testDeserializingPrimitiveTypes", 1, ((short[]) lookAheadObjectInputStream.readObject()).length);
             assertEquals("Data 18 corrupted during testDeserializingPrimitiveTypes", 1, ((int[]) lookAheadObjectInputStream.readObject()).length);
@@ -465,7 +464,7 @@ public class LookAheadObjectInputStreamTest {
             o.writeObject(new GoodExtendedExtendedClass());
             o.close();
             lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<Class<? extends Serializable>>(3);
+            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodAbstractClass.class);
             lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
             lookAheadObjectInputStream.setEnabledMaxObjects(false);

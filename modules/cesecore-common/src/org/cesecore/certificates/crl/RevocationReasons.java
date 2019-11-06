@@ -14,10 +14,9 @@ package org.cesecore.certificates.crl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.collections.CollectionUtils;
 
 /**
  * An enum for revocation reasons, with a numerical database value and a String value for CLI applications.
@@ -26,7 +25,6 @@ import org.apache.commons.collections.CollectionUtils;
  * 
  * @version $Id$
  */
-@SuppressWarnings("unchecked")
 public enum RevocationReasons {
     NOT_REVOKED(-1, "NOT_REVOKED", "The Certificate Is Not Revoked"),
     UNSPECIFIED(0, "UNSPECIFIED", "Unspecified"),
@@ -60,7 +58,7 @@ public enum RevocationReasons {
         reason.add(RevocationReasons.PRIVILEGESWITHDRAWN.getDatabaseValue());
         reason.add(RevocationReasons.SUPERSEDED.getDatabaseValue());
         reason.add(RevocationReasons.UNSPECIFIED.getDatabaseValue());
-        reasonableRevocationReasons = (Collection<Integer>) CollectionUtils.unmodifiableCollection(reason);
+        reasonableRevocationReasons = Collections.unmodifiableCollection(reason);
     }
 
     private RevocationReasons(final int databaseValue, final String stringValue, String humanReadable) {

@@ -17,7 +17,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Iterator;
@@ -37,11 +36,11 @@ public class CompressedCollectionTest {
     private static final Logger log = Logger.getLogger(CompressedCollectionTest.class);
 
     @Test
-    public void testCompression() throws IOException {
+    public void testCompression() {
         log.trace(">testCompression");
         logMemUnreliably();
         log.trace("Adding plenty of (identical) RevokedCertInfos...");
-        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<RevokedCertInfo>();
+        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<>();
         for (int i=0; i<100000; i++) {
             compressedCollection.add(new RevokedCertInfo("fingerprint".getBytes(), new BigInteger("1").toByteArray(), System.currentTimeMillis(), CertificateConstants.CERT_REVOKED, System.currentTimeMillis()));
         }
@@ -68,9 +67,9 @@ public class CompressedCollectionTest {
     }
 
     @Test
-    public void testEmpty() throws IOException {
+    public void testEmpty() {
         log.trace(">testEmpty");
-        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<RevokedCertInfo>();
+        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<>();
         for (final RevokedCertInfo x : compressedCollection) {
             log.info("  " + x.toString());
         }
@@ -80,7 +79,7 @@ public class CompressedCollectionTest {
 
     @Test
     public void testNoAddAfterClose() {
-        final CompressedCollection<Integer> compressedCollection = new CompressedCollection<Integer>();
+        final CompressedCollection<Integer> compressedCollection = new CompressedCollection<>();
         compressedCollection.add(Integer.valueOf(4711));
         assertEquals("Compressed collection with single entry should have size 1.", 1, compressedCollection.size());
         // For loop with invoke compressedCollection.iterator() that will invoke closeForWrite() making it impossible for future changes

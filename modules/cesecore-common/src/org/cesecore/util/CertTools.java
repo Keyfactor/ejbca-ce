@@ -529,7 +529,7 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getEmailFromDN(" + dn + ")");
         }
-        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<String> ret = new ArrayList<>();
         for (int i = 0; i < EMAILIDS.length; i++) {
             List<String> emails = getPartsFromDN(dn, EMAILIDS[i]);
             if (!emails.isEmpty()) {
@@ -718,7 +718,7 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getPartsFromDNInternal: dn:'" + dn + "', dnpart=" + dnPart + ", onlyReturnFirstMatch=" + onlyReturnFirstMatch);
         }
-        final List<String> parts = new ArrayList<String>();
+        final List<String> parts = new ArrayList<>();
         if (dn != null && dnPart != null) {
             final String dnPartLowerCase = dnPart.toLowerCase();
             final int dnPartLenght = dnPart.length();
@@ -800,7 +800,7 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getCustomOids: dn:'" + dn);
         }
-        ArrayList<String> parts = new ArrayList<String>();
+        ArrayList<String> parts = new ArrayList<>();
         if (dn != null) {
             String o;
             X509NameTokenizer xt = new X509NameTokenizer(dn);
@@ -1214,19 +1214,11 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM: certFilename=" + certFilename);
         }
-        InputStream inStrm = null;
         final List<T> certs;
-        try {
-            inStrm = new FileInputStream(certFilename);
+        try (final InputStream inStrm = new FileInputStream(certFilename)) {
             certs = getCertsFromPEM(inStrm, returnType);
-        } finally {
-            if (inStrm != null) {
-                try {
-                    inStrm.close();
-                } catch (IOException e) {
-                    throw new IllegalStateException("Could not clode input stream", e);
-                }
-            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to close input stream");
         }
         if (log.isTraceEnabled()) {
             log.trace("<getCertfromPEM: certFile=" + certFilename);
@@ -1247,7 +1239,7 @@ public abstract class CertTools {
     public static final byte[] readCertificateChainAsArrayOrThrow(final String file)
             throws FileNotFoundException, IOException, CertificateParsingException, CertificateEncodingException {
         
-        final List<byte[]> cachain = new ArrayList<byte[]>();
+        final List<byte[]> cachain = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(file)) {
             Collection<Certificate> certs = CertTools.getCertsFromPEM(fis, Certificate.class);
             Iterator<Certificate> iter = certs.iterator();
@@ -1279,7 +1271,7 @@ public abstract class CertTools {
             log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
             // See if it is a single binary certificate
             java.security.cert.Certificate cert = CertTools.getCertfromByteArray(bytes, java.security.cert.Certificate.class);
-            certs = new ArrayList<java.security.cert.Certificate>();
+            certs = new ArrayList<>();
             certs.add(cert);
         }
         return EJBTools.wrapCertCollection(certs);
@@ -1314,59 +1306,42 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM");
         }
-        ArrayList<T> ret = new ArrayList<>();
+        final ArrayList<T> ret = new ArrayList<>();
         String beginKeyTrust = "-----BEGIN TRUSTED CERTIFICATE-----";
         String endKeyTrust = "-----END TRUSTED CERTIFICATE-----";
-        BufferedReader bufRdr = null;
-        ByteArrayOutputStream ostr = null;
-        PrintStream opstr = null;
-        try {
-            try {
-                bufRdr = new BufferedReader(new InputStreamReader(new SecurityFilterInputStream(certstream)));
-                while (bufRdr.ready()) {
-                    ostr = new ByteArrayOutputStream();
-                    opstr = new PrintStream(ostr);
-                    String temp;
-                    while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.BEGIN_CERTIFICATE) || temp.equals(beginKeyTrust))) {
-                        continue;
-                    }
-                    if (temp == null) {
-                        if (ret.isEmpty()) {
-                            // There was no certificate in the file
-                            throw new CertificateParsingException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE
-                                    + " boundary");
-                        } else {
-                            // There were certificates, but some blank lines or something in the end
-                            // anyhow, the file has ended so we can break here.
-                            break;
-                        }
-                    }
-                    while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.END_CERTIFICATE) || temp.equals(endKeyTrust))) {
-                        opstr.print(temp);
-                    }
-                    if (temp == null) {
-                        throw new IllegalArgumentException("Error in " + certstream.toString() + ", missing " + CertTools.END_CERTIFICATE
+        try (final BufferedReader bufRdr = new BufferedReader(new InputStreamReader(new SecurityFilterInputStream(certstream)))) {
+            while (bufRdr.ready()) {
+                final ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+                final PrintStream opstr = new PrintStream(ostr);
+                String temp;
+                while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.BEGIN_CERTIFICATE) || temp.equals(beginKeyTrust))) {
+                    continue;
+                }
+                if (temp == null) {
+                    if (ret.isEmpty()) {
+                        // There was no certificate in the file
+                        throw new CertificateParsingException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE
                                 + " boundary");
+                    } else {
+                        // There were certificates, but some blank lines or something in the end
+                        // anyhow, the file has ended so we can break here.
+                        break;
                     }
-                    opstr.close();
+                }
+                while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.END_CERTIFICATE) || temp.equals(endKeyTrust))) {
+                    opstr.print(temp);
+                }
+                if (temp == null) {
+                    throw new IllegalArgumentException("Error in " + certstream.toString() + ", missing " + CertTools.END_CERTIFICATE
+                            + " boundary");
+                }
+                opstr.close();
 
-                    byte[] certbuf = Base64.decode(ostr.toByteArray());
-                    ostr.close();
-                    // Phweeew, were done, now decode the cert from file back to Certificate object
-                    T cert = getCertfromByteArray(certbuf, returnType);
-                    ret.add(cert);
-                }
-
-            } finally {
-                if (bufRdr != null) {
-                    bufRdr.close();
-                }
-                if (opstr != null) {
-                    opstr.close();
-                }
-                if (ostr != null) {
-                    ostr.close();
-                }
+                byte[] certbuf = Base64.decode(ostr.toByteArray());
+                ostr.close();
+                // Phweeew, were done, now decode the cert from file back to Certificate object
+                T cert = getCertfromByteArray(certbuf, returnType);
+                ret.add(cert);
             }
         } catch (IOException e) {
             throw new IllegalStateException("Exception caught when attempting to read stream, see underlying IOException", e);
@@ -1391,7 +1366,7 @@ public abstract class CertTools {
         if (log.isTraceEnabled()) {
             log.trace(">getCertCollectionFromArray: " + provider);
         }
-        ArrayList<Certificate> ret = new ArrayList<Certificate>();
+        ArrayList<Certificate> ret = new ArrayList<>();
         String prov = provider;
         if (prov == null) {
             prov = "BC";
@@ -1550,14 +1525,14 @@ public abstract class CertTools {
         if(returnType.equals(X509Certificate.class)) {
             ret = (T) parseX509Certificate(prov, cert);
         } else if(returnType.equals(CardVerifiableCertificate.class)) {
-            ret = (T) parseCardVerifiableCertificate(prov, cert);
+            ret = (T) parseCardVerifiableCertificate(cert);
         } else {
             //Let's guess...
             try {
                 ret = (T) parseX509Certificate(prov, cert);
             } catch (CertificateParsingException e) {
                 try {
-                    ret = (T) parseCardVerifiableCertificate(prov, cert);
+                    ret = (T) parseCardVerifiableCertificate(cert);
                 } catch (CertificateParsingException e1) {
                     throw new CertificateParsingException("No certificate could be parsed from byte array. See debug logs for details.");
                 }
@@ -1589,7 +1564,7 @@ public abstract class CertTools {
         }
     }
     
-    private static CardVerifiableCertificate parseCardVerifiableCertificate(String provider, byte[] cert) throws CertificateParsingException {
+    private static CardVerifiableCertificate parseCardVerifiableCertificate(final byte[] cert) throws CertificateParsingException {
         // We could not create an X509Certificate, see if it is a CVC certificate instead
         try {
             final CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
@@ -2042,7 +2017,7 @@ public abstract class CertTools {
      * @throws IOException if extension can not be parsed
      */
     public static List<ASN1ObjectIdentifier> getCertificatePolicyIds(Certificate certificate) throws IOException {
-        List<ASN1ObjectIdentifier> ret = new ArrayList<ASN1ObjectIdentifier>();
+        List<ASN1ObjectIdentifier> ret = new ArrayList<>();
         if (certificate != null && certificate instanceof X509Certificate) {
             final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
             if (asn1Sequence != null) {
@@ -2063,7 +2038,7 @@ public abstract class CertTools {
      * @throws IOException if extension can not be parsed
      */
     public static List<PolicyInformation> getCertificatePolicies(Certificate certificate) throws IOException {
-        List<PolicyInformation> ret = new ArrayList<PolicyInformation>();
+        List<PolicyInformation> ret = new ArrayList<>();
         if (certificate != null && certificate instanceof X509Certificate) {
             final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
             if (asn1Sequence != null) {
@@ -2088,7 +2063,7 @@ public abstract class CertTools {
      * @param cert certificate containing the extension
      * @return String with the UPN name or null if the altName does not exist
      */
-    public static String getUPNAltName(Certificate cert) throws IOException, CertificateParsingException {
+    public static String getUPNAltName(Certificate cert) throws CertificateParsingException {
         return getUTF8AltNameOtherName(cert, CertTools.UPN_OBJECTID);
     }
 
@@ -2114,7 +2089,7 @@ public abstract class CertTools {
      * @param oid the OID of the OtherName
      * @return String with the UTF8 name or null if the altName does not exist
      */
-    public static String getUTF8AltNameOtherName(final Certificate cert, final String oid) throws IOException, CertificateParsingException {
+    public static String getUTF8AltNameOtherName(final Certificate cert, final String oid) throws CertificateParsingException {
         String ret = null;
         if (cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
@@ -2228,7 +2203,7 @@ public abstract class CertTools {
      * @param cert certificate containing the extension
      * @return String with the permanentIdentifier name or null if the altName does not exist
      */
-    public static String getPermanentIdentifierAltName(Certificate cert) throws IOException, CertificateParsingException {
+    public static String getPermanentIdentifierAltName(Certificate cert) throws CertificateParsingException {
         String ret = null;
         if (cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
@@ -2376,7 +2351,6 @@ public abstract class CertTools {
      * @param seq the OtherName sequence
      * @return String with the krb5 name in the form of "principal1/principal2@realm" or null if the altName does not exist
      */
-    @SuppressWarnings("unchecked")
     protected static String getKrb5PrincipalNameFromSequence(ASN1Sequence seq) {
         String ret = null;
         if (seq != null) {
@@ -2421,12 +2395,12 @@ public abstract class CertTools {
     }
 
     /**
-     * Gets the Microsoft specific GUID altName, that is encoded as an octect string.
+     * Gets the Microsoft specific GUID altName, that is encoded as an octet string.
      * 
      * @param cert certificate containing the extension
      * @return String with the hex-encoded GUID byte array or null if the altName does not exist
      */
-    public static String getGuidAltName(Certificate cert) throws IOException, CertificateParsingException {
+    public static String getGuidAltName(Certificate cert) throws CertificateParsingException {
         if (cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
             Collection<List<?>> altNames = x509cert.getSubjectAlternativeNames();
@@ -2815,7 +2789,7 @@ public abstract class CertTools {
                 log.debug("realm: " + realm);
             }
             // Now we can have several principals separated by /
-            final ArrayList<String> principalarr = new ArrayList<String>();
+            final ArrayList<String> principalarr = new ArrayList<>();
             int jndex = 0;
             int bindex = 0;
             while (jndex < index) {
@@ -3259,7 +3233,7 @@ public abstract class CertTools {
      * @return the Authority Information Access Extention's URLs, or an empty Collection if none were found
      */
     public static Collection<String> getAuthorityInformationAccess(CRL crl) {
-        Collection<String> result = new ArrayList<String>();
+        Collection<String> result = new ArrayList<>();
         if (crl instanceof X509CRL) {
             X509CRL x509crl = (X509CRL) crl;
             ASN1Primitive derObject = getExtensionValue(x509crl, Extension.authorityInfoAccess.getId());
@@ -3737,7 +3711,7 @@ public abstract class CertTools {
      * @see X509NameTokenizer
      */
     public static List<String> getX500NameComponents(String dn) {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         if (StringUtils.isNotBlank(dn)) {
             X509NameTokenizer tokenizer = new X509NameTokenizer(dn);
             while (tokenizer.hasMoreTokens()) {
@@ -3911,7 +3885,7 @@ public abstract class CertTools {
      * @see org.cesecore.certificates.util.DnComponents#getDnObjects(boolean) for definition of the contents of the input array
      */
     private static List<ASN1ObjectIdentifier> getX509FieldOrder(String[] order) {
-        List<ASN1ObjectIdentifier> fieldOrder = new ArrayList<ASN1ObjectIdentifier>();
+        List<ASN1ObjectIdentifier> fieldOrder = new ArrayList<>();
         for (final String dNObject : order) {
             fieldOrder.add(DnComponents.getOid(dNObject));
         }
@@ -3989,12 +3963,12 @@ public abstract class CertTools {
         }
         
         // -- New order for the X509 Fields
-        final List<ASN1ObjectIdentifier> newOrdering = new ArrayList<ASN1ObjectIdentifier>();
-        final List<RDN> newValues = new ArrayList<RDN>();
+        final List<ASN1ObjectIdentifier> newOrdering = new ArrayList<>();
+        final List<RDN> newValues = new ArrayList<>();
         // -- Add ordered fields
         final RDN[] allRdns= x500Name.getRDNs();
 
-        final HashSet<ASN1ObjectIdentifier> hs = new HashSet<ASN1ObjectIdentifier>(allRdns.length + ordering.size());
+        final HashSet<ASN1ObjectIdentifier> hs = new HashSet<>(allRdns.length + ordering.size());
         for (final ASN1ObjectIdentifier oid : ordering) {
             if (!hs.contains(oid)) {
                 hs.add(oid);
@@ -4101,7 +4075,7 @@ public abstract class CertTools {
      */
     public static List<Certificate> createCertChain(Collection<?> certlistin, Date now) throws CertPathValidatorException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
-        final List<Certificate> returnval = new ArrayList<Certificate>();
+        final List<Certificate> returnval = new ArrayList<>();
 
         Collection<Certificate> certlist = orderCertificateChain(certlistin);
         // Verify that the chain contains a Root CA certificate
@@ -4117,7 +4091,7 @@ public abstract class CertTools {
 
         // set certificate chain
         Certificate rootcert = null;
-        ArrayList<Certificate> calist = new ArrayList<Certificate>();
+        ArrayList<Certificate> calist = new ArrayList<>();
         for (Certificate next : certlist) {
             if (CertTools.isSelfSigned(next)) {
                 rootcert = next;
@@ -4141,7 +4115,7 @@ public abstract class CertTools {
                 }
             } else {
                 // Normal X509 certificates
-                HashSet<TrustAnchor> trustancors = new HashSet<TrustAnchor>();
+                HashSet<TrustAnchor> trustancors = new HashSet<>();
                 TrustAnchor trustanchor = null;
                 trustanchor = new TrustAnchor((X509Certificate) rootcert, null);
                 trustancors.add(trustanchor);
@@ -4181,9 +4155,9 @@ public abstract class CertTools {
      * @return List with certificatechain, Root CA last.
      */
     private static List<Certificate> orderCertificateChain(Collection<?> certlist) throws CertPathValidatorException {
-        ArrayList<Certificate> returnval = new ArrayList<Certificate>();
+        ArrayList<Certificate> returnval = new ArrayList<>();
         Certificate rootca = null;
-        HashMap<String, Certificate> cacertmap = new HashMap<String, Certificate>();
+        HashMap<String, Certificate> cacertmap = new HashMap<>();
         for(Object possibleCertificate : certlist) {
             Certificate cert = null;
             try {
@@ -4414,7 +4388,7 @@ public abstract class CertTools {
         }
         final List<JcaX509CertificateHolder> certList = CertTools.convertToX509CertificateHolder(x509CertificateChain);
         final CMSSignedDataGenerator cmsSignedDataGenerator = new CMSSignedDataGenerator();
-        cmsSignedDataGenerator.addCertificates(new CollectionStore<JcaX509CertificateHolder>(certList));
+        cmsSignedDataGenerator.addCertificates(new CollectionStore<>(certList));
         final CMSSignedData cmsSignedData = cmsSignedDataGenerator.generate(new CMSAbsentContent(), true);
         try {
             return cmsSignedData.getEncoded();
@@ -4480,7 +4454,7 @@ public abstract class CertTools {
      */
     public static final List<JcaX509CertificateHolder> convertToX509CertificateHolder(List<X509Certificate> certificateChain)
             throws CertificateEncodingException {
-        final List<JcaX509CertificateHolder> certificateHolderChain = new ArrayList<JcaX509CertificateHolder>();
+        final List<JcaX509CertificateHolder> certificateHolderChain = new ArrayList<>();
         for (X509Certificate certificate : certificateChain) {
             certificateHolderChain.add( new JcaX509CertificateHolder(certificate));
         }
@@ -4495,7 +4469,7 @@ public abstract class CertTools {
      * @throws CertificateException if there is a problem extracting the certificate information.
      */
     public static final List<X509Certificate> convertToX509CertificateList(Collection<X509CertificateHolder> certificateHolderChain) throws CertificateException {
-        final List<X509Certificate> ret = new ArrayList<X509Certificate>();
+        final List<X509Certificate> ret = new ArrayList<>();
         final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
         for (final X509CertificateHolder certificateHolder : certificateHolderChain) {
             ret.add(jcaX509CertificateConverter.getCertificate(certificateHolder));
@@ -4522,7 +4496,7 @@ public abstract class CertTools {
      * @throws CRLException if there is a problem extracting the CRL information.
      */
     public static final List<X509CRL> convertToX509CRLList(Collection<X509CRLHolder> crlHolders) throws CRLException {
-        final List<X509CRL> ret = new ArrayList<X509CRL>();
+        final List<X509CRL> ret = new ArrayList<>();
         final JcaX509CRLConverter jcaX509CRLConverter = new JcaX509CRLConverter();
         for (final X509CRLHolder crlHolder : crlHolders) {
             ret.add(jcaX509CRLConverter.getCRL(crlHolder));
@@ -4627,7 +4601,7 @@ public abstract class CertTools {
     /**
      * Get first commonName value from subjectDn. If none is present, return null
      * @param subjectDn subjectDn value
-     * @return
+     * @return First commonName, or null
      */
     public static String getCommonNameFromSubjectDn(String subjectDn) {
         String commonName = null;

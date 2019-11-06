@@ -143,7 +143,7 @@ public class KeyGenParams {
      * @return a map with PKCS #11 attributes.
      */
     public Map<Long, Object> getPublicAttributesMap() {
-        return new HashMap<Long, Object>(publicAttributesMap);
+        return new HashMap<>(publicAttributesMap);
     }
 
     /**
@@ -152,6 +152,6 @@ public class KeyGenParams {
      * @return a map with PKCS #11 attributes.
      */
     public Map<Long, Object> getPrivateAttributesMap() {
-        return new HashMap<Long, Object>(privateAttributesMap);
+        return new HashMap<>(privateAttributesMap);
     }
 }

@@ -13,13 +13,18 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -48,11 +53,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests signing session.
@@ -245,7 +245,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, false, 0L, false);        
         assertNotNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
-        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
+        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(JcaX509ExtensionUtils.parseExtensionValue(cert.getExtensionValue("2.5.29.16")));
         assertNotNull("Has notBefore", ext.getNotBefore());
         assertNull("Has no notAfter", ext.getNotAfter());
         assertEquals("notBefore " + startOffset + " seconds after ca cert", cert.getNotBefore().getTime() + startOffset * 1000, ext.getNotBefore().getDate().getTime());
@@ -255,7 +255,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, true, length, false);        
         assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
-        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
+        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(JcaX509ExtensionUtils.parseExtensionValue(cert.getExtensionValue("2.5.29.16")));
         assertNotNull("Has notAfter", ext.getNotAfter());
         assertNull("Has no notBefore", ext.getNotBefore());
         assertEquals("notAfter " + length + " seconds after issue time", cert.getNotBefore().getTime() + length * 1000, ext.getNotAfter().getDate().getTime());
@@ -265,7 +265,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, true, length, allowValidityOverride);        
         assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
-        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
+        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(JcaX509ExtensionUtils.parseExtensionValue(cert.getExtensionValue("2.5.29.16")));
         assertNotNull("Has notBefore", ext.getNotBefore());
         assertNotNull("Has notAfter", ext.getNotAfter());
         assertEquals("notBefore " + startOffset + " seconds after ca cert", cert.getNotBefore().getTime() + startOffset * 1000, ext.getNotBefore().getDate().getTime());

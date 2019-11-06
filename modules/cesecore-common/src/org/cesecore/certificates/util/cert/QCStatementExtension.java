@@ -72,7 +72,7 @@ public final class QCStatementExtension extends CertTools {
      * @throws IOException if there is a problem parsing the certificate
      */
     public static Collection<String> getQcStatementIds(final Certificate cert) throws IOException {
-    	final ArrayList<String> ret = new ArrayList<String>();
+    	final ArrayList<String> ret = new ArrayList<>();
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
         	final ASN1Primitive obj = getExtensionValue(x509cert, Extension.qCStatements.getId());
@@ -197,7 +197,7 @@ public final class QCStatementExtension extends CertTools {
     }
 
     /** Assumes that the statementoid in the QcStatements Sequence, seq, is a String and extracts that value from position, pos, of sequence */
-    public static String getStatementStringValue(final ASN1Sequence seq, final String statementoid, final int pos) throws IOException {
+    public static String getStatementStringValue(final ASN1Sequence seq, final String statementoid, final int pos) {
         // Look through all the QCStatements and see if we have a standard ETSI PDS URL
         for (int i = 0; i < seq.size(); i++) {
             final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));

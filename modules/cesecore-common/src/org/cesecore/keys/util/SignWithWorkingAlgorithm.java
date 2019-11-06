@@ -83,7 +83,7 @@ public class SignWithWorkingAlgorithm {
             final List<String> availableSignAlgorithms,
             final Provider provider,
             final ISignOperation operation) throws TaskWithSigningException {
-        final Integer mapKey = new Integer(availableSignAlgorithms.hashCode()^provider.hashCode());
+        final Integer mapKey = Integer.valueOf(availableSignAlgorithms.hashCode()^provider.hashCode());
         final SignWithWorkingAlgorithm instance;
         synchronized (instanceMap) {
             final SignWithWorkingAlgorithm waitInstance = instanceMap.get(mapKey);

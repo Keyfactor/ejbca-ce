@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 
 /**
- * Tools to handle calls with Java Process API ({@link https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html}.
+ * Tools to handle calls with <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html">Java Process API</a>.
  *
  * @version $Id: ExternalProcessTools.java 27126 2017-12-16 09:28:54Z anjakobs $
  */
@@ -81,7 +81,7 @@ public final class ExternalProcessTools {
      * @return the command array as list.
      */
     protected static final List<String> buildShellCommand(final String cmd) {
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         if (SystemUtils.IS_OS_WINDOWS) {
             result.add(WINDOWS_SHELL);
             result.add(WINDOWS_SHELL_OPTIONS);
@@ -144,7 +144,7 @@ public final class ExternalProcessTools {
             final boolean logStdOut, final boolean logErrOut, final List<String> arguments, final String filePrefix) throws ExternalProcessException {
         final long startTime = System.currentTimeMillis();
         int exitStatus = -1;
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         final boolean writeFileToDisk = !arguments.contains(PLACE_HOLDER_CERTIFICATE);
         File file = null;
         if (writeFileToDisk) {
@@ -161,8 +161,8 @@ public final class ExternalProcessTools {
                 arguments.add(0, filename);
             } else {
                 // Only works with PEM X.509 certificates at the time as used in ExternalCommandCertificateValidator (not by CRL publishers).
-                final List<Certificate> certificates = new ArrayList<Certificate>();
-                certificates.add(CertTools.getCertfromByteArray(bytes));
+                final List<Certificate> certificates = new ArrayList<>();
+                certificates.add(CertTools.getCertfromByteArray(bytes, Certificate.class));
                 final byte[] testPemBytes = CertTools.getPemFromCertificateChain(certificates);
                 String pemString = new String(testPemBytes);
                 pemString = pemString.substring(pemString.indexOf(LINE_SEPARATOR) + 1, pemString.length());
@@ -185,7 +185,7 @@ public final class ExternalProcessTools {
                     cmdTokens.set(0, "echo -n \"" + pemString + "\" | " + cmdTokens.get(0));
                 }
             }
-            List<String> cmdArray = new ArrayList<String>();
+            List<String> cmdArray = new ArrayList<>();
             cmdArray.addAll(cmdTokens);
             cmdArray.addAll(arguments);
             if (!writeFileToDisk) {

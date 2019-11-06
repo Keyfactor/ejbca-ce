@@ -162,6 +162,7 @@ public class SoftCATokenTest extends CATokenTestBase {
         return caTokenProperties;
 	}
     
+    @Override
     String getProvider() {
     	return "BC";
     }

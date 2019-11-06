@@ -33,10 +33,10 @@ public class ModuleTypeHolder implements ModuleType {
 	}
 	
 	@Override
-	public boolean equals(final ModuleType value) {
-		if (value == null) {
+	public boolean equals(final ModuleType otherValue) {
+		if (otherValue == null) {
 			return false;
 		}
-		return this.value.equals(value.toString());
+		return value.equals(otherValue.toString());
 	}
 }

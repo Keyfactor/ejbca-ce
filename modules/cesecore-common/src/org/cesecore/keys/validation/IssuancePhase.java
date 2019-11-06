@@ -65,7 +65,6 @@ public enum IssuancePhase implements IndexEnum {
 
     /**
      * Gets the resource key or label.
-     * @return
      */
     public String getLabel() {
         return label;
@@ -73,10 +72,9 @@ public enum IssuancePhase implements IndexEnum {
 
     /**
      * Gets an Integer list instance containing all indices.
-     * @return
      */
     public static final List<Integer> indices() {
-        final List<Integer> result = new ArrayList<Integer>();
+        final List<Integer> result = new ArrayList<>();
         for (IssuancePhase phase : values()) {
             result.add(phase.getIndex());
         }

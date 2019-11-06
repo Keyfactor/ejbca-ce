@@ -49,6 +49,7 @@ public final class GlobalOcspConfigurationCache implements ConfigurationCache {
         return true;
     }
     
+    @Override
     public void clearCache() {
         ocspConfigurationCache = null;
     }

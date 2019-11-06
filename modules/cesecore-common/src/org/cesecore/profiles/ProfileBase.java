@@ -71,8 +71,6 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
     
     /**
      * Method allows implementions to add non-datamapped objects to be persisted. 
-     * 
-     * @return
      */
     protected abstract void saveTransientObjects();
     
@@ -143,8 +141,8 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
     }
    
     @Override
-    public Map<Object, Object> diff(Profile newobj) {
-        Map<Object, Object> newmap = (Map<Object, Object>) newobj.getDataMap();
+    public Map<Object, Object> diff(final Profile newobj) {
+        final Map<Object, Object> newmap = newobj.getDataMap();
         return diffMaps(data, newmap);
     }
 }

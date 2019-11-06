@@ -46,7 +46,7 @@ public enum ValidatorFactory {
     
     public Collection<Validator> getAllImplementations(final List<Class<?>> excludeClasses) {
         if (CollectionUtils.isNotEmpty(excludeClasses)) {
-            final Collection<Validator> result = new ArrayList<Validator>();
+            final Collection<Validator> result = new ArrayList<>();
             for (Validator validator : getAllImplementations()) {
                 if (!excludeClasses.contains(validator.getClass())) {
                     result.add(validator);

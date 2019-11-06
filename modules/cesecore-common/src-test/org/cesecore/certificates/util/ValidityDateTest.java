@@ -18,7 +18,6 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.util.ValidityDate;

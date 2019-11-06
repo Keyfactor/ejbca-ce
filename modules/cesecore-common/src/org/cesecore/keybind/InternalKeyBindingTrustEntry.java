@@ -99,4 +99,13 @@ public class InternalKeyBindingTrustEntry implements Serializable {
         }
         return certificateSerialNumberDecimal!=null && certificateSerialNumberDecimal.equals(other.certificateSerialNumberDecimal);
     }
+    
+    @Override
+    public int hashCode() {
+        int hash = caId;
+        if (certificateSerialNumberDecimal != null) {
+            hash += 13*certificateSerialNumberDecimal.hashCode(); // add prime number product (common practice in Java, see String.hashCode for example) 
+        }
+        return hash;
+    }
 }

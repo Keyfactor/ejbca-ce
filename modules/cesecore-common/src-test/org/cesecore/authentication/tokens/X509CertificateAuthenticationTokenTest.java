@@ -67,8 +67,7 @@ public class X509CertificateAuthenticationTokenTest {
     }
 
     @Before
-    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException,
-            SignatureException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
+    public void setUp() throws InvalidAlgorithmParameterException, IllegalStateException, OperatorCreationException, CertificateException {
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         certificate = CertTools.genSelfCert(
                 "C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,EmailAddress=Test", 365, null,
@@ -128,10 +127,10 @@ public class X509CertificateAuthenticationTokenTest {
 
         X509Certificate secondCertificate = CertTools.genSelfCert("C=SE,O=Monkey,CN=Monkey", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         credentials.add(secondCertificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
+        Set<X500Principal> principals = new HashSet<>();
         principals.add(certificate.getSubjectX500Principal());
         principals.add(secondCertificate.getSubjectX500Principal());
 

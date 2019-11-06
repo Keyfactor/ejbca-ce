@@ -22,7 +22,6 @@ import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
-import java.nio.file.Path;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 

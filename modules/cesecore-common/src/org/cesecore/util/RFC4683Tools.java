@@ -41,7 +41,7 @@ import org.cesecore.certificates.util.DnComponents;
  * including a privacy-sensitive identifier in the subjectAltName extension of a certificate. The SIM is 
  * an optional feature that may be used by relying parties to determine whether the subject of a particular 
  * certificate is also the person corresponding to a particular sensitive identifier 
- * (see {@link https://tools.ietf.org/html/rfc4683}).
+ * (see <a href="https://tools.ietf.org/html/rfc4683">RFC 4683</a>).
  * 
  * @version $Id$
  */
@@ -59,10 +59,9 @@ public final class RFC4683Tools {
     private static final Logger LOG = Logger.getLogger(RFC4683Tools.class);
 
     /**
-     * Gets the allowed hash algorithm object identifiers (see: {@link https://tools.ietf.org/html/rfc4683#section-4.3}).
+     * Gets the allowed hash algorithm object identifiers (see <a href="https://tools.ietf.org/html/rfc4683#section-4.3">RFC 4683 section 4.3</a>).
      * @return a list of ASN1ObjectIdentifier {@link TSPAlgorithms#ALLOWED}.
      */
-    @SuppressWarnings("unchecked")
     public static final List<ASN1ObjectIdentifier> getAllowedHashAlgorithms() {
         return new ArrayList<ASN1ObjectIdentifier>(TSPAlgorithms.ALLOWED);
     }
@@ -73,7 +72,7 @@ public final class RFC4683Tools {
      */
     public static final List<String> getAllowedHashAlgorithmOidStrings() {
         final List<ASN1ObjectIdentifier> identifiers = getAllowedHashAlgorithms();
-        final List<String> result = new ArrayList<String>(identifiers.size());
+        final List<String> result = new ArrayList<>(identifiers.size());
         for (ASN1ObjectIdentifier identifier : identifiers) {
             result.add(identifier.getId());
         }
@@ -186,7 +185,7 @@ public final class RFC4683Tools {
      * @param hashAlogrithmOidString the OID string for the hash algorithm used to hash R and PEPSI.
      * @param authorityRandom the registration authority chosen random value, hashed with hash of hashAlogrithmOidString (see https://tools.ietf.org/html/rfc4683#section-4.3).
      * @param pepsi Privacy-Enhanced Protected Subject Information (PEPSI), with SIM = R || PEPSI.
-     * @return the RFC4683 SIM GeneralName (see {@link https://tools.ietf.org/html/rfc4683#section-4.3}).
+     * @return the RFC4683 SIM GeneralName (see <a href="https://tools.ietf.org/html/rfc4683#section-4.3">RFC 4683 section 4.3</a>).
      */
     public static final ASN1Primitive createSimGeneralName(final String hashAlgorithmIdentifier, final String authorityRandom, final String pepsi) {
         if (LOG.isDebugEnabled()) {

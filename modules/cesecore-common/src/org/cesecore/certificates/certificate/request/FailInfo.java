@@ -100,6 +100,7 @@ public class FailInfo implements Serializable {
         return value;
     }
     
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
         	return true;
@@ -114,9 +115,11 @@ public class FailInfo implements Serializable {
         return true;
     }
 
+    @Override
     public int hashCode() {
         return value;
     }
+    @Override
     public String toString() {
     	return Integer.toString(value);
     }

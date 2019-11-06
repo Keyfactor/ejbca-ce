@@ -47,7 +47,7 @@ public abstract class DNFieldsUtil {
      */
     public static final Map<String, String> dnStringToMap(final String dnString) {
         final String[] dnTokens = dnString.split(ATTRIBUTE_SEPARATOR);
-        final Map<String, String> result = new HashMap<String,String>();
+        final Map<String, String> result = new HashMap<>();
         if (StringUtils.isNotBlank(dnString)) {
             String[] tokens;
             for (int i = 0; i<dnTokens.length;i++) {
@@ -141,8 +141,8 @@ public abstract class DNFieldsUtil {
 	public static StringBuilder removeEmpties(final String sDN, final StringBuilder removedAllEmpties, final boolean processTrailing) {
 		StringBuilder removedTrailingEmpties = null;
     	// First make a list of where all the key=value pairs start and if they are empty or not
-    	final List<Integer> startOfPairs = new ArrayList<Integer>();
-    	final List<Integer> startOfValues = new ArrayList<Integer>();
+    	final List<Integer> startOfPairs = new ArrayList<>();
+    	final List<Integer> startOfValues = new ArrayList<>();
     	final char[] buf = sDN.toCharArray();
     	populatePositionLists(startOfPairs, startOfValues, buf);
     	boolean areStringBuildersEqual = true;

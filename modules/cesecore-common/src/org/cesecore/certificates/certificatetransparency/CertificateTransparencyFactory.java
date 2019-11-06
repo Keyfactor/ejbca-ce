@@ -31,7 +31,7 @@ public enum CertificateTransparencyFactory {
         try {
             // No lock is used since the CertificateTransparencyImpl class has no state
             // so it's OK with multiple instances.
-            instance = (CertificateTransparency)Class.forName(IMPLEMENTATION_CLASSNAME).newInstance();
+            instance = (CertificateTransparency)Class.forName(IMPLEMENTATION_CLASSNAME).getConstructor().newInstance();
         } catch (Exception e) { // NOPMD not a good idea to throw an exception in a enum constructor
             instance = null;
         }

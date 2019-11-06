@@ -255,7 +255,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
      * @param isSignedBy a predicate taking a pair of CAs (A, B), outputting true iff A has signed B.
      */
     public static <T> Builder<T> from(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
-        return new Builder<T>(cas, isSignedBy);
+        return new Builder<>(cas, isSignedBy);
     }
 
     /**
@@ -265,7 +265,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
      * @return a builder.
      */
     public static Builder<Certificate> fromCertificates(final Set<Certificate> certificates) {
-        return new Builder<Certificate>(certificates, isCertificateSignedBy());
+        return new Builder<>(certificates, isCertificateSignedBy());
     }
 
     /**
@@ -291,7 +291,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         this.nodes = edges.stream()
                 .map(edge -> edge.getB())
                 .distinct()
-                .map(ca -> new AbstractMap.SimpleImmutableEntry<T, Integer>(ca, computeLevel(ca)))
+                .map(ca -> new AbstractMap.SimpleImmutableEntry<>(ca, computeLevel(ca)))
                 .sorted(compareAscending())
                 .map(entry -> entry.getKey())
                 .collect(Collectors.toList());

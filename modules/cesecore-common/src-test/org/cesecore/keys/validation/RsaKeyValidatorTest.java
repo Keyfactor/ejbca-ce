@@ -210,7 +210,7 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusMinFactor(2);
         keyValidator.setPublicKeyModulusMinFactor(-4);
         Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ",
-                keyValidator.getPublicKeyModulusMinFactor(), new Integer("2"));
+                keyValidator.getPublicKeyModulusMinFactor(), Integer.valueOf(2));
         log.trace("<testNoNegativeNumbers()");
    }
 
@@ -366,7 +366,7 @@ public class RsaKeyValidatorTest {
                 "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         // Set custom bit length.
-        List<String> bitLengths = new ArrayList<String>();
+        List<String> bitLengths = new ArrayList<>();
         bitLengths.add(Integer.toString(modulus.bitLength()));
         keyValidator.setBitLengths(bitLengths);
         List<String> messages = keyValidator.validate(publicKey, null);
@@ -382,7 +382,7 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusMin(modulus.add(BigInteger.ONE));
         keyValidator.setPublicKeyModulusMax(modulus.subtract(BigInteger.ONE));
         keyValidator.setPublicKeyModulusOnlyAllowOdd(true);
-        bitLengths = new ArrayList<String>();
+        bitLengths = new ArrayList<>();
         bitLengths.add(Integer.toString(modulus.bitLength()));
         keyValidator.setBitLengths(bitLengths);
         messages = keyValidator.validate(publicKey, null);
@@ -453,7 +453,7 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusDontAllowRocaWeakKeys(false);
 
         // With disabled validation of ROCA, everything should pass
-        List<String> bitLengths = new ArrayList<String>();
+        List<String> bitLengths = new ArrayList<>();
         bitLengths.add("1024");
         bitLengths.add("2048");
         bitLengths.add("2050"); // The positive sample ROCA cert is 2050 bits

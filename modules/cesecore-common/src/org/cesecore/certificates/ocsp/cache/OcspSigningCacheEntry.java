@@ -65,7 +65,7 @@ public class OcspSigningCacheEntry {
             fullCertificateChain = signingCaCertificateChain;
         } else {
             // We will sign with an OCSP Key Binding
-            fullCertificateChain = new ArrayList<X509Certificate>();
+            fullCertificateChain = new ArrayList<>();
             fullCertificateChain.add(ocspSigningCertificate);
             fullCertificateChain.addAll(signingCaCertificateChain);
         }

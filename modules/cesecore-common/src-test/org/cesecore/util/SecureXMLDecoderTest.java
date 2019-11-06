@@ -116,9 +116,9 @@ public class SecureXMLDecoderTest {
         root.put("testEnum", MockEnum.FOO);
         // Encode
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(root);
-        encoder.close();      
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(root);
+        }
         // Try to decode it and compare
         decodeCompare(baos.toByteArray());
     }
@@ -201,9 +201,9 @@ public class SecureXMLDecoderTest {
         
         // Encode
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(root);
-        encoder.close();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(root);
+        }
         
         // Try to decode it and compare
         decodeCompare(baos.toByteArray());
@@ -217,9 +217,9 @@ public class SecureXMLDecoderTest {
         
         // Encode
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(new Random()); // java.util.Random is serializable, but isn't whitelisted
-        encoder.close();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(new Random()); // java.util.Random is serializable, but isn't whitelisted
+        }
         
         decodeBad(baos.toByteArray());
         
@@ -234,9 +234,9 @@ public class SecureXMLDecoderTest {
         
         // Encode
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(root);
-        encoder.close();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(root);
+        }
         
         // Try to decode it and compare
         try {

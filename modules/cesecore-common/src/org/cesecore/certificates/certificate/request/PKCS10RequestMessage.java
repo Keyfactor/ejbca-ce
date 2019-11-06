@@ -91,9 +91,9 @@ public class PKCS10RequestMessage implements RequestMessage {
     /** Error text */
     private String errorText = null;
 
-    private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
+    private List<Certificate> additionalCaCertificates = new ArrayList<>();
     
-    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
+    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
     
     /**
      * Constructs a new empty PKCS#10 message handler object.

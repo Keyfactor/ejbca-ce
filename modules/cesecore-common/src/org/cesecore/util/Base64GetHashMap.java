@@ -37,7 +37,8 @@ public class Base64GetHashMap extends LinkedHashMap {
         super(m);
     }
     
-    public Object get(Object key) {
+    @Override
+    public Object get(final Object key) {
         Object o = super.get(key);
         if (o == null) {
             return o;

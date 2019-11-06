@@ -127,6 +127,7 @@ public final class ConcurrentCache<K,V> {
          * Must be called if other threads might be waiting for this cache entry
          * (i.e. if isInCache() returns false)
          */
+        @Override
         public void close() {
             if (ourSemaphore != null) {
                 synchronized (ourSemaphore) {
@@ -170,7 +171,7 @@ public final class ConcurrentCache<K,V> {
      */
     public ConcurrentCache(final Map<? extends K, ? extends V> map, long validFor) {
         for (Map.Entry<? extends K, ? extends V> mapEntry : map.entrySet()) {
-            final InternalEntry<V> intEntry = new InternalEntry<V>(mapEntry.getValue());
+            final InternalEntry<V> intEntry = new InternalEntry<>(mapEntry.getValue());
             if (validFor != -1L) {
                 intEntry.expire = System.currentTimeMillis() + validFor;
             }

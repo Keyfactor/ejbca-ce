@@ -19,6 +19,8 @@ import javax.crypto.SecretKey;
  */
 public class NJI11ReleasebleSessionSecretKey extends NJI11Object implements Key, SecretKey {
     
+    private static final long serialVersionUID = 3458221493061819379L;
+
     private final String algorithm;
     private final String keySpec;
     

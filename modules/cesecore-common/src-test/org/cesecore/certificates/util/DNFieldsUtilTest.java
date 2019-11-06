@@ -59,13 +59,13 @@ public class DNFieldsUtilTest {
     public void testDnStringToMap() throws Exception {
         // Test empty string -> empty map.
         String string = StringUtils.EMPTY;
-        Map<String,String> map = new HashMap<String,String>();
+        Map<String,String> map = new HashMap<>();
         Map<String,String> dnMap = DNFieldsUtil.dnStringToMap(string);
         assertEquals("An empty DN string must result in an empty map.", map, dnMap);
         
         // Test valid string with some attributes -> must be all in the map.
         string = "C=SE,O=,OU=Test,CN=Tester";
-        map = new HashMap<String,String>();
+        map = new HashMap<>();
         map.put("C", "SE");
         map.put("O", StringUtils.EMPTY);
         map.put("OU", "Test");

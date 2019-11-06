@@ -59,7 +59,6 @@ public enum KeyValidatorDateConditions implements IndexEnum {
 
     /**
      * Gets the index.
-     * @return
      */
     @Override
     public int getIndex() {
@@ -68,7 +67,6 @@ public enum KeyValidatorDateConditions implements IndexEnum {
 
     /**
      * Gets the resource key or label.
-     * @return
      */
     public String getLabel() {
         return label;
@@ -88,10 +86,9 @@ public enum KeyValidatorDateConditions implements IndexEnum {
 
     /**
      * Gets an Integer list instance containing all indices.
-     * @return
      */
     public static final List<Integer> index() {
-        final List<Integer> result = new ArrayList<Integer>();
+        final List<Integer> result = new ArrayList<>();
         for (KeyValidatorDateConditions condition : values()) {
             result.add(condition.getIndex());
         }

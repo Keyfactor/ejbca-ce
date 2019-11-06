@@ -82,7 +82,7 @@ public abstract class PatternLogger implements Serializable {
      */
     public static final String PROCESS_TIME = "PROCESS_TIME";
 
-    private final Map<String, String> valuepairs = new HashMap<String, String>();
+    private final Map<String, String> valuepairs = new HashMap<>();
     private final String matchString;
     private final String matchPattern;
     // Matcher is not Serializable

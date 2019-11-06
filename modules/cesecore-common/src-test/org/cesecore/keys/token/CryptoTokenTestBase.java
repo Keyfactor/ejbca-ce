@@ -164,7 +164,7 @@ public abstract class CryptoTokenTestBase {
     }
 
     protected void doCryptoTokenDSA(CryptoToken cryptoToken) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
-            CryptoTokenOfflineException, NoSuchProviderException, InvalidKeyException, SignatureException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmParameterException {
         try {
             // We have not activated the token so status should be offline
@@ -491,8 +491,8 @@ public abstract class CryptoTokenTestBase {
     }
 
     protected void doStoreAndLoad(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, SignatureException, NoSuchSlotException {
+            KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeyException, InvalidAlgorithmParameterException,
+            NoSuchSlotException {
 
         try {
             cryptoToken.activate(tokenpin.toCharArray());

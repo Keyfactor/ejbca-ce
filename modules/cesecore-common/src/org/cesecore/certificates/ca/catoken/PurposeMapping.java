@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -62,10 +62,10 @@ public final class PurposeMapping {
      */
     public PurposeMapping(final Properties properties) {
     	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and alias string as defined in Properties */
-    	map = new Hashtable<Integer, String>();
+    	map = new HashMap<>();
     	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and key purpose string (CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING)
     	 * for the properties defined in Properties */
-    	keymap = new Hashtable<Integer, String>();
+    	keymap = new HashMap<>();
     	String defaultKeyAliasTmp = null;
     	if (properties != null) {
     		defaultKeyAliasTmp = properties.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);

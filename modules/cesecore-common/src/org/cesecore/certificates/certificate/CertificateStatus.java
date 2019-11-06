@@ -47,16 +47,21 @@ public class CertificateStatus implements Serializable {
     
     @Override
     public String toString() {
-        return this.name;
+        return name;
     }
     
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof CertificateStatus && this.equals((CertificateStatus)obj);
+        return obj instanceof CertificateStatus && equals((CertificateStatus)obj);
     }
     
     public boolean equals(CertificateStatus obj) {
-        return this.name.equals(obj.toString());
+        return name.equals(obj.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
     
     public boolean isRevoked() {

@@ -82,9 +82,6 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_CVC);
     }
 
-    // Values used for lookup that are not stored in the data hash map.
-    private int id;
-
     /**
      * Public constructor needed for deserialization.
      */
@@ -120,7 +117,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     public void init() {
         super.initialize();
         if (null == data.get(VERSION)) {
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
         }
         if (null == data.get(PHASE)) {
             setPhase(getApplicablePhases().get(0));
@@ -198,7 +195,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     @Override
     public List<Integer> getCertificateProfileIds() {
         final String value = (String) data.get(CERTIFICATE_PROFILE_IDS);
-        final List<Integer> result = new ArrayList<Integer>();
+        final List<Integer> result = new ArrayList<>();
         // Can be empty String here.
         if (StringUtils.isNotBlank(value)) {
             final String[] tokens = value.trim().split(LIST_SEPARATOR);
@@ -256,17 +253,17 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         super.upgrade();
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
-            log.info(intres.getLocalizedMessage("validator.upgrade", new Float(getVersion())));
+            log.info(intres.getLocalizedMessage("validator.upgrade", getVersion()));
             init();
             // Finished upgrade, set new version
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
         }
     }
 
     @Override
     public String toDisplayString() {
         final StringBuilder result = new StringBuilder();
-        result.append("BaseKeyValidator [id=").append(id).append(", name=").append(getProfileName()).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))
+        result.append("BaseKeyValidator [name=").append(getProfileName()).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))
                 .append(", notBefore=").append(data.get(NOT_BEFORE)).append(", notBeforeCondition=").append(data.get(NOT_BEFORE_CONDITION))
                 .append(", notAfter=").append(data.get(NOT_AFTER)).append(", notAfterCondition=").append(data.get(NOT_AFTER_CONDITION))
                 .append(", failedAction=").append(data.get(FAILED_ACTION));
@@ -278,8 +275,8 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         getType();
         Validator clone;
         try {
-            clone = (Validator) getType().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            clone = (Validator) getType().getConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Could not instansiate class of type " + getType().getCanonicalName());
         }
         clone.setProfileName(getProfileName());

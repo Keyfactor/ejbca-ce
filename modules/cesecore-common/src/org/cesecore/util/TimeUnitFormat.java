@@ -50,7 +50,7 @@ public final class TimeUnitFormat {
     public TimeUnitFormat(final List<String> units, final Map<String, Long> factors) {
         this.units = units;
         this.factors = factors;
-        this.defaultValues = new LinkedHashMap<String, Long>(units.size());
+        this.defaultValues = new LinkedHashMap<>(units.size());
         final StringBuilder builder = new StringBuilder(PATTERN_PREFIX);
         int index = 0;
         for (String unit : units) {

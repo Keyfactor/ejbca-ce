@@ -19,7 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -150,7 +149,7 @@ public abstract class RequestMessageUtils {
 
     public static RequestMessage getRequestMessageFromType(final String username, final String password, final String req, final int reqType)
             throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException,
-            SignatureException, InvalidKeySpecException, ParseException, ConstructionException, NoSuchFieldException {
+            SignatureException, ParseException, ConstructionException, NoSuchFieldException {
 	    RequestMessage ret = null;
         if (reqType == CertificateConstants.CERT_REQ_TYPE_PKCS10) {
             final PKCS10RequestMessage pkcs10RequestMessage = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());

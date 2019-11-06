@@ -44,16 +44,16 @@ import org.cesecore.util.query.elems.Term;
 public final class QueryGenerator implements Serializable {
 
     private static final long serialVersionUID = 1567027442267416376L;
-    private final Map<String, Object> parameters = new LinkedHashMap<String, Object>();
+    private final Map<String, Object> parameters = new LinkedHashMap<>();
     private final Query query;
-    private final List<String> availableFields = new ArrayList<String>();
+    private final List<String> availableFields = new ArrayList<>();
     private final QueryCriteria criteria;
 
     /**
      * Class holding query construction logic.
      * 
      */
-    private final class Query {
+    private static final class Query {
         public final StringBuilder query = new StringBuilder();
         private final String attrAlias;
         private final static String WHERE = "WHERE";
@@ -112,6 +112,7 @@ public final class QueryGenerator implements Serializable {
             return query.length() == 0;
         }
 
+        @Override
         public String toString() {
             return query.toString();
         }
@@ -149,8 +150,8 @@ public final class QueryGenerator implements Serializable {
     public String generate() {
         if (query.isEmpty()) {
             final List<Elem> elements = criteria.getElements();
-            final List<Elem> terms = new ArrayList<Elem>();
-            final List<Elem> clauses = new ArrayList<Elem>();
+            final List<Elem> terms = new ArrayList<>();
+            final List<Elem> clauses = new ArrayList<>();
             
             CollectionUtils.selectRejected(elements, PredicateUtils.instanceofPredicate(Order.class), terms);
             CollectionUtils.select(elements, PredicateUtils.instanceofPredicate(Order.class), clauses);
@@ -195,7 +196,7 @@ public final class QueryGenerator implements Serializable {
     /** 
      * Partial query generation according to the provided element.
      * 
-     * @param element. Term or Operation or Order object
+     * @param elem Term or Operation or Order object
      */
     private void generate(final Elem elem) {
         if (elem instanceof Operation) {

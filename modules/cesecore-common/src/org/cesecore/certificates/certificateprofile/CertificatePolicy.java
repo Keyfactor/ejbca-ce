@@ -20,7 +20,7 @@ import org.bouncycastle.asn1.x509.PolicyQualifierId;
 
 /** Class encapsulating the CertificatePolicy X509 certificate extensions. See rfc3280.
  * Contains an OID and optionally a policy qualifier. Several CertificatePolicy classes 
- * can be created with the same oid, for different qualifiers
+ * can be created with the same OID, for different qualifiers
  * 
  * @version $Id$
  */
@@ -111,6 +111,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @see java.lang.Object#clone()
      */
+    @Override
     protected Object clone() throws CloneNotSupportedException { // NOPMD by tomas on 1/7/11 1:04 PM
         return new CertificatePolicy(this.policyID, this.qualifierId, this.qualifier);
     }
@@ -118,6 +119,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         final StringBuilder strBuilder = new StringBuilder(100);
 
@@ -135,6 +137,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    @Override
     public boolean equals(final Object obj) {
         if((obj == null) || !(obj instanceof CertificatePolicy)) {
             return false;
@@ -142,31 +145,32 @@ public class CertificatePolicy implements Serializable, Cloneable {
         final CertificatePolicy policy = (CertificatePolicy) obj;
 
         // We want to let both null and "" be the same value here, i.e. an empty value
-        // Simply because, especially in gui code, it is somewhat tricky to trust which is a non-existant value
-        boolean policyeq = false;
+        // Simply because, especially in GUI code, it is somewhat tricky to trust which is a non-existent value
+        boolean policyEqual = false;
         if (StringUtils.isEmpty(policy.getPolicyID()) && StringUtils.isEmpty(this.policyID)) {
-        	policyeq = true;
+            policyEqual = true;
         } else if (StringUtils.equals(policy.getPolicyID(), this.policyID)) {
-        	policyeq = true;
+            policyEqual = true;
         }
-        boolean qualifierideq = false;
+        boolean qualifierIdsEqual = false;
         if (StringUtils.isEmpty(policy.getQualifierId()) && StringUtils.isEmpty(this.qualifierId)) {
-        	qualifierideq = true;
+            qualifierIdsEqual = true;
         } else if (StringUtils.equals(policy.getQualifierId(), this.qualifierId)) {
-        	qualifierideq = true;
+            qualifierIdsEqual = true;
         }
-        boolean qualifier = false;
+        boolean qualifiersEqual = false;
         if (StringUtils.isEmpty(policy.getQualifier()) && StringUtils.isEmpty(this.qualifier)) {
-        	qualifier = true;
+            qualifiersEqual = true;
         } else if (StringUtils.equals(policy.getQualifier(), this.qualifier)) {
-        	qualifier = true;
+            qualifiersEqual = true;
         }
-        return policyeq && qualifierideq && qualifier; 
+        return policyEqual && qualifierIdsEqual && qualifiersEqual; 
     }
 
     /**
      * @see java.lang.Object#hashCode()
      */
+    @Override
     public int hashCode() {
         return this.toString().hashCode();
     }

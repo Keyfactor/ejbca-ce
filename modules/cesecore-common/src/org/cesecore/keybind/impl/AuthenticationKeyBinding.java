@@ -46,7 +46,7 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     {
         final String[] CIPHER_SUITES_SUBSET = CesecoreConfiguration.getAvailableCipherSuites();
-        addProperty(new DynamicUiProperty<String>(PROPERTY_PROTOCOL_AND_CIPHER_SUITE, CIPHER_SUITES_SUBSET[0], Arrays.asList(CIPHER_SUITES_SUBSET)));
+        addProperty(new DynamicUiProperty<>(PROPERTY_PROTOCOL_AND_CIPHER_SUITE, CIPHER_SUITES_SUBSET[0], Arrays.asList(CIPHER_SUITES_SUBSET)));
     }
 
     /** @return an array of supported protocols named according to JSSE */

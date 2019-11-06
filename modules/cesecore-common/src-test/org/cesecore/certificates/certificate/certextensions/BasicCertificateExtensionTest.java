@@ -342,7 +342,6 @@ public class BasicCertificateExtensionTest {
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		DLSequence seq = (DLSequence)value;
 		assertEquals(3, seq.size());
-		@SuppressWarnings("unchecked")
         Enumeration<ASN1Encodable> e = seq.getObjects();
 		int i = 1;
 		while(e.hasMoreElements()) {
@@ -472,13 +471,10 @@ public class BasicCertificateExtensionTest {
 		
 		// Success with value specified
 		userData.getExtendedInformation().setExtensionData("1.2.3", "The value 123");
-        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
-        try {
+        try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)))) {
             ASN1Encodable value1 = in.readObject();
             assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
             assertEquals("The value 123", ((DERPrintableString) value1).getString());
-        } finally {
-            in.close();
         }
 		
 	}
@@ -520,7 +516,6 @@ public class BasicCertificateExtensionTest {
 	 * The static values should be used if no value was specified in ExtendedInformation.
 	 * The values from ExtendedInformation should be used if present.
 	 */
-    @SuppressWarnings("unchecked")
     @Test
 	public void test15DynamicTrueStaticNvalues() throws Exception {
 		Properties props = new Properties();
@@ -562,7 +557,7 @@ public class BasicCertificateExtensionTest {
 		e = seq.getObjects();
 		i = 1;
 		while (e.hasMoreElements()) {
-			ASN1Encodable v = (ASN1Encodable)e.nextElement();
+			ASN1Encodable v = e.nextElement();
 			assertTrue(v.getClass().toString(), v instanceof DERPrintableString);
 			String str = ((DERPrintableString) v).getString();
 			assertEquals(str, "A dynamic value " + i++);        
@@ -643,13 +638,10 @@ public class BasicCertificateExtensionTest {
 		
 		// Success with value specified
 		userData.getExtendedInformation().setExtensionData("1.2.3.value", "The value 456");
-        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
-        try {
+        try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)))) {
             ASN1Encodable value1 = in.readObject();
             assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
             assertEquals("The value 456", ((DERPrintableString) value1).getString());
-        } finally {
-            in.close();
         }
 	}
 	
@@ -696,18 +688,15 @@ public class BasicCertificateExtensionTest {
         assertNotNull(ext);
         // Read the extension value, it's a DERIA5String wrapped in an ASN1OctetString
         ASN1OctetString str = ext.getExtnValue();
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
-        DERIA5String ia5str = (DERIA5String)aIn.readObject();
-        aIn.close();
-        assertEquals("This is a printable string", ia5str.getString());
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()))) {
+            DERIA5String ia5str = (DERIA5String)aIn.readObject();
+            assertEquals("This is a printable string", ia5str.getString());
+        }
     }
 
     private ASN1Encodable getObject(byte[] valueEncoded) throws IOException {
-        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
-        try {
+        try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded))) {
             return in.readObject();
-        } finally {
-            in.close();
         }
     }
 

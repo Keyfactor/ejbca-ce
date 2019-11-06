@@ -24,7 +24,6 @@ import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
 /**
  * @version $Id$
- *
  */
 public class SHA1DigestCalculator implements DigestCalculator {
     private ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -34,14 +33,17 @@ public class SHA1DigestCalculator implements DigestCalculator {
         this.digest = digest;
     }
 
+    @Override
     public AlgorithmIdentifier getAlgorithmIdentifier() {
         return RespID.HASH_SHA1;
     }
 
+    @Override
     public OutputStream getOutputStream() {
         return bOut;
     }
 
+    @Override
     public byte[] getDigest() {
         byte[] bytes = digest.digest(bOut.toByteArray());
 

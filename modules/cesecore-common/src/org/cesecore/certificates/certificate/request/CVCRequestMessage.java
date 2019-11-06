@@ -71,9 +71,9 @@ public class CVCRequestMessage implements RequestMessage {
     /** The cvc request message, not serialized. */
     protected transient CVCertificate cvcert = null;
 
-    private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
+    private List<Certificate> additionalCaCertificates = new ArrayList<>();
   
-    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
+    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
     
     /**
      * Constructs a new empty message handler object.

@@ -50,9 +50,7 @@ public abstract class NetworkTools {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final byte data[] = new byte[32768];    // 32KiB at the time
         int downloadedBytes = 0;
-        InputStream is = null;
-        try {
-            is = url.openStream();
+        try (final InputStream is = url.openStream()) {
             int count;
             while ((count = is.read(data)) != -1) {
                 baos.write(data, 0, count);
@@ -69,16 +67,6 @@ public abstract class NetworkTools {
                 log.debug("Failed to download data from " + url.toString(), e);
             }
             return null;
-        } finally {
-            if (is!=null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Failed to download data from " + url.toString(), e);
-                    }
-                }
-            }
         }
         return baos.toByteArray();
     }

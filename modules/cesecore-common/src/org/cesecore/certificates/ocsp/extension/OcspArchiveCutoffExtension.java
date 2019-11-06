@@ -85,7 +85,7 @@ public class OcspArchiveCutoffExtension implements OCSPExtension {
                     + " with serial number " + CertTools.getSerialNumberAsString(cert) + " issued by '" + CertTools.getIssuerDN(cert)  + "'. The OCSP archive cutoff extension"
                     + " should only be present in OCSP responses. This message is probably an indication of a misconfigured OCSP client.");
         }
-        return new HashMap<ASN1ObjectIdentifier, Extension>();
+        return new HashMap<>();
     }
 
     @Override

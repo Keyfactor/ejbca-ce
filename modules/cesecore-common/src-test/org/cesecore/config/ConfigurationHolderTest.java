@@ -43,20 +43,18 @@ public class ConfigurationHolderTest {
     public void testGetString() throws Exception {
         File f = File.createTempFile("cesecore", "test");
         try {
-            FileWriter fw = new FileWriter(f);
-
             // First the value "property1" should not exists in configuration
             // Test null default value and a default value
-            String val = ConfigurationHolder.getString("property1");
-            assertNull(val);
-            // Create a configuration file
-            fw.write("property1=foo\n");
-            fw.write("property2=${property1}bar\n");
-            // Make sure we handle comma in values
-            fw.write("property3=EN,DE,FR\n");
-            fw.close();
+            assertNull("non-existing property should be null by default", ConfigurationHolder.getString("property1"));
+            try (FileWriter fw = new FileWriter(f)) {
+                // Create a configuration file
+                fw.write("property1=foo\n");
+                fw.write("property2=${property1}bar\n");
+                // Make sure we handle comma in values
+                fw.write("property3=EN,DE,FR\n");
+            }
             // We haven't read it so it should still not contain our property
-            val = ConfigurationHolder.getString("property1");
+            String val = ConfigurationHolder.getString("property1");
             assertEquals(null, val);
             // Add the config file to configuration, now the property should be visible
             ConfigurationHolder.addConfigurationFile(f.getAbsolutePath());
@@ -86,9 +84,9 @@ public class ConfigurationHolderTest {
         assertNull(val);
         File f = File.createTempFile("cesecore", "test");
         try {
-            FileWriter fw = new FileWriter(f);
-            fw.write("test.comma.in.defaultvalue=EN,DE,FR\n");
-            fw.close();
+            try (FileWriter fw = new FileWriter(f)) {
+                fw.write("test.comma.in.defaultvalue=EN,DE,FR\n");
+            }
             defaultValues.addConfiguration(new PropertiesConfiguration(f));
             val = ConfigurationHolder.getString("test.comma.in.defaultvalue");
             assertEquals("EN,DE,FR", val);

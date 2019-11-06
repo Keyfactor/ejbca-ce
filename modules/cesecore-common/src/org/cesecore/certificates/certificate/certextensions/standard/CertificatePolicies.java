@@ -68,7 +68,7 @@ public class CertificatePolicies extends StandardCertificateExtension {
     	}
     	// Iterate through policies and add oids and policy qualifiers if they exist
     	final List<CertificatePolicy> policies = certProfile.getCertificatePolicies();
-    	final Map<ASN1ObjectIdentifier, ASN1EncodableVector> policiesMap = new LinkedHashMap<ASN1ObjectIdentifier, ASN1EncodableVector>();
+    	final Map<ASN1ObjectIdentifier, ASN1EncodableVector> policiesMap = new LinkedHashMap<>();
     	// Each Policy OID can be entered several times, with different qualifiers, 
     	// because of this we make a map of oid and qualifiers, and we can add a new qualifier
     	// in each round of this for loop
@@ -109,9 +109,9 @@ public class CertificatePolicies extends StandardCertificateExtension {
     /**
      * Obtains the Policy Qualifier Information object
      * 
-     * @param policy,
+     * @param policy
      *          CertificatePolicy with oid, user notice and cps uri
-     * @param displayencoding,
+     * @param displayencoding
      *          the encoding used for UserNotice text, DisplayText.CONTENT_TYPE_BMPSTRING, CONTENT_TYPE_UTF8STRING, CONTENT_TYPE_IA5STRING or CONTENT_TYPE_VISIBLESTRING 
      *          
      * @return PolicyQualifierInfo

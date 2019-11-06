@@ -15,7 +15,6 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -120,7 +119,7 @@ public class QcStatement extends StandardCertificateExtension {
 		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
 			si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()));                 
 		}
-		final ArrayList<QCStatement> qcs = new ArrayList<QCStatement>();
+		final ArrayList<QCStatement> qcs = new ArrayList<>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
 		// We never add RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1. This is so old so we think it has never been used in the wild basically.
@@ -153,7 +152,7 @@ public class QcStatement extends StandardCertificateExtension {
 		}
 
 		if (certProfile.getUseQCEtsiRetentionPeriod()) {
-			final ASN1Integer years = new ASN1Integer( ((Integer) certProfile.getQCEtsiRetentionPeriod()) );
+			final ASN1Integer years = new ASN1Integer(certProfile.getQCEtsiRetentionPeriod());
 			qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_RetentionPeriod, years);
 			qcs.add(qc);
 		}
@@ -258,10 +257,8 @@ public class QcStatement extends StandardCertificateExtension {
 		}
 		if (!qcs.isEmpty()) {
 			final ASN1EncodableVector vec = new ASN1EncodableVector();
-			final Iterator<QCStatement> iter = qcs.iterator();
-			while (iter.hasNext()) {
-				final QCStatement q = (QCStatement)iter.next();
-				vec.add(q);
+			for (final QCStatement q : qcs) {
+			    vec.add(q);
 			}
 			ret = new DERSequence(vec);
 		}

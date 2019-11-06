@@ -30,7 +30,7 @@ public enum InternalKeyBindingRules {
     private static final Map<String, InternalKeyBindingRules> reverseResourceLookup;
     
     static {
-        reverseResourceLookup = new HashMap<String, InternalKeyBindingRules>();
+        reverseResourceLookup = new HashMap<>();
         for(InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
             reverseResourceLookup.put(rule.resource(), rule);
         }
@@ -48,6 +48,7 @@ public enum InternalKeyBindingRules {
         return this.resource;
     }
 
+    @Override
     public String toString() {
         return this.resource;
     }

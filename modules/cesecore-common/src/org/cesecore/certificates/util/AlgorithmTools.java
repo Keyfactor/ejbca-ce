@@ -208,7 +208,7 @@ public abstract class AlgorithmTools {
      * @return a Map with elliptic curve names as key and the list of alias separated by '/' as the value.
      */
     public static TreeMap<String,String> getFlatNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
-        final TreeMap<String,String> result = new TreeMap<String,String>();
+        final TreeMap<String,String> result = new TreeMap<>();
         final Map<String, List<String>> map = getNamedEcCurvesMap(hasToBeKnownByDefaultProvider);
         final String[] keys = map.keySet().toArray(new String[map.size()]);
         Arrays.sort(keys);
@@ -219,7 +219,7 @@ public abstract class AlgorithmTools {
     }
 
     /**
-     * Gets a list of allowed curves (see {@link http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf}.
+     * Gets a list of allowed curves (see <a href="http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf">http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf</a>).
      *
      * @return the list of allowed curves.
      */
@@ -228,7 +228,7 @@ public abstract class AlgorithmTools {
         // But this is not required at the time, because certificate validity conditions are before
         // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 521
         // See http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf chapter 1.2
-        final List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<>();
         list.addAll(AlgorithmTools.getEcKeySpecAliases("P-256"));
         list.addAll(AlgorithmTools.getEcKeySpecAliases("P-384"));
         list.addAll(AlgorithmTools.getEcKeySpecAliases("P-521"));
@@ -316,7 +316,7 @@ public abstract class AlgorithmTools {
             }
             // Make things work faster by making the "best suitable" signature algorithm be first in the list
             // This is a must for example for Azure Key Vault where a P-384 key can not be used together with SHA256WithECDSA.
-            List<String> ecSigAlgs = new ArrayList<String>(SIG_ALGS_ECDSA);
+            List<String> ecSigAlgs = new ArrayList<>(SIG_ALGS_ECDSA);
             switch (AlgorithmTools.getNamedEcCurveBitLength(getKeySpecification(publickey))) {
             case 256:
                 ecSigAlgs.remove(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
@@ -911,7 +911,7 @@ public abstract class AlgorithmTools {
             final String lowerCaseCanonicalName = name.getKey().toLowerCase();
             final List<String> lowerCaseAliases = StringTools.toLowerCase(name.getValue());
             if (StringUtils.equals(lowerCaseAlias, lowerCaseCanonicalName) || lowerCaseAliases.contains(lowerCaseAlias)) {
-                final List<String> aliases = new ArrayList<String>(name.getValue());
+                final List<String> aliases = new ArrayList<>(name.getValue());
                 aliases.add(name.getKey());
                 Collections.sort(aliases);
                 return aliases;

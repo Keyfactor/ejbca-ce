@@ -83,7 +83,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         ENCODING_DEROBJECT("DEROBJECT"),
         ENCODING_DEROID("DERBOJECTIDENTIFIER");
 
-        private static final Map<String, Encoding> lookupMap = new HashMap<String, Encoding>();
+        private static final Map<String, Encoding> lookupMap = new HashMap<>();
 
         static {
             for(Encoding encoding : Encoding.values()) {
@@ -114,8 +114,8 @@ public class BasicCertificateExtension extends CertificateExtension implements C
      * The value is expected to by hex encoded and is added as an byte array
      * as the extension value.
      **/
-    private static String ENCODING_RAW = "RAW";
-    private static String ENCODING_DERNULL = "DERNULL";
+    private static String ENCODING_NAME_RAW = "RAW";
+    private static String ENCODING_NAME_DERNULL = "DERNULL";
 
     // Defined Properties
     private static String PROPERTY_VALUE = "value";
@@ -123,7 +123,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
     private static String PROPERTY_NVALUES = "nvalues";
     private static String PROPERTY_DYNAMIC  = "dynamic";
 
-    private static final Map<String, String[]> propertiesMap = new HashMap<String, String[]>();
+    private static final Map<String, String[]> propertiesMap = new HashMap<>();
 
     static {
         Encoding[] encodings = Encoding.values();
@@ -133,7 +133,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
             encodingValues[i] = encodings[i].value;
         }
         // Add RAW last
-        encodingValues[encodingValues.length-1] = ENCODING_RAW;
+        encodingValues[encodingValues.length-1] = ENCODING_NAME_RAW;
 
         propertiesMap.put(PROPERTY_ENCODING, encodingValues);
         propertiesMap.put(PROPERTY_VALUE, new String[]{});
@@ -189,14 +189,14 @@ public class BasicCertificateExtension extends CertificateExtension implements C
     private byte[] handleValues(String[] values) throws CertificateExtensionException {
         final byte[] result;
         String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
-        if (values == null || values.length == 0 || (values[0] == null && !encoding.equalsIgnoreCase(ENCODING_DERNULL))) {
+        if (values == null || values.length == 0 || (values[0] == null && !encoding.equalsIgnoreCase(ENCODING_NAME_DERNULL))) {
             if (!isRequiredFlag()) {
                 return null;
             }
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
-        if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
+        if (encoding.equalsIgnoreCase(ENCODING_NAME_RAW)) {
             if (values.length > 1) {
                 // nvalues can not be used together with encoding=RAW
                 throw new CertificateExtensionException(intres.getLocalizedMessage("certext.certextmissconfigured", Integer.valueOf(getId())));
@@ -245,9 +245,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
 
         if (dynamic) {
             final ExtendedInformation ei = userData.getExtendedInformation();
-            if (ei == null) {
-                result = null;
-            } else {
+            if (ei != null) {
                 if (nvalues < 1 ) {
                     String value = null;
                     if (oid != null) {
@@ -261,9 +259,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
                             value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
                         }
                     }
-                    if (value == null) {
-                        result = null;
-                    } else {
+                    if (value != null) {
                         result = new String[] { value };
                     }
                 } else {
@@ -421,8 +417,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         ASN1Encodable retval = null;
         if (value.matches("^\\p{XDigit}*")) {
             byte[] bytes = Hex.decode(value);
-            try {
-                ASN1InputStream ais = new ASN1InputStream(bytes);
+            try (ASN1InputStream ais = new ASN1InputStream(bytes)) {
                 ASN1Encodable firstObject = ais.readObject();
                 if (ais.available() > 0) {
                     ASN1EncodableVector ev = new ASN1EncodableVector();
@@ -434,7 +429,6 @@ public class BasicCertificateExtension extends CertificateExtension implements C
                 } else {
                     retval = firstObject;
                 }
-                ais.close();
             } catch (Exception e) {
                 throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                         Integer.valueOf(getId()), getOID()));

@@ -107,7 +107,7 @@ public class RaStyleInfo implements Serializable {
     
     /** @return List of all CSS infos in the archive*/
     public List<RaCssInfo> getRaCssValues() {
-        return new ArrayList<RaCssInfo>(getRaCssInfos().values());
+        return new ArrayList<>(getRaCssInfos().values());
     }
     
     /** @param raCssInfos sets a list of CSS infos to archive */

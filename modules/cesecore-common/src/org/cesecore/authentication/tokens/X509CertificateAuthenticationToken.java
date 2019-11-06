@@ -124,7 +124,6 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         boolean returnvalue = false;
         int parameter;
         int size = 0;
-        String[] clientstrings = null;
         if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId() == adminCaId) {
@@ -161,6 +160,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
                             break;
                         case TYPE_NOT_EQUALCASE:
                             returnvalue = !value.equals(CertTools.getSubjectDN(certificate));
+                            break;
                         case TYPE_NOT_EQUALCASEINS:
                             returnvalue = !value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
                             break;
@@ -213,49 +213,47 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
                         default:
                         }
                         size = usedExtractor.getNumberOfFields(parameter);
-                        clientstrings = new String[size];
+                        final String[] clientstrings = new String[size];
                         for (int i = 0; i < size; i++) {
                             clientstrings[i] = usedExtractor.getField(parameter, i);
                         }
 
                         // Determine how to match.
-                        if (clientstrings != null) {
-                            switch (accessUser.getMatchTypeAsType()) {
-                            case TYPE_EQUALCASE:
-                                String accessUserMatchValue = accessUser.getMatchValue();
-                                for (int i = 0; i < size; i++) {
-                                    returnvalue = clientstrings[i].equals(accessUserMatchValue);
-                                    if (returnvalue) {
-                                        break;
-                                    }
+                        switch (accessUser.getMatchTypeAsType()) {
+                        case TYPE_EQUALCASE:
+                            String accessUserMatchValue = accessUser.getMatchValue();
+                            for (int i = 0; i < size; i++) {
+                                returnvalue = clientstrings[i].equals(accessUserMatchValue);
+                                if (returnvalue) {
+                                    break;
                                 }
-                                break;
-                            case TYPE_EQUALCASEINS:
-                                for (int i = 0; i < size; i++) {
-                                    returnvalue = clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
-                                    if (returnvalue) {
-                                        break;
-                                    }
-                                }
-                                break;
-                            case TYPE_NOT_EQUALCASE:
-                                for (int i = 0; i < size; i++) {
-                                    returnvalue = !clientstrings[i].equals(accessUser.getMatchValue());
-                                    if (returnvalue) {
-                                        break;
-                                    }
-                                }
-                                break;
-                            case TYPE_NOT_EQUALCASEINS:
-                                for (int i = 0; i < size; i++) {
-                                    returnvalue = !clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
-                                    if (returnvalue) {
-                                        break;
-                                    }
-                                }
-                                break;
-                            default:
                             }
+                            break;
+                        case TYPE_EQUALCASEINS:
+                            for (int i = 0; i < size; i++) {
+                                returnvalue = clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
+                                if (returnvalue) {
+                                    break;
+                                }
+                            }
+                            break;
+                        case TYPE_NOT_EQUALCASE:
+                            for (int i = 0; i < size; i++) {
+                                returnvalue = !clientstrings[i].equals(accessUser.getMatchValue());
+                                if (returnvalue) {
+                                    break;
+                                }
+                            }
+                            break;
+                        case TYPE_NOT_EQUALCASEINS:
+                            for (int i = 0; i < size; i++) {
+                                returnvalue = !clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
+                                if (returnvalue) {
+                                    break;
+                                }
+                            }
+                            break;
+                        default:
                         }
                     }
                 } else {
