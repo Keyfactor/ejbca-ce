@@ -392,6 +392,7 @@ public class CertificateValidityTest {
     	// First see that when we don't have a specified time requested and validity override is not allowed, the end time should be ruled by the certificate profile.
     	
     	CertificateValidity cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
+    	Date now = new Date();
     	Date notBefore = cv.getNotBefore();
     	Date notAfter = cv.getNotAfter();
         Calendar cal1 = Calendar.getInstance();
