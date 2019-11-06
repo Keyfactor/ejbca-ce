@@ -10,12 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-/**
- * Test class for RSA key validator functional methods, see {@link RsaKeyValidator}.
- *
- * @version $Id$
- */
 package org.cesecore.keys.validation;
 
 import static org.junit.Assert.assertEquals;
@@ -42,7 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests RSA key validator functions.
+ * Tests RSA key validator functions, see {@link RsaKeyValidator}.
  *
  * @version $Id$
  */

@@ -10,12 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-/**
- * Test class fot RSA key validator functional methods, see {@link RsaKeyValidator}.
- * 
- * @version $Id$
- */
 package org.cesecore.keys.validation;
 
 import static org.junit.Assert.assertEquals;
@@ -34,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests ECC key validator functions.
+ * Tests ECC key validator functions, see {@link EccKeyValidator}.
  * 
  * @version $Id$
  */
