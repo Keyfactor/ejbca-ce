@@ -678,7 +678,7 @@ public abstract class AlgorithmTools {
                 } else if (certSignatureAlgorithm.contains("512")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
                 }
-            } else if (certSignatureAlgorithm.contains("MGF1")) {
+            } else if (!certSignatureAlgorithm.contains("MGF1")) {
                 if (certSignatureAlgorithm.contains("MD5")) {
                     signatureAlgorithm = "MD5WithRSA";
                 } else if (certSignatureAlgorithm.contains("SHA1")) {
