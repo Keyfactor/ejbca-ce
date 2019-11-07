@@ -54,7 +54,6 @@ public class Pkcs11SlotLabel {
 
     private static final Logger log = Logger.getLogger(Pkcs11SlotLabel.class);
 
-    private final static String DELIMETER = ":";
     private final Pkcs11SlotLabelType type;
     private final String value;
 
@@ -71,18 +70,9 @@ public class Pkcs11SlotLabel {
         this.value = value == null ? null : value.trim();
     }
 
-    /**
-     * Get a string that later could be used to create a new object with {@link Pkcs11SlotLabel#PKCS11Slot(String)}.
-     * Use it when you want to store a reference to the slot.
-     * @return the string.
-     */
-    public String getTaggedString() {
-        return this.type.name() + DELIMETER + this.value;
-    }
-
     @Override
     public String toString() {
-        return "Slot type: '" + this.type + "'. Slot value: '" + this.value + "'.";
+        return "Slot type: '" + type + "'. Slot value: '" + value + "'.";
     }
 
     /**
