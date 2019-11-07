@@ -1514,32 +1514,28 @@ public abstract class CertTools {
      * @throws CertificateParsingException if certificate couldn't be parsed from cert, or if the incorrect return type was specified.
      * 
      */
-    @SuppressWarnings("unchecked")
     public static <T extends Certificate> T getCertfromByteArray(byte[] cert, String provider, Class<T> returnType) throws CertificateParsingException {
-        T ret = null;
         String prov = provider;
         if (provider == null) {
             prov = BouncyCastleProvider.PROVIDER_NAME;
         }
         
         if(returnType.equals(X509Certificate.class)) {
-            ret = (T) parseX509Certificate(prov, cert);
-        } else if(returnType.equals(CardVerifiableCertificate.class)) {
-            ret = (T) parseCardVerifiableCertificate(cert);
+            return returnType.cast(parseX509Certificate(prov, cert));
+        } else if (returnType.equals(CardVerifiableCertificate.class)) {
+            return returnType.cast(parseCardVerifiableCertificate(cert));
         } else {
             //Let's guess...
             try {
-                ret = (T) parseX509Certificate(prov, cert);
+                return returnType.cast(parseX509Certificate(prov, cert));
             } catch (CertificateParsingException e) {
                 try {
-                    ret = (T) parseCardVerifiableCertificate(cert);
+                    return returnType.cast(parseCardVerifiableCertificate(cert));
                 } catch (CertificateParsingException e1) {
                     throw new CertificateParsingException("No certificate could be parsed from byte array. See debug logs for details.");
                 }
             }
         }
-        
-        return ret;
     }
     
     /**

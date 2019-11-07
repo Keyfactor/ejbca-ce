@@ -160,7 +160,7 @@ public class CertificateValidity {
         if (firstDate == null) {
         	firstDate = now;
         }
-        Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile, firstDate));
+        Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile));
         // Limit validity: ECA-5330 Apply expiration restriction for weekdays 
         if (certProfile.getUseExpirationRestrictionForWeekdays() && isRelativeTime(certProfile.getEncodedValidity())) {
             log.info("Applying expiration restrictions for weekdays: " + Arrays.asList(certProfile.getExpirationRestrictionWeekdays()));
@@ -199,7 +199,7 @@ public class CertificateValidity {
 			log.error(intres.getLocalizedMessage("createcert.errorbeforecurrentdate",firstDate,subject.getUsername()));
     		firstDate = now;
     		// Update valid length from the profile since the starting point has changed
-			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile, firstDate));
+			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile));
     		// Update lastDate if we use maximum validity
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
@@ -248,12 +248,12 @@ public class CertificateValidity {
 	
 	/**
      * Gets the validity end date for the certificate using the certificate profiles encoded validity.
+     * For relative dates, the date is based on the "notBefore" date of the this certificate.
      * @param profile the certificate profile
-     * @param firstDate the start time.
      * @return the encoded validity.
      */
 	@SuppressWarnings("deprecation")
-    private long getCertificateProfileValidtyEndDate(CertificateProfile profile, Date firstDate) {
+    private long getCertificateProfileValidtyEndDate(final CertificateProfile profile) {
         final String encodedValidity = profile.getEncodedValidity();
         Date date = null;
         if (StringUtils.isNotBlank(encodedValidity)) {

@@ -114,10 +114,9 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
        addExtKeyUsage("2.16.840.1.101.3.6.8", "EKU_NIST_PIVCARDAUTH");
     }
 
+    @SuppressWarnings("unchecked")
     public AvailableExtendedKeyUsagesConfiguration(Serializable dataobj) {
-        @SuppressWarnings("unchecked")
-        LinkedHashMap<Object, Object> d = (LinkedHashMap<Object, Object>) dataobj;
-        data = d;
+        data = (LinkedHashMap<Object, Object>) dataobj;
     }
 
     @Override

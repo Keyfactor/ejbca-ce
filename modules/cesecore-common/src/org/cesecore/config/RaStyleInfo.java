@@ -58,8 +58,9 @@ public class RaStyleInfo implements Serializable {
         this.logoName = logoName;
     }
     
-    @SuppressWarnings("serial")
     public static class RaCssInfo implements Serializable {
+        private static final long serialVersionUID = -7528899224548330073L;
+
         private byte[] cssBytes;
         private String cssName;
         

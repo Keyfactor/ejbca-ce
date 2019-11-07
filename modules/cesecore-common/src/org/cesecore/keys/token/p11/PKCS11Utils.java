@@ -85,9 +85,9 @@ public class PKCS11Utils {
         }
         try {
             p11utils = new PKCS11Utils(
-                    clazz.getMethod("makeKeyUnmodifiable", new Class[]{String.class, Key.class}),
-                    clazz.getMethod("isKeyModifiable", new Class[]{String.class, Key.class}),
-                    clazz.getMethod("securityInfo", new Class[]{String.class, Key.class, StringBuilder.class}) );
+                    clazz.getMethod("makeKeyUnmodifiable", String.class, Key.class),
+                    clazz.getMethod("isKeyModifiable", String.class, Key.class),
+                    clazz.getMethod("securityInfo", String.class, Key.class, StringBuilder.class));
         } catch (NoSuchMethodException e) {
             throw new Error(String.format("Not compatible version of %s. Required methods not found.", className), e);
         }
@@ -102,12 +102,12 @@ public class PKCS11Utils {
      */
     public void makeKeyUnmodifiable( final Key key, final String providerName) {
         final String sError = "Not possible to set the attribute CKA_MODIFIABLE to false for the key object.";
-        if ( this.makeKeyUnmodifiable==null ) {
+        if (makeKeyUnmodifiable == null) {
             log.warn(sError);
             return;
         }
         try {
-            final Object oResult = this.makeKeyUnmodifiable.invoke(null, new Object[]{providerName, key});
+            final Object oResult = makeKeyUnmodifiable.invoke(null, providerName, key);
             assert oResult instanceof Boolean;
             if ( log.isDebugEnabled() ) {
                 if ((boolean)oResult) {
@@ -129,13 +129,12 @@ public class PKCS11Utils {
      */
     public boolean isKeyModifiable( final Key key, final String providerName ) {
         final String sError = "Not possible to read the attribute CKA_MODIFIABLE for the key object.";
-        if ( this.isKeyModifiable==null ) {
+        if (isKeyModifiable == null) {
             log.warn(sError);
             return true;// we say modifiable when we can't find out.
         }
         try {
-            final Object oResult = this.isKeyModifiable.invoke(null, new Object[]{providerName, key});
-            return (boolean)oResult;
+            return (boolean) isKeyModifiable.invoke(null, providerName, key);
         } catch (ReflectiveOperationException e) {
             throw new P11RuntimeException(sError, e);
         }
@@ -149,12 +148,12 @@ public class PKCS11Utils {
      * @param sb the info is written to this.
      */
     public void securityInfo(final Key key, final String providerName, final StringBuilder sb) {
-        if ( this.securityInfo==null ) {
+        if (securityInfo == null) {
             sb.append("No CESeCoreUtils in classpath.");
             return;
         }
         try {
-            this.securityInfo.invoke(null, new Object[]{providerName, key, sb});
+            securityInfo.invoke(null,providerName, key, sb);
         } catch (ReflectiveOperationException e) {
             throw new P11RuntimeException("Not possible to read attributes from key object.", e);
         }
