@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -118,8 +119,13 @@ public enum CaCertificateCache  {
                 try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
                     final Integer key = HashID.getFromKeyID(cert).getKey();
                     final X509Certificate pastCert = newCertsFromSubjectKeyIdentifier.get(key);
+                    final Date notBefore = CertTools.getNotBefore(cert);
+                    if (notBefore == null) {
+                        log.debug("CA certificate with serial '" + CertTools.getSerialNumberAsString(cert)  + "' does not have notBefore attribute and will not be added");
+                        continue;
+                    }
                     // Add the entry if it's the first, or if it is more recent than the one existing (in that case replace it)
-                    if (pastCert == null || CertTools.getNotBefore(cert).after(CertTools.getNotBefore(pastCert))) {
+                    if (pastCert == null || notBefore.after(CertTools.getNotBefore(pastCert))) {
                         newCertsFromSubjectKeyIdentifier.put(key, cert);
                     }
                 } catch (Throwable t) { // NOPMD: catch all to not break with an error here.

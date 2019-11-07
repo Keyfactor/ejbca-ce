@@ -249,12 +249,12 @@ public class CVCRequestMessage implements RequestMessage {
         } catch (NoSuchFieldException e) {
             log.error("CVC error!", e);
         } catch (InvalidKeyException e) {
-            log.error("Error in CVC-request:", e);
+            log.error("Error in CVC request:", e);
             throw e;
         } catch (CertificateException e) {
-            log.error("Error in CVC-signature:", e);
+            log.error("Error in CVC certificate:", e);
         } catch (SignatureException e) {
-            log.error("Error in CVC-signature:", e);
+            log.error("Error in CVC signature:", e);
         }
 
         log.trace("<verify()");
