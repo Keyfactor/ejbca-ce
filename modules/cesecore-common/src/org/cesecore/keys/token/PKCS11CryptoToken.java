@@ -14,7 +14,7 @@ package org.cesecore.keys.token;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -151,7 +151,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         log.info(msg);
     }
 
-    private KeyStore createKeyStore(final char[] authCode) throws NoSuchAlgorithmException, CertificateException, UnsupportedEncodingException,
+    private KeyStore createKeyStore(final char[] authCode) throws NoSuchAlgorithmException, CertificateException,
             IOException, KeyStoreException {
         final Provider provider = this.p11slot.getProvider();
         final KeyStore newKeyStore = KeyStore.getInstance( "PKCS11", provider );
@@ -170,13 +170,13 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         // KeyStore cardKeyStore = KeyStore.getInstance("PKCS11KeyStore");
         // String providerName = pkcs11Provider_.getName();
         // ByteArrayInputStream providerNameInpustStream =
-        // new ByteArrayInputStream(providerName.getBytes("UTF-8"));
+        // new ByteArrayInputStream(providerName.getBytes(StandardCharsets.UTF_8));
         // cardKeyStore.load(providerNameInpustStream, null);
         // The password parameter of the load method (this is the second parameter, which is null here) will be used if provided (i.e. if it is not
         // null). If it is null, the default login manager will use the configured method for prompting the PIN on demand. If the application just
         // provides the instance number as a string instead of the complete provider name, the key store will also accept it.
         if (provider.getClass().getName().equals(Pkcs11SlotLabel.IAIK_PKCS11_CLASS)) {
-            newKeyStore.load(new ByteArrayInputStream(getSignProviderName().getBytes("UTF-8")), authCode);
+            newKeyStore.load(new ByteArrayInputStream(getSignProviderName().getBytes(StandardCharsets.UTF_8)), authCode);
         } else {
             // For the Sun provider no provider name is used.
             newKeyStore.load(null, authCode);

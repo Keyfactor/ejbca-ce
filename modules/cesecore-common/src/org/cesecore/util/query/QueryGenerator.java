@@ -156,7 +156,7 @@ public final class QueryGenerator implements Serializable {
             CollectionUtils.selectRejected(elements, PredicateUtils.instanceofPredicate(Order.class), terms);
             CollectionUtils.select(elements, PredicateUtils.instanceofPredicate(Order.class), clauses);
             
-            if (terms.size() > 0) {
+            if (!terms.isEmpty()) {
                 query.where();
             }
             termTraversal(terms);

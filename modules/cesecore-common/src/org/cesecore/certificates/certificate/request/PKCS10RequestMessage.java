@@ -469,7 +469,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     @Override
-    public void setKeyInfo(Certificate cert, PrivateKey key, String Provider) {
+    public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
     }
 
     @Override

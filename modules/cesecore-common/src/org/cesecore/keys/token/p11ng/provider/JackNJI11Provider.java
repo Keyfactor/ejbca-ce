@@ -12,7 +12,6 @@ package org.cesecore.keys.token.p11ng.provider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
@@ -99,9 +98,9 @@ public class JackNJI11Provider extends Provider {
                 // fetch the (Provider, String) constructor
                 Constructor<?> cons = clazz.getConstructor(paramTypes);
                 // invoke constructor and return the SPI object
-                Object obj = cons.newInstance(new Object[] {provider, getAlgorithm()});
+                Object obj = cons.newInstance(provider, getAlgorithm());
                 return obj;
-            } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
+            } catch (ReflectiveOperationException |  IllegalArgumentException | SecurityException e) {
                 LOG.error("Could not instantiate service", e);
                 throw new NoSuchAlgorithmException("Could not instantiate service", e);
             }
