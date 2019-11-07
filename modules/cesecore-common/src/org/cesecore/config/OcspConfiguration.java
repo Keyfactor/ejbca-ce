@@ -95,9 +95,7 @@ public class OcspConfiguration {
     public static boolean isAcceptedSignatureAlgorithm(String sigAlg) {
         if(acceptedSignatureAlgorithms.isEmpty()) {
             String[] algs = getSignatureAlgorithm().split(";");
-            for(String alg : algs) {
-                acceptedSignatureAlgorithms.add(alg);
-            }
+            acceptedSignatureAlgorithms.addAll(Arrays.asList(algs));
         }
         return acceptedSignatureAlgorithms.contains(sigAlg);
     }
@@ -175,7 +173,7 @@ public class OcspConfiguration {
     /**
      * Set this to issuer or signer depending on how you want to restrict allowed signatures for OCSP request signing.
      * 
-     * @returns one of OcspConfiguration.RESTRICTONISSUER and OcspConfiguration.RESTRICTONSIGNER
+     * @return one of OcspConfiguration.RESTRICTONISSUER and OcspConfiguration.RESTRICTONSIGNER
      */
     @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static int getRestrictSignaturesByMethod() {
@@ -212,7 +210,7 @@ public class OcspConfiguration {
     /**
      * If set to name the OCSP responses will use the Name ResponseId type, if set to keyhash the KeyHash type will be used.
      * 
-     * @returns one of OCSPUtil.RESPONDERIDTYPE_NAME and OCSPUtil.RESPONDERIDTYPE_KEYHASH
+     * @return one of OCSPUtil.RESPONDERIDTYPE_NAME and OCSPUtil.RESPONDERIDTYPE_KEYHASH
      * 
      * @deprecated no longer used, as responder ID type is instead set individually for each keybinding and CA
      */
@@ -436,14 +434,14 @@ public class OcspConfiguration {
      * All available signing keys should be tested.
      */
     public static boolean getHealthCheckSignTest() {
-        return ConfigurationHolder.getString("ocsphealthcheck.signtest").toLowerCase().indexOf("false") < 0;
+        return !ConfigurationHolder.getString("ocsphealthcheck.signtest").toLowerCase().contains("false");
     }
 
     /**
      * @return true if the validity of the OCSP signing certificates should be tested by the healthcheck.
      */
     public static boolean getHealthCheckCertificateValidity() {
-        return ConfigurationHolder.getString("ocsphealthcheck.checkSigningCertificateValidity").toLowerCase().indexOf("false") < 0;
+        return !ConfigurationHolder.getString("ocsphealthcheck.checkSigningCertificateValidity").toLowerCase().contains("false");
     }
 
     /**
@@ -701,7 +699,7 @@ public class OcspConfiguration {
     @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static boolean getDoNotStorePasswordsInMemory() {
         final String s = ConfigurationHolder.getString("ocsp.activation.doNotStorePasswordsInMemory");
-        if (s == null || s.toLowerCase().indexOf("false") >= 0 || s.toLowerCase().indexOf("no") >= 0) {
+        if (s == null || s.toLowerCase().contains("false") || s.toLowerCase().contains("no")) {
             return false;
         }
         return true;

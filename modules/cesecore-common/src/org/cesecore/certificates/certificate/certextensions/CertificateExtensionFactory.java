@@ -103,7 +103,7 @@ public class CertificateExtensionFactory {
 	 * Method returning the instance of the standard CertificateExtension
 	 * given its object identifier
 	 * 
-	 * @returns null if the CertificateExtension doesn't exist
+	 * @return null if the CertificateExtension doesn't exist
 	 */
 	public CertificateExtension getStandardCertificateExtension(final String oid, final CertificateProfile certProf){
 		StandardCertificateExtension ret = null;
@@ -113,13 +113,9 @@ public class CertificateExtensionFactory {
 				final Class<?> implClass = Class.forName(classPath);
 				ret = (StandardCertificateExtension)implClass.newInstance();					
 				ret.init(certProf);                    
-			} catch (ClassNotFoundException e) {
-				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);			
-			} catch (InstantiationException e) {
-				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);			
-			} catch (IllegalAccessException e) {
-				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);			
-			}			
+			} catch (ReflectiveOperationException e) {
+				log.error(intres.getLocalizedMessage("certext.noextensionforid", oid), e);
+			}
 		}
 		if (ret == null) {
 			log.error(intres.getLocalizedMessage("certext.noextensionforid", oid));			
