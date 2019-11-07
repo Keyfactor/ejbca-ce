@@ -87,7 +87,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
 
     
     /**
-     * @param uri the uri to set
+     * @param qualifier the qualifier string to set
      */
     public void setQualifier(final String qualifier) {
         this.qualifier = qualifier;
