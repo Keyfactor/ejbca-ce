@@ -2,8 +2,8 @@ package org.cesecore.internal;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.Thread.State;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -66,15 +66,11 @@ public class UpgradeableDataHashMapTest {
         @SuppressWarnings("unchecked")
         @Override
         public void run() {
-            try {
-                final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(decodeXML.getBytes("UTF8")));
+            try (final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(decodeXML.getBytes(StandardCharsets.UTF_8)))) {
                 final HashMap<Object,Object> h = (HashMap<Object,Object>) decoder.readObject();
-                decoder.close();
                 for (Object o : h.keySet()) {
                     log.info(o.toString() + ": " + h.get(o));
                 }
-            } catch (UnsupportedEncodingException e) {
-                log.error("",e);
             }
         }
     }

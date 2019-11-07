@@ -95,7 +95,7 @@ public class HashID {
 	}
 	
 	/**
-     * @param cert The issuer DN of the certificate should be the identifier.
+     * @param certificateHolder The issuer DN of the certificate should be the identifier.
      * @return the ID
 	 * @throws CertificateException 
      */
