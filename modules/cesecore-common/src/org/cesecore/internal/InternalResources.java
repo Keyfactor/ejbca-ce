@@ -271,7 +271,7 @@ public class InternalResources implements Serializable {
             int currentIndex = -placeHolderLength;
             boolean someThingRemoved = false;
             while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1) {
-                sb.delete(currentIndex-1, currentIndex+placeHolderLength);
+                sb.delete(currentIndex, currentIndex+placeHolderLength);
                 someThingRemoved = true;
             }
             if (!someThingRemoved) {
