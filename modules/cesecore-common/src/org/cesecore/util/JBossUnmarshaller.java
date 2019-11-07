@@ -53,14 +53,13 @@ public final class JBossUnmarshaller {
      * @return The unmarshalled or original object of type T or null if object is neither type T or jboss marshalled value
      * @throws ClassCastException if the object is JBOSS marshalled, but not of type t
      */
-    @SuppressWarnings("unchecked")
     public static <T> T extractObject(final Class<T> t, final Serializable object) throws ClassCastException {
         T ret = null;
         final String className = object.getClass().getName();
         if (JBOSS_MARSHALL_CLASS.equals(className)) {
         	try {
         		Method m = object.getClass().getMethod("get", new Class[0]);
-        		ret = (T) m.invoke(object, new Object[0]);
+        		ret = t.cast(m.invoke(object, new Object[0]));
         	} catch (SecurityException e) {
         		LOG.error("", e);
         	} catch (NoSuchMethodException e) {
@@ -73,7 +72,7 @@ public final class JBossUnmarshaller {
         		LOG.error("", e);
 			}
         } else {
-        	ret = (T) object;
+        	ret = t.cast(object);
         }
         return ret;
     }
@@ -84,8 +83,6 @@ public final class JBossUnmarshaller {
      * The method tries to extract a LinkedHashMap that was serialized. A complicating factor is that previously we used to use HashMap 
      * instead of LinkedhashMap, therefore we need this helper method to fall through to extracting a HashMap instead of a LinkedHashMap. 
      * 
-     * @param <T>
-     *            Class that we are trying to extract.
      * @param t
      *            Class that we are trying to extract.
      * @param object

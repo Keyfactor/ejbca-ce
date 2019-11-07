@@ -112,7 +112,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             slot = device.getSlot(Long.valueOf(sSlotLabel));
         } else if (slotLabelType == Pkcs11SlotLabelType.SLOT_INDEX) {
             // Removing 'i' e.g. from 'i0'
-            final String slotIndex = sSlotLabel.substring(1, sSlotLabel.length());
+            final String slotIndex = sSlotLabel.substring(1);
             slot = device.getSlotByIndex(Integer.valueOf(slotIndex));
         } else {
             slot = device.getSlotByLabel(sSlotLabel);
@@ -362,11 +362,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
      *
      * @param sSlotLabelKey which key in the properties that gives us the label
      * @param properties CA token properties
-     * @return String with the slot label, trimmed from whitespace
+     * @return String with the slot label, trimmed from whitespace. Never null
      */
     private static String getSlotLabel(String sSlotLabelKey, Properties properties) {
-        String ret = null;
-        if (sSlotLabelKey != null && properties != null) {
+        String ret = "";
+        if (properties != null) {
             ret = properties.getProperty(sSlotLabelKey);
             if (ret != null) {
                 ret = ret.trim();
