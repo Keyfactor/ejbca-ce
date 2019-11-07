@@ -60,11 +60,6 @@ public class InternalResources implements Serializable {
 
     /**
      * Method used to setup the Internal Resource management.
-     * 
-     * @param globalConfiguration
-     *            used to retrieve the internal language of the application,
-     *            configured in the System Configuration.
-     * @throws IOException
      */
     protected InternalResources() {
         setupResources(RESOURCE_LOCATION);
@@ -210,7 +205,7 @@ public class InternalResources implements Serializable {
         }
         //Append all extra parameters to the end so that no information is lost. 
         for (; i < params.length; i++) {
-            sb.append(", " + params[i]);
+            sb.append(", ").append(params[i]);
         }
         removeUnusedPlaceHolders(sb, params.length);
     }
