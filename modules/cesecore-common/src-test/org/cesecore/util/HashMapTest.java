@@ -31,10 +31,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class HashMapTest {
 
-    @SuppressWarnings("rawtypes")
     @Test
 	public void testHashMapNormal() throws Exception {
-        HashMap<String, Comparable> a = new HashMap<>();
+        HashMap<String, Comparable<?>> a = new HashMap<>();
         a.put("foo0", Boolean.FALSE);
         a.put("foo1", "fooString");
         a.put("foo2", Integer.valueOf(2));
@@ -42,15 +41,16 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
-        String data = baos.toString(StandardCharsets.UTF_8);
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(a);
+        }
+        String data = baos.toString("UTF8");
         //log.error(data);
         
-        XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
-        HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
-        decoder.close();
+        final HashMap<?, ?> b;
+        try (XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
+            b = (HashMap<?, ?>) decoder.readObject();
+        }
         assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
         assertEquals(((Boolean)b.get("foo3")).booleanValue(),true);
         assertEquals(b.get("foo1"), "fooString");
@@ -58,10 +58,9 @@ public class HashMapTest {
 
 	}
 	
-    @SuppressWarnings("rawtypes")
     @Test
     public void testHashMapStrangeChars() throws Exception {
-        HashMap<String, Comparable> a = new HashMap<>();
+        HashMap<String, Comparable<?>> a = new HashMap<>();
         a.put("foo0", Boolean.FALSE);
         a.put("foo1", "\0001\0002fooString");
         a.put("foo2", Integer.valueOf(2));
@@ -69,16 +68,14 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
-        String data = baos.toString(StandardCharsets.UTF_8);
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(a);
+        }
+        String data = baos.toString("UTF8");
         //log.error(data);
 
-        try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
+        try (XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
-            decoder.close();         
             assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
         // We can get two different errors, I don't know if it is different java versions or what...
         // The important thing is that we do expect an error to occur here
@@ -89,10 +86,9 @@ public class HashMapTest {
         }
         assertTrue(true);        	
     }
-    @SuppressWarnings("rawtypes")
     @Test
     public void testHashMapStrangeCharsSafe() throws Exception {
-        HashMap<String, Comparable> h = new HashMap<>();
+        HashMap<String, Comparable<?>> h = new HashMap<>();
         h.put("foo0", Boolean.FALSE);
         h.put("foo1", "\0001\0002fooString");
         h.put("foo2", Integer.valueOf(2));
@@ -103,16 +99,14 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
-        String data = baos.toString(StandardCharsets.UTF_8);
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(a);
+        }
+        String data = baos.toString("UTF8");
         //log.error(data);
 
-        try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
+        try (XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
-            decoder.close();    
             @SuppressWarnings("unchecked")
             HashMap<Object, Object> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
@@ -125,10 +119,10 @@ public class HashMapTest {
             assertTrue(false);
         }
     }
-    @SuppressWarnings("rawtypes")
+
     @Test
     public void testHashMapNormalCharsSafe() throws Exception {
-        HashMap<String, Comparable> h = new HashMap<>();
+        HashMap<String, Comparable<?>> h = new HashMap<>();
         h.put("foo0", Boolean.FALSE);
         h.put("foo1", "fooString");
         h.put("foo2", Integer.valueOf(2));
@@ -139,16 +133,14 @@ public class HashMapTest {
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
-        String data = baos.toString(StandardCharsets.UTF_8);
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(a);
+        }
+        String data = baos.toString("UTF8");
         //log.error(data);
 
-        try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
+        try (XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
-            decoder.close();    
             @SuppressWarnings("unchecked")
             HashMap<Object, Object> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
