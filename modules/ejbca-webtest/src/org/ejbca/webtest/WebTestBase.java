@@ -117,6 +117,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
             firefoxProfile.setAcceptUntrustedCertificates(true);
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             firefoxProfile.setPreference("browser.download.folderList", 2);
+            firefoxProfile.setPreference("browser.download.useDownloadDir", true);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
             firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream;application/json");
             firefoxProfile.setPreference("browser.download.panel.shown", false);
