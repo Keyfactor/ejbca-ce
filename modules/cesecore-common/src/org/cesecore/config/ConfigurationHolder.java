@@ -282,7 +282,7 @@ public final class ConfigurationHolder {
     public static String getExpandedString(final String property) {
         String ret = getString(property);
         if (ret != null) {
-            while (ret.indexOf("${") != -1) {
+            while (ret.contains("${")) {
                 ret = interpolate(ret);
             }
         }
