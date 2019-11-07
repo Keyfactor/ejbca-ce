@@ -41,8 +41,6 @@ import org.cesecore.util.ValidityDate;
  * The model representation of Extended Information about a user. It's used for non-searchable data about a user,
  * like a image, in an effort to minimize the need for database alterations
  *
- * TODO: Clean out whatever final static variables which aren't externally references.
- *
  * @version $Id$
  *
  */
@@ -268,8 +266,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * Set the number of maximum allowed failed login attempts. -1 means unlimited.
      *
-     * @param remainingLoginAttempts
-     *            The number to set
+     * @param maxLoginAttempts Maximum allowed failed login attempts, -1 means unlimited.
      */
     public void setMaxLoginAttempts(int maxLoginAttempts) {
         data.put(MAXFAILEDLOGINATTEMPTS, maxLoginAttempts);
@@ -302,7 +299,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * Returns the issuance revocation code configured on the end entity extended information.
      *
-     * @param data user data
      * @return issuance revocation code configured on the end entity extended information, a constant from RevokedCertInfo. Default
      *         RevokedCertInfo.NOT_REVOKED.
      */
@@ -540,7 +536,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * Special method used to retrieve custom set userdata
      *
-     * @returns The data or null if no such data have been set for the user
+     * @return The data or null if no such data have been set for the user
      */
     public String getCustomData(String key) {
         return (String) data.get(CUSTOMDATA + key);
@@ -548,8 +544,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Sets extension data.
-     * @param customly defined key to store the data with
-     * @param the string representation of the data
+     * @param key customly defined key to store the data with
+     * @param value the string representation of the data
      */
     public void setExtensionData(String key, String value) {
     	data.put(EXTENSIONDATA + key, value);
@@ -557,11 +553,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Special method used to retrieve custom extension data.
-     * @returns The data or null if no such data have been set for the user
+     * @return The data or null if no such data have been set for the user
      */
     public String getExtensionData(String key){
-    	String retval = (String) data.get(EXTENSIONDATA + key);
-    	return retval;
+    	return (String) data.get(EXTENSIONDATA + key);
     }
 
     /**
@@ -583,10 +578,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     
     /**
      *
-     * @param customly
-     *            defined key to store the data with
-     * @param the
-     *            string representation of the data
+     * @param key customly defined key to store the data with
+     * @param value the string representation of the data
      */
     public void setCustomData(String key, String value) {
         data.put(CUSTOMDATA + key, value);
@@ -704,20 +697,16 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
-     * Method that returns the classpath to the this or inheriting classes.
-     *
-     * @return String containing the classpath.
+     * Returns the type of ExtendedInformation. Currently, there is only one type, {@link #TYPE_BASIC}
      */
     public int getType() {
         return (int) data.get(TYPE);
     }
 
     /**
-     * Method used to specify which kind of object that should be created during deserialization process.
+     * Sets the type of ExtendedInformation. Currently, there is only one type, {@link #TYPE_BASIC}
      *
-     * Inheriting class should call 'setClassPath(this) in it's constructor.
-     *
-     * @param object
+     * @param type One of the TYPE_ constants, currently only {@link #TYPE_BASIC} exists
      */
     private void setType(int type) {
         data.put(TYPE, type);

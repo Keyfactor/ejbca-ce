@@ -328,12 +328,15 @@ public class DnComponents {
      *  For example : profileFieldIdToUserFieldIdMapper(EndEntityProfile.COMMONNAME) returns DnFieldExctractor.COMMONNAME.
      *
      *  Should only be used with subjectDN, Subject Alternative Names and subject directory attribute fields.
+     *  
+     *  @throws IllegalArgumentException on unknown attributes
      */
     public static int profileIdToDnId(int profileId) {
         final Integer val = profileIdToDnIdMap.get(profileId);
         if (val == null) {
-            log.error("No dn id mapping from profile id " + profileId);
-            // We allow it to fail here
+            final String msg = "No DN ID mapping from Profile ID " + profileId;
+            log.error(msg);
+            throw new IllegalArgumentException(msg);
         }
         return val;
     }
@@ -488,6 +491,7 @@ public class DnComponents {
                     in.close();
                 }
             } catch (IOException e) {
+                log.debug("Error occurred while closing input stream", e);
             }
         }
     }
@@ -546,6 +550,7 @@ public class DnComponents {
                     in.close();
                 }
             } catch (IOException e) {
+                log.debug("Error occurred while closing input stream", e);
             }
         }
 

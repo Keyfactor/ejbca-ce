@@ -242,11 +242,7 @@ public enum OcspSigningCache {
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
             ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
             return ret;
-        } catch (OCSPException e) {
-            throw new OcspFailureException(e);
-        } catch (CertificateEncodingException e) {
-            throw new OcspFailureException(e);
-        } catch (OperatorCreationException e) {
+        } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
             throw new OcspFailureException(e);
         }
     }

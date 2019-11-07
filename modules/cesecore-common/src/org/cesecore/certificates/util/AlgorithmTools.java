@@ -69,7 +69,6 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.CVCPublicKey;
@@ -84,7 +83,6 @@ import org.ejbca.cvc.OIDField;
  * added to EJBCA.
  *
  * @see AlgorithmConstants
- * @see CertTools#getSignatureAlgorithm
  * @see KeyTools#getKeyLength
  *
  * @version $Id$
@@ -683,26 +681,26 @@ public abstract class AlgorithmTools {
                 } else if (certSignatureAlgorithm.contains("512")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
                 }
-            } else if (certSignatureAlgorithm.indexOf("MGF1") == -1) {
-                if (certSignatureAlgorithm.indexOf("MD5") != -1) {
+            } else if (certSignatureAlgorithm.contains("MGF1")) {
+                if (certSignatureAlgorithm.contains("MD5")) {
                     signatureAlgorithm = "MD5WithRSA";
-                } else if (certSignatureAlgorithm.indexOf("SHA1") != -1) {
+                } else if (certSignatureAlgorithm.contains("SHA1")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-                } else if (certSignatureAlgorithm.indexOf("256") != -1) {
+                } else if (certSignatureAlgorithm.contains("256")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-                } else if (certSignatureAlgorithm.indexOf("384") != -1) {
+                } else if (certSignatureAlgorithm.contains("384")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_RSA;
-                } else if (certSignatureAlgorithm.indexOf("512") != -1) {
+                } else if (certSignatureAlgorithm.contains("512")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_RSA;
                 }
             } else {
-                if (certSignatureAlgorithm.indexOf("SHA1") != -1) {
+                if (certSignatureAlgorithm.contains("SHA1")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1;
-                } else if (certSignatureAlgorithm.indexOf("256") != -1) {
+                } else if (certSignatureAlgorithm.contains("256")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;
-                } else if (certSignatureAlgorithm.indexOf("384") != -1) {
+                } else if (certSignatureAlgorithm.contains("384")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1;
-                } else if (certSignatureAlgorithm.indexOf("512") != -1) {
+                } else if (certSignatureAlgorithm.contains("512")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1;
                 }
             }
@@ -717,15 +715,15 @@ public abstract class AlgorithmTools {
                 } else if (certSignatureAlgorithm.contains("512")) {
                     return AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
                 }
-            } else if (certSignatureAlgorithm.indexOf("256") != -1) {
+            } else if (certSignatureAlgorithm.contains("256")) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-            } else if (certSignatureAlgorithm.indexOf("224") != -1) {
+            } else if (certSignatureAlgorithm.contains("224")) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;
-            } else if (certSignatureAlgorithm.indexOf("384") != -1) {
+            } else if (certSignatureAlgorithm.contains("384")) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;
-            } else if (certSignatureAlgorithm.indexOf("512") != -1) {
+            } else if (certSignatureAlgorithm.contains("512")) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
-            } else if (certSignatureAlgorithm.indexOf("ECDSA") != -1) {
+            } else if (certSignatureAlgorithm.contains("ECDSA")) {
                 // From x509cert.getSigAlgName(), SHA1withECDSA only returns name ECDSA
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
             } else if (isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
@@ -743,7 +741,7 @@ public abstract class AlgorithmTools {
     /**
      * Returns the OID of the digest algorithm corresponding to the signature algorithm. Does not handle RSA-SSA (MGF1) since the Hash algo in MGF1
      * if hidden in the parameters, which is not visible in the sigAlg
-     * @param OID of a signatureAlgorithm, for example PKCSObjectIdentifiers.sha256WithRSAEncryption.getId() (1.2.840.113549.1.1.11)
+     * @param sigAlgOid OID of a signatureAlgorithm, for example PKCSObjectIdentifiers.sha256WithRSAEncryption.getId() (1.2.840.113549.1.1.11)
      * @return Digest OID, CMSSignedGenerator.DIGEST_SHA256, CMSSignedGenerator.DIGEST_GOST3411, etc, default to SHA256 if nothing else fits
      */
     public static String getDigestFromSigAlg(String sigAlgOid) {
@@ -902,7 +900,6 @@ public abstract class AlgorithmTools {
 
     /**
      * <p>Perform a case-insensitive lookup of all known aliases for an elliptic curve given one known alias.</p>
-     * <p>To determine whether an alias is known, see {@link #isKnownCurveAlias}.</p>
      * @return a sorted list of aliases for the elliptic curve specified, never null
      */
     public static List<String> getAllCurveAliasesFromAlias(final String alias) {
@@ -1017,7 +1014,7 @@ public abstract class AlgorithmTools {
     /**
      * Get a Bouncy Castle elliptic curve parameter specification by OID.
      * 
-     * <p>If you only have the name of the curve, use {@link #AlgorithmTools.getEcKeySpecOidFromBcName(String arg0)} 
+     * <p>If you only have the name of the curve, use {@link #getEcKeySpecOidFromBcName} 
      * to lookup the OID first.
      * 
      * @param oid the OID of the curve.

@@ -454,7 +454,7 @@ public final class CesecoreConfiguration {
         for (int i=0; i<255; i++) {
             final String key = "authkeybind.ciphersuite." + i;
             final String value = ConfigurationHolder.getString(key);
-            if (value==null || value.indexOf(AVAILABLE_CIPHER_SUITES_SPLIT_CHAR)==-1) {
+            if (value==null || !value.contains(AVAILABLE_CIPHER_SUITES_SPLIT_CHAR)) {
                 continue;
             }
             availableCipherSuites.add(value);
@@ -470,7 +470,7 @@ public final class CesecoreConfiguration {
      *
      * -1 means no limit (and not "off"). The default is 100 000.
      *
-     * @see getCTCacheEnabled
+     * @see #getCTCacheEnabled
      */
     public static long getCTCacheMaxEntries() {
         return getLongValue("ct.cache.maxentries", 100000L, "number of entries in cache");

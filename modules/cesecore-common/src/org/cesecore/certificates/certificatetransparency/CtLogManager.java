@@ -159,7 +159,7 @@ public class CtLogManager {
      *   <li>The other log has an ID identical to the new CT log</li>
      *   <li>The other log is has an identical URL and label as the new CT log</li>
      * </ul>
-     * @param the new CT log to check
+     * @param ctLog the new CT log to check
      * @return true if the CT log given as input can be added, false otherwise
      */
     public boolean canAdd(final CTLogInfo ctLog) {

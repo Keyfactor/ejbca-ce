@@ -77,7 +77,7 @@ public class SubjectDirAttrExtension extends CertTools {
 	 */
 	public static String getSubjectDirectoryAttributes(Certificate certificate) throws ParseException {
 		log.debug("Search for SubjectDirectoryAttributes");
-        String result = "";
+        StringBuilder result = new StringBuilder();
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
 	        ASN1Primitive obj = CertTools.getExtensionValue(x509cert, Extension.subjectDirectoryAttributes.getId());
@@ -90,47 +90,58 @@ public class SubjectDirAttrExtension extends CertTools {
 			SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
 	        for (int i = 0; i < seq.size(); i++) {
 	        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
-	        	if (!StringUtils.isEmpty(result)) {
+	        	if (result.length() != 0) {
 	        		prefix = ", ";
 	        	}
-	        	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
+	        	switch (attr.getAttrType().getId()) {
+	        	case id_pda_dateOfBirth: {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
 	        		ASN1GeneralizedTime time = ASN1GeneralizedTime.getInstance(set.getObjectAt(0));
 	        		Date date = time.getDate();
 	        		String dateStr = dateF.format(date);
-	        		result += prefix + "dateOfBirth="+dateStr; 
-	        	}
-	        	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
+	        		result.append(prefix).append("dateOfBirth=").append(dateStr); 
+	        		break;
+        		}
+	        	case id_pda_placeOfBirth: {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one placeOfBirth
 	        		String pb = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result += prefix + "placeOfBirth="+pb;        			
+	        		result.append(prefix).append("placeOfBirth=").append(pb);
+	        		break;
 	        	}
-	        	if (attr.getAttrType().getId().equals(id_pda_gender)) {
+	        	case id_pda_gender: {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one gender
 	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result += prefix + "gender="+g;        			
+	        		result.append(prefix).append("gender=").append(g);        			
+	        		break;
 	        	}
-	        	if (attr.getAttrType().getId().equals(id_pda_countryOfCitizenship)) {
+	        	case id_pda_countryOfCitizenship: {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one citizenship
 	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result += prefix + "countryOfCitizenship="+g;        			
+	        		result.append(prefix).append("countryOfCitizenship=").append(g);        			
+	        		break;
 	        	}
-	        	if (attr.getAttrType().getId().equals(id_pda_countryOfResidence)) {
+	        	case id_pda_countryOfResidence: {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one residence
 	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result += prefix + "countryOfResidence="+g;        			
+	        		result.append(prefix).append("countryOfResidence=").append(g);
+	        		break;
+	        	}
+        		default:
+        		    if (log.isDebugEnabled()) {
+        		        log.debug("Unsupported attribute in Subject Directory Attributes: " + attr.getAttrType().getId());
+        		    }
 	        	}
 	        }
         }
-        if (StringUtils.isEmpty(result)) {
+        if (result.length() == 0) {
             return null;
         }
-        return result;            
+        return result.toString();            
 	}
 
     /**

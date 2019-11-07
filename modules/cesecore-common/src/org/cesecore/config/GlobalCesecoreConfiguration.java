@@ -81,6 +81,6 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
 
     /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) { 
-        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Long.valueOf(maximumQueryTimeoutMs < 0L ? 0L : maximumQueryTimeoutMs));
+        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, maximumQueryTimeoutMs < 0L ? 0L : maximumQueryTimeoutMs);
     }
 }

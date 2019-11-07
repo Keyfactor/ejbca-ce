@@ -102,14 +102,12 @@ public abstract class PatternLogger implements Serializable {
     /**
      * @param doLogging
      *            True if you want this pattern logger to do anything upon flush.
-     * @param logger
+     * @param loggerClass
      *            The Class to create Log4j logger for, to log to if doLogging is true
      * @param matchPattern
      *            A string to create a matcher that is used together with matchString to determine how output is formatted
      * @param matchString
      *            A string that matches the pattern in m and specifies the order in which values are logged by the logger
-     * @param logger
-     *            A log4j Logger that is used for output
      * @param logDateFormat
      *            A string that specifies how the log-time is formatted
      * @param timeZone

@@ -170,7 +170,7 @@ public class DNFieldExtractor implements Serializable {
 
     /**
      * Looks up a DN Id (for use with DnComponents functions etc.) from a DN component.
-     * @param field Component, e.g. "CN". Not case sensitive.
+     * @param dnComponent Component, e.g. "CN". Not case sensitive.
      * @param dnType DN type, e.g. DNFieldExtractor.TYPE_SUBJECTDN
      * @return DN Id, or null if no such component exists for the given DN type.
      */
@@ -184,7 +184,7 @@ public class DNFieldExtractor implements Serializable {
     }
     
     /** The only DN components that are allowed to be used in multi-value RDNs, to prevent users from 
-     * making horrible mistakes like a multi-vavlue RDN like 'O=PrimeKey+Tech' */
+     * making horrible mistakes like a multi-value RDN like 'O=PrimeKey+Tech' */
     static final List<ASN1ObjectIdentifier> allowedMulti = new ArrayList<>(Arrays.asList(
             CeSecoreNameStyle.CN, 
             CeSecoreNameStyle.SERIALNUMBER,
@@ -199,7 +199,7 @@ public class DNFieldExtractor implements Serializable {
      * Fills the dnfields variable with dn (or altname or subject dir attrs) numerical IDs and the value of the components 
      * (i.e. the value of CN). Also populates fieldnumbers with number of occurrences in dn
      * 
-     * @param dn the DN we want to process for example CN=Tomas,O=PrimeKey,C=SE
+     * @param dninput the DN we want to process for example CN=Tomas,O=PrimeKey,C=SE
      * @param type one of the constants {@link #TYPE_SUBJECTDN}, {@link #TYPE_SUBJECTALTNAME}, {@link #TYPE_SUBJECTDIRATTR}
      * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti} 
      */
@@ -275,10 +275,10 @@ public class DNFieldExtractor implements Serializable {
                         final String dnexupper = dnex.toUpperCase();
                         if (id == DNFieldExtractor.URI) {
                             // Fix up URI, which can have several forms
-                            if (dnexupper.indexOf(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=") > -1) {
+                            if (dnexupper.contains(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=")) {
                                 field = CertTools.URI.toUpperCase(Locale.ENGLISH) + "=";
                             }
-                            if (dnexupper.indexOf(CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=") > -1) {
+                            if (dnexupper.contains(CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=")) {
                                 field = CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=";
                             }
                         }
@@ -357,20 +357,19 @@ public class DNFieldExtractor implements Serializable {
      *            This string is escaped so it can be used in a DN string.
      */
     public String getFieldString(final int field) {
-        String retval = "";
+        StringBuilder sb = new StringBuilder();
         String fieldname = DnComponents.getDnExtractorFieldFromDnId(field);
         if (type != TYPE_SUBJECTDN) {
             fieldname = DnComponents.getAltNameExtractorFieldFromDnId(field);
         }
         final int num = getNumberOfFields(field);
         for (int i = 0; i < num; i++) {
-            if (retval.length() == 0) {
-                retval += LDAPDN.escapeRDN(fieldname + getField(field, i));
-            } else {
-                retval += "," + LDAPDN.escapeRDN(fieldname + getField(field, i));
+            if (sb.length() != 0) {
+                sb.append(',');
             }
+            sb.append(LDAPDN.escapeRDN(fieldname + getField(field, i)));
         }
-        return retval;
+        return sb.toString();
     }
 
     /**

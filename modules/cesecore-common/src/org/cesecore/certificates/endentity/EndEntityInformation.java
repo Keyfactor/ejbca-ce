@@ -105,11 +105,12 @@ public class EndEntityInformation implements Serializable {
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject (may be null).
      * @param status Status of user, from {@link EndEntityConstants#STATUS_NEW} etc
-     * @param type Type of user, from {@link EndEntityConstants#ENDUSER} etc, can be "or:ed" together, i.e. EndEntityConstants#USER_ENDUSER | {@link EndEntityConstants#SENDNOTIFICATION}
+     * @param type Type of user, {@link EndEntityTypes} contains a list. {@link EndEntityTypes#toEndEntityType} can be used to convert
+     *          to the correct type, or you may combine multiple types using {@link EndEntityTypes#combineAll}.
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
-     * @param timecreated DOCUMENT ME!
-     * @param timemodified DOCUMENT ME!
+     * @param timecreated Deprecated since 7.3.2. Set to null.
+     * @param timemodified Deprecated since 7.3.2. Set to null.
      * @param tokentype the type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc
      */
     public EndEntityInformation(final String username, final String dn, final int caid, final String subjectaltname, final String email,
@@ -368,7 +369,7 @@ public class EndEntityInformation implements Serializable {
             LinkedHashMap<Object, Object> rawData = extendedinformation.getRawData();
             for (Object key : rawData.keySet()) {
                 if (rawData.get(key) != null) {
-                    extendedInformationDump.append(", [" + (String) key + ":" + rawData.get(key).toString() + "]");
+                    extendedInformationDump.append(", [").append((String) key).append(':').append(rawData.get(key)).append(']');
                 }
             }
             extendedInformationDump.append("}");

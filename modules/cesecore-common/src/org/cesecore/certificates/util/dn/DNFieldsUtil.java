@@ -96,7 +96,7 @@ public abstract class DNFieldsUtil {
             value1 = entry.getValue();
             value2 = map2.get(key);
             if (snAttributeKey.equals( key)) { // check that serial numbers are not blank and not equal. 
-                if (StringUtils.isBlank(value1) || StringUtils.isBlank(value2) || value1 == value2) {
+                if (StringUtils.isBlank(value1) || StringUtils.isBlank(value2) || StringUtils.equals(value1, value2)) {
                     result = false;
                 }
             } else { // All other DN attributes must be equal.
