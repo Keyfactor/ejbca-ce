@@ -63,7 +63,7 @@ public class DocumentTypeList extends StandardCertificateExtension {
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
         
         ArrayList<String> docTypes = certProfile.getDocumentTypeList();
-        if(docTypes.size() == 0) {
+        if (docTypes.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("No DocumentTypeList to make a certificate extension");
             }

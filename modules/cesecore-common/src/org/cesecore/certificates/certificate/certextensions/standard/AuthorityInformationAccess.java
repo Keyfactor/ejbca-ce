@@ -54,8 +54,8 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         final X509CA x509ca = (X509CA) ca;
-        List<String> caIssuerUris = new ArrayList<>();
-        List<String> ocspServiceLocatorUrls = new ArrayList<>();
+        final List<String> caIssuerUris;
+        final List<String> ocspServiceLocatorUrls = new ArrayList<>();
         
         // Get AIA by CAs default AIA section or by the certificate profiles configuration.
         if (certProfile.getUseDefaultCAIssuer()) {

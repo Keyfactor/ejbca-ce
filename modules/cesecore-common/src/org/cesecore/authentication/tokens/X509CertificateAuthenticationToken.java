@@ -18,7 +18,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -96,7 +96,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
                 certificate = cert;
             } 
         }
-        String certstring = CertTools.getSubjectDN(certificate).toString();
+        String certstring = CertTools.getSubjectDN(certificate);
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
         adminSubjectDN = CertTools.getSubjectDN(certificate);
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
@@ -112,7 +112,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
      * @throws NullPointerException if the provided certificate is null
      */
     public X509CertificateAuthenticationToken(final X509Certificate certificate) {
-        this(new HashSet<>(Arrays.asList(certificate.getSubjectX500Principal())), new HashSet<>(Arrays.asList(certificate)));
+        this(new HashSet<>(Collections.singletonList(certificate.getSubjectX500Principal())), new HashSet<>(Collections.singletonList(certificate)));
     }
 
     @Override
@@ -284,12 +284,6 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     @Override
     public String getPreferredMatchValue() {
         return CertTools.getSerialNumberAsString(certificate);
-    }
-
-    /** Returns user information of the user this authentication token belongs to. */
-    @Override
-    public String toString() {
-    	return super.toString();
     }
 
     /** Override the default X500Principal.getName() when doing toString on this object. */
