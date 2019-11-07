@@ -54,7 +54,6 @@ public abstract class JndiHelper {
 	 * @param remoteInterface
 	 * @return Reference to remote SSB
 	 */
-    @SuppressWarnings("unchecked")
 	public static <T> T getRemoteSession(final Class<T> remoteInterface, final String module) {
 		// JEE5, JBoss 5 and 6 and Glassfish 2
         final String jndiNameJEE5 = JndiConstants.APP_JNDI_PREFIX + remoteInterface.getSimpleName();
@@ -68,12 +67,12 @@ public abstract class JndiHelper {
         T ret = null;
         try {
             try {
-                ret = (T) getContext().lookup(jndiName);
+                ret = remoteInterface.cast(getContext().lookup(jndiName));
             } catch (NamingException e) {
                 if (!isJEE6) {
                     // If that did not work and we are trying with JEE5 jndi names, try with JEE6 naming
                     try {
-                        ret = (T) getContext().lookup(jndiNameJEE6);
+                        ret = remoteInterface.cast(getContext().lookup(jndiNameJEE6));
                         if (ret != null) {
                             // The JEE6 jndi name worked, use JEE6 naming in the future
                             isJEE6 = true;

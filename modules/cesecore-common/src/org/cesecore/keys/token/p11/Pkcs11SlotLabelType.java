@@ -61,8 +61,8 @@ public enum Pkcs11SlotLabelType {
         }
     }
     
-    private Pkcs11SlotLabelType(String key, String _description, Class<? extends LabelTypeValidator> validator) {
-        this.description = _description;
+    private Pkcs11SlotLabelType(String key, String description, Class<? extends LabelTypeValidator> validator) {
+        this.description = description;
         this.key = key;
         if (validator == null) {
             this.validator = null;

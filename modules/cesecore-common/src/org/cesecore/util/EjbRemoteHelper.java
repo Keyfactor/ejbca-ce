@@ -65,8 +65,7 @@ public enum EjbRemoteHelper {
         if(interfaceCache == null) {
             interfaceCache = new ConcurrentHashMap<>();
         }
-        @SuppressWarnings("unchecked")
-        T session = (T) interfaceCache.get(key);
+        T session = key.cast(interfaceCache.get(key));
         if (session == null) {
             if (module == null) {
                 if (key.getName().startsWith("org.cesecore")) {

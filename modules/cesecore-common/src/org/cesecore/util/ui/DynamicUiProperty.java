@@ -174,13 +174,12 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @param name the name of this property, for display in the UI.
      * @param defaultValue the default value, if any.
      */
-    @SuppressWarnings("unchecked")
     public DynamicUiProperty(final Class<T> type, final String name, final T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
         if (String.class.equals(type) && defaultValue != null && ((String) defaultValue).contains(LIST_SEPARATOR)) {
             for (String value : StringUtils.split((String) defaultValue, LIST_SEPARATOR)) {
-                this.values.add((T) value);
+                this.values.add(type.cast(value));
             }
         } else if (defaultValue != null) {
             this.values.add(defaultValue);

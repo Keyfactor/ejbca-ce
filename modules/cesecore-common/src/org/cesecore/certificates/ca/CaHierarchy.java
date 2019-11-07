@@ -126,7 +126,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
             if (log.isTraceEnabled()) {
                 log.trace("Creating CA hierarchies from: " + cas);
             }
-            final List<CaHierarchy<T>> caHierarchies = computeCaHierarchies(cas, isSignedBy);
+            final List<CaHierarchy<T>> caHierarchies = computeCaHierarchies();
             if (caHierarchies.isEmpty()) {
                 throw new IllegalArgumentException("No CA hierarchies found.");
             }
@@ -160,7 +160,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
             return new CaHierarchy<>(edgesInCaHierarchy);
         }
 
-        private List<CaHierarchy<T>> computeCaHierarchies(final Set<T> cas, final BiPredicate<T, T> isSignedBy) {
+        private List<CaHierarchy<T>> computeCaHierarchies() {
             final List<Edge<T>> allEdges = cas.stream().flatMap(a -> cas.stream().filter(b -> isSignedBy.test(a, b)).map(b -> new Edge<>(a, b)))
                     .collect(Collectors.toList());
             if (log.isTraceEnabled()) {
