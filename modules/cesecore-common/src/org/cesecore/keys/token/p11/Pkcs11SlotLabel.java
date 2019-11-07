@@ -191,7 +191,7 @@ public class Pkcs11SlotLabel {
     /**
      * Get slot ID for a token label.
      * @param tokenLabel the label.
-     * @param object to get slot list and labels for all slots with tokens
+     * @param p11 Pkcs11Wrapper to use to get slot list and labels for all slots with tokens
      * @return the slot ID.
      * @throws NoSuchSlotException if no slot as defined by tokenLabel was found
 
@@ -226,7 +226,7 @@ public class Pkcs11SlotLabel {
      * Get the IAIK provider.
      * @param slot Slot list index or slot ID.
      * @param libFile P11 module so file.
-     * @param isIndex true if first parameter is a slot list index, false if slot ID.
+     * @param type if first parameter is a slot list index ({@link Pkcs11SlotLabelType#SLOT_INDEX}) or slot ID ({@link Pkcs11SlotLabelType#SLOT_LABEL}).
      * @return the provider
      */
     private static Provider getIAIKP11Provider(final long slot, final File libFile, final Pkcs11SlotLabelType type) {
@@ -484,7 +484,7 @@ public class Pkcs11SlotLabel {
      * called once.
      * To check this implementation the p11 spy utils could be used. Check that
      * it is only one C_Initialize call and that null is not passed.
-     * @param a file with the path of the p11 module on which C_Finalize should
+     * @param libFile a file with the path of the p11 module on which C_Finalize should
      * be called.
      */
     static void doC_Initialize(final File libFile) {

@@ -215,7 +215,7 @@ public class InternalResources implements Serializable {
         if (placeHolders==null) {
             final String[] arr = new String[100];
             for (int i=0; i<arr.length; i++) {
-                arr[i] = new StringBuilder('{').append(i).append('}').toString();
+                arr[i] = '{' + String.valueOf(i) + '}';
             }
             placeHolders = arr;
         }
