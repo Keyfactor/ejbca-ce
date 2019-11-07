@@ -88,8 +88,8 @@ public class ExtendedInformationTest {
         final String mapDataKey = "mapDataKey";
         final String mapDataValue = "mapDataValue";
         final Integer maxLoginAttempts = 3;
-        final List<String> nameConstraintsExcluded = Arrays.asList(new String[] { "a", "b", "c" });
-        final List<String> nameConstraintsPermitted = Arrays.asList(new String[] { "d", "e", "f" });
+        final List<String> nameConstraintsExcluded = Arrays.asList("a", "b", "c");
+        final List<String> nameConstraintsPermitted = Arrays.asList("d", "e", "f");
         final Integer remainingLoginAttempts = 5;
         final String subjectDirectoryAttributes = "subjectDirectoryAttributes";
 

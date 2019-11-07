@@ -18,7 +18,6 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -112,11 +111,10 @@ public interface CA extends CACommon {
      * Method used to perform the service.
      * @throws OperatorCreationException
      * @throws CertificateException
-     * @throws CertificateEncodingException
      */
     ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
-            CertificateEncodingException, CertificateException, OperatorCreationException;
+            CertificateException, OperatorCreationException;
 
     HashMap<?, ?> getExtendedCAServiceData(int type);
 

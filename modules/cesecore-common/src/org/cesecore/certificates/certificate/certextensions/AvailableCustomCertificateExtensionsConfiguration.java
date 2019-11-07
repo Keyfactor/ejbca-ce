@@ -81,11 +81,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
             certificateExtension.init(id, oid.trim(), displayName, critical, required, properties);
             data.put(id, certificateExtension);
-        } catch (ClassNotFoundException e) {
-            throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
-        } catch (InstantiationException e) {
-            throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
-        } catch (IllegalAccessException e) {
+        } catch (ReflectiveOperationException e) {
             throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
         }
     }

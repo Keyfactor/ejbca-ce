@@ -66,14 +66,14 @@ public class EccKeyValidatorTest {
         keyValidator.setCurves(curves);
         List<String> messages = keyValidator.validate(keys.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        assertTrue("Key valildation should have been successful.", messages.size() == 0);
+        assertTrue("Key valildation should have been successful.", messages.isEmpty());
         // Set custom curve to something else, so it's not supported
         curves.clear();
         curves.add("secp384r1");
         keyValidator.setCurves(curves);
         messages = keyValidator.validate(keys.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        assertTrue("Key validation should have failed.", messages.size() > 0);
+        assertTrue("Key validation should have failed.", !messages.isEmpty());
         assertEquals("Key validation should have failed.", "Invalid: ECDSA curve [secp256r1, prime256v1, P-256]: Use one of the following [secp384r1].", messages.get(0));
 
         // TODO: create some failed EC key to test validation on
@@ -94,14 +94,14 @@ public class EccKeyValidatorTest {
         keyValidator.setCurves(curves);
         List<String> messages = keyValidator.validate(keys.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        assertTrue("Key valildation should have been successful.", messages.size() == 0);
+        assertTrue("Key valildation should have been successful.", messages.isEmpty());
         // Set custom curve to something else, so it's not supported
         curves.clear();
         curves.add("secp384r1");
         keyValidator.setCurves(curves);
         messages = keyValidator.validate(keys.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        assertTrue("Key validation should have failed.", messages.size() > 0);
+        assertTrue("Key validation should have failed.", !messages.isEmpty());
         assertEquals("Key validation should have failed.", "Invalid: ECDSA curve [secp256r1, prime256v1, P-256]: Use one of the following [secp384r1].", messages.get(0));
         log.trace("<testPublicKeyValidation()");
     }

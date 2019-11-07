@@ -93,7 +93,7 @@ public class OcspConfiguration {
      * @return 'true' if sigAlg is accepted by EJBCA, and 'false' otherwise
      */
     public static boolean isAcceptedSignatureAlgorithm(String sigAlg) {
-        if(acceptedSignatureAlgorithms.size() == 0) {
+        if(acceptedSignatureAlgorithms.isEmpty()) {
             String[] algs = getSignatureAlgorithm().split(";");
             for(String alg : algs) {
                 acceptedSignatureAlgorithms.add(alg);

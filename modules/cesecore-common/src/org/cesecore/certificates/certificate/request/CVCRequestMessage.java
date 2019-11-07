@@ -102,13 +102,7 @@ public class CVCRequestMessage implements RequestMessage {
 				CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
 				cvcert = authreq.getRequest();
 			}
-		} catch (ParseException e) {
-            log.error("Error in init for CVC request: ", e);
-            throw new IllegalArgumentException(e);
-		} catch (ConstructionException e) {
-            log.error("Error in init for CVC request: ", e);
-            throw new IllegalArgumentException(e);
-		} catch (NoSuchFieldException e) {
+		} catch (ParseException | ConstructionException | NoSuchFieldException e) {
             log.error("Error in init for CVC request: ", e);
             throw new IllegalArgumentException(e);
 		}
@@ -274,7 +268,7 @@ public class CVCRequestMessage implements RequestMessage {
     }
 
     @Override
-    public void setKeyInfo(Certificate cert, PrivateKey key, String Provider) {
+    public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
     }
 
     @Override
@@ -377,7 +371,6 @@ public class CVCRequestMessage implements RequestMessage {
             log.error("CVC not inited!", e);
             return null;
         }
-    	CardVerifiableCertificate cc = new CardVerifiableCertificate(cvcert);
-    	return cc;
+    	return new CardVerifiableCertificate(cvcert);
     }
 } // PKCS10RequestMessage

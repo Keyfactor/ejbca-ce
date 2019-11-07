@@ -52,7 +52,7 @@ public class ExtendedKeyUsage extends StandardCertificateExtension {
 		final Collection<String> oids = certProfile.getExtendedKeyUsageOids();
 		
 		// Don't add empty key usage extension
-		if (oids.size() != 0) {
+		if (!oids.isEmpty()) {
 			final ASN1Encodable[] usage = new ASN1Encodable[oids.size()];
 			int i = 0;
 			for (String oid : oids) {

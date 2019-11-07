@@ -3016,7 +3016,7 @@ public abstract class CertTools {
             return false;
         }
         
-        if(trustedCertificates.size() == 0) {
+        if (trustedCertificates.isEmpty()) {
             if(log.isDebugEnabled()) {
                 log.debug("Input of trustedCertificates was empty. Trusting everything.");
             }
@@ -4383,7 +4383,7 @@ public abstract class CertTools {
      */
     public static byte[] createCertsOnlyCMS(final List<X509Certificate> x509CertificateChain) throws CertificateEncodingException, CMSException {
         if (log.isDebugEnabled()) {
-            final String subjectdn = ( (x509CertificateChain != null && x509CertificateChain.size() > 0) ? x509CertificateChain.get(0).getSubjectDN().toString() : "null");  
+            final String subjectdn = ( (x509CertificateChain != null && !x509CertificateChain.isEmpty()) ? x509CertificateChain.get(0).getSubjectDN().toString() : "null");  
             log.debug("Creating a certs-only CMS for " + subjectdn);
         }
         final List<JcaX509CertificateHolder> certList = CertTools.convertToX509CertificateHolder(x509CertificateChain);

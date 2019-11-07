@@ -58,12 +58,12 @@ public class EkuPKIXCertPathCheckerTest {
         keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
-    final List<String> ekusEmpty = Arrays.asList(new String[]{ });
-    final List<String> ekus2 = Arrays.asList(new String[]{ KeyPurposeId.id_kp_emailProtection.getId() });
-    final List<String> ekus3 = Arrays.asList(new String[]{ KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_smartcardlogon.getId() });
-    final List<String> ekus4 = Arrays.asList(new String[]{ KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_serverAuth.getId() });
-    final List<String> ekus5 = Arrays.asList(new String[]{ KeyPurposeId.id_kp_serverAuth.getId() });
-    final List<String> ekus6 = Arrays.asList(new String[]{ KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId() });
+    final List<String> ekusEmpty = Arrays.asList();
+    final List<String> ekus2 = Arrays.asList(KeyPurposeId.id_kp_emailProtection.getId());
+    final List<String> ekus3 = Arrays.asList(KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_smartcardlogon.getId());
+    final List<String> ekus4 = Arrays.asList(KeyPurposeId.id_kp_ipsecEndSystem.getId(), KeyPurposeId.id_kp_serverAuth.getId());
+    final List<String> ekus5 = Arrays.asList(KeyPurposeId.id_kp_serverAuth.getId());
+    final List<String> ekus6 = Arrays.asList(KeyPurposeId.id_kp_clientAuth.getId(), KeyPurposeId.id_kp_codeSigning.getId(), KeyPurposeId.id_kp_emailProtection.getId());
 
     @Test
     public void testNoEkuInCert() throws Exception {
@@ -150,7 +150,7 @@ public class EkuPKIXCertPathCheckerTest {
         final X509Certificate cert = CertTools.genSelfCertForPurpose("CN=dummy", new Date(now-3600000L), new Date(now+3600000L), null, keyPair.getPrivate(), keyPair.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, isCa, ku, null, null, BouncyCastleProvider.PROVIDER_NAME, true, additionalExtensions);
         final PKIXCertPathChecker pkixCertPathChecker = new EkuPKIXCertPathChecker(requiredOids);
-        final Collection<String> unresolvedCritExts = new ArrayList<>(Arrays.asList(new String[] {Extension.extendedKeyUsage.getId()}));
+        final Collection<String> unresolvedCritExts = new ArrayList<>(Arrays.asList(Extension.extendedKeyUsage.getId()));
         pkixCertPathChecker.check(cert, unresolvedCritExts);
         return !unresolvedCritExts.contains(Extension.extendedKeyUsage.getId());
     }

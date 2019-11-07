@@ -97,11 +97,11 @@ public class CAToken extends UpgradeableDataHashMap {
 
     /** Constructor used to initialize a stored CA token, when the UpgradeableHashMap has been stored as is.
      * 
-     * @param data LinkedHashMap
+     * @param dataMap LinkedHashMap
      */
     @SuppressWarnings("rawtypes")
-    public CAToken(final HashMap tokendata) {
-		loadData(tokendata);
+    public CAToken(final HashMap dataMap) {
+		loadData(dataMap);
 		final Object cryptoTokenIdObject = data.get(CAToken.CRYPTOTOKENID);
 		if (cryptoTokenIdObject==null) {
 		    log.warn("No CryptoTokenId in CAToken map. This can safely be ignored if shown during an upgrade from EJBCA 5.0.x or lower.");
@@ -252,7 +252,7 @@ public class CAToken extends UpgradeableDataHashMap {
     /**
      * Internal method just to get rid of the always present date that is part of the standard Properties.store().
      * 
-     * @param prop
+     * @param caTokenProperties Properties to encode as string
      * @return String that can be loaded by Properties.load
      */
     private String storeProperties(Properties caTokenProperties) {
@@ -308,7 +308,7 @@ public class CAToken extends UpgradeableDataHashMap {
     public String getKeySequence() {
         Object seq = data.get(SEQUENCE);
         if (seq == null) {
-            seq = new String(CAToken.DEFAULT_KEYSEQUENCE);
+            seq = CAToken.DEFAULT_KEYSEQUENCE;
         }
         return (String) seq;
     }

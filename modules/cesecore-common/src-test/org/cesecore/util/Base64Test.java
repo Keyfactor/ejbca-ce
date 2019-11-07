@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
@@ -321,11 +321,11 @@ public class Base64Test {
 
     @Test(expected = DecoderException.class)
     public void testIncorrectPadding1() {
-        Base64.decode("DAxFSkJDQSBTYW".getBytes(Charset.forName("UTF-8")));
+        Base64.decode("DAxFSkJDQSBTYW".getBytes(StandardCharsets.UTF_8));
     }
 
     @Test(expected = DecoderException.class)
     public void testIncorrectPadding2() {
-        Base64.decode("DAxFSkJDQSBTYW=".getBytes(Charset.forName("UTF-8")));
+        Base64.decode("DAxFSkJDQSBTYW=".getBytes(StandardCharsets.UTF_8));
     }
 }

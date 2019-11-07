@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
@@ -110,7 +111,7 @@ public class AzureSignature extends SignatureSpi {
             }
             try (final CloseableHttpResponse response = privateKey.getCryptoToken().performRequest(request)) {
                 final InputStream content = response.getEntity().getContent();
-                final String s = IOUtils.toString(content, "UTF-8");
+                final String s = IOUtils.toString(content, StandardCharsets.UTF_8);
                 final int statusCode = response.getStatusLine().getStatusCode();
                 if (log.isDebugEnabled()) {
                     log.debug("Status code engineSign is: " + statusCode);

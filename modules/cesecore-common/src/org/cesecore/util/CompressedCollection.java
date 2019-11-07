@@ -90,7 +90,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
         for (final T object : objects) {
             add(object);
         }
-        return objects.size()!=0;
+        return !objects.isEmpty();
     }
 
     @Override

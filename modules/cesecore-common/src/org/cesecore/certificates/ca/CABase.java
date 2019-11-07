@@ -13,7 +13,6 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -243,22 +242,9 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         // Create implementation using reflection
         try {
             Class<?> implClass = Class.forName(info.getImplClass());
-            final ExtendedCAService service = (ExtendedCAService) implClass.getConstructor(ExtendedCAServiceInfo.class).newInstance(
-                    new Object[] { info });
+            final ExtendedCAService service = (ExtendedCAService) implClass.getConstructor(ExtendedCAServiceInfo.class).newInstance(info);
             setExtendedCAService(service);
-        } catch (ClassNotFoundException e) {
-            log.warn("failed to add extended CA service: ", e);
-        } catch (IllegalArgumentException e) {
-            log.warn("failed to add extended CA service: ", e);
-        } catch (SecurityException e) {
-            log.warn("failed to add extended CA service: ", e);
-        } catch (InstantiationException e) {
-            log.warn("failed to add extended CA service: ", e);
-        } catch (IllegalAccessException e) {
-            log.warn("failed to add extended CA service: ", e);
-        } catch (InvocationTargetException e) {
-            log.warn("failed to add extended CA service: ", e);
-        } catch (NoSuchMethodException e) {
+        } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
             log.warn("failed to add extended CA service: ", e);
         }
     }
@@ -271,7 +257,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      */
     @Override
     public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
-            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException, OperatorCreationException {
+            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateException, OperatorCreationException {
         ExtendedCAService service = getExtendedCAService(request.getServiceType());
         if (service == null) {
             final String msg = "Extended CA service is null for service request: "+request.getClass().getName();

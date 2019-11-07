@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -522,7 +521,7 @@ public final class StringTools {
         if (dontEncodeAsciiPrintable && StringUtils.isAsciiPrintable(s)) {
         	return s;
         }
-        // Since we used getBytes(s, "UTF-8") in this method, we must use UTF-8 when doing the reverse in another method
+        // Since we used getBytes(s, StandardCharsets.UTF_8) in this method, we must use UTF-8 when doing the reverse in another method
         return "B64:" + new String(Base64.encode(s.getBytes(StandardCharsets.UTF_8), false));
     }
 
@@ -545,9 +544,9 @@ public final class StringTools {
             return input;
         }
         try {
-            // Since we used getBytes(s, "UTF-8") in the method putBase64String, we must use UTF-8 when doing the reverse
-            return new String(Base64.decode(base64Data.getBytes("UTF-8")), "UTF-8");
-        } catch (UnsupportedEncodingException | DecoderException e) {
+            // Since we used getBytes(s, StandardCharsets.UTF_8) in the method putBase64String, we must use UTF-8 when doing the reverse
+            return new String(Base64.decode(base64Data.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        } catch (DecoderException e) {
             return input;
         }
     }

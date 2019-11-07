@@ -22,7 +22,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -82,7 +82,7 @@ public class OcspKeyBindingTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        ekuExtensionOnly = Arrays.asList(new Extension[] { getExtendedKeyUsageExtension() });
+        ekuExtensionOnly = Collections.singletonList(getExtendedKeyUsageExtension());
     }
 
     @Test

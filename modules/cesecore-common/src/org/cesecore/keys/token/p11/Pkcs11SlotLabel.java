@@ -250,9 +250,11 @@ public class Pkcs11SlotLabel {
                 log.debug("Using IAIK PKCS11 provider: " + IAIK_PKCS11_CLASS);
             }
             // iaik PKCS11 has Properties as constructor argument
-            ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException |
-                NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+            ret = implClass.getConstructor(Properties.class).newInstance(prop);
+        } catch (ClassNotFoundException e) {
+            return null;
+        } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
+            log.debug("IAIK provider exists but could not be instantiated", e);
             return null;
         }
         if ( ret==null ) {
@@ -426,7 +428,7 @@ public class Pkcs11SlotLabel {
                 log.debug("Using JDK8 SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
             }
             // The old (<=JDK8) Sun PKCS11 has InputStream as constructor argument
-            final Provider ret = implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+            final Provider ret = implClass.getConstructor(InputStream.class).newInstance(is);
             if (log.isDebugEnabled()) {
                 log.debug("Created JDK8 SUN PKCS11 provider: " + ret.getName());
             }
@@ -441,7 +443,7 @@ public class Pkcs11SlotLabel {
         final StringBuilder configBuilder = new StringBuilder();
         // Since Java 9, we need to prepend -- to indicate to the configure() method
         // that the config is treated as a string
-        configBuilder.append("--").append(IOUtils.toString(is, "UTF-8"));
+        configBuilder.append("--").append(IOUtils.toString(is, StandardCharsets.UTF_8));
         return configBuilder.toString();
     }
     

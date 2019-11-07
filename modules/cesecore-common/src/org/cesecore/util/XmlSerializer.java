@@ -16,7 +16,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -33,13 +33,10 @@ public class XmlSerializer {
     public static Map<String, Object> decode(final String input) {
 		Map<String, Object> ret = null;
 		if (input != null) {
-			try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes("UTF8")))) {
+			try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)))) {
                 final LinkedHashMap<String,Object> h = (LinkedHashMap<String,Object>) decoder.readObject();
 				// Handle Base64 encoded string values
 				ret = new Base64GetHashMap(h);
-			} catch (UnsupportedEncodingException e) {
-				// Fatal. No point in handling the lack of UTF-8
-				throw new IllegalStateException(e);
 			}
 		}
 		return ret;
@@ -57,12 +54,7 @@ public class XmlSerializer {
                 }
     			encoder.writeObject(linkedHashMap);
 			}
-			try {
-				ret = baos.toString("UTF8");
-			} catch (UnsupportedEncodingException e) {
-				// Fatal. No point in handling the lack of UTF-8
-				throw new IllegalStateException(e);
-			}
+			ret = baos.toString(StandardCharsets.UTF_8);
 		}
 		return ret;
 	}

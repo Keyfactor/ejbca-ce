@@ -74,8 +74,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	}
 
 	public static ServiceLoader<? extends CvcPlugin> getImplementationClasses() {
-        ServiceLoader<? extends CvcPlugin> serviceLoader = ServiceLoader.load(CvcPlugin.class);
-        return serviceLoader;
+        return ServiceLoader.load(CvcPlugin.class);
 	}
     private static CvcPlugin createCAImpl(final String type) {
         // type can be used to differentiate between different types of CVC CA implementations as there
