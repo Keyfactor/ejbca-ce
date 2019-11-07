@@ -98,8 +98,7 @@ public class JackNJI11Provider extends Provider {
                 // fetch the (Provider, String) constructor
                 Constructor<?> cons = clazz.getConstructor(paramTypes);
                 // invoke constructor and return the SPI object
-                Object obj = cons.newInstance(provider, getAlgorithm());
-                return obj;
+                return cons.newInstance(provider, getAlgorithm());
             } catch (ReflectiveOperationException |  IllegalArgumentException | SecurityException e) {
                 LOG.error("Could not instantiate service", e);
                 throw new NoSuchAlgorithmException("Could not instantiate service", e);
@@ -119,8 +118,8 @@ public class JackNJI11Provider extends Provider {
         // are stored in our provider backend, plus SecretKeys with a RAW encoding.
         @Override
         public boolean supportsParameter(Object obj) {
-            if (obj instanceof NJI11StaticSessionPrivateKey == false
-                    && obj instanceof NJI11ReleasebleSessionPrivateKey == false) {
+            if (!(obj instanceof NJI11StaticSessionPrivateKey)
+                    && !(obj instanceof NJI11ReleasebleSessionPrivateKey)) {
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder sb = new StringBuilder();
                     sb.append("Not our object:\n")
@@ -185,7 +184,7 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineInitSign(PrivateKey pk) throws InvalidKeyException {
-            if (pk instanceof NJI11Object == false) {
+            if (!(pk instanceof NJI11Object)) {
                 throw new InvalidKeyException("Not an NJI11Object: " + pk);
             }
             myKey = (NJI11Object) pk;
@@ -275,8 +274,7 @@ public class JackNJI11Provider extends Provider {
             log.debug("engineSign with " + type);
             try {
                 if (type == T_UPDATE) {
-                    final byte[] ret = myKey.getSlot().getCryptoki().SignFinal(session);
-                    return ret;
+                    return myKey.getSlot().getCryptoki().SignFinal(session);
                 } else if (type == T_DIGEST) {
                     final byte[] rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
 
@@ -303,8 +301,7 @@ public class JackNJI11Provider extends Provider {
                     seq.close();
                     return baos.toByteArray();
                 } else {
-                    final byte[] ret = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
-                    return ret;
+                    return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
                 }
             } catch (IOException e) {
                 throw new SignatureException(e);

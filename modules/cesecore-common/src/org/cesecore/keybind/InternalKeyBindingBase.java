@@ -13,7 +13,6 @@
 package org.cesecore.keybind;
 
 import java.io.Serializable;
-import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +23,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -257,11 +255,6 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public LinkedHashMap<Object, Object> getDataMapToPersist() {
         return (LinkedHashMap<Object, Object>) saveData();
     }
-    
-    @Override
-    public abstract float getLatestVersion();
-    @Override
-    public abstract void assertCertificateCompatability(Certificate certificate, final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException;
 
     @Override
     public void upgrade() {

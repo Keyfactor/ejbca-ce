@@ -166,9 +166,10 @@ public abstract class RequestMessageUtils {
                 if (buffer == null) {
                     return null;
                 }
-                ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
-                ASN1Sequence spkacSeq = (ASN1Sequence) in.readObject();
-                in.close();
+                final ASN1Sequence spkacSeq;
+                try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer))) {
+                    spkacSeq = (ASN1Sequence) in.readObject();
+                }
                 NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
                 // Verify POPO, we don't care about the challenge, it's not important.
                 nscr.setChallenge("challenge");
@@ -211,6 +212,9 @@ public abstract class RequestMessageUtils {
                             } else {
                                 log.debug("CRMF POPOSigningKey is not defined even though POP type is popSigningKey. Validation will fail.");
                             }
+                        }
+                        if (popoSigningKey == null) {
+                            throw new SignRequestSignatureException("CRMF POPOSigningKey is not present, even though POP type is popSigningKey."); // prevent NPE
                         }
                         final ContentVerifierProvider cvp = CertTools.genContentVerifierProvider(publicKey);
                         // Work around for bug in BC where jcrm.hasSigningKeyProofOfPossessionWithPKMAC() will throw NPE if PoposkInput is null

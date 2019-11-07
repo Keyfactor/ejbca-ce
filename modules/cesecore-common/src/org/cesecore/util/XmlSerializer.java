@@ -16,6 +16,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,7 +55,12 @@ public class XmlSerializer {
                 }
     			encoder.writeObject(linkedHashMap);
 			}
-			ret = baos.toString(StandardCharsets.UTF_8);
+			try {
+                ret = baos.toString("UTF8");
+            } catch (UnsupportedEncodingException e) {
+                // Fatal. No point in handling the lack of UTF-8
+                throw new IllegalStateException(e);
+            }
 		}
 		return ret;
 	}

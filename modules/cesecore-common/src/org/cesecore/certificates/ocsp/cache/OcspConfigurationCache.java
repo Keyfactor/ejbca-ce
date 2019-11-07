@@ -88,7 +88,7 @@ public enum OcspConfigurationCache {
     }
 
     public boolean isNonExistingUnauthorized(OcspKeyBinding ocspKeyBinding) {
-     // First we read the global default
+        // First we read the global default
         boolean nonExistingIsUnauthorized = this.nonExistingIsUnauthorized;
         // If we have an OcspKeyBinding for this request we use it to override the default
         if (ocspKeyBinding != null) {

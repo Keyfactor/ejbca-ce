@@ -59,7 +59,7 @@ public class Pkcs11Wrapper {
         }
 
         try {
-            this.getSlotListMethod = p11Class.getDeclaredMethod("C_GetSlotList", new Class[] { boolean.class });
+            getSlotListMethod = p11Class.getDeclaredMethod("C_GetSlotList", boolean.class);
         } catch (NoSuchMethodException e) {
             String msg = "Method C_GetSlotList was not found in class sun.security.pkcs11.wrapper.PKCS11, this may be due to"
                     + " a change in the underlying library.";
@@ -71,7 +71,7 @@ public class Pkcs11Wrapper {
             throw new IllegalStateException(msg, e);
         }
         try {
-            this.getTokenInfoMethod = p11Class.getDeclaredMethod("C_GetTokenInfo", new Class[] { long.class });
+            getTokenInfoMethod = p11Class.getDeclaredMethod("C_GetTokenInfo", long.class);
         } catch (NoSuchMethodException e) {
             String msg = "Method C_GetTokenInfo was not found in class sun.security.pkcs11.wrapper.PKCS11, this may be due to"
                     + " a change in the underlying library.";
@@ -83,7 +83,7 @@ public class Pkcs11Wrapper {
             throw new IllegalStateException(msg, e);
         }
         try {
-            this.labelField = Class.forName("sun.security.pkcs11.wrapper.CK_TOKEN_INFO").getField("label");
+            labelField = Class.forName("sun.security.pkcs11.wrapper.CK_TOKEN_INFO").getField("label");
         } catch (NoSuchFieldException e) {
             String msg = "Field 'label' was not found in class sun.security.pkcs11.wrapper.CK_TOKEN_INFO, this may be due to"
                     + " a change in the underlying library.";
@@ -101,7 +101,7 @@ public class Pkcs11Wrapper {
         final Method getInstanceMethod;
         try {
             getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
-                    new Class[] { String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class });
+                    String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class);
         } catch (NoSuchMethodException e) {
             String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
                     + " a change in the underlying library.";
@@ -117,7 +117,7 @@ public class Pkcs11Wrapper {
             throw new IllegalStateException(msg, e);
         }
         try {
-            this.p11 = getInstanceMethod.invoke(null, new Object[] { fileName, "C_GetFunctionList", null, Boolean.FALSE });
+            p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE);
         } catch (IllegalAccessException e) {
             String msg = "Method sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance was not accessible, this may be due to"
                     + " a change in the underlying library.";
@@ -136,14 +136,14 @@ public class Pkcs11Wrapper {
         }
         labelMap = new HashMap<>();
         slotList = C_GetSlotList();
-        for (long id : this.slotList) {
+        for (long id : slotList) {
             labelMap.put(id, getTokenLabelLocal(id));
         }
     }
 
     /**
      * Get an instance of the class.
-     * @param the p11 .so file.
+     * @param file the p11 .so file.
      * @return the instance.
      * @throws IllegalArgumentException
      */
@@ -181,7 +181,7 @@ public class Pkcs11Wrapper {
      * @return the list.
      */
     public long[] getSlotList() {
-        return this.slotList;
+        return slotList;
     }
 
     /**
@@ -190,12 +190,12 @@ public class Pkcs11Wrapper {
      * @return the token label, or null if no matching token was found.
      */
     public char[] getTokenLabel(long slotID) {
-        return this.labelMap.get(Long.valueOf(slotID));
+        return labelMap.get(slotID);
     }
 
     private long[] C_GetSlotList() {
         try {
-            return (long[]) this.getSlotListMethod.invoke(this.p11, new Object[] { Boolean.TRUE });
+            return (long[]) getSlotListMethod.invoke(p11, Boolean.TRUE);
         } catch (IllegalAccessException e) {
             String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11C.GetSlotList, this may be due to"
                     + " a change in the underlying library.";
@@ -216,7 +216,7 @@ public class Pkcs11Wrapper {
     private char[] getTokenLabelLocal(long slotID)  {
         final Object tokenInfo;
         try {
-            tokenInfo = this.getTokenInfoMethod.invoke(this.p11, new Object[] { Long.valueOf(slotID) });
+            tokenInfo = getTokenInfoMethod.invoke(p11, slotID);
         } catch (IllegalAccessException e) {
             String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo, this may be due to"
                     + " a change in the underlying library.";
@@ -236,7 +236,7 @@ public class Pkcs11Wrapper {
             return null;
         }
         try {
-            String result = String.copyValueOf((char[]) this.labelField.get(tokenInfo));
+            String result = String.copyValueOf((char[]) labelField.get(tokenInfo));
             return result.trim().toCharArray();
         } catch (IllegalArgumentException e) {
             String msg = "Field sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo was not of type sun.security.pkcs11.wrapper.CK_TOKEN_INFO"

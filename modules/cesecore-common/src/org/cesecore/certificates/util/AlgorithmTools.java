@@ -184,11 +184,10 @@ public abstract class AlgorithmTools {
     public static Map<String,List<String>> getNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
         // Map of curve name and aliases which are the same curve
         final Map<String,List<String>> processedCurveNames = new HashMap<>();
-        @SuppressWarnings("unchecked")
-        final Enumeration<String> ecNamedCurvesStandard = ECNamedCurveTable.getNames();
+        final Enumeration<?> ecNamedCurvesStandard = ECNamedCurveTable.getNames();
         // Process standard curves, removing blacklisted ones and those not supported by the provider
         while (ecNamedCurvesStandard.hasMoreElements()) {
-            final String ecNamedCurve = ecNamedCurvesStandard.nextElement();
+            final String ecNamedCurve = (String) ecNamedCurvesStandard.nextElement();
             processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);
         }
 
@@ -407,10 +406,9 @@ public abstract class AlgorithmTools {
                     if (log.isDebugEnabled()) {
                         log.debug("a1=" + a1 + " b1=" + b1 + " fs1=" + fs1 + " ax1=" + ax1 + " ay1=" + ay1 + " o1=" + o1 + " c1="+c1);
                     }
-                    @SuppressWarnings("unchecked")
-                    final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+                    final Enumeration<?> ecNamedCurves = ECNamedCurveTable.getNames();
                     while (ecNamedCurves.hasMoreElements()) {
-                        final String ecNamedCurveBc = ecNamedCurves.nextElement();
+                        final String ecNamedCurveBc = (String) ecNamedCurves.nextElement();
                         final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(ecNamedCurveBc);
                         final ECCurve ec2 = parameterSpec2.getCurve();
                         final BigInteger a2 = ec2.getA().toBigInteger();
@@ -500,10 +498,9 @@ public abstract class AlgorithmTools {
         ret.add(namedEllipticCurve);
 
         if (parameterSpec != null) { // GOST and DSTU aren't present in ECNamedCurveTable (and don't have aliases)
-            @SuppressWarnings("unchecked")
-            final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+            final Enumeration<?> ecNamedCurves = ECNamedCurveTable.getNames();
             while (ecNamedCurves.hasMoreElements()) {
-                final String currentCurve = ecNamedCurves.nextElement();
+                final String currentCurve = (String) ecNamedCurves.nextElement();
                 if (!namedEllipticCurve.equals(currentCurve)) {
                     final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(currentCurve);
                     if (parameterSpec.equals(parameterSpec2)) {
@@ -1056,7 +1053,7 @@ public abstract class AlgorithmTools {
     /**
      * Returns a {@link java.security.MessageDigest} object given the name of a signature algorithm, e.g. "SHA256withECDSA".
      * 
-     * <p>Signature algorithm names are defined in {@link #AlgorithmConstants}.
+     * <p>Signature algorithm names are defined in {@link AlgorithmConstants}.
      * 
      * @param signatureAlgorithm the name of the signature algorithm, e.g. "SHA256withECDSA".
      * @return a message digest object able to compute digests with the hash algorithm specified.
