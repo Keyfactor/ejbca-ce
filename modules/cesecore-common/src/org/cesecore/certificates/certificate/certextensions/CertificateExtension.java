@@ -77,7 +77,7 @@ public abstract class CertificateExtension implements Named, Serializable {
 	}
 	
 	/**
-	 * @param The unique OID of the extension
+	 * @param oID The unique OID of the extension
 	 */
 	public void setOID(String oID) {
 		this.oID = oID.trim();
@@ -91,7 +91,7 @@ public abstract class CertificateExtension implements Named, Serializable {
 	}
 	
 	/**
-	 * @param The extension's readable name
+	 * @param displayName The extension's readable name
 	 */
 	public void setDisplayName(String displayName) {
 	    this.displayName = displayName;
@@ -104,7 +104,7 @@ public abstract class CertificateExtension implements Named, Serializable {
 	}
 
 	/**
-	 * @param flag indicating if the extension should be marked as critical or not.
+	 * @param criticalFlag flag indicating if the extension should be marked as critical or not.
 	 */
 	public void setCriticalFlag(boolean criticalFlag) {
 		this.criticalFlag = criticalFlag;
@@ -118,7 +118,7 @@ public abstract class CertificateExtension implements Named, Serializable {
     }
 
     /**
-     * @param flag indicating if the extension should be marked as required or not.
+     * @param requiredFlag flag indicating if the extension should be marked as required or not.
      */
     public void setRequiredFlag(final boolean requiredFlag) {
         this.requiredFlag = requiredFlag;
@@ -147,7 +147,7 @@ public abstract class CertificateExtension implements Named, Serializable {
 	 * @param oID the OID 
 	 * @param criticalFlag if the extension should be marked as critical or not.
 	 * @param requiredFlag if the extension should be marked as required or not. 
-	 * @param config the complete configuration property file.
+	 * @param extensionProperties the complete configuration property file.
 	 */
 	public void init(int id, String oID, String displayName, boolean criticalFlag, final boolean requiredFlag, Properties extensionProperties){
 		this.id = id;

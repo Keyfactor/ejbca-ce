@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.extendedservices;
 
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 
@@ -98,9 +97,8 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * Method used to perform the service.
      * @throws OperatorCreationException 
      * @throws CertificateException 
-     * @throws CertificateEncodingException 
      */
     public abstract ExtendedCAServiceResponse extendedService(final CryptoToken cryptoToken, ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
-            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException, OperatorCreationException;
+            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateException, OperatorCreationException;
 
 }

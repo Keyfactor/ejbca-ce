@@ -23,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,7 +124,6 @@ public class SecureXMLDecoderTest {
     
     /**
      * Encodes a complex value with the standard XMLEncoder and tries to decode it again.
-     * @throws UnsupportedEncodingException 
      */
     @Test
     public void testComplexEncodeDecode() throws IOException {

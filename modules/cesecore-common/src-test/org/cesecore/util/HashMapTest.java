@@ -17,6 +17,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -44,10 +45,10 @@ public class HashMapTest {
         XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
-        String data = baos.toString("UTF8");
+        String data = baos.toString(StandardCharsets.UTF_8);
         //log.error(data);
         
-        XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
+        XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
         HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
         decoder.close();
         assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
@@ -71,11 +72,11 @@ public class HashMapTest {
         XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
-        String data = baos.toString("UTF8");
+        String data = baos.toString(StandardCharsets.UTF_8);
         //log.error(data);
 
         try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();         
             assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
@@ -105,11 +106,11 @@ public class HashMapTest {
         XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
-        String data = baos.toString("UTF8");
+        String data = baos.toString(StandardCharsets.UTF_8);
         //log.error(data);
 
         try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
             @SuppressWarnings("unchecked")
@@ -141,11 +142,11 @@ public class HashMapTest {
         XMLEncoder encoder = new XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
-        String data = baos.toString("UTF8");
+        String data = baos.toString(StandardCharsets.UTF_8);
         //log.error(data);
 
         try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes("UTF8")));
+            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
             @SuppressWarnings("unchecked")

@@ -351,7 +351,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     @Override
     public int getTokenStatus() {
         autoActivate();
-        if (this.slot == null || this.slot.getActiveSessions().size() == 0) {
+        if (slot == null || slot.getActiveSessions().isEmpty()) {
             return CryptoToken.STATUS_OFFLINE;
         }
         return CryptoToken.STATUS_ACTIVE;
