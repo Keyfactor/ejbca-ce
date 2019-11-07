@@ -107,7 +107,7 @@ public abstract class RequestMessageUtils {
 
 	/** Tries to get decoded bytes from a certificate request or certificate
 	 * 
-	 * @param bytes pem (with headers) or plain base64 with a CSR of certificate 
+	 * @param b64Encoded pem (with headers) or plain base64 with a CSR of certificate 
 	 * @return binary bytes
 	 */
 	public static byte[] getRequestBytes(byte[] b64Encoded) throws IOException {
@@ -172,7 +172,7 @@ public abstract class RequestMessageUtils {
                 NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
                 // Verify POPO, we don't care about the challenge, it's not important.
                 nscr.setChallenge("challenge");
-                if (nscr.verify("challenge") == false) {
+                if (!nscr.verify("challenge")) {
                     if (log.isDebugEnabled()) {
                         log.debug("SPKAC POPO verification Failed");
                     }
@@ -251,9 +251,7 @@ public abstract class RequestMessageUtils {
                 final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(publicKey, username, password);
                 simpleRequestMessage.setRequestExtensions(jcrm.getCertTemplate().getExtensions());
                 ret = simpleRequestMessage;
-            } catch (CRMFException e) {
-                throw new SignRequestSignatureException("CRMF POP verification failed.", e);
-            } catch (OperatorCreationException e) {
+            } catch (CRMFException | OperatorCreationException e) {
                 throw new SignRequestSignatureException("CRMF POP verification failed.", e);
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
@@ -288,7 +286,7 @@ public abstract class RequestMessageUtils {
             reqmsg.setUsername(username);
             reqmsg.setPassword(password);
             // Popo is really actually verified by the CA (in SignSessionBean) as well
-            if (reqmsg.verify() == false) {
+            if (!reqmsg.verify()) {
                 if (log.isDebugEnabled()) {
                     log.debug("CVC POPO verification Failed");
                 }

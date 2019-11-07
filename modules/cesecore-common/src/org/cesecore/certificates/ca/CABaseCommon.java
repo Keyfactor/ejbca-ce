@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -559,11 +559,9 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         for (Object o : storechain) {
             final String b64Cert = (String)o;
             try {
-                final byte[] decoded = Base64.decode(b64Cert.getBytes("US-ASCII"));
+                final byte[] decoded = Base64.decode(b64Cert.getBytes(StandardCharsets.US_ASCII));
                 final Certificate cert = CertTools.getCertfromByteArray(decoded, Certificate.class);
                 chain.add(cert);
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException(e);
             } catch (CertificateParsingException e) {
                 throw new IllegalStateException(e);
             }
@@ -586,7 +584,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                 return null;
             }
         }
-        if (certificatechain.size() == 0) {
+        if (certificatechain.isEmpty()) {
             return null;
         }
         Certificate ret = certificatechain.get(0);
@@ -666,7 +664,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             setCAToken(cainfo.getCAToken());
         }
         List<Certificate> newcerts = cainfo.getCertificateChain();
-        if ((newcerts != null) && (newcerts.size() > 0)) {
+        if ((newcerts != null) && !newcerts.isEmpty()) {
             setCertificateChain(newcerts);
             Certificate cacert = newcerts.iterator().next();
             setExpireTime(CertTools.getNotAfter(cacert));
@@ -695,11 +693,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         if (data.get(LATESTLINKCERTIFICATE) == null) {
             return null;
         }
-        try {
-            return Base64.decode(((String)data.get(LATESTLINKCERTIFICATE)).getBytes("UTF8"));
-        } catch (final UnsupportedEncodingException e) {
-            throw new RuntimeException(e);  // Lack of UTF8 would be fatal.
-        }
+        return Base64.decode(((String)data.get(LATESTLINKCERTIFICATE)).getBytes(StandardCharsets.UTF_8));
     }
     
     /** Store the latest link certificate in this object. */
@@ -707,11 +701,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         if (encodedLinkCertificate == null) {
             data.remove(LATESTLINKCERTIFICATE);
         } else {
-            try {
-                data.put(LATESTLINKCERTIFICATE, new String(Base64.encode(encodedLinkCertificate), "UTF8"));
-            } catch (final UnsupportedEncodingException e) {
-                throw new RuntimeException(e); // Lack of UTF8 would be fatal.
-            }
+            data.put(LATESTLINKCERTIFICATE, new String(Base64.encode(encodedLinkCertificate), StandardCharsets.UTF_8));
         }
     }
 
@@ -853,7 +843,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                             log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
                         }
                         Class<?> implClass = Class.forName(implClassname);
-                        returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
+                        returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(serviceData);
                         extendedcaservicemap.put(type, returnval);
                     }
                 } else {
@@ -880,8 +870,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     
     @SuppressWarnings("rawtypes")
     public HashMap<?, ?> getExtendedCAServiceData(int type) {
-        HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type);
-        return serviceData;
+        return (HashMap) data.get(EXTENDEDCASERVICE + type);
     }
 
     public void setExtendedCAServiceData(int type, @SuppressWarnings("rawtypes") HashMap serviceData) {

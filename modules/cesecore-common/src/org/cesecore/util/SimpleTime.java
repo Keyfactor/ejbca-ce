@@ -49,8 +49,8 @@ public class SimpleTime {
     public static final String PRECISION_SECONDS = "seconds";
     public static final String PRECISION_DAYS = "days";
     
-    public static final List<String> AVAILABLE_PRECISIONS = Arrays.asList( new String[] { 
-            PRECISION_MILLISECONDS, PRECISION_SECONDS, PRECISION_DAYS });
+    public static final List<String> AVAILABLE_PRECISIONS = Arrays.asList( 
+            PRECISION_MILLISECONDS, PRECISION_SECONDS, PRECISION_DAYS);
 	    
 	private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<>();
 	static {
@@ -66,14 +66,14 @@ public class SimpleTime {
     private static final Logger log = Logger.getLogger(SimpleTime.class);
 	
     private static final TimeUnitFormat DAYS_FORMAT_INSTANCE = new TimeUnitFormat(
-            Arrays.asList(new String[] { TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS }), MILLISECONDS_FACTOR);
+            Arrays.asList(TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS), MILLISECONDS_FACTOR);
 
     private static final TimeUnitFormat SECONDS_FORMAT_INSTANCE = new TimeUnitFormat(
-            Arrays.asList(new String[] { TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS }), MILLISECONDS_FACTOR);
+            Arrays.asList(TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS), MILLISECONDS_FACTOR);
 
     // Limitation 'ms' (or 'mo') MUST NOT be configured after units containing one of their characters 'm', 's' or 'o'!
     private static final TimeUnitFormat MILLISECONDS_FORMAT_INSTANCE = new TimeUnitFormat(
-            Arrays.asList(new String[] { TYPE_MILLISECONDS, TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS}), MILLISECONDS_FACTOR);
+            Arrays.asList(TYPE_MILLISECONDS, TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS, TYPE_HOURS, TYPE_MINUTES, TYPE_SECONDS), MILLISECONDS_FACTOR);
     
     private long longTime = 0;
     private long years = 0;
