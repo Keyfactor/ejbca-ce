@@ -36,7 +36,7 @@ public enum AccessMatchValueReverseLookupRegistry {
     // Registry of methods used to look up database values
     private final Map<String, AuthenticationTokenMetaData> metaDatas = new HashMap<>();
 
-    private AccessMatchValueReverseLookupRegistry() {
+    AccessMatchValueReverseLookupRegistry() {
         for (final AuthenticationTokenMetaData metaData : ServiceLoader.load(AuthenticationTokenMetaData.class)) {
             register(metaData);
         }
