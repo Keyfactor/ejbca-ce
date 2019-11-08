@@ -135,9 +135,6 @@ public enum Pkcs11SlotLabelType {
     
     /**
      * An interface defining the private validator classes.
-     * 
-     * @version $Id$
-     *
      */
     private static interface LabelTypeValidator {
         /**
@@ -150,9 +147,6 @@ public enum Pkcs11SlotLabelType {
     
     /**
      * Validates true if the inputed string can be cast to long integer.
-     * 
-     * @version $Id$
-     *
      */
     protected static class NumberValidator implements LabelTypeValidator {
 
@@ -174,9 +168,6 @@ public enum Pkcs11SlotLabelType {
 
     /**
      * Validates true if the inputed values is an 'i' followed by a string that can be cast to a long integer. 
-     * 
-     * @version $Id$
-     *
      */
     protected static class IndexValidator extends NumberValidator {
 
