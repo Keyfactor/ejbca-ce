@@ -46,7 +46,7 @@ public enum AccessMatchType {
     @Deprecated
     SPECIALADMIN_NOUSER(2005);
 
-    private AccessMatchType(int numericValue) {
+    AccessMatchType(int numericValue) {
         this.numericValue = numericValue;
     }
 
