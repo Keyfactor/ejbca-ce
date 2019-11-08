@@ -23,7 +23,7 @@ package org.cesecore.authorization.access;
 public enum AccessTreeState {
     STATE_UNKNOWN(1), STATE_ACCEPT(2), STATE_ACCEPT_RECURSIVE(3), STATE_DECLINE(4);
 
-    private AccessTreeState(int legacyNumber) {
+    AccessTreeState(int legacyNumber) {
         this.legacyNumber = legacyNumber;
     }
 

@@ -22,7 +22,7 @@ import java.util.Map;
 public enum AccessRuleState {
     RULE_NOTUSED("UNUSED", 0), RULE_ACCEPT("ACCEPT", 1), RULE_DECLINE("DECLINE", 2);
   
-    private AccessRuleState(String name, int databaseValue) {
+    AccessRuleState(String name, int databaseValue) {
         this.name = name;
         this.databaseValue = databaseValue;
     }
