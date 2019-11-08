@@ -213,7 +213,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             // used saved keys.
 			keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
     		if (keyData == null) {
-    			throw new KeyStoreException("No key recovery data exists for user");
+                throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
+                        + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator + "'.");
     		}
     		rsaKeys = keyData.getKeyPair();
     		if (reusecertificate) {
