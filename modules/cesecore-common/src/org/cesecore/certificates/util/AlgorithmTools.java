@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -469,9 +470,9 @@ public abstract class AlgorithmTools {
                 log.trace(ecNamedCurveBc + " is not available in provider " + providerName);
             }
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("EC capable provider " + providerName + " could no longer handle elliptic curve algorithm.." ,e);
+            throw new IllegalStateException("EC capable provider " + providerName + " could no longer handle elliptic curve algorithm.." ,e);
         } catch (NoSuchProviderException e) {
-            throw new RuntimeException("EC capable provider " + providerName + " disappeard unexpectedly." ,e);
+            throw new IllegalStateException("EC capable provider " + providerName + " disappeard unexpectedly." ,e);
         }
         return false;
     }
@@ -900,9 +901,9 @@ public abstract class AlgorithmTools {
      * @return a sorted list of aliases for the elliptic curve specified, never null
      */
     public static List<String> getAllCurveAliasesFromAlias(final String alias) {
-        final String lowerCaseAlias = alias.toLowerCase();
+        final String lowerCaseAlias = alias.toLowerCase(Locale.ROOT);
         for (final Entry<String, List<String>> name : getNamedEcCurvesMap(false).entrySet()) {
-            final String lowerCaseCanonicalName = name.getKey().toLowerCase();
+            final String lowerCaseCanonicalName = name.getKey().toLowerCase(Locale.ROOT);
             final List<String> lowerCaseAliases = StringTools.toLowerCase(name.getValue());
             if (StringUtils.equals(lowerCaseAlias, lowerCaseCanonicalName) || lowerCaseAliases.contains(lowerCaseAlias)) {
                 final List<String> aliases = new ArrayList<>(name.getValue());
