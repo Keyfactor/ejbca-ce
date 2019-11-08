@@ -267,8 +267,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     private CloseableHttpResponse listKeysRESTCall() throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         HttpGet request = new HttpGet("https://" + getKeyVaultName() + ".vault.azure.net/keys?api-version=7.0");
-        CloseableHttpResponse response = performRequest(request);
-        return response;
+        return performRequest(request);
     }
 
     /** Makes a REST API call, the REST call may need an authorizationToken, and if one does not exist one is retrieved.
@@ -528,9 +527,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 // Update client key aliases next time we want to use one, could be done without having to update the whole cache, 
                 // but might as well as we don't cache for too long anyhow
                 aliasCache.flush();
-            } catch (CryptoTokenAuthenticationFailedException e) {
-                throw new CryptoTokenOfflineException(e);
-            } catch (IOException e) {
+            } catch (CryptoTokenAuthenticationFailedException | IOException e) {
                 throw new CryptoTokenOfflineException(e);
             }
         } else {
