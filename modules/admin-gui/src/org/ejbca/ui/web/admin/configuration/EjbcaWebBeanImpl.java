@@ -864,7 +864,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
         final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ENDENTITY);
-        
+
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -1172,7 +1172,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
             } catch (final IOException e) {
                 log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
-            }            
+            }
         } else {
             log.info("Not clearing cache for host with empty hostname.");
         }
@@ -1572,11 +1572,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             return false;
         }
     }
-    
-    /** @return true if we are running an EJBCA build that has RA functionality enabled. 
+
+    /** @return true if we are running an EJBCA build that has RA functionality enabled.
      * The check is implemented to look for RaMasterApiPeerImpl, as it is excluded from the "variant=va ziprelease.
-     * We decided to use RaMasterApiPeerImpl for this check, because it seemd the most painless one among 
-     * the excluded classes to perform this check against: it is visible here in EjbcaWebBeanImpl and it doesn't have 
+     * We decided to use RaMasterApiPeerImpl for this check, because it seemd the most painless one among
+     * the excluded classes to perform this check against: it is visible here in EjbcaWebBeanImpl and it doesn't have
      * many dependencies to disturb the exclusion.
      * */
     @Override
@@ -1588,7 +1588,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             return false;
         }
     }
-    
+
+    public boolean isRunningBuildWithRAWeb() {
+        return !isRunningEnterprise() || isRunningBuildWithRA();
+    }
+
     @Override
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
