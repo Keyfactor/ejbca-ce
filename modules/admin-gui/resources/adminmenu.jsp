@@ -398,7 +398,7 @@ if(configheaderprinted){
 <%   }
 %>
 
-<% if (ejbcawebbean.isRunningBuildWithRA()) { %>
+<% if (ejbcawebbean.isRunningBuildWithRAWeb()) { %>
 		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcaraweb"><%=ejbcawebbean.getText("RAWEB") %></a>
 		</li>
 <% } %>
