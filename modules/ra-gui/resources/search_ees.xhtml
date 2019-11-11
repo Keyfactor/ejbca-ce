@@ -214,8 +214,8 @@
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectDnUnescapedValue}"/>
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectAn}"/>
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectDnUnescapedValue.length() gt 100 ? raSearchEndEntity.subjectDnUnescapedValue.substring(0,97).concat('...') : raSearchEndEntity.subjectDnUnescapedValue}"/>
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectAn.length() gt 100 ? raSearchEndEntity.subjectAn.substring(0,97).concat('...') : raSearchEndEntity.subjectAn}" />
                                 </h:panelGrid>
                             </h:column>
                             <h:column>
