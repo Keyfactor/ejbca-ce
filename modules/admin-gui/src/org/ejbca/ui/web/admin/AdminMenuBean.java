@@ -216,7 +216,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewRaWeb() {
-        return getEjbcaErrorWebBean().isRunningBuildWithRA();
+        return getEjbcaErrorWebBean().isRunningBuildWithRAWeb();
     }
     
     public boolean isHelpEnabled() {
