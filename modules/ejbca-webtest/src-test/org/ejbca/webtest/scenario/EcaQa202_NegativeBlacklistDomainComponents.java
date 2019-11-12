@@ -1,5 +1,9 @@
 package org.ejbca.webtest.scenario;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
@@ -16,9 +20,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Asserts whether the blacklist validator denies a site based on the
@@ -243,7 +244,8 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
     }
 
     @Test
-    public void stepU_downloadPem() {
+    public void stepU_downloadPem() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(5);
         raWebHelper.clickDownloadPem();
         raWebHelper.assertErrorMessageExists("Wrong error message displayed when uploading using invalid domain",
                 "Validation failed, certificate issuance aborted");
