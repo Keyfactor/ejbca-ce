@@ -13,8 +13,8 @@
 package org.ejbca.core.protocol.scep;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.ScepConfiguration;
-import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
 /**
  * Interface for SCEP plugins which require perform operations
@@ -32,6 +32,7 @@ public interface ScepOperationPlugin {
      * @param scepConfig the SCEP configuration, if required
      * @param alias alias of the SCEP configuration
      * @return true if the operation succeeded 
+     * @throws AuthorizationDeniedException if request was denied due to authorization error
      */
-    boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias);
+    boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias) throws AuthorizationDeniedException;
 }
