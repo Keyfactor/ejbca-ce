@@ -96,7 +96,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	}
                 if (!data.comparePassword(password)) {
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    final Map<String, Object> details = new LinkedHashMap<>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
                     if (eichange) {
@@ -111,7 +111,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                     eichange = true;
                 }
             	// Log formal message that authentication was successful
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", intres.getLocalizedMessage("authentication.authok", username));
                 auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
             	if (log.isTraceEnabled()) {
@@ -124,10 +124,9 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 data.setExtendedInformation(ei);
             }
             if (authenticated) {
-                EndEntityInformation ret = data.toEndEntityInformation();
-                return ret;
+                return data.toEndEntityInformation();
             } else {
-                final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
+                final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), status, username);
                 log.info(msg);
                 throw new AuthStatusException(msg);
             }
@@ -135,11 +134,9 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
         	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
         	log.info(msg);
             throw oe;
-        } catch (AuthStatusException se) {
+        } catch (AuthStatusException | AuthLoginException se) {
             throw se;
-        } catch (AuthLoginException le) {
-            throw le;
-        } catch (Exception e) {
+        }  catch (Exception e) {
             log.error(intres.getLocalizedMessage("error.unknown"), e);
             throw new EJBException(e);
         }
@@ -154,9 +151,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
      * @param ei
      * @param user the unique username of the user
      * @return true if the value was decremented or the status was changed, false if not
-     * @throws NoSuchEndEntityException if the entity does not exist
      */
-    public static boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) throws NoSuchEndEntityException {
+    public static boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) {
         if (log.isTraceEnabled()) {
             log.trace(">decRemainingLoginAttempts(" + user.getUsername()+ ")");
         }
@@ -219,14 +215,10 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
 			final String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
 			log.info(msg);
 			throw new NoSuchEndEntityException(e.getMessage());
-		} catch (ApprovalException e) {
-			// Should never happen
-		    log.error("ApprovalException: ", e);
-			throw new EJBException(e);
-		} catch (WaitingForApprovalException e) {
-			// Should never happen
-		    log.error("ApprovalException: ", e);
-			throw new EJBException(e);
-		}
-	}
+        } catch (ApprovalException | WaitingForApprovalException e) {
+            // Should never happen
+            log.error("ApprovalException: ", e);
+            throw new EJBException(e);
+        }
+    }
 }
