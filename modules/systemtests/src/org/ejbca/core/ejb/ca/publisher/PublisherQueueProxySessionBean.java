@@ -82,6 +82,7 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
         return queueSession.getPendingEntriesForPublisher(publisherId);
     }
     
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher) {
         return queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher);
