@@ -47,6 +47,9 @@ wait_for_deployment() {
 wait_for_deployment
 echo '=================== ant deployear done and successfully deployed! ================================='
 
+mysql -u ejbca -pejbca -h mariadb_1 ejbca < doc/sql-scripts/create-index-ejbca.sql
+echo '=================== adding database indexes done! ================================'
+
 ant runinstall
 echo '=================== ant runinstall done! ================================='
 
