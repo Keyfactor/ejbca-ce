@@ -144,7 +144,7 @@ public class CAInterfaceBean implements Serializable {
     private CAInfo cainfo;
     private EjbcaWebBean ejbcawebbean;
     /** The certification request in binary format */
-    transient private byte[] request;
+    private transient byte[] request;
     private Certificate processedcert;
 	
 	/** Creates a new instance of CaInterfaceBean */
@@ -247,7 +247,7 @@ public class CAInterfaceBean implements Serializable {
 		this.processedcert =cert;
 	}
 
-	public Certificate getProcessedCertificate(){
+    Certificate getProcessedCertificate(){
 		return this.processedcert;
 	}    
 
@@ -296,7 +296,7 @@ public class CAInterfaceBean implements Serializable {
 		} else {
 			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
-				if (certprofile.getPublisherList().size() > 0) {
+				if (!certprofile.getPublisherList().isEmpty()) {
                     if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), cdw, password, dn, ei)) {
                         returnval = "CERTREPUBLISHEDSUCCESS";
                     }
@@ -324,7 +324,7 @@ public class CAInterfaceBean implements Serializable {
 	public List<CertReqHistory> getCertReqUserDatas(String username){
 		List<CertReqHistory> history = this.certreqhistorysession.retrieveCertReqHistory(username);
 		// Sort it by timestamp, newest first;
-		Collections.sort(history, new CertReqUserCreateComparator());
+		history.sort(new CertReqUserCreateComparator());
 		return history;
 	}
 
@@ -995,7 +995,7 @@ public class CAInterfaceBean implements Serializable {
     	                // Fetch a list of all keys and their specs
     	                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
     	                // Only allow tokens with at least one keypair
-    	                if (cryptoTokenKeyPairInfos.size()>0) {
+    	                if (!cryptoTokenKeyPairInfos.isEmpty()) {
     	                    for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
     	                        String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm);
     	                        if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
@@ -1245,11 +1245,11 @@ public class CAInterfaceBean implements Serializable {
             return null;
         }
     }
-    
-    /** Returns the current CA validity "not after" date. 
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException */
-    public Date getRolloverNotAfter(int caid) throws CADoesntExistsException, AuthorizationDeniedException {
+
+    /** Returns the current CA validity "not after" date.
+     * @throws AuthorizationDeniedException
+     */
+    public Date getRolloverNotAfter(int caid) throws AuthorizationDeniedException {
         final Collection<Certificate> chain = casession.getCAInfo(authenticationToken, caid).getCertificateChain();
         return CertTools.getNotAfter(chain.iterator().next());
     }
