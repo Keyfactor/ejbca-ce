@@ -33,6 +33,9 @@ pipeline {
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
                     sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} --privileged=true -p ${env.DB2_PORTS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
                     sh "sleep 120"
+                    echo "============ Here comes DB initialization output (always logged after 120 secs) ============"
+                    sh "docker logs ${env.DOCKER_NAME_DB}"
+                    echo "============ End of DB output ============"
                 }
             }
 		}
