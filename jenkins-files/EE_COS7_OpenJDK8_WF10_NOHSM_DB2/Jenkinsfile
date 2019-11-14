@@ -29,8 +29,8 @@ pipeline {
 			steps {
                 dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}/db2") {
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
-                    sh "docker cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-tables-ejbca-db2.sql ${env.DOCKER_NAME_DB}:/app/"
-                    sh "docker cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ${env.DOCKER_NAME_DB}:/app/"
+                    sh "docker cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-tables-ejbca-db2.sql ${env.DOCKER_NAME_DB}:/var/custom/"
+                    sh "docker cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ${env.DOCKER_NAME_DB}:/var/custom/"
                     sh "docker run -d --name ${env.DOCKER_NAME_DB} --net=${env.DOCKER_NAME_NET} --privileged=true -p ${env.DB2_PORTS} -v ${env.WORKSPACE}:/database ${env.DOCKER_NAME_DB}"
                     sh "sleep 120"
                 }
