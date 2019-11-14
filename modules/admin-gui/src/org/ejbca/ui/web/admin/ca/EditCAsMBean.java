@@ -1884,7 +1884,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     getAvailableKeyValidatorValues(), useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator,
                     authorityInformationAccess, certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded,
                     caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
-                    crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl,
+                    crlDistributionPointOnCrlCritical, includeInHealthCheck, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl,
                     usePartitionedCrl, crlPartitions, suspendedCrlPartitions, createCa,
                     makeRequest, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey,
                     selectedKeyEncryptKey, testKey, fileBuffer);
@@ -2184,7 +2184,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator, authorityInformationAccess,
                     certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCRL, useUtf8Policy,
                     usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical,
-                    includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
+                    includeInHealthCheck, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
             return null;
