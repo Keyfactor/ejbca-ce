@@ -262,9 +262,9 @@
 	                                </h:commandButton>
 	                            </f:facet>
 	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectDnUnescapedValue.length() gt 100 ? raSearchCertificate.subjectDnUnescapedValue.substring(0,97).concat('&lt;br/&gt;...')  : raSearchCertificate.subjectDnUnescapedValue}"/>
+	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectDnUnescapedValue.length() gt 100 ? raSearchCertificate.subjectDnUnescapedValue.substring(0,97).concat('&lt;br/&gt;...')  : raSearchCertificate.subjectDnUnescapedValue}" escape="false"/>
 	                                <ui:fragment rendered="#{raSearchCertificate.subjectAn.length() gt 0}"><hr /></ui:fragment>
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectAn.length() gt 100 ? raSearchCertificate.subjectAn.substring(0,97).concat('&lt;br/&gt;...') : raSearchCertificate.subjectAn}"/>
+	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectAn.length() gt 100 ? raSearchCertificate.subjectAn.substring(0,97).concat('&lt;br/&gt;...') : raSearchCertificate.subjectAn}" escape="false"/>
 	                            </h:panelGrid>
 	                        </h:column>
 	                        <h:column>
