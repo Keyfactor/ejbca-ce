@@ -73,9 +73,9 @@ import org.cesecore.util.CertTools;
  * 
  * @version $Id$
  */
-public class CTLogTestServer {
+public class CTLogTestServerSystemTest {
     
-    private static final Logger log = Logger.getLogger(CTLogTestServer.class);
+    private static final Logger log = Logger.getLogger(CTLogTestServerSystemTest.class);
 
     private final ServerSocket serverSocket;
     private final ServerThread serverThread;
@@ -94,7 +94,7 @@ public class CTLogTestServer {
     
     private static KeyStore selfSigned;
 
-    public CTLogTestServer(final String expectedMethod, final String expectedUrl, final String expectedContentType, final String expectedContent,
+    public CTLogTestServerSystemTest(final String expectedMethod, final String expectedUrl, final String expectedContentType, final String expectedContent,
             final String responseContentType, final String responseContent, final int port, final boolean tls, final long responseDelay) throws IOException {
         log.debug("Creating server on port " + port);
         
