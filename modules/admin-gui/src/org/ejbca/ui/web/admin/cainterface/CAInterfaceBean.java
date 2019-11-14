@@ -348,7 +348,7 @@ public class CAInterfaceBean implements Serializable {
             String nameConstraintsPermittedString, String nameConstraintsExcludedString,
             String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-            boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
+            boolean crldistpointoncrlcritical, boolean includeInHealthCheck,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean usePartitionedCrl, int crlPartitions, int suspendedCrlPartitions,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
@@ -416,7 +416,7 @@ public class CAInterfaceBean implements Serializable {
                     certificateAiaDefaultCaIssuerUriString,
                     nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
-                    usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
+                    usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
                     serviceCmsActive, sharedCmpRaSecret, keepExpiredCertsOnCRL, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                     buttonCreateCa, buttonMakeRequest, cryptoTokenId,
                     keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
@@ -449,7 +449,7 @@ public class CAInterfaceBean implements Serializable {
             String certificateAiaDefaultCaIssuerUriString,
             String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useUtf8PolicyText,
             boolean usePrintableStringSubjectDn, boolean useLdapDnOrder, boolean useCrlDistributionPointOnCrl,
-            boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck, boolean serviceOcspActive,
+            boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean usePartitionedCrl, int crlPartitions, int suspendedCrlPartitions,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
@@ -864,7 +864,7 @@ public class CAInterfaceBean implements Serializable {
 	        String certificateAiaDefaultCaIssuerUriParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL,
+	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL,
             boolean usePartitionedCrl, int crlPartitions, int suspendedCrlPartitions
 	        ) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
