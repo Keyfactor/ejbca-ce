@@ -1,4 +1,4 @@
-The version of IBM DB2 driver (db2jcc4.jar) is V10.5 Fix Pack 10.
+The version of IBM DB2 driver (db2jcc4.jar) is V11.5 Fix Pack 0. Version: 4.26.14
 
 The IBM DB2 Driver for Wildfly is installed as a module via module.xml by copying it and db2jcc4.jar to
 $JBOSS_HOME/modules/system/layers/base/com/ibm/db2/main/
