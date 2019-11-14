@@ -21,9 +21,12 @@ db2 "CREATE REGULAR TABLESPACE EJBCADB_DATA_01 PAGESIZE 16K EXTENTSIZE 32 PREFET
 # To output db2 pools, uncomment next line
 # db2 "select TBSP_NAME,TBSP_PAGE_SIZE,TBSP_STATE from TABLE(MON_GET_TABLESPACE('',-2))"
 # Add EJBCA indexes
+echo 'Creating EJBCA tables...'
 db2 -f /var/custom/create-tables-ejbca-db2.sql
+echo 'Adding EJBCA indexes...'
 db2 -f /var/custom/create-index-ejbca.sql
 db2 'CREATE INDEX userdata_idx_test1 ON UserData (cAId)'
+echo 'Done creating indexes.'
 # Close connection
 db2 connect reset
 EOF
