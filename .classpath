@@ -138,8 +138,9 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-3.6.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jaxrs-3.0.26.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.0.26.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jaxrs-3.1.4.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-legacy-3.1.4.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.1.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-firefox-driver-3.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-java-3.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-support-3.7.1.jar"/>
@@ -192,10 +193,10 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.5.22.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.5.22.jar"/>
 	<classpathentry kind="lib" path="lib/guava-28.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.9.9.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.9.9.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.9.9.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.9.9.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.9.10.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.9.10.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.9.10.1.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.9.10.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-161.jar"/>
