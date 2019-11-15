@@ -12,16 +12,9 @@
  *************************************************************************/
 package sun.security.pkcs11;
 
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_SENSITIVE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_ALWAYS_SENSITIVE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_PRIVATE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_EXTRACTABLE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_NEVER_EXTRACTABLE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_DERIVE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_MODIFIABLE;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.CKR_ATTRIBUTE_READ_ONLY;
-import static sun.security.pkcs11.wrapper.PKCS11Constants.FALSE;
-
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.Key;
 import java.security.Provider;
 import java.security.Security;
@@ -29,6 +22,16 @@ import java.security.Security;
 import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
 import sun.security.pkcs11.wrapper.PKCS11;
 import sun.security.pkcs11.wrapper.PKCS11Exception;
+
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_ALWAYS_SENSITIVE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_DERIVE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_EXTRACTABLE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_MODIFIABLE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_NEVER_EXTRACTABLE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_PRIVATE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKA_SENSITIVE;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.CKR_ATTRIBUTE_READ_ONLY;
+import static sun.security.pkcs11.wrapper.PKCS11Constants.FALSE;
 
 /**
  * Extra utilities extending the sun PKCS#11 implementation.
@@ -118,10 +121,22 @@ public class CESeCoreUtils {
             }
             final P11Key sunP11Key = (P11Key)key;
             final Token token = sunP11Provider.getToken();
-            final long keyID = sunP11Key.getKeyID();
+            long keyID;
+            try {
+                final Method methodGetKeyID = P11Key.class.getDeclaredMethod("getKeyID");
+                keyID = (long)methodGetKeyID.invoke(sunP11Key);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                // So we didn't have this method, means we are on JDK <8u232, then we must access an instance variable instead
+                try {
+                    final Field f = P11Key.class.getField("keyID");
+                    keyID = f.getLong(sunP11Key);
+                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e1) {
+                    throw new RuntimeException("Unable to get KeyID from P11Key", e1);
+                }
+            }
             final long sessionID = token.getObjSession().id();
             final PKCS11 p11 = token.p11;
-            return new KeyData( keyID, sessionID, p11);
+            return new KeyData(keyID, sessionID, p11);
         }
     }
     private static boolean isModifiable(final KeyData d) throws PKCS11Exception {
