@@ -323,6 +323,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlDistributionPointOnCrlCritical(getCrlDistributionPointOnCrlCritical())
                 .setIncludeInHealthCheck(getIncludeInHealthCheck())
                 .setDoEnforceUniquePublicKeys(isDoEnforceUniquePublicKeys())
+                .setDoEnforceKeyRenewal(isDoEnforceKeyRenewal())
                 .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName())
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
                 .setUseCertReqHistory(isUseCertReqHistory())
