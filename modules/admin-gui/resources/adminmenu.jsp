@@ -244,8 +244,8 @@ org.ejbca.util.HTMLTools
            }  %>
 			<li><a href="<%= APPROVAL_LINK %>"><%=ejbcawebbean.getText("NAV_APPROVEACTIONS") %></a></li>
 <%    }
-    // If authorized to view log then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(LOGVIEW_RESOURCE)){
+    // If authorized to view log then display related links. _and_ database logging is enabled (cesecore.properties) so there is a lgo to search 
+      if(ejbcawebbean.isAuthorizedNoLogSilent(LOGVIEW_RESOURCE) && !ejbcawebbean.getEjb().getSecurityEventsAuditorSession().getQuerySupportingLogDevices().isEmpty()) {
             if(!logheaderprinted){
               out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
               logheaderprinted=true;
