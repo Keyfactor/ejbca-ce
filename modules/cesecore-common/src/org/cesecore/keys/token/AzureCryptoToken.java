@@ -69,6 +69,7 @@ import org.json.simple.parser.ParseException;
 
 /**
  * Class implementing a keystore on Azure Key Vault, using their REST API.
+ * https://docs.microsoft.com/en-us/rest/api/keyvault/
  *
  * @version $Id$
  */
@@ -221,6 +222,9 @@ public class AzureCryptoToken extends BaseCryptoToken {
             log.debug("getAliases called for crypto token: "+getId()+", "+getTokenName()+", "+getKeyVaultName()+", "+getKeyVaultType()+", "+authorizationHeader);
         }
         if (aliasCache.shouldCheckForUpdates(0) || aliasCache.getAllNames().isEmpty()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
+            }
             try (CloseableHttpResponse response = listKeysRESTCall()) {
                 // Connect to Azure Key Vault and get the list of keys there.
                 final InputStream content = response.getEntity().getContent();
@@ -680,6 +684,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                     } else {
                         throw new CryptoTokenOfflineException("Unknown key type (kty) in JSON public key response (neither RSA nor EC): " + kty);
                     }
+                    aliasCache.removeEntry(alias.hashCode()); // Remove any dummy entry if it is there
                     aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, publicKey);
                 }
                 return publicKey;
@@ -786,9 +791,12 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // The different algorithms Azure Key Vault handles, perhaps there is a better way to make AzureSignature 
             // figure out which algorithm to use, but I could not find one 
             put("Signature.SHA256WITHRSA" , AzureSignature.SHA256WithRSA.class.getName());
+            put("Signature.SHA384WITHRSA" , AzureSignature.SHA384WithRSA.class.getName());
+            put("Signature.SHA512WITHRSA" , AzureSignature.SHA512WithRSA.class.getName());
             put("Signature.SHA256WITHECDSA" , AzureSignature.SHA256WithECDSA.class.getName());
             put("Signature.SHA384WITHECDSA" , AzureSignature.SHA384WithECDSA.class.getName());
             put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
+            put("Cipher.RSA" , AzureCipher.RSA.class.getName());
         }
     }
 
