@@ -68,6 +68,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      */
     @Deprecated
     private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = "doEnforceUniquePublicKeys";
+    private static final String DO_ENFORCE_KEY_RENEWAL = "doEnforceKeyRenewal";
     private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
     private static final String DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER = "doEnforceUniqueSubjectDNSerialnumber";
     private static final String USE_CERTREQ_HISTORY = "useCertreqHistory";
@@ -98,6 +99,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
+        setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
         setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
         setUseCertReqHistory(cainfo.isUseCertReqHistory());
@@ -145,6 +147,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
+        setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
         setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
         setUseCertReqHistory(cainfo.isUseCertReqHistory());
@@ -295,9 +298,11 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         putBoolean(INCLUDEINHEALTHCHECK, includeInHealthCheck);
     }
 
-
     private void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
         putBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, doEnforceUniquePublicKeys);
+    }
+    private void setDoEnforceKeyRenewal(boolean doEnforceKeyRenewal) {
+        putBoolean(DO_ENFORCE_KEY_RENEWAL, doEnforceKeyRenewal);
     }
     
     private void setDoEnforceUniqueDistinguishedName(boolean doEnforceUniqueDistinguishedName) {
@@ -339,6 +344,11 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public boolean isDoEnforceUniquePublicKeys() {
         return getBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, false);
+    }
+
+    @Override
+    public boolean isDoEnforceKeyRenewal() {
+        return getBoolean(DO_ENFORCE_KEY_RENEWAL, false);
     }
 
     @Override
