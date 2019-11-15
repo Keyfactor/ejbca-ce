@@ -118,6 +118,7 @@ public abstract class CAInfo implements Serializable {
 
     protected boolean includeInHealthCheck;
     protected boolean doEnforceUniquePublicKeys;
+    protected boolean doEnforceKeyRenewal;
     protected boolean doEnforceUniqueDistinguishedName;
     protected boolean doEnforceUniqueSubjectDNSerialnumber;
     protected boolean useCertReqHistory;
@@ -532,6 +533,10 @@ public abstract class CAInfo implements Serializable {
      */
     public void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
         this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
+    }
+
+    public boolean isDoEnforceKeyRenewal() {
+        return doEnforceKeyRenewal;
     }
 
     /**
