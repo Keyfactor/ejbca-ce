@@ -147,7 +147,7 @@ public class X509CAInfo extends CAInfo {
      * Please use the shorter form if you do not need to set all of the values.
      * @param subjectDn the Subject DN of the CA as found in the certificate
      * @param name the name of the CA shown in EJBCA, can be changed by the user
-     * @param status the operational status of the CA, one of the constants in {@link #CAConstants}
+     * @param status the operational status of the CA, one of the constants in {@link CAConstants}
      * @param updateTime the last time this CA was updated, normally the current date and time
      * @param subjectaltname the Subject Alternative Name (SAN) of the CA, as found in the certificate
      * @param certificateprofileid the ID of the certificate profile for this CA
@@ -241,9 +241,7 @@ public class X509CAInfo extends CAInfo {
 			} else {
 			    setCertificateChain(null);
 			}
-		} catch (CertificateException e) {
-			throw new IllegalArgumentException(e);
-		} catch (NoSuchProviderException e) {
+		} catch (CertificateException | NoSuchProviderException e) {
 			throw new IllegalArgumentException(e);
 		}
         this.catoken = catoken;
