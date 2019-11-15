@@ -62,6 +62,7 @@ public class CVCCAInfo extends CAInfo {
                 new HashMap<ApprovalRequestType, Integer>(),
                 true, // includeInHealthCheck
                 true, // isDoEnforceUniquePublicKeys
+                true, // doEnforceKeyRenewal
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 false, // useCertReqHistory
@@ -82,7 +83,7 @@ public class CVCCAInfo extends CAInfo {
 			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
 			boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
 			Map<ApprovalRequestType, Integer> approvals,
-			boolean includeInHealthCheck, boolean doEnforceUniquePublicKeys,
+			boolean includeInHealthCheck, boolean doEnforceUniquePublicKeys, boolean doEnforceKeyRenewal,
 			boolean doEnforceUniqueDistinguishedName, boolean doEnforceUniqueSubjectDNSerialnumber,
 			boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry) {
 		this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
@@ -112,6 +113,7 @@ public class CVCCAInfo extends CAInfo {
 		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
+		this.doEnforceKeyRenewal = doEnforceKeyRenewal;
 		this.doEnforceUniqueDistinguishedName = doEnforceUniqueDistinguishedName;
 		this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialnumber;
 		this.useCertReqHistory = useCertReqHistory;
@@ -129,7 +131,7 @@ public class CVCCAInfo extends CAInfo {
 			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
 			Map<ApprovalRequestType, Integer> approvals,
-			boolean includeInHealthCheck, boolean doEnforceUniquePublicKeys,
+			boolean includeInHealthCheck, boolean doEnforceUniquePublicKeys, boolean doEnforceKeyRenewal,
 			boolean doEnforceUniqueDistinguishedName, boolean doEnforceUniqueSubjectDNSerialnumber,
 			boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry,
 			int defaultCertprofileId) {
@@ -148,6 +150,7 @@ public class CVCCAInfo extends CAInfo {
 		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
+		this.doEnforceKeyRenewal = doEnforceKeyRenewal;
 		this.doEnforceUniqueDistinguishedName = doEnforceUniqueDistinguishedName;
 		this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialnumber;
 		this.useCertReqHistory = useCertReqHistory;

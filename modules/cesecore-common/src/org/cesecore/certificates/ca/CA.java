@@ -80,6 +80,7 @@ public interface CA extends CACommon {
     int getDefaultCertificateProfileId();
     
     boolean isDoEnforceUniquePublicKeys();
+    boolean isDoEnforceKeyRenewal();
 
     boolean isDoEnforceUniqueDistinguishedName();
 

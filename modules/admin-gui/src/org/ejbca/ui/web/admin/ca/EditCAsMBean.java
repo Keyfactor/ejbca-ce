@@ -129,6 +129,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
     private String keySequence = CAToken.DEFAULT_KEYSEQUENCE;
     private boolean doEnforceUniquePublickeys = true;
+    private boolean doEnforceKeyRenewal = true;
     private boolean doEnforceUniqueDN = true;
     private boolean doEnforceUniqueSubjectDNSerialnumber;
     private boolean useCertReqHistory;
@@ -645,7 +646,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setDoEnforceUniquePublickeys(final boolean doEnforceUniquePublickeys) {
         this.doEnforceUniquePublickeys = doEnforceUniquePublickeys;
     }
-   
+
+    public boolean isDoEnforceKeyRenewal() {
+        return doEnforceKeyRenewal;
+    }
+
+    public void setDoEnforceKeyRenewal(boolean doEnforceKeyRenewal) {
+        this.doEnforceKeyRenewal = doEnforceKeyRenewal;
+    }
+
     public boolean isDoEnforceUniqueDN() {
         return this.doEnforceUniqueDN;
     }
@@ -1877,7 +1886,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
             illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam, signKeySpec, keySequenceFormatParam,
                     keySequence, catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, 
-                    useNoConflictCertificateData, signedByString, description, caSerialNumberOctetSize, caEncodedValidity, getApprovals(), finishUser, doEnforceUniquePublickeys,
+                    useNoConflictCertificateData, signedByString, description, caSerialNumberOctetSize, caEncodedValidity, getApprovals(), finishUser,
+                    doEnforceUniquePublickeys, doEnforceKeyRenewal,
                     doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                     acceptRevocationsNonExistingEntry, caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
                     getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), getAvailablePublisherValues(),
@@ -2178,7 +2188,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             cainfo = caBean.createCaInfo(caid, editCaName, getSubjectDn(), catype, keySequenceFormatParam, keySequence, signedByString, description, 
                     caSerialNumberOctetSize, caEncodedValidity, getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
-                    doEnforceUniquePublickeys, doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage,
+                    doEnforceUniquePublickeys, doEnforceKeyRenewal, doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage,
                     useCertificateStorage, acceptRevocationsNonExistingEntry, getDefaultCertProfileId(), useNoConflictCertificateData, getApprovals(),
                     getAvailablePublisherValues(), getAvailableKeyValidatorValues(), useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
                     useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator, authorityInformationAccess,
@@ -2425,6 +2435,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         description = cainfo.getDescription();
         doEnforceUniquePublickeys = cainfo.isDoEnforceUniquePublicKeys();
+        doEnforceKeyRenewal = cainfo.isDoEnforceKeyRenewal();
         doEnforceUniqueDN = cainfo.isDoEnforceUniqueDistinguishedName();
         doEnforceUniqueSubjectDNSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
         useCertificateStorage = cainfo.isUseCertificateStorage();
