@@ -192,15 +192,15 @@ public class X509CAInfo extends CAInfo {
      * @param useCrlDistributionPointOnCrl
      * @param crlDistributionPointOnCrlCritical
      * @param includeInHealthCheck enable healthcheck for this CA
-     * @param _doEnforceUniquePublicKeys
+     * @param doEnforceUniquePublicKeys
      * @param doEnforceKeyRenewal
-     * @param _doEnforceUniqueDistinguishedName
-     * @param _doEnforceUniqueSubjectDNSerialnumber
-     * @param _useCertReqHistory
-     * @param _useUserStorage
-     * @param _useCertificateStorage
-     * @param _acceptRevocationNonExistingEntry
-     * @param _cmpRaAuthSecret
+     * @param doEnforceUniqueDistinguishedName
+     * @param doEnforceUniqueSubjectDNSerialnumber
+     * @param useCertReqHistory
+     * @param useUserStorage
+     * @param useCertificateStorage
+     * @param acceptRevocationNonExistingEntry
+     * @param cmpRaAuthSecret
      * @param keepExpiredCertsOnCRL
      * @param usePartitionedCrl boolean specifying partitioned crl usage
      * @param crlPartitions the number of crl partitions (if any) used currently by this ca 
@@ -220,9 +220,9 @@ public class X509CAInfo extends CAInfo {
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
     		final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN,
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
-    		final boolean _doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
-    		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry,
-            final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
+    		final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName, final boolean doEnforceUniqueSubjectDNSerialnumber,
+    		final boolean useCertReqHistory, final boolean useUserStorage, final boolean useCertificateStorage, final boolean acceptRevocationNonExistingEntry,
+            final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
         this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
         this.name = name;
@@ -277,15 +277,15 @@ public class X509CAInfo extends CAInfo {
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
         this.includeInHealthCheck = includeInHealthCheck;
-        this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
+        this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
         this.doEnforceKeyRenewal = doEnforceKeyRenewal;
-        this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
-        this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
-        this.useCertReqHistory = _useCertReqHistory;
-        this.useUserStorage = _useUserStorage;
-        this.useCertificateStorage = _useCertificateStorage;
-        this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
-        setCmpRaAuthSecret(_cmpRaAuthSecret);
+        this.doEnforceUniqueDistinguishedName = doEnforceUniqueDistinguishedName;
+        this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialnumber;
+        this.useCertReqHistory = useCertReqHistory;
+        this.useUserStorage = useUserStorage;
+        this.useCertificateStorage = useCertificateStorage;
+        this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
+        setCmpRaAuthSecret(cmpRaAuthSecret);
         this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
         this.authorityInformationAccess = authorityInformationAccess;
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;

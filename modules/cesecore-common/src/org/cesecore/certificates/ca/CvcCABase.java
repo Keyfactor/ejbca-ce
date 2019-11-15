@@ -185,7 +185,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
                 setEncodedValidity(getEncodedValidity());
             }
             
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
 		}  
 	}
 

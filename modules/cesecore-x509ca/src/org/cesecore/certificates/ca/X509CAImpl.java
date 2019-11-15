@@ -269,7 +269,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // TYPE_HARDTOKENENCEXTENDEDSERVICE type was removed in 7.1.0.
             // They are removed from the database in the upgrade method in this class, but need to be ignored for instantiation.
             if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE && type != ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE) {
-                ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type.intValue());
+                ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type);
                 if (info != null) {
                     externalcaserviceinfos.add(info);
                 }
@@ -854,10 +854,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 throw new SignRequestSignatureException(msg1);
             }
             return s.getEncoded();
-        } catch (CryptoTokenOfflineException e) {
-            throw new IllegalStateException(e);
-        } catch (Exception e) {
-            //FIXME: This right here is just nasty
+        } catch (CryptoTokenOfflineException | CertificateEncodingException | CMSException | IOException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -928,9 +925,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 throw new SignRequestSignatureException(msg1);
             }
             return s.getEncoded();
-        } catch (CryptoTokenOfflineException e) {
-            throw new IllegalStateException(e);
-        } catch (CMSException e) {
+        } catch (CryptoTokenOfflineException | CMSException e) {
             throw new IllegalStateException(e);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to encode CMS data", e);
@@ -1013,7 +1008,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
-                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
+                        certProfile, null, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
@@ -1061,7 +1056,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(purpose));
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(purpose));
         final String provider = cryptoToken.getSignProviderName();
-        return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
+        return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions,
                 caPublicKey, caPrivateKey, provider, certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
     }
 
@@ -1087,14 +1082,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
-            final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider,
+                                            final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
-        if ((getStatus() != CAConstants.CA_ACTIVE) && ((getStatus() != CAConstants.CA_EXPIRED))) {
+        if ((getStatus() != CAConstants.CA_ACTIVE) && (getStatus() != CAConstants.CA_EXPIRED)) {
             final String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
             if (log.isDebugEnabled()) {
                 log.debug(msg); // This is something we handle so no need to log with higher priority
@@ -1172,7 +1167,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         // Will we use LDAP DN order (CN first) or X500 DN order (CN last) for the subject DN
         final boolean ldapdnorder;
-        if ((getUseLdapDNOrder() == false) || (certProfile.getUseLdapDnOrder() == false)) {
+        if ((!getUseLdapDNOrder()) || (!certProfile.getUseLdapDnOrder())) {
             ldapdnorder = false;
         } else {
             ldapdnorder = true;
@@ -1181,7 +1176,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         String[] customDNOrder = null;
         if (certProfile.getUseCustomDnOrder()) {
             final ArrayList<String> order = certProfile.getCustomDnOrder();
-            if (order != null && order.size() > 0) {
+            if (order != null && !order.isEmpty()) {
                 if (log.isDebugEnabled()) {
                     log.debug("Using Custom DN order: "+order);
                 }
@@ -1316,7 +1311,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 if (!nonOverridableExtensionOIDs.contains(oid.getId())) {
                     // Now check if we have specified which ones are allowed, if this is not set we allow everything
                     // (overridableExtensionOIDs can never by null)
-                    if (overridableExtensionOIDs.size() == 0 || overridableExtensionOIDs.contains(oid.getId())) {
+                    if (overridableExtensionOIDs.isEmpty() || overridableExtensionOIDs.contains(oid.getId())) {
                         final Extension ext = extensions.getExtension(oid);
                         if (log.isDebugEnabled()) {
                             log.debug("Overriding extension with oid: " + oid.getId());
@@ -1346,7 +1341,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (log.isDebugEnabled()) {
                 log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: " + keyusage);
             }
-            if ((certProfile.getUseKeyUsage() == true) && (keyusage >= 0)) {
+            if (certProfile.getUseKeyUsage() && (keyusage >= 0)) {
                 final KeyUsage ku = new KeyUsage(keyusage);
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
@@ -1673,12 +1668,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             throw new CertificateCreateException(msg, e);
         } catch (InvalidKeyException e) {
             throw new CertificateCreateException("CA's public key was invalid,", e);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | CertificateException e) {
            throw new CertificateCreateException(e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("Provider was unknown", e);
-        } catch (CertificateException e) {
-            throw new CertificateCreateException(e);
         }
 
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does
@@ -1814,7 +1807,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public ExtensionsGenerator getSubjectAltNameExtensionForCert(Extension subAltNameExt, boolean publishToCT) throws IOException {
         GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
-        GeneralName[] gns = names.getNames();
+        GeneralName[] gns = names !=null ? names.getNames() : new GeneralName[0];
         boolean sanEdited = false;
         ASN1EncodableVector nrOfRecactedLables = new ASN1EncodableVector();
         for (int j = 0; j<gns.length; j++) {
@@ -1866,7 +1859,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException {
         Pattern parenthesesRegex = Pattern.compile("\\(.*\\)"); // greedy match, so against "(a).(b).example.com" it will match "(a).(b)", like the old code did
         GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
-        GeneralName[] gns = names.getNames();
+        GeneralName[] gns = names != null ? names.getNames() : new GeneralName[0];
         for (int j = 0; j<gns.length; j++) {
             GeneralName generalName = gns[j];
             // Look for DNS name
@@ -1906,17 +1899,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
      * @return X509CRLHolder with the generated CRL
      * @throws CryptoTokenOfflineException
-     * @throws IllegalCryptoTokenException
      * @throws IOException
      * @throws SignatureException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeyException
-     * @throws CRLException
-     * @throws NoSuchAlgorithmException
      */
     private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
-            throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException,
-            InvalidKeyException, CRLException, NoSuchAlgorithmException {
+            throws CryptoTokenOfflineException, IOException, SignatureException {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
@@ -1971,7 +1958,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
 
         // Authority key identifier
-        if (getUseAuthorityKeyIdentifier() == true) {
+        if (getUseAuthorityKeyIdentifier()) {
             byte[] caSkid = (cacert != null ? CertTools.getSubjectKeyId(cacert) : null);
             if (caSkid != null) {
                 // Use subject key id from CA certificate
@@ -2003,7 +1990,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
 
         // CRLNumber extension
-        if (getUseCRLNumber() == true) {
+        if (getUseCRLNumber()) {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
             crlgen.addExtension(Extension.cRLNumber, this.getCRLNumberCritical(), crlnum);
         }
@@ -2047,7 +2034,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             String crldistpoint = getDefaultCRLDistPoint();
             List<DistributionPoint> distpoints = generateDistributionPoints(crldistpoint, crlPartitionIndex);
 
-            if (distpoints.size() > 0) {
+            if (!distpoints.isEmpty()) {
                 IssuingDistributionPoint idp = new IssuingDistributionPoint(distpoints.get(0).getDistributionPoint(), false, false, null, false,
                         false);
 
@@ -2060,7 +2047,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (!isDeltaCRL) {
                 String crlFreshestDP = getCADefinedFreshestCRL();
                 List<DistributionPoint> freshestDistPoints = generateDistributionPoints(crlFreshestDP, crlPartitionIndex);
-                if (freshestDistPoints.size() > 0) {
+                if (!freshestDistPoints.isEmpty()) {
                     CRLDistPoint ext = new CRLDistPoint(freshestDistPoints.toArray(new DistributionPoint[freshestDistPoints.size()]));
 
                     // According to the RFC, the Freshest CRL extension on a
