@@ -386,12 +386,26 @@
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Enforce_unique_public_keys')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="isdoenforceuniquepublickeys"
 						value="#{editCAsMBean.doEnforceUniquePublickeys}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:outputLabel for="isdoenforceuniquepublickeys"
+						value="#{web.text.ENFORCE}" />
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputLabel for="isdoenforcekeyrenewal"
+						value="#{web.text.DOENFORCEKEYRENEWAL}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Enforce_unique_public_keys')}"
+						escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="isdoenforcekeyrenewal"
+						value="#{editCAsMBean.doEnforceKeyRenewal}"
+						disabled="#{not editCAsMBean.hasEditRight}" />
+					<h:outputLabel for="isdoenforcekeyrenewal"
 						value="#{web.text.ENFORCE}" />
 				</h:panelGroup>
 
