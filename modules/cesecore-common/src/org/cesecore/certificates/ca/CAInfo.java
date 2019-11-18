@@ -539,6 +539,10 @@ public abstract class CAInfo implements Serializable {
         return doEnforceKeyRenewal;
     }
 
+    public void setDoEnforceKeyRenewal(boolean doEnforceKeyRenewal) {
+        this.doEnforceKeyRenewal = doEnforceKeyRenewal;
+    }
+
     /**
      * @return answer this: should this CA issue certificates to only one user of a specific subjectDN serialnumber.
      */
