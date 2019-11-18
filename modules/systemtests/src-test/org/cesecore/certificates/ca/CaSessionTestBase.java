@@ -210,8 +210,9 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         // Test edit using a new "edit" CAInfo
         X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getEncodedValidity(), cainfo.getCAToken(), "new description", 20, 
         		cainfo.getCRLPeriod(), cainfo.getCRLIssueInterval(), cainfo.getCRLOverlapTime(), cainfo.getDeltaCRLPeriod(), 
-        		cainfo.getCRLPublishers(), new ArrayList<Integer>(), true, false, true, false, null, null, null, null, null, null, null, null, cainfo.getFinishUser(), 
-        		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovals(), false, true, false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(), 
+        		cainfo.getCRLPublishers(), new ArrayList<Integer>(), true, false, true, false, null, null, null, null, null, null, null, null, cainfo.getFinishUser(),
+        		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovals(), false, true, false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(),
+                cainfo.isDoEnforceKeyRenewal(),
         		cainfo.isDoEnforceUniqueDistinguishedName(), cainfo.isDoEnforceUniqueSubjectDNSerialnumber(), cainfo.isUseCertReqHistory(), cainfo.isUseUserStorage(),
         		cainfo.isUseCertificateStorage(), cainfo.isAcceptRevocationNonExistingEntry(), null, cainfo.getKeepExpiredCertsOnCRL(), -1, false 
         		/* TODO: Temporary default values, change these when implementing partitioned crls -> */, false, 0, 0);
