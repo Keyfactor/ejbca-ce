@@ -12,7 +12,14 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.SystemConfigurationHelper;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openqa.selenium.WebDriver;
 
 /**
  * 
@@ -20,5 +27,46 @@ import org.ejbca.webtest.WebTestBase;
  *
  */
 public class EcaQa155_EditCTLogLogURLMandatoryCheckboxAndTimeout extends WebTestBase {
+    
+    private static SystemConfigurationHelper systemConfigurationHelper;
+    private static String LOG_URL = "https://localhost:8443/ejbca/adminweb/";
+    
+    @BeforeClass
+    public static void init() {
+        // super
+        beforeClass(true, null);
+        WebDriver webDriver = getWebDriver();
 
+        // Init helpers
+        systemConfigurationHelper = new SystemConfigurationHelper(webDriver);
+    }
+
+    @AfterClass
+    public static void exit() throws AuthorizationDeniedException {
+        // super
+        afterClass();
+    }
+    
+    @Test
+    public void stepOne_CtLogPageOpen(){
+        systemConfigurationHelper.openPage(getAdminWebUrl());
+        systemConfigurationHelper.openTab(SysConfigTabs.CTLOGS);
+    }
+    
+    @Test
+    public void stepTwo_CtLogAddFirstLog() {
+        
+    }
+    
+    @Test
+    public void stepThree_CtLogEditFirstLog() {
+        
+    }
+    
+    @Test
+    public void stepFour_CtLogAddSecondLog() {
+        
+    }
+    
+    
 }
