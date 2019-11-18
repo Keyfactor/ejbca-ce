@@ -448,6 +448,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
         if (reqMsg instanceof ScepRequestMessage) {
             ScepRequestMessage scep = (ScepRequestMessage) reqMsg;
             this.contentEncAlg = scep.getContentEncAlg();
+            if (log.isDebugEnabled()) {
+                log.debug("Setting " + (this.contentEncAlg != null ? this.contentEncAlg.getId() : "null") + " as preferred content encryption algorithm in SCEP response.");
+            }
         }
 
     }
