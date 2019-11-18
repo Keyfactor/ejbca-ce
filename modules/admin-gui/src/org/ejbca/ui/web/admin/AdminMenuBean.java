@@ -18,6 +18,7 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
@@ -239,7 +240,15 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png");
     }
     
+    /** 
+     * @return the URL to EJBCA Admin UI, i.e. https://hostname:8443/ejbca/adminweb/, always ends with a '/'
+     */
     public String getAdminWebUrl() {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
+        String url = getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
+        // This most likely always ends with a / but make damn sure
+        if (!StringUtils.endsWith(url, "/")) {
+            url += "/";
+        }
+        return url;
     }
 }
