@@ -174,7 +174,7 @@ public interface CertificateStoreSession {
      * Finds usernames of users having certificate(s) expiring within a specified time, but that have expireTime>=now, and have 
      * status "active" or "notifiedaboutexpiration".
      * 
-     * @param expireTime The time by which the certificates will be expired
+     * @param expiretime The time by which the certificates will be expired
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
      * @return a Collection of usernames or an empty list if not found, never null
