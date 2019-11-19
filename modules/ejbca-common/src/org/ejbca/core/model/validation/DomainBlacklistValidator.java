@@ -104,7 +104,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     private static final int MAX_LOG_DOMAINS = 100;
     
     
-    private static int maxCount = 0; // Keep track on how many error messages to display
+    private static int maxCountMessageDisplay = 0; // Keep track on how many error messages to display in admingui at any one time
     private String domainBlacklistFileErrorMessage;
     
     /** Dynamic UI model extension. */
@@ -123,20 +123,19 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     }
     
     private void addNonTranslatedInfoMessage(final String message) {
-        //We don't display more than the first 5 lines
-        if (maxCount < 4) {
+        //We don't display more than the first 5 lines in admingui
+        if (maxCountMessageDisplay < 4) {
             domainBlacklistFileErrorMessage = message;
             if (log.isDebugEnabled()) {
                 log.debug("Adding error message: " + domainBlacklistFileErrorMessage);
             }
-            
             FacesContext context = FacesContext.getCurrentInstance();
             if (context != null) {
                 context.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, domainBlacklistFileErrorMessage, 
                         domainBlacklistFileErrorMessage));
             }
             //Increment count of displayed messages
-            maxCount++;
+            maxCountMessageDisplay++;
         }
      }
     
@@ -182,6 +181,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             changeBlacklist(bytes);
         } catch (IOException e) {
             addNonTranslatedInfoMessage("Unable to parse domain black list. " + e.getMessage());
+            maxCountMessageDisplay = 0;
         }
     }
 
@@ -206,7 +206,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                     validateDomain(line, lineNumber);
                     domainSet.add(line.toLowerCase(Locale.ROOT));
                 }
-                maxCount = 0;
+                maxCountMessageDisplay = 0;
                 if (log.isDebugEnabled()) {
                     log.debug("Parsed domain blacklist with " + domainSet.size() + " entries (" + lineNumber + " lines)");
                 }
@@ -218,6 +218,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
         } catch (IOException e) {
             addNonTranslatedInfoMessage("Unable to parse domain black list. " + e.getMessage());
+            maxCountMessageDisplay = 0;
         }
     }
 
