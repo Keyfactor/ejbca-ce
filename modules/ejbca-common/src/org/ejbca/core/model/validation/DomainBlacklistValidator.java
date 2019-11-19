@@ -105,7 +105,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     
     
     private static int maxCount = 0; // Keep track on how many error messages to display
-    private String errorMessage;
+    private String domainBlacklistFileErrorMessage;
     
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
@@ -125,14 +125,15 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     private void addNonTranslatedInfoMessage(final String message) {
         //We don't display more than the first 5 lines
         if (maxCount < 4) {
-            errorMessage = message;
+            domainBlacklistFileErrorMessage = message;
             if (log.isDebugEnabled()) {
-                log.debug("Adding error message: " + errorMessage);
+                log.debug("Adding error message: " + domainBlacklistFileErrorMessage);
             }
             
             FacesContext context = FacesContext.getCurrentInstance();
             if (context != null) {
-                context.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, errorMessage, errorMessage));
+                context.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, domainBlacklistFileErrorMessage, 
+                        domainBlacklistFileErrorMessage));
             }
             //Increment count of displayed messages
             maxCount++;
@@ -140,8 +141,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
      }
     
     // Used by Unit test
-    public String getErrorMessage() {
-        return this.errorMessage;
+    public String getDomainBlacklistFileErrorMessage() {
+        return this.domainBlacklistFileErrorMessage;
     }
 
     @Override
