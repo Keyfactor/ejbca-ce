@@ -36,7 +36,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
-
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -101,7 +102,11 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     private static final String TEST_RESULT_KEY = "test_result";
 
     private static final int MAX_LOG_DOMAINS = 100;
-
+    
+    
+    private static int maxCount = 0; // Keep track on how many error messages to display
+    private String errorMessage;
+    
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
 
@@ -115,6 +120,28 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             this.normalizers = normalizers;
             this.checkers = checkers;
         }
+    }
+    
+    private void addNonTranslatedInfoMessage(final String message) {
+        //We don't display more than the first 5 lines
+        if (maxCount < 4) {
+            errorMessage = message;
+            if (log.isDebugEnabled()) {
+                log.debug("Adding error message: " + errorMessage);
+            }
+            
+            FacesContext context = FacesContext.getCurrentInstance();
+            if (context != null) {
+                context.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, errorMessage, errorMessage));
+            }
+            //Increment count of displayed messages
+            maxCount++;
+        }
+     }
+    
+    // Used by Unit test
+    public String getErrorMessage() {
+        return this.errorMessage;
     }
 
     @Override
@@ -148,12 +175,12 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     }
 
     /** Replaces the existing domain blacklist with the uploaded one. Takes a File object. */
-    private void changeBlacklist(final File file) {
+    private void changeBlacklist(File file) {
         try {
             final byte[] bytes = FileUtils.readFileToByteArray(file);
             changeBlacklist(bytes);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to parse domain black list.", e);
+            addNonTranslatedInfoMessage("Unable to parse domain black list. " + e.getMessage());
         }
     }
 
@@ -178,6 +205,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                     validateDomain(line, lineNumber);
                     domainSet.add(line.toLowerCase(Locale.ROOT));
                 }
+                maxCount = 0;
                 if (log.isDebugEnabled()) {
                     log.debug("Parsed domain blacklist with " + domainSet.size() + " entries (" + lineNumber + " lines)");
                 }
@@ -188,7 +216,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 // The Validator cache is reloaded after saving, so that will trigger a reload of the cache here in DomainBlacklistValidator 
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to parse domain black list.", e);
+            addNonTranslatedInfoMessage("Unable to parse domain black list. " + e.getMessage());
         }
     }
 
@@ -201,7 +229,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         if (!allowedDomainCharacters.matcher(domain).matches()) {
             final String message = "Invalid syntax of domain at line " + lineNumber + (lineNumber < 5 ? ". The file must be a plain text file in ASCII format, or UTF-8 format (without Byte Order Mark). Please put one domain per line. IDN domains must be in Punycode format." : "");
             log.info(message);
-            throw new IllegalArgumentException(message);
+            addNonTranslatedInfoMessage(message);
         }
     }
 
