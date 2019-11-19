@@ -123,9 +123,9 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @param admin administrator performing the operation.
      * @param publisherids a Collection (Integer) of publisher IDs.
      * @param certWrapper containing certificate to publish.
-     * @param password end entity password
+     * @param password end entity password, can be null
      * @param userDN DN to be used when creating a certificate.
-     * @param extendedinformation extended end entity information.
+     * @param extendedinformation extended end entity information, can be null.
      * @return true if successful result on all given publishers, if the publisher is configured to not publish the certificate 
      * (for example publishing an active certificate when the publisher only publishes revoked), true is still returned because 
      * the publishing operation succeeded even though the publisher did not publish the certificate.
