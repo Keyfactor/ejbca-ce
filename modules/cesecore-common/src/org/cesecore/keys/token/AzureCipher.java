@@ -15,6 +15,7 @@ package org.cesecore.keys.token;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -32,6 +33,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -100,14 +102,14 @@ public class AzureCipher extends CipherSpi {
             }
             try (final CloseableHttpResponse response = privateKey.getCryptoToken().performRequest(request)) {
                 final InputStream content = response.getEntity().getContent();
-                final String s = IOUtils.toString(content, "UTF-8");
+                final String s = IOUtils.toString(content, StandardCharsets.UTF_8);
                 final int statusCode = response.getStatusLine().getStatusCode();
                 if (log.isDebugEnabled()) {
                     log.debug("Status code engineDoFinal is: " + statusCode);
                     log.debug("Response.toString: " + response.toString());
                     log.debug("Response JSON: " + s);
                 }
-                if (statusCode != 200) {
+                if (statusCode != HttpStatus.SC_OK) {
                     throw new BadPaddingException("Decryption failed with status code " + statusCode + ", and response JSON: " + s);
                 }
                 final JSONParser jsonParser = new JSONParser();

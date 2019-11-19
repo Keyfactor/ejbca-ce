@@ -81,10 +81,7 @@ public class AzureSignature extends SignatureSpi {
             if (log.isDebugEnabled()) {
                 log.debug("engineSign: " + this.getClass().getName());
             }
-            // Key Vault REST API: https://docs.microsoft.com/en-us/rest/api/keyvault/
-            
-            //String lastKeyVersion = AzureCryptoToken.getLastKeyVersion(privateKey.getKeyURI());
-            //HttpPost request = new HttpPost(lastKeyVersion + "/sign?api-version=2016-10-01");
+            // Key Vault REST API: https://docs.microsoft.com/en-us/rest/api/keyvault/            
             final HttpPost request = new HttpPost(privateKey.getKeyURI() + "/sign?api-version=2016-10-01");
             request.setHeader("Content-Type", "application/json");
 
