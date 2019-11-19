@@ -423,7 +423,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             assertSubjectEnforcements(ca.getCAInfo(), endEntityInformation);
             assertSubjectKeyIdEnforcements(ca.getCAInfo(), endEntityInformation, pk);
-    
+            assertSubjectKeyIdRenewalEnforcement(ca.getCAInfo(), endEntityInformation, pk);
+
             //certProfile.verifyKey(pk); Verifying the public key against certificate profile is going to be executed in *CA.generateCertificate
 
             // Below we have a small loop if it would happen that we generate the same serial number twice
@@ -725,7 +726,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // If one of the checks failed, we need to investigate further what went wrong
         if (/*!multipleCheckOk && */enforceUniqueDistinguishedName) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(ca.getSubjectDN(), subjectDN);
-            if (users.size() > 0 && !users.contains(username)) {
+            if (!users.isEmpty() && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", username,
                         listUsers(users));
                 throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
@@ -760,7 +761,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         
         if (/*!multipleCheckOk && */enforceUniquePublicKeys) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(ca.getSubjectDN(), subjectKeyId);
-            if (users.size() > 0 && !users.contains(username)) {
+            if (!users.isEmpty() && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", username);
                 log.info(msg+listUsers(users));
                 throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
@@ -768,7 +769,30 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
     }
 
-    /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness. 
+    @Override
+    public void assertSubjectKeyIdRenewalEnforcement(CAInfo caInfo, EndEntityInformation endEntityInformation, PublicKey publicKey) throws CertificateCreateException {
+        boolean doEnforceKeyRenewal = false;
+        if (caInfo.isDoEnforceKeyRenewal()) {
+            if (caInfo.isUseCertificateStorage()) {
+                doEnforceKeyRenewal = true;
+            } else {
+                log.warn("CA configured to enforce key renewal, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
+            }
+        }
+        final String username = endEntityInformation.getUsername();
+
+        if (doEnforceKeyRenewal) {
+            byte[] subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
+            Collection<Certificate> certificates = certificateStoreSession.findCertificatesBySubjectKeyId(subjectKeyId);
+            if (!certificates.isEmpty()) {
+                final String msg = intres.getLocalizedMessage("createcert.enforce_key_renewal", username);
+                log.info(msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, msg);
+            }
+        }
+    }
+
+    /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness.
      * @throws CertificateSerialNumberException if serial number already exists in database
      */
     private void assertSerialNumberForIssuerOk(final CA ca, final BigInteger serialNumber) throws CertificateSerialNumberException {

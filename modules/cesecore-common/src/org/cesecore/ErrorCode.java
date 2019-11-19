@@ -71,6 +71,7 @@ public class ErrorCode implements Serializable {
     private static final String _CERT_PATH_INVALID ="CERT_PATH_INVALID"; // A certificate path was invalid/could not be constructed
     private static final String _CERT_COULD_NOT_BE_PARSED = "CERT_COULD_NOT_BE_PARSED"; // Certificates in a PEM or DER file could not be parsed.
     private static final String _CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER="CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER";
+    private static final String _CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS="CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS";
 	private static final String _CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER = "CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER";
 	private static final String _SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS = "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS";
 	private static final String _FIELD_VALUE_NOT_VALID = "_FIELD_VALUE_NOT_VALID";
@@ -98,7 +99,7 @@ public class ErrorCode implements Serializable {
     private ErrorCode() {}
 
     /** Constructor.
-     * @param errorCode error code.
+     * @param internalErrorCode error code.
      */
     private ErrorCode(String internalErrorCode) {
         this.internalErrorCode = internalErrorCode;
@@ -178,6 +179,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode CERT_PATH_INVALID = new ErrorCode(_CERT_PATH_INVALID);
     public static final ErrorCode CERT_COULD_NOT_BE_PARSED = new ErrorCode(_CERT_COULD_NOT_BE_PARSED);
     public static final ErrorCode CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER = new ErrorCode(_CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER);
+    public static final ErrorCode CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS = new ErrorCode(_CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS);
 	public static final ErrorCode CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER = new ErrorCode(_CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER);
 	public static final ErrorCode SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS = new ErrorCode(_SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS);
 	public static final ErrorCode FIELD_VALUE_NOT_VALID = new ErrorCode(_FIELD_VALUE_NOT_VALID);

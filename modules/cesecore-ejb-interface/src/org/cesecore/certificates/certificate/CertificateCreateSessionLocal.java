@@ -139,9 +139,9 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @param admin administrator performing this task
      * @param data auth data for user to get the certificate
      * @param ca the CA that will sign the certificate
-     * @param RequestMessage the requestMessage if the certificate profile allows subject DN override the request DN from this request will be used instead of the value from subject.getDN
+     * @param request the requestMessage if the certificate profile allows subject DN override the request DN from this request will be used instead of the value from subject.getDN
      * @param pk the users public key to be put in the certificate
-     * @param keyUsage integer with bit mask describing desired keys usage, may be ignored by the CA. Bit mask is packed in in integer using constants
+     * @param keyusage integer with bit mask describing desired keys usage, may be ignored by the CA. Bit mask is packed in in integer using constants
      *            from CertificateConstants. ex. int keyusage = CertificateConstants.digitalSignature | CertificateConstants.nonRepudiation; gives
      *            digitalSignature and nonRepudiation. ex. int keyusage = CertificateConstants.keyCertSign | CertificateConstants.cRLSign; gives
      *            keyCertSign and cRLSign. Keyusage < 0 means that default keyUsage should be used, or should be taken from extensions in the request.
@@ -181,7 +181,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
 
     /**
      * Performs SubjectDN checks
-     * @param CA non-sensitive information
+     * @param caInfo non-sensitive information
      * @param endEntityInformation user data
      * @throws CertificateCreateException if the certificate couldn't be created. 
      */
@@ -196,5 +196,14 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @throws CertificateCreateException
      */
     void assertSubjectKeyIdEnforcements(CAInfo caInfo, EndEntityInformation endEntityInformation, PublicKey publicKey) throws CertificateCreateException;
+
+    /**
+     * Performs SubjectKeyId checks
+     * @param caInfo CA non-sensitive information
+     * @param endEntityInformation user data
+     * @param publicKey public key used for generating SubjectKeyId
+     * @throws CertificateCreateException
+     */
+    void assertSubjectKeyIdRenewalEnforcement(CAInfo caInfo, EndEntityInformation endEntityInformation, PublicKey publicKey) throws CertificateCreateException;
 
 }
