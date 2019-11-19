@@ -69,11 +69,8 @@ public class DomainBlacklistValidatorUnitTest {
     @Test
     public void parseMalformedBlacklistFile() {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
-        try {
-            validator.changeBlacklist(MALFORMED_BLACKLIST);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().startsWith("Invalid syntax of domain at line 2."));
-        }
+        validator.changeBlacklist(MALFORMED_BLACKLIST);
+        assertTrue(validator.getErrorMessage().startsWith("Invalid syntax of domain at line 2."));
     }
 
     @Test
