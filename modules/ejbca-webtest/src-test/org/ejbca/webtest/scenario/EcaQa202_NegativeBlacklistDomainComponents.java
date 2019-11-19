@@ -245,7 +245,7 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
 
     @Test
     public void stepU_downloadPem() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(10);
         raWebHelper.clickDownloadPem();
         raWebHelper.assertErrorMessageExists("Wrong error message displayed when uploading using invalid domain",
                 "Validation failed, certificate issuance aborted");
