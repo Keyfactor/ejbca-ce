@@ -141,8 +141,12 @@ public interface PublisherSession {
      * Stores the certificate to the given collection of publishers. See
      * BasePublisher class for further documentation about function
      * 
-     * @param publisherids
-     *            a Collection (Integer) of publisher IDs.
+     * @param admin administrator performing the operation.
+     * @param publisherids a Collection (Integer) of publisher IDs.
+     * @param certWrapper containing certificate to publish.
+     * @param password end entity password, can be null
+     * @param userDN DN to be used when creating a certificate.
+     * @param extendedinformation extended end entity information, can be null.
      * @return true if successful result on all given publishers, if the publisher is configured to not publish the certificate 
      * (for example publishing an active certificate when the publisher only publishes revoked), true is still returned because 
      * the publishing operation succeeded even though the publisher did not publish the certificate.
@@ -156,6 +160,17 @@ public interface PublisherSession {
      * Performs the same operation as the other storeCertificate method in this class, but performs a lookup for a CertificateData and Base64CertData object.
      * 
      * To avoid unnecessary database lookups, only use this method where the CertificateData object isn't immediately available. 
+     * @param admin administrator performing the operation.
+     * @param publisherids a Collection (Integer) of publisher IDs.
+     * @param certWrapper containing certificate to publish.
+     * @param password end entity password, can be null
+     * @param userDN DN to be used when creating a certificate.
+     * @param extendedinformation extended end entity information, can be null.
+     * @return true if successful result on all given publishers, if the publisher is configured to not publish the certificate 
+     * (for example publishing an active certificate when the publisher only publishes revoked), true is still returned because 
+     * the publishing operation succeeded even though the publisher did not publish the certificate.
+     * @throws AuthorizationDeniedException if access is denied to the CA issuing incert
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, String fingerprint,
             String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException; 
