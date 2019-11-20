@@ -26,6 +26,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -56,6 +57,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     private static final String CACERT_KEY = "-cacert";
     private static final String CACRL_KEY = "-cacrl";
     private static final String EECERT_KEY = "-eecert";
+    private static final String CERT_ONLY_KEY = "-onlycerts"; // list certificates directly, not end entities to get certificates from EEs
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -65,6 +67,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
         registerParameter(Parameter.createFlag(CACERT_KEY, "Publish CA certificate."));
         registerParameter(Parameter.createFlag(CACRL_KEY, "Publish CA CRL."));
         registerParameter(Parameter.createFlag(EECERT_KEY, "Publish End Entity certificates."));
+        registerParameter(Parameter.createFlag(CERT_ONLY_KEY, "Publish certificates directly, not certificates belonging to end entities. Instead of listing end entities of a CA and publishing those certificates, this flag lists all certificates issued by the CA. Must be used together with -eecert."));
     }
 
     @Override
@@ -78,6 +81,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
         boolean cacertmode = parameters.containsKey(CACERT_KEY);
         boolean cacrlmode = parameters.containsKey(CACRL_KEY);
         boolean eecertmode = parameters.containsKey(EECERT_KEY);
+        boolean onlycerts = parameters.containsKey(CERT_ONLY_KEY);
         String caname = parameters.get(CA_NAME_KEY);
 
         try {
@@ -119,59 +123,95 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
 
             if (eecertmode) {
-                // Get all users for this CA
-                Collection<EndEntityInformation> coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
-                        .findAllUsersByCaId(getAuthenticationToken(), cainfo.getCAId());
-                Iterator<EndEntityInformation> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    EndEntityInformation data = iter.next();
-                    getLogger().info(
-                            "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail()
-                                    + ", " + data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType() + ", "
-                                    + data.getCertificateProfileId());
+                if (!onlycerts) {
+                    // Get all users for this CA
+                    Collection<EndEntityInformation> coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
+                            .findAllUsersByCaId(getAuthenticationToken(), cainfo.getCAId());
+                    Iterator<EndEntityInformation> iter = coll.iterator();
+                    while (iter.hasNext()) {
+                        EndEntityInformation data = iter.next();
+                        getLogger().info(
+                                "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail()
+                                + ", " + data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType() + ", "
+                                + data.getCertificateProfileId());
 
-                    if (data.getCertificateProfileId() > 0) { // only if we find a
-                        // certificate profile
-                        CertificateProfile certProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                                .getCertificateProfile(data.getCertificateProfileId());
-                        if (certProfile == null) {
-                            getLogger().error("Can not get certificate profile with id: " + data.getCertificateProfileId());
-                            continue;
-                        }
-                        // Get an ordered list of certificates, last expire date first
-                        List<Certificate> certCol = EJBTools.unwrapCertCollection(EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
-                                .findCertificatesByUsername(data.getUsername()));
-                        if ((certCol != null) && certCol.iterator().hasNext()) {
-                            if (certProfile.getPublisherList() != null) {
-                                getLogger().info(
-                                        "Re-publishing user " + data.getUsername() + " to publishers in users certificate profile "
-                                                + data.getCertificateProfileId());
-                                if (addAll) {
-                                    getLogger().info("Re-publishing all certificates (" + certCol.size() + ").");
-                                    // Reverse the collection so we publish the latest certificate last
-                                    Collections.reverse(certCol); // now the latest (last expire date) certificate is last in the List
-                                    Iterator<Certificate> i = certCol.iterator();
-                                    while (i.hasNext()) {
-                                        X509Certificate c = (X509Certificate) i.next();
-                                        publishCert(getAuthenticationToken(), data, certProfile, c);
+                        if (data.getCertificateProfileId() > 0) { // only if we find a
+                            // certificate profile
+                            CertificateProfile certProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                                    .getCertificateProfile(data.getCertificateProfileId());
+                            if (certProfile == null) {
+                                getLogger().error("Can not get certificate profile with id: " + data.getCertificateProfileId());
+                                continue;
+                            }
+                            // Get an ordered list of certificates, last expire date first
+                            List<Certificate> certCol = EJBTools.unwrapCertCollection(EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                                    .findCertificatesByUsername(data.getUsername()));
+                            if ((certCol != null) && certCol.iterator().hasNext()) {
+                                if (!certProfile.getPublisherList().isEmpty()) {
+                                    getLogger().info(
+                                            "Re-publishing user " + data.getUsername() + " to publishers in users certificate profile "
+                                                    + data.getCertificateProfileId());
+                                    if (addAll) {
+                                        getLogger().info("Re-publishing all certificates (" + certCol.size() + ").");
+                                        // Reverse the collection so we publish the latest certificate last
+                                        Collections.reverse(certCol); // now the latest (last expire date) certificate is last in the List
+                                        Iterator<Certificate> i = certCol.iterator();
+                                        while (i.hasNext()) {
+                                            X509Certificate c = (X509Certificate) i.next();
+                                            publishCert(getAuthenticationToken(), data.getUsername(), data.getPassword(), certProfile, c);
+                                        }
+                                    } else {
+                                        // Only publish the latest one (last expire date)
+                                        // The latest one is the first in the List according to findCertificatesByUsername()
+                                        publishCert(getAuthenticationToken(), data.getUsername(), data.getPassword(), certProfile, (X509Certificate) certCol.iterator().next());
                                     }
                                 } else {
-                                    // Only publish the latest one (last expire date)
-                                    // The latest one is the first in the List according to findCertificatesByUsername()
-                                    publishCert(getAuthenticationToken(), data, certProfile, (X509Certificate) certCol.iterator().next());
+                                    getLogger().info(
+                                            "Not publishing certificate for user " + data.getUsername() + ", no publisher in certificate profile.");
                                 }
                             } else {
-                                getLogger().info(
-                                        "Not publishing certificate for user " + data.getUsername() + ", no publisher in certificate profile.");
+                                getLogger().info("No certificate to publish for user " + data.getUsername());
                             }
                         } else {
-                            getLogger().info("No certificate to publish for user " + data.getUsername());
+                            getLogger().info("No certificate profile is set for user " + data.getUsername());
                         }
-                    } else {
-                        getLogger().info("No certificate profile is set for user " + data.getUsername());
+                    }
+                } else {
+                    // Get all certificate issued by this CA
+                    CertificateStoreSessionRemote certStore = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+                    Collection<String> fingerprints = certStore.listAllCertificates(cainfo.getSubjectDN());
+                    getLogger().info("Found " + fingerprints.size() + " certificate fingerprints for issuer '" + cainfo.getSubjectDN() + "'.");
+                    Iterator<String> iter = fingerprints.iterator();
+                    while (iter.hasNext()) {
+                        String fingerprint = iter.next();
+                        CertificateInfo info = certStore.getCertificateInfo(fingerprint);
+                        getLogger().info(
+                                "Certificate: " + info.getUsername() + ", \"" + info.getSubjectDN() + "\", \"" + info.getSubjectAltName()
+                                + ", " + info.getStatus() + ", " + info.getType() + ", " + info.getCertificateProfileId() + ", "
+                                + info.getEndEntityProfileIdOrZero());
+
+                        if (info.getCertificateProfileId() > 0) { // only if we find a certificate profile
+                            CertificateProfile certProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                                    .getCertificateProfile(info.getCertificateProfileId());
+                            if (certProfile == null) {
+                                getLogger().error("Can not get certificate profile with id: " + info.getCertificateProfileId());
+                                continue;
+                            }
+                            if (!certProfile.getPublisherList().isEmpty()) {
+                                getLogger().info(
+                                        "Re-publishing certificate " + fingerprint + " to publishers in certificate profile "
+                                                + info.getCertificateProfileId());
+                                EndEntityInformation ee = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(), info.getUsername());
+                                publishCert(getAuthenticationToken(), info.getUsername(), (ee != null ? ee.getPassword() : null), certProfile, (X509Certificate)certStore.findCertificateByFingerprint(fingerprint));
+                            } else {
+                                getLogger().info(
+                                        "Not publishing certificate " + fingerprint + ", no publisher in certificate profile.");
+                            }
+                        } else {
+                            getLogger().info("No certificate profile is set for certificate " + fingerprint);
+                        }
                     }
                 }
-               
             } // if (eecertmode)
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
@@ -181,19 +221,19 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 
     }
 
-    private void publishCert(AuthenticationToken authenticationToken, EndEntityInformation data, CertificateProfile certProfile, X509Certificate cert) {
+    private void publishCert(AuthenticationToken authenticationToken, String username, String password, CertificateProfile certProfile, X509Certificate cert) {
         try {
             String fingerprint = CertTools.getFingerprintAsString(cert);
-            final String userDataDN = data.getCertificateDN();
+            final String userDataDN = CertTools.getSubjectDN(cert);
             boolean ret = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCertificate(authenticationToken,
-                    certProfile.getPublisherList(), fingerprint, data.getPassword(), userDataDN, null);
+                    certProfile.getPublisherList(), fingerprint, password, userDataDN, null);
             if (!ret) {
                 getLogger().error(
-                        "Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. Publish returned false.");
+                        "Failed to publish certificate for user " + username + ", continuing with next. Publish returned false.");
             }
         } catch (Exception e) {
             // catch failure to publish one user and continue with the rest
-            getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. " + e.getMessage());
+            getLogger().error("Failed to publish certificate for user " + username + ", continuing with next. " + e.getMessage());
         }
     }
 
@@ -205,9 +245,12 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     @Override
     public String getFullHelpText() {
         return getCommandDescription()
-                + "Default if none of cacert, cacrl or eecert is specific is to publish all types, you can specify one or several on the command line. "
-                + "For example to only publish CA certificate and CRL, no end entity certificates: ca republish ManagementCA -cacert -cacrl"
-                + "Example to only publish CA certificate and CRL, and latest end entity certificates: ca republish ManagementCA";
+                + "Default if none of cacert, cacrl or eecert is specific is to publish all types, you can specify one or several on the command line."
+                + "\nFor example to only publish CA certificate and CRL, no end entity certificates: ca republish ManagementCA -cacert -cacrl"
+                + "\nExample to only publish CA certificate and CRL, and latest end entity certificates: ca republish ManagementCA"
+                + "\nNote that to publish end entity certificates, end entities configured to the CA are listed and certificates issued to those end entities are published, to the publisher defined in the certificate profile the end entity is configured with at this moment."
+                + "\nExample to try to publish all end entity certificates issued by a CA: ca republish ManagementCA -eecert -onlycerts"
+                + "\nNote that publishing certificates depend on publisher(s) being defined in the certificate profiles registered to end entities, or used when issuing certificates in the case of -onlycerts.";
     }
 
     @Override
