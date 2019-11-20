@@ -3,10 +3,9 @@ package org.ejbca.webtest.scenario;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CTLogHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 import java.io.BufferedWriter;
@@ -14,6 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
     private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
@@ -22,6 +22,9 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
             "-----END PUBLIC KEY-----";
 
     private static final String UNLABELED = "Unlabeled";
+    private static final String LOG_URL_A = "https://localhost:8443/ejbca/adminweb/ct/v1/";
+    private static final String LOG_URL_B = "https://localhost:8443/ejbca/doc/adminguide.html#Certificate%20Transparency%20%28Enterprise%20only%29/ct/v1/";
+    private static final String LOG_URL_C = "https://localhost:8443/ejbca/ct/v1/";
 
     private static CTLogHelper ctLogHelper;
     private static SystemConfigurationHelper sysConfigHelper;
@@ -37,6 +40,11 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
         ctLogHelper = new CTLogHelper(webDriver);
         sysConfigHelper = new SystemConfigurationHelper(webDriver);
 
+    }
+
+    @AfterClass
+    public static void exit(){
+        afterClass();
     }
 
     @Test
@@ -88,22 +96,38 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     @Test
     public void stepD_reloadCertificateTransparencyLogs(){
         goToSystemConfigurationPage();
-        ctLogHelper.assertIsTableRowsCorrectOrder();
+        ctLogHelper.assertIsTableRowsCorrectOrder(0, LOG_URL_C);
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
     }
 
     @Test
     public void stepE_pressArrowsToChangeTheOrderOfTheCertificateTransparencyAuditLogs(){
-
+        goToSystemConfigurationPage();
+        ctLogHelper.pressArrowDownButton();
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_A);
+        ctLogHelper.pressArrowUpButton();
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
     }
 
     @Test
-    public void stepF_moveTheLogToTheBottomOfALogGroup(){
+    public void stepF_moveTheLogToTheBottomOfALogGroup() {
+        ctLogHelper.pressArrowDownButton();
 
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_A);
+        ctLogHelper.isArrowDownButtonDisabled();
     }
 
     @Test
     public void stepF_moveTheLogToTheTopOfALogGroup(){
+        ctLogHelper.pressArrowUpButton();
 
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
+        ctLogHelper.isArrowUpButtonDisabled();
     }
 
     private void goToSystemConfigurationPage(){
