@@ -127,7 +127,7 @@ public class X509CAInfo extends CAInfo {
              false, // CRL Distribution Point on CRL critical
              true, // Include in HealthCheck
              true, // isDoEnforceUniquePublicKeys
-             true, // doEnforceKeyRenewal
+             false, // doEnforceKeyRenewal
              true, // isDoEnforceUniqueDistinguishedName
              false, // isDoEnforceUniqueSubjectDNSerialnumber
              false, // useCertReqHistory
