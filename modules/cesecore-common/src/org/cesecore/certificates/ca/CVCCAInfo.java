@@ -62,7 +62,7 @@ public class CVCCAInfo extends CAInfo {
                 new HashMap<ApprovalRequestType, Integer>(),
                 true, // includeInHealthCheck
                 true, // isDoEnforceUniquePublicKeys
-                true, // doEnforceKeyRenewal
+                false, // doEnforceKeyRenewal
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 false, // useCertReqHistory
