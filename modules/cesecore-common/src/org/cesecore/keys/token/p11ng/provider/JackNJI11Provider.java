@@ -249,7 +249,7 @@ public class JackNJI11Provider extends Provider {
                         buffer = new ByteArrayOutputStream();
                         buffer.write(digest);
                     } else {
-                        final byte[] digest = MessageDigest.getInstance("SHA-256").digest(bytes);
+                        final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm).digest(bytes);
                         buffer = new ByteArrayOutputStream();
                         buffer.write(digest);
                     }

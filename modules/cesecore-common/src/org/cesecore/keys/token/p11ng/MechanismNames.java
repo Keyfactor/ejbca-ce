@@ -30,6 +30,7 @@ public class MechanismNames {
     private static final Map<String, Long> SIGALGOS2L;
     public static final Map<Long, byte[]> CKM_PARAMS;
 
+    
     static {
         S2L = new HashMap<>(L2S.size());
         for (Map.Entry<Long, String> entry : L2S.entrySet()) {
@@ -51,6 +52,8 @@ public class MechanismNames {
         SIGALGOS2L.put("SHA384withRSAandMGF1", CKM.SHA384_RSA_PKCS_PSS);
         SIGALGOS2L.put("SHA512withRSAandMGF1", CKM.SHA512_RSA_PKCS_PSS);
         SIGALGOS2L.put("SHA256withECDSA", CKM.ECDSA);
+        SIGALGOS2L.put("SHA384withECDSA", CKM.ECDSA);
+        SIGALGOS2L.put("SHA512withECDSA", CKM.ECDSA);
         
         CKM_PARAMS = new HashMap<>();
         CKM_PARAMS.put(CKM.SHA1_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA_1, CKG.MGF1_SHA1, 20}));
@@ -89,6 +92,10 @@ public class MechanismNames {
      * @return long value or null if unknown
      */
     public static Optional<Long> longFromSigAlgoName(final String name) {
-        return Optional.of(SIGALGOS2L.get(name));
+        if (SIGALGOS2L.get(name) != null) {
+            return Optional.of(SIGALGOS2L.get(name));
+        } else {
+            return Optional.empty();
+        }
     }
 }
