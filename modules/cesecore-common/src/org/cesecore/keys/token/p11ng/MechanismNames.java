@@ -89,7 +89,7 @@ public class MechanismNames {
      * Provides the long value for signature algorithm name.
      *
      * @param name to get long value for
-     * @return long value or null if unknown
+     * @return long value or empty if unknown
      */
     public static Optional<Long> longFromSigAlgoName(final String name) {
         if (SIGALGOS2L.get(name) != null) {
