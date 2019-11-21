@@ -35,7 +35,6 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -129,23 +128,6 @@ public class CADataHandler implements Serializable {
 	  }
 	  caadminsession.editCA(administrator, cainfo);  
   }
-
-    /**
-     * Initializes a CA. The CA is updated with the values in caInfo,
-     * its status is set to active and certificates are generated.
-     * 
-     * @param  caInfo CAInfo class containing updated information for the CA to initialize
-     * @throws AuthorizationDeniedException if user was denied authorization to edit CAs 
-     * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys 
-     * @throws CADoesntExistsException if the CA defined by caInfo doesn't exist.
-     * @throws InvalidAlgorithmException 
-     */
-    public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException, InvalidAlgorithmException {
-        CAInfo oldinfo = caSession.getCAInfo(administrator, caInfo.getCAId());
-        caInfo.setName(oldinfo.getName());
-        
-        caadminsession.initializeCa(administrator, caInfo);
-    }
   
     /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */  
     public boolean removeCA(final int caId) throws AuthorizationDeniedException{     
