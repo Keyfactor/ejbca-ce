@@ -855,7 +855,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CAInfo createCaInfo(int caid, String caname, String subjectDn, int catype,
-	        String keySequenceFormat, String keySequence, String signedByString, String description, String caSerialNumberOctetSizeString, 
+	        String keySequenceFormat, String keySequence, int signedBy, String description, String caSerialNumberOctetSizeString, 
 	        String validityString, long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean doEnforceKeyRenewal, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry,
@@ -889,8 +889,7 @@ public class CAInterfaceBean implements Serializable {
         if (description == null) {
             description = "";
         }
-        final int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
-        if (StringUtils.isBlank(validityString) && signedby == CAInfo.SIGNEDBYEXTERNALCA) {
+        if (StringUtils.isBlank(validityString) && signedBy == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
             validityString = "0d";
         } else {

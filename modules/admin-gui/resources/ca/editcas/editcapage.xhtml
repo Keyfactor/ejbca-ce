@@ -610,32 +610,14 @@
 				<h:panelGroup
 					rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
 					<h:outputText id="cert_signedby"
-						value="#{editCAsMBean.signedByString}" />
+						value="#{editCAsMBean.signedByAsText}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}">
-					<h:selectOneMenu value="#{editCAsMBean.signedByStringValue}"
+					rendered="#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}">
+					<h:selectOneMenu value="#{editCAsMBean.signedBy}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:selectItems value="#{editCAsMBean.signedByListUninitialized}" />
-						<f:ajax event="change"
-							render="textfieldvalidity 
-									buttonmakerequest 
-									buttoncreate 
-									checkboxactivatecmsservice 
-									textfieldnameconstraintsexcluded 
-									textfieldnameconstraintspermitted 
-									textfieldpolicyid 
-									textfieldsubjectaltname 
-									selectcertificateprofile" 
-						/>
-					</h:selectOneMenu>
-				</h:panelGroup>
-
-				<h:panelGroup rendered="#{not editCAsMBean.editCA}">
-					<h:selectOneMenu id="cadatasignedby" value="#{editCAsMBean.signedByString}"
-						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:selectItems value="#{editCAsMBean.signedByCreateCAList}" />
+						<f:selectItems value="#{editCAsMBean.signedByList}" />
 						<f:ajax event="change"
 							render="textfieldvalidity 
 									buttonmakerequest 
