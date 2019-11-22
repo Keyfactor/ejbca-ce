@@ -498,10 +498,10 @@ public abstract class WebTestBase extends ExtentReportCreator {
     }
 
     protected static void removeCertificateTransparencyLogs(String... ctLogParameters) throws AuthorizationDeniedException {
-        GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSessionRemote
+        final GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSessionRemote
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        LinkedHashMap<Integer, CTLogInfo> ctLogs = globalConfiguration.getCTLogs();
+        final LinkedHashMap<Integer, CTLogInfo> ctLogs = globalConfiguration.getCTLogs();
         ctLogs.forEach((key, ctLogInfo) -> {
             if (Arrays.asList(ctLogParameters).contains(ctLogInfo.getUrl())) {
                 globalConfiguration.removeCTLog(ctLogInfo.getLogId());
