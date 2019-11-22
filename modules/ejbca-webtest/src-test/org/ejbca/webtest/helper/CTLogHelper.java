@@ -16,16 +16,16 @@ public class CTLogHelper extends BaseHelper {
     }
 
     public static class Page {
-        static final By LOG_URL_INPUT_FIELD = By.xpath("//input[@name='ctlogsform:j_idt380']");
-        static final By PUBLIC_KEY_INPUT_FIELD = By.xpath("//input[@type='file'][@name='ctlogsform:currentCTLogKeyFile']");
-        static final By TIMEOUT_INPUT_FIELD = By.xpath("//input[@name='ctlogsform:j_idt383']");
-        static final By LABEL_INPUT_FIELD = By.xpath("//input[@name='ctlogsform:j_idt384']");
-        static final By BUTTON_ADD = By.xpath("//input[@type='submit'][@name='ctlogsform:j_idt385']");
+        static final By LOG_URL_INPUT_FIELD = By.id("ctlogsform:ctLogUrlInput");
+        static final By PUBLIC_KEY_INPUT_FIELD = By.id("ctlogsform:currentCTLogKeyFile");
+        static final By TIMEOUT_INPUT_FIELD = By.id("ctlogsform:ctLogTimeoutInput");
+        static final By LABEL_INPUT_FIELD = By.id("ctlogsform:ctLogLabelInput");
+        static final By BUTTON_ADD = By.id("ctlogsform:addCtLog");
         static final By TABLE_ROW_DATA = By.xpath("//table[@class='grid ctlogTable']/tbody/tr/td[1]/span");
-        static final By ARROW_DOWN_BUTTON = By.xpath("//input[@type='submit'][@name='ctlogsform:j_idt348:1:j_idt353:0:j_idt372'][@title='Move Down']");
-        static final By ARROW_UP_BUTTON = By.xpath("//input[@type='submit'][@name='ctlogsform:j_idt348:1:j_idt353:1:j_idt371'][@title='Move Up']");
-        static final By ARROW_DOWN_BUTTON_DISABLED = By.xpath("//input[@type='submit'][@name='ctlogsform:j_idt348:1:j_idt353:1:j_idt372'][@title='Move Down']");
-        static final By ARROW_UP_BUTTON_DISABLED = By.xpath("//input[@type='submit'][@name='ctlogsform:j_idt348:1:j_idt353:0:j_idt371'][@title='Move Up']");
+        static final By ARROW_DOWN_BUTTON = By.id("ctlogsform:j_idt347:1:j_idt352:0:moveDownCtLogButton");
+        static final By ARROW_UP_BUTTON = By.id("ctlogsform:j_idt347:1:j_idt352:1:moveUpCtLogButton");
+        static final By ARROW_DOWN_BUTTON_DISABLED = By.id("ctlogsform:j_idt347:1:j_idt352:1:moveDownCtLogButton");
+        static final By ARROW_UP_BUTTON_DISABLED = By.id("ctlogsform:j_idt347:1:j_idt352:0:moveUpCtLogButton");
 
         static By getLabelTextFromTable(final String text) {
             return By.xpath("//tr/td/h3[contains(text(), '" + text + "')]");
@@ -61,24 +61,24 @@ public class CTLogHelper extends BaseHelper {
         assertElementExists(Page.getLogURLTextFromTableRow(matchRowWith), "Element " + matchRowWith + " does not exist from table row.");
     }
 
-    public void assertIsTableRowsCorrectOrder(int rowNum, String rowData){
+    public void assertIsTableRowsCorrectOrder(int rowNum, String rowData) {
         final List<WebElement> tableRows = findElements(Page.TABLE_ROW_DATA);
         assertEquals(tableRows.get(rowNum).getText(), rowData);
     }
 
-    public void pressArrowUpButton(){
+    public void pressArrowUpButton() {
         clickLink(Page.ARROW_UP_BUTTON);
     }
 
-    public void pressArrowDownButton(){
+    public void pressArrowDownButton() {
         clickLink(Page.ARROW_DOWN_BUTTON);
-    }
-
-    public void isArrowUpButtonDisabled() {
-        assertFalse(findElement(Page.ARROW_UP_BUTTON_DISABLED).isEnabled());
     }
 
     public void isArrowDownButtonDisabled() {
         assertFalse(findElement(Page.ARROW_DOWN_BUTTON_DISABLED).isEnabled());
+    }
+
+    public void isArrowUpButtonDisabled() {
+        assertFalse(findElement(Page.ARROW_UP_BUTTON_DISABLED).isEnabled());
     }
 }
