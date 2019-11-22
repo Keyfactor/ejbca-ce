@@ -1524,7 +1524,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     } 
 
     private void setDefaultKeyAliases() throws CryptoTokenOfflineException {
-        if (isEditCA) {
+        if (isEditCA && !isCaexternal) {
             cryptoTokenDefaultKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
             cryptoTokenCertSignKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             selectedKeyEncryptKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
