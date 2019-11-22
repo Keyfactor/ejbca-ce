@@ -96,7 +96,7 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     }
 
     @Test
-    public void stepD_reloadCertificateTransparencyLogs(){
+    public void stepD_reloadCertificateTransparencyLogs() {
         goToSystemConfigurationPage();
         ctLogHelper.assertIsTableRowsCorrectOrder(0, LOG_URL_C);
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
@@ -104,7 +104,7 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     }
 
     @Test
-    public void stepE_pressArrowsToChangeTheOrderOfTheCertificateTransparencyAuditLogs(){
+    public void stepE_pressArrowsToChangeTheOrderOfTheCertificateTransparencyAuditLogs() {
         goToSystemConfigurationPage();
         ctLogHelper.pressArrowDownButton();
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
@@ -124,7 +124,7 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     }
 
     @Test
-    public void stepF_moveTheLogToTheTopOfALogGroup(){
+    public void stepG_moveTheLogToTheTopOfALogGroup() {
         ctLogHelper.pressArrowUpButton();
 
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
@@ -132,7 +132,7 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
         ctLogHelper.isArrowUpButtonDisabled();
     }
 
-    private void goToSystemConfigurationPage(){
+    private void goToSystemConfigurationPage() {
         sysConfigHelper.openPage(getAdminWebUrl());
         sysConfigHelper.openTab(SystemConfigurationHelper.SysConfigTabs.CTLOGS);
     }
