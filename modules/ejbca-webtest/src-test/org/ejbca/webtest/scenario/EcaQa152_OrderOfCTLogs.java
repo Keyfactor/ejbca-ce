@@ -1,5 +1,6 @@
 package org.ejbca.webtest.scenario;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CTLogHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
@@ -43,7 +44,8 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit(){
+    public static void exit() throws AuthorizationDeniedException {
+        removeCertificateTransparencyLogs(LOG_URL_A, LOG_URL_B, LOG_URL_C);
         afterClass();
     }
 
