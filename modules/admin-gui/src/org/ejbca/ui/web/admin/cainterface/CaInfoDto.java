@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
@@ -77,13 +78,32 @@ public class CaInfoDto {
     private boolean doEnforceUniquePublickeys = true;
     private boolean doEnforceKeyRenewal = false;
     private boolean doEnforceUniqueDN = true;
+    private String crlCaCrlPeriod;
+    private String crlCaIssueInterval;
+    private String crlCaOverlapTime;
+    private String crlCaDeltaCrlPeriod;
 
+    public long getDeltaCrlPeriod() {
+        return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
+    }
+
+    long getcrlOverlapTime() {
+        return SimpleTime.getInstance(crlCaOverlapTime, "10" + SimpleTime.TYPE_MINUTES).getLong();
+    }
+
+    public long getCrlIssueInterval() {
+        return SimpleTime.getInstance(crlCaIssueInterval, "0" + SimpleTime.TYPE_MINUTES).getLong();
+    }
+
+    long getCrlPeriod() {
+        return SimpleTime.getInstance(crlCaCrlPeriod, "1" + SimpleTime.TYPE_DAYS).getLong();
+    }
 
     public boolean isCaTypeX509() {
         return caType == CAInfo.CATYPE_X509;
     }
 
-    public String getKeySequenceFormatAsString() {
+    String getKeySequenceFormatAsString() {
         return String.valueOf(this.keySequenceFormat);
     }
 
@@ -525,6 +545,38 @@ public class CaInfoDto {
 
     public void setDoEnforceUniqueDN(boolean doEnforceUniqueDN) {
         this.doEnforceUniqueDN = doEnforceUniqueDN;
+    }
+
+    public String getCrlCaCrlPeriod() {
+        return crlCaCrlPeriod;
+    }
+
+    public void setCrlCaCrlPeriod(String crlCaCrlPeriod) {
+        this.crlCaCrlPeriod = crlCaCrlPeriod;
+    }
+
+    public String getCrlCaIssueInterval() {
+        return crlCaIssueInterval;
+    }
+
+    public void setCrlCaIssueInterval(String crlCaIssueInterval) {
+        this.crlCaIssueInterval = crlCaIssueInterval;
+    }
+
+    public String getCrlCaOverlapTime() {
+        return crlCaOverlapTime;
+    }
+
+    public void setCrlCaOverlapTime(String crlCaOverlapTime) {
+        this.crlCaOverlapTime = crlCaOverlapTime;
+    }
+
+    public String getCrlCaDeltaCrlPeriod() {
+        return crlCaDeltaCrlPeriod;
+    }
+
+    public void setCrlCaDeltaCrlPeriod(String crlCaDeltaCrlPeriod) {
+        this.crlCaDeltaCrlPeriod = crlCaDeltaCrlPeriod;
     }
 }
 

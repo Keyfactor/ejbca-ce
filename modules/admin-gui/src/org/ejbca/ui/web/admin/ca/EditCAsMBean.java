@@ -168,10 +168,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private final Map<String,Integer> caSigners = getEjbcaWebBean().getActiveCANames();
     private final Map<Integer,String> publisheridtonamemap = getEjbcaWebBean().getPublisherIdToNameMapByValue();
     private String crlCaCRLDPExternal;
-    private String crlCaCrlPeriod;
-    private String crlCaIssueInterval;
-    private String crlCaOverlapTime;
-    private String crlCaDeltaCrlPeriod;
     private List<String> usedCrlPublishers;
     private List<String> usedValidators;
     private boolean hideValidity = false;
@@ -943,36 +939,36 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCrlCaCrlPeriod() {
-        return this.crlCaCrlPeriod;
+        return caInfoDto.getCrlCaCrlPeriod();
 
     }
     
     public void setCrlCaCrlPeriod(final String crlCaCrlPeriod) {
-        this.crlCaCrlPeriod = crlCaCrlPeriod;
+        caInfoDto.setCrlCaCrlPeriod(crlCaCrlPeriod);
     }
 
     public String getCrlCaIssueInterval() {
-        return this.crlCaIssueInterval;
+        return caInfoDto.getCrlCaIssueInterval();
     }
     
     public void setCrlCaIssueInterval(final String crlCaIssueInterval) {
-        this.crlCaIssueInterval = crlCaIssueInterval;
+        caInfoDto.setCrlCaIssueInterval(crlCaIssueInterval);
     }   
 
     public String getCrlCaOverlapTime() {
-        return this.crlCaOverlapTime;
+        return caInfoDto.getCrlCaOverlapTime();
     }
 
     public void setCrlCaOverlapTime(final String crlCaOverlapTime) {
-        this.crlCaOverlapTime = crlCaOverlapTime;
+        caInfoDto.setCrlCaOverlapTime(crlCaOverlapTime);
     }       
     
     public String getCrlCaDeltaCrlPeriod() {
-        return this.crlCaDeltaCrlPeriod;
+        return caInfoDto.getCrlCaDeltaCrlPeriod();
     }
     
     public void setCrlCaDeltaCrlPeriod(final String crlCaDeltaCrlPeriod) {
-        this.crlCaDeltaCrlPeriod = crlCaDeltaCrlPeriod;
+        caInfoDto.setCrlCaDeltaCrlPeriod(crlCaDeltaCrlPeriod);
     }     
     
     public List<SelectItem> getAvailableCrlPublishers() {
@@ -1772,8 +1768,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return "";
             } 
         }
-        
-        final long crlperiod = SimpleTime.getInstance(this.crlCaCrlPeriod, "0"+SimpleTime.TYPE_MINUTES).getLong();
+
+        final long crlperiod = SimpleTime.getInstance(caInfoDto.getCrlCaCrlPeriod(), "0" + SimpleTime.TYPE_MINUTES).getLong();
         
         if (caInfoDto.isCaTypeX509() && crlperiod != 0 && !illegaldnoraltname && createCa) {
             return EditCaUtil.MANAGE_CA_NAV;
@@ -1794,8 +1790,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     private boolean saveOrCreateCaInternal(final boolean createCa, final boolean makeRequest, final byte[] fileBuffer) 
             throws Exception {
-       return caBean.actionCreateCaMakeRequest(caInfoDto, getApprovals(),
-                    getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), getAvailablePublisherValues(),
+       return caBean.actionCreateCaMakeRequest(caInfoDto, getApprovals(), getAvailablePublisherValues(),
                     getAvailableKeyValidatorValues(), createCa, makeRequest, fileBuffer);
     }
 
@@ -1888,7 +1883,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final int certprofileid = (caInfoDto.getCurrentCertProfile() == null ? 0 : Integer.parseInt(caInfoDto.getCurrentCertProfile()));
             cainfo.setSignedBy(caInfoDto.getSignedBy());
             cainfo.setCertificateProfileId(certprofileid);
-            cainfo.setDefaultCertificateProfileId(getDefaultCertProfileId());
+            cainfo.setDefaultCertificateProfileId(caInfoDto.getDefaultCertProfileId());
             cainfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
             CAInfo oldinfo = caSession.getCAInfo(getAdmin(), cainfo.getCAId());
             cainfo.setName(oldinfo.getName());
@@ -2076,9 +2071,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
 
         try {
-            cainfo = caBean.createCaInfo(caInfoDto, caid, getSubjectDn(),
-                    getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(),
-                    getDefaultCertProfileId(), getApprovals(),
+            cainfo = caBean.createCaInfo(caInfoDto, caid, getSubjectDn(), getApprovals(),
                     getAvailablePublisherValues(), getAvailableKeyValidatorValues());
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
@@ -2120,7 +2113,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
             }
             cainfo.setCertificateProfileId(certprofileid);
-            cainfo.setDefaultCertificateProfileId(getDefaultCertProfileId());
+            cainfo.setDefaultCertificateProfileId(caInfoDto.getDefaultCertProfileId());
             cainfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
             cainfo.setSignedBy(caInfoDto.getSignedBy());
 
@@ -2158,22 +2151,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         return approvals;
-    }    
-    
-    private long getCrlIssueInterval() {
-        return SimpleTime.getInstance(crlCaIssueInterval, "0" + SimpleTime.TYPE_MINUTES).getLong();
-    }
-    
-    private long getCrlPeriod() {
-        return SimpleTime.getInstance(crlCaCrlPeriod, "1" + SimpleTime.TYPE_DAYS).getLong();
-    }
-    
-    private long getcrlOverlapTime() {
-        return SimpleTime.getInstance(crlCaOverlapTime, "10" + SimpleTime.TYPE_MINUTES).getLong();
-    }
-    
-    private long getDeltaCrlPeriod() {
-        return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
     
     private String getAvailablePublisherValues() {
@@ -2191,11 +2168,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
        }
         return availableKeyValidatorValues;
     }
-    
-    private int getDefaultCertProfileId() {
-        return caInfoDto.getDefaultCertProfileId();
-    }
-    
+
     private String getSubjectDn() {
         String subjectdn = null;
 
@@ -2262,15 +2235,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         if (isCaexternal) {
-            crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-            crlCaIssueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
-            crlCaOverlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
-            crlCaDeltaCrlPeriod = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+            caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
         } else {
-            crlCaCrlPeriod = "1" + SimpleTime.TYPE_DAYS;
-            crlCaIssueInterval = "0" + SimpleTime.TYPE_MINUTES;
-            crlCaOverlapTime = "10" + SimpleTime.TYPE_MINUTES;
-            crlCaDeltaCrlPeriod = "0" + SimpleTime.TYPE_MINUTES;
+            caInfoDto.setCrlCaCrlPeriod("1" + SimpleTime.TYPE_DAYS);
+            caInfoDto.setCrlCaIssueInterval("0" + SimpleTime.TYPE_MINUTES);
+            caInfoDto.setCrlCaOverlapTime("10" + SimpleTime.TYPE_MINUTES);
+            caInfoDto.setCrlCaDeltaCrlPeriod("0" + SimpleTime.TYPE_MINUTES);
         }
 
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
@@ -2401,16 +2374,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setSuspendedCrlPartitions(x509cainfo.getSuspendedCrlPartitions());
 
             if (isCaexternal) {
-                crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-                crlCaIssueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
-                crlCaOverlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
-                crlCaDeltaCrlPeriod = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+                caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+                caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+                caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+                caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
 
               } else {
-                crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-                crlCaIssueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
-                crlCaOverlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
-                crlCaDeltaCrlPeriod =  SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+                caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+                caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+                caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+                caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
               } 
         }
         
