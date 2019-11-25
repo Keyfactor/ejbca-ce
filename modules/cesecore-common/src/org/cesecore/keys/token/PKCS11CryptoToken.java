@@ -76,6 +76,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     
     private transient P11Slot p11slot;
 
+    /** we store this as an instance variable so we can log it */
     private String sSlotLabel = null;
     
     /**
@@ -96,23 +97,35 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         if (log.isDebugEnabled()) {
             log.debug(">init: id=" + id);
         }
-        // Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
-        init(properties, false, id);
         sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
-        Pkcs11SlotLabelType type = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
-        String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
-        String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
-        // If doNotAddP11Provider is set to true, this boolean is set to false
-        Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
+        // init should come last, since init in the base class calls autoactivate
+        init(properties, false, id);
+        if (log.isDebugEnabled()) {
+            log.debug("<init: id=" + id);
+        }
+    }
 
-        String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
+    /** Parts of init that should not be run one every instance creation, but that can be delayed until we try to activate the token..
+     * Since instances (init) is called also on de-activated crypto token we should not use methods that try to call it (perhaps an off-line HSM) in normal init. 
+     * @throws NoSuchSlotException if the slot asked for by slotLabel and slotLabelType does not exist in the token
+     * @throws CryptoTokenOfflineException if the token is not on-line (wrong PIN for example)
+     */
+    private void delayedInit(final Properties properties, final int id) throws NoSuchSlotException, CryptoTokenOfflineException {
+        if (log.isDebugEnabled()) {
+            log.debug(">delayedInit: id=" + id);
+        }
+        final Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
+        final String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
+        final String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
+        final String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
+        // If doNotAddP11Provider is set to true, this boolean is set to false
+        final Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
 
         if(friendlyName != null){
-            p11slot = P11Slot.getInstance(friendlyName, sSlotLabel, sharedLibrary, type, attributesFile, this, id, addProvider);
+            p11slot = P11Slot.getInstance(friendlyName, sSlotLabel, sharedLibrary, slotLabelType, attributesFile, this, id, addProvider);
         } else {
-            // getInstance will run autoActivate()
-            p11slot = P11Slot.getInstance(sSlotLabel, sharedLibrary, type, attributesFile, this, id, addProvider);
+            p11slot = P11Slot.getInstance(sSlotLabel, sharedLibrary, slotLabelType, attributesFile, this, id, addProvider);
             
         }
         final Provider provider = p11slot.getProvider();
@@ -123,7 +136,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
             log.info("Configured to not add PKCS#11 Provider: "+provider.getName());
         }
         if (log.isDebugEnabled()) {
-            log.debug("<init: id=" + id);
+            log.debug("<delayedInit: id=" + id);
         }
     }
 
@@ -134,8 +147,12 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
 
     @Override
     public void activate(final char[] authCode) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        if (this.p11slot == null) {
-            throw new CryptoTokenOfflineException("Slot not initialized.");
+        try {
+            if (getP11slotWithDelayedInit() == null) {
+                throw new CryptoTokenOfflineException("Slot not initialized: " + this.getId());
+            }
+        } catch (NoSuchSlotException e) {
+            throw new CryptoTokenOfflineException("No such slot: " + this.getId() + ": " + e.getMessage());
         }
         try {
             final KeyStore newKeyStore = createKeyStore(authCode);
@@ -268,7 +285,17 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public byte[] getTokenData() {
         return null;
     }
-    
+
+    /** calls delayedInit if we have not yet done so 
+     * @see #delayedInit(Properties, int)
+     */
+    private P11Slot getP11slotWithDelayedInit() throws CryptoTokenOfflineException, NoSuchSlotException {
+        if (this.p11slot == null) {
+            delayedInit(getProperties(), getId());
+        }
+        return p11slot;
+    }
+
     /** Used for testing */
     protected P11Slot getP11slot() {
         return p11slot;
