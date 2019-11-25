@@ -119,10 +119,6 @@ public class CAInterfaceBean implements Serializable {
 	private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
 	private static final String LIST_SEPARATOR = ";";
-	
-    public static final int CATOKENTYPE_P12          = 1;
-    public static final int CATOKENTYPE_HSM          = 2;
-	public static final int CATOKENTYPE_NULL         = 3;
 
 	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private AuthorizationSessionLocal authorizationSession;
@@ -331,7 +327,6 @@ public class CAInterfaceBean implements Serializable {
 	// Methods from editcas.jsp refactoring
 	//
     public boolean actionCreateCaMakeRequest(CaInfoDto caInfoDto, Map<ApprovalRequestType, Integer> approvals,
-            long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, String availableKeyValidatorValues,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             byte[] fileBuffer) throws Exception {
@@ -383,9 +378,7 @@ public class CAInterfaceBean implements Serializable {
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
             }
-            return actionCreateCaMakeRequestInternal(caInfoDto, approvals,
-                    crlperiod, crlIssueInterval,
-                    crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues,
+            return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,
                     buttonCreateCa, buttonMakeRequest, cryptoTokenId, fileBuffer);
         } catch (Exception e) {
             // If we failed during the creation we manually roll back any created soft CryptoToken
@@ -400,7 +393,6 @@ public class CAInterfaceBean implements Serializable {
     }
 
 	private boolean actionCreateCaMakeRequestInternal(CaInfoDto caInfoDto, Map<ApprovalRequestType, Integer> approvals,
-            long crlPeriod, long crlIssueInterval, long crlOverlapTime, long deltaCrlPeriod,
             String availablePublisherValues, String availableKeyValidatorValues,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId,
@@ -522,7 +514,7 @@ public class CAInterfaceBean implements Serializable {
 	            final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
-	            if (crlPeriod != 0 && !illegaldnoraltname) {
+	            if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
                     X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
                             .setSubjectDn(caInfoDto.getCaSubjectDN())
                             .setName(caInfoDto.getCaName())
@@ -538,10 +530,10 @@ public class CAInterfaceBean implements Serializable {
                             .setDescription(caInfoDto.getDescription())
                             .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
                             .setPolicies(policies)
-                            .setCrlPeriod(crlPeriod)
-                            .setCrlIssueInterval(crlIssueInterval)
-                            .setCrlOverlapTime(crlOverlapTime)
-                            .setDeltaCrlPeriod(deltaCrlPeriod)
+                            .setCrlPeriod(caInfoDto.getCrlPeriod())
+                            .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
+                            .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
+                            .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
                             .setCrlPublishers(crlPublishers)
                             .setValidators(keyValidators)
                             .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -606,14 +598,14 @@ public class CAInterfaceBean implements Serializable {
 
 	        if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
 	            // Only default values for these that are not used
-	            crlPeriod = 2400;
-	            crlIssueInterval = 0;
-	            crlOverlapTime = 0;
-	            deltaCrlPeriod = 0;
+	            long crlPeriod = 2400;
+	            long crlIssueInterval = 0;
+	            long crlOverlapTime = 0;
+	            long deltaCrlPeriod = 0;
 	            final List<Integer> crlpublishers = new ArrayList<>(); 
-	            final List<Integer> keyValidators = new ArrayList<>(); 
-	            if(crlPeriod != 0 && !illegaldnoraltname){
-	                // A CVC CA does not have any of the external services OCSP, CMS
+	            final List<Integer> keyValidators = new ArrayList<>();
+                if (!illegaldnoraltname) {
+                    // A CVC CA does not have any of the external services OCSP, CMS
 	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
 	                if (buttonMakeRequest) {
 	                    signedBy = CAInfo.SIGNEDBYEXTERNALCA;
@@ -752,9 +744,7 @@ public class CAInterfaceBean implements Serializable {
         return policies;
     }
 
-    public CAInfo createCaInfo(CaInfoDto caInfoDto, int caid, String subjectDn,
-	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
-            int defaultCertprofileId, Map<ApprovalRequestType, Integer> approvals,
+    public CAInfo createCaInfo(CaInfoDto caInfoDto, int caid, String subjectDn, Map<ApprovalRequestType, Integer> approvals,
 	        String availablePublisherValues, String availableKeyValidatorValues) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfo caInfo = casession.getCAInfo(authenticationToken, caid);
@@ -830,8 +820,9 @@ public class CAInterfaceBean implements Serializable {
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                //TODO builder
-                cainfo = new X509CAInfo(caid, caInfoDto.getCaEncodedValidity(), catoken, caInfoDto.getDescription(), caSerialNumberOctetSize, crlperiod, crlIssueInterval, crlOverlapTime,
-                        deltacrlperiod, crlpublishers, keyValidators, caInfoDto.isUseAuthorityKeyIdentifier(), caInfoDto.isAuthorityKeyIdentifierCritical(), caInfoDto.isUseCrlNumber(),
+                cainfo = new X509CAInfo(caid, caInfoDto.getCaEncodedValidity(), catoken, caInfoDto.getDescription(), caSerialNumberOctetSize, caInfoDto.getCrlPeriod(),
+                        caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), crlpublishers, keyValidators,
+                        caInfoDto.isUseAuthorityKeyIdentifier(), caInfoDto.isAuthorityKeyIdentifierCritical(), caInfoDto.isUseCrlNumber(),
                         caInfoDto.isCrlNumberCritical(), caInfoDto.getDefaultCRLDistPoint(), caInfoDto.getDefaultCRLIssuer(), caInfoDto.getDefaultOCSPServiceLocator(),
                         authorityInformationAccess, certificateAiaDefaultCaIssuerUri, parseNameConstraintsInput(caInfoDto.getNameConstraintsPermitted()),
                         parseNameConstraintsInput(caInfoDto.getNameConstraintsExcluded()), cadefinedfreshestcrl, caInfoDto.isFinishUser(), extendedcaservices, caInfoDto.isUseUtf8Policy(),
@@ -839,7 +830,7 @@ public class CAInterfaceBean implements Serializable {
                         caInfoDto.isCrlDistributionPointOnCrlCritical(), caInfoDto.isIncludeInHealthCheck(), caInfoDto.isDoEnforceUniquePublickeys(), caInfoDto.isDoEnforceKeyRenewal(),
                         caInfoDto.isDoEnforceUniqueDN(), caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber(), caInfoDto.isUseCertReqHistory(), caInfoDto.isUseUserStorage(),
                         caInfoDto.isUseCertificateStorage(), caInfoDto.isAcceptRevocationsNonExistingEntry(), caInfoDto.getSharedCmpRaSecret(), caInfoDto.isKeepExpiredOnCrl(),
-                        defaultCertprofileId, caInfoDto.isUseNoConflictCertificateData(), caInfoDto.isUsePartitionedCrl(), caInfoDto.getCrlPartitions(),
+                        caInfoDto.getDefaultCertProfileId(), caInfoDto.isUseNoConflictCertificateData(), caInfoDto.isUsePartitionedCrl(), caInfoDto.getCrlPartitions(),
                         caInfoDto.getSuspendedCrlPartitions());
             }
            // Info specific for CVC CA
@@ -850,7 +841,7 @@ public class CAInterfaceBean implements Serializable {
                // Create the CAInfo to be used for either generating the whole CA or making a request
                cainfo = new CVCCAInfo(caid, caInfoDto.getCaEncodedValidity(),
                        catoken, caInfoDto.getDescription(),
-                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
+                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), crlpublishers, keyValidators,
                        caInfoDto.isFinishUser(), extendedcaservices,
                        approvals,
                        caInfoDto.isIncludeInHealthCheck(),
@@ -861,7 +852,7 @@ public class CAInterfaceBean implements Serializable {
                        caInfoDto.isUseCertReqHistory(),
                        caInfoDto.isUseUserStorage(),
                        caInfoDto.isUseCertificateStorage(),
-                       caInfoDto.isAcceptRevocationsNonExistingEntry(), defaultCertprofileId);
+                       caInfoDto.isAcceptRevocationsNonExistingEntry(), caInfoDto.getDefaultCertProfileId());
            }
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(caInfo.getStatus());
