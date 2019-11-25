@@ -92,6 +92,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
     private String clientSecret;
     /** The same but for client ID */
     private String clientID;
+    /** Fail fast status flag, of token is on- or off-line */
+    private int status = STATUS_OFFLINE;
 
     /** We can make two types of requests, to different hosts/URLs, one is for the REST API requests 
      * and the other for the authorization URL we need to go to if we don't have a valid authorizationHeader
@@ -186,7 +188,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
         String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
         try {
-            if (autoPwd != null) {
+            if (StringUtils.isNotEmpty(autoPwd)) {
                 activate(autoPwd.toCharArray());
             }
         } catch (CryptoTokenAuthenticationFailedException e) {
@@ -196,24 +198,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     @Override
     public int getTokenStatus() {
-        final Set<String> names = aliasCache.getAllNames();
-        if (names.isEmpty()) {
-            log.debug("No alias names found, check that it is not just an empty key vault, which is active anyhow.");
-            try (CloseableHttpResponse response = listKeysRESTCall()) {                    
-                if (response.getStatusLine().getStatusCode() == 200) {
-                    // there are no keys, but listKeys call returns OK
-                    return STATUS_ACTIVE;
-                }
-            } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | IOException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Crypto Token Exception checking status: ", e);
-                }
-            }
-            return STATUS_OFFLINE;
-        } else {
-            log.debug("Alias names (cached) exist in token, it is active");
-            return STATUS_ACTIVE;
-        }
+        // Keep status in memory. As this method is called very often we don't want to make REST calls every time
+        return this.status;
     }
 
     @Override
@@ -255,15 +241,19 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         }
                     }                    
                 } else {
-                    aliasCache.flush(); // make sure the crypto token is off-line
+                    aliasCache.flush(); // make sure the crypto token is off-line for getTokenStatus
+                    status = STATUS_OFFLINE;
                     throw new CryptoTokenOfflineException("Can not list keys, response code is " + response.getStatusLine().getStatusCode());                    
                 }
             } catch (IOException | ParseException | CryptoTokenAuthenticationFailedException e) {
-                aliasCache.flush(); // make sure the crypto token is off-line
+                aliasCache.flush(); // make sure the crypto token is off-line for getTokenStatus
+                status = STATUS_OFFLINE;
                 throw new CryptoTokenOfflineException(e);
             }
+            status = STATUS_ACTIVE; // make sure the crypto token is on-line for getTokenStatus
             return new ArrayList<>(aliasCache.getAllNames());
         } else {
+           status = STATUS_ACTIVE; // make sure the crypto token is on-line for getTokenStatus
             return new ArrayList<>(aliasCache.getAllNames());
         }
         
@@ -287,6 +277,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
      * @throws CryptoTokenOfflineException
      */
     CloseableHttpResponse performRequest(HttpRequestBase request) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
+        // Don't even try to make a request if we don't have a client secret as it is required. Better fail fast
+        if (StringUtils.isEmpty(clientSecret)) {
+            throw new CryptoTokenOfflineException("Crypto token is not active, there is no client secret available: " + request.toString());
+        }
         try {
             CloseableHttpResponse response = performRESTAPIRequest(request);
             final int requestStatusCode = response.getStatusLine().getStatusCode();
@@ -393,7 +387,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         // ECA-8472: should we skip this part if we call activate with the same authCode? That could save some calls to getAliases and some time perhaps.
         clientSecret = new String(authCode);
         log.info("Activating Key Vault Crypto Token, listing aliases");
-        getAliases();
+        getAliases(); // getAliases sets status to on-line is it succeeds
     }
 
     @Override
@@ -402,6 +396,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         clientSecret = null;
         authorizationHeader = null;
         aliasCache.flush();
+        status = STATUS_OFFLINE;        
     }
 
     @Override
