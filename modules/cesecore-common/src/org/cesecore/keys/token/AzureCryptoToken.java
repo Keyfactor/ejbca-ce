@@ -384,7 +384,6 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     @Override
     public void activate(final char[] authCode) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        // ECA-8472: should we skip this part if we call activate with the same authCode? That could save some calls to getAliases and some time perhaps.
         clientSecret = new String(authCode);
         log.info("Activating Key Vault Crypto Token, listing aliases");
         getAliases(); // getAliases sets status to on-line is it succeeds
