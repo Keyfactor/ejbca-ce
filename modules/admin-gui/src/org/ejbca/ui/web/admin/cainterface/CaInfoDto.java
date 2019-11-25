@@ -75,7 +75,7 @@ public class CaInfoDto {
     private String testKey = StringUtils.EMPTY;// Initialize to empty;
     private int signedBy;
     private boolean doEnforceUniquePublickeys = true;
-    private boolean doEnforceKeyRenewal = true;
+    private boolean doEnforceKeyRenewal = false;
     private boolean doEnforceUniqueDN = true;
 
 
