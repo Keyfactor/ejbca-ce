@@ -28,4 +28,4 @@ set q=%9
 shift
 set r=%9
 
-java -Djava.endorsed.dirs=lib/endorsed -cp ejbca-ws-cli.jar org.ejbca.core.protocol.ws.client.cvcwscli %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m% %n% %o% %p% %q% %r%
+java -cp "ejbca-ws-cli.jar;endorsed/*" org.ejbca.core.protocol.ws.client.cvcwscli %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m% %n% %o% %p% %q% %r%
