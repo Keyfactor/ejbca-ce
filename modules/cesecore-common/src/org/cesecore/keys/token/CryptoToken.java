@@ -271,14 +271,14 @@ public interface CryptoToken extends Serializable {
 
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signing device implementation.
-     * @return String the name of the Provider
+     * @return String the name of the Provider, may return null if the token is not activated
      */
     String getSignProviderName();
 
     /** Returns the crypto Provider that should be used to encrypt/decrypt things with
      *  the PrivateKey object returned by this signing device implementation.
      *  In most cases this is the same as the signature provider.
-     * @return String the name of the Provider
+     * @return String the name of the Provider, may return null if the token is not activated
      */
     String getEncProviderName();
 
