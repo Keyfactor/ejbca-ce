@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
-
 import java.security.Security;
 import java.util.Properties;
 
@@ -27,6 +23,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
@@ -113,10 +114,15 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 
         PKCS11CryptoToken token3 = (PKCS11CryptoToken) createPKCS11Token("token3", true);
         PKCS11CryptoToken token4 = (PKCS11CryptoToken) createPKCS11Token("token4", true);
-        Assert.assertNotSame("Differen token was expected!", token3.getP11slot(), token4.getP11slot());
+        token3.activate(tokenpin.toCharArray());
+        token4.activate(tokenpin.toCharArray());
+        Assert.assertNotSame("Different tokens were expected: " + token3.getP11slot() + ": " + token4.getP11slot(), token3.getP11slot(), token4.getP11slot());
 
         PKCS11CryptoToken token5 = (PKCS11CryptoToken) createPKCS11Token("token5", false);
-        Assert.assertNotSame("Differen token was expected!", token3.getP11slot(), token5.getP11slot());
+        assertNull("P11Slot will be null until activated since we don't make P11 calls until activation: ", token5.getP11slot());
+        token5.activate(tokenpin.toCharArray());
+        assertNotNull("P11Slot should not be null after activation: ", token5.getP11slot());
+        Assert.assertNotSame("Different tokens were expected: " + token3.getP11slot() + ": " + token5.getP11slot(), token3.getP11slot(), token5.getP11slot());
     }
 
     @SuppressWarnings("deprecation") //This test will be removed when the deprecated methods it tests are.
