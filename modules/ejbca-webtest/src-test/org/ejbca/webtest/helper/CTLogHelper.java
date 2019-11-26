@@ -22,10 +22,6 @@ public class CTLogHelper extends BaseHelper {
         static final By LABEL_INPUT_FIELD = By.id("ctlogsform:ctLogLabelInput");
         static final By BUTTON_ADD = By.id("ctlogsform:addCtLog");
         static final By TABLE_ROW_DATA = By.xpath("//table[@class='grid ctlogTable']/tbody/tr/td[1]/span");
-        static final By ARROW_DOWN_BUTTON = By.id("ctlogsform:j_idt347:1:j_idt352:0:moveDownCtLogButton");
-        static final By ARROW_UP_BUTTON = By.id("ctlogsform:j_idt347:1:j_idt352:1:moveUpCtLogButton");
-        static final By ARROW_DOWN_BUTTON_DISABLED = By.id("ctlogsform:j_idt347:1:j_idt352:1:moveDownCtLogButton");
-        static final By ARROW_UP_BUTTON_DISABLED = By.id("ctlogsform:j_idt347:1:j_idt352:0:moveUpCtLogButton");
 
         static By getLabelTextFromTable(final String text) {
             return By.xpath("//tr/td/h3[contains(text(), '" + text + "')]");
@@ -33,6 +29,20 @@ public class CTLogHelper extends BaseHelper {
 
         static By getLogURLTextFromTableRow(final String rowText) {
             return By.xpath("//tr/td/table[@class='grid ctlogTable']/tbody/tr/td/span[@title='Log URL'][contains(text(), '" + rowText + "')]");
+        }
+
+        static By getNavigateDownButton(final String label, final String text) {
+            return By.xpath("//table/tbody/tr/td/h3[contains(text(), '" + label + "')]" +
+                    "/following-sibling::table[@class='grid ctlogTable']/" +
+                    "tbody/tr/td[span[contains(text(), '" + text + "')]]/" +
+                    "following-sibling::td/input[contains(@id, 'moveDownCtLogButton')]");
+        }
+
+        static By getNavigateUpButton(final String label, final String text) {
+            return By.xpath("//table/tbody/tr/td/h3[contains(text(), '" + label + "')]" +
+                    "/following-sibling::table[@class='grid ctlogTable']/" +
+                    "tbody/tr/td[span[contains(text(), '" + text + "')]]/" +
+                    "following-sibling::td/input[contains(@id, 'moveUpCtLogButton')]");
         }
     }
 
@@ -66,19 +76,19 @@ public class CTLogHelper extends BaseHelper {
         assertEquals(tableRows.get(rowNum).getText(), rowData);
     }
 
-    public void pressArrowUpButton() {
-        clickLink(Page.ARROW_UP_BUTTON);
+    public void pressArrowUpButton(final String label, final String text) {
+        clickLink(Page.getNavigateUpButton(label, text));
     }
 
-    public void pressArrowDownButton() {
-        clickLink(Page.ARROW_DOWN_BUTTON);
+    public void pressArrowDownButton(final String label, final String text) {
+        clickLink(Page.getNavigateDownButton(label, text));
     }
 
-    public void isArrowDownButtonDisabled() {
-        assertFalse(findElement(Page.ARROW_DOWN_BUTTON_DISABLED).isEnabled());
+    public void isArrowUpButtonDisabled(final String label, final String text) {
+        assertFalse(findElement(Page.getNavigateUpButton(label, text)).isEnabled());
     }
 
-    public void isArrowUpButtonDisabled() {
-        assertFalse(findElement(Page.ARROW_UP_BUTTON_DISABLED).isEnabled());
+    public void isArrowDownButtonDisabled(final String label, final String text) {
+        assertFalse(findElement(Page.getNavigateDownButton(label, text)).isEnabled());
     }
 }
