@@ -72,6 +72,7 @@ public class PKCS11TestUtils {
         final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX64_LIB);
         final File protectServerLinux32 = new File(PROTECTSERVER_PKCS11_LINUX32_LIB);
         final File protectServerWindows = new File(PROTECTSERVER_PKCS11_WINDOWS_LIB);
+        final File softHSMLinux1 = new File("/usr/local/lib/softhsm/libsofthsm2.so");
         String ret = null;
         if (utimacoCSLinux.exists()) {
             ret = "SunPKCS11-libcs2_pkcs11.so-slot1";
@@ -85,6 +86,8 @@ public class PKCS11TestUtils {
             ret = "SunPKCS11-libcryptoki.so-slot1";
         } else if (protectServerWindows.exists()) {
             ret = "SunPKCS11-cryptoki.dll-slot1";
+        } else if (softHSMLinux1.exists()) {
+            ret = "SunPKCS11-libsofthsm2.so-slot2034558108";
         }
         // Override auto-detected properties if configuration exists
         ret = getSystemTestsProperties().getProperty(PKCS11_SECURITY_PROVIDER, ret);
@@ -103,6 +106,7 @@ public class PKCS11TestUtils {
         final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX64_LIB);
         final File protectServerLinux32 = new File(PROTECTSERVER_PKCS11_LINUX32_LIB);
         final File protectServerWindows = new File(PROTECTSERVER_PKCS11_WINDOWS_LIB);
+        final File softHSMLinux1 = new File("/usr/local/lib/softhsm/libsofthsm2.so");
         String ret = null;
         if (utimacoCSLinux.exists()) {
             ret = utimacoCSLinux.getAbsolutePath();
@@ -120,6 +124,8 @@ public class PKCS11TestUtils {
             ret = protectServerLinux.getAbsolutePath();
         } else if (protectServerWindows.exists()) {
             ret = protectServerWindows.getAbsolutePath();
+        } else if (softHSMLinux1.exists()) {
+            ret = softHSMLinux1.getAbsolutePath();
         }
         // Override auto-detected properties if configuration exists
         ret = getSystemTestsProperties().getProperty(PKCS11_LIBRARY, ret);
@@ -134,7 +140,8 @@ public class PKCS11TestUtils {
         if (log.isDebugEnabled()) {
             log.debug("PKCS11_SLOT_VALUE: "+ret);
         }
-        return ret;
+        return "slot2";
+        //return ret;
     }
 
     public static Pkcs11SlotLabelType getPkcs11SlotType(final String defaultValue) {
@@ -142,7 +149,8 @@ public class PKCS11TestUtils {
         if (log.isDebugEnabled()) {
             log.debug("PKCS11_SLOT_TYPE: "+ret.getKey());
         }
-        return ret;
+        return Pkcs11SlotLabelType.SLOT_LABEL;
+        //return ret;
     }
 
     public static String getPkcs11SlotPin(String defaultValue) {
@@ -150,7 +158,8 @@ public class PKCS11TestUtils {
         if (log.isDebugEnabled()) {
             log.debug("PKCS11_SLOT_PIN: "+ret);
         }
-        return ret;
+        return "foo123";
+        //return ret;
     }
 
     /** @return properties defined in systemtests.properties for override of non-default environments. See also org.cesecore.SystemTestsConfiguration. */
