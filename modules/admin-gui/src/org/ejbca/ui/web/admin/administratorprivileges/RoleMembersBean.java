@@ -42,13 +42,16 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -67,6 +70,8 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
@@ -332,10 +337,23 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) &&
                     X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()==tokenMatchKey) {
                 try {
-                    new BigInteger(tokenMatchValue, 16);
+                    final BigInteger matchValueSerialNr = new BigInteger(tokenMatchValue, 16);
+                    // If we require cert in database, the CA isn't external and the cert serial number doesn't exists for the matched CA,
+                    // it's safe to assume that this was a user error (wrong CA selected or invalid serialnumber).
+                    if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+                        final String issuerDn = caSession.getCaSubjectDn(getCaIdToNameMap().get(tokenIssuerId));
+                        final boolean isExternalCa = caSession.getCANoLog(getAdmin(), tokenIssuerId).getStatus() ==  CAConstants.CA_EXTERNAL;
+                        if (!isExternalCa && !certificateStoreSession.existsByIssuerAndSerno(issuerDn, matchValueSerialNr)) {
+                            super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "WITH_SERIALNUMBER_UNKNOWN", tokenMatchValue, issuerDn);
+                        }
+                    }
+                    
                 } catch (NumberFormatException e) {
                     super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "HEXREQUIRED");
                     return;
+                } catch (AuthorizationDeniedException e) {
+                    // Since the CA is selected from a drop down containing authorized CAs only. Occurrence is unlikely
+                    super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
                 }
             }
             final int tokenIssuerId;
