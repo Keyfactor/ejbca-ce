@@ -106,30 +106,30 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     @Test
     public void stepE_pressArrowsToChangeTheOrderOfTheCertificateTransparencyAuditLogs() {
         goToSystemConfigurationPage();
-        ctLogHelper.pressArrowDownButton();
+        ctLogHelper.pressArrowDownButton(UNLABELED, LOG_URL_A);
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
         ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_A);
-        ctLogHelper.pressArrowUpButton();
+        ctLogHelper.pressArrowUpButton(UNLABELED, LOG_URL_A);
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
         ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
     }
 
     @Test
     public void stepF_moveTheLogToTheBottomOfALogGroup() {
-        ctLogHelper.pressArrowDownButton();
+        ctLogHelper.pressArrowDownButton(UNLABELED, LOG_URL_A);
 
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
         ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_A);
-        ctLogHelper.isArrowDownButtonDisabled();
+        ctLogHelper.isArrowDownButtonDisabled(UNLABELED, LOG_URL_A);
     }
 
     @Test
     public void stepG_moveTheLogToTheTopOfALogGroup() {
-        ctLogHelper.pressArrowUpButton();
+        ctLogHelper.pressArrowUpButton(UNLABELED, LOG_URL_A);
 
         ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
         ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
-        ctLogHelper.isArrowUpButtonDisabled();
+        ctLogHelper.isArrowUpButtonDisabled(UNLABELED, LOG_URL_A);
     }
 
     private void goToSystemConfigurationPage() {
