@@ -73,7 +73,7 @@ public class CaInfoDto {
     private String cryptoTokenCertSignKey = StringUtils.EMPTY; // Initialize to empty
     private String cryptoTokenDefaultKey = StringUtils.EMPTY; // Initialize to empty
     private String selectedKeyEncryptKey = StringUtils.EMPTY; // Initialize to empty
-    private String testKey = StringUtils.EMPTY;// Initialize to empty;
+    private String testKey = StringUtils.EMPTY; // Initialize to empty;
     private int signedBy;
     private boolean doEnforceUniquePublickeys = true;
     private boolean doEnforceKeyRenewal = false;
@@ -83,7 +83,7 @@ public class CaInfoDto {
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
 
-    public long getDeltaCrlPeriod() {
+    long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
