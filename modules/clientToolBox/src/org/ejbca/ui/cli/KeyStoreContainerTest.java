@@ -136,7 +136,7 @@ class KeyStoreContainerTest {
         NormalTest tests[] = null;
         final KeyStoreTools keyStore = getKeyStoreTools(
                 p11moduleName, storeID, slotLabelType, protectionParameter);
-        for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
+        for (int i = 0; i<nrOfTests || nrOfTests<1; i++) { // if nrOfTests == 0, run continuously until user presses ctrl-c
             try {
                 if ( tests==null || nrOfTests==-5 ) {
                     tests = getTests(keyStore);
