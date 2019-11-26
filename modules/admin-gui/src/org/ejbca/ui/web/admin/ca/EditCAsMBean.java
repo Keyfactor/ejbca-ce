@@ -124,7 +124,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private final TreeMap<String,Integer> rootCaProfiles = getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames();
     private final TreeMap<String,Integer> subCaProfiles = getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames();
 
-    CaInfoDto caInfoDto = new CaInfoDto();
+    private CaInfoDto caInfoDto = new CaInfoDto();
     private boolean isEditCA;
 
 
@@ -186,15 +186,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setFileRecieveFileImportRenewal(final UploadedFile fileRecieveFileImportRenewal) {
         this.fileRecieveFileImportRenewal = fileRecieveFileImportRenewal;
-    }    
-    
-    public boolean isAcceptRevocationsNonExistingEntry() {
-        return caInfoDto.isAcceptRevocationsNonExistingEntry();
     }
 
-    public void setAcceptRevocationsNonExistingEntry(final boolean acceptRevocationsNonExistingEntry) {
-        caInfoDto.setAcceptRevocationsNonExistingEntry(acceptRevocationsNonExistingEntry);
-    }    
+    public CaInfoDto getCaInfoDto() {
+        return caInfoDto;
+    }
+
+    public void setCaInfoDto(CaInfoDto caInfoDto) {
+        this.caInfoDto = caInfoDto;
+    }
 
     public UploadedFile getFileRecieveFileMakeRequest() {
         return fileRecieveFileMakeRequest;
@@ -284,39 +284,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public int getCaid() {
         return caid;
     }
-    
-    public String getDefaultCertificateProfile() {
-        return caInfoDto.getDefaultCertificateProfile();
-    }
 
-    public void setDefaultCertificateProfile(final String defaultCertificateProfile) {
-        caInfoDto.setDefaultCertificateProfile(defaultCertificateProfile);
-    }
-    
-    public String getCurrentCertProfile() {
-        return caInfoDto.getCurrentCertProfile();
-    }
-
-    public void setCurrentCertProfile(final String currentCertProfile) {
-        caInfoDto.setCurrentCertProfile(currentCertProfile);
-    }
-
-    public String getSignKeySpec() {
-        return caInfoDto.getSignKeySpec();
-    }
-
-    public void setSignKeySpec(final String signKeySpec) {
-        caInfoDto.setSignKeySpec(signKeySpec);
-    }
-    
-    public int getCaType() {
-        return caInfoDto.getCaType();
-    }
-
-    public void setCaType(final int catype) {
-        caInfoDto.setCaType(catype);
-    }
-    
     public void setCaTypeX509() {
         caInfoDto.setCaType(CAInfo.CATYPE_X509);
     }
@@ -425,14 +393,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return caBean.hasCreateRight();
     }
     
-    public String getSignatureAlgorithmParam() {
-        return caInfoDto.getSignatureAlgorithmParam();
-    }
-
-    public void setSignatureAlgorithmParam(final String signatureAlgorithmParam) {
-        caInfoDto.setSignatureAlgorithmParam(signatureAlgorithmParam);
-    }    
-    
     public String getCurrentCaCryptoTokenLink() {
         try {
             return CRYPTO_TOKEN_LINK + caBean.getCAInfo(caid).getCAInfo().getCAToken().getCryptoTokenId();
@@ -535,14 +495,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return " : " + caInfoDto.getCaName();
     }
 
-    public int getKeySequenceFormat() {
-        return caInfoDto.getKeySequenceFormat();
-    }
-
-    public void setKeySequenceFormat(final int keySequenceFormat) {
-        caInfoDto.setKeySequenceFormat(keySequenceFormat);
-    }
-    
     public List<SelectItem> getKeySequenceFormatList() {
         final List<SelectItem> resultList = new ArrayList<>();
         resultList.add(new SelectItem(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, getEjbcaWebBean().getText("NUMERIC")));
@@ -562,91 +514,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setKeySequence(final String keySequenceValue) {
         caInfoDto.setKeySequence(keySequenceValue);
     }
-    
-    public String getDescription() {
-        return caInfoDto.getDescription();
-    }
-    
-    public void setDescription(final String description) {
-        caInfoDto.setDescription(description);
-    }
-    
-    public String getCaSerialNumberOctetSize() {
-        return caInfoDto.getCaSerialNumberOctetSize();
-    }
 
-    public void setCaSerialNumberOctetSize(String caSerialNumberOctetSize) {
-        caInfoDto.setCaSerialNumberOctetSize(caSerialNumberOctetSize);
-    }
-
-    public boolean isDoEnforceUniquePublickeys() {
-        return caInfoDto.isDoEnforceUniquePublickeys();
-    }
-
-    public void setDoEnforceUniquePublickeys(final boolean doEnforceUniquePublickeys) {
-        caInfoDto.setDoEnforceUniquePublickeys(doEnforceUniquePublickeys);
-    }
-
-    public boolean isDoEnforceKeyRenewal() {
-        return caInfoDto.isDoEnforceKeyRenewal();
-    }
-
-    public void setDoEnforceKeyRenewal(boolean doEnforceKeyRenewal) {
-        caInfoDto.setDoEnforceKeyRenewal(doEnforceKeyRenewal);
-    }
-
-    public boolean isDoEnforceUniqueDN() {
-        return caInfoDto.isDoEnforceUniqueDN();
-    }
-    
-    public void setDoEnforceUniqueDN(final boolean doEnforceUniqueDN) {
-        caInfoDto.setDoEnforceUniqueDN(doEnforceUniqueDN);
-    }
-    
-    public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
-        return caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber();
-    }
-    
-    public void setDoEnforceUniqueSubjectDNSerialnumber(final boolean doEnforceUniqueSubjectDNSerialnumber) {
-        caInfoDto.setDoEnforceUniqueSubjectDNSerialnumber(doEnforceUniqueSubjectDNSerialnumber);
-    }
-    
-    public boolean isUseCertReqHistory() {
-        return caInfoDto.isUseCertReqHistory();
-    }
-    
-    public void setUseCertReqHistory(final boolean useCertReqHistory) {
-        caInfoDto.setUseCertReqHistory(useCertReqHistory);
-    }
-    
-    public boolean isUseUserStorage() {
-        return caInfoDto.isUseUserStorage();
-    }
-    
-    public void setUseUserStorage(final boolean useUserStorage) {
-        caInfoDto.setUseUserStorage(useUserStorage);
-    }
-    
-    public boolean isUseCertificateStorage() {
-        return caInfoDto.isUseCertificateStorage();
-    }
-    
-    public void setUseCertificateStorage(final boolean useCertificateStorage) {
-        caInfoDto.setUseCertificateStorage(useCertificateStorage);
-    }
-    
     public String getCheckboxUseCertificateStorageText() {
         return getEjbcaWebBean().getText("USE") + "...";
     }
-    
-    public String getCaSubjectDN() {
-        return caInfoDto.getCaSubjectDN();
-    }
 
-    public void setCaSubjectDN(final String subjectDn) {
-        caInfoDto.setCaSubjectDN(subjectDn);
-    }
-    
     public String getCaIssuerDN() {
         String issuerDN = "unknown";
         try {
@@ -663,14 +535,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return issuerDN;
     }
 
-    public int getSignedBy() {
-        return caInfoDto.getSignedBy();
-    }
-
-    public void setSignedBy(final int signedBy) {
-        caInfoDto.setSignedBy(signedBy);
-    }
-    
     public String getSignedByAsText() {
         switch (caInfoDto.getSignedBy()) {
         case CAInfo.SELFSIGNED: return getEjbcaWebBean().getText("SELFSIGNED");
@@ -737,10 +601,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean getHideValidity() {
         return hideValidity;
     }
-
-    public boolean isCaTypeX509() {
-        return caInfoDto.isCaTypeX509();
-    }
     
     public boolean isCaTypeCVC() {
         return caInfoDto.getCaType() == CAInfo.CATYPE_CVC;
@@ -758,54 +618,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setCaSubjectAltName(subjectAltName);
     }
     
-    public String getPolicyId() {
-        return caInfoDto.getPolicyId();
-    }
-    
-    public void setPolicyId(final String policyId) {
-        caInfoDto.setPolicyId(policyId);
-    }
-    
-    public boolean isUseUtf8Policy() {
-        return caInfoDto.isUseUtf8Policy();
-    }
-    
-    public void setUseUtf8Policy(final boolean utf8Policy) {
-        caInfoDto.setUseUtf8Policy(utf8Policy);
-    }
-    
-    public boolean isUsePrintableStringSubjectDN() {
-        return caInfoDto.isUsePrintableStringSubjectDN();
-    }
-    
-    public void setUsePrintableStringSubjectDN(final boolean usePrintableStringSubjectDN) {
-        caInfoDto.setUsePrintableStringSubjectDN(usePrintableStringSubjectDN);
-    }
-    
-    public boolean isUseLdapDNOrder() {
-        return caInfoDto.isUseLdapDNOrder();
-    }
-    
-    public void setUseLdapDNOrder(final boolean useLdapDNOrder) {
-        caInfoDto.setUseLdapDNOrder(useLdapDNOrder);
-    }
-    
-    public String getNameConstraintsPermittedString() {
-        return caInfoDto.getNameConstraintsPermitted();
-    }
-    
-    public void setNameConstraintsPermittedString(final String nameConstraintsPermitted) {
-        caInfoDto.setNameConstraintsPermitted(nameConstraintsPermitted);
-    }
-
-    public String getNameConstraintsExcludedString() {
-        return caInfoDto.getNameConstraintsPermitted();
-    }
-    
-    public void setNameConstraintsExcludedString(final String nameConstraintsExcluded) {
-        caInfoDto.setNameConstraintsPermitted(nameConstraintsExcluded);
-    }
-    
     public boolean getWaitingResponse() {
         return this.waitingresponse;
     }
@@ -813,103 +625,33 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setWaitingResponse(final boolean waitingResponse) {
         this.waitingresponse = waitingResponse;
     }
-    
     public String getCrlCaCRLDPExternal() {
         return this.crlCaCRLDPExternal;
     }
-    
+
     public void setCrlCaCRLDPExternal(final String crlCaCRLDPExternal) {
         this.crlCaCRLDPExternal = crlCaCRLDPExternal;
     }
-    
-    public boolean getCheckboxAuthorityKeyIdentifier() {
-        return caInfoDto.isUseAuthorityKeyIdentifier();
-    }
-    
-    public void setCheckboxAuthorityKeyIdentifier(final boolean useAuthorityKeyIdentifier) {
-        caInfoDto.setUseAuthorityKeyIdentifier(useAuthorityKeyIdentifier);
-    }
-    
-    public boolean getCheckboxAuthorityKeyIdentifierCritical() {
-        return caInfoDto.isAuthorityKeyIdentifierCritical();
-    }
-    
-    public void setCheckboxAuthorityKeyIdentifierCritical(final boolean authorityKeyIdentifierCritical) {
-        caInfoDto.setAuthorityKeyIdentifierCritical(authorityKeyIdentifierCritical);
-    }
-    
+
     public boolean isCheckboxAuthorityKeyIdentifierCriticalDisabled() {
         if (isEditCA && caInfoDto.isCaTypeX509()) {
-            return !getCheckboxAuthorityKeyIdentifier() || isCaexternal;
+            return !caInfoDto.isUseAuthorityKeyIdentifier() || isCaexternal;
         }
         return false;
     }   
-    
-    public boolean getCheckboxUseCrlNumber() {
-        return caInfoDto.isUseCrlNumber();
-    }
-    
-    public void setCheckboxUseCrlNumber(final boolean useCrlNumber) {
-        caInfoDto.setUseCrlNumber(useCrlNumber);
-    }
-    
-    public boolean getCheckboxCrlNumberCritical() {
-        return caInfoDto.isCrlNumberCritical();
-    }
-    
-    public void setCheckboxCrlNumberCritical(final boolean crlNumberCritical) {
-        caInfoDto.setCrlNumberCritical(crlNumberCritical);
-    }
-    
+
     public boolean isCheckboxCrlNumberCriticalDisabled() {
         if (isEditCA && caInfoDto.isCaTypeX509()) {
-            return !getCheckboxUseCrlNumber() || isCaexternal;
+            return !caInfoDto.isUseCrlNumber() || isCaexternal;
         }
         return false;
     }
-    
-    public boolean getCheckboxUseCrlDistributiOnPointOnCrl() {
-        return caInfoDto.isUseCrlDistributiOnPointOnCrl();
-    }
-    
-    public void setCheckboxUseCrlDistributiOnPointOnCrl(final boolean useCrlDistributiOnPointOnCrl) {
-        caInfoDto.setUseCrlDistributiOnPointOnCrl(useCrlDistributiOnPointOnCrl);
-    }
-    
-    public boolean getCheckboxCrlDistributionPointOnCrlCritical() {
-        return caInfoDto.isCrlDistributionPointOnCrlCritical();
-    }
-    
-    public void setCheckboxCrlDistributionPointOnCrlCritical(final boolean crlDistributionPointOnCrlCritical) {
-        caInfoDto.setCrlDistributionPointOnCrlCritical(crlDistributionPointOnCrlCritical);
-    }
-    
+
     public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
         if (isEditCA && caInfoDto.isCaTypeX509()) {
-            return !getCheckboxUseCrlDistributiOnPointOnCrl() || isCaexternal;
+            return !caInfoDto.isUseCrlDistributiOnPointOnCrl() || isCaexternal;
         }
         return false;
-    }
-    
-    public String getAuthorityInformationAccess() {
-        return caInfoDto.getAuthorityInformationAccess();
-
-    }
-    
-    public void setAuthorityInformationAccess(final String authorityInformationAccess) {
-        caInfoDto.setAuthorityInformationAccess(authorityInformationAccess);
-    }
-    
-    public boolean getCheckboxKeepExpiredOnCrl() {
-        return caInfoDto.isKeepExpiredOnCrl();
-    }
-    
-    public void setCheckboxKeepExpiredOnCrl(final boolean checkboxKeepExpiredOnCrl) {
-        caInfoDto.setKeepExpiredOnCrl(checkboxKeepExpiredOnCrl);
-    }
-
-    public boolean isUsePartitionedCrl() {
-        return caInfoDto.isUsePartitionedCrl();
     }
     
     public boolean isUsePartitionedCrlChecked() {
@@ -917,59 +659,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
         return submittedValue != null ? submittedValue : caInfoDto.isUsePartitionedCrl();
     }
-
-    public void setUsePartitionedCrl(boolean usePartitionedCrl) {
-        caInfoDto.setUsePartitionedCrl(usePartitionedCrl);
-    }
-
-    public int getCrlPartitions() {
-        return caInfoDto.getCrlPartitions();
-    }
-
-    public void setCrlPartitions(int crlPartitions) {
-        caInfoDto.setCrlPartitions(crlPartitions);
-    }
-
-    public int getSuspendedCrlPartitions() {
-        return caInfoDto.getSuspendedCrlPartitions();
-    }
-
-    public void setSuspendedCrlPartitions(int suspendedCrlPartitions) {
-        caInfoDto.setSuspendedCrlPartitions(suspendedCrlPartitions);
-    }
-
-    public String getCrlCaCrlPeriod() {
-        return caInfoDto.getCrlCaCrlPeriod();
-
-    }
-    
-    public void setCrlCaCrlPeriod(final String crlCaCrlPeriod) {
-        caInfoDto.setCrlCaCrlPeriod(crlCaCrlPeriod);
-    }
-
-    public String getCrlCaIssueInterval() {
-        return caInfoDto.getCrlCaIssueInterval();
-    }
-    
-    public void setCrlCaIssueInterval(final String crlCaIssueInterval) {
-        caInfoDto.setCrlCaIssueInterval(crlCaIssueInterval);
-    }   
-
-    public String getCrlCaOverlapTime() {
-        return caInfoDto.getCrlCaOverlapTime();
-    }
-
-    public void setCrlCaOverlapTime(final String crlCaOverlapTime) {
-        caInfoDto.setCrlCaOverlapTime(crlCaOverlapTime);
-    }       
-    
-    public String getCrlCaDeltaCrlPeriod() {
-        return caInfoDto.getCrlCaDeltaCrlPeriod();
-    }
-    
-    public void setCrlCaDeltaCrlPeriod(final String crlCaDeltaCrlPeriod) {
-        caInfoDto.setCrlCaDeltaCrlPeriod(crlCaDeltaCrlPeriod);
-    }     
     
     public List<SelectItem> getAvailableCrlPublishers() {
         final List<SelectItem> ret = new ArrayList<>();
@@ -1000,15 +689,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setUsedCrlPublishers(final List<String> publishers) {
         this.usedCrlPublishers = publishers;
     }
-    
-    public String getDefaultCRLDistPoint() {
-        return caInfoDto.getDefaultCRLDistPoint();
-    }
-    
-    public void setDefaultCRLDistPoint(final String defaultCRLDistPoint) {
-        caInfoDto.setDefaultCRLDistPoint(defaultCRLDistPoint);
-    }       
-    
+
     public void genDefaultCrlDistPoint() {
         final StringBuilder sb = new StringBuilder();
         sb.append(globalconfiguration.getStandardCRLDistributionPointURINoDN());
@@ -1032,14 +713,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return StringUtils.EMPTY;
     }
 
-    public String getDefaultCRLIssuer() {
-        return caInfoDto.getDefaultCRLIssuer();
-    }
-
-    public void setDefaultCRLIssuer(final String defaultCRLIssuer) {
-        caInfoDto.setDefaultCRLIssuer(defaultCRLIssuer);
-    }    
-
     public void genDefaultCrlIssuer() {
         if (!isEditCA) {
             caInfoDto.setDefaultCRLIssuer(caInfoDto.getCaSubjectDN());
@@ -1047,15 +720,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setDefaultCRLIssuer(cainfo.getSubjectDN());
         }
     }    
-    
-    public String getCaDefinedFreshestCRL() {
-        return caInfoDto.getCaDefinedFreshestCRL();
-    }
-    
-    public void setCaDefinedFreshestCRL(final String caDefinedFreshestCRL) {
-        caInfoDto.setCaDefinedFreshestCRL(caDefinedFreshestCRL);
-    }
-    
+
     public void genCaDefinedFreshestCrl() {
         final StringBuilder sb = new StringBuilder();
         sb.append(globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN());
@@ -1073,24 +738,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void genDefaultOcspLocator() {
         caInfoDto.setDefaultOCSPServiceLocator(globalconfiguration.getStandardOCSPServiceLocatorURI());
     }
-    
-
-    public String getDefaultOCSPServiceLocator(){
-        return caInfoDto.getDefaultOCSPServiceLocator();
-    }
-
-    public void setDefaultOCSPServiceLocator(final String defaultOCSPServiceLocator) {
-        caInfoDto.setDefaultOCSPServiceLocator(defaultOCSPServiceLocator);
-    }    
-    
-    public String getCertificateAiaDefaultCaIssuerUri() {
-        return caInfoDto.getCertificateAiaDefaultCaIssuerUri();
-
-    }
-    
-    public void setCertificateAiaDefaultCaIssuerUri(final String certificateAiaDefaultCaIssuerUri) {
-        caInfoDto.setCertificateAiaDefaultCaIssuerUri(certificateAiaDefaultCaIssuerUri);
-    }     
     
     public List<ApprovalRequestItem> getApprovalRequestItems() {
         if (approvalRequestItems == null || approvalRequestItems.isEmpty()) {
@@ -1158,14 +805,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return waitingresponse || (isEditCA && !isCaUninitialized && cmscainfo == null);
     }
     
-    public boolean getCmsButtonStatus() {
-        return caInfoDto.isServiceCmsActive();
-    }
-    
-    public void setCmsButtonStatus(final boolean serviceCmsActive) {
-        caInfoDto.setServiceCmsActive(serviceCmsActive);
-    }
-    
     public boolean isWaitingForResponse() {
         return this.waitingresponse;
     }
@@ -1173,32 +812,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isRenderViewCmsCert() {
         return isEditCA && !isCaUninitialized && cmscert != null;
     }
-    
-    public boolean getFinishUser() {
-        return caInfoDto.isFinishUser();
-    }
-    
-    public void setFinishUser(final boolean finishUser) {
-        caInfoDto.setFinishUser(finishUser);
-    }
-    
-    public String getCmpRaAuthSecretValue() {
-        return caInfoDto.getSharedCmpRaSecret();
-    }
-    
-    public void setCmpRaAuthSecretValue(final String cmpRaAuthSecretValue) {
-        caInfoDto.setSharedCmpRaSecret(cmpRaAuthSecretValue);
-    }
-    
-    public boolean getIncludeInHealthCheck() {
-        return caInfoDto.isIncludeInHealthCheck();
-        
-    }
-    
-    public void setIncludeInHealthCheck(final boolean includeInHealthCheck) {
-        caInfoDto.setIncludeInHealthCheck(includeInHealthCheck);
-    }
-    
+
     public boolean isRenderCaLifeCycle() {
         return isEditCA && isHasEditRight() && revokable;
     }
@@ -1640,15 +1254,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isEditCaNotUninitializedHasEditRights() {
         return isEditCA && !isCaUninitialized && isHasEditRight();
     }
-    
-    public boolean isUseNoConflictCertificateData() {
-        return caInfoDto.isUseNoConflictCertificateData();
-    }
-    
-    public void setUseNoConflictCertificateData(final boolean useNoConflictCertificateData) {
-        caInfoDto.setUseNoConflictCertificateData(useNoConflictCertificateData);
-    }
-    
+
     public boolean isCheckboxAcceptRevocationsNonExistingEntryDisabled() {
         return (!isHasEditRight() || caInfoDto.isUseCertificateStorage());
     }
