@@ -55,7 +55,7 @@ public abstract class CryptoTokenTestBase {
     private static final InternalResources intres = InternalResources.getInstance();
 
     private static final String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
-    private static final String strp11 = "Failed to initialize PKCS11 provider slot '1'.";
+    private static String strp11 = "Failed to initialize PKCS11 provider slot "; // should be appended with real value, i.e. '1'
     private static final String slotIndexP11Ng = "'i0'"; // Test should run on slot with index 0
     private static final String slotIdP11Ng = "0"; // Test should run on slot with id 0
     private static final String strP11Ng = "Failed to login to PKCS#11 provider slot " + slotIndexP11Ng + ": 0x000000a" + slotIdP11Ng
@@ -83,11 +83,11 @@ public abstract class CryptoTokenTestBase {
             InvalidAlgorithmParameterException {
         // We have not activated the token so status should be offline
         assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
-        assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
         cryptoToken.activate(tokenpin.toCharArray());
         // Should still be ACTIVE now, because we run activate
         assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+        assertEquals(getProvider(), cryptoToken.getSignProviderName());
         cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
         cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
         cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_3);
@@ -270,11 +270,11 @@ public abstract class CryptoTokenTestBase {
         try {
             // We have not activated the token so status should be offline
             assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
-            assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
             cryptoToken.activate(tokenpin.toCharArray());
             // Should still be ACTIVE now, because we run activate
             assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+            assertEquals(getProvider(), cryptoToken.getSignProviderName());
             cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
             cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
             cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_3);
@@ -371,7 +371,6 @@ public abstract class CryptoTokenTestBase {
 
             // We have not activated the token so status should be offline
             assertEquals(CryptoToken.STATUS_OFFLINE, cryptoToken.getTokenStatus());
-            assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
             if (!cryptoToken.getClass().getCanonicalName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
                 try {
@@ -385,6 +384,7 @@ public abstract class CryptoTokenTestBase {
             cryptoToken.activate(tokenpin.toCharArray());
             // Should still be ACTIVE now, because we run activate
             assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
+            assertEquals(getProvider(), cryptoToken.getSignProviderName());
             cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
 
             // Generate a key, should work
@@ -422,7 +422,8 @@ public abstract class CryptoTokenTestBase {
                 cryptoToken.activate(PKCS11TestUtils.WRONG_PIN.toCharArray());
                 fail("Should have thrown");
             } catch (CryptoTokenAuthenticationFailedException e) {
-                assert (e.getMessage().equals(strsoft) || e.getMessage().equals(strp11) || e.getMessage().equals(strP11Ng));
+                strp11 = strp11 + "'" + PKCS11TestUtils.getPkcs11SlotValue("1") + "'.";
+                assertTrue("exception is not one of the expected: " + e.getMessage(), e.getMessage().equals(strsoft) || e.getMessage().equals(strp11) || e.getMessage().equals(strP11Ng));
             }
             cryptoToken.activate(tokenpin.toCharArray());
             priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
