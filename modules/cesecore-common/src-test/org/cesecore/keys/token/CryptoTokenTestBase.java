@@ -25,6 +25,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -543,7 +544,12 @@ public abstract class CryptoTokenTestBase {
             // Encrypt something with the key, must be multiple of 16 bytes for AES (need to do padding on your own)
             String input = "1234567812345678";
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding", cryptoToken.getEncProviderName());
-            IvParameterSpec ivSpec = new IvParameterSpec("1234567812345678".getBytes());
+            // Make a real random IV to not give a bad example with fixed IV
+            // This _should_ be a SecureRandom, but that can take more time to make it quick with standard Random
+            byte[] ivbytes = new byte[16]; // must be 16 bytes
+            Random r = new Random();
+            r.nextBytes(ivbytes);
+            IvParameterSpec ivSpec = new IvParameterSpec(ivbytes);
             cipher.init(Cipher.ENCRYPT_MODE, symkey, ivSpec);
             byte[] cipherText = cipher.doFinal(input.getBytes());
             // Decrypt
