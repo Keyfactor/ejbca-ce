@@ -33,9 +33,15 @@ import org.openqa.selenium.WebDriver;
  * @version $Id$
  *
  */
-public class EcaQa155_EditCTLogLogURLMandatoryCheckboxAndTimeout extends WebTestBase {
+public class EcaQa155_EditCreateCTLog extends WebTestBase {
     
-    private static final String TEST_LABEL = "Test";
+    private static final String INIT_LABEL = "Test";
+    private static final String EDIT_LABEL = "ECAQA-155";
+    private static final String INIT_LOG_URL = "https://localhost:8443/ejbca/adminweb/";
+    private static final String EDIT_LOG_URL = "https://localhost:8443/ejbca/ct/v1/";
+    private static final int INITIAL_TIMEOUT = 60000;
+    private static final String EDITED_TIMEOUT = "120000";
+    
     private static SystemConfigurationHelper systemConfigurationHelper;
     private static CTLogHelper ctLogHelper;
     
@@ -61,33 +67,30 @@ public class EcaQa155_EditCTLogLogURLMandatoryCheckboxAndTimeout extends WebTest
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
+        removeCertificateTransparencyLogs(INIT_LOG_URL,EDIT_LOG_URL);
         // super
         afterClass();
     }
     
     @Test
-    public void stepOne_CtLogPageOpen(){
+    public void stepTwo_CtLogEditFirstLog() throws IOException, AuthorizationDeniedException {
         goToSystemConfigurationPage();
-    }
-    
-    @Test
-    public void stepTwo_CtLogAddFirstLog() throws IOException {
-        final String logUrl = "https://localhost:8443/ejbca/adminweb/";
-        ctLogHelper.fillLogUrlField(logUrl);
+        ctLogHelper.fillLogUrlField(INIT_LOG_URL);
         ctLogHelper.fillPublicKeyField(createPublicKeyFile());
-        ctLogHelper.fillTimeoutField(60000);
-        ctLogHelper.fillLabelField(TEST_LABEL);
+        ctLogHelper.fillTimeoutField(INITIAL_TIMEOUT);
+        ctLogHelper.fillLabelField(INIT_LABEL);
         ctLogHelper.addCertificateTransparencyLog();
-        ctLogHelper.assertIsTableAndRowExists(TEST_LABEL, logUrl);
+        ctLogHelper.assertIsTableAndRowExists(INIT_LABEL, INIT_LOG_URL);
+        ctLogHelper.pressEditCtLogButton(INIT_LABEL, INIT_LOG_URL);
+        ctLogHelper.fillEditLogUrlField(EDIT_LOG_URL);
+        ctLogHelper.fillEditTimeoutField(EDITED_TIMEOUT);
+        ctLogHelper.fillEditLabelField(EDIT_LABEL);
+        ctLogHelper.pressSaveEditCtLogButton();
+        ctLogHelper.assertIsTableAndRowExists(EDIT_LABEL, EDIT_LOG_URL);
     }
     
     @Test
-    public void stepThree_CtLogEditFirstLog() {
-        
-    }
-    
-    @Test
-    public void stepFour_CtLogAddSecondLog() {
+    public void stepThree_CtLogAddSecondLog() {
         
     }
     
