@@ -51,6 +51,10 @@ public class CTLogHelper extends BaseHelper {
         static By getLogURLTextFromTableRow(final String rowText) {
             return By.xpath("//tr/td/table[@class='grid ctlogTable']/tbody/tr/td/span[@title='Log URL'][contains(text(), '" + rowText + "')]");
         }
+        
+        static By getTimeoutTextFromTableRow(final String timeOutText) {
+            return By.xpath("//tr/td/table[@class='grid ctlogTable']/tbody/tr/td/span[@class='numberCell'][contains(text(), '" + timeOutText + "')]");
+        }
 
         static By getNavigateDownButton(final String label, final String text) {
             return By.xpath("//table/tbody/tr/td/h3[contains(text(), '" + label + "')]" +
@@ -82,8 +86,8 @@ public class CTLogHelper extends BaseHelper {
         fillInput(Page.PUBLIC_KEY_INPUT_FIELD, inputFile.toString());
     }
 
-    public void fillTimeoutField(final int inputNumber) {
-        fillInput(Page.TIMEOUT_INPUT_FIELD, String.valueOf(inputNumber));
+    public void fillTimeoutField(final String inputNumber) {
+        fillInput(Page.TIMEOUT_INPUT_FIELD, inputNumber);
     }
 
     public void fillLabelField(final String inputText) {
@@ -106,9 +110,10 @@ public class CTLogHelper extends BaseHelper {
         clickLink(Page.BUTTON_ADD);
     }
 
-    public void assertIsTableAndRowExists(final String matchLabelWith, final String matchRowWith) {
+    public void assertIsTableAndRowExists(final String matchLabelWith, final String matchRowWith, final String matchTimeoutWith) {
         assertElementExists(Page.getLabelTextFromTable(matchLabelWith), "Element label:" + matchLabelWith + " does not exist from table.");
         assertElementExists(Page.getLogURLTextFromTableRow(matchRowWith), "Element " + matchRowWith + " does not exist from table row.");
+        assertElementExists(Page.getTimeoutTextFromTableRow(matchTimeoutWith), "Element " + matchTimeoutWith + " does not exist from table row.");
     }
 
     public void assertIsTableRowsCorrectOrder(int rowNum, String rowData) {

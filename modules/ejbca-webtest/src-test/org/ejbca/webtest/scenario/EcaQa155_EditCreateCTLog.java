@@ -39,7 +39,7 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
     private static final String EDIT_LABEL = "ECAQA-155";
     private static final String INIT_LOG_URL = "https://localhost:8443/ejbca/adminweb/";
     private static final String EDIT_LOG_URL = "https://localhost:8443/ejbca/ct/v1/";
-    private static final int INITIAL_TIMEOUT = 60000;
+    private static final String INITIAL_TIMEOUT = "60000";
     private static final String EDITED_TIMEOUT = "120000";
     
     private static SystemConfigurationHelper systemConfigurationHelper;
@@ -80,13 +80,13 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
         ctLogHelper.fillTimeoutField(INITIAL_TIMEOUT);
         ctLogHelper.fillLabelField(INIT_LABEL);
         ctLogHelper.addCertificateTransparencyLog();
-        ctLogHelper.assertIsTableAndRowExists(INIT_LABEL, INIT_LOG_URL);
+        ctLogHelper.assertIsTableAndRowExists(INIT_LABEL, INIT_LOG_URL, INITIAL_TIMEOUT);
         ctLogHelper.pressEditCtLogButton(INIT_LABEL, INIT_LOG_URL);
         ctLogHelper.fillEditLogUrlField(EDIT_LOG_URL);
         ctLogHelper.fillEditTimeoutField(EDITED_TIMEOUT);
         ctLogHelper.fillEditLabelField(EDIT_LABEL);
         ctLogHelper.pressSaveEditCtLogButton();
-        ctLogHelper.assertIsTableAndRowExists(EDIT_LABEL, EDIT_LOG_URL);
+        ctLogHelper.assertIsTableAndRowExists(EDIT_LABEL, EDIT_LOG_URL, EDITED_TIMEOUT);
     }
     
     @Test
