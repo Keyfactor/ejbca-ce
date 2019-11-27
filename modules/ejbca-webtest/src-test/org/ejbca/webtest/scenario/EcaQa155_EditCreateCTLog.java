@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -45,14 +42,8 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
     private static SystemConfigurationHelper systemConfigurationHelper;
     private static CTLogHelper ctLogHelper;
     
-    private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
-            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFJY5TplekPjaNgCckezeyhkccA8O\n" +
-            "63Sj84rZ1RCRoJ7vHa8FF2IIbF/S1iEb/gbkmqNJ4K3m+oNzcr76yoH3Dg==\n" +
-            "-----END PUBLIC KEY-----";
-    
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-
     
     @BeforeClass
     public static void init() {
@@ -76,11 +67,12 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
     public void stepTwo_CtLogEditFirstLog() throws IOException, AuthorizationDeniedException {
         goToSystemConfigurationPage();
         ctLogHelper.fillLogUrlField(INIT_LOG_URL);
-        ctLogHelper.fillPublicKeyField(createPublicKeyFile());
+        ctLogHelper.fillPublicKeyField(ctLogHelper.createPublicKeyFile(folder));
         ctLogHelper.fillTimeoutField(INITIAL_TIMEOUT);
         ctLogHelper.fillLabelField(INIT_LABEL);
         ctLogHelper.addCertificateTransparencyLog();
         ctLogHelper.assertIsTableAndRowExists(INIT_LABEL, INIT_LOG_URL, INITIAL_TIMEOUT);
+        
         ctLogHelper.pressEditCtLogButton(INIT_LABEL, INIT_LOG_URL);
         ctLogHelper.fillEditLogUrlField(EDIT_LOG_URL);
         ctLogHelper.fillEditTimeoutField(EDITED_TIMEOUT);
@@ -98,13 +90,5 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
         systemConfigurationHelper.openPage(getAdminWebUrl());
         systemConfigurationHelper.openTab(SystemConfigurationHelper.SysConfigTabs.CTLOGS);
     }
-    
-    private File createPublicKeyFile() throws IOException {
-        File publicKeyFile = folder.newFile("test_pub.pem");
-        FileWriter fileWriter = new FileWriter(publicKeyFile);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write(PUBLIC_KEY);
-        bufferedWriter.close();
-        return publicKeyFile;
-    }
+
 }
