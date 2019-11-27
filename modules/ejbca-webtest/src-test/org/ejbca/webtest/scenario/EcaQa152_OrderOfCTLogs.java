@@ -26,6 +26,8 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     private static final String LOG_URL_A = "https://localhost:8443/ejbca/adminweb/ct/v1/";
     private static final String LOG_URL_B = "https://localhost:8443/ejbca/doc/adminguide.html#Certificate%20Transparency%20%28Enterprise%20only%29/ct/v1/";
     private static final String LOG_URL_C = "https://localhost:8443/ejbca/ct/v1/";
+    private static final String TIMEOUT_ONE = "60000";
+    private static final String TIMEOUT_TWO = "30000";
 
     private static CTLogHelper ctLogHelper;
     private static SystemConfigurationHelper sysConfigHelper;
@@ -57,11 +59,11 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
         ctLogHelper.fillLogUrlField(logUrl);
         ctLogHelper.fillPublicKeyField(createPublicKeyFile());
-        ctLogHelper.fillTimeoutField(60000);
+        ctLogHelper.fillTimeoutField(TIMEOUT_ONE);
         ctLogHelper.fillLabelField(UNLABELED);
         ctLogHelper.addCertificateTransparencyLog();
 
-        ctLogHelper.assertIsTableAndRowExists(UNLABELED, logUrl);
+        ctLogHelper.assertIsTableAndRowExists(UNLABELED, logUrl, TIMEOUT_ONE);
     }
 
     @Test
@@ -72,11 +74,11 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
         ctLogHelper.fillLogUrlField(logUrl);
         ctLogHelper.fillPublicKeyField(createPublicKeyFile());
-        ctLogHelper.fillTimeoutField(30000);
+        ctLogHelper.fillTimeoutField(TIMEOUT_TWO);
         ctLogHelper.fillLabelField(UNLABELED);
         ctLogHelper.addCertificateTransparencyLog();
 
-        ctLogHelper.assertIsTableAndRowExists(UNLABELED, logUrl);
+        ctLogHelper.assertIsTableAndRowExists(UNLABELED, logUrl, TIMEOUT_TWO);
     }
 
     @Test
@@ -88,11 +90,11 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
         ctLogHelper.fillLogUrlField(logUrl);
         ctLogHelper.fillPublicKeyField(createPublicKeyFile());
-        ctLogHelper.fillTimeoutField(30000);
+        ctLogHelper.fillTimeoutField(TIMEOUT_TWO);
         ctLogHelper.fillLabelField(label);
         ctLogHelper.addCertificateTransparencyLog();
 
-        ctLogHelper.assertIsTableAndRowExists(label, logUrl);
+        ctLogHelper.assertIsTableAndRowExists(label, logUrl, TIMEOUT_TWO);
     }
 
     @Test
