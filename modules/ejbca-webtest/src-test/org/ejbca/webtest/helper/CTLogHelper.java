@@ -12,12 +12,16 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+import org.junit.rules.TemporaryFolder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import java.io.File;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,6 +35,11 @@ public class CTLogHelper extends BaseHelper {
     public CTLogHelper(final WebDriver webDriver) {
         super(webDriver);
     }
+    
+    private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
+            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFJY5TplekPjaNgCckezeyhkccA8O\n" +
+            "63Sj84rZ1RCRoJ7vHa8FF2IIbF/S1iEb/gbkmqNJ4K3m+oNzcr76yoH3Dg==\n" +
+            "-----END PUBLIC KEY-----";
 
     public static class Page {
         static final By LOG_URL_INPUT_FIELD = By.id("ctlogsform:ctLogUrlInput");
@@ -143,5 +152,14 @@ public class CTLogHelper extends BaseHelper {
 
     public void isArrowDownButtonDisabled(final String label, final String text) {
         assertFalse(findElement(Page.getNavigateDownButton(label, text)).isEnabled());
+    }
+    
+    public File createPublicKeyFile(final TemporaryFolder folder) throws IOException {
+        File publicKeyFile = folder.newFile("test_pub.pem");
+        FileWriter fileWriter = new FileWriter(publicKeyFile);
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        bufferedWriter.write(PUBLIC_KEY);
+        bufferedWriter.close();
+        return publicKeyFile;
     }
 }
