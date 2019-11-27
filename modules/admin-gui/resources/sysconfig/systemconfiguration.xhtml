@@ -275,7 +275,7 @@
 					<h:column>
 						<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeNode}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 						<f:facet name="footer">
-							<h:commandButton id="test" value="#{web.text.ADD}" action="#{systemConfigMBean.addNode}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+							<h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addNode}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 						</f:facet>
 					</h:column>
 				</h:dataTable>
@@ -622,7 +622,7 @@
 	         <h:commandButton id="addCtLog" value="#{web.text.ADD}"
                  action="#{systemConfigMBean.ctLogManager.addCtLog}"
                  rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-        </h:panelGrid> 
+        </h:panelGrid>
         <h:outputLink value="https://www.certificate-transparency.org/known-logs" target="_blank" styleClass="tableFooter">
         	<h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS1}"/>
         </h:outputLink>
