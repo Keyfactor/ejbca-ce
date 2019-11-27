@@ -81,11 +81,6 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
         ctLogHelper.assertIsTableAndRowExists(EDIT_LABEL, EDIT_LOG_URL, EDITED_TIMEOUT);
     }
     
-    @Test
-    public void stepThree_CtLogAddSecondLog() {
-        
-    }
-    
     private void goToSystemConfigurationPage(){
         systemConfigurationHelper.openPage(getAdminWebUrl());
         systemConfigurationHelper.openTab(SystemConfigurationHelper.SysConfigTabs.CTLOGS);
