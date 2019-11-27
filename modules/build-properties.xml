@@ -209,7 +209,7 @@
 	<property name="systemtests.properties.file" location="${ejbca.home}/conf/systemtests.properties"/>
     
 	<!-- Define class-paths of global interest -->
-	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc-1.4.9.jar"/></path>
+	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc-1.4.10.jar"/></path>
 
 	<path id="lib.junit.classpath">
 		<fileset dir="${ejbca.home}/lib/ext">
@@ -365,7 +365,7 @@
 		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
 		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
 	</path>
-	
+
 	<path id="lib.servicemanifestbuilder.classpath">
 		<fileset dir="${ejbca.home}/lib/ext" includes="servicemanifestbuilder*.jar"/>
 	</path>
