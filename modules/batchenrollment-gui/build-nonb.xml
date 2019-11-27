@@ -27,6 +27,7 @@
         <path refid="lib.commons-collections.classpath"/>
         <path refid="lib.commons-config.classpath"/>
         <path refid="lib.commons-lang.classpath"/>
+        <path refid="lib.commons-io.classpath"/>
         <path refid="lib.commons-logging.classpath"/>
         <path refid="lib.log4j.classpath"/>
         <path refid="lib.swing-app-framework.classpath"/>
