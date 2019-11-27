@@ -19,7 +19,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -62,13 +66,12 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-
-import sun.security.pkcs11.SunPKCS11;
 
 /**
  * Dialog for connection and authentication settings.
@@ -630,32 +633,92 @@ public class ConnectDialog extends JDialog {
         return settings;
     }
 
+    private static Provider getPKCS11ProviderUsingConfigMethod(final Method configMethod,
+            final String config)
+                    throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        final Provider prototype = Security.getProvider("SunPKCS11");
+        final Provider provider = (Provider) configMethod.invoke(prototype, config);
+
+        return provider;
+    }
+
+    private static String getSunP11ConfigStringFromInputStream(final InputStream is) throws IOException {
+        final StringBuilder configBuilder = new StringBuilder();
+        /* we need to prepend -- to indicate to the configure() method
+         * that the config is treated as a string
+         */
+        configBuilder.append("--").append(IOUtils.toString(is, StandardCharsets.UTF_8));
+        return configBuilder.toString();
+    }
+
+    
     private static KeyStore getLoadedKeystorePKCS11(final String name, final String library, final char[] authCode, KeyStore.CallbackHandlerProtection callbackHandlerProtection) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         final KeyStore keystore;
 
         final InputStream config = new ByteArrayInputStream(
-            new StringBuilder().append("name=").append(name).append("\n")
-                    .append("library=").append(library)
-                    .toString().getBytes());
-        Provider provider = new SunPKCS11(config);
-        Security.addProvider(provider);
+                new StringBuilder().append("name=").append(name).append("\n")
+                        .append("library=").append(library).append("\n")
+                        .append("showInfo=true")
+                        .toString().getBytes());
 
-        final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
-                provider, callbackHandlerProtection);
+            try {
+                    final Class<?> klass = Class.forName("sun.security.pkcs11.SunPKCS11");
+                    Provider provider;
+                    
+                    try {
+                        /* try getting the Java 9+ configure method first
+                         * if this fails, fall back to the old way, calling the
+                         * constructor
+                         */
+                        final Class<?>[] paramString = new Class[1];    
+                        paramString[0] = String.class;
+                        final Method method =
+                                Provider.class.getDeclaredMethod("configure",
+                                                                 paramString);
+                        final String configString =
+                                getSunP11ConfigStringFromInputStream(config);
+                        
+                        provider = getPKCS11ProviderUsingConfigMethod(method, configString);
+                    } catch (NoSuchMethodException e) {
+                        // find constructor taking one argument of type InputStream
+                        Class<?>[] parTypes = new Class[1];
+                        parTypes[0] = InputStream.class;
 
-        keystore = builder.getKeyStore();
-        keystore.load(null, authCode);
+                        Constructor<?> ctor = klass.getConstructor(parTypes);           
+                        Object[] argList = new Object[1];
+                        argList[0] = config;
+                        provider = (Provider) ctor.newInstance(argList);
+                    }
 
-        final Enumeration<String> e = keystore.aliases();
-        while( e.hasMoreElements() ) {
-            final String keyAlias = e.nextElement();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("******* keyAlias: " + keyAlias
-                        + ", certificate: "
-                        + ((X509Certificate) keystore.getCertificate(keyAlias))
-                            .getSubjectDN().getName());
+                    Security.addProvider(provider);
+
+                    final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
+                            provider, callbackHandlerProtection);
+
+                    keystore = builder.getKeyStore();
+                    keystore.load(null, authCode);
+
+                    final Enumeration<String> e = keystore.aliases();
+                    while( e.hasMoreElements() ) {
+                        final String keyAlias = e.nextElement();
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("******* keyAlias: " + keyAlias
+                                    + ", certificate: "
+                                    + ((X509Certificate) keystore.getCertificate(keyAlias))
+                                        .getSubjectDN().getName());
+                        }
+                    }
+            } catch (NoSuchMethodException nsme) {
+                throw new KeyStoreException("Could not find constructor for keystore provider", nsme);
+            } catch (InstantiationException ie) {
+                throw new KeyStoreException("Failed to instantiate keystore provider", ie);
+            } catch (ClassNotFoundException ncdfe) {
+                throw new KeyStoreException("Unsupported keystore provider", ncdfe);
+            } catch (InvocationTargetException ite) {
+                throw new KeyStoreException("Could not initialize provider", ite);
+            } catch (Exception e) {
+                throw new KeyStoreException("Error", e);
             }
-        }
         return keystore;
     }
 
