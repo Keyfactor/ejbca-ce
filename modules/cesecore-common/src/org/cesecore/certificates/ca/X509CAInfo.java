@@ -309,9 +309,9 @@ public class X509CAInfo extends CAInfo {
             final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, final boolean useUTF8PolicyText,
             final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN, final boolean useLdapDnOrder,
             final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
-            final boolean _doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean _doEnforceUniqueDistinguishedName,
-            final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
-            final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
+            final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
+            final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
+            final boolean useCertificateStorage, final boolean acceptRevocationNonExistingEntry, final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
             final int defaultCertprofileId, final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
@@ -341,15 +341,15 @@ public class X509CAInfo extends CAInfo {
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
         this.includeInHealthCheck = includeInHealthCheck;
-        this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
+        this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
         this.doEnforceKeyRenewal = doEnforceKeyRenewal;
-        this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
-        this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
-        this.useCertReqHistory = _useCertReqHistory;
-        this.useUserStorage = _useUserStorage;
-        this.useCertificateStorage = _useCertificateStorage;
-        this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
-        setCmpRaAuthSecret(_cmpRaAuthSecret);
+        this.doEnforceUniqueDistinguishedName = doEnforceUniqueDistinguishedName;
+        this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialnumber;
+        this.useCertReqHistory = useCertReqHistory;
+        this.useUserStorage = useUserStorage;
+        this.useCertificateStorage = useCertificateStorage;
+        this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
+        setCmpRaAuthSecret(cmpRaAuthSecret);
         this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
         this.authorityInformationAccess = crlAuthorityInformationAccess;
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
