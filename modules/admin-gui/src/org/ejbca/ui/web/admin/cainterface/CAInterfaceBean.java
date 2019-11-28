@@ -856,6 +856,7 @@ public class CAInterfaceBean implements Serializable {
            }
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(caInfo.getStatus());
+            cainfo.setName(caInfo.getName());
             return cainfo;
         }
         return null;
