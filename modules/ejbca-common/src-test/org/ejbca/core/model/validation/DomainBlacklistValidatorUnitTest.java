@@ -52,7 +52,7 @@ public class DomainBlacklistValidatorUnitTest {
             "\n").getBytes(StandardCharsets.UTF_8);
 
     @Test
-    public void parseBlacklistFile() {
+    public void parseBlacklistFile() throws DomainBlacklistFileException {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
         validator.changeBlacklist(BLACKLIST);
         final Collection<String> blacklist = validator.getBlacklist();
@@ -69,12 +69,15 @@ public class DomainBlacklistValidatorUnitTest {
     @Test
     public void parseMalformedBlacklistFile() {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
-        validator.changeBlacklist(MALFORMED_BLACKLIST);
-        assertTrue(validator.getDomainBlacklistFileErrorMessage().startsWith("Invalid syntax of domain at line 2."));
+        try {
+            validator.changeBlacklist(MALFORMED_BLACKLIST);
+        } catch (DomainBlacklistFileException exception) {
+            assertTrue(exception.getMessage().startsWith("Invalid syntax of domain at line 2."));
+        }    
     }
 
     @Test
-    public void matchAllowedAgainstBlacklist() {
+    public void matchAllowedAgainstBlacklist() throws DomainBlacklistFileException {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
         validator.changeBlacklist(BLACKLIST);
         validator.setNormalizations(Arrays.asList(DomainBlacklistAsciiLookalikeNormalizer.class.getName()));
@@ -85,7 +88,7 @@ public class DomainBlacklistValidatorUnitTest {
     }
 
     @Test
-    public void matchBlockedAgainstBlacklist() {
+    public void matchBlockedAgainstBlacklist() throws DomainBlacklistFileException {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
         validator.changeBlacklist(BLACKLIST);
         validator.setNormalizations(Arrays.asList(DomainBlacklistAsciiLookalikeNormalizer.class.getName()));
@@ -100,9 +103,10 @@ public class DomainBlacklistValidatorUnitTest {
         assertEquals("Unexpected validator result for " + domain + ". ",  expectedResult, result.getKey());
     }
 
-    /** Checks that the exception message contains both the requested and the blacklisted domain. */
+    /** Checks that the exception message contains both the requested and the blacklisted domain. 
+     * @throws DomainBlacklistFileException */
     @Test
-    public void checkExceptionMessage() {
+    public void checkExceptionMessage() throws DomainBlacklistFileException {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
         validator.changeBlacklist(BLACKLIST);
         validator.setNormalizations(Arrays.asList(DomainBlacklistAsciiLookalikeNormalizer.class.getName()));
