@@ -18,7 +18,7 @@ import org.cesecore.ErrorCode;
 
 /**
  * An exception thrown when trying to parse a malformed blacklist file.
- * @version $Id$
+ * @version $Id:$
  */
 public class DomainBlacklistFileException extends CesecoreException {
     private static final long serialVersionUID = 1L;
