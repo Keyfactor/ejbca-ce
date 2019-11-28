@@ -15,7 +15,9 @@ package org.ejbca.ui.web.admin.publisher;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -30,7 +32,13 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
+import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -56,6 +64,17 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     
     private String selectedPublisherName;
     private String newPublisherName = StringUtils.EMPTY;
+    
+    private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
+
+    static {
+        AVAILABLE_PUBLISHERS = new LinkedHashMap<>();
+        AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_LDAPPUBLISHER, "LDAPPUBLISHER");
+        AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_LDAPSEARCHPUBLISHER, "LDAPSEARCHPUBLISHER");
+        AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_ADPUBLISHER, "ACTIVEDIRECTORYPUBLISHER");
+        AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER, "CUSTOMPUBLISHER");
+        AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_MULTIGROUPPUBLISHER, "MULTIGROUPPUBLISHER");
+    }
     
     public void initAccess() throws Exception {
         // To check access 
@@ -83,11 +102,11 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     
     public List<SortableSelectItem> getAvailablePublishers() {
         List<SortableSelectItem> availablePublishers = new ArrayList<>();
-        getEjbcaWebBean().getAuthorizedPublisherNames().forEach(publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher)));
+        getEjbcaWebBean().getAuthorizedPublisherNames().forEach(publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher + " (" + getPublisherType(publisher) + ") ")));
         Collections.sort(availablePublishers);
         return availablePublishers;
     }
-    
+
     // Actions //
     public String editPublisher() {
         if (StringUtils.isNotEmpty(selectedPublisherName)) {
@@ -170,6 +189,44 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
      */
     public boolean getHasEditRights() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITPUBLISHER);
+    }
+    
+    private String getPublisherType(String publisherName) {
+        BasePublisher publisher = publisherSession.getPublisher(publisherName);
+        int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
+        if (publisher instanceof CustomPublisherContainer) {
+            retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
+        }
+        if (publisher instanceof LdapPublisher) {
+            retval = PublisherConst.TYPE_LDAPPUBLISHER;
+        }
+        if (publisher instanceof LdapSearchPublisher) {
+            retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
+        }
+        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
+        if (publisher.getClass().getName().equals("org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher")) {
+            retval = PublisherConst.TYPE_VAPUBLISHER;
+        }
+        if (publisher instanceof ActiveDirectoryPublisher) {
+            retval = PublisherConst.TYPE_ADPUBLISHER;
+        }
+        if (publisher instanceof MultiGroupPublisher) {
+            retval = PublisherConst.TYPE_MULTIGROUPPUBLISHER;
+        }
+        return getActualType(retval, publisher); 
+    }
+
+    private String getActualType(final int publisherType, final BasePublisher publisher) {
+        if (publisherType == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+            final CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
+            final String currentClass = custompublisher.getClassPath();
+            if (currentClass == null || currentClass.isEmpty()) {
+                return Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString();
+            } else {
+                return currentClass.substring(currentClass.lastIndexOf('.') + 1);
+            }
+        }
+        return getEjbcaWebBean().getText(AVAILABLE_PUBLISHERS.get(publisherType));
     }
 
 }
