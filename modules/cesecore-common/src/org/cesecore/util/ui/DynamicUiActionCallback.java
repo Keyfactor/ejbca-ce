@@ -14,6 +14,8 @@ package org.cesecore.util.ui;
 
 import java.util.List;
 
+import org.cesecore.CesecoreException;
+
 /**
  * Action callback from the PSM (may be JSF 2 (JsfDynamicUiPsmFactory) back to the PIM {@link DynamicUiModel}.
  * 
@@ -25,8 +27,9 @@ public interface DynamicUiActionCallback {
      * Action callback method.
      * @param paramter the given (in case of UIInput components)
      * @throws DynamicUiCallbackException any exception containing a message which has to be rendered on UI.
+     * @throws CesecoreException 
      */
-    void action(Object parameter) throws DynamicUiCallbackException;
+    void action(Object parameter) throws DynamicUiCallbackException, CesecoreException;
     
     /**
      * Gets the list of components of the same dialog to be updated.
