@@ -29,7 +29,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -37,7 +36,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -115,19 +113,6 @@ public class CADataHandler implements Serializable {
       }
       caadminsession.updateCACertificate(administrator, caId, EJBTools.wrapCertCollection(certs));
   }
-
-  /**
-   *  @throws CADoesntExistsException 
- * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */
-  public void editCA(CAInfo cainfo) throws AuthorizationDeniedException, CADoesntExistsException, CmsCertificatePathMissingException {
-	  CAInfo oldinfo = caSession.getCAInfo(administrator, cainfo.getCAId());
-	  cainfo.setName(oldinfo.getName());
-	  if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-	      cainfo.setSubjectDN(oldinfo.getSubjectDN());
-	  }
-	  caadminsession.editCA(administrator, cainfo);  
-  }
   
     /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */  
     public boolean removeCA(final int caId) throws AuthorizationDeniedException{     
@@ -203,7 +188,7 @@ public class CADataHandler implements Serializable {
       try {
           return caadminsession.makeRequest(administrator, caid, certChain, nextSignKeyAlias);
       } catch (CertPathValidatorException e) {
-          throw new RuntimeException("Unexpected outcome.", e);
+          throw new IllegalStateException("Unexpected outcome.", e);
       }
   }
   
@@ -255,14 +240,5 @@ public class CADataHandler implements Serializable {
           caadminsession.renewCANewSubjectDn(administrator, caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
       }
   }
-
- public boolean isCARevoked(CAInfo cainfo){
-	 boolean retval = false;
-	 
-	 if(cainfo != null){
-	   retval = RevokedCertInfo.isRevoked(cainfo.getRevocationReason());
-	 }
-	 return retval;
- }
 
 }
