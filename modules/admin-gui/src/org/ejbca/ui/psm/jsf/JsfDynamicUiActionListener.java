@@ -22,6 +22,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.ActionListener;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
@@ -71,6 +72,9 @@ public class JsfDynamicUiActionListener implements Serializable, ActionListener 
                 FacesContext.getCurrentInstance().addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, e.getMessage(), e.getMessage()));
                 // throw new AbortProcessingException(e);
                 // -> Renders the message (no stack trace) on UI.
+            } catch (CesecoreException e) {
+                log.info("Could not process dynamic UI model action callback: " + e.getMessage());
+                FacesContext.getCurrentInstance().addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), e.getMessage()));
             }
         } else {
             throw new AbortProcessingException(new DynamicUiModelException(
