@@ -960,26 +960,6 @@ public class CAInterfaceBean implements Serializable {
         }
         return aliases;
     }
-    
-    /** @deprecated Since EJBCA 7.0.0. Use  cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId) */
-    @Deprecated
-	public boolean isCryptoTokenActive(final int cryptoTokenId) throws AuthorizationDeniedException {
-	    return cryptoTokenManagementSession.isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
-	}
-	
-    /** @deprecated Since EJBCA 7.0.0. Use  cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId) */
-    @Deprecated
-    public boolean isCryptoTokenPresent(final int cryptoTokenId) throws AuthorizationDeniedException {
-        return cryptoTokenManagementSession.isCryptoTokenPresent(authenticationToken, cryptoTokenId);
-    }
-    
-	public String getCryptoTokenName(final int cryptoTokenId) throws AuthorizationDeniedException {
-	    final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-	    if (cryptoTokenInfo == null) {
-	        return "CryptoToken " + cryptoTokenId + " not found.";
-	    }
-	    return cryptoTokenInfo.getName();
-	}
 	
 	/**
 	 * 
