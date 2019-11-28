@@ -56,15 +56,15 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ListPublishersManagedBean.class);
-    
+
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
-    
+
     private String selectedPublisherName;
     private String newPublisherName = StringUtils.EMPTY;
-    
+
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
 
     static {
@@ -75,7 +75,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER, "CUSTOMPUBLISHER");
         AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_MULTIGROUPPUBLISHER, "MULTIGROUPPUBLISHER");
     }
-    
+
     public void initAccess() throws Exception {
         // To check access 
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -83,7 +83,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             getEjbcaWebBean().initialize(request, AccessRulesConstants.REGULAR_VIEWPUBLISHER);
         }
     }
-    
+
     public String getSelectedPublisherName() {
         return selectedPublisherName;
     }
@@ -99,10 +99,11 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     public void setNewPublisherName(final String newPublisherName) {
         this.newPublisherName = newPublisherName;
     }
-    
+
     public List<SortableSelectItem> getAvailablePublishers() {
         List<SortableSelectItem> availablePublishers = new ArrayList<>();
-        getEjbcaWebBean().getAuthorizedPublisherNames().forEach(publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher + " (" + getPublisherType(publisher) + ") ")));
+        getEjbcaWebBean().getAuthorizedPublisherNames().forEach(
+                publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher + " (" + getPublisherType(publisher) + ") ")));
         Collections.sort(availablePublishers);
         return availablePublishers;
     }
@@ -116,7 +117,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             return "listpublishers";
         }
     }
-    
+
     public String deletePublisher() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(selectedPublisherName)) {
             try {
@@ -131,7 +132,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         newPublisherName = StringUtils.EMPTY;
         return "listpublishers";
     }
-    
+
     public String renamePublisher() throws AuthorizationDeniedException {
         if (StringUtils.isEmpty(selectedPublisherName)) {
             addErrorMessage("YOUHAVETOSELECTAPUBLISHER");
@@ -148,7 +149,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         newPublisherName = StringUtils.EMPTY;
         return "listpublishers";
     }
-    
+
     public String addPublisher() throws AuthorizationDeniedException {
         if (StringUtils.isEmpty(StringUtils.trim(newPublisherName))) {
             addErrorMessage("YOUHAVETOENTERAPUBLISHER");
@@ -162,35 +163,35 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         }
         newPublisherName = StringUtils.EMPTY;
         return "listpublishers";
-    }    
-    
+    }
+
     public String clonePublisher() throws AuthorizationDeniedException {
         if (StringUtils.isEmpty(selectedPublisherName)) {
             addErrorMessage("YOUHAVETOSELECTAPUBLISHER");
         } else if (StringUtils.isEmpty(StringUtils.trim(newPublisherName))) {
             addErrorMessage("YOUHAVETOENTERAPUBLISHER");
-        } else {            
-                try {
-                    publisherSession.clonePublisher(getAdmin(), selectedPublisherName, newPublisherName);
-                } catch (PublisherDoesntExistsException e) {
-                    log.info("Publisher " + selectedPublisherName + " does not exists!", e);
-                    addErrorMessage("PUBLISHERDOESNOTEXISTS", selectedPublisherName);
-                } catch (PublisherExistsException e) {
-                    log.info("Publisher " + newPublisherName + " already exists!", e);
-                    addErrorMessage("PUBLISHERALREADYEXISTS", newPublisherName);
-                }
+        } else {
+            try {
+                publisherSession.clonePublisher(getAdmin(), selectedPublisherName, newPublisherName);
+            } catch (PublisherDoesntExistsException e) {
+                log.info("Publisher " + selectedPublisherName + " does not exists!", e);
+                addErrorMessage("PUBLISHERDOESNOTEXISTS", selectedPublisherName);
+            } catch (PublisherExistsException e) {
+                log.info("Publisher " + newPublisherName + " already exists!", e);
+                addErrorMessage("PUBLISHERALREADYEXISTS", newPublisherName);
+            }
         }
         newPublisherName = StringUtils.EMPTY;
         return "listpublishers";
     }
-    
+
     /** 
      * @return true if admin has access to /ca_functionality/edit_publisher/
      */
     public boolean getHasEditRights() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITPUBLISHER);
     }
-    
+
     private String getPublisherType(String publisherName) {
         BasePublisher publisher = publisherSession.getPublisher(publisherName);
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
@@ -213,7 +214,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         if (publisher instanceof MultiGroupPublisher) {
             retval = PublisherConst.TYPE_MULTIGROUPPUBLISHER;
         }
-        return getActualType(retval, publisher); 
+        return getActualType(retval, publisher);
     }
 
     private String getActualType(final int publisherType, final BasePublisher publisher) {
@@ -223,7 +224,13 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             if (currentClass == null || currentClass.isEmpty()) {
                 return Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString();
             } else {
-                return currentClass.substring(currentClass.lastIndexOf('.') + 1);
+                final String classSimpleName = currentClass.substring(currentClass.lastIndexOf('.') + 1);
+                final String className = getEjbcaWebBean().getText(classSimpleName.toUpperCase());
+                if (className.equals(classSimpleName.toUpperCase())) {
+                    return classSimpleName;
+                } else {
+                    return className;
+                }
             }
         }
         return getEjbcaWebBean().getText(AVAILABLE_PUBLISHERS.get(publisherType));
