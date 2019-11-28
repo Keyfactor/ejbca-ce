@@ -156,7 +156,7 @@ public final class CTLogInfo implements Serializable {
 
     /** Makes sure that a URL ends with /ct/v1/ */
     public static String fixUrl(String urlToFix) {
-        urlToFix = urlToFix.trim();
+        urlToFix = urlToFix.replaceAll("\\s","");
         String url = (urlToFix.endsWith("/") ? urlToFix : urlToFix + "/");
         if (!url.endsWith("/ct/v1/")) {
             if (!url.endsWith("/ct/")) {
@@ -203,11 +203,11 @@ public final class CTLogInfo implements Serializable {
     /**
      * Returns a {@link Date} object defining the start date of the validity period, which all certificates
      * published to this CT log must fulfill in order to be accepted, or null if there is no such requirement.
-     * 
+     *
      * <p>For example, if this method returns "20.01.2019" then you should only try to publish
      * certificates to this CT log expiring after this date, since all other certificates
      * will be rejected.
-     * 
+     *
      * @return the validity period start date for sharding or null if there is no such requirement.
      */
     public Date getIntervalStart() {
@@ -217,7 +217,7 @@ public final class CTLogInfo implements Serializable {
     /**
      * Sets a {@link Date} object defining the start date of the validity period, which all certificates
      * published to this CT log must fulfill. See also {@link #getIntervalStart()}.
-     * 
+     *
      * @param intervalStart the new validity start date for sharding or null to disable.
      */
     public void setIntervalStart(final Date intervalStart) {
@@ -227,11 +227,11 @@ public final class CTLogInfo implements Serializable {
     /**
      * Returns a {@link Date} object defining the end date of the validity period, which all certificates
      * published to this CT log must fulfill in order to be accepted, or null if there is no such requirement.
-     * 
+     *
      * <p>For example, if this method returns "20.01.2020" then you should only try to publish
      * certificates to this CT log expiring before this date, since all other certificates
      * will be rejected.
-     * 
+     *
      * @return the validity period end date for sharding or null if there is no such requirement.
      */
     public Date getIntervalEnd() {
@@ -241,7 +241,7 @@ public final class CTLogInfo implements Serializable {
     /**
      * Sets a {@link Date} object defining the end date of the validity period, which all certificates
      * published to this CT log must fulfill. See also {@link #getIntervalEnd()}.
-     * 
+     *
      * @param intervalEnd the new validity end date for sharding or null to disable.
      */
     public void setIntervalEnd(final Date intervalEnd) {
