@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -56,13 +63,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean.
@@ -192,7 +192,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         
         // Test edit
         CA ca = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getName());
-        CAInfo cainfo = ca.getCAInfo();
+        X509CAInfo cainfo = (X509CAInfo) ca.getCAInfo();
         assertEquals(testx509ca.getCAId(), ca2.getCAId());
         assertEquals(0, cainfo.getCRLIssueInterval());
         cainfo.setCRLIssueInterval(50);
@@ -214,8 +214,8 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovals(), false, true, false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(),
                 cainfo.isDoEnforceKeyRenewal(),
         		cainfo.isDoEnforceUniqueDistinguishedName(), cainfo.isDoEnforceUniqueSubjectDNSerialnumber(), cainfo.isUseCertReqHistory(), cainfo.isUseUserStorage(),
-        		cainfo.isUseCertificateStorage(), cainfo.isAcceptRevocationNonExistingEntry(), null, cainfo.getKeepExpiredCertsOnCRL(), -1, false 
-        		/* TODO: Temporary default values, change these when implementing partitioned crls -> */, false, 0, 0);
+        		cainfo.isUseCertificateStorage(), cainfo.isAcceptRevocationNonExistingEntry(), null, cainfo.getKeepExpiredCertsOnCRL(), -1, false, 
+        		cainfo.getUsePartitionedCrl(), 0, 0);
         newinfo.setSubjectDN(cainfo.getSubjectDN());
         newinfo.setName(cainfo.getName());
         caSession.editCA(roleMgmgToken, newinfo);
