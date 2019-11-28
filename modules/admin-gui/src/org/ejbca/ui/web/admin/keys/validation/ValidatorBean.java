@@ -33,6 +33,8 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -500,6 +502,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("Not authorized to edit validator " + validator.getProfileName());
         } catch (KeyValidatorDoesntExistsException e) {
             // NOPMD: ignore do nothing
+        } catch (CesecoreException e) {
+            if (e.getErrorCode().equals(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED)) {
+            addNonTranslatedErrorMessage("Failed to save blacklist validator. " + e.getMessage());
+            } else {
+            addNonTranslatedErrorMessage("An exception occured: " + e.getMessage());
+            }
         }
         return StringUtils.EMPTY;
     }

@@ -20,6 +20,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.AjaxBehaviorListener;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
@@ -60,7 +61,7 @@ public class JsfDynamicUiAjaxBehaviorListener implements Serializable, AjaxBehav
         }
         try {
             dynamicUiProperty.getActionCallback().action(((UIInput) event.getSource()).getSubmittedValue());
-        } catch (DynamicUiCallbackException e) {
+        } catch (DynamicUiCallbackException | CesecoreException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Could not perform dynamic UI property action callback: " + component.getSubmittedValue(), e);
             }
