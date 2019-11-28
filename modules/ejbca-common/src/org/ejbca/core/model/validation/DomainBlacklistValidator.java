@@ -36,14 +36,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.CesecoreException;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.Validator;
@@ -103,10 +102,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     private static final int MAX_LOG_DOMAINS = 100;
     
-    
-    private static int maxCountMessageDisplay = 0; // Keep track on how many error messages to display in admingui at any one time
-    private String domainBlacklistFileErrorMessage;
-    
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
 
@@ -122,28 +117,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
     }
     
-    private void addNonTranslatedInfoMessage(final String message) {
-        //We don't display more than the first 5 lines in admingui
-        if (maxCountMessageDisplay < 4) {
-            domainBlacklistFileErrorMessage = message;
-            if (log.isDebugEnabled()) {
-                log.debug("Adding error message: " + domainBlacklistFileErrorMessage);
-            }
-            FacesContext context = FacesContext.getCurrentInstance();
-            if (context != null) {
-                context.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, domainBlacklistFileErrorMessage, 
-                        domainBlacklistFileErrorMessage));
-            }
-            //Increment count of displayed messages
-            maxCountMessageDisplay++;
-        }
-     }
-    
-    // Used by Unit test
-    public String getDomainBlacklistFileErrorMessage() {
-        return this.domainBlacklistFileErrorMessage;
-    }
-
     @Override
     public List<Integer> getApplicablePhases() {
         return new ArrayList<>(Arrays.asList(IssuancePhase.DATA_VALIDATION.getIndex(), IssuancePhase.APPROVAL_VALIDATION.getIndex()));
@@ -174,19 +147,20 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
     }
 
-    /** Replaces the existing domain blacklist with the uploaded one. Takes a File object. */
-    private void changeBlacklist(File file) {
+    /** Replaces the existing domain blacklist with the uploaded one. Takes a File object. 
+     * @throws DomainBlacklistFileException */
+    private void changeBlacklist(File file) throws DomainBlacklistFileException {
         try {
             final byte[] bytes = FileUtils.readFileToByteArray(file);
             changeBlacklist(bytes);
         } catch (IOException e) {
-            addNonTranslatedInfoMessage("Unable to parse domain black list. " + e.getMessage());
-            maxCountMessageDisplay = 0;
+            throw new DomainBlacklistFileException("Unable to parse domain black list. " + e.getMessage());
         }
     }
 
-    /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. */
-    public void changeBlacklist(final byte[] bytes) {
+    /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. 
+     * @throws DomainBlacklistFileException */
+    public void changeBlacklist(final byte[] bytes) throws DomainBlacklistFileException {
         final Set<String> domainSet = new TreeSet<>(); // store entries sorted in database
         try {
             try (final InputStream domainBlacklistInputStream = new ByteArrayInputStream(bytes);
@@ -206,7 +180,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                     validateDomain(line, lineNumber);
                     domainSet.add(line.toLowerCase(Locale.ROOT));
                 }
-                maxCountMessageDisplay = 0;
                 if (log.isDebugEnabled()) {
                     log.debug("Parsed domain blacklist with " + domainSet.size() + " entries (" + lineNumber + " lines)");
                 }
@@ -217,8 +190,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 // The Validator cache is reloaded after saving, so that will trigger a reload of the cache here in DomainBlacklistValidator 
             }
         } catch (IOException e) {
-            addNonTranslatedInfoMessage("Unable to parse domain black list. " + e.getMessage());
-            maxCountMessageDisplay = 0;
+            throw new DomainBlacklistFileException("Unable to parse domain black list. " + e.getMessage());
         }
     }
 
@@ -226,12 +198,13 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
      * Performs a basic validation of a domain, just to prevent mistakes.
      * Given that we may want to block fraud domains, we should not be too strict with standards compliance here.
      * Otherwise, we could have used StringTools.isValidSanDnsName
+     * @throws DomainBlacklistFileException 
      */
-    private void validateDomain(final String domain, final int lineNumber) {
+    private void validateDomain(final String domain, final int lineNumber) throws DomainBlacklistFileException {
         if (!allowedDomainCharacters.matcher(domain).matches()) {
             final String message = "Invalid syntax of domain at line " + lineNumber + (lineNumber < 5 ? ". The file must be a plain text file in ASCII format, or UTF-8 format (without Byte Order Mark). Please put one domain per line. IDN domains must be in Punycode format." : "");
             log.info(message);
-            addNonTranslatedInfoMessage(message);
+            throw new DomainBlacklistFileException(message);
         }
     }
 
@@ -301,7 +274,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModel(data, getFilteredDataMapForLogging()) {
             @Override
-            public Map<String, Object> getRawData() {
+            public Map<String, Object> getRawData() throws CesecoreException {
                 final Map<String, Object> rawData = super.getRawData();
                 // Parse file data
                 final DynamicUiProperty<?> uploadUiProperty = getProperties().get(BLACKLIST_UPLOAD_KEY);
@@ -400,7 +373,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         testButton.setTransientValue(true);
         testButton.setActionCallback(new DynamicUiActionCallback() {
             @Override
-            public void action(final Object parameter) throws DynamicUiCallbackException {
+            public void action(final Object parameter) throws DynamicUiCallbackException, CesecoreException {
                 final DynamicUiProperty<?> domainEntryProperty = uiModel.getProperties().get(TEST_DOMAINENTRY_KEY);
                 uiModel.writeProperties(getRawData());
                 reloadBlacklistData();
