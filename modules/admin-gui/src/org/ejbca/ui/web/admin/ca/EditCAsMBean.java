@@ -1115,7 +1115,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setSelectedCryptoTokenCertSignKey(final String selectedCryptoTokenCertSignKey) {
         if (selectedCryptoTokenCertSignKey != null) {
-            caInfoDto.setCryptoTokenIdParam(selectedCryptoTokenCertSignKey);
+            caInfoDto.setCryptoTokenCertSignKey(selectedCryptoTokenCertSignKey);
         }
     }
 
