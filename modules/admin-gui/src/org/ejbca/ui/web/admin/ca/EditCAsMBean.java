@@ -79,6 +79,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
@@ -2042,10 +2043,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             updateCryptoTokenInfo();
             if (currentCryptoTokenId != 0) {
                 try {
-                    if (!isEditCA || isCaUninitialized) {
-                        updateAvailableKeyAliasesList();
-                        generateKeyAlreadyInUseMap();
-                    }
+                    // List of key aliases is needed even on Edit CA page, to show the renew key dropdown list
+                    updateAvailableKeyAliasesList();
+                    generateKeyAlreadyInUseMap();
                     if (isEditCA) {
                         setKeyAliasesFromCa();
                     } else {
@@ -2059,14 +2059,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private void updateAvailableKeyAliasesList() throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        availableCryptoTokenKeyAliases = caBean.getAvailableCryptoTokenAliases(currentCryptoTokenId, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenMixedAliases = caBean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenEncryptionAliases = caBean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, caInfoDto.getSignatureAlgorithmParam());
+        final List<KeyPairInfo> keyPairInfos = caBean.getKeyPairInfos(currentCryptoTokenId);
+        availableCryptoTokenKeyAliases = caBean.getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenMixedAliases = caBean.getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenEncryptionAliases = caBean.getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
     }
     
-    private void generateKeyAlreadyInUseMap() throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    private void generateKeyAlreadyInUseMap() {
         // Create already in use key map
-        for (final String alias : caBean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, caInfoDto.getSignatureAlgorithmParam())) {
+        for (final String alias : availableCryptoTokenMixedAliases) {
             final String alreadyInUse = caBean.isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
                     : StringUtils.EMPTY;
             aliasUsedMap.put(alias, alreadyInUse);
