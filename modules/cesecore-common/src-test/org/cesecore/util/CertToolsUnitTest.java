@@ -1635,7 +1635,7 @@ public class CertToolsUnitTest {
         try {
             authreq.verify(pubKey);
         } catch (Exception e) {
-            fail();
+            fail("Exception verifying authenticated request: " + e.getMessage());
         }
         // Test verification of an authenticated request that fails
         parsedObject = CertificateParser.parseCVCObject(cvcreqrenew);
@@ -1643,8 +1643,8 @@ public class CertToolsUnitTest {
         req = authreq.getRequest();
         try {
             authreq.verify(req.getCertificateBody().getPublicKey());
-            fail();
-        } catch (Exception e) {
+            fail("verifying authenticated request should have failed");
+        } catch (Exception e) { // NOPMD:
         }
         
         // IS cert
