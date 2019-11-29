@@ -467,8 +467,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 log.warn("CA configured to enforce unique SubjectDN serialnumber, but not to store any user data. Check will be ignored. Please verify your configuration.");
             }
         }
+        
+        String certProfileName = certificateProfileSession.getCertificateProfileName(endEntity.getCertificateProfileId());
+        
         // Store a new UserData in the database, if this CA is configured to do so.
-        if (caInfo.isUseUserStorage()) {
+        // Store it in case of the OCSPSIGNER certificate profile anyway, since otherwise OCSP signer renewal via peers won't work for throwaway CAs
+        if (caInfo.isUseUserStorage() || CertificateProfile.OCSPSIGNERPROFILENAME.equals(certProfileName)) {
             try {
                 final ExtendedInformation extendedInformation = endEntity.getExtendedInformation();
                 ensureOldClusterNodeCompatibility(extendedInformation);
