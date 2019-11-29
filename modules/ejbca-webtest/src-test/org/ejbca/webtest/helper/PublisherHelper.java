@@ -85,9 +85,9 @@ public class PublisherHelper extends BaseHelper {
      * @param publisherName
      */
     public void assertPublisherExists(final String publisherName) {
-        final List<String> selectNames = getSelectNames(Page.LISTBOX_SELECT_PUBLISHER);
-        assertNotNull(publisherName + " was not found in the List of Publishers", selectNames);
-        assertTrue(publisherName + " was not found in the List of Publishers", selectNames.contains(publisherName));
+        final List<String> selectValues = getSelectValues(Page.LISTBOX_SELECT_PUBLISHER);
+        assertNotNull(publisherName + " was not found in the List of Publishers", selectValues);
+        assertTrue(publisherName + " was not found in the List of Publishers", selectValues.contains(publisherName));
     }
     
     /**
@@ -101,7 +101,7 @@ public class PublisherHelper extends BaseHelper {
     }
     
     public void selectPublisherFromList(final String publisherName) {
-        selectOptionByName(Page.LISTBOX_SELECT_PUBLISHER, publisherName);
+        selectOptionByValue(Page.LISTBOX_SELECT_PUBLISHER, publisherName);
     }
 
     public void deletePublisher(final String expectedAlertMessage, final boolean isConfirmed) {
