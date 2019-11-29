@@ -26,6 +26,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
@@ -919,44 +920,42 @@ public class CAInterfaceBean implements Serializable {
         }
         return failedCryptoTokens;
     }
+	
+	public List<KeyPairInfo> getKeyPairInfos(int cryptoTokenId) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+	    if (cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId) == null) {
+           log.debug("CryptoToken didn't exist when trying to get aliases");
+           return Collections.emptyList();
+        }
+        return cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+	}
 
     /** @return a list of key pair aliases that can be used for either signing or encryption under the supplied CA signing algorithm */
-    public List<String> getAvailableCryptoTokenMixedAliases(int cryptoTokenId, final String caSigingAlgorithm) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    public List<String> getAvailableCryptoTokenMixedAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>();
-        aliases.addAll(getAvailableCryptoTokenAliases(cryptoTokenId, caSigingAlgorithm));
-        final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(cryptoTokenId, caSigingAlgorithm);
+        aliases.addAll(getAvailableCryptoTokenAliases(keyPairInfos, caSigingAlgorithm));
+        final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caSigingAlgorithm);
         aliases.removeAll(encAliases);  // Avoid duplicates
         aliases.addAll(encAliases);
         return aliases;
     }
 
     /** @return a list of key pair aliases that can be used for signing using the supplied CA signing algorithm */
-	public List<String> getAvailableCryptoTokenAliases(int cryptoTokenId, final String caSigingAlgorithm) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+	public List<String> getAvailableCryptoTokenAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
 	    final List<String> aliases = new ArrayList<>();
-	    if (cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId) == null) {
-	       log.debug("CryptoToken didn't exist when trying to get aliases");
-	    } else {
-            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
-            for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-                if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
-                }
+        for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
-	    }
+        }
         return aliases;
 	}
 
     /** @return a list of key pair aliases that can be used for encryption using the supplied CA signing algorithm to derive encryption algo. */
-    public List<String> getAvailableCryptoTokenEncryptionAliases(int cryptoTokenId, final String caSigingAlgorithm) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>();
-        if (cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId) == null) {
-            log.debug("CryptoToken didn't exist when trying to get aliases");
-        } else {
-            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
-            for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-                if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
-                }
+        for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
         }
         return aliases;
