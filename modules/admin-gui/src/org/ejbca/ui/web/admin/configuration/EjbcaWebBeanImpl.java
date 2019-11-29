@@ -858,7 +858,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /**
-     * Returns authorized end entity  profile names as a treemap of name (String) -> id (Integer)
+     * Returns names of authorized Certificate Profile of 'End Entity' type.
+     * @return TreeMap of name (String) -> id (Integer)
      */
     @Override
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
