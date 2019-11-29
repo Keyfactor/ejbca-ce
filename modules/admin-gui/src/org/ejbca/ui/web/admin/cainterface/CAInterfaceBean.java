@@ -973,12 +973,12 @@ public class CAInterfaceBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAADD.resource());
     }
 	
-	public boolean isCaExportable(CAInfo caInfo) throws AuthorizationDeniedException {
+	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
 	    if (caInfoStatus != CAConstants.CA_EXTERNAL && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
 	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
-	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
+	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
 	        if (cryptoTokenInfo!=null) {
 	            ret = (SoftCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType())) && cryptoTokenInfo.isAllowExportPrivateKey();
 	        }
