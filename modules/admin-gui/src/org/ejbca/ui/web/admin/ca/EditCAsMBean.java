@@ -150,6 +150,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean isCaRevoked = false;
     private Map<Integer, String> keyValidatorMap = getEjbcaWebBean().getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap();
     private final Map<Integer, String> approvalProfileMap = getEjbcaWebBean().getApprovalProfileIdToNameMap();
+    private final TreeMap<String, Integer> certProfilesOfEndEntityType = getEjbcaWebBean().getAuthorizedEndEntityCertificateProfileNames();
+    private boolean isUniqueIssuerDnSerialNoIndexPresent;
+    private boolean isCvcAvailable;
     private boolean signbyexternal = false;
     private boolean revokable = true;
     private boolean waitingresponse = false;  
@@ -191,6 +194,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private UploadedFile fileRecieveFileImportRenewal;
 
     private String viewCertLink;
+    private boolean hasLinkCertificate;
+    private String issuerDn = "unknown";
+    private Date rolloverNotBefore = null;
+    private Date rolloverNotAfter = null;
     
 
     public UploadedFile getFileRecieveFileImportRenewal() {
@@ -250,12 +257,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         cadatahandler = caBean.getCADataHandler();
         caIdToNameMap = caSession.getCAIdToNameMap();
+        isUniqueIssuerDnSerialNoIndexPresent = caBean.isUniqueIssuerDNSerialNoIndexPresent();
+        isCvcAvailable = caBean.isCvcAvailable();
 
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         initPageVariables(requestMap);
 
         viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.xhtml";
-        
+
         try {
             cainfo = caBean.getCAInfo(caid).getCAInfo();
         } catch (final AuthorizationDeniedException e) {
@@ -359,15 +368,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isCaUninitialized() {
-        return this.isCaUninitialized;
+        return isCaUninitialized;
     }
     
     public boolean isCaExternal() {
-        return this.isCaexternal;
+        return isCaexternal;
     }
     
     public boolean isSignByExternal() {
-        return this.signbyexternal;
+        return signbyexternal;
     }
     
     public String getCurrentCaSigningAlgorithm() {
@@ -508,19 +517,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCaIssuerDN() {
-        String issuerDN = "unknown";
-        try {
-            final Collection<Certificate> cachain = cainfo.getCertificateChain();
-            if (cachain != null && !cachain.isEmpty()) {
-                final Iterator<Certificate> iter = cachain.iterator();
-                final Certificate cacert = iter.next();
-                issuerDN = CertTools.getIssuerDN(cacert);
-            }
-        } catch (final Exception e) {
-            addNonTranslatedErrorMessage(e);
-            issuerDN = e.getMessage();
-        }
-        return issuerDN;
+        return issuerDn;
     }
 
     public String getSignedByAsText() {
@@ -887,51 +884,25 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isRenderLinkCertificate() {
-        return caAdminSession.getLatestLinkCertificate(caid) != null;
+        return hasLinkCertificate;
     }
 
     public boolean isRollOverDate() {
-        Date rolloverDate = null;
-        try {
-            rolloverDate = caBean.getRolloverNotBefore(caid);
-        } catch (final CADoesntExistsException e) {
-            log.error("Error while getting roll over not before!", e);
-        }
-        return rolloverDate != null;
+        return rolloverNotBefore != null;
     }
     
     public String getCaRollOverNotAfter() {
-        Date currentValidity = null;
-        try {
-            currentValidity = caBean.getRolloverNotAfter(caid);
-        } catch ( AuthorizationDeniedException e) {
-            log.error("Error while getting roll over not after!", e);
-        }
-        return getEjbcaWebBean().formatAsISO8601(currentValidity);
+        return rolloverNotAfter != null ? getEjbcaWebBean().formatAsISO8601(rolloverNotAfter) : StringUtils.EMPTY;
     }
     
     public String getCaRollOverNotBefore() {
-        Date rolloverDate = null;
-        try {
-            rolloverDate = caBean.getRolloverNotBefore(caid);
-        } catch (final CADoesntExistsException e) {
-            log.error("Error while getting roll over not before!", e);
-        }
-        return rolloverDate != null ? getEjbcaWebBean().formatAsISO8601(rolloverDate) : StringUtils.EMPTY;
+        return rolloverNotBefore != null ? getEjbcaWebBean().formatAsISO8601(rolloverNotBefore) : StringUtils.EMPTY;
     }
     
     public String getConfirmRolloverDate() {
-        Date rolloverDate = null;
         final Date now = new Date();
-
-        try {
-            rolloverDate = caBean.getRolloverNotBefore(caid);
-        } catch (final CADoesntExistsException e) {
-            log.error("Error while getting roll over not before!", e);
-        }
-        
-        if (rolloverDate != null) {
-            return rolloverDate.after(now) ? " onclick=\"return confirm('Next certificate is not yet valid! Are you sure?')\"" : StringUtils.EMPTY;
+        if (rolloverNotBefore != null) {
+            return rolloverNotBefore.after(now) ? " onclick=\"return confirm('Next certificate is not yet valid! Are you sure?')\"" : StringUtils.EMPTY;
         }
         return StringUtils.EMPTY;
     }
@@ -953,12 +924,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isCaExportable() {
-        try {
-            return caBean.isCaExportable(cainfo);
-        } catch (final AuthorizationDeniedException e) {
-            log.error("Error while accessing ca bean!", e);
-        }
-        return false;
+        return caBean.isCaExportable(cainfo);
     }
     
     public boolean isEditCANotUninitializedNotExternal() {
@@ -1197,23 +1163,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public List<SelectItem> getThrowAwayDefaultProfileList() {
-        final TreeMap<String, Integer> allp = getEjbcaWebBean().getAuthorizedEndEntityCertificateProfileNames();
-        final Iterator<String> iter = allp.keySet().iterator();
         final List<SelectItem> resultList = new ArrayList<>();
-        while(iter.hasNext()){
-            final String nextprofilename = iter.next();
-            final int certprofid = allp.get(nextprofilename);
-            resultList.add(new SelectItem(certprofid, nextprofilename, "", isCertificateProfileForNonExistingDisabled()));
+        for (final String profilename : certProfilesOfEndEntityType.keySet()) {
+            final int certprofid = certProfilesOfEndEntityType.get(profilename);
+            resultList.add(new SelectItem(certprofid, profilename, "", isCertificateProfileForNonExistingDisabled()));
         }
         return resultList;
     }
     
     public boolean isRenderCvcAvailable() {
-        return (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) && (!caBean.isCvcAvailable() || caBean.isUniqueIssuerDNSerialNoIndexPresent());
+        return (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) && (!isCvcAvailable || isUniqueIssuerDnSerialNoIndexPresent);
     }
     
     public boolean isCvcAvailable() {
-        return caBean.isCvcAvailable();
+        return isCvcAvailable;
     }
     
     
@@ -1487,9 +1450,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         try {
             cadatahandler.receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
-            cafuturerolloverdate = caBean.getRolloverNotBefore(caid);
-            if (cafuturerolloverdate != null) {
-                addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(cafuturerolloverdate));
+            if (rolloverNotBefore != null) {
+                addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(rolloverNotBefore));
             } else {
                 addInfoMessage(getEjbcaWebBean().getText("CAACTIVATED"));
             }
@@ -1939,6 +1901,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 } else {
                     caInfoDto.setCaSubjectAltName(x509cainfo.getSubjectAltName());
                 }
+                try {
+                    rolloverNotBefore = caBean.getRolloverNotBefore(caid);
+                    rolloverNotAfter = caBean.getRolloverNotAfter(caid);
+                } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+                    log.warn("Failed to get CA notAfter and/or rollover date", e);
+                }
             } else {
                 caInfoDto.setCaSubjectAltName(x509cainfo.getSubjectAltName());
             }
@@ -1946,9 +1914,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         caInfoDto.setCaSubjectDN(cainfo.getSubjectDN());
         approvalRequestItems = initApprovalRequestItems();
+        final Collection<Certificate> cachain = cainfo.getCertificateChain();
+        if (cachain != null && !cachain.isEmpty()) {
+            final Iterator<Certificate> iter = cachain.iterator();
+            final Certificate cacert = iter.next();
+            issuerDn = CertTools.getIssuerDN(cacert);
+        }
         
         if (isCaUninitialized) {
             createLinkCertificate = false;
+        } else {
+            hasLinkCertificate = (caAdminSession.getLatestLinkCertificate(caid) != null);
         }
         
         if (isRenderUseCaNameChange()) {
