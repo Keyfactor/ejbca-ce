@@ -615,7 +615,7 @@
 
 				<h:panelGroup
 					rendered="#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}">
-					<h:selectOneMenu value="#{editCAsMBean.caInfoDto.signedBy}"
+					<h:selectOneMenu id="cadatasignedby" value="#{editCAsMBean.caInfoDto.signedBy}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:selectItems value="#{editCAsMBean.signedByList}" />
 						<f:ajax event="change"
