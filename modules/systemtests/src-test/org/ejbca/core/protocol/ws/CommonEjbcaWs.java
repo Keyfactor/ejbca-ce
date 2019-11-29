@@ -335,15 +335,18 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
             return;
         }
-        /* Similar to overriding system properties like
-         * 
+        /* 
          *  System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
          *  System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
          *  System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
          *  System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
-         * 
-         * but also ensures that these are actually loaded and used if another part of the JVM (like remote EJB CLI) has set these as well.
          */
+        // For Apache CFX, used when there is no SOAP in JDK anymore (JDK >9), we need to set these properties
+        System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
+        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+        System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
+        System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
+        // For standard Java 8, this is similar to overriding system properties like and we don't need to set these properties...unless Apache CFX is used (when on the classpath)
         HttpsURLConnection.setDefaultSSLSocketFactory(getSSLFactory(TEST_ADMIN_FILE, PASSWORD.toCharArray())); 
         
         createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");

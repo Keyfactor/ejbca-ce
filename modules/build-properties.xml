@@ -366,6 +366,19 @@
 		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
 	</path>
 
+    <!-- Client jars needed din order to run a WS client on Java 9 and later where the WS stack is not part of the SDK -->
+    <path id="soapclient.classpath">
+        <fileset dir="${ejbca.home}/lib/jee">
+            <include name="javaee-api*.jar"/>
+        </fileset>
+        <fileset dir="${ejbca.home}/lib/jee/soapclient">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${ejbca.home}/lib/ext">
+            <include name="geronimo-osgi-locator*.jar"/>
+        </fileset>
+    </path>
+
 	<path id="lib.servicemanifestbuilder.classpath">
 		<fileset dir="${ejbca.home}/lib/ext" includes="servicemanifestbuilder*.jar"/>
 	</path>
