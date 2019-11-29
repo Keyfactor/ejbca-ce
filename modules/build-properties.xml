@@ -228,20 +228,20 @@
 	</path>
 	
 	<path id="lib.easymock.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/easymock">
-			<include name="*.jar"/>
+        <!-- this is for cglib and objenesis, so we don't have to duplicate those jars -->
+		<fileset dir="${ejbca.home}/lib/ext/test/powermock">
+			<include name="cglib-nodep*.jar"/>
+            <include name="objenesis-*.jar"/>
 		</fileset>
 		<!-- TODO To support legacy references, use lib.test.classpath instead of lib.easymock.classpath -->
 		<fileset dir="${ejbca.home}/lib/ext/test">
-			<include name="easymock-3.6.jar"/>
+			<include name="easymock-*.jar"/>
 		</fileset>
 	</path>
 
 	<path id="lib.test.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/test">
 			<include name="*.jar"/>
-			<exclude name="*-javadoc.jar"/>
-			<exclude name="*-sources.jar"/>
 		</fileset>
 	</path>
 
