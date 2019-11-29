@@ -201,6 +201,13 @@
     	<copy todir="${mod.ejbca-ws-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${compile.classpath.property}"/>
     	</copy>
+        <pathconvert property="soapclient.classpath.property" pathsep=" ">
+            <path refid="soapclient.classpath" />
+            <map from="${ejbca.home}/" to=""/>
+        </pathconvert>
+        <copy todir="${mod.ejbca-ws-cli.dist}/lib" flatten="true">
+            <fileset dir="${ejbca.home}" includes="${soapclient.classpath.property}"/>
+        </copy>
     	<!--
     	<pathconvert property="lib.jaxws-client.classpath.property" pathsep=" ">
     	    <path refid="lib.jaxws-client.classpath" />
