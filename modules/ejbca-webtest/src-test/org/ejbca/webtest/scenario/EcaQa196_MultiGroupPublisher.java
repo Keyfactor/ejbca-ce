@@ -49,14 +49,15 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     
     // Test Data
     private static class TestData {
-        static final Map<String, String> PUBLISHERS;
+        static final Map<String, String> PUBLISHERS_SIMPLE_NAME;
         static {
-            PUBLISHERS = new LinkedHashMap<>();
-            PUBLISHERS.put("PUBLISHER_ONE", "pub1");
-            PUBLISHERS.put("PUBLISHER_TWO", "pub2");
-            PUBLISHERS.put("PUBLISHER_THREE", "pub3");
-            PUBLISHERS.put("PUBLISHER_FOUR", "pub4");
+            PUBLISHERS_SIMPLE_NAME = new LinkedHashMap<>();
+            PUBLISHERS_SIMPLE_NAME.put("PUBLISHER_ONE", "pub1");
+            PUBLISHERS_SIMPLE_NAME.put("PUBLISHER_TWO", "pub2");
+            PUBLISHERS_SIMPLE_NAME.put("PUBLISHER_THREE", "pub3");
+            PUBLISHERS_SIMPLE_NAME.put("PUBLISHER_FOUR", "pub4");
         }
+        
         static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_ONE = "pub2\npub3\npub4";
         static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_TWO = "pub3\npub4";
         static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_THREE = "pub4";
@@ -81,7 +82,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     
     @AfterClass
     public static void exit() throws ReferencesToItemExistException, AuthorizationDeniedException {
-        for (final String publisherName : TestData.PUBLISHERS.values()) {
+        for (final String publisherName : TestData.PUBLISHERS_SIMPLE_NAME.values()) {
             removePublisherByName(publisherName);
         }
         afterClass();
@@ -90,16 +91,16 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     @Test
     public void stepA_addPublishers() {
         publisherHelper.openPage(getAdminWebUrl());
-        for (final String publisher : TestData.PUBLISHERS.values()) {
+        for (final String publisher : TestData.PUBLISHERS_SIMPLE_NAME.values()) {
             publisherHelper.addPublisher(publisher);
         }
-        publisherHelper.assertPublishersExist(TestData.PUBLISHERS.values());
+        publisherHelper.assertPublishersExist(TestData.PUBLISHERS_SIMPLE_NAME.values());
     }
     
     @Test
     public void stepB_setPublisherTypeAsMultiGroupPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_ONE"));
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS_SIMPLE_NAME.get("PUBLISHER_ONE"));
         publisherHelper.editPublisher();
         publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
         publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_ONE);
@@ -110,7 +111,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     @Test
     public void stepC_failWhenUnknowPublisherAddedToGroup() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_ONE"));
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS_SIMPLE_NAME.get("PUBLISHER_ONE"));
         publisherHelper.editPublisher();
         publisherHelper.setPublisherGroup(TestData.NONEXISTING_PUBLISHER);
         publisherHelper.save();
@@ -123,7 +124,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         publisherHelper.save();
         publisherHelper.assertBackToListPublisherPage();
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_ONE"));
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS_SIMPLE_NAME.get("PUBLISHER_ONE"));
         publisherHelper.editPublisher();
         publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_ONE);
         publisherHelper.assertMultiGroupPublishersTextAreaValue(TestData.PUBLISHERS_GROUP_FOR_PUB_ONE);
@@ -134,7 +135,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     @Test
     public void stepE_addSecondMultiGroupPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_TWO"));
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS_SIMPLE_NAME.get("PUBLISHER_TWO"));
         publisherHelper.editPublisher();
         publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
         publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_TWO);
@@ -149,7 +150,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     @Test
     public void stepF_addThirdMultiGroupPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_THREE"));
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS_SIMPLE_NAME.get("PUBLISHER_THREE"));
         publisherHelper.editPublisher();
         publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
         publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_THREE);
@@ -160,7 +161,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     @Test
     public void stepG_deletePublisherUsedbyAnotherPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_TWO"));
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS_SIMPLE_NAME.get("PUBLISHER_TWO"));
         publisherHelper.deletePublisher(TestData.PUBLISHER_DELETE_MESSAGE, true);
         publisherHelper.assertHasErrorMessage(TestData.DELETE_PUBLISHER_INUSE_ERROR_MESSAGE);
     }
