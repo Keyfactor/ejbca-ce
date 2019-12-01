@@ -215,14 +215,9 @@
 	<classpathentry kind="lib" path="lib/hibernate/FastInfoset-1.2.15.jar"/>
     <classpathentry kind="lib" path="lib/ext/test/easymock-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.21.0-GA.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-api-easymock-1.7.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-api-support-1.7.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-core-1.7.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-module-junit4-1.7.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-module-junit4-common-1.7.4.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-reflect-1.7.4.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.24.0-GA.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/extentreports-3.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/byte-buddy-1.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-5.4.4.Final.jar"/>
