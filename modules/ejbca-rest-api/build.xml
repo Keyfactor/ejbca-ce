@@ -56,7 +56,7 @@
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-common.jar"/>
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-ejb.jar"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
-		<path refid="lib.test.classpath"/>
+		<path refid="lib.easymock.classpath"/>
         <path refid="lib.resteasy-jaxrs.classpath"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
