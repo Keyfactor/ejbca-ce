@@ -74,7 +74,7 @@ public class JsfDynamicUiActionListener implements Serializable, ActionListener 
                 // -> Renders the message (no stack trace) on UI.
             } catch (CesecoreException e) {
                 log.info("Could not process dynamic UI model action callback: " + e.getMessage());
-                throw new AbortProcessingException(e.getMessage(), e);
+                FacesContext.getCurrentInstance().addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), e.getMessage()));
             }
         } else {
             throw new AbortProcessingException(new DynamicUiModelException(
