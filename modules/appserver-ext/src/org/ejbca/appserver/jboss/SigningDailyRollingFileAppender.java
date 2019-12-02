@@ -1,11 +1,9 @@
 package org.ejbca.appserver.jboss;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,10 +14,15 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.helpers.LogLog;
@@ -360,35 +363,34 @@ class SignerThread implements Runnable { // NOPMD this is not run in the ejb app
 			byte[] digest = dig.digest();
 			TimeStampRequest timeStampRequest = timeStampRequestGenerator.generate(TSPAlgorithms.SHA1, digest, BigInteger.valueOf(nonce));
 
-			// create a singular HttpClient object
-			HttpClient client = new HttpClient();
+            // create a singular HttpClient object
+			CloseableHttpClient httpclient = HttpClients.createDefault();
+            
+            final HttpPost post = new HttpPost(urlstr);
+            //establish a connection within 5 seconds
+            final int timeoutMillis = 5000;
+            final RequestConfig reqcfg = RequestConfig.custom()
+                    .setConnectionRequestTimeout(timeoutMillis)
+                    .setConnectTimeout(timeoutMillis)
+                    .setSocketTimeout(timeoutMillis)
+                    .build();
+            post.setConfig(reqcfg);
+            post.setHeader("Content-Type", "application/timestamp-query");
+            
+            InputStreamEntity reqEntity = new InputStreamEntity(
+                    new ByteArrayInputStream(timeStampRequest.getEncoded()), -1, ContentType.APPLICATION_OCTET_STREAM);
+            reqEntity.setChunked(true);
+            post.setEntity(reqEntity);
 
-			//establish a connection within 5 seconds
-			client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);			
-			PostMethod method = new PostMethod(urlstr);
-			method.setParameter("http.socket.timeout", "5000");
-			method.setRequestHeader("Content-Type", "application/timestamp-query");
-			method.setRequestEntity(new InputStreamRequestEntity(new ByteArrayInputStream(timeStampRequest.getEncoded())));
-			method.setContentChunked(true);
-			InputStream input = null;
-			ByteArrayOutputStream baos = null;
-			byte[] replyBytes = null;
-			try {
-				client.executeMethod(method);
-				if (method.getStatusCode() == HttpStatus.SC_OK) {
-					replyBytes = method.getResponseBody();
+            // POST and read input 
+			byte[] replyBytes = null;            
+			try (CloseableHttpResponse response = httpclient.execute(post)) {
+				if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				    replyBytes = EntityUtils.toByteArray(response.getEntity());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-			} finally {
-				method.releaseConnection();
-				if (input != null) { 
-					input.close(); 
-				}
-				if (baos != null) { 
-					baos.close(); 
-				}
-			}   
+			}
 
 			if ( (outfile != null) && (replyBytes != null) ) {
 				// Store request

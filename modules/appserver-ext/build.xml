@@ -16,7 +16,7 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.commons-httpclient.classpath"/>
+		<path refid="lib.hc.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
         <path location="${mod.cesecore-common.lib}"/>
