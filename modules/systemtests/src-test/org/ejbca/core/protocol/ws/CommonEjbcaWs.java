@@ -335,12 +335,6 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
             return;
         }
-        /* 
-         *  System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
-         *  System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
-         *  System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
-         *  System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
-         */
         // For Apache CFX, used when there is no SOAP in JDK anymore (JDK >9), we need to set these properties
         System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
         System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
