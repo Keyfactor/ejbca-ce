@@ -12,12 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.cli.infrastructure.library;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
@@ -38,7 +35,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
+import static org.junit.Assert.assertTrue;
+
+/** Tests that we can load CliCommandPlugin's dynamically as new commands when the CliCommandPlugin's are available on the classpath
+ * 
  * @version $Id$
  *
  */
@@ -48,6 +48,7 @@ public class CommandLibraryTest {
     private static final String META_INF = "META-INF";
     private static final String SERVICES = "services";
     
+    /** THe CliCommandPlugin that we want to try to find dynamically */
     private static final String TESTCLASS = "import org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin; import java.util.Set; import java.util.HashSet; import org.ejbca.ui.cli.infrastructure.command.CommandResult;"
             + "public class MockCommand implements CliCommandPlugin { "
             + "public CommandResult execute(String... arguments) { return CommandResult.SUCCESS; } "
@@ -61,20 +62,17 @@ public class CommandLibraryTest {
     private File temporaryFileDirectory;
     private File temporarySourceDirectory;
 
+    private URLClassLoader myClassLoader; 
     @Before
     public void setup() throws IOException {
         //Create a temporary file directory that we'll add to the classpath
         temporaryFileDirectory = FileTools.createTempDirectory();
         temporarySourceDirectory = FileTools.createTempDirectory(temporaryFileDirectory);
-        //Let's do the ugliest hack of hacks and add that directory to the classpath at runtime
-        URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-        try {
-            Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
-            method.setAccessible(true);
-            method.invoke(sysloader, new Object[] { temporarySourceDirectory.toURI().toURL() });
-        } catch (Throwable t) {
-            throw new RuntimeException("Exception caught while trying to haxxor classpath", t);
-        }
+        // In order to load our Mocked class and service manifest we have to extend ClassLoader and set that as the threads context classloader
+        // (the threads context classloader is the one used by java.util.ServiceLoader)
+        myClassLoader = new URLClassLoader(new URL[] { temporarySourceDirectory.toURI().toURL() });
+        Thread.currentThread().setContextClassLoader(myClassLoader);
+        // Compile our CliCommandPlugin test class
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         JavaFileObject firstImplentation = new JavaSourceFromString("MockCommand", TESTCLASS);
         List<JavaFileObject> compilationUnits = Arrays.asList(firstImplentation);
@@ -84,6 +82,7 @@ public class CommandLibraryTest {
             throw new RuntimeException("Compilation of test classes failed, can't continue");
         }
         buildServiceManifestToLocation(temporarySourceDirectory, CliCommandPlugin.class);
+        
     }
     
     /**
@@ -94,7 +93,7 @@ public class CommandLibraryTest {
      * @param interfaceClass the interface to base the manifest on
      * @throws IOException for any file related errors
      */
-    private static void buildServiceManifestToLocation(File location, Class<?>... interfaceClasses) throws IOException {
+    private void buildServiceManifestToLocation(File location, Class<?>... interfaceClasses) throws IOException {
         if (!location.isDirectory()) {
             throw new IOException("File " + location + " was not a directory.");
         }
@@ -169,7 +168,7 @@ public class CommandLibraryTest {
      * @return a list of classes implementing the given interface
      * @throws IOException 
      */
-    private static List<Class<?>> getImplementingClasses(final File baseLocation, File location, Class<?> interfaceClass) {
+    private List<Class<?>> getImplementingClasses(final File baseLocation, File location, Class<?> interfaceClass) {
         List<Class<?>> result = new ArrayList<Class<?>>();
         if (location.isDirectory()) {
             //Recurse to find all files in all subdirectories
@@ -183,7 +182,7 @@ public class CommandLibraryTest {
                                 .substring(baseLocation.getAbsolutePath().length() + File.separator.length(),
                                         file.getAbsolutePath().indexOf(CLASS_EXTENSION)).replace(File.separatorChar, '.');
                         try {
-                            Class<?> candidate = Class.forName(className);
+                            Class<?> candidate = Class.forName(className, false, myClassLoader);
                             if (interfaceClass.isAssignableFrom(candidate) && !Modifier.isAbstract(candidate.getModifiers())
                                     && !candidate.isInterface()) {                              
                                 result.add(candidate);
