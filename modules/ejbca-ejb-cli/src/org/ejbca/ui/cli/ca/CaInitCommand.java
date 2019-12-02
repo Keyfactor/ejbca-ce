@@ -637,7 +637,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
 
     private CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
             List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
-        X509CAInfo cainfo = new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validityString,                                             
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validityString,
                 signedByCAId, new ArrayList<Certificate>(), catokeninfo);
         cainfo.setSubjectAltName(subjectAltName);
         cainfo.setDescription(caname + "created using CLI");

@@ -261,7 +261,7 @@ public class RevocationApprovalTest extends CaTestCase {
     public static int createApprovalCA(AuthenticationToken internalAdmin, String nameOfCA, ApprovalRequestType approvalRequirementType, int approvalProfileId,
             CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, CAToken caToken)
             throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, CADoesntExistsException {
-        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, 
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
                 CAInfo.SELFSIGNED, null, caToken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));

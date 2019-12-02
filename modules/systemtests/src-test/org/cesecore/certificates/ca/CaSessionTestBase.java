@@ -208,14 +208,54 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals("SE002", ca.getCAInfo().getCAToken().getKeySequence());
 
         // Test edit using a new "edit" CAInfo
-        X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getEncodedValidity(), cainfo.getCAToken(), "new description", 20, 
-        		cainfo.getCRLPeriod(), cainfo.getCRLIssueInterval(), cainfo.getCRLOverlapTime(), cainfo.getDeltaCRLPeriod(), 
-        		cainfo.getCRLPublishers(), new ArrayList<Integer>(), true, false, true, false, null, null, null, null, null, null, null, null, cainfo.getFinishUser(),
-        		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovals(), false, true, false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(),
-                cainfo.isDoEnforceKeyRenewal(),
-        		cainfo.isDoEnforceUniqueDistinguishedName(), cainfo.isDoEnforceUniqueSubjectDNSerialnumber(), cainfo.isUseCertReqHistory(), cainfo.isUseUserStorage(),
-        		cainfo.isUseCertificateStorage(), cainfo.isAcceptRevocationNonExistingEntry(), null, cainfo.getKeepExpiredCertsOnCRL(), -1, false, 
-        		cainfo.getUsePartitionedCrl(), 0, 0);
+        X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
+                .setCaId(cainfo.getCAId())
+                .setEncodedValidity(cainfo.getEncodedValidity())
+                .setCaToken(cainfo.getCAToken()).setDescription("new description")
+                .setCaSerialNumberOctetSize(20)
+                .setCrlPeriod(cainfo.getCRLPeriod())
+                .setCrlIssueInterval(cainfo.getCRLIssueInterval())
+                .setCrlOverlapTime(cainfo.getCRLOverlapTime())
+                .setDeltaCrlPeriod(cainfo.getDeltaCRLPeriod())
+                .setCrlPublishers(cainfo.getCRLPublishers())
+                .setValidators(new ArrayList<Integer>())
+                .setUseAuthorityKeyIdentifier(true)
+                .setAuthorityKeyIdentifierCritical(false)
+                .setUseCrlNumber(true)
+                .setCrlNumberCritical(false)
+                .setDefaultCrlDistPoint(null)
+                .setDefaultCrlIssuer(null)
+                .setDefaultOcspCerviceLocator(null)
+                .setAuthorityInformationAccess(null)
+                .setCertificateAiaDefaultCaIssuerUri(null)
+                .setNameConstraintsPermitted(null)
+                .setNameConstraintsExcluded(null)
+                .setCaDefinedFreshestCrl(null)
+                .setFinishUser(cainfo.getFinishUser())
+                .setExtendedCaServiceInfos(cainfo.getExtendedCAServiceInfos())
+                .setUseUtf8PolicyText(true)
+                .setApprovals(cainfo.getApprovals())
+                .setUsePrintableStringSubjectDN(false)
+                .setUseLdapDnOrder(true)
+                .setUseCrlDistributionPointOnCrl(false)
+                .setCrlDistributionPointOnCrlCritical(false)
+                .setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck())
+                .setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys())
+                .setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal())
+                .setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName())
+                .setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber())
+                .setUseCertReqHistory(cainfo.isUseCertReqHistory())
+                .setUseUserStorage(cainfo.isUseUserStorage())
+                .setUseCertificateStorage(cainfo.isUseCertificateStorage())
+                .setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry())
+                .setCmpRaAuthSecret(null)
+                .setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL())
+                .setDefaultCertProfileId(-1)
+                .setUseNoConflictCertificateData(false)
+                .setUsePartitionedCrl(cainfo.getUsePartitionedCrl())
+                .setCrlPartitions(0)
+                .setSuspendedCrlPartitions(0);
+        X509CAInfo newinfo =  x509CAInfoBuilder.buildForUpdate();
         newinfo.setSubjectDN(cainfo.getSubjectDN());
         newinfo.setName(cainfo.getName());
         caSession.editCA(roleMgmgToken, newinfo);
