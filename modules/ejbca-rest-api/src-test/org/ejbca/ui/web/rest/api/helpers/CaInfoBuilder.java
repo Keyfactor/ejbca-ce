@@ -165,7 +165,7 @@ public class CaInfoBuilder {
      * @return instance of CAInfo within this builder.
      */
     public CAInfo build() {
-        final X509CAInfo x509CaInfo = new X509CAInfo(
+        final X509CAInfo x509CaInfo = X509CAInfo.getDefaultX509CAInfo(
                 CertTools.getSubjectDN(testCaCertificate),
                 name,
                 CAConstants.CA_ACTIVE,

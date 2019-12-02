@@ -1794,7 +1794,7 @@ Content-Type: text/html; charset=iso-8859-1
             List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-            X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
+            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
             cainfo.setDescription("JUnit ECDSA CA");
             cainfo.setPolicies(policies);
@@ -1862,7 +1862,7 @@ Content-Type: text/html; charset=iso-8859-1
             final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-            X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
+            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
             cainfo.setDescription("JUnit DSA CA");
             cainfo.setPolicies(policies);
@@ -1900,7 +1900,7 @@ Content-Type: text/html; charset=iso-8859-1
             final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
             
-            X509CAInfo cainfo = new X509CAInfo(subcaDN, subcaDN, CAConstants.CA_ACTIVE,
+            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(subcaDN, subcaDN, CAConstants.CA_ACTIVE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "365d", signbyID, null, catoken);
             cainfo.setDescription("JUnit DSA CA");
             cainfo.setPolicies(policies);
