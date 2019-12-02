@@ -345,6 +345,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                         final boolean isExternalCa = caSession.getCANoLog(getAdmin(), tokenIssuerId).getStatus() ==  CAConstants.CA_EXTERNAL;
                         if (!isExternalCa && !certificateStoreSession.existsByIssuerAndSerno(issuerDn, matchValueSerialNr)) {
                             super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "WITH_SERIALNUMBER_UNKNOWN", tokenMatchValue, issuerDn);
+                            return;
                         }
                     }
                     
@@ -354,6 +355,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 } catch (AuthorizationDeniedException e) {
                     // Since the CA is selected from a drop down containing authorized CAs only. Occurrence is unlikely
                     super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
+                    return;
                 }
             }
             final int tokenIssuerId;
