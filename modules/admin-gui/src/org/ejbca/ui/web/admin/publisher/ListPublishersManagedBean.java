@@ -37,6 +37,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
+import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
@@ -205,7 +206,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
         }
         // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
-        if (publisher.getClass().getName().equals("org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher")) {
+        if (publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME)) {
             retval = PublisherConst.TYPE_VAPUBLISHER;
         }
         if (publisher instanceof ActiveDirectoryPublisher) {

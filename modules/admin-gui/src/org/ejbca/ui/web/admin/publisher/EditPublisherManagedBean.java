@@ -218,7 +218,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
         }
         // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
-        if (publisher.getClass().getName().equals("org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher")) {
+        if (publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME)) {
             retval = PublisherConst.TYPE_VAPUBLISHER;
         }
         if (publisher instanceof ActiveDirectoryPublisher) {
