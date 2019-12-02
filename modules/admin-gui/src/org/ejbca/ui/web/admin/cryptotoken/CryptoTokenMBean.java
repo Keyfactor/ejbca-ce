@@ -1424,7 +1424,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             try {
                 cryptoTokenManagementSession.keyAuthorizeInit(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias, selectedPaddingScheme);
                 keyPairGuiInfo.initialized = true;
-                addNonTranslatedInfoMessage("Key '" + alias + "' initalized successfully.");
+                addNonTranslatedInfoMessage("Key '" + alias + "' initialized successfully.");
             } catch (CryptoTokenOfflineException | EJBException e) {
                 addNonTranslatedErrorMessage(e);
                 keyPairGuiInfo.initialized = false;
