@@ -768,11 +768,10 @@ public class UserFulfillEndEntityProfileTest {
         // Test time constraints
         final EndEntityProfile profile = new EndEntityProfile();
         Date now = new Date();
-        Date endOfTime = new Date(Long.MAX_VALUE);
         FastDateFormat sm = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
         String staticNow = sm.format(now);
         String relativeNow = "0:00:00";
-        String staticEndOfTime = sm.format(endOfTime);
+        String staticEndOfTime = "9999-12-31 23:59"; // unlimited end date according to RFC5280 section 4.1.2.5
         String relativeEndOfTime = "3300:00:00"; // ~100 years
         String staticInvalid = "XXXX-XX-XX XX:XX PM";
         String relativeInvalid = "XXXXX:XXX:XXX";
