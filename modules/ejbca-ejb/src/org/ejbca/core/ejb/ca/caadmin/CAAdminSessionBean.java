@@ -1687,7 +1687,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (certprof.getCertificatePolicies() != null && certprof.getCertificatePolicies().size() > 0) {
                 policies.addAll(certprof.getCertificatePolicies());
             }
-            final X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null,
+            final X509CAInfo x509cainfo = X509CAInfo.getDefaultX509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null,
                     null);
             x509cainfo.setSubjectAltName(subjectaltname);
             x509cainfo.setPolicies(policies);
@@ -2797,7 +2797,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=CMSCertificate, " + CertTools.getSubjectDN(caSignatureCertificate), "", keySpecification, keyAlgorithm));
 
-            cainfo = new X509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE, certprof, encodedValidity,
+            cainfo = X509CAInfo.getDefaultX509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE, certprof, encodedValidity,
                     signedby, certificatechain, catoken);
             cainfo.setExpireTime(CertTools.getNotAfter(caSignatureCertificate));
             cainfo.setDescription(description);

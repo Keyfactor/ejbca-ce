@@ -374,7 +374,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @return The new X509CAInfo for testing.
      */
     private X509CAInfo getNewCAInfo(String caname, CAToken catoken) {
-        final X509CAInfo cainfo = new X509CAInfo("CN="+caname, caname, CAConstants.CA_ACTIVE, 
+        final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN="+caname, caname, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("Used for testing CA import and export");
         cainfo.setExpireTime(new Date(System.currentTimeMillis()+364*24*3600*1000));

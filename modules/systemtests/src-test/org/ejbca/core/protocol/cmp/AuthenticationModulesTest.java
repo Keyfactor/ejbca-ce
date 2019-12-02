@@ -1269,7 +1269,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         String caname = CertTools.getPartFromDN(ecdsaCADN, "CN");
-        X509CAInfo ecdsaCaInfo = new X509CAInfo(ecdsaCADN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
+        X509CAInfo ecdsaCaInfo = X509CAInfo.getDefaultX509CAInfo(ecdsaCADN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, catoken);
         ecdsaCaInfo.setExtendedCAServiceInfos(extendedCaServices);
         X509CA ecdsaCA = (X509CA) CAFactory.INSTANCE.getX509CAImpl(ecdsaCaInfo);
@@ -1292,7 +1292,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         //-------------- Create the EndEntityProfile and the CertificateProfile
         List<Integer> availableCAs = new ArrayList<Integer>();
-        availableCAs.add(Integer.valueOf(ecdsaCA.getCAId()));
+        availableCAs.add(ecdsaCA.getCAId());
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         cp.setAvailableCAs(availableCAs);

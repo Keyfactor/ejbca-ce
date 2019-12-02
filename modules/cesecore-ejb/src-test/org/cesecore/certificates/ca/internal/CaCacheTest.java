@@ -219,7 +219,7 @@ public class CaCacheTest {
 
     private CA getNewCa(final String cadn) {
         final CAToken emptyCaToken = new CAToken(0, new Properties());
-        final X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
+        final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, emptyCaToken);
         cainfo.setDescription("JUnit RSA CA");
         return (CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);

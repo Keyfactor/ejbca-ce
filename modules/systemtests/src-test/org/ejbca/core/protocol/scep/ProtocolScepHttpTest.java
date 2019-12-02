@@ -739,7 +739,7 @@ public class ProtocolScepHttpTest {
             // Create sub CA
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, ROLLOVER_SUB_CA, "1024");
             final CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-            X509CAInfo cainfo = new X509CAInfo(ROLLOVER_SUB_CA_DN, ROLLOVER_SUB_CA, CAConstants.CA_ACTIVE,
+            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(ROLLOVER_SUB_CA_DN, ROLLOVER_SUB_CA, CAConstants.CA_ACTIVE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
             cainfo.setDescription("JUnit Test Sub CA for SCEP GetNextCACert test");
             cainfo.setSignedBy(x509ca.getCAId());

@@ -147,7 +147,7 @@ public class EjbcaRestHelperUnitTest {
         Collection<Certificate> certificatechain = new ArrayList<>();
         CAToken caToken = EasyMock.mock(CAToken.class);
 
-        CAInfo caInfo = new X509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
+        CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
 
         AuthenticationToken authenticationToken = EasyMock.mock(AuthenticationToken.class);
 
@@ -193,7 +193,7 @@ public class EjbcaRestHelperUnitTest {
         Collection<Certificate> certificatechain = new ArrayList<>();
         CAToken caToken = EasyMock.mock(CAToken.class);
 
-        CAInfo caInfo = new X509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
+        CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
 
         AuthenticationToken authenticationToken = EasyMock.mock(AuthenticationToken.class);
 
@@ -243,7 +243,7 @@ public class EjbcaRestHelperUnitTest {
         Collection<Certificate> certificatechain = new ArrayList<>();
         CAToken caToken = EasyMock.mock(CAToken.class);
 
-        CAInfo caInfo = new X509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
+        CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
 
         EndEntityProfile endEntityProfile = EasyMock.createNiceMock(EndEntityProfile.class);
 

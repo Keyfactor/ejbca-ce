@@ -499,7 +499,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId, CAToken catoken) throws Exception {
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, certProfileId, "365d", CAInfo.SELFSIGNED, null, catoken);
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, certProfileId, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
         cainfo.setDescription("Used for testing approvals");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);

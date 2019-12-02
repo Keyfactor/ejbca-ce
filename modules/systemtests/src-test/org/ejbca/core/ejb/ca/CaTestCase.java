@@ -284,7 +284,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        X509CAInfo cainfo = new X509CAInfo(dn, caName, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caName, CAConstants.CA_ACTIVE,
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d", signedBy, certificateChain, catoken);
         cainfo.setDescription("JUnit RSA CA");
@@ -487,7 +487,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, name, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        final X509CAInfo cainfo = new X509CAInfo(dn, name, CAConstants.CA_ACTIVE,
+        final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, name, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
@@ -514,7 +514,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        final X509CAInfo cainfo = new X509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE,
+        final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
@@ -532,7 +532,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        final X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE,
+        final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
                 CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit ECDSA ImplicitlyCA CA");
@@ -555,7 +555,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit ECDSA CA");
         cainfo.setPolicies(policies);
@@ -575,7 +575,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit GOST3410 CA");
         cainfo.setPolicies(policies);
@@ -595,7 +595,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit DSTU4145 CA");
         cainfo.setPolicies(policies);
@@ -633,7 +633,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit DSA CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);

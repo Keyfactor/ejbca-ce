@@ -321,7 +321,7 @@ public class CAImportExportTest  {
      * @return The new X509CAInfo for testing.
      */
 	private X509CAInfo getNewCAInfo(String caname, CAToken catoken) {
-        cainfo = new X509CAInfo("CN="+caname, caname, CAConstants.CA_ACTIVE, 
+        cainfo = X509CAInfo.getDefaultX509CAInfo("CN="+caname, caname, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("Used for testing CA import and export");
         cainfo.setExpireTime(new Date(System.currentTimeMillis()+364*24*3600*1000));
@@ -332,7 +332,7 @@ public class CAImportExportTest  {
     /**
      * Perform test of import and export with interal admin.
 
-     * @param catokeninfo The tokeninfo for this CA-info
+     * @param catoken The tokeninfo for this CA-info
      */
 	private void subTest(CAToken catoken) throws Exception {
 	    byte[] keystorebytes = null;
@@ -404,7 +404,7 @@ public class CAImportExportTest  {
     /**
      * Perform security test of import and export with specified admin. 
      *  
-     * @param catokeninfo The tokeninfo for this CA-info
+     * @param catoken The tokeninfo for this CA-info
      * @param admin The unathorized administrator 
      */
 	private void subTestPublicAccess(CAToken catoken, AuthenticationToken admin) throws Exception {

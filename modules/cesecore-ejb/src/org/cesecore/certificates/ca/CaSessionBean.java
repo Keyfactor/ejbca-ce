@@ -174,7 +174,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (ca != null) {
             final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), Integer.valueOf(ca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), ca.getCAId());
                 throw new AuthorizationDeniedException(msg);
             }
             CAInfo cainfo = ca.getCAInfo();
@@ -187,14 +187,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 throw new CAExistsException(msg);
             }
             if (findById(ca.getCAId()) != null) {
-                String msg = intres.getLocalizedMessage("caadmin.caexistsid", Integer.valueOf(ca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.caexistsid", ca.getCAId());
                 throw new CAExistsException(msg);
             }
             final CAData caData = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
             entityManager.persist(caData);
             caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
             String msg = intres.getLocalizedMessage("caadmin.addedca", ca.getCAId(), cainfo.getName(), cainfo.getStatus());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("tokenproperties", ca.getCAToken().getProperties());
             details.put("tokensequence", ca.getCAToken().getKeySequence());
@@ -303,7 +303,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             final Collection<Integer> ids = getCAInfoInternal(caId).getValidators();
             if (ids != null) {
                 for (final Integer id : ids) {
-                    if (id.intValue() == keyValidatorId) {
+                    if (id == keyValidatorId) {
                         // We have found a match. No point in looking for more.
                         return true;
                     }
@@ -328,13 +328,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // Check if we are authorized to edit CA and authorization to specific CA
         if (cryptoTokenId == ca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
             if (!authorizationSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(ca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), ca.getCAId());
                 throw new AuthorizationDeniedException(msg);
             }
         } else {
             // We only need to check usage authorization if we change CryptoToken reference (and not to 0 which means "removed").
             if (!authorizationSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(ca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), ca.getCAId());
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -350,7 +350,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CACommon getCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }
         return getCAInternal(caid, null, true);
@@ -373,7 +373,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public CACommon getCANoLog(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCANoLogging(admin, caid)) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }
         return getCAInternal(caid, null, true);
@@ -385,7 +385,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         CACommon ca = getCAInternal(caid, null, false);
         if (ca != null) {
             if (!authorizedToCA(admin, ca.getCAId())) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -484,18 +484,18 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public void removeCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         // check authorization
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAREMOVE.resource())) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremoveca", admin.toString(), Integer.valueOf(caid));
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremoveca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }
         // Get CA from database if it does not exist, ignore
-        CAData cadata = findById(Integer.valueOf(caid));
+        CAData cadata = findById(caid);
         if (cadata != null) {
             // Remove CA
             entityManager.remove(cadata);
             // Invalidate CA cache to refresh information
             CaCache.INSTANCE.removeEntry(caid);
             caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
-            final String detailsMsg = intres.getLocalizedMessage("caadmin.removedca", Integer.valueOf(caid), cadata.getName());
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.removedca", caid, cadata.getName());
             logSession.log(EventTypes.CA_DELETION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(caid), null, null, detailsMsg);
         }
     }
@@ -514,7 +514,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // The new CA doesn't exist, it's okay to rename old one.
             cadata.setName(newname);
             // Invalidate CA cache to refresh information
-            int caid = cadata.getCaId().intValue();
+            int caid = cadata.getCaId();
             CaCache.INSTANCE.removeEntry(caid);
             caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
             final String detailsMsg = intres.getLocalizedMessage("caadmin.renamedca", oldname, cadata.getCaId(), newname);
@@ -662,13 +662,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	    if (log.isTraceEnabled()) {
 	        log.trace(">getCAInternal: " + caid + ", " + name);
 	    }
-	    Integer caIdValue = Integer.valueOf(caid);
+	    Integer caIdValue = caid;
 	    if (caid == -1) {
 	        caIdValue = CaCache.INSTANCE.getNameToIdMap().get(name);
 	    }
 	    CACommon ca = null;
 	    if (fromCache && caIdValue!=null) {
-	        ca = getCa(caIdValue.intValue());
+	        ca = getCa(caIdValue);
 	        if (ca != null && hasCAExpiredNow(ca)) {
 	            // CA has expired, re-read from database with the side affect that the status will be updated
 	            ca = getCAData(caid, name).getCA();
@@ -724,7 +724,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     private CAData getCAData(final int caid, final String name)  {
         CAData cadata = null;
         if (caid != -1) {
-            cadata = upgradeAndMergeToDatabase(findById(Integer.valueOf(caid)));
+            cadata = upgradeAndMergeToDatabase(findById(caid));
             if (log.isDebugEnabled() && cadata == null) {
                 log.debug("Unable to get CAData with ID (from SubjectDN): "+caid);
             }
@@ -741,7 +741,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             if (caid != -1) {
                 // subject DN of the CA certificate might not have all objects
                 // that is the DN of the certificate data.
-                final Integer oRealCAId = CACacheHelper.getCaCertHash(Integer.valueOf(caid));
+                final Integer oRealCAId = CACacheHelper.getCaCertHash(caid);
                 // has the "real" CAID been mapped to the certificate subject
                 // hash by a previous call?
                 if (oRealCAId != null) {
@@ -761,7 +761,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                         	if (log.isDebugEnabled()) {
                         		log.debug("Adding a mapping from caid "+caid+" to realCaid "+cadata.getCaId());
                         	}
-                            CACacheHelper.putCaCertHash(Integer.valueOf(caid), Integer.valueOf(cadata.getCaId()));
+                            CACacheHelper.putCaCertHash(caid, cadata.getCaId());
                         }
                         if (cadata != null) {
                             break;
@@ -772,7 +772,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             if (cadata == null) {
                 String msg;
                 if (caid != -1) {
-                    msg = intres.getLocalizedMessage("caadmin.canotexistsid", Integer.valueOf(caid));
+                    msg = intres.getLocalizedMessage("caadmin.canotexistsid", caid);
                 } else {
                     msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);
                 }
@@ -806,10 +806,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     /** @return the CA object, from the database (including any upgrades) is necessary */
     private CACommon getCa(int caId) {
-        final Integer realCAId = CACacheHelper.getCaCertHash(Integer.valueOf(caId));
+        final Integer realCAId = CACacheHelper.getCaCertHash(caId);
         if (realCAId!=null) {
             // Since we have found a cached "real" CA Id and the cache will use this one (if cached)
-            caId = realCAId.intValue();
+            caId = realCAId;
         }
         // 1. Check (new) CaCache if it is time to sync-up with database
         if (CaCache.INSTANCE.shouldCheckForUpdates(caId)) {
@@ -851,7 +851,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // merge a new object.
             caData.setCA(ca);
         }
-        caData = entityManager.merge(caData);
+        entityManager.merge(caData);
         // Since loading a CA is quite complex (populating CAInfo etc), we simple purge the cache here
         CaCache.INSTANCE.removeEntry(caId);
         caIDCache.forceCacheExpiration();
@@ -958,14 +958,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 return false;
             }
             for (final Integer currentCryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
-                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId.intValue());
+                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId);
                 final Properties cryptoTokenProperties = cryptoToken.getProperties();
                 if (StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY))
                         && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY), cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY))
                         && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE))
                         && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE))) {
                     // The current CryptoToken point to the same HSM slot in the same way.. re-use this id!
-                    cryptoTokenId = currentCryptoTokenId.intValue();
+                    cryptoTokenId = currentCryptoTokenId;
                     break;
                 }
             }

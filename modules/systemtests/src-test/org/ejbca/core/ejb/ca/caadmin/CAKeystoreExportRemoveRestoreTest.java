@@ -358,12 +358,12 @@ public class CAKeystoreExportRemoveRestoreTest {
      * 
      * @param caname
      *            The name this CA-info will be assigned
-     * @param catokeninfo
+     * @param catoken
      *            The tokeninfo for this CA-info
      * @return The new X509CAInfo for testing.
      */
     private X509CAInfo getNewCAInfo(String caname, CAToken catoken) {
-        X509CAInfo cainfo = new X509CAInfo("CN=" + caname, caname, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + caname, caname, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
         cainfo.setDescription("Used for testing CA keystore export, remove and restore");

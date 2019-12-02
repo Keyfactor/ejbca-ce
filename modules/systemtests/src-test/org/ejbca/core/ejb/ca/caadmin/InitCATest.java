@@ -285,7 +285,7 @@ public class InitCATest extends CaTestCase {
         catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        final X509CAInfo x509CaInfo = new X509CAInfo("CN="+caName, caName, CAConstants.CA_UNINITIALIZED,
+        final X509CAInfo x509CaInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_UNINITIALIZED,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         x509CaInfo.setDescription("JUnit RSA CA");
 
