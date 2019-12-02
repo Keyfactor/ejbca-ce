@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.api.easymock.PowerMock;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -44,6 +45,7 @@ import static org.easymock.EasyMock.verify;
  */
 @PrepareForTest({StringTools.class, FacesContext.class })
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class ProfileNameValidatorUnitTest {
 
     private final ProfileNameValidator testClass = new ProfileNameValidator();
