@@ -156,6 +156,7 @@
 					<include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
+                    <include name="modules/cli-util/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -241,6 +242,9 @@
         </condition>
         <condition property="module" value="modules/plugins-ee">
             <matches string="${test-fullname}" pattern="^modules/plugins-ee/.*$"/>
+        </condition>
+        <condition property="module" value="modules/cli-util">
+            <matches string="${test-fullname}" pattern="^modules/cli-util/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
