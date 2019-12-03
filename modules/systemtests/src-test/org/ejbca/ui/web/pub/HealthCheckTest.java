@@ -165,7 +165,7 @@ public class HealthCheckTest {
     @Test
     public void testAuditLogHealthCheck() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, NoSuchSlotException, IOException {
-        //Create a crypto token to sign with
+        // Create a crypto token to sign with
         final Properties cryptoTokenProperties = new Properties();
         final String cryptoTokenName = "testAuditLogHealthCheck";
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, cryptoTokenName, SoftCryptoToken.class.getName(),
@@ -192,7 +192,7 @@ public class HealthCheckTest {
         } finally {
             //Restore values
             configurationSession.updateCesecoreProperty("databaseprotection.enablesign.AuditRecordData", shouldProtectAuditLog);
-            configurationSession.updateCesecoreProperty("ddatabaseprotection.keyid.AuditRecordData", auditLogKeyId);
+            configurationSession.updateCesecoreProperty("databaseprotection.keyid.AuditRecordData", auditLogKeyId);
             configurationSession.updateProperty("healthcheck.publisherconnections", originalPublisherValue);
             cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);
         }
