@@ -193,6 +193,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITPUBLISHER);
     }
 
+    @SuppressWarnings("deprecation")
     private String getPublisherType(String publisherName) {
         BasePublisher publisher = publisherSession.getPublisher(publisherName);
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
