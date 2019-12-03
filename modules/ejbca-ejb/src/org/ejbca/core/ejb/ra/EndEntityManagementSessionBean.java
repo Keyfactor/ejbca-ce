@@ -747,7 +747,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
 
-        FieldValidator.validate(endEntityInformation, endEntityProfileId, endEntityProfileSession.getEndEntityProfileName(endEntityProfileId));
+        final String eeProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
+        if (eeProfileName == null) {
+            throw new EndEntityProfileValidationException("End Entity profile " + endEntityProfileId + " does not exist trying to change user: " + username);
+        }
+        FieldValidator.validate(endEntityInformation, endEntityProfileId, eeProfileName);
 
         String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
@@ -755,7 +759,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace(">changeUser(" + username + ", " + dn + ", " + endEntityInformation.getEmail() + ")");
         }
         try {
-            altName =  RFC4683Tools.generateSimForInternalSanFormat( altName);
+            altName =  RFC4683Tools.generateSimForInternalSanFormat(altName);
         } catch(Exception e) {
              log.info("Could not generate SIM string for SAN: " + altName, e);
              throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
