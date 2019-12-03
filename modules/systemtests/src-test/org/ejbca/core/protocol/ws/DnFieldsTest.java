@@ -15,21 +15,16 @@ package org.ejbca.core.protocol.ws;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CaSession;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -47,7 +42,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -85,7 +79,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
     
     private static final String wsadminRoleName = "WsTEstRole";
     
-    private static List<File> fileHandles = new ArrayList<File>();
+    private static List<File> fileHandles = new ArrayList<>();
 
     
     @BeforeClass
@@ -102,6 +96,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
         }
     }
  
+    @Override
     @Before
     public void setUp() throws Exception {
         
@@ -124,6 +119,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
        
     }
     
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -143,9 +139,8 @@ public class DnFieldsTest extends CommonEjbcaWs {
     }
     
     @Test
-    public void testEmailInBothSanAndDn() throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, AuthorizationDeniedException_Exception, EjbcaException_Exception, IllegalQueryException_Exception,
-            InvalidKeyException, SignatureException, ApprovalException_Exception, CADoesntExistsException_Exception, NotFoundException_Exception,
+    public void testEmailInBothSanAndDn() throws InvalidAlgorithmParameterException, AuthorizationDeniedException_Exception,
+            EjbcaException_Exception, IllegalQueryException_Exception, ApprovalException_Exception, NotFoundException_Exception,
             UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException, OperatorCreationException, EndEntityProfileNotFoundException_Exception {
 
         UserMatch um = new UserMatch(UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_TYPE_EQUALS, "tomcat");
@@ -153,15 +148,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
             log.info("User: " + ud.getSubjectDN());
         }
 
-        String caname = null;
-        CaSession caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        List<String> cas = caSession.getActiveCANames(internalAdmin);
-        if(cas.contains("ManagementCA")) {
-            caname = "ManagementCA";
-        } else {
-            caname = "AdminCA1";
-        }
-        
+        final String caName = CaTestUtils.getClientCertCaName(internalAdmin);
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys
                 .getPublic(), new DERSet(), keys.getPrivate(), null).toASN1Structure().getEncoded()));
@@ -170,7 +157,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
         user.setPassword("foo123");
         user.setClearPwd(false);
         user.setSubjectDN("E=boss@fire.com,CN=Tester,C=SE");
-        user.setCaName(caname);
+        user.setCaName(caName);
         user.setSubjectAltName("rfc822name=boss@fire.com");
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(PROFILE_NAME);
