@@ -461,6 +461,16 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         assertEquals("bar123", data1.getPassword());
         assertEquals("CN=" + username + ",O=AnaTom1,C=SE", data1.getDN());
         assertEquals("dnsName=a.b.se, rfc822name=" + email, data1.getSubjectAltName());
+        
+        // Test to change with a EE profile ID that does not exist, this should throw an error
+        data.setEndEntityProfileId(new Random().nextInt(100000) + 123456);
+        try {
+            endEntityManagementSession.changeUser(admin, data, true);
+            fail("Trying to edit a user to a non existing end entity profile should not work");
+        } catch (EndEntityProfileValidationException e) {
+            // NOPMD:
+        }
+        
         log.trace("<test04ChangeUser()");
     }
 
