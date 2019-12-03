@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.MalformedURLException;
@@ -53,7 +56,6 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
@@ -76,9 +78,6 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 /**
  * 
@@ -110,12 +109,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWs {
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
-    private static List<File> fileHandles = new ArrayList<File>();
+    private static List<File> fileHandles = new ArrayList<>();
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        setAdminCAName();
+        adminBeforeClass();
         fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
     }
 
@@ -334,8 +332,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWs {
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream(TEST_NONADMIN_FILE), PASSWORD.toCharArray());
         
-        Set<Principal> principals = new HashSet<Principal>(Arrays.asList(admincert1.getSubjectX500Principal()));
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>(Arrays.asList(admincert1));
+        Set<Principal> principals = new HashSet<>(Arrays.asList(admincert1.getSubjectX500Principal()));
+        Set<X509Certificate> credentials = new HashSet<>(Arrays.asList(admincert1));
         admin1 = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
     }
 

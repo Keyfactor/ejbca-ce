@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +28,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -30,7 +36,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
@@ -138,7 +143,6 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -200,13 +204,6 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 
 /**
@@ -303,17 +300,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
     protected static void adminBeforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        setAdminCAName();
+        managementCaName = CaTestUtils.getClientCertCaName(intAdmin);
     }
 
-    protected static void setAdminCAName() {
-        List<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(intAdmin);
-        if(canames.contains("AdminCA1")) {
-            managementCaName = "AdminCA1";
-        } else if(canames.contains("ManagementCA")) {
-            managementCaName = "ManagementCA";
-        }
-    }
     protected void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException {
         final Role role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
         assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", role);
@@ -354,7 +343,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
     protected static List<File> setupAccessRights(final String wsadminRoleName) throws CADoesntExistsException,
         AuthorizationDeniedException, EndEntityExistsException, WaitingForApprovalException, EjbcaException,
-        RoleExistsException, RoleNotFoundException, UnrecoverableKeyException, InvalidAlgorithmParameterException, OperatorCreationException,
+        RoleExistsException, UnrecoverableKeyException, InvalidAlgorithmParameterException, OperatorCreationException,
         CertificateException, SignRequestSignatureException, IllegalKeyException, CertificateCreateException, IllegalNameException,
         CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
         InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
@@ -401,7 +390,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             log.debug("Changing user: " + endEntityInformation2.getUsername());
             endEntityManagementSession.changeUser(intAdmin, endEntityInformation2, true);
         }
-        List<File> fileHandles = new ArrayList<File>();
+        List<File> fileHandles = new ArrayList<>();
         File p12Directory = new File(P12_FOLDER_NAME);
         try {
             fileHandles.add(BatchCreateTool.createUser(intAdmin, p12Directory, endEntityInformation1.getUsername()));
@@ -564,7 +553,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(endEntityProfileName);
         user.setCertificateProfileName(certificateProfileName);
-        List<ExtendedInformationWS> ei = new ArrayList<ExtendedInformationWS>();
+        List<ExtendedInformationWS> ei = new ArrayList<>();
         ei.add(new ExtendedInformationWS(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer
                 .toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)));
         ei.add(new ExtendedInformationWS(ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
@@ -664,10 +653,10 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     
     
     protected void editUser() throws CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, ApprovalException_Exception,
+            CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, ApprovalException_Exception,
             AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
             UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IllegalQueryException_Exception,
-            CertificateProfileExistsException, EndEntityProfileNotFoundException_Exception {
+            EndEntityProfileNotFoundException_Exception {
         createTestCA(CA1);
         createTestCA(CA2);
         int certificateProfileId = createCertificateProfile(WS_CERTPROF_EI);
@@ -757,12 +746,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
-            try {
+            try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
                 DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
                 assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
-            } finally {
-                asn1InputStream.close();
             }
         } finally {
             // restore
@@ -892,12 +878,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
-            try {
+            try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
                 DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
                 assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
-            } finally {
-                asn1InputStream.close();
             }
         } finally {
             // restore
@@ -1294,7 +1277,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
     private CertReqMsg createCrmfRequest(final String issuerDN, final String userDN, final PublicKey publicKey, final PrivateKey privateKey, final String extensionOid,
             final String extensionContent, final boolean useProofOfPossession, final String publicKeyMacPassword, final boolean useAuthInfoSender) throws
-            IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CRMFException, OperatorCreationException {
+            IOException, CRMFException, OperatorCreationException {
         final CertificateRequestMessageBuilder crmb = new CertificateRequestMessageBuilder(BigInteger.valueOf(4L)); // ReqId = 4
         crmb.setIssuer(new X500Name(issuerDN));
         if (!useAuthInfoSender && publicKeyMacPassword==null) {
@@ -2383,7 +2366,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         assertEquals(caref, caref);
 
         // Now we have to import the CVCA certificate as an external CA, and do it again, then it should find the CVCA certificate
-        Collection<java.security.cert.Certificate> cvcacerts = new ArrayList<java.security.cert.Certificate>();
+        Collection<java.security.cert.Certificate> cvcacerts = new ArrayList<>();
         cvcacerts.add(cvcacert);
         caAdminSessionRemote.importCACertificate(intAdmin, "WSTESTCVCAIMPORTED", EJBTools.wrapCertCollection(cvcacerts));
         request = ejbcaraws.caRenewCertRequest(caname, new ArrayList<byte[]>(), false, false, false, null);

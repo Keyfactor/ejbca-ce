@@ -25,6 +25,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -533,6 +534,25 @@ public abstract class CaTestUtils {
         throw new IllegalStateException("Cannot find the required CA. Looked for: '" + StringUtils.join(cas, "', '") +
                 "'. Use '" + SystemTestsConfiguration.TARGET_SERVERCERT_CA + "' and '" + SystemTestsConfiguration.TARGET_CLIENTCERT_CA +
                 "' in systemtests.properties to override.");
+    }
+    
+    /**
+     * Like {@link #getClientCertCaInfo} but returns the name of the CA instead.
+     * I.e. it returns the name of an active CA that is trusted by the application server.
+     *
+     * @param authenticationToken Authentication token
+     * @return Name of the CA, never null.
+     * @throws IllegalStateException if none exist or if access was denied.
+     */
+    public static String getClientCertCaName(final AuthenticationToken authenticationToken) {
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final List<String> allCaNames = caSession.getActiveCANames(authenticationToken);
+        final List<String> clientCertCaNames = Arrays.asList(SystemTestsConfiguration.getClientCertificateCaNames());
+        allCaNames.retainAll(clientCertCaNames);
+        if (allCaNames.isEmpty()) {
+            throw new IllegalStateException("No active CA for issuing client certificates was found. Searched for: " + String.join(", ", clientCertCaNames));
+        }
+        return allCaNames.iterator().next();
     }
 
 }
