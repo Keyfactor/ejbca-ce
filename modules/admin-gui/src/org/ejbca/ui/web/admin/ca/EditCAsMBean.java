@@ -95,7 +95,6 @@ import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
-import org.ejbca.util.SelectItemComparator;
 
 /**
  * 
@@ -184,7 +183,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private final Map<Integer,String> publisheridtonamemap = getEjbcaWebBean().getPublisherIdToNameMapByValue();
     private String crlCaCRLDPExternal;
     private List<String> usedCrlPublishers;
-    private List<String> usedValidators;
+    private Collection<Integer> usedValidators;
     private boolean hideValidity = false;
     private String caCryptoTokenKeyEncryptKey;
     private String caCryptoTokenTestKey;
@@ -764,21 +763,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
-    public List<Integer> getUsedValidators() {
-        Collection<?> usedValidators = null;
-        final List<Integer> ret = new ArrayList<>();
-        if (isEditCA) {
-            usedValidators = cainfo.getValidators();
-        }
-        for (final int id : keyValidatorMap.keySet()) {
-            if (isEditCA && usedValidators.contains(id)) {
-                ret.add(id);
-            }
-        }
-        return ret;
+    public Collection<Integer> getUsedValidators() {
+        return usedValidators;
     } 
     
-    public void setUsedValidators(final List<String> validators) {
+    public void setUsedValidators(final Collection<Integer> validators) {
         this.usedValidators = validators;
     }
     
@@ -1728,6 +1717,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
         caInfoDto.setCaSerialNumberOctetSize(String.valueOf(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()));
+        usedValidators = new ArrayList<>();
 
         updateAvailableCryptoTokenList();
     }
@@ -1920,6 +1910,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final Certificate cacert = iter.next();
             issuerDn = CertTools.getIssuerDN(cacert);
         }
+        usedValidators = cainfo.getValidators();
         
         if (isCaUninitialized) {
             createLinkCertificate = false;
@@ -1970,7 +1961,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 caInfoDto.setCryptoTokenIdParam(null);
                 currentCryptoTokenId = 0;
             }
-            resultList.sort(new SelectItemComparator());
             availableCryptoTokenSelectItems = resultList;
         } catch (final AuthorizationDeniedException e) {
             log.error("Error while listing available CryptoTokens!", e);

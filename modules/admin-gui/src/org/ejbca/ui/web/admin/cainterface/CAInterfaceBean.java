@@ -88,8 +88,10 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.util.AsStringComparator;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EntryValueComparator;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -902,10 +904,6 @@ public class CAInterfaceBean implements Serializable {
     public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm, boolean isEditingCA)
             throws AuthorizationDeniedException {
 	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
-        if (!isEditingCA && authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
-            // Add a quick setup option for key generation (not visible when editing an uninitialized CA)
-            availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
-        }
 	    if (caSigingAlgorithm != null && caSigingAlgorithm.length()>0) {
 	        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
             for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
@@ -933,6 +931,11 @@ public class CAInterfaceBean implements Serializable {
 	            }
 	        }
 	    }
+        availableCryptoTokens.sort(new EntryValueComparator<>(new AsStringComparator()));
+        if (!isEditingCA && authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+            // Add a quick setup option for key generation (not visible when editing an uninitialized CA)
+            availableCryptoTokens.add(0, new AbstractMap.SimpleEntry<>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
+        }
 	    return availableCryptoTokens;
 	}
 	
