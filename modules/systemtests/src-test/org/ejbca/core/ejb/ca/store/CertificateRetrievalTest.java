@@ -13,6 +13,11 @@
 
 package org.ejbca.core.ejb.ca.store;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -23,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -51,11 +57,6 @@ import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @version $Id$
@@ -411,10 +412,7 @@ public class CertificateRetrievalTest {
         assertNotNull("failed to list certs", certs);
         assertEquals("cert list should be empty", 0, certs.size());
         
-        CAInfo caInfo = caSession.getCAInfo(admin, "ManagementCA");
-        if(caInfo == null) {
-            caInfo = caSession.getCAInfo(admin, "AdminCA1");
-        }
+        final CAInfo caInfo = CaTestUtils.getClientCertCaInfo(admin);
         int caid = caInfo.getCAId();
         EndEntityInformation userdata = new EndEntityInformation(username,  dn, caid, "", null,
             EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),

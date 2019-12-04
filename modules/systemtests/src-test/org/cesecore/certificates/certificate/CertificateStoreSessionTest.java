@@ -21,11 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
@@ -38,7 +34,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBTransactionRolledbackException;
 
 import org.apache.log4j.Logger;
@@ -49,6 +44,7 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -56,7 +52,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -84,8 +79,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     private static KeyPair keys;
 
     private static final String USERNAME = "CertificateStoreSessionTest";
+    private static final String SELFCERT_DN = "C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo";
 
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
@@ -97,6 +92,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     public static void setUpProvider() throws Exception {
         CryptoProviderTools.installBCProvider();
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST).removeCertificatesBySubject(SELFCERT_DN);
     }
 
     @Before
@@ -106,6 +102,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     @After
     public void tearDown() throws Exception {
+        internalCertStoreSession.removeCertificatesBySubject(SELFCERT_DN);
     	super.tearDownRemoveRole();
     }
 
@@ -143,37 +140,33 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     public void test02FindByExpireTime() throws Exception {
         Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
         String fp = CertTools.getFingerprintAsString(cert);
-        try {
-            CertificateInfo data = certificateStoreSession.getCertificateInfo(fp);
-            assertNotNull("Failed to find cert", data);
-            log.debug("expiredate=" + data.getExpireDate());
-            // Seconds in a year
-            long yearmillis = 365 * 24 * 60 * 60 * 1000;
-            long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 200);
-            Date findDate = new Date(findDateSecs);
-            log.info("1. Looking for cert with expireDate=" + findDate);
-            Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
-            log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
-            assertEquals("No certs should have expired before this date", 0, certs.size());
-            Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
-            log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
-            assertEquals("No certs should have expired before this date", 0, usernames.size());
-            findDateSecs = data.getExpireDate().getTime() + (yearmillis * 200);
-            findDate = new Date(findDateSecs);
-            log.info("2. Looking for cert with expireDate=" + findDate+", "+findDate.getTime());
-            Collection<Certificate> certs2 = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
-            log.debug("findCertificatesByExpireTime returned " + certs2.size() + " certs.");
-            assertNotEquals("Some certs should have expired before this date", 0, certs2.size());
-            usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
-            log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
-            assertNotEquals("Some certs should have expired before this date", 0, usernames.size());
-            for (final Certificate tmpcert : certs2) {
-                Date retDate = CertTools.getNotAfter(tmpcert);
-                log.debug(retDate);
-                assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
-            }
-        } finally {
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
+        CertificateInfo data = certificateStoreSession.getCertificateInfo(fp);
+        assertNotNull("Failed to find cert", data);
+        log.debug("expiredate=" + data.getExpireDate());
+        // Seconds in a year
+        long yearmillis = 365 * 24 * 60 * 60 * 1000;
+        long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 200);
+        Date findDate = new Date(findDateSecs);
+        log.info("1. Looking for cert with expireDate=" + findDate);
+        Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
+        log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
+        assertEquals("No certs should have expired before this date", 0, certs.size());
+        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
+        log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
+        assertEquals("No certs should have expired before this date", 0, usernames.size());
+        findDateSecs = data.getExpireDate().getTime() + (yearmillis * 200);
+        findDate = new Date(findDateSecs);
+        log.info("2. Looking for cert with expireDate=" + findDate+", "+findDate.getTime());
+        Collection<Certificate> certs2 = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
+        log.debug("findCertificatesByExpireTime returned " + certs2.size() + " certs.");
+        assertNotEquals("Some certs should have expired before this date", 0, certs2.size());
+        usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
+        log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
+        assertNotEquals("Some certs should have expired before this date", 0, usernames.size());
+        for (final Certificate tmpcert : certs2) {
+            Date retDate = CertTools.getNotAfter(tmpcert);
+            log.debug(retDate);
+            assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
         }
     }
 
@@ -186,19 +179,14 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 	@Test
 	public void test03FindByIssuerAndSerno() throws Exception {
     	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+		String issuerDN = CertTools.getIssuerDN(cert);
+		String fp = CertTools.getFingerprintAsString(cert);
+		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
 
-    	try {
-    		String issuerDN = CertTools.getIssuerDN(cert);
-    		String fp = CertTools.getFingerprintAsString(cert);
-    		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
-    		assertNotNull("Failed to find cert", data3);
-
-    		log.debug("Looking for cert with DN:" + CertTools.getIssuerDN(cert) + " and serno " + CertTools.getSerialNumber(cert));
-    		Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(cert));
-    		assertNotNull("Cant find by issuer and serno", fcert);
-    	} finally {
-    		internalCertStoreSession.removeCertificate(cert);
-    	}
+		log.debug("Looking for cert with DN:" + CertTools.getIssuerDN(cert) + " and serno " + CertTools.getSerialNumber(cert));
+		Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(cert));
+		assertNotNull("Cant find by issuer and serno", fcert);
 	}
 
 	/**
@@ -211,85 +199,77 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     public void test04FindAndChange() throws Exception {
     	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
         String fp = CertTools.getFingerprintAsString(cert);
-        try {
-        	X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(fp);
-        	assertNotNull("Cannot find certificate with fp=" + fp, ce);
-        	CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
-        	// log.info("Got certificate info for cert with fp="+fp);
-        	assertEquals("fingerprint does not match.", fp, info.getFingerprint());
-        	assertEquals("CAfingerprint does not match.", "1234", info.getCAFingerprint());
-        	assertEquals("serialnumber does not match.", ce.getSerialNumber(), info.getSerialNumber());
-        	assertEquals("issuerdn does not match.", CertTools.getIssuerDN(ce), info.getIssuerDN());
-        	assertEquals("subjectdn does not match.", CertTools.getSubjectDN(ce), info.getSubjectDN());
-        	// The cert was just stored above with status INACTIVE
-        	assertEquals("status does not match.", CertificateConstants.CERT_ACTIVE, info.getStatus());
-        	assertEquals("type does not match.", CertificateConstants.CERT_TYPE_ENCRYPTION, info.getType());
-        	assertEquals("exiredate does not match.", ce.getNotAfter(), info.getExpireDate());
-        	// We just stored it above, not revoked
-        	assertEquals("revocation reason does not match.", RevokedCertInfo.NOT_REVOKED, info.getRevocationReason());
-        	log.info("revocationdate (before rev)=" + info.getRevocationDate());
-        	assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
-        	assertEquals("footag", info.getTag());
-        	Date now = new Date();
-        	assertNotNull(info.getUpdateTime());
-        	assertTrue(now.after(info.getUpdateTime()));
-        	internalCertStoreSession.setRevokeStatus(roleMgmgToken, ce, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-        	CertificateInfo info1 = certificateStoreSession.getCertificateInfo(fp);
-        	assertEquals("revocation reason does not match.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, info1.getRevocationReason());
-        	log.info("revocationdate (after rev)=" + info1.getRevocationDate());
-        	assertTrue("Revocation date in future.", new Date().compareTo(info1.getRevocationDate()) >= 0);
-        } finally {
-        	internalCertStoreSession.removeCertificate(cert);
-        }
+    	X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(fp);
+    	assertNotNull("Cannot find certificate with fp=" + fp, ce);
+    	CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
+    	// log.info("Got certificate info for cert with fp="+fp);
+    	assertEquals("fingerprint does not match.", fp, info.getFingerprint());
+    	assertEquals("CAfingerprint does not match.", "1234", info.getCAFingerprint());
+    	assertEquals("serialnumber does not match.", ce.getSerialNumber(), info.getSerialNumber());
+    	assertEquals("issuerdn does not match.", CertTools.getIssuerDN(ce), info.getIssuerDN());
+    	assertEquals("subjectdn does not match.", CertTools.getSubjectDN(ce), info.getSubjectDN());
+    	// The cert was just stored above with status INACTIVE
+    	assertEquals("status does not match.", CertificateConstants.CERT_ACTIVE, info.getStatus());
+    	assertEquals("type does not match.", CertificateConstants.CERT_TYPE_ENCRYPTION, info.getType());
+    	assertEquals("exiredate does not match.", ce.getNotAfter(), info.getExpireDate());
+    	// We just stored it above, not revoked
+    	assertEquals("revocation reason does not match.", RevokedCertInfo.NOT_REVOKED, info.getRevocationReason());
+    	log.info("revocationdate (before rev)=" + info.getRevocationDate());
+    	assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
+    	assertEquals("footag", info.getTag());
+    	Date now = new Date();
+    	assertNotNull(info.getUpdateTime());
+    	assertTrue(now.after(info.getUpdateTime()));
+    	internalCertStoreSession.setRevokeStatus(roleMgmgToken, ce, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+    	CertificateInfo info1 = certificateStoreSession.getCertificateInfo(fp);
+    	assertEquals("revocation reason does not match.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, info1.getRevocationReason());
+    	log.info("revocationdate (after rev)=" + info1.getRevocationDate());
+    	assertTrue("Revocation date in future.", new Date().compareTo(info1.getRevocationDate()) >= 0);
     }
 
 	@Test
     public void test05listAndRevoke() throws Exception {
     	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-    	try {
-    		String issuerDN = CertTools.getIssuerDN(cert);
-    		String subjectDN = CertTools.getSubjectDN(cert);
-    		// List all certificates to see
-    		Collection<String> certfps = certificateStoreSession.listAllCertificates(issuerDN);
-    		assertNotNull("failed to list certs", certfps);
-    		assertTrue("failed to list certs", certfps.size() != 0);
+		String issuerDN = CertTools.getIssuerDN(cert);
+		String subjectDN = CertTools.getSubjectDN(cert);
+		// List all certificates to see
+		Collection<String> certfps = certificateStoreSession.listAllCertificates(issuerDN);
+		assertNotNull("failed to list certs", certfps);
+		assertTrue("failed to list certs", certfps.size() != 0);
 
-    		int size = certfps.size();
-    		log.debug("List certs: " + size);
+		int size = certfps.size();
+		log.debug("List certs: " + size);
 
-    		// List all certificates for user foo, which we have created in
-    		Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
-    		assertTrue("something weird with size, all < foos", size >= certfps.size());
-    		log.debug("List certs for foo: " + certfps.size());
-    		Iterator<Certificate> iter = certs.iterator();
-    		while (iter.hasNext()) {
-    			Certificate tmpcert = iter.next();
-    			String fp = CertTools.getFingerprintAsString(tmpcert);
-    			log.debug("revoking cert with fp=" + fp);
-    			// Revoke all foos certificates, note that revokeCertificate will
-    			// not change status of certificates that are already revoked
-    			internalCertStoreSession.setRevokeStatus(roleMgmgToken, tmpcert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
-    			log.debug("Revoked cert " + fp);
-    		}
+		// List all certificates for user foo, which we have created in
+		Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
+		assertTrue("something weird with size, all < foos", size >= certfps.size());
+		log.debug("List certs for foo: " + certfps.size());
+		Iterator<Certificate> iter = certs.iterator();
+		while (iter.hasNext()) {
+			Certificate tmpcert = iter.next();
+			String fp = CertTools.getFingerprintAsString(tmpcert);
+			log.debug("revoking cert with fp=" + fp);
+			// Revoke all foos certificates, note that revokeCertificate will
+			// not change status of certificates that are already revoked
+			internalCertStoreSession.setRevokeStatus(roleMgmgToken, tmpcert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+			log.debug("Revoked cert " + fp);
+		}
 
-    		// Check that they are revoked
-			Collection<Certificate> revcerts = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
-			assertNotNull("failed to list certs", revcerts);
-			assertTrue("failed to list certs", revcerts.size() != 0);
+		// Check that they are revoked
+		Collection<Certificate> revcerts = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
+		assertNotNull("failed to list certs", revcerts);
+		assertTrue("failed to list certs", revcerts.size() != 0);
 
-			// Verify that cert are revoked
-			Iterator<Certificate> reviter = revcerts.iterator();
-			while (reviter.hasNext()) {
-				Certificate tmpcert = reviter.next();
-				String fp = CertTools.getFingerprintAsString(tmpcert);
-				CertificateInfo rev = certificateStoreSession.getCertificateInfo(fp);
-				log.info("revocationdate (after rev)=" + rev.getRevocationDate());
-				assertTrue("Revocation date in future.", new Date().compareTo(rev.getRevocationDate()) >= 0);
-				assertTrue(rev.getStatus() == CertificateConstants.CERT_REVOKED);
-			}
-    	} finally {
-    		internalCertStoreSession.removeCertificate(cert);
-    	}
+		// Verify that cert are revoked
+		Iterator<Certificate> reviter = revcerts.iterator();
+		while (reviter.hasNext()) {
+			Certificate tmpcert = reviter.next();
+			String fp = CertTools.getFingerprintAsString(tmpcert);
+			CertificateInfo rev = certificateStoreSession.getCertificateInfo(fp);
+			log.info("revocationdate (after rev)=" + rev.getRevocationDate());
+			assertTrue("Revocation date in future.", new Date().compareTo(rev.getRevocationDate()) >= 0);
+			assertTrue(rev.getStatus() == CertificateConstants.CERT_REVOKED);
+		}
 	}
 
     /**
@@ -301,62 +281,58 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 	@Test
     public void test07FindAgain() throws Exception {
 		Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-		try {
-			String fp = CertTools.getFingerprintAsString(cert);
-			CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
-			assertNotNull("Failed to find cert", data3);
-			log.debug("found by key! =" + data3);
-			log.debug("fp=" + data3.getFingerprint());
-			log.debug("issuer=" + data3.getIssuerDN());
-			log.debug("subject=" + data3.getSubjectDN());
-			log.debug("cafp=" + data3.getCAFingerprint());
-			assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
-			log.debug("status=" + data3.getStatus());
-			assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_ACTIVE);
-			log.debug("type=" + data3.getType());
-			assertTrue("wrong type", (data3.getType() & CertificateConstants.CERTTYPE_ENDENTITY) == CertificateConstants.CERTTYPE_ENDENTITY);
-			log.debug("serno=" + data3.getSerialNumber());
-			log.debug("expiredate=" + data3.getExpireDate());
-			log.debug("revocationdate=" + data3.getRevocationDate());
-			log.debug("revocationreason=" + data3.getRevocationReason());
-			assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.NOT_REVOKED);
-            log.debug("subjectAltName=" + data3.getSubjectAltName());
-            assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
-            log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
-            assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
-            log.debug("notBefore=" + data3.getNotBefore());
-            assertEquals("Wrong notBefore", CertTools.getNotBefore(cert), data3.getNotBefore());
+		String fp = CertTools.getFingerprintAsString(cert);
+		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
+		log.debug("found by key! =" + data3);
+		log.debug("fp=" + data3.getFingerprint());
+		log.debug("issuer=" + data3.getIssuerDN());
+		log.debug("subject=" + data3.getSubjectDN());
+		log.debug("cafp=" + data3.getCAFingerprint());
+		assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
+		log.debug("status=" + data3.getStatus());
+		assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_ACTIVE);
+		log.debug("type=" + data3.getType());
+		assertTrue("wrong type", (data3.getType() & CertificateConstants.CERTTYPE_ENDENTITY) == CertificateConstants.CERTTYPE_ENDENTITY);
+		log.debug("serno=" + data3.getSerialNumber());
+		log.debug("expiredate=" + data3.getExpireDate());
+		log.debug("revocationdate=" + data3.getRevocationDate());
+		log.debug("revocationreason=" + data3.getRevocationReason());
+		assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.NOT_REVOKED);
+        log.debug("subjectAltName=" + data3.getSubjectAltName());
+        assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
+        log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
+        assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
+        log.debug("notBefore=" + data3.getNotBefore());
+        assertEquals("Wrong notBefore", CertTools.getNotBefore(cert), data3.getNotBefore());
 
-			internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-			data3 = certificateStoreSession.getCertificateInfo(fp);
-			assertNotNull("Failed to find cert", data3);
-			log.debug("found by key! =" + data3);
-			log.debug("fp=" + data3.getFingerprint());
-			log.debug("issuer=" + data3.getIssuerDN());
-			log.debug("subject=" + data3.getSubjectDN());
-			log.debug("cafp=" + data3.getCAFingerprint());
-			assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
-			log.debug("status=" + data3.getStatus());
-			assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_REVOKED);
-			log.debug("type=" + data3.getType());
-			assertTrue("wrong type", (data3.getType() & CertificateConstants.CERTTYPE_ENDENTITY) == CertificateConstants.CERTTYPE_ENDENTITY);
-			log.debug("serno=" + data3.getSerialNumber());
-			log.debug("expiredate=" + data3.getExpireDate());
-			log.debug("revocationdate=" + data3.getRevocationDate());
-			log.debug("revocationreason=" + data3.getRevocationReason());
-			assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
+		log.debug("found by key! =" + data3);
+		log.debug("fp=" + data3.getFingerprint());
+		log.debug("issuer=" + data3.getIssuerDN());
+		log.debug("subject=" + data3.getSubjectDN());
+		log.debug("cafp=" + data3.getCAFingerprint());
+		assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
+		log.debug("status=" + data3.getStatus());
+		assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_REVOKED);
+		log.debug("type=" + data3.getType());
+		assertTrue("wrong type", (data3.getType() & CertificateConstants.CERTTYPE_ENDENTITY) == CertificateConstants.CERTTYPE_ENDENTITY);
+		log.debug("serno=" + data3.getSerialNumber());
+		log.debug("expiredate=" + data3.getExpireDate());
+		log.debug("revocationdate=" + data3.getRevocationDate());
+		log.debug("revocationreason=" + data3.getRevocationReason());
+		assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
-			log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
-			Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(CertTools.getSubjectDN(cert),
-					CertTools.getIssuerDN(cert));
-			Iterator<Certificate> iter = certs.iterator();
-			while (iter.hasNext()) {
-				Certificate xcert = iter.next();
-				log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumberAsString(xcert));
-				// log.debug(certs[i].toString());
-			}
-		} finally {
-			internalCertStoreSession.removeCertificate(cert);
+		log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
+		Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(CertTools.getSubjectDN(cert),
+				CertTools.getIssuerDN(cert));
+		Iterator<Certificate> iter = certs.iterator();
+		while (iter.hasNext()) {
+			Certificate xcert = iter.next();
+			log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumberAsString(xcert));
+			// log.debug(certs[i].toString());
 		}
     }
 
@@ -369,160 +345,152 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 	@Test
     public void test08IsRevoked() throws Exception {
 		Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-		try {
-			String fp = CertTools.getFingerprintAsString(cert);
-			CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
-			assertNotNull("Failed to find cert", data3);
-			log.debug("found by key! =" + data3);
-			log.debug("fp=" + data3.getFingerprint());
-			log.debug("issuer=" + data3.getIssuerDN());
-			log.debug("subject=" + data3.getSubjectDN());
-			log.debug("cafp=" + data3.getCAFingerprint());
-			assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
-			log.debug("status=" + data3.getStatus());
-			assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_ACTIVE);
-			log.debug("type=" + data3.getType());
-			assertTrue("wrong type", (data3.getType() == CertificateConstants.CERTTYPE_ENDENTITY));
-			log.debug("serno=" + data3.getSerialNumber());
-			log.debug("expiredate=" + data3.getExpireDate());
-			log.debug("revocationdate=" + data3.getRevocationDate());
-			log.debug("revocationreason=" + data3.getRevocationReason());
-			assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.NOT_REVOKED);
-            log.debug("subjectAltName=" + data3.getSubjectAltName());
-            assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
-            log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
-            assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
+		String fp = CertTools.getFingerprintAsString(cert);
+		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
+		log.debug("found by key! =" + data3);
+		log.debug("fp=" + data3.getFingerprint());
+		log.debug("issuer=" + data3.getIssuerDN());
+		log.debug("subject=" + data3.getSubjectDN());
+		log.debug("cafp=" + data3.getCAFingerprint());
+		assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
+		log.debug("status=" + data3.getStatus());
+		assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_ACTIVE);
+		log.debug("type=" + data3.getType());
+		assertTrue("wrong type", (data3.getType() == CertificateConstants.CERTTYPE_ENDENTITY));
+		log.debug("serno=" + data3.getSerialNumber());
+		log.debug("expiredate=" + data3.getExpireDate());
+		log.debug("revocationdate=" + data3.getRevocationDate());
+		log.debug("revocationreason=" + data3.getRevocationReason());
+		assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.NOT_REVOKED);
+        log.debug("subjectAltName=" + data3.getSubjectAltName());
+        assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
+        log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
+        assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
 
-			boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-			assertTrue("Failed to revoke cert that should have worked", worked);
-			data3 = certificateStoreSession.getCertificateInfo(fp);
-			assertNotNull("Failed to find cert", data3);
-			log.debug("found by key! =" + data3);
-			log.debug("fp=" + data3.getFingerprint());
-			log.debug("issuer=" + data3.getIssuerDN());
-			log.debug("subject=" + data3.getSubjectDN());
-			log.debug("cafp=" + data3.getCAFingerprint());
-			assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
-			log.debug("status=" + data3.getStatus());
-			assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_REVOKED);
-			log.debug("type=" + data3.getType());
-			assertTrue("wrong type", (data3.getType() == CertificateConstants.CERTTYPE_ENDENTITY));
-			log.debug("serno=" + data3.getSerialNumber());
-			log.debug("expiredate=" + data3.getExpireDate());
-			log.debug("revocationdate=" + data3.getRevocationDate());
-			log.debug("revocationreason=" + data3.getRevocationReason());
-			assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		assertTrue("Failed to revoke cert that should have worked", worked);
+		data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
+		log.debug("found by key! =" + data3);
+		log.debug("fp=" + data3.getFingerprint());
+		log.debug("issuer=" + data3.getIssuerDN());
+		log.debug("subject=" + data3.getSubjectDN());
+		log.debug("cafp=" + data3.getCAFingerprint());
+		assertNotNull("wrong CAFingerprint", data3.getCAFingerprint());
+		log.debug("status=" + data3.getStatus());
+		assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_REVOKED);
+		log.debug("type=" + data3.getType());
+		assertTrue("wrong type", (data3.getType() == CertificateConstants.CERTTYPE_ENDENTITY));
+		log.debug("serno=" + data3.getSerialNumber());
+		log.debug("expiredate=" + data3.getExpireDate());
+		log.debug("revocationdate=" + data3.getRevocationDate());
+		log.debug("revocationreason=" + data3.getRevocationReason());
+		assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
-			log.debug("Checking if cert is revoked DN:'" + CertTools.getIssuerDN(cert) + "', serno:'" + CertTools.getSerialNumberAsString(cert) + "'.");
-			CertificateStatus revinfo = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-			assertNotNull("Certificate not found, it should be!", revinfo);
-			int reason = revinfo.revocationReason;
-			assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
-			assertTrue("Wrong revocationDate!", revinfo.revocationDate.compareTo(data3.getRevocationDate()) == 0);
-			assertEquals("Wrong reason!", revinfo.revocationReason, data3.getRevocationReason());
+		log.debug("Checking if cert is revoked DN:'" + CertTools.getIssuerDN(cert) + "', serno:'" + CertTools.getSerialNumberAsString(cert) + "'.");
+		CertificateStatus revinfo = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+		assertNotNull("Certificate not found, it should be!", revinfo);
+		int reason = revinfo.revocationReason;
+		assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
+		assertTrue("Wrong revocationDate!", revinfo.revocationDate.compareTo(data3.getRevocationDate()) == 0);
+		assertEquals("Wrong reason!", revinfo.revocationReason, data3.getRevocationReason());
 
-			// Try to revoke again, should return false since no changes should be done in database since certificate is already revoked
-			worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-			assertFalse("Revoked cert in database although it should not have worked", worked);
-		} finally {
-			internalCertStoreSession.removeCertificate(cert);
-		}
+		// Try to revoke again, should return false since no changes should be done in database since certificate is already revoked
+		worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		assertFalse("Revoked cert in database although it should not have worked", worked);
     }
 
 	@Test
     public void test09GetStatus() throws Exception {
         // generate a new certificate
         X509Certificate xcert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-        try {
-        	// Test getStatus
-        	log.debug("Certificate fingerprint: " + CertTools.getFingerprintAsString(xcert));
-        	// Certificate is OK to start with
-        	CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.OK, status);
-        	// Set status of the certificate to ARCHIVED, as the CRL job does for
-        	// expired certificates. getStatus should still return OK (see
-        	// ECA-1527).
-        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.OK, status);
+    	// Test getStatus
+    	log.debug("Certificate fingerprint: " + CertTools.getFingerprintAsString(xcert));
+    	// Certificate is OK to start with
+    	CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.OK, status);
+    	// Set status of the certificate to ARCHIVED, as the CRL job does for
+    	// expired certificates. getStatus should still return OK (see
+    	// ECA-1527).
+    	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.OK, status);
 
-        	// Revoke certificate and set to ON HOLD, this will change status from
-        	// ARCHIVED to REVOKED
-        	boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-			assertTrue("Failed to revoke cert that should have worked", worked);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.REVOKED, status);
-        	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
-        	// Check the revocation date once, it must be within one minute diff
-        	// from current time
-        	Calendar cal1 = Calendar.getInstance();
-        	cal1.add(Calendar.MINUTE, -1);
-        	Date date1 = cal1.getTime();
-        	Calendar cal2 = Calendar.getInstance();
-        	cal2.add(Calendar.MINUTE, 1);
-        	Date date2 = cal2.getTime();
-        	assertTrue(date1.compareTo(status.revocationDate) < 0);
-        	assertTrue(date2.compareTo(status.revocationDate) > 0);
-        	Date revDate = status.revocationDate;
+    	// Revoke certificate and set to ON HOLD, this will change status from
+    	// ARCHIVED to REVOKED
+    	boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+		assertTrue("Failed to revoke cert that should have worked", worked);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.REVOKED, status);
+    	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+    	// Check the revocation date once, it must be within one minute diff
+    	// from current time
+    	Calendar cal1 = Calendar.getInstance();
+    	cal1.add(Calendar.MINUTE, -1);
+    	Date date1 = cal1.getTime();
+    	Calendar cal2 = Calendar.getInstance();
+    	cal2.add(Calendar.MINUTE, 1);
+    	Date date2 = cal2.getTime();
+    	assertTrue(date1.compareTo(status.revocationDate) < 0);
+    	assertTrue(date2.compareTo(status.revocationDate) > 0);
+    	Date revDate = status.revocationDate;
 
-        	// Set status of the certificate to ARCHIVED, as the CRL job does for
-        	// expired certificates. getStatus should still return REVOKED.
-        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.REVOKED, status);
-        	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
-        	assertEquals(revDate, status.revocationDate);
+    	// Set status of the certificate to ARCHIVED, as the CRL job does for
+    	// expired certificates. getStatus should still return REVOKED.
+    	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.REVOKED, status);
+    	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+    	assertEquals(revDate, status.revocationDate);
 
-        	// Now unrevoke the certificate, REMOVEFROMCRL
-        	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
-			assertTrue("Failed to revoke cert that should have worked", worked);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.OK, status);
+    	// Now unrevoke the certificate, REMOVEFROMCRL
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+		assertTrue("Failed to revoke cert that should have worked", worked);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.OK, status);
 
-        	// Revoke certificate and set to ON HOLD again, this will change status to REVOKED (again)
-        	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-			assertTrue("Failed to revoke cert that should have worked", worked);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.REVOKED, status);
-        	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+    	// Revoke certificate and set to ON HOLD again, this will change status to REVOKED (again)
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+		assertTrue("Failed to revoke cert that should have worked", worked);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.REVOKED, status);
+    	assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
-        	// Now unrevoke the certificate, NOT_REVOKED
-        	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.NOT_REVOKED);
-			assertTrue("Failed to revoke cert that should have worked", worked);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.OK, status);
+    	// Now unrevoke the certificate, NOT_REVOKED
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.NOT_REVOKED);
+		assertTrue("Failed to revoke cert that should have worked", worked);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.OK, status);
 
-        	// Set status of the certificate to ARCHIVED, as the CRL job does for
-        	// expired certificates. getStatus should still return OK.
-        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.OK, status);
+    	// Set status of the certificate to ARCHIVED, as the CRL job does for
+    	// expired certificates. getStatus should still return OK.
+    	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.OK, status);
 
-        	// Finally revoke for real, this will change status from ARCHIVED to REVOKED
-        	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
-			assertTrue("Failed to revoke cert that should have worked", worked);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.REVOKED, status);
-        	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
-        	revDate = status.revocationDate;
+    	// Finally revoke for real, this will change status from ARCHIVED to REVOKED
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
+		assertTrue("Failed to revoke cert that should have worked", worked);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.REVOKED, status);
+    	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+    	revDate = status.revocationDate;
 
-        	// Try to unrevoke the certificate, should not work, because it is permanently revoked
-        	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.NOT_REVOKED);
-			assertFalse("Revoked cert in database although it should not have worked", worked);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.REVOKED, status);
-        	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+    	// Try to unrevoke the certificate, should not work, because it is permanently revoked
+    	worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, xcert, new Date(), RevokedCertInfo.NOT_REVOKED);
+		assertFalse("Revoked cert in database although it should not have worked", worked);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.REVOKED, status);
+    	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
 
-        	// Set status of the certificate to ARCHIVED, as the CRL job does for
-        	// expired certificates. getStatus should still return REVOKED.
-        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
-        	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
-        	assertEquals(CertificateStatus.REVOKED, status);
-        	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
-        	assertTrue(revDate.compareTo(status.revocationDate) == 0);
-        } finally {
-        	internalCertStoreSession.removeCertificate(xcert);
-		}
+    	// Set status of the certificate to ARCHIVED, as the CRL job does for
+    	// expired certificates. getStatus should still return REVOKED.
+    	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
+    	status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+    	assertEquals(CertificateStatus.REVOKED, status);
+    	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+    	assertTrue(revDate.compareTo(status.revocationDate) == 0);
     }
 
 	@Test
@@ -542,75 +510,63 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
         // Try to change status of a cert with an admin that does not have access to CA
     	X509Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-    	try {
-            try {
-                internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
-            	assertTrue("Should throw", false);
-            } catch (AuthorizationDeniedException e) {
-            	// NOPMD
-            }
-            try {
-                internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
-            	assertTrue("Should throw", false);
-            } catch (AuthorizationDeniedException e) {
-            	// NOPMD
-            }
-            try {
-            	certificateStoreSession.setStatus(adminTokenNoAuth, CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ARCHIVED);
-            	assertTrue("Should throw", false);
-            } catch (AuthorizationDeniedException e) {
-            	// NOPMD
-            }
-            // Should work with the right admin though
-        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ARCHIVED);
-    	} finally {
-    		internalCertStoreSession.removeCertificate(cert);
-    	}
+        try {
+            internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+        	assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+        	// NOPMD
+        }
+        try {
+            internalCertStoreSession.setRevokeStatus(adminTokenNoAuth, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
+        	assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+        	// NOPMD
+        }
+        try {
+        	certificateStoreSession.setStatus(adminTokenNoAuth, CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ARCHIVED);
+        	assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+        	// NOPMD
+        }
+        // Should work with the right admin though
+    	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ARCHIVED);
 	}
 
 	@Test
 	public void test11FindByType() throws Exception {
     	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-    	try {
-    		String issuerDN = CertTools.getIssuerDN(cert);
-    		String fp = CertTools.getFingerprintAsString(cert);
-    		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
-    		assertNotNull("Failed to find cert", data3);
-    		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
-    		Collection<Certificate> fcert = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, issuerDN));
-    		assertNotNull("Cant find by issuer and type", fcert);
-    		assertEquals("Should be one ee cert issued by '"+issuerDN+"'", 1, fcert.size());
-    		// Test a query with no issuerDN as well
-    		Collection<Certificate> tcert = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, null));
-    		assertNotNull("Cant find by type", tcert);
-    		assertTrue("Should be more than one ee cert", tcert.size()>0);
-    	} finally {
-    		internalCertStoreSession.removeCertificate(cert);
-    	}
+		String issuerDN = CertTools.getIssuerDN(cert);
+		String fp = CertTools.getFingerprintAsString(cert);
+		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
+		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
+		Collection<Certificate> fcert = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, issuerDN));
+		assertNotNull("Cant find by issuer and type", fcert);
+		assertEquals("Should be one ee cert issued by '"+issuerDN+"'", 1, fcert.size());
+		// Test a query with no issuerDN as well
+		Collection<Certificate> tcert = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, null));
+		assertNotNull("Cant find by type", tcert);
+		assertTrue("Should be more than one ee cert", tcert.size()>0);
 	}
 
 	@Test
 	public void test12FindExpirationInfo() throws Exception {
     	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-    	try {
-    		String issuerDN = CertTools.getIssuerDN(cert);
-    		String fp = CertTools.getFingerprintAsString(cert);
-    		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
-    		assertNotNull("Failed to find cert", data3);
-    		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
-    		Collection<String> cas = new ArrayList<String>();
-    		cas.add(issuerDN);
-    		List<Object[]> fcert = internalCertStoreSession.findExpirationInfo(cas, System.currentTimeMillis(), Long.MAX_VALUE, Long.MAX_VALUE);
-    		assertNotNull("Cant find any expiration info", fcert);
-    		assertEquals("Should be one ee cert issued by '"+issuerDN+"'.", 1, fcert.size());
-    		// Try add another CA that does not exist
-    		cas.add("CN=This CA does not exist, I hope");
-    		fcert = internalCertStoreSession.findExpirationInfo(cas, System.currentTimeMillis(), Long.MAX_VALUE, Long.MAX_VALUE);
-    		assertNotNull("Cant find any expiration info", fcert);
-    		assertEquals("Should be one ee cert", 1, fcert.size());
-    	} finally {
-    		internalCertStoreSession.removeCertificate(cert);
-    	}
+		String issuerDN = CertTools.getIssuerDN(cert);
+		String fp = CertTools.getFingerprintAsString(cert);
+		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+		assertNotNull("Failed to find cert", data3);
+		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
+		Collection<String> cas = new ArrayList<>();
+		cas.add(issuerDN);
+		List<Object[]> fcert = internalCertStoreSession.findExpirationInfo(cas, System.currentTimeMillis(), Long.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull("Cant find any expiration info", fcert);
+		assertEquals("Should be one ee cert issued by '"+issuerDN+"'.", 1, fcert.size());
+		// Try add another CA that does not exist
+		cas.add("CN=This CA does not exist, I hope");
+		fcert = internalCertStoreSession.findExpirationInfo(cas, System.currentTimeMillis(), Long.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull("Cant find any expiration info", fcert);
+		assertEquals("Should be one ee cert", 1, fcert.size());
 	}
 
 	@Test
@@ -631,18 +587,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 	}
 
     @Test
-    public void testFindUsernameByIssuerDnAndSerialNumber() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException,
-            CreateException, AuthorizationDeniedException, IOException {
+    public void testFindUsernameByIssuerDnAndSerialNumber() throws IllegalStateException, OperatorCreationException, CertificateException,
+            AuthorizationDeniedException, IOException {
         Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-        try {
-            String issuerDn = CertTools.getIssuerDN(cert);
-            BigInteger serialNumber = CertTools.getSerialNumber(cert);
-            assertEquals("Username was not delivered properly", USERNAME,
-                    certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber));
-        } finally {
-            internalCertStoreSession.removeCertificate(cert);
-        }
+        String issuerDn = CertTools.getIssuerDN(cert);
+        BigInteger serialNumber = CertTools.getSerialNumber(cert);
+        assertEquals("Username was not delivered properly", USERNAME,
+                certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber));
     }
 
 
@@ -650,39 +601,35 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     @Test
     public void testLimitedCertificateDataWontUpdateFullEntire() throws Exception {
         final Certificate certificate = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+        final String issuerDn = CertTools.getIssuerDN(certificate);
+        final BigInteger serialNumber = CertTools.getSerialNumber(certificate);
         try {
-            final String issuerDn = CertTools.getIssuerDN(certificate);
-            final BigInteger serialNumber = CertTools.getSerialNumber(certificate);
-            try {
-                internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
-                        RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, "fakecafp");
-            } catch (EJBTransactionRolledbackException e) {
-                if (e.getCausedByException() != null && e.getCausedByException() instanceof UnsupportedOperationException) {
-                    // This is expected to be unsupported
-                } else {
-                    throw e;
-                }
-            } catch (UnsupportedOperationException e) {
+            internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                    RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, "fakecafp");
+        } catch (EJBTransactionRolledbackException e) {
+            if (e.getCausedByException() != null && e.getCausedByException() instanceof UnsupportedOperationException) {
                 // This is expected to be unsupported
+            } else {
+                throw e;
             }
-            assertNotNull("Limited CertificateData update removed real certificate.", certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn, serialNumber));
-            try {
-                internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
-                        RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, "fakecafp");
-            } catch (EJBTransactionRolledbackException e) {
-                if (e.getCausedByException() != null && e.getCausedByException() instanceof UnsupportedOperationException) {
-                    // This is expected to be unsupported
-                } else {
-                    throw e;
-                }
-            } catch (UnsupportedOperationException e) {
-                // This really should be unsupported
-            }
-            final CertificateStatus certificateStatus = certificateStoreSession.getStatus(issuerDn, serialNumber);
-            assertTrue("Limited CertificateData updated real certificate entry.", certificateStatus.equals(CertificateStatus.OK));
-        } finally {
-            internalCertStoreSession.removeCertificate(certificate);
+        } catch (UnsupportedOperationException e) {
+            // This is expected to be unsupported
         }
+        assertNotNull("Limited CertificateData update removed real certificate.", certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn, serialNumber));
+        try {
+            internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                    RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, "fakecafp");
+        } catch (EJBTransactionRolledbackException e) {
+            if (e.getCausedByException() != null && e.getCausedByException() instanceof UnsupportedOperationException) {
+                // This is expected to be unsupported
+            } else {
+                throw e;
+            }
+        } catch (UnsupportedOperationException e) {
+            // This really should be unsupported
+        }
+        final CertificateStatus certificateStatus = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData updated real certificate entry.", certificateStatus.equals(CertificateStatus.OK));
     }
 
     // verify that certificateStoreSession.getStatus (used by OcspResponseGeneratorSessionBean) returns the correct CertificateStatus for limited entries
@@ -737,14 +684,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         final String subjectDn = "CN="+username;
         final BigInteger serialNumber = BigInteger.valueOf(username.hashCode()); // Just some value
         try {
-            CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, "ManagementCA");
-            if(cainfo == null) {
-                cainfo = caSession.getCAInfo(alwaysAllowToken, "AdminCA1");
-            }
-            if(cainfo == null) {
-                throw new IllegalStateException("Couldn't find either ManagementCA or AdminCA1");
-            }
-
+            final CAInfo cainfo = CaTestUtils.getClientCertCaInfo(alwaysAllowToken);
             final Certificate cacert = cainfo.getCertificateChain().iterator().next();
             final int caid = cainfo.getCAId();
             final String issuerDn = cainfo.getSubjectDN();
@@ -769,7 +709,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void testGetCertificateDataByUsername() throws AuthorizationDeniedException, CertificateParsingException, OperatorCreationException, CertIOException, InvalidAlgorithmParameterException {
+    public void testGetCertificateDataByUsername() throws CertificateParsingException, OperatorCreationException, CertIOException, InvalidAlgorithmParameterException {
         final String TEST_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
         log.trace(">" + TEST_NAME);
         final String USERNAME = TEST_NAME + "_user";
@@ -854,8 +794,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 //		assertTrue("Result returned", result.size()>0);
 //	}
 
-    private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            SignatureException, InvalidKeyException, CreateException, AuthorizationDeniedException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
+    private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws AuthorizationDeniedException, IllegalStateException,
+            OperatorCreationException, CertificateException, IOException {
         // create a new self signed certificate
         GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
         ExtensionsGenerator extgen = new ExtensionsGenerator();
@@ -864,7 +804,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         List<Extension> additionalExtensions = new ArrayList<>();
         additionalExtensions.add(sanExtension);
 
-        X509Certificate xcert = CertTools.genSelfCertForPurpose("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(),
+        X509Certificate xcert = CertTools.genSelfCertForPurpose(SELFCERT_DN, 24, null, keys.getPrivate(),
         		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false, 0, null, null, BouncyCastleProvider.PROVIDER_NAME, true, additionalExtensions);
         String fp = CertTools.getFingerprintAsString(xcert);
 
