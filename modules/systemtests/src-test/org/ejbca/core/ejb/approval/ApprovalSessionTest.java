@@ -227,7 +227,7 @@ public class ApprovalSessionTest extends CaTestCase {
         endEntityManagementSession.addUser(intadmin, reqUserData, true);
 
         externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, externalAdminRsaKey.getPrivate(), externalAdminRsaKey.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
         externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
         fileHandles.addAll(BatchCreateTool.createAllNew(intadmin, new File(P12_FOLDER_NAME)));
