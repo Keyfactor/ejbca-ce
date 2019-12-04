@@ -13,6 +13,7 @@
 
 package org.cesecore.keys.token;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,9 @@ import org.pkcs11.jacknji11.CKA;
  * 
  * @version $Id$
  */
-public class KeyGenParams {
+public class KeyGenParams implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private final String keySpecification;
     private final Map<Long, Object> publicAttributesMap;
     private final Map<Long, Object> privateAttributesMap;
