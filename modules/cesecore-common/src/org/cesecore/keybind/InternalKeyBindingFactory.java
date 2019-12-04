@@ -34,7 +34,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
 public enum InternalKeyBindingFactory {
     INSTANCE;
 
-    private final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
+    private static final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
     private final Map<String, String> aliasToImplementationMap = new HashMap<>();
     private final Map<String, String> implementationToAliasMap = new HashMap<>();
     private final Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> implementationPropertiesMap = new HashMap<>();

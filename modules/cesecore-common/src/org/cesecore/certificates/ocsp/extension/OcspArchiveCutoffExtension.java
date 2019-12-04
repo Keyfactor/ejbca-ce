@@ -70,7 +70,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  */
 public class OcspArchiveCutoffExtension implements OCSPExtension {
-    private final Logger log = Logger.getLogger(OcspArchiveCutoffExtension.class);
+    private static final Logger log = Logger.getLogger(OcspArchiveCutoffExtension.class);
     public static final String EXTENSION_NAME = "Archive Cutoff";
 
     @Override

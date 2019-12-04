@@ -42,7 +42,7 @@ import org.cesecore.util.CertTools;
 public enum CaCertificateCache  {
     INSTANCE;
     
-	private final Logger log = Logger.getLogger(CaCertificateCache.class);
+	private static final Logger log = Logger.getLogger(CaCertificateCache.class);
 
     /** Mapping from subjectDN to key in the certs HashMap. */
     private Map<Integer, X509Certificate> certsFromSubjectDN = new HashMap<>();
