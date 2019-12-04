@@ -1988,10 +1988,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     final String errMsg = "CryptoToken " + currentCryptoTokenId + " not found.";
                     log.info(errMsg);
                     currentCryptoTokenName = errMsg;
+                } else {
+                    currentCryptoTokenName = cryptoTokenInfo.getName();
+                    currentCryptoTokenLink = CRYPTO_TOKEN_LINK + currentCryptoTokenId;
+                    currentCryptoTokenPresent = cryptoTokenManagementSession.isCryptoTokenPresent(getAdmin(), currentCryptoTokenId);
                 }
-                currentCryptoTokenName = cryptoTokenInfo.getName();
-                currentCryptoTokenLink = CRYPTO_TOKEN_LINK + currentCryptoTokenId;
-                currentCryptoTokenPresent = cryptoTokenManagementSession.isCryptoTokenPresent(getAdmin(), currentCryptoTokenId);
             } catch (final AuthorizationDeniedException e) {
                 log.error("Error while getting crypto token info!", e);
             }
