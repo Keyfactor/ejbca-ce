@@ -188,7 +188,7 @@ public interface CryptoTokenManagementSession {
      * Generate a new key pair in the specified CryptoToken with the requested alias and key parameters
      * 
      * @param KeyGenParams key generation parameters and attributes KeyGenParams.getKeySpecification should be in the form "RSAnnnn", 
-     * "DSAnnnn" or an known EC curve name.
+     * "DSAnnnn" or an known EC curve name. For example "KeyGenParams.builder("RSA2048").build()"
      * 
      * @throws CryptoTokenOfflineException if the CryptoToken is unavailable or inactive.
      * @throws InvalidKeyException if key generation failed.
