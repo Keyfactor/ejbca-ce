@@ -47,7 +47,7 @@ public class RaStyleCacheBean {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     
-    private final Logger log = Logger.getLogger(RaStyleCacheBean.class);
+    private static final Logger log = Logger.getLogger(RaStyleCacheBean.class);
     
     private Map<AuthenticationToken, List<RaStyleInfo>> raStyleCache;
     private Map<AuthenticationToken, Long> lastUpdateMap;
