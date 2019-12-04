@@ -226,7 +226,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
     
     protected EjbcaWS ejbcaraws;
-    /** Either ManagementCA or AdminCA1 */
+    /** Either ManagementCA or AdminCA1, or whatever is configured in target.clientcert.name */
     protected static String managementCaName;
 
     protected final static AuthenticationToken intAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CommonEjbcaWS"));
