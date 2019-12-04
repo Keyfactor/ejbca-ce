@@ -68,6 +68,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
@@ -176,12 +177,19 @@ public abstract class CaTestUtils {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         CAInfo caInfo = caSession.getCAInfo(authenticationToken, caName);
+        Integer cryptoTokenId = null;
         if (caInfo != null) {
+            if (caInfo.getCAToken() != null) {
+                // We want to delete this CAs crypto token
+                cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
+            }
             caSession.removeCA(authenticationToken, caInfo.getCAId());
             internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
         }
-
-        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (cryptoTokenId == null) {
+            // If we didn't find on in CAToken, make sure we don't have one with the same name as the CA
+            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        }
         if (cryptoTokenId != null) {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         }
@@ -478,10 +486,10 @@ public abstract class CaTestUtils {
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
         }
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("RSA1024").build());
         }
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
         }
         return cryptoTokenId;
     }
