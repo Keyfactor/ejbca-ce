@@ -341,6 +341,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
 
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
+        if (endEntityProfileName == null) {
+            throw new EndEntityProfileValidationException("End Entity profile " + endEntityProfileId + " does not exist trying to add user: " + endEntity.getUsername());
+        }
         final String dn = endEntity.getDN();
         String altName = endEntity.getSubjectAltName();
         try {
