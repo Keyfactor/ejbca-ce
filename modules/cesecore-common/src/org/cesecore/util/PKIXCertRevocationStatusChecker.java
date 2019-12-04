@@ -81,7 +81,7 @@ import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
  */
 public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
 
-    private final Logger log = Logger.getLogger(PKIXCertRevocationStatusChecker.class);
+    private static final Logger log = Logger.getLogger(PKIXCertRevocationStatusChecker.class);
 
     
     private String ocspUrl;
