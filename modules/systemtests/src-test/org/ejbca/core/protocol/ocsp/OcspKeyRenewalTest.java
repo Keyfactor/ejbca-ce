@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -24,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -68,11 +74,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @version $Id$
@@ -199,10 +200,7 @@ public class OcspKeyRenewalTest {
         authenticationKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
                 TESTCLASSNAME + "-ssl", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // We need to issue the SSL certificate from an issuer trusted by the server (AdminCA1/ManagementCA)
-        CAInfo caInfo = caSession.getCAInfo(authenticationToken, "AdminCA1");
-        if (caInfo == null) {
-            caInfo = caSession.getCAInfo(authenticationToken, "ManagementCA");
-        }
+        final CAInfo caInfo = CaTestUtils.getClientCertCaInfo(authenticationToken);
         managementCaId = caInfo.getCAId();
    
         // Create a new AuthenticationKeyBinding

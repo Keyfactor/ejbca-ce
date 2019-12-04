@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -70,8 +73,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
-import org.cesecore.util.ui.PropertyValidationException;
-import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.cvc.AccessRightEnum;
@@ -82,9 +83,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Common class for test classes which need to create a CA.
@@ -137,7 +135,7 @@ public abstract class CaTestUtils {
     public static X509CA createX509CaWithApprovals(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn, 
             int caStatus, Map<ApprovalRequestType, Integer> approvals) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
                 AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
-                IllegalStateException, OperatorCreationException, CAExistsException, PropertyValidationException, ApprovalProfileExistsException, CADoesntExistsException {
+                IllegalStateException, OperatorCreationException, CAExistsException {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -505,6 +503,8 @@ public abstract class CaTestUtils {
      * be overridden in systemtests.properties using 'target.clientcert.ca'.
      * <p>
      * This CA should be an active CA, that we can issue certificates from.
+     * 
+     * @return CAInfo of ManagementCA or other trusted CA, never null.
      */
     public static CAInfo getClientCertCaInfo(final AuthenticationToken authenticationToken) {
         final CAInfo caInfo = getCaInfo(authenticationToken, SystemTestsConfiguration.getClientCertificateCaNames());
@@ -517,6 +517,7 @@ public abstract class CaTestUtils {
 
     /**
      * Returns the first available CA in the list.
+     * @return CAInfo. Never null
      * @throws IllegalStateException if none exist or if access was denied.
      */
     private static CAInfo getCaInfo(final AuthenticationToken authenticationToken, final String[] cas) {

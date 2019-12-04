@@ -58,8 +58,10 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -98,7 +100,7 @@ import static org.junit.Assert.assertTrue;
  *  3- There must be a database for the unid-fnr mapping with the mapping 123456789, 654321 (it can be created using the create-table-unid-mysql.sql 
  *     script which can be found under modules/unidfnr/resources/scripts/). 
  *  4- You must have a CA that has issued certificates with serialNumber in the DN matching the unid
- *     123456789 (Default ManagementCA can be used). 
+ *     123456789 (Default ManagementCA can be used, otherwise configure target.clientcert.ca). 
  *  5- You also need a keystore issued by the CA for TLS communication located under LOOKUP_KSTRUST_PATH, 
  *     and its keystore cert (in pem format) must be configured in the ocsp lookup extension.
  *  6- You also need a keystore as above but not configured as trusted in the lookup extension located under LOOKUP_KSNOTRUST_PATH. 
@@ -123,6 +125,8 @@ import static org.junit.Assert.assertTrue;
 public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpTest.class);
 
+    private static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolLookupServerHttpTest"));
+
     // Set the proper trust/notrust keystore parameters here
     private static final String LOOKUP_KSTRUST_PATH = "";
     private static final String LOOKUP_KSNOTRUST_PATH = "";
@@ -131,7 +135,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static final String USER_PASS_PHRASE = "foo123";
     private static final String TEST_USER_NAME = "unidtest";
     private static final String TEST_USER_EMAIL = TEST_USER_NAME+"@anatom.se";
-    private static final String TRUSTED_CA_NAME = "ManagementCA"; // Default ManagementCA is used for this test (to keep things simple).
+    private static final String TRUSTED_CA_NAME = CaTestUtils.getClientCertCaName(admin); // Defaults to ManagementCA but can be overridden with target.clientcert.ca
     private static final String SAMPLE_UNID = "123456789";
     private static final String SAMPLE_FNR = "654321";
     private static final String TEST_USER_SUBJECTDN_GOOD_SERIAL = "C=SE,O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+",CN=UNIDTest";
@@ -143,7 +147,6 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private String resourceOcsp;
 
     private int caid = getTestCAId(TRUSTED_CA_NAME);
-    private static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolLookupServerHttpTest"));
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
