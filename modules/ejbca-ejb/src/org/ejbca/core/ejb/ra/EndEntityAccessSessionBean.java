@@ -411,7 +411,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<findAllUsersByStatusWithLimit()");
+            log.trace("<findAllUsersByStatusWithLimit(): " + returnval.size());
         }
         return returnval;
     }
