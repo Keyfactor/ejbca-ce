@@ -31,7 +31,7 @@ public enum AccessMatchValueReverseLookupRegistry {
     INSTANCE;
     
     // Logger is not static since static initializers run after the constructor for enums.
-    private static final Logger log = Logger.getLogger(AccessMatchValueReverseLookupRegistry.class); // NOPMD
+    private final Logger log = Logger.getLogger(AccessMatchValueReverseLookupRegistry.class); // NOPMD
     
     // Registry of methods used to look up database values
     private final Map<String, AuthenticationTokenMetaData> metaDatas = new HashMap<>();
