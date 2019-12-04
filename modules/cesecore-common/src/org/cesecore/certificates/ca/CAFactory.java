@@ -27,17 +27,28 @@ public enum CAFactory {
     private Map<String, CACommon> caImplMap = new HashMap<>();
     
     private CAFactory() {
-        try {
-            ServiceLoader<CACommon> cALoader = ServiceLoader.load(CACommon.class);
-            for (CACommon ca : cALoader) {
-                caImplMap.put(ca.getCaImplType(), ca);
+        ServiceLoader<CACommon> cALoader = ServiceLoader.load(CACommon.class);
+        for (CACommon ca : cALoader) {
+            caImplMap.put(ca.getCaImplType(), ca);
+        }
+        if (caImplMap.isEmpty()) {
+            // If we have no CA implementations it is most likely because we don't have a service loader 
+            // manifest on the class path. This is most likely when we run inside eclipse, because the 
+            // manifest is created by a clever ant script.
+            // Trying to add the default X509CAImpl can not hurt here, and let's us run test cases from inside eclipse
+            // If we don't even have this implementation, we fail as if there wasn't any implementation found.
+            // So to help developers...
+            // Reflection is used because the CA modules does not have to be accessible when building the cesecore-common library, 
+            // as CA implementations can be plug-ins
+            final String caimpl = "org.cesecore.certificates.ca.X509CAImpl";
+            try {
+                Class<?> clazz = Class.forName(caimpl);
+                caImplMap.put("X509CA", (CACommon)clazz.newInstance());                
+            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+                Logger.getLogger(CAFactory.class).info("Could not construct org.cesecore.certificates.ca.X509CAImpl implementation for developers: ", e);
             }
-            if (caImplMap.isEmpty()) {
-                Logger.getLogger(CAFactory.class).error("No CA implementations found by ServiceLoader");
-            } 
-        } catch (Exception e) {
-            Logger.getLogger(CAFactory.class).error("Could not construct CA implementations", e);
-            throw e;
+            // If no CA implementations were found, log error
+            Logger.getLogger(CAFactory.class).error("No CA implementations found by ServiceLoader");
         }
     }
     
