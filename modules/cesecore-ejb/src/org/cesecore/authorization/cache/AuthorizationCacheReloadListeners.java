@@ -28,7 +28,7 @@ public enum AuthorizationCacheReloadListeners {
     INSTANCE;
 
     private final Set<AuthorizationCacheReloadListener> authCacheReloadEvent = new HashSet<>();
-    private final Logger log = Logger.getLogger(AuthorizationCacheReloadListeners.class);
+    private static final Logger log = Logger.getLogger(AuthorizationCacheReloadListeners.class);
 
     /** Broadcast the specified event to all registered listeners */
     public void onReload(final AuthorizationCacheReload event) {
