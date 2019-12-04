@@ -395,7 +395,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @Override
     public List<EndEntityInformation> findAllBatchUsersByStatusWithLimit(int status) {
         if (log.isTraceEnabled()) {
-            log.trace(">findAllUsersByStatusWithLimit()");
+            log.trace(">findAllUsersByStatusWithLimit(): " + status);
         }
         final javax.persistence.Query query = entityManager
                 .createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
