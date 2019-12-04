@@ -443,13 +443,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public boolean getGloballyEnableNonce() {
-        if (this.nonceEnabled == null) {
-            GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            this.nonceEnabled = configuration.getNonceEnabled();
-        }
-
-        return this.nonceEnabled;
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        return configuration.getNonceEnabled();
     }
 
     public void setGloballyEnableNonce(boolean nonceEnabled) {
