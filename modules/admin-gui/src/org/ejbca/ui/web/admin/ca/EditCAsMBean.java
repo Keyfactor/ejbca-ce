@@ -1207,6 +1207,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public void resetCryptoTokenParam() {
         caInfoDto.setCryptoTokenIdParam(StringUtils.EMPTY);
+        updateAvailableCryptoTokenList();
     }
 
     // ===================================================== Create CA Actions ============================================= //
