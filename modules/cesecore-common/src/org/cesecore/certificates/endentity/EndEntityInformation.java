@@ -205,6 +205,8 @@ public class EndEntityInformation implements Serializable {
      * null or an empty string depending on the database software used.
      */
     public String getPassword() {return StringTools.getBase64String(password);}
+    /** @param status Status of user, from {@link EndEntityConstants#STATUS_NEW} etc
+     */
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}
     public void setType(EndEntityType type) {this.type=type.getHexValue();}
