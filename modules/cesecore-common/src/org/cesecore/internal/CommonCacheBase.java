@@ -46,7 +46,7 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
         }
     }
     
-    private final Logger log = Logger.getLogger(CommonCacheBase.class);
+    private static final Logger log = Logger.getLogger(CommonCacheBase.class);
     private Map<Integer, CacheEntry> cache = new HashMap<>();
     private Map<String, Integer> nameToIdMap = new HashMap<>();
 
