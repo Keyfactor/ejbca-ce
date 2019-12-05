@@ -1216,6 +1216,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                 log.debug("Enriching DV public key with EC parameters from CVCA");
                                 Certificate cvcacert = reqchain.iterator().next();
                                 caCertPublicKey = KeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
+                            } else {
+                                final String msg = "Trying to receive CA certificate response for a DVCA, but the received certificate is for an IS"; 
+                                log.debug(msg);
+                                throw new CertPathValidatorException(msg);
                             }
                         } catch (InvalidKeySpecException e) {
                             log.debug("Strange CVCA certificate that we can't get the key from, continuing anyway...", e);
