@@ -522,18 +522,22 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                     final ByteArrayOutputStream bao = new ByteArrayOutputStream();
                     new DEROutputStream(bao).writeObject(protObject);
                     final byte[] protBytes = bao.toByteArray();
-                    final AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
-                    if (log.isDebugEnabled()) {
-                        log.debug("POP protection bytes length: " + (protBytes != null ? protBytes.length : "null"));
-                        log.debug("POP algorithm identifier is: " + algId.getAlgorithm().getId());
-                    }
-                    final Signature sig = Signature.getInstance(algId.getAlgorithm().getId(), "BC");
-                    sig.initVerify(getRequestPublicKey());
-                    sig.update(protBytes);
-                    final DERBitString bs = sk.getSignature();
-                    ret = sig.verify(bs.getBytes());
-                    if (log.isDebugEnabled()) {
-                        log.debug("POP verify returns: " + ret);
+                    if (protBytes != null) {
+                        final AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
+                        if (log.isDebugEnabled()) {
+                            log.debug("POP protection bytes length: " + (protBytes != null ? protBytes.length : "null"));
+                            log.debug("POP algorithm identifier is: " + algId.getAlgorithm().getId());
+                        }
+                        final Signature sig = Signature.getInstance(algId.getAlgorithm().getId(), "BC");
+                        sig.initVerify(getRequestPublicKey());
+                        sig.update(protBytes);
+                        final DERBitString bs = sk.getSignature();
+                        ret = sig.verify(bs.getBytes());
+                        if (log.isDebugEnabled()) {
+                            log.debug("POP verify returns: " + ret);
+                        }
+                    } else {
+                        log.info("Can not verify POP, protObject exists but there is nothing in it.");
                     }
                 }
             } catch (IOException e) {
