@@ -103,6 +103,10 @@ public class CaInfoDto {
         return caType == CAInfo.CATYPE_X509;
     }
 
+    public boolean isCaTypeCVC() {
+        return caType == CAInfo.CATYPE_CVC;
+    }
+
     String getKeySequenceFormatAsString() {
         return String.valueOf(this.keySequenceFormat);
     }
