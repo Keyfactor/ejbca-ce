@@ -1217,7 +1217,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                 Certificate cvcacert = reqchain.iterator().next();
                                 caCertPublicKey = KeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
                             } else {
-                                final String msg = "Trying to receive CA certificate response for a DVCA, but the received certificate is for an IS"; 
+                                final String msg = "Trying to receive CA certificate response for a DVCA, but the received certificate's authRole field is not for a DV"; 
                                 log.debug(msg);
                                 throw new CertPathValidatorException(msg);
                             }
