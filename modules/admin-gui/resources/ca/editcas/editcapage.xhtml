@@ -591,6 +591,11 @@
 							validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
 							disabled="#{editCAsMBean.caInfoDto.caTypeX509}" />
 					</h:inputText>
+                    <br />
+					<h:outputText styleClass="smallHelp" value="#{web.text.SUBJECTDN_CA_HELP}"
+					    rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.editCA}"/>
+                    <h:outputText styleClass="smallHelp" value="#{web.text.SUBJECTDN_CA_CVC_HELP}"
+                        rendered="#{editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.editCA}"/>
 				</h:panelGroup>
 
 				<h:panelGroup
