@@ -355,11 +355,12 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             
         } finally {
             endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, eepProfileName);
+            // Remove test CAs and associated crypto tokens
             if (caInfo1 != null) {
-                caSession.removeCA(alwaysAllowToken, caInfo1.getCAId());
+                CaTestUtils.removeCa(alwaysAllowToken, caInfo1);
             }
             if (caInfo2 != null) {
-                caSession.removeCA(alwaysAllowToken, caInfo2.getCAId());
+                CaTestUtils.removeCa(alwaysAllowToken, caInfo2);
             }
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId1);
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId1);
