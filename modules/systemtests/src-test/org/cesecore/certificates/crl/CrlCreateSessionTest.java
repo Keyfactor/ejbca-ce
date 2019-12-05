@@ -388,7 +388,6 @@ public class CrlCreateSessionTest {
             }
             CAInfo caInfo = caSession.getCAInfo(authenticationToken, subcaname);
             if (caInfo != null) {
-                int caid = caInfo.getCAId();
                 // Delete sub CA CRLs
                 while (true) {
                     final byte[] crl = getLastCrl(subcadn, true); // delta CRLs
@@ -404,8 +403,8 @@ public class CrlCreateSessionTest {
                     }
                     internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
                 }
-                // Delete sub CA
-                caSession.removeCA(authenticationToken, caid);
+                // Delete sub CA and associated crypto token
+                CaTestUtils.removeCa(authenticationToken, caInfo);
             }
         }
     }
