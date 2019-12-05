@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -122,7 +123,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @After
     public void tearDown() throws AuthorizationDeniedException {
-        caSession.removeCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAId());
+        if (x509TestCa != null) {
+            CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
+        }
     }
 
     @Test

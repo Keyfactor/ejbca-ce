@@ -870,7 +870,7 @@ public class ProtocolScepHttpTest {
         } finally {
             // Done with all of the rollover tests
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
-                caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
+                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA));
             }
             internalCertificateStoreSession.removeCertificatesBySubject(ROLLOVER_SUB_CA_DN);
             internalCertificateStoreSession.removeCertificatesBySubject(rolloverDN);

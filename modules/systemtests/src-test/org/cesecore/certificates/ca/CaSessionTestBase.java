@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -30,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -57,12 +51,20 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean.
@@ -103,10 +105,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	        ), null);
         // Remove any lingering testca before starting the tests
         if (testx509ca != null) {
-            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());        	
+            CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());            
         }
         if (testcvcca != null) {
-        	caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
+            CaTestUtils.removeCa(alwaysAllowToken, testcvcca.getCAInfo());            
         }
     }
 
@@ -114,10 +116,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         // Remove any testca before exiting tests
     	try {
             if (testx509ca != null) {
-                caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());        	
+                CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());            
             }
             if (testcvcca != null) {
-            	caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
+                CaTestUtils.removeCa(alwaysAllowToken, testcvcca.getCAInfo());            
             }
     	} finally {
     		// Be sure to to this, even if the above fails
@@ -263,7 +265,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals("new description", ca.getDescription());
         
         // Remove
-        caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+        CaTestUtils.removeCa(roleMgmgToken, testx509ca.getCAInfo());            
         assertNull("CA by name of " +  testx509ca.getName() + " shouldn't exist.", caTestSession.getCA(roleMgmgToken, testx509ca.getName()));
         assertNull("CA by name of " +   "TEST1" + " shouldn't exist.", caTestSession.getCA(roleMgmgToken,  "TEST1"));
       
@@ -320,7 +322,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         	int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
         	cryptoTokenManagementSession.activate(roleMgmgToken, cryptoTokenId, tokenpwd);
         	final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        	cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, signKeyAlias, "1024");
+        	cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, signKeyAlias, KeyGenParams.builder("RSA1024").build());
         	// Now create a CA certificate
         	CAInfo info = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
             // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
@@ -357,7 +359,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
             }
             CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
-    		caSession.removeCA(roleMgmgToken, ca.getCAId());
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
     		internalCertStoreSession.removeCertificate(cert);
     	}    	
     }
@@ -406,7 +408,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             assertTrue("extended CA service should have been activated", ok);
             
     	} finally {
-    		caSession.removeCA(roleMgmgToken, ca.getCAId());
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
     		internalCertStoreSession.removeCertificate(cert);
     	}    	
     }
@@ -416,7 +418,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CaSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
-    	caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+        CaTestUtils.removeCa(roleMgmgToken, testx509ca.getCAInfo());
     	// Try to add and edit CAs with and admin that does not have authorization
     	try {
     		try {
@@ -464,19 +466,22 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     		assertEquals(50, cainfo.getCRLIssueInterval());
     		assertEquals(CAConstants.CA_OFFLINE, cainfo.getStatus());
     	} finally {
-        	caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+            CaTestUtils.removeCa(roleMgmgToken, testx509ca.getCAInfo());
     	}
     }
 
     /** Remove any existing CA. Null value parameter can be used to ignore one of the alternatives. */
     protected void cleanUpAnyExistingCa(Integer caId, String caname) throws AuthorizationDeniedException {
         if (caId != null) {
-            caSession.removeCA(roleMgmgToken, caId.intValue());
+            final CAInfo caInfo = caSession.getCAInfo(roleMgmgToken, caId);
+            if (caInfo != null) {
+                CaTestUtils.removeCa(roleMgmgToken, caInfo);
+            }
         }
         if (caname != null) {
             final CAInfo caInfo = caSession.getCAInfo(roleMgmgToken, caname);
             if (caInfo != null) {
-                caSession.removeCA(roleMgmgToken, caInfo.getCAId());
+                CaTestUtils.removeCa(roleMgmgToken, caInfo);
             }
 
         }
@@ -494,7 +499,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             ca.setCAToken(caToken);
             caSession.addCA(authenticationToken, ca);
             final int cryptoTokenId = caToken.getCryptoTokenId();
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", "1024");
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", KeyGenParams.builder("RSA1024").build());
             PublicKey pubK = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, "signKeyAlias").getPublicKey();
             assertNotNull(pubK);
             // Now create a CA certificate
@@ -532,7 +537,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 cryptoTokenManagementSession.removeKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
             }
             CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
-            caSession.removeCA(authenticationToken, ca.getCAId());
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
             internalCertStoreSession.removeCertificate(cert);
         }
     }

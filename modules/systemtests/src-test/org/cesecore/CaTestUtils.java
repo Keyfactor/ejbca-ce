@@ -218,6 +218,7 @@ public abstract class CaTestUtils {
         caSession.removeCA(authenticationToken, caInfo.getCAId());
         cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caInfo.getCAToken().getCryptoTokenId());
         internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
+        internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */

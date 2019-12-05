@@ -1940,7 +1940,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, testUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
         }
         if(caSession.existsCa(testCaName)) {
-            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, testCaName).getCAId());
+            CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, testCaName));
         }
 
         java.security.cert.Certificate cert1 = null;
@@ -2106,7 +2106,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             }
             CAInfo caInfo = caSession.getCAInfo(intAdmin, testCaName);
             if (caInfo != null) {
-                caSession.removeCA(intAdmin, caInfo.getCAId());
+                CaTestUtils.removeCa(intAdmin, caInfo);
             }
 
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
