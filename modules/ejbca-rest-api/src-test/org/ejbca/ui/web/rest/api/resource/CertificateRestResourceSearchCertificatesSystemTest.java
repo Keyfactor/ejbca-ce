@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -135,7 +136,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         RestResourceSystemTestBase.afterClass();
         endEntityProfileSessionRemote.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, TEST_EEP_NAME);
         certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, TEST_CERTP_NAME);
-        caSession.removeCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAId());
+        if (x509TestCa != null) {
+            CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
+        }
     }
 
     @After
