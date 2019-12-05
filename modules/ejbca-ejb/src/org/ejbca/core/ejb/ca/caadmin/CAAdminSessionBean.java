@@ -1213,10 +1213,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         try {
                             if (cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole()
                                     .isDV()) {
-                                if (cachain.size() == 0) {
-                                    log.error("The DVCA certificate cannot be imported because the CVCA certificate is not present in the chain.");
-                                    throw new CertPathValidatorException(intres.getLocalizedMessage("caadmin.errornocvca"));
-                                }
                                 log.debug("Enriching DV public key with EC parameters from CVCA");
                                 Certificate cvcacert = reqchain.iterator().next();
                                 caCertPublicKey = KeyTools.getECPublicKeyWithParams(caCertPublicKey, cvcacert.getPublicKey());
