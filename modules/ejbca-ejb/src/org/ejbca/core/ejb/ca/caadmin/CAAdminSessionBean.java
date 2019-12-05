@@ -3416,7 +3416,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * Get a hash code for the test key of a CA. If the token of the CA cannot be read, the
      * hash code <code>0</code> is returned.
      * 
-     * @param caInfo an object containing information about the CA.
+     * @param caToken an object containing the CAs token that contains the test key.
      * @return a hash code derived from the crypto token ID and the test key alias.
      */
     private int getCaTestKeyHashCode(final CAToken caToken) {
