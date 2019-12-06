@@ -1567,22 +1567,8 @@ Content-Type: text/html; charset=iso-8859-1
                 log.error("",e);
             }
             
-            try {
-                int cryptoTokenId = caSession.getCAInfo(admin, subSubCaDN.hashCode()).getCAToken().getCryptoTokenId();
-                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
-                
-                cryptoTokenId = caSession.getCAInfo(admin, subcaDN.hashCode()).getCAToken().getCryptoTokenId();
-                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
-            } catch (Exception e) {
-                log.error("",e);
-            }
-            
-            try {
-                caSession.removeCA(admin, subSubCaDN.hashCode());
-                caSession.removeCA(admin, subcaDN.hashCode());
-            } catch (Exception e) {
-                log.info("Could not remove CA with SubjectDN " + subSubCaDN);
-            }
+            CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, subSubCaDN.hashCode()));
+            CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, subcaDN.hashCode()));
         }
             
         log.trace("<testRootCACertNotIncludedInResponse()");
@@ -1637,14 +1623,14 @@ Content-Type: text/html; charset=iso-8859-1
         }
         try {
             if (caSession.existsCa(DSA_DN.hashCode())) {
-                caSession.removeCA(admin, DSA_DN.hashCode());
+                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, DSA_DN.hashCode()));
             }
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN " + DSA_DN);
         }
         try {
             if (caSession.existsCa("CN=OCSPDSAIMPCATEST".hashCode())) {
-                caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
+                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPDSAIMPCATEST".hashCode()));
             }
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
@@ -1660,16 +1646,8 @@ Content-Type: text/html; charset=iso-8859-1
     public void removeECDSACA() throws Exception {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
-        try {
-            caSession.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
-        } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN CN=OCSPECDSATEST");
-        }
-        try {
-            caSession.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
-        } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
-        }
+        CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPECDSATEST".hashCode()));
+        CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPECDSAIMPCATEST".hashCode()));
     }
 
     //

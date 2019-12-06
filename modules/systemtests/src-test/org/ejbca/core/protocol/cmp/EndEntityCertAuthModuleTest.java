@@ -72,7 +72,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -192,7 +191,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         }
         int subcaid = CertTools.stringToBCDNString("CN="+AUTH_PARAM_SUBCA).hashCode();
         if (caSession.existsCa(subcaid)) {
-            caSession.removeCA(ADMIN, subcaid);
+            CaTestUtils.removeCa(ADMIN, caSession.getCAInfo(ADMIN, subcaid));
             log.debug("Removed CA in beforeClass: " + subcaid);            
         }
         adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024");
@@ -203,8 +202,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         for (final CA ca : Arrays.asList(adminca, ca1, ca2)) {
             try {
                 if (ca != null && caSession.existsCa(ca.getCAId())) {
-                    CryptoTokenTestUtils.removeCryptoToken(ADMIN, ca.getCAToken().getCryptoTokenId());
-                    caSession.removeCA(ADMIN, ca.getCAId());
+                    CaTestUtils.removeCa(ADMIN, ca.getCAInfo());
                     log.debug("Removed CA: " + ca.getName());
                 }
             } catch (Exception e) {
@@ -212,8 +210,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             }
         }
         if (adminsubca != null && caSession.existsCa(adminsubca.getCAId())) {
-            CryptoTokenTestUtils.removeCryptoToken(ADMIN, adminsubca.getCAToken().getCryptoTokenId());
-            caSession.removeCA(ADMIN, adminsubca.getCAId());
+            CaTestUtils.removeCa(ADMIN, adminsubca);
             log.debug("Removed CA: " + adminsubca.getName());
         }
     }

@@ -52,6 +52,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -96,6 +97,7 @@ import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -784,8 +786,8 @@ public class IntegratedOcspResponseTest {
             try {
                 cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(internalAdmin, "testOcspSigningCacheDoesntAddUnsignedCa",
                         SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
-                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("RSA1024").build());
+                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -816,7 +818,7 @@ public class IntegratedOcspResponseTest {
                 int laterCacheSize = ocspResponseGeneratorTestSession.getCacheOcspCertificates().size();
                 assertEquals("An unsigned CA has been added to cache.", originalCacheSize, laterCacheSize);
             } finally {
-                caSession.removeCA(internalAdmin, cainfo.getCAId());
+                CaTestUtils.removeCa(internalAdmin, cainfo);
             }
         } finally {
             if (cryptoTokenId != 0) {
@@ -911,7 +913,7 @@ public class IntegratedOcspResponseTest {
                     internalCertificateStoreSession.removeCertificate(importedCertificate);
                 }
             } finally {
-                caSession.removeCA(internalAdmin, externalCa.getCAId());
+                CaTestUtils.removeCa(internalAdmin, externalCa.getCAInfo());
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {

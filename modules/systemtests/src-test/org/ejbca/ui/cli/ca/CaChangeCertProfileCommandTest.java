@@ -69,7 +69,7 @@ public class CaChangeCertProfileCommandTest {
     @After
     public void tearDown() throws Exception {
         if (ca != null) {
-            caSession.removeCA(authenticationToken, ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, ca.getCAInfo());
         }
         certificateProfileSession.removeCertificateProfile(authenticationToken, CERTIFICATE_PROFILE);
     }
