@@ -180,10 +180,10 @@ public class CAKeystoreExportRemoveRestoreTest {
             cryptoTokenId3 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), CANAME3, "1024");
             final CAToken catoken3 = CaTestUtils.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             final CAInfo cainfo3 = getNewCAInfo(CANAME3, catoken3);
-            // Remove CAs if they already exists
-            CaTestUtils.removeCa(internalAdmin, cainfo1);
-            CaTestUtils.removeCa(internalAdmin, cainfo2);
-            CaTestUtils.removeCa(internalAdmin, cainfo3);
+            // Remove CAs if they already exists, but not crypto tokens
+            caSession.removeCA(internalAdmin, cainfo1.getCAId());
+            caSession.removeCA(internalAdmin, cainfo2.getCAId());
+            caSession.removeCA(internalAdmin, cainfo3.getCAId());
             // Create CAs
             caAdminSession.createCA(internalAdmin, cainfo1);
             caAdminSession.createCA(internalAdmin, cainfo2);
@@ -243,17 +243,17 @@ public class CAKeystoreExportRemoveRestoreTest {
     public void test06RestoreNotRemoved() throws Exception {
         final String capassword = "foo123";
         log.trace(">test06RestoreNotRemoved()");
-        int cryptoTokenId = 0;
+        CAInfo cainfo = null;
         try {
             // CA using SHA1withRSA and 2048 bit RSA KEY
             final String CANAME = "TestExportRemoveRestoreCA1";
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), CANAME, "1024");
+            int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), CANAME, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            final CAInfo cainfo = getNewCAInfo(CANAME, catoken);
+            cainfo = getNewCAInfo(CANAME, catoken);
 
             byte[] keystorebytes1 = null;
-            // Remove if they already exists
-            CaTestUtils.removeCa(internalAdmin, cainfo);
+            // Remove if they already exists, but not crypto token
+            caSession.removeCA(internalAdmin, cainfo.getCAId());
             // Create CAs
             caAdminSession.createCA(internalAdmin, cainfo);
             keystorebytes1 = caAdminSession.exportCAKeyStore(internalAdmin, CANAME, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
@@ -270,10 +270,9 @@ public class CAKeystoreExportRemoveRestoreTest {
                 // OK. EJBException -> Exception: "CA already has an existing CryptoToken reference: nnn..."
                 log.debug("", e);
             }
+        } finally {
             // Clean up
             CaTestUtils.removeCa(internalAdmin, cainfo);
-        } finally {
-            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
         }
         log.trace("<test06RestoreNotRemoved()");
     }
