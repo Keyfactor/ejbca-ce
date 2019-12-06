@@ -115,13 +115,17 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeApprovalProfile(final AuthenticationToken admin, final int id) throws AuthorizationDeniedException {
         authorizedToEditProfiles(admin);
-        ProfileData profileData = profileSession.findById(id);
+        final ProfileData profileData = profileSession.findById(id);
         if(profileData == null) {
-            throw new IllegalArgumentException("No profile with ID " + id + " could be found.");
+            // Don't do anything, according to javadoc
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Approval profile does not exist when trying to remove, ignoring: " + id);
+            }
+            return; 
         }
         profileSession.removeProfile(profileData);
         approvalProfileCache.forceCacheExpiration();
-        String msg = INTRES.getLocalizedMessage("approval.profile.store.remove", profileData.getProfileName());
+        final String msg = INTRES.getLocalizedMessage("approval.profile.store.remove", profileData.getProfileName());
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EjbcaEventTypes.APPROVAL_PROFILE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL_PROFILE, EjbcaServiceTypes.EJBCA,
