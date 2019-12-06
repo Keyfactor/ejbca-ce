@@ -463,10 +463,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return this.caCryptoTokenKeyEncryptKey;
     }
-    
-    public void setCurrentCaCryptoTokenKeyEncryptKey(final String currentCaCryptoTokenKeyEncryptKey) {
-        this.caCryptoTokenKeyEncryptKey = currentCaCryptoTokenKeyEncryptKey;
-    }
 
     public String getCurrentCaCryptoTokenTestKey() {
         if(catoken != null) {
@@ -477,10 +473,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         return this.caCryptoTokenTestKey;
-    }
-    
-    public void setCurrentCaCryptoTokenTestKey(final String currentCaCryptoTokenTestKey) {
-        this.caCryptoTokenTestKey = currentCaCryptoTokenTestKey;
     }
     
     public String getEditCaName() {
@@ -975,6 +967,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private void setDefaultKeyAliases() {
         // Make up defaults based on key alias names
         caInfoDto.setSelectedKeyEncryptKey("");
+        caInfoDto.setTestKey("");
         
         for (final String alias : availableCryptoTokenEncryptionAliases) {
             if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
@@ -1053,9 +1046,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectedCryptoTokenDefaultKey(final String selectedCryptoTokenDefaultKey) {
-        if (selectedCryptoTokenDefaultKey != null) {
-            caInfoDto.setCryptoTokenDefaultKey(selectedCryptoTokenDefaultKey);
-        }
+        caInfoDto.setCryptoTokenDefaultKey(StringUtils.defaultString(selectedCryptoTokenDefaultKey));
     }
     
     public boolean isRenderCreateCaTokenKeys() {
@@ -1070,9 +1061,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectedCryptoTokenCertSignKey(final String selectedCryptoTokenCertSignKey) {
-        if (selectedCryptoTokenCertSignKey != null) {
-            caInfoDto.setCryptoTokenCertSignKey(selectedCryptoTokenCertSignKey);
-        }
+        caInfoDto.setCryptoTokenCertSignKey(StringUtils.defaultString(selectedCryptoTokenCertSignKey));
     }
 
     public String getSelectedKeyEncryptKey() {
@@ -1080,9 +1069,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectedKeyEncryptKey(final String selectedKeyEncryptKey) {
-        if (selectedKeyEncryptKey != null) {
-            caInfoDto.setSelectedKeyEncryptKey(selectedKeyEncryptKey);
-        }
+        caInfoDto.setSelectedKeyEncryptKey(StringUtils.defaultString(selectedKeyEncryptKey));
     }
     
     public String getSelectTestKey() {
@@ -1090,9 +1077,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public void setSelectTestKey(final String testKey) {
-        if (testKey != null) {
-            caInfoDto.setTestKey(testKey);
-        }
+        caInfoDto.setTestKey(StringUtils.defaultString(testKey));
     }
 
     public String getCertificateValidityHelp() {
