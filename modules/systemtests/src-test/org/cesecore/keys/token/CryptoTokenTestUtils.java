@@ -53,24 +53,18 @@ public class CryptoTokenTestUtils {
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
-    
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
       return createTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED);
     }
     
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-
         X509CA x509ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, false, signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
                 + X509KeyUsage.cRLSign);
         // Remove any lingering test CA before starting the tests
         CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, x509ca.getCAId());
         if (oldCaInfo != null) {
-            final int oldCaCryptoTokenId = oldCaInfo.getCAToken().getCryptoTokenId();
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, oldCaCryptoTokenId);
-            caSession.removeCA(authenticationToken, x509ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, oldCaInfo);
         }
         // Now add the test CA so it is available in the tests
         caSession.addCA(authenticationToken, x509ca);
@@ -138,7 +132,7 @@ public class CryptoTokenTestUtils {
                     cryptoTokenProperties, null, pin);
             if (genenrateKeys) {
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
             }
         } catch (Exception e) {
             // Cleanup token if we failed during the key creation stage

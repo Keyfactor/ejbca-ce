@@ -104,7 +104,6 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
                 StandardRules.CREATECRL.resource(),
                 StandardRules.CREATECERT.resource()
                 ), null);
-        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     
@@ -120,26 +119,17 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     
     @Before
     public void setUp() throws Exception {
-        // Remove any lingering testca before starting the tests
-        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         // Now add the test CA so it is available in the tests
+        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
+        // Remove any lingering testca before adding the new one
+        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         caSession.addCA(alwaysAllowToken, testx509ca);
     }
 
     @After
     public void tearDown() throws Exception {
         // Remove any testca before exiting tests
-        byte[] crl;
-        while ((crl = getLastCrl(testx509ca.getSubjectDN(), false)) != null) {
-            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-            internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
-        }
-        while ((crl = getLastCrl(testx509ca.getSubjectDN(), true)) != null) {
-            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-            internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
-        }
-
-        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
+        CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());
     }
 
     @Test

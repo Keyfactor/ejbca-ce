@@ -13,8 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -33,7 +31,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -43,6 +40,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
@@ -65,7 +65,6 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 
     private static final String issuerDN = "CN=TestCA";
     private final KeyPair keys;
-    private final int caid;
     private final X509Certificate cacert;
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
@@ -83,7 +82,6 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
-        this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
@@ -131,8 +129,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         if (!this.configurationSession.restoreConfiguration()) {
             log.error("Failed to restore configuration");
         }
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
 
         this.cmpConfiguration.removeAlias(cmpAlias);
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {

@@ -148,10 +148,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 StandardRules.CERTIFICATEPROFILEEDIT.resource(),
                 CryptoTokenRules.BASE.resource()
                 ), null);
-        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
-        // Remove any lingering testca before starting the tests
-        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         // Now add the test CA so it is available in the tests
+        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         caSession.addCA(alwaysAllowToken, testx509ca);
     }
 
@@ -160,7 +158,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         // Remove any testca before exiting tests
         try {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
+            CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());
         } finally {
             // Be sure to to this, even if the above fails
         	super.tearDownRemoveRole();

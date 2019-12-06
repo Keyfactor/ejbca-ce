@@ -61,7 +61,7 @@ public class CaCreateCrlCommandTest {
     @After
     public void tearDown() throws Exception {
         if (ca != null) {
-            caSession.removeCA(authenticationToken, ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, ca.getCAInfo());
         }
     }
 
