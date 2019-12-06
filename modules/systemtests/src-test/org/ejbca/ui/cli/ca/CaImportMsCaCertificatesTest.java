@@ -13,11 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
@@ -25,7 +20,9 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -43,6 +40,11 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System test for {@link CaImportMsCaCertificates}.
@@ -121,10 +123,11 @@ public class CaImportMsCaCertificatesTest {
         );
         final Map<String, Integer> nameToId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class)
                 .getAuthorizedCaNamesToIds(getAuthenticationToken());
-        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).removeCA(
+        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(
                 getAuthenticationToken(), 
                 nameToId.get("Let's Encrypt Authority X3")
         );
+        CaTestUtils.removeCa(getAuthenticationToken(), cainfo);
     }
 
     @Test

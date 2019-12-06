@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import static org.junit.Assert.assertEquals;
-
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -25,7 +23,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
@@ -34,6 +31,8 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests http pages of public webdist
@@ -64,8 +63,9 @@ public class WebdistHttpTest {
 
     @After
     public void tearDown() throws Exception {
-        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, testx509ca.getCAId());
+        if (testx509ca != null) {
+            CaTestUtils.removeCa(admin, testx509ca.getCAInfo());            
+        }
     }
     
     @Test

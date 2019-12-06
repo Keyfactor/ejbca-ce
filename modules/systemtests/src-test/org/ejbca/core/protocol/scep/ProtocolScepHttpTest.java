@@ -747,7 +747,7 @@ public class ProtocolScepHttpTest {
             cainfo.setEncodedValidity("14d");
             cainfo.setDoEnforceUniqueDistinguishedName(false);
             if (caSession.existsCa(ROLLOVER_SUB_CA)) {
-                caSession.removeCA(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getCAId());
+                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, ROLLOVER_SUB_CA));
             }
             caAdminSession.createCA(admin, cainfo);
             assertEquals("Wrong state of test Sub CA", CAConstants.CA_ACTIVE, caSession.getCAInfo(admin, ROLLOVER_SUB_CA).getStatus());

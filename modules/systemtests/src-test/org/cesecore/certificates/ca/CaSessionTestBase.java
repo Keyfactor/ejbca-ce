@@ -103,23 +103,27 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	        StandardRules.CREATECRL.resource(),
     	        CryptoTokenRules.BASE.resource()
     	        ), null);
-        // Remove any lingering testca before starting the tests
+        // Remove any lingering testca before starting the tests, but not associated crypto tokens
+    	// CaSessionTestBase depends on that the Crypto Token is not removed so it can be re-used.
+    	// a bad circular dependency
         if (testx509ca != null) {
-            CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());            
+            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());         
         }
         if (testcvcca != null) {
-            CaTestUtils.removeCa(alwaysAllowToken, testcvcca.getCAInfo());            
+            caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
         }
     }
 
     public void tearDown() throws Exception { //NOPMD: this is not a test case
-        // Remove any testca before exiting tests
+        // Remove any testca before exiting tests, but not associated crypto tokens
+        // CaSessionTestBase depends on that the Crypto Token is not removed so it can be re-used.
+        // a bad circular dependency
     	try {
             if (testx509ca != null) {
-                CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());            
+                caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());         
             }
             if (testcvcca != null) {
-                CaTestUtils.removeCa(alwaysAllowToken, testcvcca.getCAInfo());            
+                caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
             }
     	} finally {
     		// Be sure to to this, even if the above fails
@@ -472,16 +476,15 @@ public class CaSessionTestBase extends RoleUsingTestCase {
 
     /** Remove any existing CA. Null value parameter can be used to ignore one of the alternatives. */
     protected void cleanUpAnyExistingCa(Integer caId, String caname) throws AuthorizationDeniedException {
+        // CaSessionTestBase depends on that the Crypto Token is not removed so it can be re-used.
+        // a bad circular dependency
         if (caId != null) {
-            final CAInfo caInfo = caSession.getCAInfo(roleMgmgToken, caId);
-            if (caInfo != null) {
-                CaTestUtils.removeCa(roleMgmgToken, caInfo);
-            }
+            caSession.removeCA(roleMgmgToken, caId.intValue());
         }
         if (caname != null) {
             final CAInfo caInfo = caSession.getCAInfo(roleMgmgToken, caname);
             if (caInfo != null) {
-                CaTestUtils.removeCa(roleMgmgToken, caInfo);
+                caSession.removeCA(roleMgmgToken, caInfo.getCAId());
             }
 
         }

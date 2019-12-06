@@ -12,17 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.cli.roles;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -36,6 +33,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @version $Id$
@@ -62,11 +61,7 @@ public class AddRoleMemberCommandTest {
     @AfterClass
     public static void afterClass() throws Exception {
         if (x509ca != null) {
-            final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            final int caCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caCryptoTokenId);
-            caSession.removeCA(authenticationToken, x509ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, x509ca.getCAInfo());
         }
     }
 

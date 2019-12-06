@@ -126,7 +126,7 @@ public class CaImportCertCommandSystemTest {
     @After
     public void tearDown() throws Exception {
         if (ca != null) {
-            caSession.removeCA(authenticationToken, ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, ca.getCAInfo());
         }
         if (certificateFile.exists()) {
             FileTools.delete(certificateFile);
