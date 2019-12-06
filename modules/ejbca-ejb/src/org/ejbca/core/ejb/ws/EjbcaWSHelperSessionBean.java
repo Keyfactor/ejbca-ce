@@ -206,8 +206,8 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \""
-                        + userdata.getSubjectDN() + "\"");
-                throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime.");
+                        + userdata.getSubjectDN() + "\" and customStartTime was '" + customStartTime + "'.");
+                throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime");
             }
         }
         if (userdata.getEndTime() != null) {
