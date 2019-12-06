@@ -67,7 +67,7 @@ public class CaImportCACommandTest {
             outputStream.close();
         }
         try {
-            caSession.removeCA(authenticationToken, caSession.getCAInfo(authenticationToken, CA_NAME).getCAId());
+            CaTestUtils.removeCa(authenticationToken, caSession.getCAInfo(authenticationToken, CA_NAME));
         } catch(Exception e) {
             // NOPMD Ignore
         }
@@ -79,7 +79,7 @@ public class CaImportCACommandTest {
             FileTools.delete(keyStoreFile);
         }
         try {
-            caSession.removeCA(authenticationToken, caSession.getCAInfo(authenticationToken, CA_NAME).getCAId());
+            CaTestUtils.removeCa(authenticationToken, caSession.getCAInfo(authenticationToken, CA_NAME));
         } catch(Exception e) {
             // NOPMD Ignore
         }

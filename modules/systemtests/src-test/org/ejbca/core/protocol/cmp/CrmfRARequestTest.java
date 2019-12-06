@@ -70,7 +70,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
@@ -128,10 +127,9 @@ public class CrmfRARequestTest extends CmpTestCase {
     }
 
     public CrmfRARequestTest() throws Exception {
-        this.caSession.removeCA(ADMIN, ISSUER_DN.hashCode());
-        
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(ISSUER_DN, null, false, keyusage);
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo()); // remove any lingering CA before re-creating for the test
         this.caSession.addCA(ADMIN, this.testx509ca);
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
@@ -1238,8 +1236,7 @@ public class CrmfRARequestTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
         
         Assert.assertTrue("Unable to restore server configuration.", this.configurationSession.restoreConfiguration());
         this.cmpConfiguration.removeAlias(cmpAlias);

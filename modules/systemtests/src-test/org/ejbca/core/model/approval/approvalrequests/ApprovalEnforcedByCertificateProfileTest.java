@@ -241,6 +241,47 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         log.info("endEntityProfileId=" + endEntityProfileId);
     }
 
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        // Remove users
+        for (Object o : createdUsers) {
+            try {
+                endEntityManagementSession.deleteUser(admin1, (String) o);
+            } catch (Exception ex) {
+                log.error("Remove user", ex);
+            }
+        }
+
+        // Remove CAs
+        removeCA(caSession.getCAInfo(admin1, approvalCAID));
+        removeCA(caSession.getCAInfo(admin1, anotherCAID1));
+        removeCA(caSession.getCAInfo(admin1, anotherCAID2));
+
+        // Remove end entity profile
+
+        endEntityProfileSession.removeEndEntityProfile(admin1, ENDENTITYPROFILE);
+
+        // Remove certificate profiles
+        removeCertificateProfile(CERTPROFILE1);
+        removeCertificateProfile(CERTPROFILE2);
+        removeCertificateProfile(CERTPROFILE3);
+        removeCertificateProfile(CERTPROFILE4);
+        removeCertificateProfile(CERTPROFILE5);
+        // Remove the CA's CryptoTokens
+        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId1);
+        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId2);
+        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId3);
+        // Remove approval profiles
+        
+        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdEndEntityApprovals);
+        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdActivateCATokensApprovals);
+        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdKeyRecoveryApprovals);
+        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdAllApprovals);
+    }
+
     @Test
     public void test01AddEditEndEntity() {
         log.info("test01AddEditEndEntity");
@@ -415,55 +456,15 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-
-        // Remove users
-        for (Object o : createdUsers) {
-            try {
-                endEntityManagementSession.deleteUser(admin1, (String) o);
-            } catch (Exception ex) {
-                log.error("Remove user", ex);
-            }
-        }
-
-        // Remove CAs
-        removeCA(anotherCAID1);
-        removeCA(anotherCAID2);
-        removeCA(approvalCAID);
-
-        // Remove end entity profile
-
-        endEntityProfileSession.removeEndEntityProfile(admin1, ENDENTITYPROFILE);
-
-        // Remove certificate profiles
-        removeCertificateProfile(CERTPROFILE1);
-        removeCertificateProfile(CERTPROFILE2);
-        removeCertificateProfile(CERTPROFILE3);
-        removeCertificateProfile(CERTPROFILE4);
-        removeCertificateProfile(CERTPROFILE5);
-        // Remove the CA's CryptoTokens
-        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId1);
-        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId2);
-        CryptoTokenTestUtils.removeCryptoToken(admin1, cryptoTokenId3);
-        // Remove approval profiles
-        
-        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdEndEntityApprovals);
-        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdActivateCATokensApprovals);
-        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdKeyRecoveryApprovals);
-        approvalProfileSession.removeApprovalProfile(admin1, approvalProfileIdAllApprovals);
-    }
     
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
 
-    private void removeCA(int caId) {
+    private void removeCA(CAInfo cainfo) {
         try {
-            caSession.removeCA(admin1, caId);
+            CaTestUtils.removeCa(admin1, cainfo);
         } catch (AuthorizationDeniedException e) {
             log.error("Remove CA", e);
         }
@@ -504,11 +505,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         cainfo.setDescription("Used for testing approvals");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
         int caID = cainfo.getCAId();
-        try {
-            caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-            caSession.removeCA(internalAdmin, caID);
-        } catch (Exception e) {
-        }
+        caSession.removeCA(internalAdmin, caID);
         caAdminSession.createCA(internalAdmin, cainfo);
         cainfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, caID);
         assertNotNull(cainfo);

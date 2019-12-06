@@ -13,11 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +33,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.ScepConfiguration;
@@ -47,6 +41,11 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Try HTTP methods that should be disabled, like HTTP DELETE, for all public
@@ -82,8 +81,9 @@ public class HttpMethodsTest {
     
     @After
     public void tearDown() throws Exception {
-        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, testx509ca.getCAId());
+        if (testx509ca != null) {
+            CaTestUtils.removeCa(admin, testx509ca.getCAInfo());            
+        }
     }
 
     /** Test the doc.war module. */

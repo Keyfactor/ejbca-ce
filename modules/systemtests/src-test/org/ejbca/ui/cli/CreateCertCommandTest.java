@@ -98,7 +98,7 @@ public class CreateCertCommandTest {
             FileTools.delete(resultFile);
         }
         if (ca != null) {
-            caSession.removeCA(authenticationToken, ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, ca.getCAInfo());
         }
         endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
     }
