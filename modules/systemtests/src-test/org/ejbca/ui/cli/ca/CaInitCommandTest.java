@@ -13,10 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.security.KeyPair;
@@ -36,6 +32,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -61,6 +58,10 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * System test class for CaInitCommandTest
@@ -93,8 +94,6 @@ public class CaInitCommandTest {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
-    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -169,21 +168,18 @@ public class CaInitCommandTest {
     /** Test happy path for creating an ECDSA CA with explicit ECC parameters. Requires some special handling. */
     @Test
     public void testEccCAExplicitEccParams() throws Exception {
+        CAInfo cainfo = null;
         try {
             caInitCommand.execute(ECC_CA_EXPLICIT_ARGS);
             // In versions of EJBCA before 6.4.0 / 6.2.11, this did not work, because Java always deserializes
             // certificates using the Sun provider even if they where created with BC originally. This was fixed
             // by making the certificate object transient and sending an encoded certificate instead.
-            CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
+            cainfo = caSession.getCAInfo(admin, CA_NAME);
             assertNotNull("ECC CA was not created.", cainfo);
             Certificate cert = cainfo.getCertificateChain().iterator().next();
             assertEquals("EC", cert.getPublicKey().getAlgorithm());
         } finally {
-            // Normal remove routines do not work when it is not serializeable, we have to make some qualified guesses
-            // and remove it manually
-            caSession.removeCA(admin, CA_DN.hashCode());
-            Integer id = cryptoTokenManagementSession.getIdFromName(CA_NAME);
-            cryptoTokenManagementSession.deleteCryptoToken(admin, id);
+            CaTestUtils.removeCa(admin, cainfo);
         }
     }
 
@@ -204,16 +200,13 @@ public class CaInitCommandTest {
                     Integer.toString(rootCaId) };
             assertEquals(CommandResult.SUCCESS, caInitCommand.execute(SUB_CA_ARGS));
             CAInfo subCaInfo = caSession.getCAInfo(admin, subCaName);
-            int subCaId = subCaInfo.getCAId();
             try {
                 assertEquals("SubCA was not signed by Root CA", rootCaId, subCaInfo.getSignedBy());
             } finally {
-                caSession.removeCA(admin, subCaId);
-                cryptoTokenManagementSession.deleteCryptoToken(admin, subCaInfo.getCAToken().getCryptoTokenId());
+                CaTestUtils.removeCa(admin, subCaInfo);
             }
         } finally {
-            caSession.removeCA(admin, rootCaId);
-            cryptoTokenManagementSession.deleteCryptoToken(admin, rootCaInfo.getCAToken().getCryptoTokenId());
+            CaTestUtils.removeCa(admin, rootCaInfo);
         }
         
 

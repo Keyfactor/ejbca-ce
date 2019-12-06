@@ -966,7 +966,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         final CAInfo caInfo = caSession.getCAInfo(internalAdmin, name);
         if (caInfo != null) {
             log.info("CA " + name + " exists and will be removed.");
-            caSession.removeCA(internalAdmin, caInfo.getCAId());
+            CaTestUtils.removeCa(internalAdmin, caInfo);
         }
     }
 

@@ -62,7 +62,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -122,7 +121,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private final ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class,
             EjbRemoteHelper.MODULE_TEST);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final static Logger log = Logger.getLogger(CaTestCase.class);
@@ -380,34 +378,22 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     /** Removes the Test-CA if it exists. */
     public static void removeTestCA(String caName) throws AuthorizationDeniedException {
-    	final CaSessionRemote caSession = CaTestCase.getCaSession();
         final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
-        int cryptoTokenId = 0;
         CA ca = (CA)caTestSession.getCA(internalAdmin, caName);
         if (ca != null) {
-            cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-            caSession.removeCA(internalAdmin, ca.getCAId());
-            log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caName);
-            cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
-            internalCertificateStoreSession.removeCertificatesBySubject(ca.getSubjectDN());
-            internalCertificateStoreSession.removeCRLs(internalAdmin, ca.getSubjectDN());
+            CaTestUtils.removeCa(internalAdmin, ca.getCAInfo());
         }
     }
 
     /** Removes the Test-CA if it exists. */
     public static void removeTestCA(int caId) throws AuthorizationDeniedException {
-        final CaSessionRemote caSession = CaTestCase.getCaSession();
         final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
-        int cryptoTokenId = 0;
         CA ca = (CA)caTestSession.getCA(internalAdmin, caId);
         if (ca != null) {
-            cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-            caSession.removeCA(internalAdmin, ca.getCAId());
+            CaTestUtils.removeCa(internalAdmin, ca.getCAInfo());
         }
-        log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caId);
-        cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
     }
 
     /** Generate random password */
@@ -678,9 +664,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CaSessionRemote caSession = CaTestCase.getCaSession();
         CAInfo info = caSession.getCAInfo(internalAdmin, caName);
         if (info != null) {
-            final int cryptoTokenId = info.getCAToken().getCryptoTokenId();
-            caSession.removeCA(internalAdmin, info.getCAId());
-            cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
+            CaTestUtils.removeCa(internalAdmin, info);
         }
         internalCertificateStoreSession.removeCertificatesBySubject(dn);
 

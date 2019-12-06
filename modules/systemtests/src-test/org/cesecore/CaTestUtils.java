@@ -211,14 +211,18 @@ public abstract class CaTestUtils {
      * See {@link #removeCa(AuthenticationToken, String, String)}, which is more robust, in case the test got aborted for some reason.
      */
     public static void removeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException {
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        caSession.removeCA(authenticationToken, caInfo.getCAId());
-        cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caInfo.getCAToken().getCryptoTokenId());
-        internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
-        internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());
+        if (caInfo != null) {
+            CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+            CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                    .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+            caSession.removeCA(authenticationToken, caInfo.getCAId());
+            if (caInfo.getCAToken() != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caInfo.getCAToken().getCryptoTokenId());
+            }
+            internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
+            internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());            
+        }
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */

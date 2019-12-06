@@ -58,6 +58,7 @@ import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
@@ -105,6 +106,7 @@ import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -643,7 +645,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 internalCertificateStoreSession.removeCertificate(importedCertificate);
             }
         } finally {
-            caSession.removeCA(authenticationToken, externalCa.getCAId());
+            CaTestUtils.removeCa(authenticationToken, externalCa.getCAInfo());
             internalCertificateStoreSession.removeCertificate(externalCaCertificate);
         }
     }
@@ -714,7 +716,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                     internalCertificateStoreSession.removeCertificate(importedCertificate);
                 }
             } finally {
-                caSession.removeCA(authenticationToken, externalCa.getCAId());
+                CaTestUtils.removeCa(authenticationToken, externalCa.getCAInfo());
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
@@ -794,7 +796,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                     internalCertificateStoreSession.removeCertificate(importedCertificate);
                 }
             } finally {
-                caSession.removeCA(authenticationToken, externalCa.getCAId());
+                CaTestUtils.removeCa(authenticationToken, externalCa.getCAInfo());
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
@@ -1135,7 +1137,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         X509CA signatureIssuerCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken,
                 "CN=RevokedSignatureIssuer");
         int cryptoTokenId = signatureIssuerCa.getCAToken().getCryptoTokenId();
-        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", "1024");
+        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", KeyGenParams.builder("RSA1024").build());
         X509Certificate signerIssuerCaCertificate = (X509Certificate) signatureIssuerCa.getCACertificate();
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(signerIssuerCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,

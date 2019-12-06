@@ -19,7 +19,6 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -169,8 +168,7 @@ public class CrmfRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
         } catch (NoSuchEndEntityException e) {
@@ -623,12 +621,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 // A test probably failed before creating the entity
                 log.debug("Failed to delete user: " + username);
             }
-            CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
-            // Remove CA certificate of CA that we will remove
-            Collection<Certificate> certs = this.caSession.getCAInfo(ADMIN, subcaID).getCertificateChain();
-            this.internalCertStoreSession.removeCertificate(certs.iterator().next());
-            // Remove the CA itself
-            this.caSession.removeCA(ADMIN, subcaID);
+            CaTestUtils.removeCa(ADMIN, this.caSession.getCAInfo(ADMIN, subcaID));
         }
     }
 

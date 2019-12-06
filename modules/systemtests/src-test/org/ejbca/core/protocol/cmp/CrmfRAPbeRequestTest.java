@@ -119,7 +119,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static final String ISSUERDN_ENTERPRISE = "CN=TestCA,O=PrimeKey,OU=FoooUåäö,organizationIdentifier=VATAT-U87654321";
     private static final String ISSUERDN_COMMUNITY = "CN=TestCA,O=PrimeKey,OU=FoooUåäö";
     private final KeyPair keys;
-    private final int caid;
     private final X509Certificate cacert;
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
@@ -152,7 +151,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     public CrmfRAPbeRequestTest() throws Exception {
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
-        this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
         
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
@@ -196,8 +194,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
         
         cmpConfiguration.removeAlias(ALIAS);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
@@ -632,15 +629,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         } finally {
             approvalProfileSession.removeApprovalProfile(ADMIN, approvalProfileId);           
             // Delete user
-            this.endEntityManagementSession.deleteUser(ADMIN, username);
-            if ( cainfo!=null ) {
-                // Nuke CA
-                try {
-                    this.caAdminSession.revokeCA(ADMIN, cainfo.getCAId(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                } finally {
-                    this.caSession.removeCA(ADMIN, cainfo.getCAId());
-                }
-            }
+            try {
+                this.endEntityManagementSession.deleteUser(ADMIN, username);
+            } catch (NoSuchEndEntityException e) {} // NOPMD
+            // Nuke CA
+            CaTestUtils.removeCa(ADMIN, cainfo);
             for(File file : fileHandles) {
                 FileTools.delete(file);
             }

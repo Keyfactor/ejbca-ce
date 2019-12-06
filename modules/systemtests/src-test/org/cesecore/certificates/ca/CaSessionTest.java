@@ -163,7 +163,7 @@ public class CaSessionTest extends RoleUsingTestCase {
             assertEquals("Get the CA certificate chain for CA with status CAConstants.CA_WAITING_CERTIFICATE_RESPONSE should return an empty collection.", certificates.size(), 0);
         } finally {
             if (caInfo != null) {
-                caSession.removeCA(alwaysAllowToken, caInfo.getCAId());
+                CaTestUtils.removeCa(alwaysAllowToken, caInfo);
             }
         }
     }

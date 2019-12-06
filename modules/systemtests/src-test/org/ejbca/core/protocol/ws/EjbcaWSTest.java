@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -104,6 +97,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -182,6 +176,13 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -338,7 +339,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             //Create a SubCA for this test.
             subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
             int cryptoTokenId = subCA.getCAToken().getCryptoTokenId();
-            cryptoTokenManagementSession.createKeyPair(intAdmin, cryptoTokenId, "signKeyAlias", "1024");
+            cryptoTokenManagementSession.createKeyPair(intAdmin, cryptoTokenId, "signKeyAlias", KeyGenParams.builder("RSA1024").build());
             X509Certificate subCaCertificate = (X509Certificate) subCA.getCACertificate();
             //Store the CA Certificate.
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(subCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
@@ -837,12 +838,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         } finally {
             approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileId);
             // Nuke CA
-            try {
-                caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-            } finally {
-                caSession.removeCA(intAdmin, caID);
-                CryptoTokenTestUtils.removeCryptoToken(intAdmin, cryptoTokenId);
-            }
+            CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caID));
         }
         log.trace("<test19RevocationApprovals");
     }
@@ -863,36 +859,39 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         String caname = "testGetNumberOfApprovalsCa";
         String username = "testGetNumberOfApprovals";
         int cryptoTokenId = 0;
-        AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
-        approvalProfile.setNumberOfApprovalsRequired(2);
-        int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
-        final int approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
+        int caId = 0;
+        int approvalProfileId = 0;
+        int roleId = 0;
         X509Certificate adminCert = null;
-        cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
-        createTestCA();
-        EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, null);
-        approvingAdmin.setPassword("foo123");
         try {
-            endEntityManagementSession.addUser(intAdmin, approvingAdmin, true);
-        } catch(EndEntityExistsException e) {}
-        final Role role = roleSession.persistRole(intAdmin,
-                new Role(null, getRoleName(),
-                        Arrays.asList(AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRulesConstants.REGULAR_REVOKEENDENTITY,
-                                AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRulesConstants.ENDENTITYPROFILEBASE,
-                                StandardRules.CAACCESSBASE.resource()),
-                        null));
-        roleMemberSession.persist(intAdmin,
-                new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
-                        X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                        adminUsername, role.getRoleId(), null));
-        int roleId = role.getRoleId();
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        int caId = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.ADDEDITENDENTITY, approvalProfileId,
-                caAdminSessionRemote, caSession, catoken);
-        try {
+            AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
+            approvalProfile.setNumberOfApprovalsRequired(2);
+            int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
+            approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
+            createTestCA();
+            EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_P12, null);
+            approvingAdmin.setPassword("foo123");
+            try {
+                endEntityManagementSession.addUser(intAdmin, approvingAdmin, true);
+            } catch(EndEntityExistsException e) {}
+            final Role role = roleSession.persistRole(intAdmin,
+                    new Role(null, getRoleName(),
+                            Arrays.asList(AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+                                    AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRulesConstants.ENDENTITYPROFILEBASE,
+                                    StandardRules.CAACCESSBASE.resource()),
+                            null));
+            roleMemberSession.persist(intAdmin,
+                    new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
+                            X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                            adminUsername, role.getRoleId(), null));
+            roleId = role.getRoleId();
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            caId = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.ADDEDITENDENTITY, approvalProfileId,
+                    caAdminSessionRemote, caSession, catoken);
             KeyPair keys = KeyTools.genKeys("1024", "RSA");
             X509Certificate admincert = (X509Certificate) this.signSession.createCertificate(intAdmin, adminUsername, "foo123", new PublicKeyWrapper(keys.getPublic()));
             AuthenticationToken approvingAdminToken = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(admincert));
@@ -919,8 +918,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             deleteUser(adminUsername);
             internalCertificateStoreSession.removeCertificate(adminUsername);
             approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileId);
-            caSession.removeCA(intAdmin, caId);
-            CryptoTokenTestUtils.removeCryptoToken(intAdmin, cryptoTokenId);
+            CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caId));
             internalCertificateStoreSession.removeCertificate(adminCert);
             roleSession.deleteRoleIdempotent(intAdmin, roleId);
             removeTestCA();
@@ -2044,7 +2042,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         final String cryptoTokenName = caName + "CryptoToken";
         // Remove any residues from earlier test runs
         if (caSession.existsCa(caName)) {
-            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caName).getCAId());
+            CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caName));
         }
         Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
         if (cryptoTokenId != null) {
@@ -2104,7 +2102,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertEquals(CAInfo.CATYPE_X509, caInfo.getCAType());
         } finally {
             if (caSession.existsCa(caName)) {
-                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caName).getCAId());
+                CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caName));
             }
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
             if (cryptoTokenId != null) {
@@ -2415,7 +2413,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             }
             if(caSession.existsCa(caname)) {
                 log.debug("Remove CA " + caname + " before test.");
-                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+                CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caname));
             }
 
             // B: Updates a CA certificate of an external CSCA (X.509 certificate with at least C=${ISO-3166-2}, CN != null and serialNumber != null).
@@ -2519,7 +2517,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private void removeCaIfExists(final String caname ) throws Exception {
         if(caSession.existsCa(caname)) {
             log.debug("Remove CA " + caname + " after test.");
-            caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
+            CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caname));
         }
     }
 
@@ -2699,7 +2697,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         try {
             endEntityManagementSession.deleteUser(intAdmin, username);
         } catch (NoSuchEndEntityException e) {
-            // Ignore
+            // NOPMD: Ignore
         } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
             log.warn("Error when deleting user ' " + username + "': " + e.getMessage(), e);
         }

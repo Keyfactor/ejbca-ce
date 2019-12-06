@@ -43,6 +43,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -84,7 +85,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         x509ca.setCAToken(caToken);
         caSession.addCA(alwaysAllowToken, x509ca);
         int cryptoTokenId = caToken.getCryptoTokenId();
-        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");
+        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, KeyGenParams.builder("RSA1024").build());
         CAInfo info = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId());
         // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
         PublicKey pk = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, ALIAS).getPublicKey();

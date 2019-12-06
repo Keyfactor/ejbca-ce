@@ -93,7 +93,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -208,8 +207,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);      
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
         try {
             this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, RENEWAL_USERNAME, ReasonFlags.unused);
             this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, "fakeuser", ReasonFlags.unused);

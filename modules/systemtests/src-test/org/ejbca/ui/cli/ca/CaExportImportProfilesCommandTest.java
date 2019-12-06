@@ -13,12 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.util.Collection;
 
@@ -28,7 +22,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -38,6 +31,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System test class for CaImportProfilesCommand
@@ -91,13 +90,11 @@ public class CaExportImportProfilesCommandTest {
     public void testExportImportProfiles() throws Exception {        
 
         final String profilename = "4712EEPROFILE";
-        int caid = 0;
-        int cryptoTokenId = 0;
+        CA ca = null;
         try {
             // Create a CA that we can delete later
-            CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(CA_DN, "foo".toCharArray(), false, false);
-            cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-            caid = ca.getCAId();
+            ca = CaTestUtils.createTestX509CAOptionalGenKeys(CA_DN, "foo".toCharArray(), false, false);
+            int caid = ca.getCAId();
             caSession.addCA(admin, ca);
 
             // Create an End entity profile to export and import
@@ -136,7 +133,7 @@ public class CaExportImportProfilesCommandTest {
 
             // Now remove the CA and import the profile again, the removed CA id should be removed from the profile
             eeProfileSession.removeEndEntityProfile(admin, profilename);
-            caSession.removeCA(admin, caid);
+            CaTestUtils.removeCa(admin, ca.getCAInfo());
             prof = eeProfileSession.getEndEntityProfile(profilename);
             assertNull(prof);
             caImportProfilesCommand.execute(CAIMPORTPROFILES_ARGS);
@@ -149,8 +146,9 @@ public class CaExportImportProfilesCommandTest {
             assertEquals("DefaultCA should not be our test CA", -1, prof.getDefaultCA()); // -1 means that the default CA is not set
         } finally {
             eeProfileSession.removeEndEntityProfile(admin, profilename);
-            caSession.removeCA(admin, caid);
-            CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
+            if (ca != null) {
+                CaTestUtils.removeCa(admin, ca.getCAInfo());
+            }
         }
     }
 }

@@ -41,6 +41,7 @@ import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -124,7 +125,7 @@ public class InternalKeyBindingMgmtTest {
         int internalKeyBindingId = 0;
         try {
             // First create a new CryptoToken
-            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
@@ -160,7 +161,7 @@ public class InternalKeyBindingMgmtTest {
         String certFpToDelete = null;
         try {
             // First create a new CryptoToken
-            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
@@ -214,7 +215,7 @@ public class InternalKeyBindingMgmtTest {
         String certFpToDelete = null;
         try {
             // First create a new CryptoToken
-            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
@@ -276,7 +277,7 @@ public class InternalKeyBindingMgmtTest {
         String certFpToDelete = null;
         try {
             // First create a new CryptoToken
-            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, null);
             log.debug("Created InternalKeyBinding with id " + internalKeyBindingId);

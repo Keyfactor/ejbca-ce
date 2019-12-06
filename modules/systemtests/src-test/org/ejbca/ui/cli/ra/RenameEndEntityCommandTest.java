@@ -26,7 +26,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -78,8 +77,9 @@ public class RenameEndEntityCommandTest {
     
     @After
     public void tearDown() throws Exception {
-        CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, testx509ca.getCAId());
+        if (testx509ca != null) {
+            CaTestUtils.removeCa(admin, testx509ca.getCAInfo());
+        }
     }
 
     @Test

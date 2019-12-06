@@ -106,13 +106,13 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     }
 
     private void subTest(final int cryptoTokenId, final String keySpec) throws Exception {
-        // Test additional key creation and informatin retrieval
+        // Test additional key creation and information retrieval
         final String KEYALIAS1 = "newAlias1";
         final String KEYALIAS2 = "newAlias2";
         final String KEYALIAS_BAD = "notAnAlias";
-        cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, KEYALIAS1, keySpec);
+        cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, KEYALIAS1, KeyGenParams.builder(keySpec).build());
         try {
-            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, KEYALIAS1, keySpec);
+            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, KEYALIAS1, KeyGenParams.builder(keySpec).build());
             fail("Should not be able to generate a key pair with the same alias twice.");
         } catch (InvalidKeyException e) {
             // Expected

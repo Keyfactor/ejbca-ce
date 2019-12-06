@@ -308,16 +308,8 @@ public class OcspKeyRenewalTest {
         
         
         
-        try {
-            while (true) {
-                CAInfo info = caSession.getCAInfo(authenticationToken, caEccName);
-                caSession.removeCA(authenticationToken, info.getCAId());
-            }
-        } catch (Exception e) {
-            // Get out of loop and ignore
-            log.debug(e.getMessage());
-        }
-        cleanupCryptoToken(caEccName);
+        CAInfo cainfo = caSession.getCAInfo(authenticationToken, caEccName);
+        CaTestUtils.removeCa(authenticationToken, cainfo);
         
         if (endEntityAccessSession.findUser(authenticationToken, OCSP_ECC_END_USER_NAME) != null) {
             endEntityManagementSession.revokeAndDeleteUser(authenticationToken, OCSP_ECC_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

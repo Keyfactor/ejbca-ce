@@ -61,7 +61,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -210,12 +209,8 @@ public class DefaultProfileTest extends CmpTestCase {
         endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_NAME);
         certProfileSession.removeCertificateProfile(ADMIN, CP_NAME);
         
-        CryptoTokenTestUtils.removeCryptoToken(null, ca1.getCAToken().getCryptoTokenId());
-        caSession.removeCA(ADMIN, caid1);
-        
-        CryptoTokenTestUtils.removeCryptoToken(null, ca2.getCAToken().getCryptoTokenId());
-        caSession.removeCA(ADMIN, caid2);
-
+        CaTestUtils.removeCa(ADMIN, ca1.getCAInfo());
+        CaTestUtils.removeCa(ADMIN, ca2.getCAInfo());
     }
 
 

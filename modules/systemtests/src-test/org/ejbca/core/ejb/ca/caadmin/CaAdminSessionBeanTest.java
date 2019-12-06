@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -59,6 +54,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
@@ -77,6 +73,11 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * System tests for {@link CAAdminSession}
@@ -210,7 +211,7 @@ public class CaAdminSessionBeanTest {
         } finally {
             final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, TEST_BC_CERT_CA);
             if (cainfo != null) {
-                caSession.removeCA(alwaysAllowToken, cainfo.getCAId());
+                CaTestUtils.removeCa(alwaysAllowToken, cainfo);
             }
             internalCertStoreSession.removeCertificatesBySubject("CN=" + TEST_BC_CERT_CA);
         }
@@ -230,8 +231,6 @@ public class CaAdminSessionBeanTest {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, TOKEN_PIN);
-        final String KEY_SPEC_RSA = "1024";
-        final String KEY_SPEC_EC = "prime256v1";
         final String KEY_ALIAS_RSA = "signKeyRsa";
         final String KEY_ALIAS_EC = "signKeyEc";
         final Properties caTokenProperties = new Properties();
@@ -245,8 +244,8 @@ public class CaAdminSessionBeanTest {
             caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_ALIAS_RSA, KEY_SPEC_RSA);
-            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_ALIAS_EC, KEY_SPEC_EC);
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_ALIAS_RSA, KeyGenParams.builder("RSA1024").build());
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_ALIAS_EC, KeyGenParams.builder("prime256v1").build());
             final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
             final int certificateProfileId = certificateProfileSession.addCertificateProfile(alwaysAllowToken, TEST_NAME, certificateProfile);
             final X509CAInfo x509CaInfo = X509CAInfo.getDefaultX509CAInfo("CN="+TEST_NAME, TEST_NAME, CAConstants.CA_ACTIVE, certificateProfileId, "3650d", CAInfo.SELFSIGNED, null, caToken);
@@ -283,9 +282,8 @@ public class CaAdminSessionBeanTest {
         } finally {
             CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, TEST_NAME);
             if(caInfo != null) {
-                caSession.removeCA(alwaysAllowToken, caInfo.getCAId());
+                CaTestUtils.removeCa(alwaysAllowToken, caInfo);
             }
-            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenManagementSession.getIdFromName(TEST_NAME));
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, TEST_NAME);
         }
     }
@@ -331,7 +329,7 @@ public class CaAdminSessionBeanTest {
         caInfo.getCAToken().setSignatureAlgorithm(signatureAlgoritm);
         try {
             caAdminSession.createCA(alwaysAllowToken, caInfo);
-            caSession.removeCA(alwaysAllowToken, caSession.getCAInfo(alwaysAllowToken, caInfo.getName()).getCAId());
+            CaTestUtils.removeCa(alwaysAllowToken, caInfo);
             if (!expectNoIllegalKeyException) {
                 fail("Validation should not work with invalid key size and/or algoritmh,");
             }
