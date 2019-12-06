@@ -59,6 +59,7 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
@@ -113,7 +114,7 @@ public class OcspTestUtils {
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         // First create a new CryptoToken
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, testName)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, keyspec);
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, KeyGenParams.builder(keyspec).build());
         }
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
         final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();

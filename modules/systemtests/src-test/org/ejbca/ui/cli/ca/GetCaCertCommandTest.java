@@ -73,10 +73,10 @@ public class GetCaCertCommandTest {
     public static void afterClass() throws AuthorizationDeniedException {
 
         if (rootCa != null) {
-            caSession.removeCA(authenticationToken, rootCa.getCAId());
+            CaTestUtils.removeCa(authenticationToken, rootCa.getCAInfo());
         }
         if(cainfo != null) {
-            caSession.removeCA(authenticationToken, cainfo.getCAId());
+            CaTestUtils.removeCa(authenticationToken, cainfo);
         }
     }
 

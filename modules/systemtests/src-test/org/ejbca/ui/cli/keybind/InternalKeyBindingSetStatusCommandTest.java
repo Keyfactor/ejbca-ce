@@ -15,9 +15,9 @@ package org.ejbca.ui.cli.keybind;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -35,6 +35,7 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -62,7 +63,6 @@ public class InternalKeyBindingSetStatusCommandTest {
 
     private InternalKeyBindingSetStatusCommand command = new InternalKeyBindingSetStatusCommand();
 
-    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
@@ -77,16 +77,14 @@ public class InternalKeyBindingSetStatusCommandTest {
         CryptoProviderTools.installBCProvider();
         x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "CN=" + TESTCLASS_NAME);
         cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(authenticationToken, TESTCLASS_NAME);
-        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, TESTCLASS_NAME, "RSA2048");
+        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, TESTCLASS_NAME, KeyGenParams.builder("RSA2048").build());
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         if (x509ca != null) {
-            final int caCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caCryptoTokenId);
-            caSession.removeCA(authenticationToken, x509ca.getCAId());
+            CaTestUtils.removeCa(authenticationToken, x509ca.getCAInfo());
         }
     }
 

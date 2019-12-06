@@ -228,12 +228,11 @@ public class RevocationApprovalTest extends CaTestCase {
         for (final String username : Arrays.asList(adminUsername, requestingAdminUsername, "test01Revocation", "test02Revocation", "test03Revocation", "test01extendedInfoRevokeUser")) {
             try {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
-            } catch (Exception e) {
+            } catch (NoSuchEndEntityException e) {
                 // NOPMD:
             }
         }
-        caSession.removeCA(internalAdmin, approvalCAID);
-        CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
+        CaTestUtils.removeCa(internalAdmin, caSession.getCAInfo(internalAdmin, approvalCAID));
         try {
             approvalProfileSession.removeApprovalProfile(internalAdmin, approvalProfileId);
         } catch (Exception e) {
@@ -269,11 +268,6 @@ public class RevocationApprovalTest extends CaTestCase {
         approvals.put(approvalRequirementType, approvalProfileId);
         cainfo.setApprovals(approvals);
         int caID = cainfo.getCAId();
-        try {
-            caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-            caSession.removeCA(internalAdmin, caID);
-        } catch (Exception e) {
-        }
         caAdminSession.createCA(internalAdmin, cainfo);
         cainfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, caID);
         assertNotNull(cainfo);

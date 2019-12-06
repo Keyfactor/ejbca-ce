@@ -38,7 +38,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
@@ -130,7 +129,9 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
+
         this.cmpConfiguration.removeAlias(this.cmpAlias);
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", this.cmpAlias);
@@ -143,8 +144,6 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         }
         assertTrue("Unable to clean up properly.", cleanUpOk);
         
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);
     }
 
     @Override
