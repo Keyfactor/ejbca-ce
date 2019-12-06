@@ -525,7 +525,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                     if (protBytes != null) {
                         final AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
                         if (log.isDebugEnabled()) {
-                            log.debug("POP protection bytes length: " + (protBytes != null ? protBytes.length : "null"));
+                            log.debug("POP protection bytes length: " + protBytes.length);
                             log.debug("POP algorithm identifier is: " + algId.getAlgorithm().getId());
                         }
                         final Signature sig = Signature.getInstance(algId.getAlgorithm().getId(), "BC");
