@@ -40,6 +40,7 @@ import java.util.Set;
 import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -1149,12 +1150,14 @@ public class CAInterfaceBean implements Serializable {
         }
     }
 
-    /** Returns the current CA validity "not after" date.
+    /**
+     * Returns the current CA validity "not after" date.
+     * @return Not after date, or null if the CA does not have a certificate yet.
      * @throws AuthorizationDeniedException
      */
     public Date getRolloverNotAfter(int caid) throws AuthorizationDeniedException {
         final Collection<Certificate> chain = casession.getCAInfo(authenticationToken, caid).getCertificateChain();
-        return CertTools.getNotAfter(chain.iterator().next());
+        return CollectionUtils.isNotEmpty(chain) ? CertTools.getNotAfter(chain.iterator().next()) : null;
     }
 
     /**
