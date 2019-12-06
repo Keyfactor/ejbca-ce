@@ -216,8 +216,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         this.cmpConfiguration.removeAlias(ALIAS);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(ADMIN, this.caid);
+        CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
     }
 
     @AfterClass

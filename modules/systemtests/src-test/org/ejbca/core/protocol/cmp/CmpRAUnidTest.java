@@ -14,11 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -55,7 +50,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -70,6 +64,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -97,7 +95,6 @@ public class CmpRAUnidTest extends CmpTestCase {
 
     private static final String issuerDN = "CN=TestCA";
     private final KeyPair keys;
-    private final int caid;
     private final X509Certificate cacert;
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
@@ -117,7 +114,6 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         this.testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
-        this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
@@ -174,8 +170,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.endEntityProfileSession.removeEndEntityProfile(this.admin, EEPNAME);
         this.certProfileSession.removeCertificateProfile(this.admin, CPNAME);
         
-        CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
-        this.caSession.removeCA(this.admin, this.caid);
+        CaTestUtils.removeCa(this.admin, testx509ca.getCAInfo());
         
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());
         this.cmpConfiguration.removeAlias(configAlias);

@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.roles;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
 
 import org.bouncycastle.jce.X509KeyUsage;
@@ -24,7 +22,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -34,6 +31,8 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @version $Id$
@@ -76,8 +75,7 @@ public class RemoveAdminCommandTest {
             final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(internalAdmin, roleId);
             assertEquals("RoleMember was not removed via CLI command", 0, roleMembers.size());
         } finally {
-            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-            caSession.removeCA(internalAdmin, caId);
+            CaTestUtils.removeCa(internalAdmin, testx509ca.getCAInfo());
         }
     }
 }

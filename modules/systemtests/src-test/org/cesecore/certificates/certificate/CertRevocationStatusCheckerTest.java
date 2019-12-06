@@ -49,7 +49,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -160,8 +159,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         try {
             // Remove any testca before exiting tests
             Certificate testX509caCert = testx509ca.getCACertificate();
-            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
+            CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());
             internalCertStoreSession.removeCertificate(testX509caCert);
             certProfileSession.removeCertificateProfile(alwaysAllowToken, certprofileName);
             endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "CertRevocationStatusCheckerTestEndEntityProfile");
@@ -697,8 +695,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             internalCertStoreSession.removeCRL(alwaysAllowToken, testca2CrlFp1);
             internalCertStoreSession.removeCertificate(usercertFp);
             eeManagementSession.revokeAndDeleteUser(alwaysAllowToken, username, ReasonFlags.unused);
-            
-            caSession.removeCA(alwaysAllowToken, testca2.getCAId());
+            CaTestUtils.removeCa(alwaysAllowToken, testca2.getCAInfo());
             internalCertStoreSession.removeCertificate(testca2.getCACertificate());
         }
     }

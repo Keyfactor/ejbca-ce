@@ -42,6 +42,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -79,6 +80,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -169,7 +171,7 @@ public class CAsTest extends CaTestCase {
         try {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, this.getClass().getSimpleName() + "." + tokenName, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
             cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
-            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1265,8 +1267,7 @@ public class CAsTest extends CaTestCase {
             // Start with preemptive cleanup
             CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             if (caInfo != null) {
-                caSession.removeCA(admin, caInfo.getCAId());
-                internalCertStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
+                CaTestUtils.removeCa(admin, caInfo);
             }
         }
         try {
@@ -1338,8 +1339,7 @@ public class CAsTest extends CaTestCase {
         } finally {
             CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             if (caInfo != null) {
-                caSession.removeCA(admin, caInfo.getCAId());
-                internalCertStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
+                CaTestUtils.removeCa(admin, caInfo);
             }
         }
     }
