@@ -423,7 +423,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
 
 
 
-    public void extendedCAServices(CA ca) throws Exception {
+    /** 
+     * @param ca CA to test extended CA services on, the CA must be cleaned up/removed by caller, including the crypto token
+     */
+    protected void extendedCAServices(CA ca) throws Exception {
         cleanUpAnyExistingCa(ca.getCAId(), null);
         // Generate CA keys
         caSession.addCA(roleMgmgToken, ca);
