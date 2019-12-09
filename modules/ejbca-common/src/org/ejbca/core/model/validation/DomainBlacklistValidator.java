@@ -280,6 +280,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 final DynamicUiProperty<?> uploadUiProperty = getProperties().get(BLACKLIST_UPLOAD_KEY);
                 final File uploadedFile = (File) uploadUiProperty.getValue();
                 if (uploadedFile != null) {
+                    if (!uploadedFile.exists()) {
+                        throw new DomainBlacklistFileException("Please select the blacklist file again.");
+                    }
                     try {
                         if (log.isDebugEnabled()) {
                             log.debug("Parsing uploaded file: " + uploadedFile.getName());
