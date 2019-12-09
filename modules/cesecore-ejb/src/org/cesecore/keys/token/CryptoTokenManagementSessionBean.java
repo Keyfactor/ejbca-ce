@@ -725,10 +725,31 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             AuthorizationDeniedException {
         assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
-        if (!getKeyPairAliasesInternal(cryptoToken).contains(alias)) {
-            return null;
+        PublicKey publicKey = null;
+        // The fastest way to see if an key alias exists is to just to to get the public key, if the alias
+        // does not exist, we'll get an error. 
+        // Succeed fast on the expected common case that the key actually exists, don't list all keys on the token which can take time
+        try {
+            publicKey = cryptoToken.getPublicKey(alias);
+            // Javadoc says that return code is null when not found, which is not true in reality for all cases
+        } catch (CryptoTokenOfflineException e) {
+            // The javadoc for the above getPublicKey claims that null is returned when the alias does not exist
+            // this is however not true, as an exception is thrown. I don't dare get down that rabbithole for this issue, see ECA-8326
+            // leave the value as null
         }
-        final PublicKey publicKey = cryptoToken.getPublicKey(alias);
+        if (publicKey == null) {
+            // If we did not find it above on the fail-fast, there is a (slim) chance that a getAliases call will update the token cache
+            if (!getKeyPairAliasesInternal(cryptoToken).contains(alias)) {
+                return null; // If still nothing, return null
+            }
+            // Alias exists try to get it
+            publicKey = cryptoToken.getPublicKey(alias);
+            if (publicKey == null) {
+                // Crypto tokens come in many forms, and have many flaws, it may claim the alias exists, but the key still can not be read
+                // Handle that corner case to avoid an NPE below
+                return null;
+            }
+        }
         final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
         final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
