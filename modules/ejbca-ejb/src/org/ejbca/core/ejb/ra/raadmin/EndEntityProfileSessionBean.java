@@ -17,7 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -409,7 +408,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         final TreeMap<String,Integer> result = new TreeMap<>();
         if (profile != null) {
             final Collection<Integer> ids = profile.getAvailableCAs();
-            final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
+            final Map<Integer,String> map = caSession.getCAIdToNameMap();
             String name;
             for (int id : ids) {
                 name = map.get(id);
