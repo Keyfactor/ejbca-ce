@@ -263,6 +263,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         auditLogHelper.openPage(getAdminWebUrl());
         // Sort by time and set 'Displaying results' and 'Entries per page'
         webDriver.findElement(By.xpath("(//input[@class='sortButton'])[2]")).click();
+        auditLogHelper.setViewFilteringCondition("Event", "Not equals", "Administrator Session Ended");
         auditLogHelper.setViewPaginationProperties(2, 5);
         auditLogHelper.reloadView();
 
