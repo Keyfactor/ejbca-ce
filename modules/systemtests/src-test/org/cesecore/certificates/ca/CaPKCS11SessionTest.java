@@ -19,6 +19,7 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,6 +42,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     private static CA authenticationx509ca = null;
     private static final char[] tokenpin = SystemTestsConfiguration.getPkcs11SlotPin("userpin1");
 
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static CaSessionTestBase testBase;
 
     @BeforeClass
@@ -75,14 +77,28 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     public void addCAGenerateKeysLater() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
         final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, false, true);
-        testBase.addCAGenerateKeysLater(ca, cadn, tokenpin);
+        try {
+            // Store CA
+            caSession.addCA(roleMgmgToken, ca);
+            testBase.addCAGenerateKeysLater(ca, tokenpin);
+        } finally {
+            // Clean up CA and crypto token
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
+        }
     }
 
     @Test
     public void addCAUseSessionBeanToGenerateKeys2() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
         final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, false, true);
-        testBase.addCAUseSessionBeanToGenerateKeys(ca, cadn, tokenpin);
+        try {
+            // Store CA
+            caSession.addCA(roleMgmgToken, ca);
+            testBase.addCAUseSessionBeanToGenerateKeys(ca, tokenpin);
+        } finally {
+            // Clean up CA and crypto token
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
+        }
     }
 
 }
