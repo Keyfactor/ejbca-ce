@@ -13,7 +13,9 @@
 package org.cesecore.certificates.ca.internal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
@@ -60,8 +62,8 @@ public class CaIDCacheBean {
      * threads in the same VM. Set volatile to make it thread friendly.
      */
 
-    /** Cache of CA IDs */
-    private volatile List<Integer> idCache = null;
+    /** Cache of CA IDs and Names*/
+    private volatile Map<Integer, String> idNameCache = null;
 
     private volatile long lastUpdate = 0;
 
@@ -69,7 +71,7 @@ public class CaIDCacheBean {
     
     @PostConstruct
     public void initialize() {
-        idCache = new ArrayList<Integer>();
+        idNameCache = new HashMap<Integer, String>();
         lock = new ReentrantLock(false);
 
         try {
@@ -117,8 +119,12 @@ public class CaIDCacheBean {
         if (LOG.isDebugEnabled()) {
         	LOG.debug("Loading CA ID cache from database");
         }
-        final List<Integer> idCacheTemp = findAllCaIds();
-        idCache = idCacheTemp;
+        final HashMap<Integer, String> cacheTemp = new HashMap<Integer, String>();
+        final List<Object[]> idNames = findAllCaIdNames();
+        for (Object[] objects : idNames) {
+            cacheTemp.put((Integer)objects[0], (String)objects[1]);
+        }
+        idNameCache = cacheTemp;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateCache");
         }
@@ -126,17 +132,24 @@ public class CaIDCacheBean {
 
     /** @return return the query results as a List<Integer>. */
     @SuppressWarnings("unchecked")
-    private List<Integer> findAllCaIds() {
-        final Query query = entityManager.createQuery("SELECT a.caId FROM CAData a");
+    private List<Object[]> findAllCaIdNames() {
+        final Query query = entityManager.createQuery("SELECT a.caId,a.name FROM CAData a");
         return query.getResultList();
     }
     
 
     /** @return the latest List from the cache, which will be refreshed if needed. */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<Integer> getCacheContent() {
+    public List<Integer> getIdCacheContent() {
         updateCache(false);
-        return idCache;
+        return new ArrayList<Integer>(idNameCache.keySet());
+    }
+
+    /** @return the latest List from the cache, which will be refreshed if needed. */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Map<Integer,String> getIdNameCacheContent() {
+        updateCache(false);
+        return new HashMap<Integer,String>(idNameCache);
     }
 
 }

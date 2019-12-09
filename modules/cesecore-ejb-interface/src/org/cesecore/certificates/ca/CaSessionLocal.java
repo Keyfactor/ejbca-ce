@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -169,12 +168,12 @@ public interface CaSessionLocal extends CaSession {
     void verifyExistenceOfCA(int caid) throws CADoesntExistsException;
 
     /**
-     * Returns a HashMap containing mappings of caid (Integer) to CA name
+     * Returns a HashMap containing mappings of caID (Integer) to CA name
      * (String) of all CAs in the system.
      * 
-     * @return HashMap with Integer->String mappings
+     * @return Map with Integer->String mappings
      */
-    HashMap<Integer,String> getCAIdToNameMap();
+    Map<Integer,String> getCAIdToNameMap();
     
     /**
      * Returns a HashMap containing mappings of caid (Integer) to CA name
