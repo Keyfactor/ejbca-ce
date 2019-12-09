@@ -53,7 +53,7 @@ public class CaSessionTest extends RoleUsingTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     
-    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("CaSessionTest");
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("CaSessionTest");
     
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
@@ -65,7 +65,7 @@ public class CaSessionTest extends RoleUsingTestCase {
     @AfterClass
     public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
         if (testx509ca != null) {
-            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+            CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());
         }
     }
 
@@ -94,9 +94,14 @@ public class CaSessionTest extends RoleUsingTestCase {
         final String cadn = "CN=TEST GEN KEYS, O=CaSessionTest, C=SE";
         final String tokenpwd = "thisisatest";
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpwd.toCharArray(), false, false);
-        final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-        testBase.addCAGenerateKeysLater(ca, cadn, tokenpwd.toCharArray());
-        CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
+        try {
+            // Store CA
+            caSession.addCA(roleMgmgToken, ca);
+            testBase.addCAGenerateKeysLater(ca, tokenpwd.toCharArray());
+        } finally {
+            // Clean up CA and crypto token
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
+        }
     }
 
     @Test
@@ -104,9 +109,14 @@ public class CaSessionTest extends RoleUsingTestCase {
         final String cadn = "CN=TEST GEN KEYS, O=CaSessionTest, C=SE";
         final String tokenpwd = "thisisatest";
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpwd.toCharArray(), false, false);
-        final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-        testBase.addCAUseSessionBeanToGenerateKeys(ca, cadn, tokenpwd.toCharArray());
-        CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
+        try {
+            // Store CA
+            caSession.addCA(roleMgmgToken, ca);
+            testBase.addCAUseSessionBeanToGenerateKeys(ca, tokenpwd.toCharArray());
+        } finally {
+            // Clean up CA and crypto token
+            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
+        }
     }
 
     @Test

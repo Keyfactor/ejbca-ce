@@ -35,7 +35,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -50,7 +49,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -80,7 +78,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     protected CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     protected CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_CESECORE);
@@ -316,12 +313,12 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     /**
      * Add CA object first with just key references and let these references sign the initial CA certificate.
      * This probably works due to the lack of sanity checks (like that a CA probably should have a CA certificate).
+     * @param ca a CA that is expected to be added to the system with a crypto token (caSession.addCA must have been done, the caller is responsible for cleaning up the CA and Crypto Token
+     * @param tokenpwd the password for activating the CAs crypto token and generating keys 
      */
-    public void addCAGenerateKeysLater(CA ca, String cadn, char[] tokenpwd) throws Exception {
+    protected void addCAGenerateKeysLater(CA ca, char[] tokenpwd) throws Exception {
     	X509Certificate cert = null;
     	try {
-        	// Store CA
-        	caSession.addCA(roleMgmgToken, ca);
         	// Generate keys, will audit log
         	int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
         	cryptoTokenManagementSession.activate(roleMgmgToken, cryptoTokenId, tokenpwd);
@@ -331,7 +328,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         	CAInfo info = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
             // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
         	PublicKey pk = cryptoTokenManagementSession.getPublicKey(roleMgmgToken, cryptoTokenId, signKeyAlias).getPublicKey();
-            EndEntityInformation user = new EndEntityInformation("casessiontestca", cadn, ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
+            EndEntityInformation user = new EndEntityInformation("casessiontestca", ca.getSubjectDN(), ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
@@ -357,151 +354,32 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             cert1.verify(pk);
     	} finally {
             // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
+    	    // So delete the keys we have generated above at least
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             if (cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, signKeyAlias)) {
                 cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
             }
-            CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
-            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
-    		internalCertStoreSession.removeCertificate(cert);
     	}    	
     }
     
-
-
-    public void extendedCAServices(CA ca) throws Exception {
-    	// Generate CA keys
-    	Certificate cert = null;
-    	try {
-            caSession.addCA(roleMgmgToken, ca);
-            final String caName = ca.getName();
-            CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, caName);
-            ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
-            ExtendedCAServiceInfo myinfo = new TestExtendedCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE);
-            newlist.add(myinfo);
-            cainfo.setExtendedCAServiceInfos(newlist);
-            caSession.editCA(roleMgmgToken, cainfo);
-            cainfo = caSession.getCAInfo(roleMgmgToken, caName);
-            Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
-            boolean ok = false;
-            for (ExtendedCAServiceInfo info : infos) {
-    			if (info.getType() == TestExtendedCAServiceInfo.type) {
-    				if (info.getStatus() == ExtendedCAServiceInfo.STATUS_INACTIVE) {
-    					ok = true;
-    				}
-    			}
-    		}
-            assertTrue("extended CA service should not have been activated", ok);
-            
-            ArrayList<ExtendedCAServiceInfo> newlist1 = new ArrayList<ExtendedCAServiceInfo>();
-            ExtendedCAServiceInfo myinfo1 = new TestExtendedCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE);
-            newlist1.add(myinfo1);
-            cainfo.setExtendedCAServiceInfos(newlist1);
-            caSession.editCA(roleMgmgToken, cainfo);
-            cainfo = caSession.getCAInfo(roleMgmgToken, caName);
-            infos = cainfo.getExtendedCAServiceInfos();
-            ok = false;
-            for (ExtendedCAServiceInfo info : infos) {
-    			if (info.getType() == TestExtendedCAServiceInfo.type) {
-    				if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-    					ok = true;
-    				}
-    			}
-    		}
-            assertTrue("extended CA service should have been activated", ok);
-            
-    	} finally {
-            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
-    		internalCertStoreSession.removeCertificate(cert);
-    	}    	
-    }
-
-    public void authorization() throws Exception {
-        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); 
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CaSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
-        CaTestUtils.removeCa(roleMgmgToken, testx509ca.getCAInfo());
-    	// Try to add and edit CAs with and admin that does not have authorization
-    	try {
-    		try {
-    			caSession.addCA(adminTokenNoAuth, testx509ca);
-    			assertTrue("Should throw", false);
-    		} catch (AuthorizationDeniedException e) {
-    			// NOPMD
-    		}
-    		caSession.addCA(roleMgmgToken, testx509ca);
-
-    		try {
-    			caSession.renameCA(adminTokenNoAuth, testx509ca.getName(), "fooName");
-    			assertTrue("Should throw", false);
-    		} catch (AuthorizationDeniedException e) {
-    			// NOPMD
-    		}
-
-    		try {
-    			caSession.removeCA(adminTokenNoAuth, testx509ca.getCAId());
-    			assertTrue("Should throw", false);
-    		} catch (AuthorizationDeniedException e) {
-    			// NOPMD
-    		}
-
-    		try {
-        		caSession.getCAInfo(adminTokenNoAuth, testx509ca.getCAId());
-    			assertTrue("Should throw", false);
-    		} catch (AuthorizationDeniedException e) {
-    			// NOPMD
-    		}
-
-    		CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
-    		assertEquals(0, cainfo.getCRLIssueInterval());
-    		assertEquals(CAConstants.CA_ACTIVE, cainfo.getStatus());
-    		cainfo.setCRLIssueInterval(50);
-    		cainfo.setStatus(CAConstants.CA_OFFLINE);
-    		try {
-    			caSession.editCA(adminTokenNoAuth, cainfo);
-    		} catch (AuthorizationDeniedException e) {
-    			// NOPMD
-    		}
-    		// This should work though
-    		caSession.editCA(roleMgmgToken, cainfo);
-    		cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
-    		assertEquals(50, cainfo.getCRLIssueInterval());
-    		assertEquals(CAConstants.CA_OFFLINE, cainfo.getStatus());
-    	} finally {
-            CaTestUtils.removeCa(roleMgmgToken, testx509ca.getCAInfo());
-    	}
-    }
-
-    /** Remove any existing CA. Null value parameter can be used to ignore one of the alternatives. */
-    protected void cleanUpAnyExistingCa(Integer caId, String caname) throws AuthorizationDeniedException {
-        // CaSessionTestBase depends on that the Crypto Token is not removed so it can be re-used.
-        // a bad circular dependency
-        if (caId != null) {
-            caSession.removeCA(roleMgmgToken, caId.intValue());
-        }
-        if (caname != null) {
-            final CAInfo caInfo = caSession.getCAInfo(roleMgmgToken, caname);
-            if (caInfo != null) {
-                caSession.removeCA(roleMgmgToken, caInfo.getCAId());
-            }
-
-        }
-    }
-    
-    public void addCAUseSessionBeanToGenerateKeys(CA ca, String cadn, char[] tokenpwd) throws Exception {
-        
+    /**
+     * Add CA object first with just key references and let these references sign the initial CA certificate.
+     * This probably works due to the lack of sanity checks (like that a CA probably should have a CA certificate).
+     * @param ca a CA that is expected to be added to the system with a crypto token (caSession.addCA must have been done, the caller is responsible for cleaning up the CA and Crypto Token
+     * @param tokenpwd the password for activating the CAs crypto token and generating keys 
+     */
+    protected void addCAUseSessionBeanToGenerateKeys(CA ca, char[] tokenpwd) throws Exception {        
         AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken("addCAUseSessionBeanToGenerateKeys");
-        // Generate CA keys
         Certificate cert = null;
         try {
             CAToken caToken = ca.getCAToken();
             caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "signKeyAlias");
             caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, "signKeyAlias");
             ca.setCAToken(caToken);
-            caSession.addCA(authenticationToken, ca);
+            caSession.editCA(authenticationToken, ca.getCAInfo());
             final int cryptoTokenId = caToken.getCryptoTokenId();
+            // Generate CA keys
             cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, "signKeyAlias", KeyGenParams.builder("RSA1024").build());
             PublicKey pubK = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, "signKeyAlias").getPublicKey();
             assertNotNull(pubK);
@@ -534,14 +412,125 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             cert1.verify(pubK);
         } finally {
             // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
+            // So delete the keys we have generated above at least
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             if (cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, signKeyAlias)) {
-                cryptoTokenManagementSession.removeKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
+                cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
             }
-            CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
-            CaTestUtils.removeCa(roleMgmgToken, ca.getCAInfo());
-            internalCertStoreSession.removeCertificate(cert);
+        }       
+    }
+
+
+
+    public void extendedCAServices(CA ca) throws Exception {
+        cleanUpAnyExistingCa(ca.getCAId(), null);
+        // Generate CA keys
+        caSession.addCA(roleMgmgToken, ca);
+        final String caName = ca.getName();
+        CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, caName);
+        ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
+        ExtendedCAServiceInfo myinfo = new TestExtendedCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE);
+        newlist.add(myinfo);
+        cainfo.setExtendedCAServiceInfos(newlist);
+        caSession.editCA(roleMgmgToken, cainfo);
+        cainfo = caSession.getCAInfo(roleMgmgToken, caName);
+        Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+        boolean ok = false;
+        for (ExtendedCAServiceInfo info : infos) {
+            if (info.getType() == TestExtendedCAServiceInfo.type) {
+                if (info.getStatus() == ExtendedCAServiceInfo.STATUS_INACTIVE) {
+                    ok = true;
+                }
+            }
+        }
+        assertTrue("extended CA service should not have been activated", ok);
+
+        ArrayList<ExtendedCAServiceInfo> newlist1 = new ArrayList<ExtendedCAServiceInfo>();
+        ExtendedCAServiceInfo myinfo1 = new TestExtendedCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE);
+        newlist1.add(myinfo1);
+        cainfo.setExtendedCAServiceInfos(newlist1);
+        caSession.editCA(roleMgmgToken, cainfo);
+        cainfo = caSession.getCAInfo(roleMgmgToken, caName);
+        infos = cainfo.getExtendedCAServiceInfos();
+        ok = false;
+        for (ExtendedCAServiceInfo info : infos) {
+            if (info.getType() == TestExtendedCAServiceInfo.type) {
+                if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+                    ok = true;
+                }
+            }
+        }
+        assertTrue("extended CA service should have been activated", ok);
+    }
+
+    public void authorization() throws Exception {
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); 
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CaSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
+        cleanUpAnyExistingCa(testx509ca.getCAId(), null);
+        // Try to add and edit CAs with and admin that does not have authorization
+        try {
+            caSession.addCA(adminTokenNoAuth, testx509ca);
+            assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+            // NOPMD
+        }
+        caSession.addCA(roleMgmgToken, testx509ca);
+
+        try {
+            caSession.renameCA(adminTokenNoAuth, testx509ca.getName(), "fooName");
+            assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+            // NOPMD
+        }
+
+        try {
+            caSession.removeCA(adminTokenNoAuth, testx509ca.getCAId());
+            assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+            // NOPMD
+        }
+
+        try {
+            caSession.getCAInfo(adminTokenNoAuth, testx509ca.getCAId());
+            assertTrue("Should throw", false);
+        } catch (AuthorizationDeniedException e) {
+            // NOPMD
+        }
+
+        CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+        assertEquals(0, cainfo.getCRLIssueInterval());
+        assertEquals(CAConstants.CA_ACTIVE, cainfo.getStatus());
+        cainfo.setCRLIssueInterval(50);
+        cainfo.setStatus(CAConstants.CA_OFFLINE);
+        try {
+            caSession.editCA(adminTokenNoAuth, cainfo);
+        } catch (AuthorizationDeniedException e) {
+            // NOPMD
+        }
+        // This should work though
+        caSession.editCA(roleMgmgToken, cainfo);
+        cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+        assertEquals(50, cainfo.getCRLIssueInterval());
+        assertEquals(CAConstants.CA_OFFLINE, cainfo.getStatus());
+    }
+
+    /** Remove any existing CA. Null value parameter can be used to ignore one of the alternatives. */
+    protected void cleanUpAnyExistingCa(Integer caId, String caname) throws AuthorizationDeniedException {
+        // CaSessionTestBase depends on that the Crypto Token is not removed so it can be re-used.
+        // a bad circular dependency
+        if (caId != null) {
+            caSession.removeCA(roleMgmgToken, caId.intValue());
+        }
+        if (caname != null) {
+            final CAInfo caInfo = caSession.getCAInfo(roleMgmgToken, caname);
+            if (caInfo != null) {
+                caSession.removeCA(roleMgmgToken, caInfo.getCAId());
+            }
+
         }
     }
+    
 }
