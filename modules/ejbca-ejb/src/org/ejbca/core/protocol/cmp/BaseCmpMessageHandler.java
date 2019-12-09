@@ -109,6 +109,9 @@ public class BaseCmpMessageHandler {
 		} else {
             // No need to do access control here, just to get the CAId
             final CAInfo info = caSession.getCAInfoInternal(-1, caName, true);
+            if (info == null) {
+                throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
+            }
 			ret = info.getCAId();					
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using fixed caName when adding users in RA mode: "+caName+"("+ret+")");
