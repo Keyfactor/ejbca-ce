@@ -13,11 +13,6 @@
 package org.cesecore.certificates.ca;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 
@@ -27,7 +22,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
@@ -38,6 +32,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean using soft CA tokens.
@@ -122,9 +121,13 @@ public class CaSessionTest extends RoleUsingTestCase {
     @Test
     public void testExtendedCAService() throws Exception {
         CA ca = CaTestUtils.createTestX509CAOptionalGenKeys("CN=Test Extended CA service", "foo123".toCharArray(), false, false);
-        final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-        testBase.extendedCAServices(ca);
-        CryptoTokenTestUtils.removeCryptoToken(null, cryptoTokenId);
+        try {
+            testBase.extendedCAServices(ca);
+        } finally {
+            if (ca != null) {
+                CaTestUtils.removeCa(alwaysAllowToken, ca.getCAInfo());
+            }
+        }
     }
 
     @Test
