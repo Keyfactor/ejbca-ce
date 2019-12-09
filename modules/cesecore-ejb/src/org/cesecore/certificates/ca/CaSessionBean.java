@@ -528,7 +528,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public List<Integer> getAllCaIds() {
         // We need a cache of these, to not list from the database all the time
-        return caIDCache.getCacheContent();
+        return caIDCache.getIdCacheContent();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<Integer, String> getCAIdToNameMap() {
+        // We need a cache of these, to not list from the database all the time
+        return caIDCache.getIdNameCacheContent();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -644,16 +651,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             throw new CADoesntExistsException("CA with id " + caid + " does not exist.");
         }
        
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public HashMap<Integer, String> getCAIdToNameMap() {
-        final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        for (final CAData cadata : findAll()) {
-            returnval.put(cadata.getCaId(), cadata.getName());
-        }
-        return returnval;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
