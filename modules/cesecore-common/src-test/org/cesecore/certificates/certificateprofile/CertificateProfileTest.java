@@ -13,6 +13,13 @@
 
 package org.cesecore.certificates.certificateprofile;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -37,13 +44,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the CertificateProfile class.
@@ -280,11 +280,11 @@ public class CertificateProfileTest {
     public void test04createSubjectDNSubSet() throws Exception{
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
-    	ArrayList<String> dnsubset = new ArrayList<>();
-    	dnsubset.add(Integer.toString(DNFieldExtractor.CN));
-    	dnsubset.add(Integer.toString(DNFieldExtractor.UID));
-    	dnsubset.add(Integer.toString(DNFieldExtractor.GIVENNAME));
-    	dnsubset.add(Integer.toString(DNFieldExtractor.SURNAME));    	
+        ArrayList<Integer> dnsubset = new ArrayList<>();
+        dnsubset.add(DNFieldExtractor.CN);
+        dnsubset.add(DNFieldExtractor.UID);
+        dnsubset.add(DNFieldExtractor.GIVENNAME);
+        dnsubset.add(DNFieldExtractor.SURNAME);
     	profile.setSubjectDNSubSet(dnsubset);
     	
     	String indn1 = "UID=PVE,CN=Philip Vendil,SN=123435,GIVENNAME=Philip,SURNAME=Vendil";
