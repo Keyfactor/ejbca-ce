@@ -1581,17 +1581,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Should contain a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
-     *
-     * Will come in as a list of string from the GUI, because JSP doesn't always care about type safety.
-     *
+     * Sets a subset of subject DN fields to use in the certificate.
+     * 
+     * @param subjectDNSubset a list of {@link DNFieldExtractor} constants.
      */
-    public void setSubjectDNSubSet(List<String> subjectdns) {
-        List<Integer> convertedList = new ArrayList<>();
-        for(String value : subjectdns) {
-            convertedList.add(Integer.valueOf(value));
-        }
-        data.put(SUBJECTDNSUBSET, convertedList);
+    public void setSubjectDNSubSet(final List<Integer> subjectDNSubset) {
+        data.put(SUBJECTDNSUBSET, subjectDNSubset);
     }
 
     // Method name alias for Configdump
