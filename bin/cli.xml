@@ -41,7 +41,7 @@
         <echo message="Common Name (CN) of httpsserver dn is by default taken from the httpsserver.hostname."/>
         <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=EJBCA Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=EJBCA Sample,C=SE"/>
         <input message="Please enter the superadmin cn (default: SuperAdmin) ?" addproperty="superadmin.cn" defaultvalue="SuperAdmin"/>
-         <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
+        <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
         <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>      
 		<input message="Please enter the superadmin password (default: ejbca) ?" addproperty="superadmin.password" defaultvalue="ejbca">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
@@ -146,7 +146,13 @@ appserver.home         : ${appserver.home}
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;${superadmin.dn}&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype}"/>
+        <condition property="sa.validity" value="${superadmin.validity}" else="">
+           	<isset property="superadmin.validity" />
+        </condition>
+        <condition property="sa.validity.flag" value="--superadminvalidity" else="">
+           	<isset property="superadmin.validity" />
+        </condition>
+		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;${superadmin.dn}&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype} ${sa.validity.flag} ${sa.validity}"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
