@@ -2329,7 +2329,8 @@
                         disabled="#{certProfilesBean.viewOnly}"
                         id="selectsubjectdnsubset"
                         value="#{certProfileBean.certificateProfile.subjectDNSubSet}"
-                        size="10">
+                        size="10"
+                        converter="javax.faces.Integer">
                         <f:selectItems
                             value="#{certProfileBean.subjectDNSubSetAvailable}" />
                     </h:selectManyListbox>
