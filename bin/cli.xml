@@ -99,13 +99,7 @@ appserver.home         : ${appserver.home}
     	<antcall target="ejbca:javatruststore"/>
     </target>
 
-    <target name="ejbca:install:import" depends="check:bootstrapdone, ejbca:init" description="Import the prepared installation ManagementCA, tomcat and superadmin">
-        <antcall target="ejbca:importManagementCA" />
-        <antcall target="ejbca:importTomcat"/>
-        <antcall target="ejbca:importSuperadmin"/>
-    </target>
-
-	<!-- Property used to specify certificate profile different from the defautl ROOTCA or SUBCA profile 
+	<!-- Property used to specify certificate profile different from the defautl ROOTCA or SUBCA profile
 	     Specify in install.properties (ca.certificateprofile) for initial installation CA -->
     <condition property="install.certprofile.command" value="-certprofile &quot;${ca.certificateprofile}&quot;" else="">
     	<isset property="ca.certificateprofile" />
@@ -119,21 +113,6 @@ appserver.home         : ${appserver.home}
        <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' '&lt;ca.tokenpassword hidden&gt;' '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${install.catoken.command} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
     	<ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} &quot;${ca.tokenpassword}&quot; ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${install.catoken.command} ${install.certprofile.command} -superadmincn &quot;${superadmin.cn}&quot;"/>
      </target>
-
-    <target name="ejbca:importManagementCA">
-        <echo message="Importing CA with '${ca.name}' 'foo123' 'SignatureKeyAlias' 'EncryptionKeyAlias' '${ejbca.home}/p12/ManagementCA.p12'..." />
-        <ejbca:cli-hideargs arg="ca importca --caname &quot;${ca.name}&quot; -kspassword &quot;foo123&quot; --signalias 'SignatureKeyAlias' --encalias 'EncryptionKeyAlias' --p12 &quot;${ejbca.home}/p12/ManagementCA.p12&quot;"/>
-    </target>
-
-    <target name="ejbca:importTomcat">
-        <echo message="Importing certificate with 'tomcat' '${httpsserver.password}' '${ca.name}' 'ACTIVE' '${ejbca.home}/p12/tomcat.pem'..." />
-        <ejbca:cli-hideargs arg="ca importcert --username tomcat --password ${httpsserver.password} --caname '${ca.name}' -a ACTIVE -f &quot;${ejbca.home}/p12/tomcat.pem&quot; --eeprofile EMPTY --certprofile SERVER"/>
-    </target>
-
-    <target name="ejbca:importSuperadmin">
-        <echo message="Importing certificate with 'superadmin' '${superadmin.password}' '${ca.name}' 'ACTIVE' '${ejbca.home}/p12/superadmin.pem' 'EMPTY' 'ENDUSER'..." />
-        <ejbca:cli-hideargs arg="ca importcert --username superadmin --password ${superadmin.password} --caname '${ca.name}' -a ACTIVE -f &quot;${ejbca.home}/p12/superadmin.pem&quot; --eeprofile EMPTY --certprofile ENDUSER"/>
-    </target>
 
 	<target name="ejbca:adminweb">
 		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost, otherwise add and altname with the same dnsName as hostname. -->
