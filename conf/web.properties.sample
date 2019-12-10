@@ -32,6 +32,12 @@ superadmin.cn=SuperAdmin
 # example:  superadmin.dn=CN=${superadmin.cn},O=EJBCA Sample,C=SE
 superadmin.dn=CN=${superadmin.cn}
 
+# Duration that superadmin will be valid. Leave it commented out to have default of 2 years super admin
+# certificate validity. The validity format should be ISO 8601 date that is:
+# [yyyy-MM-dd HH:mm:ssZZ]: '2019-12-10 11:56:19+01:00' 
+# or (*y *mo *d *h *m *s) - y=365 days, mo=30 days
+# superadmin.validity=2y
+
 # The password used to protect the generated super administrator P12 keystore (to be imported in browser).
 # Choose a good password here.
 superadmin.password=ejbca
