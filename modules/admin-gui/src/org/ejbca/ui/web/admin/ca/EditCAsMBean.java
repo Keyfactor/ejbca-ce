@@ -1033,12 +1033,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getExTServicesKeySpecList() {
-        final List<SelectItem> resultList = new ArrayList<>();
-        
-        for (final Entry<String, String> entry : caBean.getAvailableKeySpecs()) {
-            resultList.add(new SelectItem(entry.getKey(), entry.getValue(), ""));
-        }
-        return resultList;
+        return caBean.getAvailableKeySpecs()
+                .stream()
+                .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
+                .map(e -> new SelectItem(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
     
     public String getSelectedCryptoTokenDefaultKey() {
