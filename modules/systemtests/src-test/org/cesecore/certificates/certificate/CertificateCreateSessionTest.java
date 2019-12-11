@@ -113,6 +113,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private static final Logger log = Logger.getLogger(CertificateCreateSessionTest.class);
 
     private static KeyPair keys;
+    private static KeyPair renewalKeys;
     private static final String X509CADN = "CN=CertificateCreateSessionTest";
     private CA testx509ca;
 
@@ -134,6 +135,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     public static void setUpCryptoProvider() throws Exception {
         CryptoProviderTools.installBCProvider();
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        renewalKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
     @Before
@@ -539,7 +541,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(fp2);
         }
     }
-
+        
     @Test
     public void testInvalidSignatureAlg() throws CertificateProfileExistsException, AuthorizationDeniedException,
             CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException,
@@ -1157,6 +1159,62 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             caInfo.setSuspendedCrlPartitions(0);
             caAdminSession.editCA(alwaysAllowToken, caInfo);
             log.trace("<issueCertificateWithCrlPartition");
+        }
+    }
+    
+    /**
+     * This test checks that certificate renewal without key renewal is not possible when Enforce Key Renewal
+     * option is set. The test uses the same request twice with the same keys, which should throw an exception
+     * if Enforce Key Renewal is configured for the issuing CA. 
+     */
+    @Test
+    public void testEnforceKeyRenewal() throws Exception {
+        log.trace(">testEnforceKeyRenewal");
+        // Given:
+        CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+        boolean enforceKeyRenewal = cainfo.isDoEnforceKeyRenewal();
+        // Make sure that the CA requires key renewal
+        cainfo.setDoEnforceKeyRenewal(true);
+        String fingerprint1 = null;
+        String fingerprint2 = null;
+        try {
+            caSession.editCA(roleMgmgToken, cainfo);
+            // Create user
+            EndEntityInformation user = new EndEntityInformation();
+            user.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            user.setUsername("enforceKeyRenewalTestUser");
+            user.setDN("CN=CommonName,O=PrimeKey,C=SE");
+            user.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
+            // When:
+            // Create first certificate
+            SimpleRequestMessage req = new SimpleRequestMessage(renewalKeys.getPublic(), "enforceKeyRenewalTestUser", "foo123");
+            req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
+            X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+            assertNotNull("Failed to create cert", resp);
+            fingerprint1 = CertTools.getFingerprintAsString(resp.getCertificate());
+            // Create new certificate for same user, this should not work with the same keys
+            // Then:
+            try {
+                user.setStatus(EndEntityConstants.STATUS_NEW);
+                user.setPassword("foo123");
+                resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
+                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+                assertTrue("Should not create new certificate for this user with the same key", false);
+                fingerprint2 = CertTools.getFingerprintAsString(resp.getCertificate());
+            } catch (CesecoreException e) {
+                assertEquals("User 'enforceKeyRenewalTestUser' is not allowed to use same key as another certificate is using.", e.getMessage());
+                assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, e.getErrorCode());
+            }
+        } finally {
+            // Configure the CA as it was before the test
+            cainfo.setDoEnforceKeyRenewal(enforceKeyRenewal);
+            caSession.editCA(roleMgmgToken, cainfo);
+            internalCertStoreSession.removeCertificate(fingerprint1);
+            internalCertStoreSession.removeCertificate(fingerprint2);
+            log.trace("<testEnforceKeyRenewal");
         }
     }
 
