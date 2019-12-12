@@ -55,13 +55,20 @@ public class CabForumOrganizationIdentifier extends StandardCertificateExtension
         if (extInfo == null) {
             throw new CertificateExtensionException("End Entity must have \"extended information\" structure.");
         }
-        final ASN1EncodableVector vec = new ASN1EncodableVector();
-        vec.add(new DERPrintableString(extInfo.getCabfRegistrationSchemeIdentifier()));
-        vec.add(new DERPrintableString(extInfo.getCabfRegistrationCountry()));
-        if (!StringUtils.isBlank(extInfo.getCabfRegistrationStateOrProvince())) {
-            vec.add(new DERTaggedObject(false, 0, new DERPrintableString(extInfo.getCabfRegistrationStateOrProvince())));
+        if (StringUtils.isBlank(extInfo.getCabfOrganizationIdentifier())) {
+            throw new CertificateExtensionException("CA/B Forum Organization Identifier is blank or missing");
         }
-        vec.add(new DERUTF8String(extInfo.getCabfRegistrationReference()));
+        final ASN1EncodableVector vec = new ASN1EncodableVector();
+        try {
+            vec.add(new DERPrintableString(extInfo.getCabfRegistrationSchemeIdentifier()));
+            vec.add(new DERPrintableString(extInfo.getCabfRegistrationCountry()));
+            if (!StringUtils.isBlank(extInfo.getCabfRegistrationStateOrProvince())) {
+                vec.add(new DERTaggedObject(false, 0, new DERPrintableString(extInfo.getCabfRegistrationStateOrProvince())));
+            }
+            vec.add(new DERUTF8String(extInfo.getCabfRegistrationReference()));
+        } catch (IndexOutOfBoundsException | IllegalStateException e) {
+            throw new CertificateExtensionException("CA/B Forum Organization Identifier is malformed", e);
+        }
         return new DERSequence(vec);
     }
     
