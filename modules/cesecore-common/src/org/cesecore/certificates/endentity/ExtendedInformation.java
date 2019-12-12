@@ -456,6 +456,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * Returns the "Registration Scheme Identifier" part of the CA/B Forum Organization Identifier
      * @return Three letter "Registration Scheme Identifier"
+     * @throws IndexOutOfBoundsException if the string is malformed (too short)
      */
     public String getCabfRegistrationSchemeIdentifier() {
         return getCabfOrganizationIdentifier().substring(0, 3);
@@ -464,6 +465,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * Returns the "Registration Country" part of the CA/B Forum Organization Identifier
      * @return Two letter ISO country code
+     * @throws IndexOutOfBoundsException if the string is malformed (too short)
      */
     public String getCabfRegistrationCountry() {
         return getCabfOrganizationIdentifier().substring(3, 5);
@@ -473,7 +475,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * Returns the "Registration State of Province" part of the CA/B Forum Organization Identifier.
      * Not all countries have states or provinces.
      * @return Two letter state or province code, or null if absent.
-     * @throws IllegalStateException if the organization identifier is malformed
+     * @throws IllegalStateException if the organization identifier is malformed (missing the hyphen)
+     * @throws IndexOutOfBoundsException if the organization identifier is malformed (too short)
      */
     public String getCabfRegistrationStateOrProvince() {
         final String orgIdent = getCabfOrganizationIdentifier();

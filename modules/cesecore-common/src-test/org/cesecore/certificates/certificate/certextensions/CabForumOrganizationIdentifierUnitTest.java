@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
@@ -92,6 +93,28 @@ public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
         assertAsn1String("Registration State or Province", DERPrintableString.class, "CA", DERPrintableString.getInstance(tagged, false));
         assertAsn1String("Registration Reference", DERUTF8String.class, "123456", seqIter.next());
         assertFalse("Extranous items in sequence", seqIter.hasNext());
+    }
+    
+    /** Tries to generate a certificate with the CA/B Forum Organization Identifier extension configured, but without any value. */
+    @Test
+    public void missingCabfOrganizationIdentifier() throws Exception {
+        try {
+            makeCabfOrgIdentCertificate(null);
+            fail("Should throw");
+        } catch (CertificateExtensionException e) {
+            assertEquals("CA/B Forum Organization Identifier is blank or missing", e.getMessage());
+        }
+    }
+
+    /** Tries to generate a certificate with an invalid CA/B Forum Organization Identifier. */
+    @Test
+    public void malformedCabfOrganizationIdentifier() throws Exception {
+        try {
+            makeCabfOrgIdentCertificate("x");
+            fail("Should throw");
+        } catch (CertificateExtensionException e) {
+            assertEquals("CA/B Forum Organization Identifier is malformed", e.getMessage());
+        }
     }
 
     private X509Certificate makeCabfOrgIdentCertificate(final String cabfOrgIdent) throws Exception {
