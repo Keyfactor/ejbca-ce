@@ -135,8 +135,8 @@ public class CertificateRetrievalTest {
         CryptoProviderTools.installBCProvider();
         Certificate cert;
         AuthenticationToken adm = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        final HashSet<Certificate> m_certs = new HashSet<Certificate>();
-        m_certfps = new HashSet<String>();
+        final HashSet<Certificate> m_certs = new HashSet<>();
+        m_certfps = new HashSet<>();
         cert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
         m_certs.add(cert);
         m_certfps.add(CertTools.getFingerprintAsString(cert));
@@ -292,7 +292,7 @@ public class CertificateRetrievalTest {
         subcacert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
         cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
 
-        sernos = new ArrayList<BigInteger>();
+        sernos = new ArrayList<>();
         sernos.add(CertTools.getSerialNumber(subcacert));
         sernos.add(CertTools.getSerialNumber(rootcacert));
         certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(CertTools.getSubjectDN(rootcacert), sernos);
@@ -303,7 +303,7 @@ public class CertificateRetrievalTest {
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 2);
 
-        sernos = new ArrayList<BigInteger>();
+        sernos = new ArrayList<>();
         sernos.add(CertTools.getSerialNumber(cert));
         certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(CertTools.getSubjectDN(subcacert), sernos);
         assertNotNull("failed to list certs", certfps);
@@ -363,11 +363,11 @@ public class CertificateRetrievalTest {
     public void test08LoadRevocationInfo() throws Exception {
         log.trace(">test08LoadRevocationInfo()");
 
-        ArrayList<CertificateStatus> revstats = new ArrayList<CertificateStatus>();
+        ArrayList<CertificateStatus> revstats = new ArrayList<>();
         Certificate rootcacert;
         Certificate subcacert;
 
-        ArrayList<BigInteger> sernos = new ArrayList<BigInteger>();
+        ArrayList<BigInteger> sernos = new ArrayList<>();
         rootcacert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
         subcacert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
         sernos.add(CertTools.getSerialNumber(rootcacert));

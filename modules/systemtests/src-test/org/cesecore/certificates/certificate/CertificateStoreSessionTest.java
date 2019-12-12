@@ -97,13 +97,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     @Before
     public void setUp() throws Exception {
-    	super.setUpAuthTokenAndRole(null, "CertStoreSessionTest", Arrays.asList(StandardRules.CAACCESSBASE.resource()), null);
+    	setUpAuthTokenAndRole(null, "CertStoreSessionTest", Arrays.asList(StandardRules.CAACCESSBASE.resource()), null);
     }
 
     @After
     public void tearDown() throws Exception {
         internalCertStoreSession.removeCertificatesBySubject(SELFCERT_DN);
-    	super.tearDownRemoveRole();
+    	tearDownRemoveRole();
     }
 
     @Test

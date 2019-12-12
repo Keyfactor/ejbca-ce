@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -177,13 +184,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
  * <p>
@@ -330,7 +330,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         try {
             //rootCA a rootCA
             rootCA = CaTestUtils.createTestX509CA(rootCaDn, PASSWORD.toCharArray(), false);
-            CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             caSession.addCA(intAdmin, rootCA);
             X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(cacert), "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
@@ -1083,7 +1082,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             user1.setEndEntityProfileName(KEY_RECOVERY_EEP);
             user1.setCertificateProfileName("ENDUSER");
             ejbcaraws.editUser(user1);
-            final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
             final int eepId = endEntityProfileSession.getEndEntityProfileId(KEY_RECOVERY_EEP);
             final int caId = caSession.getCAInfo(intAdmin, getAdminCAName()).getCAId();
             // generate 4 certificates

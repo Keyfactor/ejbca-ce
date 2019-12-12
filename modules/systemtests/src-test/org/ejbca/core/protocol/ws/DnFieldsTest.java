@@ -123,7 +123,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        super.cleanUpAdmins(wsadminRoleName);
+        cleanUpAdmins(wsadminRoleName);
         
         if (endEntityManagementSession.existsUser(TEST_USERNAME)) {
             // Remove user
