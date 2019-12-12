@@ -130,7 +130,7 @@ public class CaIDCacheBean {
         }
     }
 
-    /** @return return the query results as a List<Integer>. */
+    /** @return return the query results as a List of Object[], where in each list item, Object[0] is the caID and Object[1] the CA name. */
     @SuppressWarnings("unchecked")
     private List<Object[]> findAllCaIdNames() {
         final Query query = entityManager.createQuery("SELECT a.caId,a.name FROM CAData a");
