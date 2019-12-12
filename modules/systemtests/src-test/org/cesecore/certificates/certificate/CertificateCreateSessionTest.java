@@ -1202,8 +1202,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 user.setPassword("foo123");
                 resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
                         org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
-                assertTrue("Should not create new certificate for this user with the same key", false);
                 fingerprint2 = CertTools.getFingerprintAsString(resp.getCertificate());
+                assertTrue("Should not create new certificate for this user with the same key", false);
             } catch (CesecoreException e) {
                 assertEquals("User 'enforceKeyRenewalTestUser' is not allowed to use same key as another certificate is using.", e.getMessage());
                 assertEquals(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS, e.getErrorCode());
