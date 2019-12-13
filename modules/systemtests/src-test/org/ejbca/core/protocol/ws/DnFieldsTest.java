@@ -12,16 +12,17 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -40,16 +41,9 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
-import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
-import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -70,6 +64,8 @@ public class DnFieldsTest extends CommonEjbcaWs {
     
     private static final String PROFILE_NAME = "TW";
     private static final String TEST_USERNAME = "tester";
+    private static final String TEST_SUBJECTDN = "E=test@example.com,CN=DnFieldsTest,C=SE";
+    private static final String TEST_SUBJECTALTNAME = "rfc822name=test@example.com";
     
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -77,7 +73,8 @@ public class DnFieldsTest extends CommonEjbcaWs {
     
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DnFieldsTest"));
     
-    private static final String wsadminRoleName = "WsTEstRole";
+
+
     
     private static List<File> fileHandles = new ArrayList<>();
 
@@ -85,7 +82,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
     @BeforeClass
     public static void beforeClass() throws Exception {
         adminBeforeClass();
-        fileHandles = setupAccessRights(wsadminRoleName);
+        fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
 
     }
     
@@ -123,7 +120,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        cleanUpAdmins(wsadminRoleName);
+        cleanUpAdmins(WS_ADMIN_ROLENAME);
         
         if (endEntityManagementSession.existsUser(TEST_USERNAME)) {
             // Remove user
@@ -139,10 +136,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
     }
     
     @Test
-    public void testEmailInBothSanAndDn() throws InvalidAlgorithmParameterException, AuthorizationDeniedException_Exception,
-            EjbcaException_Exception, IllegalQueryException_Exception, ApprovalException_Exception, NotFoundException_Exception,
-            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException, OperatorCreationException, EndEntityProfileNotFoundException_Exception {
-
+    public void testEmailInBothSanAndDn() throws Exception {
         UserMatch um = new UserMatch(UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_TYPE_EQUALS, "tomcat");
         for (UserDataVOWS ud : ejbcaraws.findUser(um)) {
             log.info("User: " + ud.getSubjectDN());
@@ -156,15 +150,19 @@ public class DnFieldsTest extends CommonEjbcaWs {
         user.setUsername(TEST_USERNAME);
         user.setPassword("foo123");
         user.setClearPwd(false);
-        user.setSubjectDN("E=boss@fire.com,CN=Tester,C=SE");
+        user.setSubjectDN(TEST_SUBJECTDN);
         user.setCaName(caName);
-        user.setSubjectAltName("rfc822name=boss@fire.com");
+        user.setSubjectAltName(TEST_SUBJECTALTNAME);
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(PROFILE_NAME);
         user.setCertificateProfileName(PROFILE_NAME);
-        ejbcaraws.certificateRequest(user, p10, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE)
-                .getRawData();
-
+        final CertificateResponse resp = ejbcaraws.certificateRequest(user, p10, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        assertNotNull("Response was null", resp);
+        assertNotNull("Data was null", resp.getRawData());
+        final X509Certificate cert = resp.getCertificate();
+        assertNotNull("Certificate was null", cert);
+        assertEquals("Wrong Subject DN.", TEST_SUBJECTDN, CertTools.getSubjectDN(cert));
+        assertEquals("Wrong Subject Alternative Name.", TEST_SUBJECTALTNAME, CertTools.getSubjectAlternativeName(cert));
     }
 
     @Override
