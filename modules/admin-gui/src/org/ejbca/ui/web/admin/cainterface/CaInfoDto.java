@@ -20,6 +20,8 @@ import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
 /**
+ * Wrapper class for holding CaInfo properties.
+ *
  * @version $Id$
  */
 public class CaInfoDto {
