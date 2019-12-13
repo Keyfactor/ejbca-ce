@@ -830,9 +830,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         Extensions exts = extgen.generate();
         attr.add(new DERSet(exts));
         attributes.add(new DERSequence(attr));
-        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+        return CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(attributes), keys.getPrivate(), null);
-        return pkcs10;
     }
 
     /**
@@ -1745,7 +1744,6 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                 CertificateHelper.RESPONSETYPE_PKCS7);
         assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
         CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
-        assertTrue(cmsSignedData != null);
         Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
         assertTrue(certStore.getMatches(null).size() == 1);
 
@@ -2011,8 +2009,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             cert1 = genCerts.get(0);
             assertEquals(CertificateStatus.OK, certificateStoreSession.getStatus(CertTools.getIssuerDN(cert1), CertTools.getSerialNumber(cert1)));
 
+            assertNotNull("Missing notAfter in cert1", CertTools.getNotAfter(cert1));
             Date testDate = new Date((new Date()).getTime() + (24 * 60 * 60 * 1000)); // 1 day from now
-            assertTrue(CertTools.getNotAfter(cert1).before(testDate));
+            assertTrue("cert1 expiration date was too far in the future", CertTools.getNotAfter(cert1).before(testDate));
 
             List<Certificate> certs = ejbcaraws.getCertificatesByExpirationTime(1, 1000); // get certs that will expire in 1 day
             log.debug("Found " + certs.size() + " certificates that will expire within one day");
@@ -2055,7 +2054,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                 cert2 = genCerts.get(1);
             }
             assertEquals(CertificateStatus.OK, certificateStoreSession.getStatus(CertTools.getIssuerDN(cert2), CertTools.getSerialNumber(cert2)));
-            assertTrue(CertTools.getNotAfter(cert2).before(testDate));
+            assertNotNull("Missing notAfter in cert2", CertTools.getNotAfter(cert2));
+            assertTrue("cert2 expiration date was too far in the future", CertTools.getNotAfter(cert2).before(testDate));
 
             // get certs that will expire in 1 day and were issued by testCaForExpirationTime
             certs = ejbcaraws.getCertificatesByExpirationTimeAndIssuer(1, cainfo.getSubjectDN(), 1000);
