@@ -138,7 +138,7 @@ public class OcspKeyRenewalTest {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         // - Disable any existing AuthenticationKeyBinding.
         final List<Integer> existingAuthenticationKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingIds(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
-        for (final Integer internalKeyBindingId : existingAuthenticationKeyBindings) {
+        for (final int internalKeyBindingId : existingAuthenticationKeyBindings) {
             final InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId);
             if (InternalKeyBindingStatus.ACTIVE.equals(internalKeyBindingInfo.getStatus())) {
                 final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
@@ -149,7 +149,7 @@ public class OcspKeyRenewalTest {
                 log.info("Temporarly disabling existing AuthenticationKeyBinding with id " + internalKeyBindingId + " for the duration of this test.");
                 internalKeyBinding.setStatus(InternalKeyBindingStatus.DISABLED);
                 internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
-                disabledAuthenticationKeyBindings.add(Integer.valueOf(internalKeyBindingId));
+                disabledAuthenticationKeyBindings.add(internalKeyBindingId);
             }
         }
         
@@ -342,9 +342,7 @@ public class OcspKeyRenewalTest {
                     log.info("Re-enabling existing AuthenticationKeyBinding with id " + internalKeyBindingId + " for the duration of this test.");
                     internalKeyBinding.setStatus(InternalKeyBindingStatus.ACTIVE);
                     internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
-                } catch (InternalKeyBindingNameInUseException e) {
-                    log.error(e.getMessage(), e);
-                } catch (AuthorizationDeniedException e) {
+                } catch (InternalKeyBindingNameInUseException | AuthorizationDeniedException e) {
                     log.error(e.getMessage(), e);
                 }
             }
