@@ -43,6 +43,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -287,7 +288,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void tearDown() throws Exception {
         super.tearDown();
         // Restore WS admin access
-        setAccessRulesForWsAdmin(Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        setAccessRulesForWsAdmin(Collections.singletonList(StandardRules.ROLE_ROOT.resource()), null);
         // Restore key recovery, end entity profile limitations etc
         if (originalGlobalConfiguration!=null) {
             globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalConfiguration);
@@ -861,7 +862,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         int caId = 0;
         int approvalProfileId = 0;
         int roleId = 0;
-        X509Certificate adminCert = null;
         try {
             AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
             approvalProfile.setNumberOfApprovalsRequired(2);
@@ -918,7 +918,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             internalCertificateStoreSession.removeCertificate(adminUsername);
             approvalProfileSession.removeApprovalProfile(intAdmin, approvalProfileId);
             CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caId));
-            internalCertificateStoreSession.removeCertificate(adminCert);
             roleSession.deleteRoleIdempotent(intAdmin, roleId);
             removeTestCA();
         }
@@ -929,37 +928,30 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void test20KeyRecoverNewest() throws Exception {
         log.trace(">test20KeyRecoverNewest");
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean krenabled = gc.getEnableKeyRecovery();
-        if (krenabled == true) {
+        if (gc.getEnableKeyRecovery()) {
             gc.setEnableKeyRecovery(false);
             globalConfigurationSession.saveConfiguration(intAdmin, gc);
         }
 
-        boolean trows = false;
         try {
             // This should throw an exception that key recovery is not enabled
             ejbcaraws.keyRecoverNewest(CA1_WSTESTUSER1);
+            fail("Should throw");
         } catch (EjbcaException_Exception e) {
-            trows = true;
-            // e.printStackTrace();
             assertEquals(e.getMessage(), "Keyrecovery have to be enabled in the system configuration in order to use this command.");
         }
-        assertTrue(trows);
 
         // Set key recovery enabled
         gc.setEnableKeyRecovery(true);
         globalConfigurationSession.saveConfiguration(intAdmin, gc);
 
-        trows = false;
         try {
             // This should throw an exception that the user does not exist
             ejbcaraws.keyRecoverNewest("sdfjhdiuwerw43768754###");
+            fail("Should throw");
         } catch (NotFoundException_Exception e) {
-            trows = true;
-            // e.printStackTrace();
             assertEquals(e.getMessage(), "Wrong username or password");
         }
-        assertTrue(trows);
 
         // Add a new End entity profile, KEYRECOVERY
         EndEntityProfile profile = new EndEntityProfile();
@@ -1107,7 +1099,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
                 user1.setEndEntityProfileName(KEY_RECOVERY_EEP);
                 user1.setCertificateProfileName("ENDUSER");
-                setAccessRulesForWsAdmin(Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+                setAccessRulesForWsAdmin(Collections.singletonList(StandardRules.ROLE_ROOT.resource()), null);
                 ejbcaraws.editUser(user1);
                 setAccessRulesForWsAdmin(Arrays.asList(
                         AccessRulesConstants.ROLE_ADMINISTRATOR,
@@ -1946,8 +1938,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
         // Remove any residues from earlier test runs
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-        if(ctid != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        if (ctid != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid);
         }
 
         try {
@@ -1964,7 +1956,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             assertNotNull("Creating a new SoftCryptoToken failed", ctid);
-            CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
+            CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid);
 
             Properties ctproperties = token.getCryptoTokenProperties();
             assertEquals(3, ctproperties.keySet().size());
@@ -1974,14 +1966,14 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertEquals("SoftCryptoToken", token.getType());
             assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
             assertTrue(token.isActive());
-            cryptoTokenManagementSession.deactivate(intAdmin, ctid.intValue());
-            assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
-            cryptoTokenManagementSession.activate(intAdmin, ctid.intValue(), "1234".toCharArray());
-            assertTrue(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid.intValue()));
+            cryptoTokenManagementSession.deactivate(intAdmin, ctid);
+            assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid));
+            cryptoTokenManagementSession.activate(intAdmin, ctid, "1234".toCharArray());
+            assertTrue(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid));
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-            if(ctid != null) {
-                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+            if (ctid != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid);
             }
         }
         log.trace("<test70CreateSoftCryptoToken()");
@@ -1997,8 +1989,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
         // Remove any residues from earlier test runs
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-        if(ctid != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+        if (ctid != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid);
         }
 
         try {
@@ -2017,15 +2009,15 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
             String keyAlias = "testWSGeneratedKeys";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "RSA1024");
-            List<String> keyAliases = cryptoTokenManagementSession.getKeyPairAliases(intAdmin, ctid.intValue());
+            List<String> keyAliases = cryptoTokenManagementSession.getKeyPairAliases(intAdmin, ctid);
             assertTrue(keyAliases.contains(keyAlias));
-            KeyPairInfo keyInfo = cryptoTokenManagementSession.getKeyPairInfo(intAdmin, ctid.intValue(), keyAlias);
+            KeyPairInfo keyInfo = cryptoTokenManagementSession.getKeyPairInfo(intAdmin, ctid, keyAlias);
             assertEquals("RSA", keyInfo.getKeyAlgorithm());
             assertEquals("1024", keyInfo.getKeySpecification());
         } finally {
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-            if(ctid != null) {
-                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
+            if (ctid != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid);
             }
         }
         log.trace("<test71GenerateCryptoTokenKeys()");
@@ -2044,7 +2036,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
         Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
         if (cryptoTokenId != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, cryptoTokenId.intValue());
+            cryptoTokenManagementSession.deleteCryptoToken(intAdmin, cryptoTokenId);
         }
         try {
             // Create CryptoToken
@@ -2104,7 +2096,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             }
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
             if (cryptoTokenId != null) {
-                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, cryptoTokenId.intValue());
+                cryptoTokenManagementSession.deleteCryptoToken(intAdmin, cryptoTokenId);
             }
         }
         log.trace("<test72CreateCA()");
@@ -2164,7 +2156,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
             // Create a new role
             log.info("Creating new role: "+rolename);
-            final Role role = roleSession.persistRole(intAdmin, new Role(null, rolename, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
+            final Role role = roleSession.persistRole(intAdmin, new Role(null, rolename, Collections.singletonList(StandardRules.ROLE_ROOT.resource()), null));
             List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId());
             assertTrue("New role "+rolename+" should have been empty.", roleMembers.isEmpty());
 
@@ -2234,7 +2226,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     @Test
     public void test75CertificateRequestWithOnlyAltNames() throws Exception {
         final String username = "wsRequestOnlyAltNames" + new SecureRandom().nextLong();
-        final String eepName = username;
+        final String eeProfileName = username;
         // Generate a CSR
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=NOUSED"),
@@ -2245,7 +2237,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             // Setup an End Entity Profile that don't require any Subject DN and has a DNSName field
             final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
             endEntityProfile.setRequired(DnComponents.COMMONNAME, 0, false);
-            endEntityProfileSession.addEndEntityProfile(intAdmin, eepName, endEntityProfile);
+            endEntityProfileSession.addEndEntityProfile(intAdmin, eeProfileName, endEntityProfile);
             // Set some user data
             final String SUBJECT_DN = "";
             final String SUBJECT_AN = "dNSName="+username+".primekey.se";
@@ -2259,7 +2251,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             userDataVOWS.setSubjectAltName(SUBJECT_AN);
             userDataVOWS.setStatus(EndEntityConstants.STATUS_NEW);
             userDataVOWS.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-            userDataVOWS.setEndEntityProfileName(eepName);
+            userDataVOWS.setEndEntityProfileName(eeProfileName);
             userDataVOWS.setCertificateProfileName("ENDUSER");
             // Issue a certificate
             final CertificateResponse certificateResponse = ejbcaraws.certificateRequest(userDataVOWS, b64csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
@@ -2285,7 +2277,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             }
             deleteUser(username);
             try {
-                endEntityProfileSession.removeEndEntityProfile(intAdmin, eepName);
+                endEntityProfileSession.removeEndEntityProfile(intAdmin, eeProfileName);
             } catch (AuthorizationDeniedException e) {
                 log.debug("Error during cleanup: " + e.getMessage());
             }
@@ -2308,7 +2300,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             ejbcaraws.importCaCert(caname, importFile);
             assertTrue("Imported CVCA must exists.", caSession.existsCa(caname));
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
-            assertEquals("CVCA must be a CVC CA.", cainfo.getCAType(), CAInfo.CATYPE_CVC);
+            assertEquals("CVCA must be a CVC CA.", CAInfo.CATYPE_CVC, cainfo.getCAType());
             assertCertificateEquals("The imported CA certificate chain must match the CA certificate chain after import.", importFile, cainfo);
 
             // Exceptions: Import of the same CA again must throw a CAExistsException.
@@ -2386,7 +2378,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             ejbcaraws.importCaCert(caname, importFile);
             assertTrue("Imported CSCA must exists.", caSession.existsCa(caname));
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
-            assertEquals("CSCA must be a X.509 CA.", cainfo.getCAType(), CAInfo.CATYPE_X509);
+            assertEquals("CSCA must be a X.509 CA.", CAInfo.CATYPE_X509, cainfo.getCAType());
             assertCertificateEquals("The imported CA certificate chain must match the existing CA certificate chain after import.", importFile, cainfo);
 
             // Exceptions: Import of the same CA again must throw a CAExistsException.
@@ -2575,7 +2567,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 }
                 cert = (X509Certificate) keyStore.getCertificate(alias);
             }
-            final List<Certificate> certificates = Arrays.asList(new Certificate[] { cert });
+            final List<Certificate> certificates = Collections.singletonList(cert);
             log.info(certificates.size() + " certs.\n" + new String(CertTools.getPemFromCertificateChain(certificates)));
             X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
             String resultingSubjectDN = CeSecoreNameStyle.INSTANCE.toString(x500name);

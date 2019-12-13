@@ -135,10 +135,8 @@ public class CertificateRetrievalTest {
         CryptoProviderTools.installBCProvider();
         Certificate cert;
         AuthenticationToken adm = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        final HashSet<Certificate> m_certs = new HashSet<>();
         m_certfps = new HashSet<>();
         cert = CertTools.getCertfromByteArray(testrootcert, Certificate.class);
-        m_certs.add(cert);
         m_certfps.add(CertTools.getFingerprintAsString(cert));
         // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
         rootCaFp = CertTools.getFingerprintAsString(cert);
@@ -151,7 +149,6 @@ public class CertificateRetrievalTest {
                                                          CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
-            m_certs.add(cert);
             m_certfps.add(CertTools.getFingerprintAsString(cert));
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             subCaFp = CertTools.getFingerprintAsString(cert);
@@ -163,7 +160,6 @@ public class CertificateRetrievalTest {
                                                          CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
-            m_certs.add(cert);
             m_certfps.add(CertTools.getFingerprintAsString(cert));
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             endEntityFp = CertTools.getFingerprintAsString(cert);
