@@ -25,6 +25,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -321,7 +322,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWs {
         endEntityManagementSession.addUser(intadmin, userData, true);
 
         File f = BatchCreateTool.createUser(intadmin, new File(P12_FOLDER_NAME), adminusername1);
-        fileHandles.addAll(Arrays.asList(f));
+        fileHandles.addAll(Collections.singletonList(f));
         final Role role = roleSession.getRole(intadmin, null, getRoleName());
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1,
@@ -332,8 +333,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWs {
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream(TEST_NONADMIN_FILE), PASSWORD.toCharArray());
         
-        Set<Principal> principals = new HashSet<>(Arrays.asList(admincert1.getSubjectX500Principal()));
-        Set<X509Certificate> credentials = new HashSet<>(Arrays.asList(admincert1));
+        Set<Principal> principals = new HashSet<>(Collections.singletonList(admincert1.getSubjectX500Principal()));
+        Set<X509Certificate> credentials = new HashSet<>(Collections.singletonList(admincert1));
         admin1 = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
     }
 
