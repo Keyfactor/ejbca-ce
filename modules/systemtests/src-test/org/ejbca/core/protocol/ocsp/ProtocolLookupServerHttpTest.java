@@ -285,7 +285,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         RevokedStatus rev = (RevokedStatus) status;
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        assertEquals("Wrong revocation reason", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
     }
 
     /**
@@ -535,6 +535,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
             certs = KeyTools.getCertChain(keystore, alias);
         }
         
+        assertNotNull("No trusted cert found in truststore", certs);
         trustks.setCertificateEntry("trusted", certs[certs.length - 1]);
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
         trustManagerFactory.init(trustks);
