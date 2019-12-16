@@ -36,6 +36,8 @@ superadmin.dn=CN=${superadmin.cn}
 # certificate validity. The validity format should be ISO 8601 date that is:
 # [yyyy-MM-dd HH:mm:ssZZ]: '2019-12-10 11:56:19+01:00' 
 # or (*y *mo *d *h *m *s) - y=365 days, mo=30 days
+# Setting a value here will result in creation of an EE profile and a Certificate Profile specifically used 
+# for the purpose of changing the default super admin user's validity.  
 # superadmin.validity=2y
 
 # The password used to protect the generated super administrator P12 keystore (to be imported in browser).

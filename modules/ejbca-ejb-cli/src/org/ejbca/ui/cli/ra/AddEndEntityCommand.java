@@ -91,9 +91,9 @@ public class AddEndEntityCommand extends BaseRaCommand {
     private static final String EMAIL_KEY = "--email";
     private static final String CERT_PROFILE_KEY = "--certprofile";
     private static final String EE_PROFILE_KEY = "--eeprofile";
-    private static final String SUPER_ADMIN_VALIDITY = "--superadminvalidity";
-    private static final String SUPERADMIN_CERTPROFILE_NAME = "SuperAdminCP";
-    private static final String SUPERADMIN_EEPROFILE_NAME = "SuperAdminEE";
+    private static final String VALIDITY = "--validity";
+    private static final String CLIENT_AUTHENTICATION_CERTPROFILE_NAME = "ClientAuthenticationCP";
+    private static final String CLIENT_AUTHENTICATION_EEPROFILE_NAME = "ClientAuthenticationEE";
     
     private final GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
             GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -127,8 +127,9 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 "The certificate profile, will default to End User."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The end entity profile, will default to Empty."));
-        registerParameter(new Parameter(SUPER_ADMIN_VALIDITY, "Super admin validity", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "The validity of super admin."));
+        registerParameter(new Parameter(VALIDITY, "Validity", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The validity of the end user certificate. Providing this option will result in creation of an EE profile and a Certificate Profile"
+                + "which are going to be used for custom end entity's validity."));
     }
 
     @Override
@@ -151,7 +152,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
         final String email = parameters.get(EMAIL_KEY);
         final EndEntityType type;
         final String tokenString = parameters.get(TYPE_KEY);
-        final String superAdminValidity = parameters.get(SUPER_ADMIN_VALIDITY);
+        final String superAdminValidity = parameters.get(VALIDITY);
         
         try {
 
@@ -181,7 +182,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             CertificateProfile clonedCertProfile = new CertificateProfile(certificatetypeid);
             clonedCertProfile.setEncodedValidity(superAdminValidity);
             try {
-                certificatetypeid = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAuthenticationToken(), SUPERADMIN_CERTPROFILE_NAME, clonedCertProfile);
+                certificatetypeid = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAuthenticationToken(), CLIENT_AUTHENTICATION_CERTPROFILE_NAME, clonedCertProfile);
             } catch (CertificateProfileExistsException | AuthorizationDeniedException e) {
                 getLogger().error("Failed to create the certificate profile for the modified super admin validity of " + superAdminValidity);
                 error = true;
@@ -209,7 +210,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             clonedEEProfile.setAvailableCertificateProfileIds(defaultAvailableCertProfileIds);
             clonedEEProfile.setDefaultCertificateProfile(certificatetypeid);
             try {
-                endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(getAuthenticationToken(), SUPERADMIN_EEPROFILE_NAME, clonedEEProfile);
+                endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(getAuthenticationToken(), CLIENT_AUTHENTICATION_EEPROFILE_NAME, clonedEEProfile);
             } catch (EndEntityProfileExistsException | AuthorizationDeniedException e) {
                 getLogger().error("Failed to create the end entity profile for the modified super admin validity of " + superAdminValidity);
                 error = true;
