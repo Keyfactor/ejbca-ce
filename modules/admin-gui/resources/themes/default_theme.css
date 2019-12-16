@@ -578,6 +578,10 @@ table.edit tr td {
 .column-align-right {
 	text-align: right;
 }
+.column-editca {
+	width: 16.5%;
+	text-align: left;
+}
 
 
 /* Titles (and Sections) */
