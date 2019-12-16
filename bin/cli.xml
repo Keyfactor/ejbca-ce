@@ -128,7 +128,7 @@ appserver.home         : ${appserver.home}
         <condition property="sa.validity" value="${superadmin.validity}" else="">
            	<isset property="superadmin.validity" />
         </condition>
-        <condition property="sa.validity.flag" value="--superadminvalidity" else="">
+        <condition property="sa.validity.flag" value="--validity" else="">
            	<isset property="superadmin.validity" />
         </condition>
 		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;${superadmin.dn}&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype} ${sa.validity.flag} ${sa.validity}"/>
