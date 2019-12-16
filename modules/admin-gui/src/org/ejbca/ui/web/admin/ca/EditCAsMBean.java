@@ -1420,8 +1420,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String receiveResponse() {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
-        Date cafuturerolloverdate = null;
-
         try {
             cadatahandler.receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
             if (rolloverNotBefore != null) {
