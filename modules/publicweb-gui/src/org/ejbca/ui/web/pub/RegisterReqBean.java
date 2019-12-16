@@ -575,6 +575,7 @@ public class RegisterReqBean {
         }
 
         final int certProfileId = getCertificateProfileId();
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
 
         if (endEntityManagementSession.existsUser(username)) {
             errors.add("A user with that name exists already");
@@ -600,7 +601,7 @@ public class RegisterReqBean {
         try {
             endEntity = endEntityManagementSession.canonicalizeUser(endEntity);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                eeprofile.doesUserFulfillEndEntityProfile(endEntity, false);
+                eeprofile.doesUserFulfillEndEntityProfile(endEntity, certProfile, false);
 
             }
         } catch (EjbcaException e) {

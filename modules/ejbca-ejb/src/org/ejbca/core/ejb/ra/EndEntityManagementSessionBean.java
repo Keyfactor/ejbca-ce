@@ -219,7 +219,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void assertAuthorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCA(admin, caid)) {
             final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid), admin.toString());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, details);
@@ -239,7 +239,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final int caId) throws AuthorizationDeniedException {
         if (!isAuthorizedToEndEntityProfile(admin, endEntityProfileId, accessRule)) {
             final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(endEntityProfileId), admin.toString());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caId), null, null, details);
@@ -388,16 +388,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String username = endEntity.getUsername();
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
             try {
                 final String dirattrs = endEntity.getExtendedInformation() != null ? endEntity.getExtendedInformation()
                         .getSubjectDirectoryAttributes() : null;
                 profile.doesUserFulfillEndEntityProfile(username, endEntity.getPassword(), dn, altName, dirattrs, email,
                         endEntity.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
                         type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), caid,
-                        endEntity.getExtendedInformation());
+                        endEntity.getExtendedInformation(), certProfile);
             } catch (EndEntityProfileValidationException e) {
                 final String msg = intres.getLocalizedMessage("ra.errorfulfillprofile", endEntityProfileName, dn, e.getMessage());
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
@@ -499,7 +500,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // Send notifications, if they should be sent
                 // This is an add user request, if there was an approval involved in add user, it will have been added to extendedInformation
                 int approvalRequestID = 0;
-                if ( (endEntity != null) && (endEntity.getExtendedInformation() != null) && (endEntity.getExtendedInformation().getAddEndEntityApprovalRequestId() != null) ) {
+                if (endEntity.getExtendedInformation() != null && endEntity.getExtendedInformation().getAddEndEntityApprovalRequestId() != null) {
                     approvalRequestID = endEntity.getExtendedInformation().getAddEndEntityApprovalRequestId().intValue();
                 }
                 sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW, approvalRequestID, lastApprovingAdmin, null);
@@ -510,13 +511,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         log.debug("Type ("+type.getHexValue()+") does not contain SecConst.USER_PRINT, no print job created.");
                     }
                 }
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", intres.getLocalizedMessage("ra.addedentity", username));
                 details.putAll(endEntity.getDetailMap());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             } catch (EndEntityExistsException e) {
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", intres.getLocalizedMessage("ra.errorentityexist", username));
                 details.put("error", e.getMessage());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -525,7 +526,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             } catch (Exception e) {
                 final String msg = intres.getLocalizedMessage("ra.erroraddentity", username);
                 log.error(msg, e);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -738,7 +739,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
-            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
+            ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         final int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
         final int caid = endEntityInformation.getCAId();
         String username = endEntityInformation.getUsername();
@@ -781,39 +782,37 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         // if required, we merge the existing user dn into the dn provided by the web service.
         if (fromWebService && profile.getAllowMergeDnWebServices()) {
-            if (userData != null) {
-                final Map<String, String> sdnMap = new HashMap<String, String>();
-                if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
-                    sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
-                }
-                try {
-                    // SubjectDN is not mandatory so
-                    if (dn == null) {
-                        dn = "";
-                    }
-                    dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
-                } catch (InvalidNameException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
-                    }
+            final Map<String, String> sdnMap = new HashMap<>();
+            if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+                sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
+            }
+            try {
+                // SubjectDN is not mandatory so
+                if (dn == null) {
                     dn = "";
                 }
-                final Map<String, String> sanMap = new HashMap<String, String>();
-                if (profile.getUse(DnComponents.RFC822NAME, 0)) {
-                    sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
+                dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
+            } catch (InvalidNameException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
                 }
-                try {
-                    // SubjectAltName is not mandatory so
-                    if (altName == null) {
-                        altName = "";
-                    }
-                    altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
-                } catch (InvalidNameException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
-                    }
+                dn = "";
+            }
+            final Map<String, String> sanMap = new HashMap<>();
+            if (profile.getUse(DnComponents.RFC822NAME, 0)) {
+                sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
+            }
+            try {
+                // SubjectAltName is not mandatory so
+                if (altName == null) {
                     altName = "";
                 }
+                altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
+            } catch (InvalidNameException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
+                }
+                altName = "";
             }
         }
         altName = getAddDnsFromCnToAltName(dn, altName, profile);
@@ -827,6 +826,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
             try {
                 String dirattrs = null;
                 if (ei != null) {
@@ -836,14 +836,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 if (!profile.useAutoGeneratedPasswd() && StringUtils.isNotEmpty(newpassword)) {
                     profile.doesUserFulfillEndEntityProfile(username, endEntityInformation.getPassword(), dn, altName, dirattrs, endEntityInformation.getEmail(),
                             endEntityInformation.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
-                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caid, ei);
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caid, ei, certProfile);
                 } else {
                     profile.doesUserFulfillEndEntityProfileWithoutPassword(username, dn, altName, dirattrs, endEntityInformation.getEmail(),
                             endEntityInformation.getCertificateProfileId(), type.contains(EndEntityTypes.KEYRECOVERABLE),
-                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caid, ei);
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caid, ei, certProfile);
                 }
             } catch (EndEntityProfileValidationException e) {
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", intres.getLocalizedMessage("ra.errorfulfillprofile", Integer.valueOf(endEntityProfileId), dn, e.getMessage()));
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
@@ -989,7 +989,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // Send notification if it should be sent.
             sendNotification(admin, notificationEndEntityInformation, newstatus, approvalRequestId, lastApprovingAdmin, null);
             // Logging details object
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             // Make a diff of what was changed to we can log it
             // We need to set times so that diffing is made properly
             endEntityInformation.setTimeModified(new Date(userData.getTimeModified()));
@@ -1022,7 +1022,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("ra.erroreditentity", username);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -1079,13 +1079,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             entityManager.remove(data1);
             final String msg = intres.getLocalizedMessage("ra.removedentity", username);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                     caIdLog, null, username, details);
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("ra.errorremoveentity", username);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -1359,7 +1359,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         data1.setStatus(status);
         data1.setTimeModified(timeModified.getTime());
         final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(status));
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                 String.valueOf(caid), null, username, details);
@@ -1444,7 +1444,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 data.setTimeModified(now.getTime());
             }
             final String msg = intres.getLocalizedMessage("ra.editpwdentity", username);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, username, details);
@@ -1473,7 +1473,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         data.setCaId(newCAId);
 
         final String msg = intres.getLocalizedMessage("ra.updatedentitycaid", username, oldCAId, newCAId);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
             String.valueOf(oldCAId), null, username, details);
@@ -1691,7 +1691,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new IllegalStateException("This should never happen", e);
         }
         final String msg = intres.getLocalizedMessage("ra.revokedentity", username);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         auditSession.log(EjbcaEventTypes.RA_REVOKEDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                 String.valueOf(caid), null, username, details);
@@ -1959,7 +1959,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         final List<UserData> queryResult = query.getResultList();
-        final List<EndEntityInformation> ret = new ArrayList<EndEntityInformation>(queryResult.size());
+        final List<EndEntityInformation> ret = new ArrayList<>(queryResult.size());
         for (UserData userData : queryResult) {
             ret.add(userData.toEndEntityInformation());
         }
