@@ -162,7 +162,7 @@ public interface PublisherSession {
      * To avoid unnecessary database lookups, only use this method where the CertificateData object isn't immediately available. 
      * @param admin administrator performing the operation.
      * @param publisherids a Collection (Integer) of publisher IDs.
-     * @param certWrapper containing certificate to publish.
+     * @param fingerprint the fingerprint of the certificate to look up in the database and store to publishers (publisherids).
      * @param password end entity password, can be null
      * @param userDN DN to be used when creating a certificate.
      * @param extendedinformation extended end entity information, can be null.
