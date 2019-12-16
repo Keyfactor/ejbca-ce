@@ -20,6 +20,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -2284,6 +2285,28 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     log.debug("Not using standard certificate extensions: " + s);
                 }
             }
+        }
+        return ret;
+    }
+    
+    /** Returns the names of all allowed built-in extensions in the profile. The keys are used in the ExtendedInformation class. */
+    public Set<String> getUsedStandardCertificateExtensionKeys() {
+        final Set<String> ret = new HashSet<>();
+        for (final String key : useStandardCertificateExtensions.keySet()) {
+            if (data.get(key) != null && (Boolean) data.get(key)) {
+                // All extension use keys in the Certificate Profile are named "use" + name of extension
+                ret.add(StringUtils.removeStart(key, "use"));
+            }
+        }
+        return ret;
+    }
+    
+    /** Returns the names of all supported (i.e. not only used) built-in certificate extensions. The keys are used in the ExtendedInformation class. */
+    public static Set<String> getAllStandardCertificateExtensionKeys() {
+        final Set<String> ret = new HashSet<>();
+        for (final String key : useStandardCertificateExtensions.keySet()) {
+            // All extension use keys in the Certificate Profile are named "use" + name of extension
+            ret.add(StringUtils.removeStart(key, "use"));
         }
         return ret;
     }
