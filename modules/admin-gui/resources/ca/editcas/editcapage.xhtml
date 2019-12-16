@@ -1450,7 +1450,7 @@
 
 
 				<h:panelGroup rendered="#{editCAsMBean.renderRenewCA}">
-					<h:panelGrid columns="2">
+					<h:panelGrid columns="2" columnClasses="column-editca,editColumn2">
 						<h:panelGroup>
 							<h:outputLabel 
 								value="#{web.text.RENEWCA_NEXTCAKEY}" />
@@ -1552,9 +1552,6 @@
 					value="#{web.text.REPUBLISHCA}"
 					rendered="#{editCAsMBean.renderRepublishCA}"
 					action="#{editCAsMBean.publishCA}" />
-				<h:panelGroup>
-
-				</h:panelGroup>
 			</h:panelGrid>
 
 			<!-- ==================================================================== CA Life Cycle ================================================================================ -->
@@ -1572,7 +1569,7 @@
 				<h:panelGroup />
 
 				<h:panelGroup>
-					<h:panelGrid columns="2">
+					<h:panelGrid columns="2" columnClasses="column-editca,editColumn2">
 						<h:panelGroup rendered="#{editCAsMBean.editCA}">
 							<h:outputText value="#{web.text.EXTERNALLYSIGNED_STEP1}"
 								style="font-weight: bold;" />
@@ -1593,6 +1590,7 @@
 							<br />
 							<h:outputText value="#{web.text.EXTERNALLYSIGNED_CACHAIN_HELP}" styleClass="smallHelp" />
 						</h:panelGroup>
+						
 						<h:panelGroup>
 							<t:inputFileUpload name="filerecievefilemakerequest"
 								align="right" value="#{editCAsMBean.fileRecieveFileMakeRequest}" />
