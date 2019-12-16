@@ -93,7 +93,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
     private static final String EE_PROFILE_KEY = "--eeprofile";
     private static final String VALIDITY = "--validity";
     private static final String CLIENT_AUTHENTICATION_CERTPROFILE_NAME = "ClientAuthenticationCP";
-    private static final String CLIENT_AUTHENTICATION_EEPROFILE_NAME = "ClientAuthenticationEE";
+    private static final String CLIENT_AUTHENTICATION_EEPROFILE_NAME = "ClientAuthenticationEEP";
     
     private final GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
             GlobalConfigurationSessionRemote.class).getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
