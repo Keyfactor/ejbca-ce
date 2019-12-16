@@ -498,16 +498,17 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     
     /**
      * Test if the cardnumber is required in an end entity profile, and if check it is set if it was required.
-     * @throws CertificateProfileExistsException 
      * @throws AuthorizationDeniedException 
      * @throws EndEntityProfileNotFoundException 
      */
     @Test
-    public void test10CardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
+    public void test10CardnumberRequired() throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
  	log.trace(">test10CardnumberRequired()");
 
     	try {
     	    int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();
+    	    
+    	    final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 
     	    EndEntityProfile profile = new EndEntityProfile();
     	    profile.addField(EndEntityProfile.CARDNUMBER);
@@ -528,7 +529,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                     SecConst.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
     	    try {
-    	        profile.doesUserFulfillEndEntityProfile(userdata, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
     	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
     	        ret = true;
@@ -538,7 +539,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     	    ret = false;
     	    userdata.setCardNumber(cardnumber);
     	    try {
-    	        profile.doesUserFulfillEndEntityProfile(userdata, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
     	        ret = true;
     	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
