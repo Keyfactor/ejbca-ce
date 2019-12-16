@@ -1829,8 +1829,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         for (final String unusedExtKey : unusedExts) {
             final String requestValue = ei.getMapData(unusedExtKey);
             if (StringUtils.isNotBlank(requestValue)) {
-log.error("REMOVEME Certificate Extension '" + unusedExtKey + "' is not allowed in Certificate Profile, but was present with value '" + requestValue + "'");
-//                throw new EndEntityProfileValidationException("Certificate Extension '" + unusedExtKey + "' is not allowed in Certificate Profile, but was present with value '" + requestValue + "'");
+                throw new EndEntityProfileValidationException("Certificate Extension '" + unusedExtKey + "' is not allowed in Certificate Profile, but was present with value '" + requestValue + "'");
             }
         }
     }
