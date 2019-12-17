@@ -824,10 +824,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 log.debug("Publisher with ID " + idValue + " and/or name '" + name + "' will be checked for updates.");
             }
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
-            final PublisherData pd;
+            PublisherData pd = null;
             if (name != null) {
                 pd = PublisherData.findByName(entityManager, name);
-            } else {
+            } else if (idValue != null) {
                 pd = PublisherData.findById(entityManager, idValue);
             }
             if (pd != null) {
