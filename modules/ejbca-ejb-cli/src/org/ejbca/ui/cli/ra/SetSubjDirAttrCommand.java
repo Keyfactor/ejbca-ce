@@ -100,7 +100,9 @@ public class SetSubjDirAttrCommand extends BaseRaCommand {
 
     @Override
     public String getFullHelpText() {
-        return getCommandDescription();
+        return getCommandDescription() + "\n\n" +
+                "Note: The Certificate Profile of the end entity must have the\n" +
+                "Subject Directory Attributes extension enabled.\n";
     }
 
     protected Logger getLogger() {
