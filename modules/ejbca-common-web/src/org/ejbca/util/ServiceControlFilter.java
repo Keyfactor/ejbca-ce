@@ -14,7 +14,6 @@
 package org.ejbca.util;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -47,7 +46,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  */
 public class ServiceControlFilter implements Filter {
     private static final Logger log = Logger.getLogger(ServiceControlFilter.class);
-    private static final Pattern SWAGGER_URL_REGEX = Pattern.compile("^[^;?&]*/ejbca/swagger-ui(/.*)?$");
     
     private AvailableProtocolsConfiguration availableProtocolsConfiguration;
     
@@ -78,28 +76,18 @@ public class ServiceControlFilter implements Filter {
         availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         
-        if (serviceName == null) {
-            if (SWAGGER_URL_REGEX.matcher(httpRequest.getRequestURL().toString()).matches()) {
-                chain.doFilter(request, response);
-                log.debug("Allowing service explicitly for Swagger UI");
-            } else {
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Service is not available, see server log.");
-                log.warn("serviceName was null, this is a bug. Denying access.");
-                return;
-            }
-        } else {
-            if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
-                }
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
-                return;
-            }
-
+        // Note: Swagger gets serviceName == AvailableProtocols.REST_CERTIFICATE_MANAGEMENT
+        if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
             if (log.isDebugEnabled()) {
-                log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+                log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
             }
-            chain.doFilter(request, response);
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
+            return;
         }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+        }
+        chain.doFilter(request, response);
     }
 }
