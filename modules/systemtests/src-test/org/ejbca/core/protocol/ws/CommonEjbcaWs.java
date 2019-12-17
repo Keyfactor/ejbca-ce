@@ -669,6 +669,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     protected int createCertificateProfile(String profileName) throws AuthorizationDeniedException {
         if ( this.certificateProfileSession.getCertificateProfileId(profileName)==0 ) {
             final CertificateProfile certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+            certProfile.setUseSubjectDirAttributes(true); // used in test cases
             try {
                 this.certificateProfileSession.addCertificateProfile(intAdmin, profileName, certProfile);
             } catch (CertificateProfileExistsException e) {

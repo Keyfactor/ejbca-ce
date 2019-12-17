@@ -2456,8 +2456,63 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         log.trace("<test77ImportAndUpdateExternalCscaCaCertificate");
     }
     
+    /**
+     * Creates a user with data in the ExtendedInformation object, in this case
+     * a "CA/B Forum Organization Identifier" Certificate Extension.
+     */
     @Test
-    public void test78AddUserWithExtendedInformation() throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, AuthorizationDeniedException {
+    public void test78AddUserWithExtendedInformation() throws Exception {
+        log.trace(">test78AddUserWithExtendedInformation");
+        final String testUser = "ejbcawstest_extdata";
+        final String testSubjectDn = "CN=" + testUser;
+        final String testOrgIdent = "NTRUS+CA-123-456+789";
+        deleteUser(testUser);
+        try {
+            // Create profiles with the certificate extension enabled
+            int certificateProfileId = createCertificateProfile(WS_CERTPROF_EI);
+            final CertificateProfile profile = certificateProfileSession.getCertificateProfile(certificateProfileId);
+            profile.setUseCabfOrganizationIdentifier(true);
+            certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, profile);
+            createEndEndtityProfile(WS_EEPROF_EI, certificateProfileId);
+            // Given
+            final UserDataVOWS userData = new UserDataVOWS();
+            userData.setUsername(testUser);
+            userData.setPassword(PASSWORD);
+            userData.setClearPwd(false);
+            userData.setSubjectDN(testSubjectDn);
+            userData.setCaName(getAdminCAName());
+            userData.setEmail(null);
+            userData.setSubjectAltName(null);
+            userData.setStatus(EndEntityConstants.STATUS_NEW);
+            userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+            userData.setEndEntityProfileName(WS_EEPROF_EI);
+            userData.setCertificateProfileName(WS_CERTPROF_EI);
+            final List<ExtendedInformationWS> extendedInformation = new ArrayList<>();
+            extendedInformation.add(new ExtendedInformationWS("cabforganizationidentifier", testOrgIdent));
+            userData.setExtendedInformation(extendedInformation);
+            // When
+            ejbcaraws.editUser(userData);
+            // Then
+            final EndEntityInformation savedEndEntity = endEntityAccessSession.findUser(intAdmin, testUser);
+            assertEquals("Wrong Subject DN was returned", testSubjectDn, savedEndEntity.getDN());
+            final ExtendedInformation savedExtInfo = savedEndEntity.getExtendedInformation();
+            assertNotNull("ExtendedInformation was null", savedExtInfo);
+            assertEquals("CA/B Forum Organization Identifier was not set in ExtendedInformation", testOrgIdent,
+                    savedExtInfo.getCabfOrganizationIdentifier());
+        } finally {
+            deleteUser(testUser);
+            log.trace("<test78AddUserWithExtendedInformation");
+        }
+    }
+    
+    /**
+     * Creates a user with data in the ExtendedInformation object, in this case
+     * a "CA/B Forum Organization Identifier" Certificate Extension.
+     * In this test, the certificate extension is not enabled in the Certificate Profiles,
+     * so the request should fail.
+     */
+    @Test
+    public void testAddUserWithUnconfiguredExtension() throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, WaitingForApprovalException_Exception {
         log.trace(">test78AddUserWithExtendedInformation");
         final String testUser = "ejbcawstest_extdata";
         final String testSubjectDn = "CN=" + testUser;
@@ -2478,17 +2533,14 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             userData.setEndEntityProfileName("EMPTY");
             userData.setCertificateProfileName("SERVER");
             final List<ExtendedInformationWS> extendedInformation = new ArrayList<>();
-            extendedInformation.add(new ExtendedInformationWS("cabforganizationidentifier", testOrgIdent));
+            extendedInformation.add(new ExtendedInformationWS("cabforganizationidentifier", testOrgIdent)); // not enabled in Certificate Profile
             userData.setExtendedInformation(extendedInformation);
             // When
             ejbcaraws.editUser(userData);
-            // Then
-            final EndEntityInformation savedEndEntity = endEntityAccessSession.findUser(intAdmin, testUser);
-            assertEquals("Wrong Subject DN was returned", testSubjectDn, savedEndEntity.getDN());
-            final ExtendedInformation savedExtInfo = savedEndEntity.getExtendedInformation();
-            assertNotNull("ExtendedInformation was null", savedExtInfo);
-            assertEquals("CA/B Forum Organization Identifier was not set in ExtendedInformation", testOrgIdent,
-                    savedExtInfo.getCabfOrganizationIdentifier());
+            fail("Should throw EndEntityProfileValidationException");
+        } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
+            // Expected
+            assertEquals("org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException: Certificate Extension 'cabforganizationidentifier' is not allowed in Certificate Profile, but was present with value 'NTRUS+CA-123-456+789'", e.getMessage());
         } finally {
             deleteUser(testUser);
             log.trace("<test78AddUserWithExtendedInformation");
