@@ -852,7 +852,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check name constraints
         final CA ca = (CA) caSession.getCAInternal(caid, null, true);
-        final CAInfo cainfo = ca != null ? ca.getCAInfo() : null;
+        if (ca == null) {
+            throw new EndEntityProfileValidationException("CA with ID " + caid + " doesn't exist.");
+        }
+        final CAInfo cainfo = ca.getCAInfo();
         final boolean nameChanged = // only check when name is changed so existing end-entities can be changed even if they violate NCs
                 !userData.getSubjectDnNeverNull().equals(CertTools.stringToBCDNString(dn)) ||
                 (userData.getSubjectAltName() != null && !userData.getSubjectAltName().equals(altName));
