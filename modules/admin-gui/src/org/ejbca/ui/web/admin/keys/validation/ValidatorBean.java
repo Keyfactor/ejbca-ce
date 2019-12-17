@@ -145,7 +145,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     public String getValidatorType() {
-        return getValidator().getValidatorTypeIdentifier();
+        final Validator v = getValidator();
+        return v == null ? null : v.getValidatorTypeIdentifier();
     }
   
     /**˛
@@ -176,7 +177,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     public int getIssuancePhase() {
-        return getValidator().getPhase();
+        final Validator v = getValidator();
+        // Default to DATA_VALIDATION is the session is screwed up
+        return v == null ? IssuancePhase.DATA_VALIDATION.getIndex() : v.getPhase();
     }
 
     public void setIssuancePhase(final int issuancePhase) {
@@ -193,7 +196,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /**
      * Gets the selected validator.
-     * @return the  validator.
+     * @return the Validator or null if no validator is selected.
      */
     public Validator getValidator() {
         // @ViewScoped: If the back link was called it may happen that the same view is rendered again with another validator.
@@ -346,8 +349,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public List<SelectItem> getApplicablePhases() {
         final List<SelectItem> result = new ArrayList<>();
-        for (Integer index : ((PhasedValidator) getValidator()).getApplicablePhases()) {
-            result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.fromIndex(index).getLabel())));
+        final Validator v = getValidator();
+        if (v != null) {
+            for (Integer index : ((PhasedValidator) v).getApplicablePhases()) {
+                result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.fromIndex(index).getLabel())));
+            }
         }
         return result;
     }
@@ -541,7 +547,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list
      */
     public List<Integer> getCertificateProfileIds() {
-        return getValidator().getCertificateProfileIds();
+        final Validator v = getValidator();
+        return v == null ? new ArrayList<Integer>() : v.getCertificateProfileIds();
     }
 
     /**
