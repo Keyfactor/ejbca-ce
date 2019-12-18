@@ -30,6 +30,8 @@ import org.ejbca.ui.web.RequestHelper;
  *  When using some filters, namely the CSRFGuard filter, it will mess up character encoding (if using something else than US-ASCII).
  *  We use this filter to set the correct, configured in EJBCA, (i.e. UTF-8 to support intl characters) character encoding.
  *  
+ *  This filter also prevents using GET requests to operations in JSP pages, because OWASP CSRF guard does not protect GET requests the way we use it. 
+ *  
  *  We don't use a WebFilter annotation here, because we must set it in web.xml in order to enforce the order filters are called.
  *  
  * @version $Id$
@@ -40,6 +42,10 @@ public class EncodingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
+        if (((HttpServletRequest) request).getMethod().equals("GET")) {
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        }
+        
         log.trace("Using EncodingFilter to set HTTP request character encoding");
         try {
             RequestHelper.setDefaultCharacterEncoding((HttpServletRequest)request);
