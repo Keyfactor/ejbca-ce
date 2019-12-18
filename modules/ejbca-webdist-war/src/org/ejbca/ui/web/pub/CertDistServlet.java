@@ -358,8 +358,8 @@ public class CertDistServlet extends HttpServlet {
                         String subject = CertTools.getSubjectDN((Certificate)certs[i]);
                         String issuer = CertTools.getIssuerDN((Certificate)certs[i]);
                         BigInteger serno = CertTools.getSerialNumber((Certificate)certs[i]);
-                        pout.println("<pre>Subject:"+subject);
-                        pout.println("Issuer:"+issuer);
+                        pout.println("<pre>Subject:"+HTMLTools.htmlescape(subject));
+                        pout.println("Issuer:"+HTMLTools.htmlescape(issuer));
                         pout.println("NotBefore:"+notBefore.toString());
                         pout.println("NotAfter:"+notAfter.toString());
                         pout.println("Serial number:"+serno.toString());
