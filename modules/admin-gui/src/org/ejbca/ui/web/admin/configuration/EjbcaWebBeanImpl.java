@@ -642,8 +642,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** Returns a fallback text to be used if the session was not initialized properly */
     private String fallbackText(final String template, final Object... params) {
         final String msg = "Language was not initialized for this session";
-        if (log.isDebugEnabled()) {
-            log.warn(msg, new Exception("Stack trace")); // Included for stack trace
+        if (log.isTraceEnabled()) {
+            log.trace(msg, new Exception("Stack trace")); // Included for stack trace
         } else {
             log.warn(msg);
         }
