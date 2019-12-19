@@ -182,9 +182,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
 
-    // The administrator that the services should be run as. Internal, allow all.
-    private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
-
     @PostConstruct
     public void ejbCreate() {
         timerService = sessionContext.getTimerService();
@@ -759,7 +756,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                             details.put(entry.getKey().toString(), entry.getValue().toString());
                         }
                         auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                                intAdmin.toString(), null, null, null, details);
+                                admin.toString(), null, null, null, details);
                     }
                 } else {
                     String msg = intres.getLocalizedMessage("services.serviceedited", name);
@@ -769,7 +766,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                                intAdmin.toString(), null, null, null, details);
+                                admin.toString(), null, null, null, details);
                     }
                 }
             } else {
@@ -903,6 +900,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
     }
 
+    // Use an internal admin, allow all, to initialize the service, the service must be allowed to work on everything
+    private final AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
     /**
      * Method that creates a worker from the service configuration.
      * 
