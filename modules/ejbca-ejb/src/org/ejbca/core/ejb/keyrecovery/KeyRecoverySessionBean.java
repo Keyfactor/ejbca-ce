@@ -164,18 +164,24 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
             boolean returnval = false;
             try {
-                KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
-                        new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
-                entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
-                        .getIssuerDN(certificate), username, response.getKeyData(), response.getCryptoTokenId(), response.getKeyAlias(), response.getPublicKeyId()));
-                // same method to make hex serno as in KeyRecoveryDataBean
-                String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16),
-                        CertTools.getIssuerDN(certificate), response.getKeyAlias(), response.getPublicKeyId(), response.getCryptoTokenId());
-                final Map<String, Object> details = new LinkedHashMap<>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(caid), certSerialNumber, username, details);
-                returnval = true;
+                if (!existsKeys(certificateWrapper)) {
+                    KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
+                            new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
+                    entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
+                            .getIssuerDN(certificate), username, response.getKeyData(), response.getCryptoTokenId(), response.getKeyAlias(), response.getPublicKeyId()));
+                    // same method to make hex serno as in KeyRecoveryDataBean
+                    String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16),
+                            CertTools.getIssuerDN(certificate), response.getKeyAlias(), response.getPublicKeyId(), response.getCryptoTokenId());
+                    final Map<String, Object> details = new LinkedHashMap<>();
+                    details.put("msg", msg);
+                    auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
+                            admin.toString(), String.valueOf(caid), certSerialNumber, username, details);
+                    returnval = true;                    
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Key recovery data for certificate with fingerprint " + CertTools.getFingerprintAsString(certificate) + " already exists in the database. Returning false.");
+                    }
+                }
             } catch (Exception e) {
                 final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
                         CertTools.getIssuerDN(certificate));
