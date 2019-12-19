@@ -67,11 +67,11 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
      */
     private void registerDefaultParameters() {
         this.registerParameter(new Parameter(USERNAME_KEY, "CLI Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Username for the CLI user, if required."));
+                "Username of the CLI user, if required."));
         this.registerParameter(new Parameter(PASSWORD_KEY, "CLI Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Set the password explicitly on the command line with " + PASSWORD_KEY + "=<password>"));
+                "Set the CLI user's password explicitly on the command line with " + PASSWORD_KEY + "=<password>"));
         this.registerParameter(new Parameter(PASSWORD_PROMPT_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.PASSWORD,
-                "Set this flag to be prompted for the username password"));
+                "Set this flag to be prompted for the CLI user's password"));
     }
 
 
