@@ -189,10 +189,10 @@ public class KeyRecoveryTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            if(!keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1))) {
-                throw new RuntimeException("Key recovery data already exists in database.");
-            }
-            assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
+            assertTrue("Key recovery data already exists in database.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
+            assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
+            // Try again, now it exists and should return 
+            assertFalse("Key recovery data already exists in database, but adding return true instead of false.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
