@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.PublisherHelper;
 import org.junit.AfterClass;
@@ -49,6 +50,9 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
             PUBLISHERS.put("RENAME_PUBLISHER_NAME", "NewPublisher");
         }
         static final String PUBLISHER_DELETE_MESSAGE = "Are you sure you want to delete this?";
+        static final String BAD_SERVER = "ldap://0.0.0.0:4001";
+        
+        static final String BAD_DATA_SOURCE_ERROR = "Invalid data source!";
     }
     
     @BeforeClass
@@ -107,4 +111,17 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
         publisherHelper.cancelEditPublisher();
         publisherHelper.assertBackToListPublisherPage();
     }
+    
+    @Test
+    public void stepF_validateVaPublisherDataSource() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
+        publisherHelper.editPublisher();
+        publisherHelper.setPublisherType("1-org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisher");
+        publisherHelper.setDataSource(TestData.BAD_SERVER);
+        publisherHelper.save();
+        publisherHelper.assertHasErrorMessage(TestData.BAD_DATA_SOURCE_ERROR);
+
+    }
+    
 }
