@@ -67,7 +67,7 @@ public class ParameterHandler {
         parameterMap.put(keyWord, parameter);
         if (parameter.isMandatory()) {
             mandatoryParameters.add(keyWord);
-        } else {
+        } else if (parameter.getParameterMode() != ParameterMode.HIDDEN) {
             optionalParameters.add(keyWord);
         }
         if (parameter.isStandAlone()) {
