@@ -28,6 +28,6 @@ package org.ejbca.ui.cli.infrastructure.parameter.enums;
  *
  */
 public enum ParameterMode {
-    ARGUMENT, FLAG, INPUT, PASSWORD;
+    ARGUMENT, FLAG, INPUT, PASSWORD, HIDDEN;
     
 }
