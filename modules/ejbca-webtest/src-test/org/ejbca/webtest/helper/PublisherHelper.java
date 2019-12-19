@@ -54,6 +54,16 @@ public class PublisherHelper extends BaseHelper {
         static final By AVAILABLE_PUBLISHERS_LABEL = By.id("selectPublisher:multigrouppublisherpage:availablepublisherslabel");
         static final By PUBLISHER_GROUPS_TEXT_AREA = By.id("selectPublisher:multigrouppublisherpage:publishergroupstextarea");
         static final By AVAILABLE_PUBLISHERS = By.id("selectPublisher:multigrouppublisherpage:availablepublishers");
+        
+        
+        static By getDataSourceInputText() {
+            return By.xpath("//table[@class='edit-top']/following-sibling::table[@class='edit-top']"
+                    + "/tbody/tr/[@class='Row1']td/[@class='editColumn2']/input");
+        }
+        
+        //static final String VA_PUBLISHET_DEFAULT_DS = "java:/OcspDS";
+        
+        
     } 
     
     public PublisherHelper(WebDriver webDriver) {
@@ -77,6 +87,11 @@ public class PublisherHelper extends BaseHelper {
     public void renamePublisher(final String renamePublisherName) {
         fillInput(Page.INPUT_PUBLISHER_NAME, renamePublisherName);
         clickLink(Page.BUTTON_RENAME_PUBLISHER);
+    }
+    
+    public void setDataSource(final String dataSource) {
+        fillInput(Page.getDataSourceInputText(), dataSource);
+        clickLink(Page.BUTTON_SAVE);
     }
 
     /**
