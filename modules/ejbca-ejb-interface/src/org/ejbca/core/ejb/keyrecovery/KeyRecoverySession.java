@@ -80,7 +80,11 @@ public interface KeyRecoverySession {
      */
     void removeKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificate) throws AuthorizationDeniedException;
 
-    /** Removes a all keyrecovery data saved for a user from the database. */
+    /** Removes a all keyrecovery data saved for a user from the database. If no key recovery data exists, nothing is done. 
+     * 
+     * @param admin the administrator calling the function
+     * @param username the end entity for which to remove all key recovery data entries
+     */
     void removeAllKeyRecoveryData(AuthenticationToken admin, String username);
 
     /**
