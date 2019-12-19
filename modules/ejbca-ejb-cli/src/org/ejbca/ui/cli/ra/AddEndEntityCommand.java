@@ -127,7 +127,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 "The certificate profile, will default to End User."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The end entity profile, will default to Empty."));
-        registerParameter(new Parameter(VALIDITY, "Validity", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(VALIDITY, "Validity", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.HIDDEN,
                 "The validity of the end user certificate. Providing this option will result in creation of an EE profile and a Certificate Profile"
                 + "which are going to be used for custom end entity's validity."));
     }
