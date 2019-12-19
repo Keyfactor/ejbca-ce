@@ -77,23 +77,28 @@ public class KeyRecoveryNewestCommandTest {
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
-    private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            TESTCLASS_NAME));
+    private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(TESTCLASS_NAME));
+
     private final KeyRecoveryNewestCommand command = new KeyRecoveryNewestCommand();
 
     private static X509CA x509ca = null;
+    private static boolean wasKeyRecoveryEnabled = false;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
         GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        wasKeyRecoveryEnabled = configuration.getEnableKeyRecovery();
         configuration.setEnableKeyRecovery(true);
         globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
+        final GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        configuration.setEnableKeyRecovery(wasKeyRecoveryEnabled);
+        globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
         if (x509ca != null) {
             CaTestUtils.removeCa(authenticationToken, x509ca.getCAInfo());
         }

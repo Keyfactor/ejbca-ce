@@ -84,18 +84,23 @@ public class KeyRecoveryCommandTest {
     private final KeyRecoveryCommand command = new KeyRecoveryCommand();
 
     private static X509CA x509ca = null;
+    private static boolean wasKeyRecoveryEnabled = false;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME);
         GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        wasKeyRecoveryEnabled = configuration.getEnableKeyRecovery();
         configuration.setEnableKeyRecovery(true);
         globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
+        final GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        configuration.setEnableKeyRecovery(wasKeyRecoveryEnabled);
+        globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
         if (x509ca != null) {
             CaTestUtils.removeCa(authenticationToken, x509ca.getCAInfo());
         }
