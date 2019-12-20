@@ -111,7 +111,7 @@ public abstract class FileTools {
         } // getBytesfromPEM
 
     /**
-     * Helpfunction to read a file to a byte array.
+     * Helper function to read a file to a byte array.
      *
      * @param file filename of file.
      *
