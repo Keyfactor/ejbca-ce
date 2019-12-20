@@ -121,6 +121,7 @@ public class KeyRecoveryImportCommandTest {
         }
     }
 
+    /** Test to import key recovery data that already exists in the database, it should fail */
     @Test
     public void testImportAlreadyExisting() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         final String username = TESTCLASS_NAME+"User";
@@ -137,7 +138,9 @@ public class KeyRecoveryImportCommandTest {
             final String alias = username;
             final Certificate certificate = keystore.getCertificate(alias);
             final PrivateKey privKey = (PrivateKey) keystore.getKey(alias, password.toCharArray());
-            final KeyPair keys = new KeyPair(certificate.getPublicKey(), privKey); 
+            final KeyPair keys = new KeyPair(certificate.getPublicKey(), privKey);
+            // Remove the generated certificate, so it is a "fresh" import with nothing in the database
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
             assertTrue("Key recovery data should not already exists after generation", keyRecoverySession.addKeyRecoveryData(authenticationToken, EJBTools.wrap(certificate), TESTCLASS_NAME, EJBTools.wrap(keys)));
             final File temp = File.createTempFile("testImportAlreadyExisting", ".tmp");
             temp.deleteOnExit();
@@ -145,9 +148,11 @@ public class KeyRecoveryImportCommandTest {
                 w.write(userks);            
             }
             // Try to add key recovery data to the existing end entity "username", this should not work as it already exists
-            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password, "--caname", x509ca.getName() };
+            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password };
             final CommandResult result = command.execute(args);
             assertEquals("Adding key recovery data should not work as it already exists", CommandResult.FUNCTIONAL_FAILURE.getReturnCode(), result.getReturnCode());
+            // The certificate should not exist in the database after trying to import
+            assertNull("Certificate should not exists in the database after failed import", certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate)));
         } finally {
             keyRecoverySession.removeAllKeyRecoveryData(authenticationToken, username);
             internalCertificateStoreSession.removeCertificatesByUsername(username);
@@ -155,6 +160,7 @@ public class KeyRecoveryImportCommandTest {
         }
     }
 
+    /** Test to import key recovery data using a random username, where the certificate already exists in the database */
     @Test
     public void testImportRandomUserExistingCert() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         final String username = TESTCLASS_NAME+"User";
@@ -178,7 +184,7 @@ public class KeyRecoveryImportCommandTest {
                 w.write(userks);            
             }
             // Try to add key recovery data to a new random user 
-            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password, "--caname", x509ca.getName() };
+            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password };
             final CommandResult result = command.execute(args);
             assertEquals("Adding key recovery data should work", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
             // Check that the key recovery data was added
@@ -194,6 +200,57 @@ public class KeyRecoveryImportCommandTest {
         }
     }
 
+    /** Test to import key recovery data where the issuing CA does not exist. Key recovery data can not be stored then because there is no CA to encrypt the data */
+    @Test
+    public void testImportRandomUserWithoutCA() throws Exception {
+
+        // A temporary CA the we will delete to try to import without CA
+        X509CA temporaryca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(authenticationToken, "C=SE,CN=" + TESTCLASS_NAME + "Temporary");
+
+        final String username = TESTCLASS_NAME+"User";
+        final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, temporaryca.getCAId(), null, null,
+                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+        final String password = "foo123";
+        userdata.setPassword(password);
+        Certificate certificate = null;
+        try {
+            endEntityManagementSession.addUser(authenticationToken, userdata, true);
+            final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
+            final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            final String alias = username;
+            certificate = keystore.getCertificate(alias);
+            assertFalse("Key recovery data should should not have been added by generate command", keyRecoverySession.existsKeys(EJBTools.wrap(certificate)));
+            // Remove the generated certificate, so it is a "fresh" import with nothing in the database
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            // Now remove the CA so it does not exist when trying to import the keystore
+            CaTestUtils.removeCa(authenticationToken, temporaryca.getCAInfo()); 
+            
+            final File temp = File.createTempFile("testImportRandomUser", ".tmp");
+            temp.deleteOnExit();
+            try (FileOutputStream w = new FileOutputStream(temp)) {
+                w.write(userks);            
+            }
+            // Try to add key recovery data to a new random user 
+            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password };
+            final CommandResult result = command.execute(args);
+            assertEquals("Adding key recovery data should not work as the issuing CA does not exist", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+            // The certificate should not exist in the database after trying to import
+            assertNull("Certificate should not exists in the database after failed import", certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate)));
+        } finally {
+            CaTestUtils.removeCa(authenticationToken, temporaryca.getCAInfo()); // if something failed and it was not removed
+            keyRecoverySession.removeAllKeyRecoveryData(authenticationToken, username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            if (certificate != null) {
+                keyRecoverySession.removeKeyRecoveryData(authenticationToken, EJBTools.wrap(certificate));
+                internalCertificateStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
+            }
+            endEntityManagementSession.deleteUser(authenticationToken, username);
+        }
+    }
+
+    /** Test to import key recovery data using a random username, where the certificate does not already exists in the database */
     @Test
     public void testImportRandomUserNonExistingCert() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         final String username = TESTCLASS_NAME+"User";
@@ -220,7 +277,7 @@ public class KeyRecoveryImportCommandTest {
                 w.write(userks);            
             }
             // Try to add key recovery data to a new random user 
-            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password, "--caname", x509ca.getName() };
+            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password };
             final CommandResult result = command.execute(args);
             assertEquals("Adding key recovery data should work", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
             // Check that the key recovery data was added
@@ -237,6 +294,7 @@ public class KeyRecoveryImportCommandTest {
         }
     }
 
+    /** Test to import key recovery data to an existing end entity, where the certificate already exists in the database */
     @Test
     public void testImportExistingUserWithCert() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         final String username = TESTCLASS_NAME+"User";
@@ -261,7 +319,7 @@ public class KeyRecoveryImportCommandTest {
                 w.write(userks);            
             }
             // Try to add key recovery data to the existing end entity "username", this should work as it does not already exist
-            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password, "--caname", x509ca.getName() };
+            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password };
             final CommandResult result = command.execute(args);
             // Check that the key recovery data was added
             assertEquals("Adding key recovery data should work", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
@@ -275,6 +333,7 @@ public class KeyRecoveryImportCommandTest {
         }
     }
 
+    /** Test to import key recovery data to an existing end entity, where the certificate does not already exists in the database */
     @Test
     public void testImportExistingUserWithoutCert() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         final String username = TESTCLASS_NAME+"User";
@@ -302,7 +361,7 @@ public class KeyRecoveryImportCommandTest {
                 w.write(userks);            
             }
             // Try to add key recovery data to the existing end entity "username", this should work as it does not already exist
-            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password, "--caname", x509ca.getName() };
+            final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password };
             CommandResult result = command.execute(args);
             // Check that the key recovery data was added
             assertEquals("Adding key recovery data should work", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
