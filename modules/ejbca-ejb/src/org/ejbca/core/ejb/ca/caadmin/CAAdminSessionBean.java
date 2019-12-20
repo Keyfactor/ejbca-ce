@@ -980,7 +980,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     final CA cvca = (CA) caSession.getCA(authenticationToken, availableCaId);
                     if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED) {
                         final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cvca.getCACertificate();
-                        if (ca_ref.equals(cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())) {
+                        if (cvccert != null && ca_ref.equals(cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())) {
                             log.debug("Added missing CVCA to rewnewal request: " + cvca.getName());
                             chain.add(cvccert);
                             break;
