@@ -22,7 +22,10 @@ package org.ejbca.ui.cli.infrastructure.parameter.enums;
  *      INPUT
  *          Like an argument, but the value is expected to be prompted instead of read from the command line.
  *      PASSWORD
- *          Like INPUT, but the input is never echoed on the screen. 
+ *          Like INPUT, but the input is never echoed on the screen.
+ *      HIDDEN
+ *          A very special purpose type used to not show the parameter in the help text output. 
+ *          See ECA-6787 for details.     
  * 
  * @version $Id$
  *
