@@ -76,7 +76,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 /**
  * Import key recovery data (private key and certificate) for an end entity, either an exiting end entity or adding a new end entity.
  *
- * @version $Id: KeyRecoveryImport.java
+ * @version $Id$
  */
 public class KeyRecoveryImportCommand extends BaseRaCommand {
 
