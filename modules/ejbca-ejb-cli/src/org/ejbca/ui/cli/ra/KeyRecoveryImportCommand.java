@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli.ra;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -123,9 +121,11 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
         final String password = parameters.get(PASSWORD_KEY);
         String username = parameters.get(USERNAME_KEY);
 
+        getLogger().info("Starting attempt to import key recovery information from file: " + p12File);
+
         try {
-            final byte[] p12Bytes = loadcertbytes(p12File);
-            // load keystore
+            // Load PKCS#12 keystore
+            final byte[] p12Bytes = FileTools.readFiletoBuffer(p12File);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new java.io.ByteArrayInputStream(p12Bytes), password.toCharArray());
             final Enumeration<String> en = keystore.aliases();
@@ -190,6 +190,20 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             }
 
             final Certificate userCertificate = certChain[0];
+            final String fingerprint = CertTools.getFingerprintAsString(userCertificate);
+
+            // We have the certificate to add, check that key recovery information does not already exist before going further
+            final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
+            if (keyRecoverySession.existsKeys(EJBTools.wrap(userCertificate))) {
+                getLogger().error("Key recovery information already exists for certificate, aborting import. Fingerprint: " + fingerprint);
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            
+            // All good: 
+            // - Key recovery information does not exist in the database
+            // - End entity can be random or an existing one, we'll either add key recovery info to the existing end entity or create a new one
+            // - The certificate may exist in the database already which is ok, if it does not we will import it
+
             boolean randomUser = false;
             if (username == null) {
                 getLogger().info("No username parameter supplied, creating a randomized username based on CN UID, SERIALNUMBER, or 'user', in order of existence.");
@@ -207,6 +221,7 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 username = userPart + "_" + seq;
                 randomUser = true;
             }
+            
             getLogger().info("Trying to add key recovery data to end entity with username: " + username);
             final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
             if (endEntityManagementSession.existsUser(username)) {
@@ -214,7 +229,7 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                     // If we specified a username, add key recovery to the existing user if it did not exist 
                     getLogger().info("Username specified already exists, will try to add key recovery data to the existing end entity: " + username);
                 } else {
-                    getLogger().error("End entity with random username already exists, this is an odd fluke that should not happen: " + username);
+                    getLogger().error("End entity with random username already exists, this is an odd fluke that should never happen, aborting: " + username);
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
             } else {
@@ -232,23 +247,22 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             final int crlPartitionIndex = cainfo.determineCrlPartitionIndex(userCertificate);
             final Certificate cacert = cainfo.getCertificateChain().iterator().next();
             final CertificateStoreSessionRemote certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-            final String fingerprint = CertTools.getFingerprintAsString(userCertificate);
             if (certStoreSession.getCertificateInfo(fingerprint) != null) {
                 getLogger().info("End entity certificate with fingerprint '" + fingerprint + "' already exist in the database, will not try to add it.");
             } else {
-                getLogger().info("Adding end entity certificate with fingerprint '" + fingerprint + "' to the database.");
+                getLogger().info("Adding end entity certificate with fingerprint '" + fingerprint + "' to the database, with status active (not revoked).");
                 certStoreSession.storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(userCertificate),
                         username, CertTools.getFingerprintAsString(cacert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, 
                         certificateprofileid, endentityprofileid, crlPartitionIndex, null, new Date().getTime());
             }
-            final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
             final PublicKey p12PublicKey = userCertificate.getPublicKey();
             final KeyPair keypair1 = new KeyPair(p12PublicKey, p12PrivateKey);
-            if(!keyRecoverySession.addKeyRecoveryData(getAuthenticationToken(), EJBTools.wrap(userCertificate), username, EJBTools.wrap(keypair1))) {
-                getLogger().error("Key recovery data for user '" + username + "' could not be added to the database because it already exists.");
+            if (!keyRecoverySession.addKeyRecoveryData(getAuthenticationToken(), EJBTools.wrap(userCertificate), username, EJBTools.wrap(keypair1))) {
+                getLogger().error("Key recovery data for user '" + username + "' could not be added to the database because it already exists, which is strange since we checked for existence earlier. Is multiple imports being run in parallell?. Potentially improted end entity and certificate remains in the database.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            // All went well
+            // All went well, key recovery information imported
+            getLogger().info("Success: Added key recovery information for certificate with fingerprint '" + fingerprint + "' to end entity with username '" + username + "' to the database.");
             return CommandResult.SUCCESS;
         } catch (IOException | NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException | CertificateException nsae) {
             getLogger().error("Unable to read provided PKCS#12 file: " + nsae.getMessage());
@@ -267,27 +281,6 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             getLogger().error("ERROR, BouncyCastle provider does not exist: " + nspe.getMessage());
         } 
         return CommandResult.FUNCTIONAL_FAILURE;
-    }
-
-    /**
-     * 
-     * @param filename path to a file containing a PEM encoded certificate
-     * @return the certificate
-     * 
-     * @throws IOException if the file didn't contain the certificate keys.
-     * @throws CertificateException if the read PEM couldn't be decoded to a certificate
-     * @throws FileNotFoundException if file wasn't found
-     */
-    private byte[] loadcertbytes(String filename) throws FileNotFoundException {
-        final File certfile = new File(filename);
-        if (!certfile.exists()) {
-            throw new FileNotFoundException("'" + filename + "' does not exist.");
-        }
-        if (!certfile.isFile()) {
-            throw new FileNotFoundException("'" + filename + "' is not a file.");
-        }
-        final byte[] bytes = FileTools.readFiletoBuffer(filename);
-        return bytes;
     }
 
     @Override
