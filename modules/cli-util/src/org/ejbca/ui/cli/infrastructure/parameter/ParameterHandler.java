@@ -155,7 +155,7 @@ public class ParameterHandler {
                     continue;
                 }
             } else {
-                if (parameter.getParameterMode() == ParameterMode.ARGUMENT) {
+                if (parameter.getParameterMode() == ParameterMode.ARGUMENT || parameter.getParameterMode() == ParameterMode.HIDDEN) {
                     //Check that the following argument exists and isn't a switch (ignoring negative numbers)
                     if ((i + 1) >= argumentList.size() || argumentList.get(i + 1).matches("^-[A-z]+$")) {
                         log.info("ERROR: Missing argument.");
