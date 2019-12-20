@@ -31,11 +31,14 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -45,6 +48,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -81,7 +85,6 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
     private static final String FILE_KEY = "-f";
     private static final String EE_PROFILE_KEY = "--eeprofile";
     private static final String CERT_PROFILE_KEY = "--certprofile";
-    private static final String CA_NAME_KEY = "--caname";
     private static final String USERNAME_KEY = "--username";
     private static final String PASSWORD_KEY = "--password";
 
@@ -90,14 +93,13 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 "Keystore file with the private key and certificate to import. Must be a PKCS#12 (p12) file."));
         registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Password for the keystore file."));
-        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Name of the CA that issued the certificate to be imported. THe CA must be an operational CA in this EJBCA instance and have a keyEncryptKey configured, used to encrypt the imported private key."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "End Entity Profile to create end entity with. If no profile is specified then the EMPTY profile will be used."));
         registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Certificate Profile to create end entity with. If no profile specified then the ENDUSER profile will be used."));
         registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Username for the new end entity to create, or an existing end entity to add key recovery data to. Optional, if left out the username is randomized (creating a new end entity) in the form of 'CN'+_+(20 random alphanumeric characters). If CN does not exist UID or SERIALNUMBER or just 'user' is used, in order of existence."));
+                "Username for the new end entity to create, or an existing end entity to add key recovery data to. Optional, if left out the username is randomized (creating a new end entity) in the form of 'CN'+_+(20 random alphanumeric characters). "
+                + "If CN does not exist UID or SERIALNUMBER or just 'user' is used, in order of existence. If certificate already exists in the database, the username registered with the certificate wil be used and this parameter will be ignored."));
     }
 
     @Override
@@ -115,7 +117,6 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
         }
 
         final String p12File = parameters.get(FILE_KEY);
-        final String caname = parameters.get(CA_NAME_KEY);
         final String eeprofile = parameters.get(EE_PROFILE_KEY);
         final String certificateprofile = parameters.get(CERT_PROFILE_KEY);
         final String password = parameters.get(PASSWORD_KEY);
@@ -146,12 +147,20 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 return CommandResult.CLI_FAILURE;                
             }
             final Certificate[] certChain = KeyTools.getCertChain(keystore, privateKeyAlias);
-            if (certChain == null) {
+            if (certChain == null || certChain.length == 0) {
                 getLogger().error("Cannot load any certificate chain with alias: " + privateKeyAlias);
                 return CommandResult.CLI_FAILURE;
             }
+            final Certificate userCertificate = certChain[0];
+            final String fingerprint = CertTools.getFingerprintAsString(userCertificate);
+            final String userCertIssuerDN = CertTools.getIssuerDN(userCertificate);
+            getLogger().info("Found certificate with fingerprint '" + fingerprint + "' and issuerDN '" + userCertIssuerDN + "'.");
 
             final PrivateKey p12PrivateKey = (PrivateKey) keystore.getKey(privateKeyAlias, password.toCharArray());
+            if (p12PrivateKey == null) {
+                getLogger().error("Cannot load any private key with alias: " + privateKeyAlias);
+                return CommandResult.CLI_FAILURE;
+            }
             getLogger().info("Found private key with algorithm: " + p12PrivateKey.getAlgorithm());
 
             // Validate parameters for end entity profile, certificate profile and CA
@@ -177,10 +186,28 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 }
             }
 
-            final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+            // Does the CA exist and is able to encrypt and add key recovery data?
+            final int caid = userCertIssuerDN.hashCode();
+            final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caid);
             if (cainfo == null) {
-                getLogger().error("CA with name " + caname + " does not exist.");
-                errorString.append("CA with name '" + caname + "' does not exist.\n");
+                getLogger().error("CA with issuer DN '" + userCertIssuerDN + "' does not exist.");
+                errorString.append("CA with issuer DN '" + userCertIssuerDN + "' does not exist.\n");
+            } else {
+                if (cainfo.getStatus() != CAConstants.CA_ACTIVE) {
+                    getLogger().error("CA with issuer DN '" + userCertIssuerDN + "' is not active.");
+                    errorString.append("CA with issuer DN '" + userCertIssuerDN + "' is not active.\n");                
+                }
+                if (cainfo.getCAToken() == null) {
+                    getLogger().error("CA with issuer DN '" + userCertIssuerDN + "' does not have a CA Token.");
+                    errorString.append("CA with issuer DN '" + userCertIssuerDN + "' does not have a CA Token.\n");                                    
+                } else {
+                    try {
+                        cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+                    } catch (CryptoTokenOfflineException e) {
+                        getLogger().error("CA with issuer DN '" + userCertIssuerDN + "' does not have a keyEncryptKey configured.");
+                        errorString.append("CA with issuer DN '" + userCertIssuerDN + "' does not have a keyEncryptKey configured.\n");                
+                    }                                    
+                }
             }
 
             if (errorString.length() > 0) {
@@ -188,9 +215,6 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 // Some parameters were correct, i.e. non existing profile or CA
                 return CommandResult.CLI_FAILURE; 
             }
-
-            final Certificate userCertificate = certChain[0];
-            final String fingerprint = CertTools.getFingerprintAsString(userCertificate);
 
             // We have the certificate to add, check that key recovery information does not already exist before going further
             final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
@@ -201,9 +225,21 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             
             // All good: 
             // - Key recovery information does not exist in the database
-            // - End entity can be random or an existing one, we'll either add key recovery info to the existing end entity or create a new one
-            // - The certificate may exist in the database already which is ok, if it does not we will import it
+            // - The CA that issued the certificate we want to import exists and is active
+            // - The CA that issued the certificate we want to import has a keyEncryptKey in the CA Token so it can encrypt imported key recovery data
+            // - The certificate may exist in the database already which is ok, then we will use that, and the end entity that the certificate already belongs to
+            // - If the certificate does not exist in the database we will import it, and create a new end entity
+            // - End entity can be random or an existing one (--username parameter), we'll either use the existing end entity or create a new one
 
+            final CertificateStoreSessionRemote certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+            CertificateInfo certInfo = certStoreSession.getCertificateInfo(fingerprint);
+            if (certInfo != null) {
+                if (username != null) {
+                    getLogger().info("Username parameter was supplied (" + username + "), but end entity certificate with fingerprint '" + fingerprint + "' already exist in the database. Supplied parameter will be ignored and will use the certificate's username as end entity for the key recovery data: " + username);                    
+                }
+                username = certInfo.getUsername();
+                getLogger().info("End entity certificate with fingerprint '" + fingerprint + "' already exist in the database, will not try to add it, but we will use the certificate's username as end entity for the key recovery data: " + username);
+            }
             boolean randomUser = false;
             if (username == null) {
                 getLogger().info("No username parameter supplied, creating a randomized username based on CN UID, SERIALNUMBER, or 'user', in order of existence.");
@@ -243,18 +279,16 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 endEntityManagementSession.addUser(getAuthenticationToken(), userdata, false);                
                 getLogger().info("End entity '" + username + "' has been added.");
             }
-
+            // Import certificate if needed
             final int crlPartitionIndex = cainfo.determineCrlPartitionIndex(userCertificate);
             final Certificate cacert = cainfo.getCertificateChain().iterator().next();
-            final CertificateStoreSessionRemote certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-            if (certStoreSession.getCertificateInfo(fingerprint) != null) {
-                getLogger().info("End entity certificate with fingerprint '" + fingerprint + "' already exist in the database, will not try to add it.");
-            } else {
-                getLogger().info("Adding end entity certificate with fingerprint '" + fingerprint + "' to the database, with status active (not revoked).");
+            if (certInfo == null) {
+                getLogger().info("Adding end entity certificate with fingerprint '" + fingerprint + "' to the database, with status active (not revoked), for end entity: " + username);
                 certStoreSession.storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(userCertificate),
                         username, CertTools.getFingerprintAsString(cacert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, 
                         certificateprofileid, endentityprofileid, crlPartitionIndex, null, new Date().getTime());
             }
+            // Finally add the key recovery data
             final PublicKey p12PublicKey = userCertificate.getPublicKey();
             final KeyPair keypair1 = new KeyPair(p12PublicKey, p12PrivateKey);
             if (!keyRecoverySession.addKeyRecoveryData(getAuthenticationToken(), EJBTools.wrap(userCertificate), username, EJBTools.wrap(keypair1))) {
