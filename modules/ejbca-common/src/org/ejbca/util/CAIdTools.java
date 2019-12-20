@@ -250,7 +250,7 @@ public final class CAIdTools {
         boolean changed = false;
         for (String alias : estConfig.getAliasList()) {
             final String defaultCaID = estConfig.getDefaultCAID(alias);
-            if (defaultCaID != null && Integer.valueOf(defaultCaID) == fromId) {
+            if (StringUtils.isNotEmpty(defaultCaID) && Integer.valueOf(defaultCaID) == fromId) {
                 estConfig.setDefaultCAID(alias, toId);
                 changed = true;
             }
