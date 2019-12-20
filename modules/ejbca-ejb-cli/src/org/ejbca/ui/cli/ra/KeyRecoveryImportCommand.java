@@ -262,7 +262,7 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             // All went well, key recovery information imported
-            getLogger().info("Success: Added key recovery information for certificate with fingerprint '" + fingerprint + "' to end entity with username '" + username + "' to the database.");
+            getLogger().info("Success: Added key recovery information from file '" + p12File + "' containing certificate with fingerprint '" + fingerprint + "', to end entity with username '" + username + "'.");
             return CommandResult.SUCCESS;
         } catch (IOException | NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException | CertificateException nsae) {
             getLogger().error("Unable to read provided PKCS#12 file: " + nsae.getMessage());
