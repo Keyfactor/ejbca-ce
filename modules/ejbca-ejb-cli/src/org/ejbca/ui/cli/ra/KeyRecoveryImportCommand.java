@@ -270,6 +270,7 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 }
             } else {
                 getLogger().info("Adding new end entity with username: " + username);
+                // Use status GENERATED so that we don't create end entities that can be enrolled
                 final EndEntityInformation userdata = new EndEntityInformation(username, CertTools.getSubjectDN(userCertificate), cainfo.getCAId(), CertTools.getSubjectAlternativeName(userCertificate), 
                         CertTools.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endentityprofileid, certificateprofileid, null,
                         null, SecConst.TOKEN_SOFT_P12, null);
