@@ -40,7 +40,7 @@ import org.ejbca.util.HTMLTools;
  */
 public abstract class StoreServletBase extends HttpServlet {
 
-    private static final String SPACE = StringUtils.rightPad("|", 5, "&nbsp;");
+    private static final String SPACE = "|" + StringUtils.repeat("&nbsp;", 5);
     
 	private static final long serialVersionUID = 1L;
 
