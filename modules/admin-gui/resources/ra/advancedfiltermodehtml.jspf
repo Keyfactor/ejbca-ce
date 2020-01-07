@@ -762,7 +762,7 @@ function changematchfields(row){
          <% } %> 
       </select>&nbsp;
       <select name='<%= SELECT_YEAR_ROW4  %>' class="year">  
-         <% for(int i=2000; i <  2020; i++) { %> 
+         <% for(int i=2000; i <= java.time.Year.now().getValue(); i++) { %> 
          <option <% if(oldyearrow4 != null)
                       if(oldyearrow4.equals(Integer.toString(i))) 
                         out.print(" selected ");
@@ -826,7 +826,7 @@ function changematchfields(row){
              }else{ 
                 tempval = year;
              } 
-            for(int i=2000; i <  2020; i++) { %> 
+            for(int i=2000; i <= java.time.Year.now().getValue(); i++) { %> 
          <option  <%   if(tempval == i) 
                         out.print(" selected ");
                       %>value='<%= i %>'> 
