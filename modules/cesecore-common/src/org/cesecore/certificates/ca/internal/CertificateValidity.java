@@ -328,8 +328,7 @@ public class CertificateValidity {
 	
 	/**
 	 * Checks that the PrivateKeyUsagePeriod of the certificate is valid at this time
-	 * @param cacert
-
+	 * @param cert X.509 certificate to check if "now" is within the date defined by a PrivateKeyUsagePeriod extension in this certificate. If no PrivateKeyUsagePeriod exists, it is ignored (same as if "now" is within the date). 
 	 * @throws CAOfflineException if PrivateKeyUsagePeriod either is not valid yet or has expired, exception message gives details
 	 */
 	public static void checkPrivateKeyUsagePeriod(final X509Certificate cert) throws CAOfflineException {
