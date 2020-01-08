@@ -341,6 +341,7 @@ public abstract class CertTools {
      *            order is the reverse
      * @param order specified order, which overrides 'ldaporder', care must be taken constructing this String array, ignored if null or empty
      * @return X500Name, which can be empty if dn does not contain any real DN components, or null if input is null
+     * @throws IllegalArgumentException if the DN is badly formatted 
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder, final String[] order) {
         return stringToBcX500Name(dn, nameStyle, ldaporder, order, true);
@@ -983,7 +984,7 @@ public abstract class CertTools {
      */
     public static BigInteger getSerialNumberFromString(String sernoString) {
         if (sernoString == null) {
-            throw new IllegalArgumentException("getSerialNumberFromString: cert is null");
+            throw new IllegalArgumentException("getSerialNumberFromString: sernoString is null");
         }
         BigInteger ret;
         try {
@@ -3942,7 +3943,7 @@ public abstract class CertTools {
      * @param order specified order, which overrides 'ldaporder', care must be taken constructing this String array, ignored if null or empty
      * @param applyLdapToCustomOrder specifies if the ldaporder setting should apply to an order (custom order) if this is not empty
      * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
-     * @return X500Name with ordered conmponents according to the orcering vector
+     * @return X500Name with ordered components according to the ordering vector
      */
     private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, String[] order, final boolean applyLdapToCustomOrder, final X500NameStyle nameStyle) {        
         // Guess order of the input name
