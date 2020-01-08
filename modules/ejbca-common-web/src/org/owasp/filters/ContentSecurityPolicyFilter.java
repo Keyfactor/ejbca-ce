@@ -211,7 +211,14 @@ public class ContentSecurityPolicyFilter implements Filter {
         // Also X-FRAME-OPTIONS, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
         // Used to be in a separate filter, ClickjackFilter, but there is no point in having multiple filters adding security headers
         httpResponse.setHeader("X-FRAME-OPTIONS", frameOptionsMode );            
-
+        // New header in 2018, Feature-Policy. https://scotthelme.co.uk/a-new-security-header-feature-policy/
+        // https://github.com/w3c/webappsec-feature-policy/blob/master/features.md
+        // https://w3c.github.io/webappsec-feature-policy/
+        // Add some sensible denies
+        httpResponse.setHeader("Feature-Policy", "vibrate 'none'; autoplay 'none'; camera 'none'; microphone 'none'; midi 'none'; gyroscope 'none'; accelerometer 'none'; magnetometer 'none'; payment 'none'" );            
+        // Referrer policy: https://www.w3.org/TR/referrer-policy/
+        httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade" );            
+        
         /* Step 3 : Let request continue chain filter */
         fchain.doFilter(request, response);
     }
