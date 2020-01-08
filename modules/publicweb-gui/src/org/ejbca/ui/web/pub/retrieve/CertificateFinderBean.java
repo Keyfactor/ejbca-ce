@@ -34,6 +34,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -162,6 +163,13 @@ public class CertificateFinderBean {
 		if (result == null) {
 			return; // There's nothing we can do here.
 		}
+	      // Verify that the DN is valid
+        try {
+            CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        } catch (IllegalArgumentException e ) {
+            log.info("Invalid DN entered (IllegalArgumentException): "+issuerDN+": "+e.getMessage());
+            return;
+        }
 		try {
 			BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));
 			CertificateStatus info = mStoreSession.getStatus(StringUtils.trimToEmpty(issuerDN), serialBignum);
@@ -200,11 +208,17 @@ public class CertificateFinderBean {
 		if (subject == null) {
 			return; // We can't lookup any certificates, so return with an empty result.
 		}
+		// Verify that the DN is valid
+		try {
+	        CertTools.stringToBCDNString(StringTools.strip(subject));
+        } catch (IllegalArgumentException e ) {
+            log.info("Invalid DN entered (IllegalArgumentException): "+subject+": "+e.getMessage());
+            return;
+        }
 		final List<CertificateDataWrapper> cdws = mStoreSession.getCertificateDatasBySubject(subject);
 		Collections.sort(cdws);
 		for (final CertificateDataWrapper cdw : cdws) {
-            // TODO: CertificateView is located in web.admin package, but this is web.pub package...
-            result.add(new CertificateView(cdw));
+		    result.add(new CertificateView(cdw));
 		}
 	}
 
@@ -216,13 +230,17 @@ public class CertificateFinderBean {
 	 * @see getSerialNumber()
 	 */
     public void lookupCertificateInfo(String issuer, String serno) {
-        BigInteger sernoBigInt = CertTools.getSerialNumberFromString(serno);
-        Certificate cert = mStoreSession.findCertificateByIssuerAndSerno(issuer, sernoBigInt);
-        if (cert != null) {
-            this.issuerDN = CertTools.getIssuerDN(cert);
-            this.subjectDN = CertTools.getSubjectDN(cert);
-            this.serialNumber = CertTools.getSerialNumberAsString(cert);
-            this.fingerprint = CertTools.getFingerprintAsString(cert);
+        try {
+            BigInteger sernoBigInt = CertTools.getSerialNumberFromString(serno);
+            Certificate cert = mStoreSession.findCertificateByIssuerAndSerno(issuer, sernoBigInt);
+            if (cert != null) {
+                this.issuerDN = CertTools.getIssuerDN(cert);
+                this.subjectDN = CertTools.getSubjectDN(cert);
+                this.serialNumber = CertTools.getSerialNumberAsString(cert);
+                this.fingerprint = CertTools.getFingerprintAsString(cert);
+            }
+        } catch (IllegalArgumentException e ) {
+            log.info("Invalid DN or SerialNumber entered (IllegalArgumentException): " + issuerDN + ": " + serno + ":" + e.getMessage());
         }
     }
 

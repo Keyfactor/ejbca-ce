@@ -168,6 +168,14 @@ public class CertDistServlet extends HttpServlet {
             // HttpServetRequets.getParameter URLDecodes the value for you
             // No need to do it manually, that will cause problems with + characters
             issuerdn = req.getParameter(ISSUER_PROPERTY);
+            // Verify that the DN is valid
+            try {
+                CertTools.stringToBCDNString(StringTools.strip(issuerdn));
+            } catch (IllegalArgumentException e ) {
+                log.debug("Invalid DN entered (IllegalArgumentException): "+issuerdn+": "+e.getMessage());
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid issuer property");
+                return;
+            }
             issuerdn = CertTools.stringToBCDNString(issuerdn);
         }
 		int caid = 0;
@@ -312,6 +320,14 @@ public class CertDistServlet extends HttpServlet {
         	String dn = req.getParameter(SUBJECT_PROPERTY);
             if (dn == null) {
                 log.debug("Bad request, no 'subject' arg to 'lastcert' or 'listcert' command.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
+                return;
+            }
+            // Verify that the DN is valid
+            try {
+                CertTools.stringToBCDNString(StringTools.strip(dn));
+            } catch (IllegalArgumentException e ) {
+                log.debug("Invalid DN entered (IllegalArgumentException): "+dn+": "+e.getMessage());
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
                 return;
             }
