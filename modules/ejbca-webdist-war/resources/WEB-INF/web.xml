@@ -38,6 +38,24 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <filter>
+        <filter-name>ContentSecurityPolicyFilter</filter-name>
+        <filter-class>org.owasp.filters.ContentSecurityPolicyFilter</filter-class>
+        <init-param>
+            <param-name>unsafeeval</param-name>
+            <param-value>yes</param-value>
+        </init-param>
+        <init-param>
+            <param-name>frameoptionsmode</param-name>
+            <param-value>SAMEORIGIN</param-value>
+        </init-param>       
+    </filter>
+    
+    <filter-mapping> 
+        <filter-name>ContentSecurityPolicyFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <servlet>
         <display-name>CertDistServlet</display-name>
         <servlet-name>CertDist</servlet-name>
