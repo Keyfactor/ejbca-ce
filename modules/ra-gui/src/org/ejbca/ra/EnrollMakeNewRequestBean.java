@@ -55,6 +55,7 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.asn1.x509.Extension;
@@ -141,9 +142,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private boolean renderNonModifiableTemplates = false;
     private boolean renderNonModifiableFields = false;
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<CAInfo>();
+    private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
     private String selectedEndEntityProfile;
     private String selectedCertificateProfile;
     private String selectedCertificateAuthority;
@@ -960,6 +961,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
                             raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
                             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername() + ": " + e.getMessage() + ", " + errorCode);
+                        } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
+                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", ExceptionUtils.getRootCauseMessage(e), errorCode);
+                            log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
                             log.info("Exception creating keystore. Error Code: " + errorCode, e);
@@ -982,12 +986,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
                     } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                        LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
+                        LinkedList<Certificate> chain = new LinkedList<>(getCAInfo().getCertificateChain());
                         chain.addFirst(certificate);
                         ret = CertTools.getPemFromCertificateChain(chain);
                     } else if (tokenDownloadType == TokenDownloadType.PKCS7) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                        LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
+                        LinkedList<Certificate> chain = new LinkedList<>(getCAInfo().getCertificateChain());
                         chain.addFirst(certificate);
                         ret = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
                     } else if (tokenDownloadType == TokenDownloadType.PEM) {
@@ -1015,6 +1019,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
                             raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
                             log.info("Certificate could not be generated for user " + endEntityInformation.getUsername() + ": " + e.getMessage() + ", " + errorCode);
+                        } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
+                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", ExceptionUtils.getRootCauseMessage(e), errorCode);
+                            log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
                             log.info("Exception creating certificate. Error Code: " + errorCode, e);
@@ -1040,6 +1047,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
                             raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), errorCode);
                             log.info("End entity " + endEntityInformation.getUsername() + " could not be added: " + e.getMessage() + ", " + errorCode);
+                        } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
+                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", ExceptionUtils.getRootCauseMessage(e), errorCode);
+                            log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
                             log.info("Exception adding end entity. Error Code: " + errorCode, e);
@@ -1083,13 +1093,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } else {
             return; // We simply return since certificate is generated and EE must not be deleted.
         }
-    }
-
-    /**
-     * Returns true if the default value of the given field is true in the end entity profile
-     */
-    private boolean isDefaultInProfile(final String field) {
-        return EndEntityProfile.TRUE.equals(getEndEntityProfile().getValue(field, 0));
     }
 
     /**
