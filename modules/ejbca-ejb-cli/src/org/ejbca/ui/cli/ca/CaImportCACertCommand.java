@@ -188,7 +188,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Imports a PEM file and creates a new external CA representation from it";
+        return "Imports a PEM file and creates a new external CA representation from it, or imports the certificate for a CA waiting for certificate from an external CA.";
 
     }
 
