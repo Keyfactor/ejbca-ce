@@ -962,7 +962,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                             raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
                             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername() + ": " + e.getMessage() + ", " + errorCode);
                         } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
-                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", ExceptionUtils.getRootCauseMessage(e), errorCode);
+                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e), errorCode);
                             log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
@@ -1020,7 +1020,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                             raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
                             log.info("Certificate could not be generated for user " + endEntityInformation.getUsername() + ": " + e.getMessage() + ", " + errorCode);
                         } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
-                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", ExceptionUtils.getRootCauseMessage(e), errorCode);
+                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e), errorCode);
                             log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
@@ -1048,7 +1048,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                             raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), errorCode);
                             log.info("End entity " + endEntityInformation.getUsername() + " could not be added: " + e.getMessage() + ", " + errorCode);
                         } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
-                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", ExceptionUtils.getRootCauseMessage(e), errorCode);
+                            raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e), errorCode);
                             log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
@@ -1071,6 +1071,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
             cleanUpEndEntities(errorCode, ret);
             endEntityInformation.setUsername(StringUtils.EMPTY);
         }
+    }
+
+    private String cleanExceptionMessage(final Throwable e) {
+        String message = ExceptionUtils.getRootCauseMessage(e);
+        if (message != null) {
+            message = message.replaceFirst("^EndEntityProfileValidationException: ", "");
+        }
+        return message;
     }
 
     /**
