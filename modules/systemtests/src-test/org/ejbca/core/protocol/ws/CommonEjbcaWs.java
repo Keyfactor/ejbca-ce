@@ -208,7 +208,7 @@ import org.ejbca.cvc.CertificateParser;
 
 /**
  *
- * @version $Id: CommonEjbcaWS.java 32243 2019-04-30 23:57:42Z bastianf $
+ * @version $Id$
  */
 public abstract class CommonEjbcaWs extends CaTestCase {
 
