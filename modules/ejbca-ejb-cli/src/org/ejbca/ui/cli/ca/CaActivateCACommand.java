@@ -62,12 +62,12 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Activates the specified HSM CA";
+        return "Activates the specified CA and crypto token";
     }
 
     @Override
     public String getFullHelpText() {
-        return "Activates the specified HSM CA. Leaving out authorization code will prompt for it.";
+        return "Activates the specified CA and crypto token. Leaving out authorization code will prompt for it.";
     }
     
     @Override
