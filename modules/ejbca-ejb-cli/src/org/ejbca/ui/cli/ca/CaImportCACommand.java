@@ -253,7 +253,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     public String getFullHelpText() {
         return getCommandDescription()
                 + " This command has two modes: importing a CA from a PKCS#12 keystore (default) or importing from a CA certificate."
-                + " PKCS#12 keystore is the default option, while CA certificate can be chosen by specifying the flag " + HARD_SWITCH_KEY + "\n"
+                + " PKCS#12 keystore is the default option, while CA certificate can be chosen by specifying the flag " + HARD_SWITCH_KEY + " to import a CA certificate where the keys are on an HSM.\n"
                 + "The two usages are: \n" + "<CA name> <pkcs12 file> [" + KEYSTORE_PASSWORD_KEY
                 + " <password>] [<signature alias>] [<encryption alias>]\n" + "    or:\n" + "<CA name> " + HARD_SWITCH_KEY
                 + " <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>";
