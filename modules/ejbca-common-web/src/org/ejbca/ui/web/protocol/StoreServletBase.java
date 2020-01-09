@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
@@ -46,14 +47,14 @@ public abstract class StoreServletBase extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(StoreServletBase.class);
 
-	protected CaCertificateCache certCache;
+	CaCertificateCache certCache;
 	
 	private CertificateStoreSessionLocal certificateStoreSession;
 
 	/**
 	 * Called when the servlet is initialized.
 	 * @param config see {@link HttpServlet#init(ServletConfig)}
-	 * @throws ServletException
+	 * @throws ServletException ServletException
 	 */
 	@Override
     public void init(ServletConfig config) throws ServletException {
@@ -67,42 +68,42 @@ public abstract class StoreServletBase extends HttpServlet {
 
 	/**
 	 * Return certificate or CRL for the RFC4387 sHash http parameter
-	 * @param sHash
-	 * @param resp
-	 * @param req
-	 * @throws IOException
-	 * @throws ServletException
+	 * @param sHash sHash http parameter
+	 * @param resp HttpServletResponse
+	 * @param req HttpServletRequest
+	 * @throws IOException IOException
+	 * @throws ServletException ServletException
 	 */
 	public abstract void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 
 	/**
 	 * Return certificate or CRL for the RFC4387 iHash http parameter
-	 * @param iHash
-	 * @param resp
-	 * @param req
-	 * @throws IOException
-	 * @throws ServletException
+	 * @param iHash iHash http parameter
+	 * @param resp HttpServletResponse
+	 * @param req HttpServletRequest
+	 * @throws IOException IOException
+	 * @throws ServletException ServletException
 	 */
 	public abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 
 	/**
 	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter
-	 * @param sKIDHash
-	 * @param resp
-	 * @param req
-	 * @throws IOException
-	 * @throws ServletException
+	 * @param sKIDHash sKIDHash http parameter
+	 * @param resp HttpServletResponse
+	 * @param req HttpServletRequest
+	 * @throws IOException IOException
+	 * @throws ServletException ServletException
 	 */
 	public abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	
 	/**
 	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter. In this case the alias name has been used to get the parameter.
-	 * @param sKIDHash
-	 * @param resp
-	 * @param req
+	 * @param sKIDHash sKIDHash http parameter
+	 * @param resp HttpServletResponse
+	 * @param req HttpServletRequest
 	 * @param name alias name of the object
-	 * @throws IOException
-	 * @throws ServletException
+	 * @throws IOException IOException
+	 * @throws ServletException ServletException
 	 */
 	public abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException;
 
@@ -156,6 +157,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 		printInfo(req, resp);
 	}
+
 	private boolean alias(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		final String alias = req.getParameter("setAlias");
 		if ( alias==null ) {
@@ -247,7 +249,7 @@ public abstract class StoreServletBase extends HttpServlet {
             printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
             pw.println();
             final X509Certificate issuedCerts[] = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
-            if (issuedCerts == null || issuedCerts.length < 1) {
+            if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
             printInfo(issuedCerts, SPACE + indent, pw, url);
@@ -315,7 +317,7 @@ public abstract class StoreServletBase extends HttpServlet {
 
 	private class HtmlPrintWriter extends PrintWriter {
 
-		public HtmlPrintWriter(Writer out) {
+		HtmlPrintWriter(Writer out) {
 			super(out);
 		}
 		@Override
