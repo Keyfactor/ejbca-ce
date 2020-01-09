@@ -242,25 +242,31 @@ public abstract class StoreServletBase extends HttpServlet {
 	}
 	
 	private void printInfo(X509Certificate certs[], String indent, PrintWriter pw, String url) {
-		for ( int i=0; i<certs.length; i++ ) {
-			printInfo(certs[i], indent, pw, HTMLTools.htmlescape(url));
-			pw.println();
-			final X509Certificate issuedCerts[] = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(certs[i]));
-			if ( issuedCerts==null || issuedCerts.length<1 ) {
-				continue;
-			}
-			printInfo(issuedCerts, SPACE+indent, pw, url);
-		}
+        for (X509Certificate cert : certs) {
+            // Escape the URL as it might be unsafe
+            printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
+            pw.println();
+            final X509Certificate issuedCerts[] = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            if (issuedCerts == null || issuedCerts.length < 1) {
+                continue;
+            }
+            printInfo(issuedCerts, SPACE + indent, pw, url);
+        }
 	}
-	
-	/**
-	 * Print info and download URL of a certificate or CRL.
-	 * @param cert
-	 * @param indent
-	 * @param pw
-	 * @param url
-	 */
+
+    /**
+     * Print info and download URL of a certificate or CRL.
+     * <p>
+     *     The implementation has to escape characters of URL to be HTML safe.
+     * </p>
+     *
+     * @param cert certificate
+     * @param indent indentation
+     * @param pw PrintWriter
+     * @param url The URL in the escaped form for HTML
+     */
 	public abstract void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url);
+
 	/**
 	 * @return the title of the page
 	 */
@@ -295,6 +301,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		writer.println("</html>");
 		writer.flush();
 	}
+
 	private void printInfo(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
