@@ -880,8 +880,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
-        endEntityInformation.setSendNotification(isDefaultInProfile(EndEntityProfile.SENDNOTIFICATION) && !endEntityInformation.getSendNotification());
-        endEntityInformation.setKeyRecoverable(isDefaultInProfile(EndEntityProfile.KEYRECOVERABLE) && !endEntityInformation.getKeyRecoverable());
+        endEntityInformation.setSendNotification(getEndEntityProfile().isSendNotificationUsed() && getEndEntityProfile().isSendNotificationDefault() && !endEntityInformation.getSendNotification());
+        endEntityInformation.setKeyRecoverable(getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault() && !endEntityInformation.getKeyRecoverable());
         endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
 
