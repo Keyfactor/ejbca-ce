@@ -47,7 +47,7 @@ public abstract class StoreServletBase extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(StoreServletBase.class);
 
-	CaCertificateCache certCache;
+	protected CaCertificateCache certCache;
 	
 	private CertificateStoreSessionLocal certificateStoreSession;
 
