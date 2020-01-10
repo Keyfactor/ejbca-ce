@@ -1147,19 +1147,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * Update RFC822NAME and DNEMAILADDRESS with value from end entity email
-     *
-     * @param event
+     * Update RFC822NAME with value from end entity email
      */
-    public void updateOtherEmailFields(AjaxBehaviorEvent event) {
-        updateRfcAltName();
-        EndEntityProfile.FieldInstance dnEmailAddress = subjectDn.getFieldInstancesMap().get(DnComponents.DNEMAILADDRESS).get(0);
-        if (dnEmailAddress != null && dnEmailAddress.isUsed()) {
-            dnEmailAddress.setValue(getEndEntityInformation().getEmail());
-        }
-    }
-
-    private void updateRfcAltName() {
+    public void updateRfcAltName() {
         EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
         if (rfc822Name != null) {
             if (rfc822Name.getRfcEmailUsed()) {
