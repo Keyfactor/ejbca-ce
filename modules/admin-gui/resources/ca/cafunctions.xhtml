@@ -129,10 +129,10 @@
 								</h:form>
 							</h:panelGrid>
 						</h:panelGroup>
-						<h:panelGroup rendered="#{caGuiInfo.isShowJksDownloadForm(table.rowIndex)}">
+						<h:panelGroup rendered="#{caGuiInfo.isShowJksDownloadForm(table.rowCount - table.rowIndex - 1)}">
 							<form method="POST" action="#{cAFunctionsMBean.getDownloadCertificateLink()}">
 								<input type="hidden" name="cmd" value="jkscert"/>
-								<input type="hidden" name="level" value="#{table.rowIndex}"/>
+								<input type="hidden" name="level" value="#{table.rowCount - table.rowIndex - 1}"/>
 								<input type="hidden" name="issuer" value="#{caGuiInfo.subjectdn}"/>
 								<h:outputText value="#{web.text.JKSPASSWORD}"/>
 								<input type="password" name="password" value=""/>
