@@ -344,7 +344,7 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{instance.rfcUseEmail}">
                                         <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].rfcEmailUsed}">
-                                            <f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateOtherEmailFields}"
+                                            <f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"
                                                 execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                                         </h:selectBooleanCheckbox>
                                     </h:panelGroup>
@@ -511,8 +511,8 @@
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
 								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" 
 									required="#{enrollMakeNewRequestBean.emailRequired}">
-									<f:ajax event="change" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateOtherEmailFields}"/>
-									<f:ajax event="keyup" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateOtherEmailFields}"/>
+									<f:ajax event="change" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
+									<f:ajax event="keyup" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
 								</h:inputText>
 								<h:message for="emailField" id="emailFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
