@@ -168,15 +168,14 @@ public class CertDistServlet extends HttpServlet {
             // HttpServetRequets.getParameter URLDecodes the value for you
             // No need to do it manually, that will cause problems with + characters
             issuerdn = req.getParameter(ISSUER_PROPERTY);
-            // Verify that the DN is valid
+            // Verify that the DN is valid, and make it into EJBCA ordering/format
             try {
-                CertTools.stringToBCDNString(StringTools.strip(issuerdn));
+                issuerdn = CertTools.stringToBCDNString(issuerdn);
             } catch (IllegalArgumentException e ) {
                 log.debug("Invalid DN entered (IllegalArgumentException): "+issuerdn+": "+e.getMessage());
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid issuer property");
                 return;
             }
-            issuerdn = CertTools.stringToBCDNString(issuerdn);
         }
 		int caid = 0;
 		try {
