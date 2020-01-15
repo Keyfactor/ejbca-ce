@@ -1274,7 +1274,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final Collection<Integer> authorizedPublisherIds = getEjbcaWebBean().getEjb().getCaAdminSession().getAuthorizedPublisherIds(getAdmin());
         final Map<Integer, String> publisherIdToNameMap = getEjbcaWebBean().getEjb().getPublisherSession().getPublisherIdToNameMap();
         for (final Integer publisherId : authorizedPublisherIds) {
-            ret.add(new SelectItem(publisherId, publisherIdToNameMap.get(publisherId)));
+            if (publisherIdToNameMap.get(publisherId) != null) {
+                ret.add(new SelectItem(publisherId, publisherIdToNameMap.get(publisherId)));
+            }
         }
         ret.sort(new Comparator<SelectItem>() {
             @Override
