@@ -126,6 +126,8 @@
 		<h:inputText id="maxResults" value="#{auditor.maxResults}" styleClass="numberInputSmall"><f:convertNumber type="number"/></h:inputText>
 	</h:panelGroup>
 
+    <div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
+
 	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionClass="listCaption" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
 		<f:facet name="caption">
 			<h:panelGroup>
