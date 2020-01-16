@@ -41,7 +41,7 @@
 					<f:facet name="header"><h:outputText value="#{web.text.APPROVALPROFILE_NAME}"/></f:facet>
 					<h:outputText value="#{approvalProfile.name}"/>
 					<f:facet name="footer">
-			  			<h:inputText value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255"
+			  			<h:inputText value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="250"
 									 id="approvalProfileName"
 			  				disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
 					</f:facet>
@@ -70,7 +70,7 @@
 					<h:outputLabel for="addFromTemplateProfileOld" value="#{web.text.APPROVALPROFILE_FROMTEMPLATE}"/>
 					<h:outputText id="addFromTemplateProfileOld" value="#{approvalProfilesMBean.selectedApprovalProfileName}"/>
 					<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.APPROVALPROFILE_NEWNAME}"/>
-	  				<h:inputText id="addFromTemplateProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+	  				<h:inputText id="addFromTemplateProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="250"/>
 	  				<h:panelGroup/>
 					<h:panelGroup>
 						<h:commandButton value="#{web.text.CLONE_CONFIRM}" action="#{approvalProfilesMBean.actionAddFromTemplateConfirm}"/>
@@ -87,7 +87,7 @@
 					<h:outputLabel for="renameProfileOld" value="#{web.text.RENAME_CURRENTNAME}"/>
 					<h:outputText id="renameProfileOld" value="#{approvalProfilesMBean.selectedApprovalProfileName}"/>
 					<h:outputLabel for="renameProfileNew" value="#{web.text.RENAME_NEWNAME}"/>
-	  				<h:inputText id="renameProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+	  				<h:inputText id="renameProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="250"/>
 	  				<h:panelGroup/>
 					<h:panelGroup>
 						<h:commandButton value="#{web.text.RENAME_CONFIRM}" action="#{approvalProfilesMBean.actionRenameConfirm}"/>
