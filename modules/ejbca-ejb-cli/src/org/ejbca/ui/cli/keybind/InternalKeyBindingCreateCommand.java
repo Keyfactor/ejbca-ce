@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -91,10 +92,14 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
 
         // Start by extracting any property
-        final Map<String, String> dataMap = new LinkedHashMap<String, String>();
+        final Map<String, String> dataMap = new LinkedHashMap<>();
 
         // Parse static arguments
         final String name = parameters.get(KEYBINDING_NAME_KEY);
+        if (StringUtils.isBlank(name)) {
+            getLogger().error("Name may not be blank.");
+            return CommandResult.CLI_FAILURE;
+        }
         final String type = parameters.get(TYPE_KEY);
         if (!InternalKeyBindingFactory.INSTANCE.existsTypeAlias(type)) {
             getLogger().error("KeyBinding of type " + type + " does not exist.");
@@ -159,6 +164,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
         return sb.toString();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
     }
