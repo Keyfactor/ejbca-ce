@@ -246,14 +246,14 @@
                     <h:outputLabel value="#{web.text.FINGERPRINT_SHA256}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel escape="false" value="#{viewCertificateMBean.fingerPrint}" styleClass="fingerprint"/>
+                    <h:outputLabel escape="false" value="#{viewCertificateMBean.fingerPrint}" styleClass="fingerprint monospace"/>
                 </h:panelGroup>
                 
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.FINGERPRINT_SHA1}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel styleClass="fingerprint" value="#{viewCertificateMBean.certificateData.SHA1Fingerprint}"/>
+                    <h:outputLabel styleClass="fingerprint monospace" value="#{viewCertificateMBean.certificateData.SHA1Fingerprint}"/>
                 </h:panelGroup>
                 
                 <h:panelGroup>
