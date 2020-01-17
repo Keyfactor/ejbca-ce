@@ -106,7 +106,6 @@ superadmin_password=$(pwgen)
 
 init_mysql() {
   cd $INSTALL_DIRECTORY || exit 1
-  mysql_host=$(grep database.url ejbca-custom/conf/database.properties | awk -F/ '{print $3}' | awk -F: '{print $1}' | grep -v '^$')
   echo "Dropping all database tables in database ${database_name} (using the script ejbca/doc/sql-scripts/drop-tables-ejbca-mysql.sql), using DB user ${database_username}, who should have privileges to do that"
   cat ejbca/doc/sql-scripts/drop-tables-ejbca-mysql.sql | mysql --host=${database_host} --user=${database_username} --password=${database_password} ${database_name} -f
 }
@@ -359,7 +358,7 @@ ejbca_installer() {
   wildfly_check || exit 1
   
   # Add datasource
-  wildfly_exec "data-source add --name=ejbcads --driver-name=\"mariadb-java-client.jar\" --connection-url=\"jdbc:mysql://${mysql_host}:3306/${database_name}\" --jndi-name=\"java:/EjbcaDS\" --use-ccm=true --driver-class=\"org.mariadb.jdbc.Driver\" --user-name=\"${database_username}\" --password=\"${database_password}\" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql=\"select 1;\""
+  wildfly_exec "data-source add --name=ejbcads --driver-name=\"mariadb-java-client.jar\" --connection-url=\"jdbc:mysql://${database_host}:3306/${database_name}\" --jndi-name=\"java:/EjbcaDS\" --use-ccm=true --driver-class=\"org.mariadb.jdbc.Driver\" --user-name=\"${database_username}\" --password=\"${database_password}\" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql=\"select 1;\""
   wildfly_exec ":reload"
   
   # Configure WildFly Remoting
@@ -517,12 +516,12 @@ ca.keystorepass=${cakeystorepass}
 # SHA1PRNG
 ca.rngalgorithm=SHA1PRNG
 
-# The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
-# It is really recommended to use at least 64 bits, so please leave as default unless you are really sure, 
-# and have a really good reason to change it.
-# Possible values: between 4 and 20
-# Default: 8
-#ca.serialnumberoctetsize=8
+# The default length in octets of certificate serial numbers configured when creating new CAs. 
+# Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 
+# Before selecting a value, see the documentation for a complete description of how serial numbers are generated.
+# Possible values: between 4 and 20 
+# Default: 20 
+#ca.serialnumberoctetsize=20 
 
 # The date and time from which an expire date of a certificate is to be considered to be too far in the future.
 # The time could be specified in two ways:
@@ -1098,23 +1097,6 @@ cat <<EOF > ejbca-custom/conf/web.properties
 # When upgrading, the important options are:
 # - httpsserver.password
 
-# If you prefer to manually configure the web settings for your application
-# server, you should uncomment this property. Enabling this option will prevent
-# the 'ant web-configure' command from making any changes to the configuration
-# of your application server (in terms of web settings, like paths etc).
-# Can not be set to false, commented away means that web will be configured.
-#web.noconfigure=true
-
-# If you enable this option, the 'ant web-configure' command will not set-up the
-# SSL access on your application server. This is normally desired for the OCSP
-# responder or Validation Authority (unless you want to run them over https as
-# well). Normally, in case of a CA build you should _not_ enable this option
-# (otherwise you won't have access to the administration web interface). If you
-# wish to use the Unid functionality on the OCSP responder, make sure to also
-# have a look at the 'Configuring TLS on the Unid lookup server' how-to.
-# Can not be set to false, commented away means that web will be configured.
-# web.nosslconfigure=true
-
 # Password for java trust keystore (p12/truststore.jks). Default is changeit
 # This truststore will contain the CA-certificate after running 'ant javatruststore'
 # Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default ManagementCA
@@ -1182,13 +1164,6 @@ httpsserver.dn=CN=${httpsserver_hostname},${BASE_DN}
 #httpserver.external.fqdn=
 #httpserver.external.fqdn=${httpsserver_hostname}
  
-# The interfaces JBoss will bind to. E.g. 127.0.0.1 will only allow connections from localhost.
-# You can also specify \${jboss.bind.address} to use JBoss configuration which interface to listen on.
-# Default 0.0.0.0
-httpsserver.bindaddress.pubhttp=0.0.0.0
-httpsserver.bindaddress.pubhttps=0.0.0.0
-httpsserver.bindaddress.privhttps=0.0.0.0
-
 # Defines the available languages by ISO 639-1 language codes separated with a comma (example: en,zh).
 # If you are not sure that you know how to add a new language (languagefile.xx.properties, etc.), 
 # we suggest you stick with the default the first time you install if you wan't to add your own language.
