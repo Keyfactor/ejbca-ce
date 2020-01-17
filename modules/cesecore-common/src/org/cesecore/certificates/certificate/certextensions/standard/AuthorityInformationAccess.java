@@ -54,23 +54,16 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         final X509CA x509ca = (X509CA) ca;
-        final List<String> caIssuerUris;
-        final List<String> ocspServiceLocatorUrls = new ArrayList<>();
-        
         // Get AIA by CAs default AIA section or by the certificate profiles configuration.
+        final List<String> caIssuerUris;
         if (certProfile.getUseDefaultCAIssuer()) {
             caIssuerUris = x509ca.getCertificateAiaDefaultCaIssuerUri();
-            
-            if (caIssuerUris == null) {
-                throw new CertificateExtensionException("An error occurred when creating the AIA extension. The certificate profile for '"
-                        + subject.getUsername() + "' specifies that the CA-defined AIA issuer URI should be used but the CA '" + ca.getName()
-                        + "' has no such value defined.");
-            }
         } else {
             caIssuerUris = certProfile.getCaIssuers();
         }
         
         // Get OCSP by CAs default OCSP Service Locator section or by the certificate profiles configuration.
+        final List<String> ocspServiceLocatorUrls = new ArrayList<>();
         if (certProfile.getUseDefaultOCSPServiceLocator()) {
         	if (StringUtils.isNotBlank(x509ca.getDefaultOCSPServiceLocator())) {
                 ocspServiceLocatorUrls.add(x509ca.getDefaultOCSPServiceLocator());
@@ -87,9 +80,11 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
         }
         
         final ASN1EncodableVector aia = new ASN1EncodableVector();
-        for (String uri : caIssuerUris) {
-            if(StringUtils.isNotEmpty(uri)) {
-                aia.add(new AccessDescription(AccessDescription.id_ad_caIssuers, new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri))));
+        if (caIssuerUris != null) {
+            for (String uri : caIssuerUris) {
+                if(StringUtils.isNotEmpty(uri)) {
+                    aia.add(new AccessDescription(AccessDescription.id_ad_caIssuers, new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri))));
+                }
             }
         }
         for (String url : ocspServiceLocatorUrls) {
@@ -102,7 +97,7 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
             ret = org.bouncycastle.asn1.x509.AuthorityInformationAccess.getInstance(new DERSequence(aia));
         }
 		if (ret == null) {
-			log.error("AIA extension was used, but neither CA issuer URIs or OCSP service locator URLs was defined!");
+			log.warn("AIA extension was enabled, but neither CA issuer URIs or OCSP service locator URLs was defined!");
 		}
 		return ret;
 	}	
