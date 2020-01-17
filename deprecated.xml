@@ -23,26 +23,12 @@
          overridden. Set the warning messages inside of deprecated:notify
          target. -->
 
-    <!-- The j2ee.web-noconfigure option has been replaced with the
-         web.nosslconfigure, but the same values are valid, so we just copy
-         it. -->
-    <condition property="web.nosslconfigure" value="${j2ee.web-noconfigure}">
-        <isset property="j2ee.web-noconfigure"/>
-    </condition>
-
     <!--=======================-->
     <!-- Deprecation utilities -->
     <!--=======================-->
     <!-- Display the warning messages and sleep for 10 seconds in order to draw the user's attention. -->
     <target name="deprecated:notify" if="deprecated.detected">
         <echo message="You're using deprecated features! Be aware that those features will be removed in the next release! Proceeding automatically in 10 seconds. You can stop the build process now by pressing Ctrl-C." />
-
-        <!-- j2ee.web-noconfigure warning message -->
-        <condition property="deprecated.j2ee.web-noconfigure.warning"
-                   value="You are still using the j2ee.web-noconfigure option in the ocsp.properties. This option is deprecated. It has been replaced by the 'web.nosslconfigure' option which can be found in the web.properties. Please review the 'web.properties.sample' file for more details." else="">
-            <isset property="j2ee.web-noconfigure"/>
-        </condition>
-    	<echo message="${deprecated.j2ee.web-noconfigure.warning}" level="warning"/>
 
         <sleep seconds="10" />
     </target>

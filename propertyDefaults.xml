@@ -98,7 +98,7 @@
 	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jboss7"/>
-	<!-- WildFly 8, 9 and 10 is same as JBoss EAP 6 for building -->
+	<!-- WildFly 8 through 14 is the same as JBoss EAP 6 for building -->
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jbosseap6"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/glassfish/lib/javaee.jar" property="appserver.type" value="glassfish"/>
@@ -153,9 +153,6 @@
 	<property name="mail.smtp.auth" value="false" />
 	<property name="mail.smtp.starttls.enable" value="false" />
 	<property name="mail.debug" value="false" />
-	<property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
-	<property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
-	<property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
 	<property name="httpserver.external.fqdn" value="" />
 	<property name="target.servercert.ca" value="ManagementCA" />
 	<property name="target.clientcert.ca" value="ManagementCA" />

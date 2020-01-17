@@ -68,15 +68,9 @@
     <target name="build" depends="deprecated:check, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
     
 	<!--
-	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
+	  Installs EJBCA by creating an initial CA and generating certs for
 	  SSL and the super administrator.
 	  -->
-    <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli, deprecated:check, inputKeystorePassword" description="Install EJBCA application (only once)">
-        <antcall target="runinstall"/>
-        <!-- By calling the jee targets we make sure that the target calls will succeed, but no changes will be made if web.noconfigure and web.nosslconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
-        <antcall target="jee:web-configure"/>
-        <antcall target="jee:keystore"/>
-    </target>
     <target name="runinstall">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
@@ -667,8 +661,6 @@
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
                 <include name="*.jar"/>
             </zipfileset>
-        	<!-- Include HttpClient for the use from the peerconnector.rar -->
-        	<zipfileset prefix="lib" dir="${lib}/ext" includes="commons-httpclient-*.jar"/>
         	<!-- Include JackNji11 for use from P11NG (cesecore-common) -->
         	<zipfileset prefix="lib" dir="${lib}/ext" includes="jacknji11-*.jar"/>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
@@ -810,7 +802,7 @@
     <!-- Note: This code is duplicated in cli.xml!!!!                               -->
     <!-- ========================================================================== -->
     
-	<target name="inputKeystorePassword" unless="web.nosslconfigure">
+	<target name="inputKeystorePassword">
 		<input message="Please enter the password of the truststore with the CA certificate for https?" addproperty="java.trustpassword" defaultvalue="changeit">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
@@ -824,10 +816,6 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="cleanDistDir, failinproduction-deprecation,build, inputDatabasePassword, deprecated:check" description="Deploy the main EJBCA application with datasources and configuration">       
-    	<antcall target="jee:deploy" />
-        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
-    </target>
     <!-- Check if there exist a dist/ejbca.ear, if it exists deployear can just deploy it directly, if not we have to build it before deployear can deploy it -->
 	<target name="checkearexists">
     	<condition property="ejbcaear.built">	
@@ -836,6 +824,9 @@
 	</target>
 	<target name="buildifnotbuilt" depends="checkearexists" unless="ejbcaear.built">
 		<antcall target="build" inheritall="true" inheritrefs="true"/>
+	</target>
+    <target name="deploy" description="'ant deploy' is a deprecated target from outdated installation instructions, please use updated installation guides and the 'deployear' target">
+        <echo message="'ant deploy' is a deprecated target from outdated installation instructions, please use updated installation guides and the 'deployear' target"/>
 	</target>
     <target name="deployear" depends="buildifnotbuilt" description="Deploy the EJBCA application (ejbca.ear) without building and without deploying datasources or any configuration">       
 		<fail message="File '${dist.dir}/ejbca.ear' to deploy does not exist. You must build the file using the 'ant' command.">
@@ -850,26 +841,9 @@
     </target>
 
     <!-- ======================================================================= -->
-    <!-- Configure the web access for application servers.                       -->
-    <!-- ======================================================================= -->
-    <target name="web-configure" depends="deprecated:check,inputKeystorePassword" description="Set-up the web configuration for the application server (including changes related to setting-up SSL keystore/truststore).">
-      <fail message="You cannot run the web configuration target since it has been explicitly disabled in the web.properties file.">
-        <condition>
-          <istrue value="${web.noconfigure}" />
-        </condition>
-      </fail>
-      <antcall target="jee:web-configure" />
-    </target>
-
-    <!-- ======================================================================= -->
     <!-- Deploy the keystores to the application server.                         -->
     <!-- ======================================================================= -->
     <target name="deploy-keystore" depends="deprecated:check" description="Deploy the keystore and truststore for the application server.">
-      <fail message="You cannot run the keystore deployment target since the SSL configuration has been explicitly disabled in the web.properties file.">
-        <condition>
-          <istrue value="${web.nosslconfigure}" />
-        </condition>
-      </fail>
       <antcall target="jee:keystore" />
     </target>
 
