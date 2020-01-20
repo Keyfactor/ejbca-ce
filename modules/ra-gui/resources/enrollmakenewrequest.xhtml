@@ -511,8 +511,8 @@
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
 								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" 
 									required="#{enrollMakeNewRequestBean.emailRequired}">
-									<f:ajax event="change" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
-									<f:ajax event="keyup" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
+									<f:ajax event="change" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
+									<f:ajax event="keyup" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
 								</h:inputText>
 								<h:message for="emailField" id="emailFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
