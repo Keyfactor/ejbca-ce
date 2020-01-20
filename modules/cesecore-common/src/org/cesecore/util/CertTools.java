@@ -3000,7 +3000,7 @@ public abstract class CertTools {
      * is trusted; or it could be CA certificates, in this case, all certificates issued by this CA are trusted.
      * 
      * @param certificate certificate to verify
-     * @param trustedCertificates collection of trusted X509Certificates, empty list trust everyting, null trusts nothing.
+     * @param trustedCertificates collection of trusted X509Certificates, empty list trust everything, null trusts nothing.
      * @param pkixCertPathCheckers optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      */
