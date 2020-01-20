@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
-import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +20,7 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.pinning.TrustEntry;
 
 /**
  * @see InternalKeyBindingMgmtSession
@@ -57,21 +56,13 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
     InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 
     /**
-     * Returns a collection of the trusted certificates defined in internalKeyBinding along with their issuers' certificate chains.
+     * Creates a list with {@link TrustEntry} instances according to the trust references defined by the internal key binding.
      * 
-     * - If the list of trusted certificates in internalKeyBinding contains certificate serial number(s), only the certificates with these specific serial numbers
-     *   are trusted
-     * - If only trusted CAs are specified in internalKeyBinding, all certificates issued by the specified CAs will be trusted.
-     * - If the list of trusted certificates in internalKeyBinding is empty, all certificates issued by all CAs known to this instance of EJBCA are trusted
-     * - If the list of trusted certificates in internalKeyBinding is null, no certificates will be trusted.
-     *
-     * 
-     * @param authenticationToken
-     * @param internalKeyBinding
-     * @return a collection of the trusted certificates along with their issuers' certificate chains or null if no trusted certificates or CAs are specified
-     * @throws CADoesntExistsException
+     * @param internalKeyBinding the internal key binding whose trust entries should be created.
+     * @return a list of {@link TrustEntry} instances according to the trust references defined by the internal key binding.
+     * @throws CADoesntExistsException if the internal key binding references a CA which has been removed.
      */
-    List< Collection<X509Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException;
+    List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException;
 
     /**
      * Returns a id-to-name map of all internal key bindings of the given type 

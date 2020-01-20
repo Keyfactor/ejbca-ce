@@ -13,16 +13,21 @@
 package org.cesecore.keybind.impl;
 
 import java.security.cert.CertificateException;
+import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificates.pinning.TrustEntry;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
@@ -31,62 +36,64 @@ import org.cesecore.util.provider.EkuPKIXCertPathChecker;
  * @version $Id$
  */
 public class ClientX509TrustManager implements X509TrustManager {
-
-    private List<Collection<X509Certificate> > trustedCertificatesChains = null;
-    private List<X509Certificate> encounteredServerCertificateChain = null;
+    private final Logger log = Logger.getLogger(ClientX509TrustManager.class);
+    private final List<TrustEntry> trustEntries;
+    private List<X509Certificate> encounteredServerCertificateChain;
     
-    public ClientX509TrustManager(final List< Collection<X509Certificate>> trustedCertificates) {
-        if (trustedCertificates!=null) {
-            trustedCertificatesChains = new ArrayList<>(trustedCertificates);
-        }
+    public ClientX509TrustManager(final List<TrustEntry> trustEntries) {
+        this.trustEntries = trustEntries;
     }
 
     @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        X509Certificate cert = chain[0];
-        // Validate the certificate and require a critical EKU extensions (if present) to contain the purpose "clientAuth"
-        if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_clientAuth.getId()))) {
-            String subjectdn = CertTools.getSubjectDN(cert);
-            String issuerdn = CertTools.getIssuerDN(cert);
-            String sn = CertTools.getSerialNumberAsString(cert);
-            String errmsg = "Client certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
-                    "' and serialnumber '" + sn + "' is NOT trusted.";
-            throw new CertificateException(errmsg);
-        }
+    public void checkClientTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+        checkCertificate(chain[0], new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_clientAuth.getId()));
     }
 
     @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        X509Certificate cert = chain[0];
+    public void checkServerTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
         encounteredServerCertificateChain = new ArrayList<>(Arrays.asList(chain));
-        // Validate the certificate and require a critical EKU extensions (if present) to contain the purpose "serverAuth"
-        if(!CertTools.verifyWithTrustedCertificates(cert, trustedCertificatesChains, new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_serverAuth.getId()))) {
-            String subjectdn = CertTools.getSubjectDN(cert);
-            String issuerdn = CertTools.getIssuerDN(cert);
-            String sn = CertTools.getSerialNumberAsString(cert);
-            String errmsg = "Server certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
-                    "' and serialnumber '" + sn + "' is NOT trusted.";
+        checkCertificate(chain[0], new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_serverAuth.getId()));
+    }
+
+    private void checkCertificate(final X509Certificate leafCertificate, final PKIXCertPathChecker pkixPathChecker)
+            throws CertificateException {
+        final List<Collection<X509Certificate>> trustedCertificateChains = getTrustedCertificateChains(leafCertificate);
+        if (log.isDebugEnabled()) {
+            if (trustedCertificateChains == null) {
+                log.debug("Verifying the leaf certificate '" + CertTools.getSubjectDN(leafCertificate) + "' with no trusted certificate chains.");
+            } else {
+                log.debug("Verifying the leaf certificate '" + CertTools.getSubjectDN(leafCertificate) + "' with trusted certificate chains "
+                        + trustedCertificateChains.stream()
+                            .map(chain -> chain.stream().map(x -> CertTools.getSubjectDN(x)).collect(Collectors.toList()))
+                            .collect(Collectors.toList()));
+            }
+        }
+        if (!CertTools.verifyWithTrustedCertificates(leafCertificate, trustedCertificateChains, pkixPathChecker)) {
+            String subjectdn = CertTools.getSubjectDN(leafCertificate);
+            String issuerdn = CertTools.getIssuerDN(leafCertificate);
+            String sn = CertTools.getSerialNumberAsString(leafCertificate);
+            String errmsg = "Certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
+                    "' and serial number '" + sn + "' is NOT trusted.";
             throw new CertificateException(errmsg);
         }
+    }
+
+    private List<Collection<X509Certificate>> getTrustedCertificateChains(final X509Certificate leafCertificate) throws CertificateException {
+        if (trustEntries.isEmpty()) {
+            // Nothing configured in the internal key binding. Trust ANY CA known to this EJBCA instance
+            return Collections.emptyList();
+        }
+        final List<Collection<X509Certificate>> trustedCertificateChains = trustEntries.stream()
+                .map(trustEntry -> trustEntry.getChain(leafCertificate))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        return trustedCertificateChains.isEmpty() ? null : trustedCertificateChains;
     }
 
     @Override
     public X509Certificate[] getAcceptedIssuers() {
-        if(trustedCertificatesChains == null) {
-            return new X509Certificate[0];
-        }
-        
-        ArrayList<X509Certificate> acceptedIssuers = new ArrayList<>();
-        for(Collection<X509Certificate> certChain : trustedCertificatesChains) {
-            Iterator<X509Certificate> itr = certChain.iterator();
-            X509Certificate cert = itr.next();
-            if(CertTools.isCA(cert)) {
-                acceptedIssuers.add(cert);
-            } else {
-                acceptedIssuers.add(itr.next());
-            }
-        }
-        return acceptedIssuers.toArray(new X509Certificate[0]);
+        return trustEntries.stream().map(trustEntry -> trustEntry.getIssuer()).toArray(X509Certificate[]::new);
     }
 
     /** @return the encountered server side certificate chain that this class has been asked to verify or null if none has been encountered yet. */

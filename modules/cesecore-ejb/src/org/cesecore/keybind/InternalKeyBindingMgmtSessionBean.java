@@ -31,7 +31,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -82,6 +81,9 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.pinning.CertificatePin;
+import org.cesecore.certificates.pinning.TrustEntry;
+import org.cesecore.certificates.pinning.TrustedChain;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -281,69 +283,56 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
     
     @Override
-    public List<Collection<X509Certificate>> getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException {
+    public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException {
+        final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
         
-        List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
-        if(trustedReferences == null) {
-            return null;
-        }
-        
-        List<Collection<X509Certificate> > trustedCerts = new ArrayList<>();
-        if(trustedReferences.size()==0) {
+        List<TrustEntry> trustedEntries = new ArrayList<>();
+        if (trustedReferences.size() == 0) {
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
-            // This is done by adding all CAs' certificate chains to trustedCerts
+            // This is done by adding all CA certificate chains
             List<Integer> allCAs = caSession.getAllCaIds();
             for(int caid : allCAs) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caid);
                 if (caInfo instanceof X509CAInfo) { // ignore CVC CAs
                     // Quick and dirty cast
-                    Collection<Certificate> certificateChain = caInfo.getCertificateChain();
-                    Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
+                    final List<Certificate> certificateChain = caInfo.getCertificateChain();
+                    final List<X509Certificate> x509CertificateChain = new ArrayList<>(
+                            Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     if (!x509CertificateChain.isEmpty()) {
-                        trustedCerts.add(x509CertificateChain);
+                        trustedEntries.add(new TrustedChain(x509CertificateChain));
                     }
                 }
             }
-            
             if(log.isDebugEnabled()) {
                 log.debug("Trusted Certificates list is empty. Trust ANY certificates issued by ANY CA known to this EJBCA instance");
             }
         } else {
             for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(trustedReference.getCaId());
-                if (trustedReference.getCertificateSerialNumberDecimal()==null) {
+                if (trustedReference.fetchCertificateSerialNumber() == null) {
                     // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
                     // CA certificate chain to be used for issuer verification
-                    Collection<Certificate> certificateChain = caInfo.getCertificateChain();
-                    Collection<X509Certificate> x509CertificateChain = new ArrayList<>(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));    
-                    trustedCerts.add(x509CertificateChain);
+                    final List<Certificate> certificateChain = caInfo.getCertificateChain();
+                    final List<X509Certificate> x509CertificateChain = new ArrayList<>(
+                            Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
+                    trustedEntries.add(new TrustedChain(x509CertificateChain));
                 } else {
-                    // If a cert serialnumber is specified, then we trust only this certificate. We create a certificate collection 
-                    // containing this certificate and it's issuer's certificate chain to be used for issuer verification
-                    X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
-                                caInfo.getSubjectDN(), trustedReference.fetchCertificateSerialNumber());
-                    if(cert!=null) {
-                        ArrayList<X509Certificate> leafCertChain = new ArrayList<>();
-                        leafCertChain.add(cert);
-                        String issuer = CertTools.getIssuerDN(cert);
-                        CAInfo issuerInfo = caSession.getCAInfoInternal(issuer.hashCode());
-                        Collection<Certificate> certificateChain = issuerInfo.getCertificateChain();             
-                        leafCertChain.addAll(Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
-                        trustedCerts.add(leafCertChain);                
-                    } else {
-                        log.info("No (trusted) certificate with issuer '"+caInfo.getSubjectDN()+"' and serialNo "+trustedReference.fetchCertificateSerialNumber().toString(16)
-                                +" could be found for authentication key binding "+internalKeyBinding.getName()+"."); 
-                    }
+                    // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
+                    // in the trustedReference
+                    final List<Certificate> certificateChain = caInfo.getCertificateChain();
+                    final List<X509Certificate> x509CertificateChain = new ArrayList<>(
+                            Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
+                    trustedEntries.add(new CertificatePin(x509CertificateChain, trustedReference.fetchCertificateSerialNumber()));
                 }
             }
         }
         
-        if(trustedCerts.size() == 0) {
+        if(trustedEntries.size() == 0) {
             // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate. 
             // In this case, EJBCA should not trust anything
             return null;
         }
-        return trustedCerts;
+        return trustedEntries;
     }
 
     
