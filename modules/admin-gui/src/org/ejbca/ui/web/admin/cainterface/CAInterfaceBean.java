@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -340,6 +341,7 @@ public class CAInterfaceBean implements Serializable {
             log.info("No selected crypto token. Check crypto token access rules for administrator " + authenticationToken);
             throw new CryptoTokenAuthenticationFailedException("Crypto token authentication failed for administrator " + authenticationToken);
         }
+        capitalizeCountryCodeInSubjectDN(caInfoDto);
         int cryptoTokenId = Integer.parseInt(caInfoDto.getCryptoTokenIdParam());
         try {
             if (cryptoTokenId==0) {
@@ -393,6 +395,23 @@ public class CAInterfaceBean implements Serializable {
                 cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
             }
             throw e;
+        }
+    }
+    
+    private void capitalizeCountryCodeInSubjectDN(final CaInfoDto caInfoDto) {
+        String subjectDN = caInfoDto.getCaSubjectDN();
+        String delimiter = "C=";
+        int delimeterStartIndex = subjectDN.indexOf(delimiter);
+        int countryStartIndex = delimeterStartIndex + delimiter.length();
+        if (delimeterStartIndex != -1) {
+            // Assume country code is 2 characters long. In special cases when it's longer and it's lowercase not all of it will be capitalized. 
+            // In that case CA creation fails just like it always used to anyway.
+            int countryEndIndex = countryStartIndex + 2;
+            String replacement = subjectDN.substring(countryStartIndex, countryEndIndex).toUpperCase(Locale.ENGLISH);
+            String manipulatedSubjectDN = subjectDN.substring(0, countryStartIndex)
+                       + replacement
+                       + subjectDN.substring(countryEndIndex);
+            caInfoDto.setCaSubjectDN(manipulatedSubjectDN);
         }
     }
 
