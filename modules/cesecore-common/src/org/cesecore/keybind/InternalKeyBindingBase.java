@@ -205,10 +205,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         if (trustedCertificateReferences == null) {
             trustedCertificateReferences = getDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, new ArrayList<InternalKeyBindingTrustEntry>());
         }
-        // Return a shallow copy of the list
-        final ArrayList<InternalKeyBindingTrustEntry> copy = new ArrayList<>();
-        copy.addAll(this.trustedCertificateReferences);
-        return copy;
+        return new ArrayList<>(trustedCertificateReferences);
     }
 
     @Override
