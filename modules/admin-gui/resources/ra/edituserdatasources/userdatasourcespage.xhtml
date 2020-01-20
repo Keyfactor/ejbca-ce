@@ -78,7 +78,7 @@
                     </h:panelGroup>
                     <h:panelGroup>
                         <h:inputText id="textfielduserdatasourcename" name="textfielduserdatasourcename"
-                                     value="#{userDatasoucesMBean.newUserDatasource}" size="40" title="#{web.text.FORMAT_ID_STR}"/><h:outputText value=" "/>
+                                     value="#{userDatasoucesMBean.newUserDatasource}" size="40" title="#{web.text.FORMAT_ID_STR}" maxlength="250"/><h:outputText value=" "/>
                         <h:commandButton id="buttonadduserdatasource" name="buttonadduserdatasource"
                                          action="#{userDatasoucesMBean.addDatasource}" value="#{web.text.ADD}"/>&nbsp;&nbsp;
                         <h:commandButton id="buttonrenameuserdatasource" name="buttonrenameuserdatasource"
