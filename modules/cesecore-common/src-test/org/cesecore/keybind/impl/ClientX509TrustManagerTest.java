@@ -23,11 +23,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.pinning.TrustEntry;
+import org.cesecore.certificates.pinning.TrustedChain;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -71,9 +72,9 @@ public class ClientX509TrustManagerTest {
         final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final X509Certificate x509Certificate1 = CertTools.genSelfCert("CN=ClientX509TrustManagerTest1", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
         final X509Certificate x509Certificate2 = CertTools.genSelfCert("CN=ClientX509TrustManagerTest2", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
-        final Collection<X509Certificate> trust1 = Arrays.asList(x509Certificate1);
-        final List<Collection<X509Certificate>> trustedChains = new ArrayList<>();
-        trustedChains.add(trust1);
+        final List<X509Certificate> trust1 = Arrays.asList(x509Certificate1);
+        final List<TrustEntry> trustedChains = new ArrayList<>();
+        trustedChains.add(new TrustedChain(trust1));
         final ClientX509TrustManager clientX509TrustManager = new ClientX509TrustManager(trustedChains);
         assertNull("Validated server TLS certificate was encountered before validation.", clientX509TrustManager.getEncounteredServerCertificateChain());
         try {
