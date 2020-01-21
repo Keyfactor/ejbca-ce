@@ -1126,17 +1126,38 @@ function checkallfields(){
   <div class="container">
   <h1><c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/></h1>
 
+  <% 
+  String formAction = ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp";
+  %>
   <% if(noprofiles){ %>
     <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"NOTAUTHORIZEDTOCREATEENDENTITY\") %>"/></div>
   <% }else{
        if(userexists){ %>
   <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"ENDENTITYALREADYEXISTS\") %>"/></div>
-  <div class="message alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonfind=value&textfieldusername=" + request.getParameter(TEXTFIELD_USERNAME) + "\">See existing user</a>"); %></div>
+  <div class="message alert">
+    <form action="<%=formAction%>" method="post">
+      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
+      <input type="hidden" name="action" value="listusers"/>
+      <input type="hidden" name="buttonfind" value="value"/>
+      <input type="hidden" name="textfieldusername" value="<%=request.getParameter(TEXTFIELD_USERNAME)%>"/>
+      <input type="submit" class="commandLink" value="See existing user">
+    </form>  
+  </div>
   <% } %>
     <% if(approvalmessage != null){ %>
-  <div class="message alert"><c:out value="<%= approvalmessage%>"/></div>
+      <div class="message alert"><c:out value="<%= approvalmessage%>"/></div>
   		<% if(approvalmessage.equals(ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS"))){ %>
-  <div class="message alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonadvancedlist=value&selectmatchwithrow1=" + UserMatch.MATCH_WITH_DNSERIALNUMBER + "&selectmatchtyperow1=" + BasicMatch.MATCH_TYPE_EQUALS + "&textfieldmatchvaluerow1=" + serialnumber + "\">See existing user</a>"); %></div>
+	  <div class="message alert">
+	    <form action="<%=formAction%>" method="post">
+	      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
+	      <input type="hidden" name="action" value="listusers"/>
+	      <input type="hidden" name="buttonadvancedlist" value="value"/>
+	      <input type="hidden" name="selectmatchwithrow1" value="<%=UserMatch.MATCH_WITH_DNSERIALNUMBER%>"/>
+	      <input type="hidden" name="selectmatchtyperow1" value="<%=BasicMatch.MATCH_TYPE_EQUALS%>"/>
+	      <input type="hidden" name="textfieldmatchvaluerow1" value="serialnumber%>"/>
+	      <input type="submit" class="commandLink" value="See existing user">
+	    </form>  
+	  </div>
   		<% } %>
   <% } %>
   <% if(useradded){ %>
