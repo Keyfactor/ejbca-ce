@@ -118,6 +118,7 @@ public class CertFetchAndVerify {
 				theURL = "http://localhost:8080/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
 			}
 		}
+		log.debug("theURL is [" + theURL + "]");
 		return theURL;
 	}
 	
