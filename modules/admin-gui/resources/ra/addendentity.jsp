@@ -2062,5 +2062,8 @@ function edituser(row){
    
   <jsp:include page="<%= footurl %>" />
 </div> <!-- main-wrapper -->
+<script>
+    window.onload = fillCAField;
+</script>
 </body>
 </html>
