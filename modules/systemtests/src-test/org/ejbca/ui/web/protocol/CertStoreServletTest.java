@@ -13,18 +13,13 @@
 
 package org.ejbca.ui.web.protocol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -35,20 +30,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.mail.MessagingException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -56,6 +45,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Testing of CertStoreServlet
@@ -82,23 +75,8 @@ public class CertStoreServletTest extends CaTestCase {
     }
     
     
-    /**
-     * @throws MessagingException
-     * @throws URISyntaxException
-     * @throws IOException
-     * @throws CertificateException
-     * @throws MalformedURLException
-     * @throws AuthorizationDeniedException
-     * @throws CADoesntExistsException
-     * @throws InvalidAlgorithmException 
-     * @throws CryptoTokenAuthenticationFailedException 
-     * @throws CryptoTokenOfflineException 
-     * @throws CAExistsException 
-     */
-
     @Test
-    public void testIt() throws MalformedURLException, CertificateException, IOException, URISyntaxException, MessagingException,
-            CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+    public void testIt() throws Exception {
         final CAInHierarchy ca1 = new CAInHierarchy("root", this);
         final CAInHierarchy ca1_1 = new CAInHierarchy("1 from root", this);
         ca1.subs.add(ca1_1);
@@ -111,7 +89,7 @@ public class CertStoreServletTest extends CaTestCase {
         final CAInHierarchy ca3_1_1 = new CAInHierarchy("3 from 1 from root", this);
         ca1_1.subs.add(ca3_1_1);
         try {
-            final Set<Integer> setOfSubjectKeyIDs = new HashSet<Integer>();
+            final Set<Integer> setOfSubjectKeyIDs = new HashSet<>();
             final X509Certificate rootCert = ca1.createCA(setOfSubjectKeyIDs);
             log.info("The number of CAs created was " + setOfSubjectKeyIDs.size() + ".");
             internalCertificateStoreSession.reloadCaCertificateCache();
@@ -121,8 +99,9 @@ public class CertStoreServletTest extends CaTestCase {
             ca1.deleteCA();
         }
     }
+
     @Test
-    public void testDisplayPage() throws MalformedURLException, IOException, URISyntaxException {
+    public void testDisplayPage() throws IOException, URISyntaxException {
         final String sURI = CertFetchAndVerify.getURL();
         log.debug("URL: '"+sURI+"'.");
         final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
@@ -155,27 +134,25 @@ public class CertStoreServletTest extends CaTestCase {
 
 class CAInHierarchy {
     private final static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertStoreServletTest"));
-    final String name;
+    private final String name;
     final Set<CAInHierarchy> subs;
-    final CaTestCase testCase;
+    private final CaTestCase testCase;
 
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     CAInHierarchy(String _name, CaTestCase _testCase) {
         this.name = _name;
-        this.subs = new HashSet<CAInHierarchy>();
+        this.subs = new HashSet<>();
         this.testCase = _testCase;
     }
 
-    X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+    X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) throws Exception {
         return createCA(CAInfo.SELFSIGNED, null, setOfSubjectKeyIDs);
     }
 
     private X509Certificate createCA(int signedBy, Collection<Certificate> certificateChain, Set<Integer> setOfSubjectKeyIDs)
-            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+            throws Exception {
         assertTrue("Failed to created certificate.",
                 CaTestCase.createTestCA(this.name, 1024, "CN=" + this.name + ",O=EJBCA junit,OU=CertStoreServletTest", signedBy, certificateChain));
         final CAInfo info = getCAInfo();
@@ -190,10 +167,9 @@ class CAInHierarchy {
         return caCert;
     }
 
-    void deleteCA() throws CADoesntExistsException, AuthorizationDeniedException {
-        final Iterator<CAInHierarchy> i = this.subs.iterator();
-        while (i.hasNext()) {
-            i.next().deleteCA();
+    void deleteCA() throws AuthorizationDeniedException {
+        for (CAInHierarchy sub : this.subs) {
+            sub.deleteCA();
         }
         CaTestCase.removeTestCA(this.name);
         internalCertificateStoreSession.removeCertificatesBySubject("CN=" + this.name + ",O=EJBCA junit,OU=CertStoreServletTest");
