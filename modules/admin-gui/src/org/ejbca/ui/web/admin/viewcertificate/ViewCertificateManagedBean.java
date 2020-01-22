@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -53,6 +54,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 @ViewScoped
 @ManagedBean(name="viewCertificateMBean")
 public class ViewCertificateManagedBean extends BaseManagedBean implements Serializable {
+    private static final Logger log = Logger.getLogger(ViewCertificateManagedBean.class);
 
     private static final String CA_BEAN_ATTRIBUTE = "caBean";
     private static final String RA_BEAN_ATTRIBUTE = "rabean";
@@ -373,9 +375,14 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
 
         if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
             certificateSerNo = request.getParameter(SERNO_PARAMETER);
-            caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
             noparameter = false;
-            raBean.loadCertificates(new BigInteger(certificateSerNo, 16), caId);
+            try {
+                final BigInteger serNo = new BigInteger(certificateSerNo, 16);
+                caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
+                raBean.loadCertificates(serNo, caId);
+            } catch (NumberFormatException e) {
+                log.debug("Invalid input of cert serial or caid: " + certificateSerNo + ", " + request.getParameter(CACERT_PARAMETER));
+            }
         } else if (request.getParameter(CACERT_PARAMETER) != null) {
             caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
             raBean.loadCACertificates(caBean.getCACertificates(caId));

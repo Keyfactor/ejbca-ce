@@ -89,21 +89,13 @@
                                 <h:inputText id="tokenMatchValue" value="#{roleMembersBean.tokenMatchValue}" rendered="#{roleMembersBean.renderTokenMatchValueInput}"/>
                             </h:panelGroup>
                         </f:facet>
-                        <h:outputText value="#{roleMember.tokenMatchValue}"/>
-<ui:remove>
-      <!-- We can not have link using HTTP GET to a jsp page, as the jsp page is protected with CSRF Guard. Could not find a way to 
-           make a POST request from here, so the link is removed until listendentities.jsp is a jsf page and we can make a commandLink instead.
-           See EJBCAINTER-230 
-      -->  
                         <h:outputText rendered="#{!roleMembersBean.isRenderCertificateLink(roleMember)}" value="#{roleMember.tokenMatchValue}"/>
-                        <h:outputLink rendered="#{roleMembersBean.isRenderCertificateLink(roleMember)}"
-                            value="#{facesContext.externalContext.context.contextPath}/ra/listendentities.jsp">
-                            <f:param name="action" value="listusers"/>
-                            <f:param name="buttonisrevoked" value="value"/>
-                            <f:param name="textfieldserialnumber" value="#{roleMember.tokenMatchValue}"/>
+	 		            <h:outputLink rendered="#{roleMembersBean.isRenderCertificateLink(roleMember)}"
+			                value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml">
+                            <f:param name="serno" value="#{roleMember.tokenMatchValue}"/>
+                            <f:param name="caid" value="#{roleMember.tokenIssuerId}"/>
                             <h:outputText value="#{roleMember.tokenMatchValue}"/>
                         </h:outputLink>
-</ui:remove>
                     </h:column>
                     <h:column>
                         <f:facet name="header">
