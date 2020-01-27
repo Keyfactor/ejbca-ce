@@ -220,9 +220,16 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private List<String> fetchTexts(final String[] keys) {
         final List<String> texts= new ArrayList<>();
         for (final String key : keys) {
-            if (!key.equals("REV_UNUSED")) {
-                texts.add(ejbcaBean.getText(key));
+            if (key.equals("REV_UNUSED")) {
+                continue;
             }
+            if (certificateData.isRevokedAndOnHold() && key.equals("REV_CERTIFICATEHOLD")) {
+                continue;
+            }
+            if (!certificateData.isRevoked() && key.equals("REV_REMOVEFROMCRL")) {
+                continue;
+            }
+            texts.add(ejbcaBean.getText(key));
         }
         return texts;
     }
