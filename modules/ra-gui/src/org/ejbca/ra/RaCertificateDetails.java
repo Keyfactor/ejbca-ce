@@ -418,10 +418,6 @@ public class RaCertificateDetails {
     public void setPrevious(RaCertificateDetails previous) { this.previous = previous; }
 
     public List<SelectItem> getNewRevocationReasons() {
-        return getNewRevocationReasons(!isSuspended());
-    }
-
-    private List<SelectItem> getNewRevocationReasons(final boolean includeOnHold) {
         final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_0")));
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_1")));
@@ -429,10 +425,10 @@ public class RaCertificateDetails {
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_3")));
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_SUPERSEDED), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_4")));
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_5")));
-        if (includeOnHold) {
-            ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_6")));
+        if (!isSuspended()) {
+            ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD),
+                    callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_6")));
         }
-        ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_8")));
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_9")));
         ret.add(new SelectItem(Integer.valueOf(RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE), callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_reason_10")));
         return ret;
