@@ -226,7 +226,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             if (certificateData.isRevokedAndOnHold() && key.equals("REV_CERTIFICATEHOLD")) {
                 continue;
             }
-            if (!certificateData.isRevoked() && key.equals("REV_REMOVEFROMCRL")) {
+            if (key.equals("REV_REMOVEFROMCRL")) {
                 continue;
             }
             texts.add(ejbcaBean.getText(key));
