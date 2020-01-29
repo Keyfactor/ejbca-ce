@@ -77,6 +77,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * 
@@ -255,6 +256,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         ResponseMessage resp = null;
         try {
             resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
+            fail("Should throw");
         } catch (CesecoreException e) {
             log.debug(e.getMessage());
             assertTrue("Unexpected exception.",
@@ -293,7 +295,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         user.setExtendedInformation(ei);
         try {
             certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
-            assertTrue("This method should throw exception", false);
+            fail("This method should throw exception");
         } catch (CesecoreException e) {
             assertTrue(e.getMessage().contains("not allowing certificate serial number override"));
         }
