@@ -1033,6 +1033,7 @@ public class CertToolsUnitTest {
                     +" GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
             // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
             CertTools.stringToBCDNString(dn1);
+            fail("Should throw");
         } catch (IllegalArgumentException e) {
             // K is not a valid OID so it should throw
             assertEquals("Exception message is wrong", "Unknown object id - K - passed to distinguished name", e.getMessage());            
@@ -1222,6 +1223,7 @@ public class CertToolsUnitTest {
         try {
             // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
             assertEquals("", CertTools.stringToBCDNString("asdasd,asdassd"));
+            fail("Should throw");
         } catch (IllegalArgumentException e) {
             // invalid and should throw
             assertEquals("Exception message is wrong", "badly formatted directory string", e.getMessage());
