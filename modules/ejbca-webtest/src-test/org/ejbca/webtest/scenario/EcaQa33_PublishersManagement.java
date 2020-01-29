@@ -125,7 +125,7 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
     }
     
     @Test
-    public void stepF_mallformedVaPublisherDataSource() {
+    public void stepG_mallformedVaPublisherDataSource() {
         publisherHelper.openPage(getAdminWebUrl());
         publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
         publisherHelper.editPublisher();
@@ -136,7 +136,7 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
     }
     
     @Test
-    public void stepF_validVaPublisherDataSource() {
+    public void stepH_validVaPublisherDataSource() {
         publisherHelper.openPage(getAdminWebUrl());
         publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
         publisherHelper.editPublisher();
@@ -145,5 +145,4 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
         publisherHelper.save();
         publisherHelper.assertBackToListPublisherPage();
     }
-    
 }
