@@ -209,7 +209,11 @@
 	<property name="systemtests.properties.file" location="${ejbca.home}/conf/systemtests.properties"/>
     
 	<!-- Define class-paths of global interest -->
-	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc-1.4.10.jar"/></path>
+	<path id="lib.cert-cvc.classpath">
+		<fileset dir="${ejbca.home}/lib"> 
+			<include name="cert-cvc-*.jar"/>
+		</fileset>
+	</path>
 
 	<path id="lib.junit.classpath">
 		<fileset dir="${ejbca.home}/lib/ext">
