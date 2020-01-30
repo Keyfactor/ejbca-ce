@@ -146,7 +146,7 @@
 	<classpathentry kind="lib" path="lib/ext/webtest/commons-exec-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/gson-2.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/guava-28.0.jar"/>
-	<classpathentry kind="lib" path="lib/cert-cvc-1.4.10.jar"/>
+	<classpathentry kind="lib" path="lib/cert-cvc-1.4.11.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-8.2.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-1.1.3.jar"/>
