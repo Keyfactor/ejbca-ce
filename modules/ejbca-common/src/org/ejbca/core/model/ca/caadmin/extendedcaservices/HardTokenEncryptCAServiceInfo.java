@@ -17,7 +17,7 @@ import java.io.Serializable;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 
 /**
- * Deprecated class. Kept for backwards compatibility with 6.15 or older RA peer systems, which send this class in serialized data.
+ * Deprecated class. Kept for backwards compatibility with 6.15 or older CA peer systems, which send this class in serialized data, to the RAs.
  * @version $Id$
  * @deprecated Since 7.0 (was removed in 7.0 until 7.4.0)
  */
