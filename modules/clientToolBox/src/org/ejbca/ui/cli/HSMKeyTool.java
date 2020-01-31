@@ -510,16 +510,10 @@ public class HSMKeyTool extends ClientToolBox {
                 final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
                 // End date is the same as the new CVCA certificate
                 final Date validTo = newCertCVC.getCertificateBody().getValidTo();
-
-                // In link certificates we can change algorithm and keys. The algorithm in CVC is encoded into the public key though, so if we
-                // don't take special precaution here CertificateGenerator.createCertificate will sign with linkSigAlg but put the algorithm OID
-                // from cvcNewPubKey, which will not be the algorithm used to sign the cert with, if the algorithm has changed (say from SHA256WithECDSA to SHA512withECDSA).
-                // Therefore we "hack" the new key here to set the same oid as in the old public key, which is the one used for signing (well the private key, 
-                // but with the algorithm as encoded in the public key)
-                CVCPublicKey cvcOldPubKey = oldCertCVC.getCertificateBody().getPublicKey();
+                // In link certificates we can change algorithm and keys. The algorithm used to sign the link certificate is the algorithm
+                // taken from the old certificate public key (linkSigAlg). Algorithm OID of the link certificate is bound to the new public key
                 CVCPublicKey cvcNewPubKey = newCertCVC.getCertificateBody().getPublicKey();
-                cvcNewPubKey.setObjectIdentifier(cvcOldPubKey.getObjectIdentifier());
-                
+                               
                 final CVCertificate linkCert = CertificateGenerator.createCertificate(cvcNewPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
                 try ( final DataOutputStream dos = new DataOutputStream(baos) ) {
                     linkCert.encode(dos);
