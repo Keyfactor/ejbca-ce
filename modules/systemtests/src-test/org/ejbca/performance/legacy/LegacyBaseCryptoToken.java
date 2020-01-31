@@ -101,8 +101,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
     protected KeyStore getKeyStore() throws CryptoTokenOfflineException {
         autoActivate();
         if (this.keyStore == null) {
-            final String msg = intres.getLocalizedMessage("token.errorinstansiate", mJcaProviderName, "keyStore ("+id+") == null");
-            throw new CryptoTokenOfflineException(msg);
+            throw new CryptoTokenOfflineException(intres.getLocalizedMessage("token.offline", id));
         }
         return this.keyStore;
     }
