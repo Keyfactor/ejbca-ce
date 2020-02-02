@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
+import org.ejbca.issuechecker.issues.BasicConstraintsViolation;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
 import org.ejbca.issuechecker.issues.InternalKeyBindingValidityCheck;
 import org.ejbca.issuechecker.issues.NotInProductionMode;
@@ -33,6 +34,7 @@ public class EjbcaCommonIssueSet extends ConfigurationIssueSet {
             .add(NotInProductionMode.class)
             .add(EccWithKeyEncipherment.class)
             .add(InternalKeyBindingValidityCheck.class)
+            .add(BasicConstraintsViolation.class)
             .build();
 
     @Override
