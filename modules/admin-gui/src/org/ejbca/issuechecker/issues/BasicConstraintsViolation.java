@@ -32,7 +32,7 @@ import org.ejbca.issuechecker.TicketDescription;
  *
  * <p>Tickets created by this issue can be viewed by anyone who is authorized to the CA.
  *
- * @version $Id $
+ * @version $Id$
  */
 public class BasicConstraintsViolation extends ConfigurationIssue {
     private final class CaEntry {
