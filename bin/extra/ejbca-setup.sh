@@ -812,9 +812,6 @@ cat <<EOF > ejbca-custom/conf/ejbca.properties
 # Default: \$APPSRV_HOME
 appserver.home=${INSTALL_DIRECTORY}/wildfly
 
-# See also the section 'cluster configuration' for other JBoss options, for example
-# for deploying on JBoss EAP.
-
 # Which application server is used? Normally this is auto-detected from 'appserver.home' and should not be configured. 
 # Possible values: jboss, glassfish (, weblogic)
 # Default: <auto-detect>
@@ -870,14 +867,12 @@ ca.cmskeystorepass=${cmskeystorepass}
 #approval.excludedClasses=
 
 # ----------------- cluster configuration ----------------
-# The configuration. Use "all" when clustering, 
-# or for example "production" when deploying on JBoss EAP.
-# Default: default
-#jboss.config=all
-
-# Name of the farm directory. Use "farm" when clustering.
-# Default: deploy
-#jboss.farm.name=farm
+# By default, EJBCA keeps a list of every EJBCA instance's hostname that has started in this cluster
+# and allows for example Services to be pinned to a specific set of hostnames.
+# In environments that has many short-lived instances with different hostnames this should be disabled.
+#
+# Default: true
+#ejbca.nodetracking=true
 
 #------------------- EJBCA Healthcheck settings -------------
 # Specifies the basic settings of the EJBCA Healthcheck servlet
