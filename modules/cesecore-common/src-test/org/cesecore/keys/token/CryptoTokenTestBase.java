@@ -394,7 +394,6 @@ public abstract class CryptoTokenTestBase {
             PublicKey pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
             KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
             assertEquals(1024, KeyTools.getKeyLength(pub));
-
             // Get a key that does not exist
             try {
                 pub = cryptoToken.getPublicKey(PKCS11TestUtils.NON_EXISTING_KEY);
@@ -409,13 +408,13 @@ public abstract class CryptoTokenTestBase {
                     priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertTrue(e.getMessage(), e.getMessage().contains("keyStore (111) == null"));
+                    assertTrue(e.getMessage(), e.getMessage().contains(intres.getLocalizedMessage("token.offline", 111)));
                 }
                 try {
                     pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertTrue(e.getMessage(), e.getMessage().contains("keyStore (111) == null"));
+                    assertTrue(e.getMessage(), e.getMessage().contains(intres.getLocalizedMessage("token.offline", 111)));
                 }
             }
             // Activate with wrong PIN should not work
