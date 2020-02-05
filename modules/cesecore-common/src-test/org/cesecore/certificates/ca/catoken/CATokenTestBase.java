@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -51,7 +52,9 @@ public abstract class CATokenTestBase {
 	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin("userpin1");
 	private static final String DEFAULT_KEY = "defaultKey ÅaÄÖbåäöc«»©“”nµA";
 	protected static final String ENCRYPTION_KEY = "encryptionKey ÅaÄbbÖcccäâãêëẽć©A";
-
+    private static final InternalResources intres = InternalResources.getInstance();
+	
+	
 	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
 	        CertificateException, IOException,CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
 	        InvalidAlgorithmParameterException {
@@ -489,7 +492,7 @@ public abstract class CATokenTestBase {
 						cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
 				fail("Keystore instansiation should have failed.");
 			} catch (CryptoTokenOfflineException e) {
-                assertEquals("Can not instantiate "+getProvider()+". keyStore (111) == null.", e.getMessage());
+                assertEquals(intres.getLocalizedMessage("token.offline", 111), e.getMessage());
 			}
 			// Activate with wrong PIN should not work
 			try {
@@ -497,7 +500,7 @@ public abstract class CATokenTestBase {
 				assertTrue("should throw", false);
 			} catch (CryptoTokenAuthenticationFailedException e) {
 				String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
-				String strp11 = "Failed to initialize PKCS11 provider slot '1'.";
+				String strp11 = "Failed to initialize PKCS11 provider slot '" + PKCS11TestUtils.getPkcs11SlotValue("1") + "'.";
 				assert(e.getMessage().equals(strsoft)||e.getMessage().equals(strp11));
 			}
 			cryptoToken.activate(TOKEN_PIN.toCharArray());
