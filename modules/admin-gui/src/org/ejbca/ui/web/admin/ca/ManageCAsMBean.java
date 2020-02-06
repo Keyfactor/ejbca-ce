@@ -158,8 +158,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isCanAddAndEditResource() {
-        return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAADD.resource())
-               && getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource());
+        return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAADD.resource(), StandardRules.CAEDIT.resource());
     }
     
     public String getCreateCaNameTitle() {
