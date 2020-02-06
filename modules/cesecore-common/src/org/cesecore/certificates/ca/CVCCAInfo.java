@@ -51,10 +51,10 @@ public class CVCCAInfo extends CAInfo {
                 "", // Description
                 -1, // Revocation reason
                 null, // Revocation date
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL period
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL issue interval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL overlap time
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // Delta CRL period
+                1 * SimpleTime.MILLISECONDS_PER_DAY, // CRL period
+                0L, // CRL issue interval
+                10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRL overlap time
+                0L, // Delta CRL period
                 new ArrayList<Integer>(), // CRL publishers
                 new ArrayList<Integer>(), // Key validators
                 true, // Finish user
