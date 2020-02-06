@@ -1737,8 +1737,8 @@
 					<h:commandButton id="buttoncreate"
 						value="#{web.text.CREATE}"
 						action="#{editCAsMBean.createCa}"
-						rendered="#{not editCAsMBean.editCA or not editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
-						disabled="#{editCAsMBean.signedByExternal or not editCAsMBean.hasEditRight or not editCAsMBean.hasCreateRight}" />
+						rendered="#{not editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
+						disabled="#{editCAsMBean.signedByExternal}" />
         	    &nbsp;&nbsp;&nbsp;
 				<h:button 
 						name="buttoncancel"
