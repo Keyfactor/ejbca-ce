@@ -634,7 +634,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         return null;
                     }
                     if (s == null) {
-                        log.warn("We got HTTP 200 as response code getting public key, but no JSON content returned. Unknown error sate from Key Vault. Returning null as public key (we can't find it)");
+                        log.warn("We got HTTP 200 as response code getting public key, but no JSON content returned. Unknown error state from Key Vault. Returning null as public key (we can't find it)");
                         return null;
                     }
                     final JSONParser jsonParser = new JSONParser();
