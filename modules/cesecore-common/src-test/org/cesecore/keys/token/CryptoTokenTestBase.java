@@ -57,9 +57,9 @@ public abstract class CryptoTokenTestBase {
 
     private static final String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
     private static String strp11 = "Failed to initialize PKCS11 provider slot "; // should be appended with real value, i.e. '1'
-    private static final String slotIndexP11Ng = "'i0'"; // Test should run on slot with index 0
+    private static final String slotIndexP11Ng = PKCS11TestUtils.getPkcs11SlotValue("0"); // Test should run on slot with index 0
     private static final String slotIdP11Ng = "0"; // Test should run on slot with id 0
-    private static final String strP11Ng = "Failed to login to PKCS#11 provider slot " + slotIndexP11Ng + ": 0x000000a" + slotIdP11Ng
+    private static final String strP11Ng = "Failed to login to PKCS#11 provider slot '" + slotIndexP11Ng + "': 0x000000a" + slotIdP11Ng
             + ": PIN_INCORRECT";
 
     public CryptoTokenTestBase() {
