@@ -611,7 +611,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         PublicKey publicKey = null;
         if (aliasCache.shouldCheckForUpdates(alias.hashCode()) || aliasCache.getEntry(alias.hashCode()).equals(AzureCryptoToken.getDummyCacheKey()) ) {
             if (log.isDebugEnabled()) {
-                log.debug("Looking for public key with alias " + alias + ", and cache is expired or filled with dummyCacheKey. Will try to read it form Key Vault.");
+                log.debug("Looking for public key with alias " + alias + ", and cache is expired or filled with dummyCacheKey. Will try to read it from Key Vault.");
             }
             try {
                 // connect to Azure and retrieve public key, use empty version string to get last version (don't check for existing key versions to save a round trip)
