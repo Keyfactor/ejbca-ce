@@ -92,17 +92,13 @@
                                 <h:inputText id="tokenMatchValue" value="#{roleMembersBean.tokenMatchValue}" rendered="#{roleMembersBean.renderTokenMatchValueInput}"/>
                             </h:panelGroup>
                         </f:facet>
-                        <h:outputText value="#{roleMember.tokenMatchValue}"/>
-                        <h:commandButton rendered="#{roleMembersBean.isRenderCertificateLink(roleMember)}"
-                        	onclick="view_cert('#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml', '#{roleMember.tokenMatchValue}', '#{roleMember.tokenIssuerId}')" value="View Certificate">
-                        </h:commandButton>
-                        <script type="text/javascript">
-                            function view_cert(baseUrl, tokenMatchValue, tokenIssuerId) {
-                                var link = baseUrl + '?serno=' + tokenMatchValue + '&amp;caid=' + tokenIssuerId;
-                                win_popup = window.open(link, 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
-                                win_popup.focus();
-                            }
-                        </script>
+                        <h:outputText rendered="#{!roleMembersBean.isRenderCertificateLink(roleMember)}" value="#{roleMember.tokenMatchValue}"/>
+	 		            <h:outputLink rendered="#{roleMembersBean.isRenderCertificateLink(roleMember)}" target="_blank"
+			                value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml">
+                            <f:param name="serno" value="#{roleMember.tokenMatchValue}"/>
+                            <f:param name="caid" value="#{roleMember.tokenIssuerId}"/>
+                            <h:outputText value="#{roleMember.tokenMatchValue}"/>
+                        </h:outputLink>
                     </h:column>
                     <h:column>
                         <f:facet name="header">
