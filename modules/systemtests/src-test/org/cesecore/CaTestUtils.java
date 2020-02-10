@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -73,6 +70,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -84,6 +82,9 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Common class for test classes which need to create a CA.
@@ -256,6 +257,7 @@ public abstract class CaTestUtils {
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
+        cainfo.setDeltaCRLPeriod(10 * SimpleTime.MILLISECONDS_PER_HOUR); // In order to be able to create deltaCRLs
         X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         try {
             x509ca.setCAToken(catoken);
