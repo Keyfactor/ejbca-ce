@@ -1023,7 +1023,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             reportGenericError("enroll_certificate_could_not_be_generated",
                     "Certificate could not be generated for end entity with username " + getEndEntityInformation().getUsername(),
                     errorCode, exception);
-            break;
+            return;
         }
         throw new IllegalStateException("Unhandled key pair generation option");
     }
