@@ -241,13 +241,13 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         }
                     }                    
                 } else {
-                    aliasCache.flush(); // make sure the crypto token is off-line for getTokenStatus
-                    status = STATUS_OFFLINE;
+                    aliasCache.flush();
+                    status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
                     throw new CryptoTokenOfflineException("Can not list keys, response code is " + response.getStatusLine().getStatusCode());                    
                 }
             } catch (IOException | ParseException | CryptoTokenAuthenticationFailedException e) {
-                aliasCache.flush(); // make sure the crypto token is off-line for getTokenStatus
-                status = STATUS_OFFLINE;
+                aliasCache.flush();
+                status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
                 throw new CryptoTokenOfflineException(e);
             }
             status = STATUS_ACTIVE; // make sure the crypto token is on-line for getTokenStatus
@@ -286,7 +286,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             final int requestStatusCode = response.getStatusLine().getStatusCode();
             if (requestStatusCode == 401) {
                 log.debug("Got access denied calling key vault, try to get authentication URI and fetch auth token");
-                // Bet bearer token (authentication token).
+                // Get bearer token (authentication token).
                 final Header lastHeader = response.getLastHeader("WWW-Authenticate");
                 // Close as soon as possible, we don't need this response, it's an "Error Response" for invalid_token 
                 response.close();
