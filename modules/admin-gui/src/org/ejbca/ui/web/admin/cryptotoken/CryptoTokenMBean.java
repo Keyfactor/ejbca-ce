@@ -37,6 +37,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -1340,8 +1341,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         return newKeyPairAlias;
     }
 
-    public void setNewKeyPairAlias(String newKeyPairAlias) {
-        this.newKeyPairAlias = newKeyPairAlias;
+    public void setNewKeyPairAlias(final String newKeyPairAlias) {
+        this.newKeyPairAlias = StringUtils.strip(newKeyPairAlias);
     }
 
     /**
