@@ -156,7 +156,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     }
 
     @Test
-    public void stepE2_CreateSven() {
+    public void stepE2_CreateSven() throws InterruptedException {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }

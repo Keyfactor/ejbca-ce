@@ -13,8 +13,11 @@
 package org.ejbca.webtest.helper;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -30,6 +33,8 @@ import static org.junit.Assert.fail;
  * @version $Id$
  */
 public class RaWebHelper extends BaseHelper {
+
+    private static final Logger log = Logger.getLogger(RaWebHelper.class);
 
     public RaWebHelper(final WebDriver webDriver) {
         super(webDriver);
@@ -119,25 +124,37 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.BUTTON_TAB_PENDING_REQUESTS);
     }
 
-    public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) {
+    public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) throws InterruptedException {
         selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
+        TimeUnit.SECONDS.sleep(2);
     }
 
-    public void selectCertificationAuthorityByName(final String ca) {
-        selectOptionByName(Page.SELECT_CA_TYPE, ca);
+    public void selectCertificationAuthorityByName(final String ca) throws InterruptedException {
+        try {
+            selectOptionByName(Page.SELECT_CA_TYPE, ca);
+        } catch (NoSuchElementException e) {
+            final String nameWithDefault = ca + " (default)";
+            if (log.isDebugEnabled()) {
+                log.debug("CA select item '" + ca + "' was not found, trying with '" + nameWithDefault + "'");
+            }
+            selectOptionByName(Page.SELECT_CA_TYPE, ca);
+        }
+        TimeUnit.SECONDS.sleep(2);
     }
 
     public void selectKeyAlgorithm(final String keyAlgorithm) {
         selectOptionByName(Page.SELECT_KEY_ALGORITHM, keyAlgorithm);
     }
     
-    public void selectKeyPairGenerationOnServer() {
+    public void selectKeyPairGenerationOnServer() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_ON_SERVER);
+        TimeUnit.SECONDS.sleep(2);
     }
 
     
-    public void selectKeyPairGenerationProvided() {
+    public void selectKeyPairGenerationProvided() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_PROVIDED);
+        TimeUnit.SECONDS.sleep(2);
     }
 
     public void assertCorrectProvideRequestInfoBlock() {
@@ -211,7 +228,14 @@ public class RaWebHelper extends BaseHelper {
     public void assertErrorMessageExists(final String noErrorMessage, final String errorMessage) {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
         assertNotNull(noErrorMessage, errorMessageWebElement);
-        assertEquals("Error message does not match.", errorMessageWebElement.getText(), errorMessage);
+        assertEquals("Error message does not match.", errorMessage, errorMessageWebElement.getText());
+    }
+    
+    public void assertErrorMessageContains(final String noErrorMessage, final String errorMessage) {
+        final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
+        assertNotNull(noErrorMessage, errorMessageWebElement);
+        assertTrue("Error message does not match. Should contains '" + errorMessage + "', but was '" + errorMessageWebElement.getText() + "'",
+                errorMessageWebElement.getText().contains(errorMessage));
     }
 
     /**
