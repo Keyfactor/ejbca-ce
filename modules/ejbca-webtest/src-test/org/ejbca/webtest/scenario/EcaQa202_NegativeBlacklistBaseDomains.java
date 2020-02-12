@@ -1,7 +1,10 @@
 package org.ejbca.webtest.scenario;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaHelper;
@@ -16,9 +19,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Asserts whether the blacklist validator denies a site based on the
@@ -74,7 +74,7 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // super
         afterClass();
 
@@ -185,14 +185,14 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
 
     @Test
     public void stepM_AddEndEntityProfile() {
-        eeProfileHelper.openPage(this.getAdminWebUrl());
+        eeProfileHelper.openPage(getAdminWebUrl());
         eeProfileHelper.addEndEntityProfile(TestData.ENTITY_NAME);
     }
 
     @Test
     public void stepN_EditEndEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
-        eeProfileHelper.selectDefaultCa(this.getCaName());
+        eeProfileHelper.selectDefaultCa(getCaName());
         //Add DNS Name
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
     }
@@ -204,12 +204,12 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
 
     @Test
     public void stepP_MakeNewCertificate() {
-        raWebHelper.openPage(this.getRaWebUrl());
+        raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
     }
 
     @Test
-    public void stepQ_SelectRequestTemplate() {
+    public void stepQ_SelectRequestTemplate() throws InterruptedException {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
@@ -226,15 +226,16 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
     }
 
     @Test
-    public void stepT_ProvideRequestInfo() {
+    public void stepT_ProvideRequestInfo() throws InterruptedException {
         raWebHelper.fillMakeRequestEditCommonName("cn" + Calendar.getInstance().toString());
         raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+        TimeUnit.SECONDS.sleep(2);
     }
 
     @Test
     public void stepU_downloadPem() {
         raWebHelper.clickDownloadPem();
-        raWebHelper.assertErrorMessageExists("Wrong error message displayed when uploading using invalid domain",
+        raWebHelper.assertErrorMessageContains("No error message displayed when uploading using invalid domain",
                 "Validation failed, certificate issuance aborted");
     }
 
