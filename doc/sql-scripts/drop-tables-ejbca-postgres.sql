@@ -35,3 +35,4 @@ drop table if exists AcmeNonceData cascade;
 drop table if exists AcmeAccountData cascade;
 drop table if exists AcmeOrderData cascade;
 drop table if exists SctData cascade;
+drop table if exists OcspResponseData cascade;
