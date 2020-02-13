@@ -38,7 +38,17 @@
          - Community supported and not well tested.
          - LVARCHAR(n) has a maximum n of 32739 bytes.
     -->
-
+    <entity class="org.cesecore.oscp.OcspResponseData" access="PROPERTY" metadata-complete="false">
+    	<attributes>
+    		<id name="certificateFingerPrint"><column name="certificateFingerPrint" column-definition="VARCHAR(255,0)"/></id>
+    		<basic name="producedAt" fetch="EAGER"><column name="producedAt" column-definition="DECIMAL(18,0)"/></basic>
+    		<basic name="nextUpdate" fetch="EAGER"><column name="nextUpdate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+    		<basic name="ocspResponse" fetch="EAGER"><column name="ocspResponse" column-definition="BLOB"/></basic>
+    		<basic name="caId" fetch="EAGER"><column name="cAId" column-definition="INTEGER"/> </basic>
+    		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+    	</attributes>
+    </entity>
     <entity class="org.ejbca.acme.AcmeNonceData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="nonce"><column name="nonce" column-definition="VARCHAR(255,0)"/></id>
