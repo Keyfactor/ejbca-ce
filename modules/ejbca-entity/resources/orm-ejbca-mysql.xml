@@ -40,6 +40,18 @@
          
          MySQL/MariaDB row size (all columns) is limited to 65535 bytes. UTF-8 chars can take up to 3 bytes.
     -->
+    
+    <entity class="org.cesecore.oscp.OcspResponseData" access="PROPERTY" metadata-complete="false">
+    	<attributes>
+    		<id name="certificateFingerPrint"><column name="certificateFingerPrint" column-definition="VARCHAR(250) BINARY"/></id>
+    		<basic name="producedAt" fetch="EAGER"><column name="producedAt" column-definition="BIGINT(20)"/></basic>
+    		<basic name="nextUpdate" fetch="EAGER"><column name="nextUpdate" column-definition="BIGINT(20)" nullable="false"/></basic>
+    		<basic name="ocspResponse" fetch="EAGER"><column name="ocspResponse" column-definition="LONGBLOB"/></basic>
+    		<basic name="caId" fetch="EAGER"><column name="cAId" column-definition="INT(11)"/> </basic>
+    		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
+    	</attributes>
+    </entity>
     <entity class="org.ejbca.acme.AcmeNonceData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="nonce"><column name="nonce" column-definition="VARCHAR(250) BINARY"/></id>
