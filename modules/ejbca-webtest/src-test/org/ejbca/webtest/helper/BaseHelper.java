@@ -31,6 +31,7 @@ import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -257,6 +258,7 @@ public class BaseHelper {
      */
     protected void openPageByUrlAndAssert(final String webUrl, final String expectedUri) {
         webDriver.get(webUrl);
+        waitForJavaScriptLoad(webDriver);
         assertPageUri(expectedUri);
     }
 
@@ -797,6 +799,23 @@ public class BaseHelper {
         }
     }
 
+    /**
+     * Some pages executes JavaScript on load which may cause StaleElementException if executed after
+     * webelement is selected. Invoke this method to wait for document to be ready before interacting with
+     * webelements
+     * @param driver Selenium Web Driver.
+     */
+    private void waitForJavaScriptLoad(WebDriver driver) {
+        ExpectedCondition<Boolean> pageLoadCondition = new
+                ExpectedCondition<Boolean>() {
+                    public Boolean apply(WebDriver driver) {
+                        return ((org.openqa.selenium.JavascriptExecutor)driver).executeScript("return document.readyState").equals("complete");
+                    }
+                };
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+        wait.until(pageLoadCondition);
+    }
+    
     // Selects options of a select
     private void selectOptions(final Select selectObject, final List<String> options, final boolean useDeselectAll, final SELECT_BY selectBy) {
         if(useDeselectAll) {
