@@ -110,7 +110,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     }
 
     @Test
-    public void testB_addEndEntityProfile() {
+    public void testB_addEndEntityProfile() throws InterruptedException {
         eeProfileHelper.openPage(getAdminWebUrl());
         eeProfileHelper.addEndEntityProfile(TestData.EEP_NAME);
         eeProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
@@ -125,6 +125,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         eeProfileHelper.triggerExtensionData();
         eeProfileHelper.triggerNumberOfAllowedRequests();
         eeProfileHelper.triggerKeyRecoverable();
+        Thread.sleep(10000);
         eeProfileHelper.triggerIssuanceRevocationReason();
         eeProfileHelper.triggerSendNotification();
         eeProfileHelper.addNotification();
@@ -148,7 +149,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         addEndEntityHelper.assertTokenSelected("User Generated");
         addEndEntityHelper.assertNumberOfAllowedRequestsSelected("1");
         addEndEntityHelper.assertRevocationReasonSelected("Active");
-        addEndEntityHelper.assertKeyRecoveryEnabled(false);
+        addEndEntityHelper.assertKeyRecoveryEnabled(true);
         addEndEntityHelper.assertFieldsExists(TestData.ASSERTION_FIELDMAP);
         addEndEntityHelper.assertFieldNameConstraintsPermittedExists();
     }
