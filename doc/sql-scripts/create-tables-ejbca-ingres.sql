@@ -443,3 +443,15 @@ CREATE TABLE SctData (
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (pk) 
 );
+
+CREATE TABLE OcspResponseData (
+    certificateFingerPrint VARCHAR(256) NOT NULL,
+    producedAt INT8 NOT NULL,
+    nextUpdate INT8,
+    ocspResponse LONG BYTE,
+    caId INT4,
+    rowProtection LONG VARCHAR,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (certificateFingerPrint)
+);
+

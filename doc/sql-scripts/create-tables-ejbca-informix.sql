@@ -442,3 +442,15 @@ CREATE TABLE SctData (
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (pk) 
 );
+
+CREATE TABLE OcspResponseData (
+    certificateFingerPrint VARCHAR(255,0) NOT NULL,
+    producedAt DECIMAL(18,0) NOT NULL,
+    nextUpdate DECIMAL(18,0),
+    ocspResponse BLOB,
+    caId INTEGER,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (certificateFingerPrint)
+);
+

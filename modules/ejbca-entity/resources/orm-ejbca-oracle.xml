@@ -41,7 +41,17 @@
            name the CLOB accessors with a leading "zzz" when there are columns with names that would be sorted after the CLOBs.
            Apparently (from testing) this is only relevant if there are inserts of VARCHAR2s exceeding the default 255 bytes.
     -->
-
+    <entity class="org.cesecore.oscp.OcspResponseData" access="PROPERTY" metadata-complete="false">
+    	<attributes>
+    		<id name="certificateFingerPrint"><column name="certificateFingerPrint" column-definition="VARCHAR2(255 byte)"/></id>
+    		<basic name="producedAt" fetch="EAGER"><column name="producedAt" column-definition="NUMBER(19)"/></basic>
+    		<basic name="nextUpdate" fetch="EAGER"><column name="nextUpdate" column-definition="NUMBER(19)" nullable="false"/></basic>
+    		<basic name="ocspResponse" fetch="EAGER"><column name="ocspResponse" column-definition="BLOB"/></basic>
+    		<basic name="caId" fetch="EAGER"><column name="cAId" column-definition="NUMBER(10)"/> </basic>
+    		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
+    	</attributes>
+    </entity>
     <entity class="org.ejbca.acme.AcmeNonceData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="nonce"><column name="nonce" column-definition="VARCHAR2(255 byte)"/></id>
