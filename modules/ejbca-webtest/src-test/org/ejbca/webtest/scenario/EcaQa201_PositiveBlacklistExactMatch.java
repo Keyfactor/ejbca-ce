@@ -1,5 +1,8 @@
 package org.ejbca.webtest.scenario;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
@@ -16,9 +19,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Asserts whether the blacklist validator permits a site based on the
@@ -208,7 +208,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     }
 
     @Test
-    public void stepQ_SelectRequestTemplate() {
+    public void stepQ_SelectRequestTemplate() throws Exception {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
