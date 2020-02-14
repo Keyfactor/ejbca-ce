@@ -15,6 +15,7 @@ package org.cesecore.oscp;
 import java.io.Serializable;
 
 /**
+ * Primary key class used by OcspResponseData class.
  * 
  * @version $Id$
  *
