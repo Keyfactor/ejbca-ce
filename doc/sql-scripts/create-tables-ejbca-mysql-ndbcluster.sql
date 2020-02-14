@@ -450,13 +450,13 @@ CREATE TABLE SctData (
 
 
 CREATE TABLE OcspResponseData (
-    certificateFingerPrint VARCHAR(250) BINARY NOT NULL,
+    serialNumber VARCHAR(250) BINARY NOT NULL,
     producedAt BIGINT(20) NOT NULL,
     nextUpdate BIGINT(20),
     ocspResponse LONGBLOB,
-    caId INT(11),
+    cAId INT(11),
     rowProtection LONG TEXT,
     rowVersion INT(11) NOT NULL,
-    PRIMARY KEY (certificateFingerPrint)
+    PRIMARY KEY (cAId, serialNumber)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
 

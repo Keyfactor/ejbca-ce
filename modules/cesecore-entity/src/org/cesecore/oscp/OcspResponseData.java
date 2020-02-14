@@ -16,7 +16,6 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -41,28 +40,31 @@ public class OcspResponseData extends ProtectedData implements Serializable {
 
     private static final Logger log = Logger.getLogger(OcspResponseData.class);
 
-    @Id
-    @Column(nullable = false)
-    private String certificateFingerPrint;
+    private ResponsePK responsePrimaryKey;
     private long producedAt;
-    @Column(nullable = false)
     private long nextUpdate;
     private byte[] ocspResponse;
-    private Integer cAId;
     private int rowVersion = 0;
     private String rowProtection;
 
     public OcspResponseData() {
     }
 
-    public String getCertificateFingerPrint() {
-        return this.certificateFingerPrint;
+    public OcspResponseData(final ResponsePK pk, final long producedAt, final long nextUpdate, final byte[] ocspResponse) {
+        this.responsePrimaryKey = pk;
+        this.producedAt = producedAt;
+        this.nextUpdate = nextUpdate;
+        this.ocspResponse = ocspResponse;
     }
 
-    public void setCertificateFingerPrint(final String fingerPrint) {
-        this.certificateFingerPrint = fingerPrint;
+    public ResponsePK getResponsePrimaryKey() {
+        return responsePrimaryKey;
     }
 
+    public void setResponsePrimaryKey(ResponsePK responsePrimaryKey) {
+        this.responsePrimaryKey = responsePrimaryKey;
+    }
+    
     public long getProducedAt() {
         return this.producedAt;
     }
@@ -71,6 +73,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
         this.producedAt = producedAt;
     }
 
+    @Column(nullable = false)
     public long getNextUpdate() {
         return this.nextUpdate;
     }
@@ -87,14 +90,6 @@ public class OcspResponseData extends ProtectedData implements Serializable {
         this.ocspResponse = ocspResponse;
     }
 
-    public Integer getCaId() {
-        return cAId;
-    }
-
-    public void setCaId(final Integer cAId) {
-        this.cAId = cAId;
-    }
-
     public int getRowVersion() {
         return rowVersion;
     }
@@ -106,7 +101,8 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     @Override
     protected String getProtectString(int rowversion) {
         final ProtectionStringBuilder protectedStringBuilder = new ProtectionStringBuilder(8000);
-        protectedStringBuilder.append(getCaId()).append(getCertificateFingerPrint()).append(getProducedAt()).append(getNextUpdate()).append(getOcspResponse());
+        protectedStringBuilder.append(getResponsePrimaryKey().getCaId()).append(getResponsePrimaryKey().getSerialNumber()).append(getProducedAt()).append(getNextUpdate())
+                .append(getOcspResponse());
         if (log.isDebugEnabled()) {
             // Some profiling
             if (protectedStringBuilder.length() > 8000) {
@@ -135,7 +131,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     @Override
     @Transient
     protected String getRowId() {
-        return getCertificateFingerPrint();
+        return new ProtectionStringBuilder().append(getResponsePrimaryKey().getCaId()).append(getResponsePrimaryKey().getSerialNumber()).toString();
     }
 
     @PrePersist
@@ -150,5 +146,4 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
     }
-
 }
