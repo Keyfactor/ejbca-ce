@@ -38,11 +38,13 @@
     -->
     <entity class="org.cesecore.oscp.OcspResponseData" access="PROPERTY" metadata-complete="false">
     	<attributes>
-    		<id name="certificateFingerPrint"><column name="certificateFingerPrint" column-definition="VARCHAR(254)"/></id>
+    	    <embedded-id name="responsePrimaryKey">
+        		<attribute-override name="caId"><column name="cAId" column-definition="INTEGER"/></attribute-override>
+        		<attribute-override name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(254)"/></attribute-override>
+        	</embedded-id>
     		<basic name="producedAt" fetch="EAGER"><column name="producedAt" column-definition="BIGINT"/></basic>
     		<basic name="nextUpdate" fetch="EAGER"><column name="nextUpdate" column-definition="BIGINT" nullable="false"/></basic>
     		<basic name="ocspResponse" fetch="EAGER"><column name="ocspResponse" column-definition="BLOB(200K)"/></basic>
-    		<basic name="caId" fetch="EAGER"><column name="cAId" column-definition="INTEGER"/> </basic>
     		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
     	</attributes>

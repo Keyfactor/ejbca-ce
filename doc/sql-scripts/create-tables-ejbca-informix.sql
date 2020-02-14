@@ -444,13 +444,13 @@ CREATE TABLE SctData (
 );
 
 CREATE TABLE OcspResponseData (
-    certificateFingerPrint VARCHAR(255,0) NOT NULL,
+    serialNumber VARCHAR(255,0) NOT NULL,
     producedAt DECIMAL(18,0) NOT NULL,
     nextUpdate DECIMAL(18,0),
     ocspResponse BLOB,
-    caId INTEGER,
+    cAId INTEGER,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (certificateFingerPrint)
+    PRIMARY KEY (cAId, serialNumber)
 );
 

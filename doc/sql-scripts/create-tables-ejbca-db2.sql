@@ -440,14 +440,14 @@ CREATE TABLE SctData (
 );
 
 CREATE TABLE OcspResponseData (
-    certificateFingerPrint VARCHAR(254) NOT NULL,
+    serialNumber VARCHAR(254) NOT NULL,
     producedAt BIGINT NOT NULL,
     nextUpdate BIGINT,
     ocspResponse BLOB(200K),
-    caId INTEGER,
+    cAId INTEGER NOT NULL,
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (certificateFingerPrint)
+    PRIMARY KEY (cAId, serialNumber)
 );
 
 
