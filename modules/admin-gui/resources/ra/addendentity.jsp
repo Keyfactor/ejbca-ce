@@ -2084,7 +2084,13 @@ function edituser(row){
   <jsp:include page="<%= footurl %>" />
 </div> <!-- main-wrapper -->
 <script>
-    window.onload = fillCAField;
+    if (typeof document.addEventListener != 'undefined') {
+    	// Standard way of doing it
+    	document.addEventListener('load', fillCAField);
+    } else if (typeof document.attachEvent != 'undefined') {
+    	// IE 6-8
+    	document.attachEvent('load', fillCAField);
+    }
 </script>
 </body>
 </html>
