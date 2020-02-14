@@ -14,7 +14,6 @@ package org.cesecore.oscp;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
@@ -73,7 +72,6 @@ public class OcspResponseData extends ProtectedData implements Serializable {
         this.producedAt = producedAt;
     }
 
-    @Column(nullable = false)
     public long getNextUpdate() {
         return this.nextUpdate;
     }
