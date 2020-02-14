@@ -149,7 +149,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         addEndEntityHelper.assertTokenSelected("User Generated");
         addEndEntityHelper.assertNumberOfAllowedRequestsSelected("1");
         addEndEntityHelper.assertRevocationReasonSelected("Active");
-        addEndEntityHelper.assertKeyRecoveryEnabled(true);
+        addEndEntityHelper.assertKeyRecoveryEnabled(false); // because "User Generated" is selected
         addEndEntityHelper.assertFieldsExists(TestData.ASSERTION_FIELDMAP);
         addEndEntityHelper.assertFieldNameConstraintsPermittedExists();
     }
