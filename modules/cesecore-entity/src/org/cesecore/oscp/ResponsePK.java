@@ -30,7 +30,7 @@ public class ResponsePK implements Serializable {
         return caId;
     }
 
-    public void setCaId(Integer cAId) {
+    public void setCaId(final Integer cAId) {
         this.caId = cAId;
     }
 
@@ -38,7 +38,7 @@ public class ResponsePK implements Serializable {
         return serialNumber;
     }
 
-    public void setSerialNumber(String serialNumber) {
+    public void setSerialNumber(final String serialNumber) {
         this.serialNumber = serialNumber;
     }
 

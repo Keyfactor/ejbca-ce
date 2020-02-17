@@ -60,7 +60,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
         return responsePrimaryKey;
     }
 
-    public void setResponsePrimaryKey(ResponsePK responsePrimaryKey) {
+    public void setResponsePrimaryKey(final ResponsePK responsePrimaryKey) {
         this.responsePrimaryKey = responsePrimaryKey;
     }
     
@@ -92,12 +92,12 @@ public class OcspResponseData extends ProtectedData implements Serializable {
         return rowVersion;
     }
 
-    public void setRowVersion(int rowVersion) {
+    public void setRowVersion(final int rowVersion) {
         this.rowVersion = rowVersion;
     }
 
     @Override
-    protected String getProtectString(int rowversion) {
+    protected String getProtectString(final int rowversion) {
         final ProtectionStringBuilder protectedStringBuilder = new ProtectionStringBuilder(8000);
         protectedStringBuilder.append(getResponsePrimaryKey().getCaId()).append(getResponsePrimaryKey().getSerialNumber()).append(getProducedAt()).append(getNextUpdate())
                 .append(getOcspResponse());
