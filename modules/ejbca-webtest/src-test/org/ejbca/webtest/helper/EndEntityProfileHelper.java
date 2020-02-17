@@ -64,6 +64,10 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By INPUT_START_TIME = By.id("eeProfiles:textFieldCertValidityStartTime");
         // Other certificate data / Certificate Validity END Time /Value
         static final By INPUT_END_TIME = By.id("eeProfiles:textFieldCertValidityEndTime");
+        // Other certificate data / Certificate Validity Start Time / Modifiable
+        static final By INPUT_START_TIME_MODIFIABLE = By.id("eeProfiles:certValidityStartTimeModCheckBox");
+        // Other certificate data / Certificate Validity END Time / Modifiable
+        static final By INPUT_END_TIME_MODIFIABLE = By.id("eeProfiles:certValidityEndTimeModCheckBox");
         //Other certificate data/ Name Constraints, Permitted / Use
         static final By INPUT_USE_NAME_CONSTRAINTS = By.id("eeProfiles:nameConstraintsPermittedCheckBox");
         // Other certificate data/ Custom certificate extension data
@@ -260,6 +264,20 @@ public class EndEntityProfileHelper extends BaseHelper {
                     "Expected profile save message was not displayed");
         }
     }
+    
+    /** Saves the End Entity Profile with failure assertion. */
+    public void saveEndEntityProfileWithClientSideErrors() {
+        saveEndEntityProfile(false);
+        assertIsOnEditPage();
+    }
+
+    /** Fails test if not on Edit page (e.g. on list page) */
+    private void assertIsOnEditPage() {
+        final WebElement endEntityProfileTitle = findElement(Page.TEXT_TITLE_END_ENTITY_PROFILE);
+        if (endEntityProfileTitle == null) {
+            fail("Should stay on the edit page for the end entity profile.");
+        }
+    }
 
     /**
      * Clones the End Entity Profile.
@@ -366,12 +384,56 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void triggerCertificateValidityStartTime() {
         clickLink(Page.INPUT_USE_START_TIME);
     }
+    
+    public void setUseCertificateValidityStartTime(final boolean use) {
+        if (isSelectedElement(Page.INPUT_USE_START_TIME) != use) {
+            triggerCertificateValidityStartTime();
+        }
+    }
 
     /**
      * Triggers the checkbox 'Use' for 'Certificate Validity End Time'.
      */
     public void triggerCertificateValidityEndTime() {
         clickLink(Page.INPUT_USE_END_TIME);
+    }
+    
+    public void setUseCertificateValidityEndTime(final boolean use) {
+        if (isSelectedElement(Page.INPUT_USE_END_TIME) != use) {
+            triggerCertificateValidityEndTime();
+        }
+    }
+    
+    /** Checks the state for the 'Use' checkbox for 'Custom Validity Start Time' */
+    public void assertUseCustomValidityStartTimeIsSelected(boolean expectedState) {
+        assertEquals("'Use' checkbox for 'Custom Validity Start Time' should be checked.", expectedState, isSelectedElement(Page.INPUT_USE_START_TIME));
+    }
+    
+    /** Checks the state for the 'Use' checkbox for 'Custom Validity End Time' */
+    public void assertUseCustomValidityEndTimeIsSelected(boolean expectedState) {
+        assertEquals("'Use' checkbox for 'Custom Validity End Time' should be checked.", expectedState, isSelectedElement(Page.INPUT_USE_END_TIME));
+    }
+    
+    /** Checks the state for the 'Use' checkbox for 'Custom Validity Start Time' */
+    public void assertCustomValidityStartTimeModifiableIsSelected(boolean expectedState) {
+        assertEquals("'Modifiable' checkbox for 'Custom Validity Start Time' should be checked.", expectedState, isSelectedElement(Page.INPUT_START_TIME_MODIFIABLE));
+    }
+    
+    /** Checks the state for the 'Use' checkbox for 'Custom Validity End Time' */
+    public void assertCustomValidityEndTimeModifiableIsSelected(boolean expectedState) {
+        assertEquals("'Modifiable' checkbox for 'Custom Validity End Time' should be checked.", expectedState, isSelectedElement(Page.INPUT_END_TIME_MODIFIABLE));
+    }
+    
+    /** Checks if the Custom Validity Start Time controls are enabled (true) or disabled (false) */
+    public void assertCustomValidityStartTimeFieldsEnabled(boolean enabled) {
+        assertEquals("'Custom Validity Start Time' text box had the wrong enabled state.", enabled, isEnabledElement(Page.INPUT_START_TIME));
+        assertEquals("'Custom Validity Start Time' 'Modifiable' chekcbox had the wrong enabled state.", enabled, isEnabledElement(Page.INPUT_START_TIME_MODIFIABLE));
+    }
+
+    /** Checks if the Custom Validity End Time controls are enabled (true) or disabled (false) */
+    public void assertCustomValidityEndTimeFieldsEnabled(boolean enabled) {
+        assertEquals("'Custom Validity End Time' text box had the wrong enabled state.", enabled, isEnabledElement(Page.INPUT_END_TIME));
+        assertEquals("'Custom Validity End Time' 'Modifiable' chekcbox had the wrong enabled state.", enabled, isEnabledElement(Page.INPUT_END_TIME_MODIFIABLE));
     }
 
     /**
@@ -445,12 +507,20 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void setCertificateValidityStartTime(String startTime) {
         fillInput(Page.INPUT_START_TIME, startTime);
     }
+    
+    public String getCertificateValidityStartTime() {
+        return getElementText(Page.INPUT_START_TIME);
+    }
 
     /**
      * Fills  Certificate Validity End Time
      */
     public void setCertificateValidityEndTime(String endTime) {
         fillInput(Page.INPUT_END_TIME, endTime);
+    }
+
+    public String getCertificateValidityEndTime() {
+        return getElementText(Page.INPUT_END_TIME);
     }
 
     /**
