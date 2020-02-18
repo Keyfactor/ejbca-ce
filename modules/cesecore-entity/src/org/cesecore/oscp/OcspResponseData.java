@@ -38,6 +38,8 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(OcspResponseData.class);
+    
+    private static final int LATEST_PROTECT_VERSON = 1;
 
     private ResponsePK responsePrimaryKey;
     private long producedAt;
@@ -113,7 +115,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return LATEST_PROTECT_VERSON;
     }
 
     @Override
