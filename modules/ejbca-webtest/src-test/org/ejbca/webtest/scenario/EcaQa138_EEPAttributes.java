@@ -70,7 +70,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove generated artifacts
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         // super
@@ -87,7 +87,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
     public void stepB_subjectDn() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.addSubjectAttribute(TestData.SUBJECT_DN_ATTRIBUTE, TestData.SUBJECT_DN_ATTRIBUTE_NAME);
+        endEntityProfileHelper.addSubjectDnAttribute(TestData.SUBJECT_DN_ATTRIBUTE_NAME);
         endEntityProfileHelper.saveEndEntityProfile();
         // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
@@ -108,7 +108,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
     public void stepC_subjectAltName() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.addSubjectAttribute(TestData.SUBJECT_ALT_NAME_ATTRIBUTE, TestData.SUBJECT_ALT_NAME_ATTRIBUTE_NAME);
+        endEntityProfileHelper.addSubjectAltNameAttribute(TestData.SUBJECT_ALT_NAME_ATTRIBUTE_NAME);
         endEntityProfileHelper.saveEndEntityProfile();
         // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
@@ -129,7 +129,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
     public void stepD_subjectDir() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.addSubjectAttribute(TestData.SUBJECT_DIR_ATTRIBUTE, TestData.SUBJECT_DIR_ATTRIBUTE_NAME);
+        endEntityProfileHelper.addSubjectDirectoryAttribute(TestData.SUBJECT_DIR_ATTRIBUTE_NAME);
         endEntityProfileHelper.saveEndEntityProfile();
         // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);

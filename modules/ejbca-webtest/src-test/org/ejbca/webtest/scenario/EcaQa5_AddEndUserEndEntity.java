@@ -13,11 +13,13 @@
 
 package org.ejbca.webtest.scenario;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
+import org.ejbca.webtest.helper.CertificateProfileHelper;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -34,14 +36,17 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     // Helpers
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
+    private static CertificateProfileHelper certificateProfileHelper;
+    private static EndEntityProfileHelper endEntityProfileHelper;
 
     public static class TestData {
         private static final String ROOTCA_NAME = "ECAQA5";
         private static final String SUBCA_NAME = "subCA ECAQA5";
+        private static final String CERTIFICATE_PROFILE_NAME = "ECAQA5_EndUser";
+        public static final String END_ENTITY_PROFILE_NAME = "ECAQA5_EEP";
         private static final String END_ENTITY_NAME_1 = "TestEndEntityEMPTY_1";
         private static final String END_ENTITY_NAME_2 = "TestEndEntityEMPTY_2";
         private static final String END_ENTITY_NAME_3 = "TestEndEntityEMPTY_3";
-
     }
 
     @BeforeClass
@@ -50,22 +55,69 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         webDriver = getWebDriver();
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
+        certificateProfileHelper = new CertificateProfileHelper(webDriver);
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
+        cleanup();
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
+        cleanup();
+        afterClass();
+    }
+    
+    private static void cleanup() {
         // Remove generated artifacts
-        removeCaAndCryptoToken(TestData.ROOTCA_NAME);
-        removeCaByName(TestData.SUBCA_NAME);
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_1);
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
         removeEndEntityByUsername(TestData.END_ENTITY_NAME_3);
-
-        afterClass();
+        removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
+        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
+        removeCaAndCryptoToken(TestData.ROOTCA_NAME);
+        removeCaByName(TestData.SUBCA_NAME);
     }
 
     @Test
-    public void stepA_AddEndEntitySubjectDn1of3() throws InterruptedException {
+    public void stepA_CreateCertificateProfile() {
+        // Create a profile with Subject Directory Attributes enabled
+        certificateProfileHelper.openPage(getAdminWebUrl());
+        certificateProfileHelper.addCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.triggerX509v3ExtensionsNamesSubjectDirectoryAttributes();
+        certificateProfileHelper.saveCertificateProfile();
+    }
+
+    @Test
+    public void stepB_CreateEndEntityProfile() {
+        // Create a profile with the previously created Certificate Profile
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.triggerBatchGeneration();
+        endEntityProfileHelper.addSubjectDnAttribute("emailAddress, E-mail address in DN");
+        endEntityProfileHelper.addSubjectAltNameAttribute("RFC 822 Name (e-mail address)");
+        endEntityProfileHelper.addSubjectAltNameAttribute("Uniform Resource Identifier (URI)");
+        endEntityProfileHelper.addSubjectAltNameAttribute("Kerberos KPN, Kerberos 5 Principal Name");
+        endEntityProfileHelper.addSubjectAltNameAttribute("MS GUID, Globally Unique Identifier");
+        endEntityProfileHelper.addSubjectAltNameAttribute("DNS Name");
+        endEntityProfileHelper.addSubjectAltNameAttribute("Permanent Identifier");
+        endEntityProfileHelper.addSubjectAltNameAttribute("Directory Name (Distinguished Name)");
+        endEntityProfileHelper.addSubjectAltNameAttribute("IP Address");
+        endEntityProfileHelper.addSubjectAltNameAttribute("MS UPN, User Principal Name");
+        endEntityProfileHelper.addSubjectDirectoryAttribute("Country of residence (ISO 3166)");
+        endEntityProfileHelper.addSubjectDirectoryAttribute("Country of citizenship (ISO 3166)");
+        endEntityProfileHelper.addSubjectDirectoryAttribute("Place of birth");
+        endEntityProfileHelper.addSubjectDirectoryAttribute("Date of birth (YYYYMMDD)");
+        endEntityProfileHelper.addSubjectDirectoryAttribute("Gender (M/F)");
+        endEntityProfileHelper.triggerCustomCertificateSerialNumber();
+        endEntityProfileHelper.editEndEntityProfile(
+                "ENDUSER", Arrays.asList("ENDUSER", TestData.CERTIFICATE_PROFILE_NAME),
+                getCaName(), Arrays.asList(getCaName()));
+        endEntityProfileHelper.saveEndEntityProfile();
+    }
+
+    @Test
+    public void stepC_AddEndEntitySubjectDn1of3() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
         HashMap<String, String> fields = new HashMap<>();
@@ -96,7 +148,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.clickCheckBoxRfc822();
         addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
         addEndEntityHelper.setCertificateProfile("ENDUSER");
-        addEndEntityHelper.setCa("ManagementCA");
+        addEndEntityHelper.setCa(getCaName());
         addEndEntityHelper.setToken("User Generated");
         addEndEntityHelper.fillCertificateSerialNumberInHexl("1234567890ABCDEF");
         addEndEntityHelper.addEndEntity();
@@ -106,10 +158,10 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
 
     @Test
-    public void stepB_AddEndEntitySubjectDn2of3() throws InterruptedException {
+    public void stepD_AddEndEntitySubjectDn2of3() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
-        HashMap<String, String> fields = new HashMap<String, String>();
+        HashMap<String, String> fields = new HashMap<>();
         fields.put("Username", TestData.END_ENTITY_NAME_2);
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
@@ -137,7 +189,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.clickCheckBoxRfc822();
         addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
         addEndEntityHelper.setCertificateProfile("ENDUSER");
-        addEndEntityHelper.setCa("ManagementCA");
+        addEndEntityHelper.setCa(getCaName());
         addEndEntityHelper.setToken("User Generated");
         addEndEntityHelper.fillCertificateSerialNumberInHexl("1234567890ABCDEF");
         addEndEntityHelper.addEndEntity();
@@ -147,10 +199,10 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
     
     @Test
-    public void stepC_AddEndEntitySubjectDn3of3() throws InterruptedException {
+    public void stepE_AddEndEntitySubjectDn3of3() {
         addEndEntityHelper.openPage(getAdminWebUrl());
-        addEndEntityHelper.setEndEntityProfile("EMPTY");
-        HashMap<String, String> fields = new HashMap<String, String>();
+        addEndEntityHelper.setEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
+        HashMap<String, String> fields = new HashMap<>();
 
         fields.put("Username", TestData.END_ENTITY_NAME_3);
         fields.put("Password (or Enrollment Code)", "foo123");
@@ -175,8 +227,8 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         addEndEntityHelper.triggerEmailAddress();
         addEndEntityHelper.clickCheckBoxRfc822();
         addEndEntityHelper.fillFieldEmail("you_mail_box", "primekey.se");
-        addEndEntityHelper.setCertificateProfile("ENDUSER");
-        addEndEntityHelper.setCa("ManagementCA");
+        addEndEntityHelper.setCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
+        addEndEntityHelper.setCa(getCaName());
         addEndEntityHelper.setToken("User Generated");
         addEndEntityHelper.fillCertificateSerialNumberInHexl("1234567890ABCDEF");
         addEndEntityHelper.addEndEntity();
@@ -187,7 +239,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
     
     @Test
-    public void stepD_SearchEndEntitySubjectDn1of3() {
+    public void stepF_SearchEndEntitySubjectDn1of3() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
         
         searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic(); //Note: the search panel needs to be in "basic mode" for 'fillSearchCriteria' method to work properly.
@@ -198,7 +250,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
     
     @Test
-    public void stepE_SearchEndEntitySubjectDn2of3() {
+    public void stepG_SearchEndEntitySubjectDn2of3() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
 
         searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic(); //Note: the search panel needs to be in "basic mode" for 'fillSearchCriteria' method to work properly.
@@ -209,7 +261,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     }
     
     @Test
-    public void stepF_SearchEndEntitySubjectDn3of3() {
+    public void stepH_SearchEndEntitySubjectDn3of3() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
 
         searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic(); //Note: the search panel needs to be in "basic mode" for 'fillSearchCriteria' method to work properly.
