@@ -109,12 +109,12 @@ public class HsmKeepAliveWorker extends BaseWorker {
                             "HSM Keepalive Worker executed, but no active PKCS#11 crypto tokens were found.");
                 } else {
                     return new ServiceExecutionResult(Result.SUCCESS,
-                            "Performed succesful health check on " + successfulCryptoTokens.size() + " crypto tokens.");
+                            "Performed successful healthcheck on " + successfulCryptoTokens.size() + " crypto tokens.");
                 }
                 
             } else {              
-                return new ServiceExecutionResult(Result.FAILURE, "Performed succesful health check on " + successfulCryptoTokens.size()
-                        + " crypto tokens, but the followning failed: " + constructNameList(failedCryptoTokens));
+                return new ServiceExecutionResult(Result.FAILURE, "Performed successful healthcheck on " + successfulCryptoTokens.size()
+                        + " crypto tokens, but the following crypto tokens failed: " + constructNameList(failedCryptoTokens));
             }
         }
 
