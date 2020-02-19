@@ -160,18 +160,17 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
 
     @Test
     public void stepJ_AddEndEntityProfile() {
-        eeProfileHelper.openPage(this.getAdminWebUrl());
+        eeProfileHelper.openPage(getAdminWebUrl());
         eeProfileHelper.addEndEntityProfile(TestData.ENTITY_NAME);
     }
 
     @Test
     public void stepK_EditEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
-        eeProfileHelper.addSubjectAttribute("dn", "O, Organization");
-        eeProfileHelper.addSubjectAttribute("dn",
-                "ST, State or Province");
-        eeProfileHelper.addSubjectAttribute("dn", "L, Locality");
-        eeProfileHelper.addSubjectAttribute("dn", "C, Country (ISO 3166)");
+        eeProfileHelper.addSubjectDnAttribute("O, Organization");
+        eeProfileHelper.addSubjectDnAttribute("ST, State or Province");
+        eeProfileHelper.addSubjectDnAttribute("L, Locality");
+        eeProfileHelper.addSubjectDnAttribute("C, Country (ISO 3166)");
 
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
         eeProfileHelper.setSubjectAlternativeName("IP Address");
