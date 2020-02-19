@@ -137,7 +137,7 @@ public class RaWebHelper extends BaseHelper {
             if (log.isDebugEnabled()) {
                 log.debug("CA select item '" + ca + "' was not found, trying with '" + nameWithDefault + "'");
             }
-            selectOptionByName(Page.SELECT_CA_TYPE, ca);
+            selectOptionByName(Page.SELECT_CA_TYPE, nameWithDefault);
         }
         TimeUnit.SECONDS.sleep(2);
     }
