@@ -43,8 +43,8 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By INPUT_CERT_EXTENSION_DATA = By.xpath("//textarea[@name='textareaextensiondata']");
         static final By INPUT_EMAIL_NAME = By.xpath("//input[@name='textfieldemail']");
         static final By INPUT_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldemaildomain']");
-        static final By INPUT_MSUPN_EMAIL_NAME = By.xpath("//input[@name='textfieldupnname3']");
-        static final By INPUT_MSUPN_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldsubjectaltname3']");
+        static final By INPUT_MSUPN_EMAIL_NAME = By.xpath("//input[starts-with(@name, 'textfieldupnname')]");
+        static final By INPUT_MSUPN_EMAIL_DOMAIN = By.xpath("//input[starts-with(@name, 'textfieldupnname')]/following-sibling::input");
         static final By CERTIFICATE_SERIAL_NUMBER_IN_HEX = By.name("textfieldcertsn");
 
 
@@ -63,11 +63,15 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By BUTTON_SEND_NOTIFICATIONS = By.id("checkboxsendnotification");
         
         static final By CHECKBOX_BATCH_GENERATION = By.id("checkboxcleartextpassword");
-        static final By CHECKBOX_EMAIL_ADDRESS = By.id("checkboxsubjectdn14");
-        static final By CHECKBOX_RFC_822 = By.id("checkboxsubjectaltname9");
+        static final By CHECKBOX_EMAIL_ADDRESS = getInputCheckboxLocatorByKey("emailAddress, E-mail address in DN");
+        static final By CHECKBOX_RFC_822 = getInputCheckboxLocatorByKey("RFC 822 Name (e-mail address)");
 
         static By getInputFieldLocatorByKey(final String key) {
             return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]");
+        }
+        
+        static By getInputCheckboxLocatorByKey(final String key) {
+            return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[@type='checkbox']");
         }
     }
     

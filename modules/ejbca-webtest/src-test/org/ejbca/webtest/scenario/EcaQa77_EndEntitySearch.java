@@ -109,7 +109,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
                 Collections.singletonList(getCaName())
         );
         
-        endEntityProfileHelper.addSubjectAttribute("dn", "C, Country (ISO 3166)");
+        endEntityProfileHelper.addSubjectDnAttribute("C, Country (ISO 3166)");
         
         endEntityProfileHelper.saveEndEntityProfile();
         
@@ -151,7 +151,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     // For whatever reason the actions for creating an EndEntity need to be in separate steps. Otherwise, when you press 'Download PEM', you'll get a JSF parsingexception
     @Test
     public void stepE1_CreateSven() {
-        raWebHelper.openPage(this.getRaWebUrl());
+        raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
     }
 

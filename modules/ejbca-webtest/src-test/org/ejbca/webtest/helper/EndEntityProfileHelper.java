@@ -56,6 +56,10 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By INPUT_USE_ISSUANNCE_REVOCATION_REASON = By.id("eeProfiles:useRevocationReasonAfterIssuanceCheckBox");
         // Maximum number of failed login attempts / Use
         static final By INPUT_USE_MAX_FAILED_LOGINS = By.id("eeProfiles:nrFailedAttempts");
+        // Batch generation / Use
+        static final By INPUT_BATCH_GENERATION = By.id("eeProfiles:batchCheckBox");
+        // Other certificate data / Custom certificate serial number in hex / Use
+        static final By INPUT_CUSTOM_SERIAL_NUMBER = By.id("eeProfiles:certSerialNumberCheckBox");
         // Other certificate data / Certificate Validity Start Time /Use
         static final By INPUT_USE_START_TIME = By.id("eeProfiles:certValidityStartTimeCheckBox");
         // Other certificate data / Certificate Validity End Time /Use
@@ -776,12 +780,39 @@ public class EndEntityProfileHelper extends BaseHelper {
      * Adds an attribute to 'Subject DN Attributes', 'Subject Alternative Name' or
      * 'Subject Directory Attributes' while editing an End Entity Profile.
      *
-     * @param attributeType either 'subjectdn', 'subjectaltname' or 'subjectdirattr'
+     * @param attributeType either 'dn', 'altName' or 'directory'
      * @param attributeName the displayed name of the attribute, e.g. 'O, Organization'
      */
-    public void addSubjectAttribute(final String attributeType, final String attributeName) {
+    private void addSubjectAttribute(final String attributeType, final String attributeName) {
         selectOptionByName(Page.getSubjectAttributesSelectByAttributeType(attributeType), attributeName);
         clickLink(Page.getSubjectAttributesAddButtonByAttributeType(attributeType));
+    }
+    
+    /**
+     * Adds an attribute to 'Subject DN Attributes'
+     *
+     * @param attributeName the displayed name of the attribute, e.g. 'O, Organization'
+     */
+    public void addSubjectDnAttribute(final String attributeName) {
+        addSubjectAttribute("dn", attributeName);
+    }
+    
+    /**
+     * Adds an attribute to 'Subject Alternative Name'
+     *
+     * @param attributeName the displayed name of the attribute, e.g. 'DNS Name'
+     */
+    public void addSubjectAltNameAttribute(final String attributeName) {
+        addSubjectAttribute("altName", attributeName);
+    }
+
+    /**
+     * Adds an attribute to 'Subject Directory Attributes'
+     *
+     * @param attributeName the displayed name of the attribute, e.g. 'Date of birth (YYYYMMDD)'
+     */
+    public void addSubjectDirectoryAttribute(final String attributeName) {
+        addSubjectAttribute("directory", attributeName);
     }
 
     /**
@@ -841,6 +872,14 @@ public class EndEntityProfileHelper extends BaseHelper {
         fillInput(Page.getSubjectAttributesAttributeTextfieldByAttributeTypeAndAttributeIndex(attributeType, attributeIndex), value);
     }
 
+    public void triggerBatchGeneration() {
+        clickLink(Page.INPUT_BATCH_GENERATION);
+    }
+
+    public void triggerCustomCertificateSerialNumber() {
+        clickLink(Page.INPUT_CUSTOM_SERIAL_NUMBER);
+    }
+
     // Asserts the title text
     private void assertEndEntityProfileTitleExists(final String endEntityProfileName) {
         final WebElement endEntityProfileTitle = findElement(Page.TEXT_TITLE_END_ENTITY_PROFILE);
@@ -897,9 +936,7 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     /**
-     *
      * @param inputIndex the index of notification to check
-     * @return
      */
     public String getNotificationSubjectValueText(final int inputIndex) {
         return getElementValue(Page.getNotificationSubjectByIndex(inputIndex));
