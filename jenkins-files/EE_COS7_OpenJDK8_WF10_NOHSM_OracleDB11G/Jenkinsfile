@@ -7,20 +7,20 @@ pipeline {
             steps {
                 sh "docker container rm oracledb -f || true"
                 sh "docker container rm ee_cos7_openjdk8_wf10_nohsm_oracledb11g -f || true"
-                sh "docker network rm bridge my_isolated_bridge_network || true"
+                sh "docker network rm bridge net_ee_cos7_openjdk8_wf10_nohsm_oracledb11g || true"
                 sh "rm -rf ear"
             }
         }
         stage('network') {
             steps {
-                sh "docker network create --driver bridge my_isolated_bridge_network || true"
+                sh "docker network create --driver bridge net_ee_cos7_openjdk8_wf10_nohsm_oracledb11g || true"
             }
         }
 		stage('database') {
             steps {
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_OracleDB11G/oracle_image') {
                     sh "docker build -t oracledb ."
-                    sh "docker run -d --name oracledb --net=my_isolated_bridge_network --shm-size=2g oracledb"
+                    sh "docker run -d --name oracledb --net=net_ee_cos7_openjdk8_wf10_nohsm_oracledb11g --shm-size=2g oracledb"
                     
                     // waits until oracleDB comes up
                     timeout(10) {
@@ -45,7 +45,7 @@ pipeline {
                 sh "mkdir ear || true"
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_OracleDB11G/ejbca_image') {
                     sh "docker build -t ee_cos7_openjdk8_wf10_nohsm_oracledb11g -m 3GB ."
-                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_oracledb11g --net=my_isolated_bridge_network -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_oracledb11g"
+                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_oracledb11g --net=net_ee_cos7_openjdk8_wf10_nohsm_oracledb11g -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_oracledb11g"
                 }
             }
         }
@@ -57,7 +57,7 @@ pipeline {
             sh "docker rm -f ee_cos7_openjdk8_wf10_nohsm_oracledb11g || true"
             sh "docker stop --time=1 oracledb"
             sh "docker rm -f oracledb"
-            sh "docker network rm bridge my_isolated_bridge_network || true"
+            sh "docker network rm bridge net_ee_cos7_openjdk8_wf10_nohsm_oracledb11g || true"
             cleanWs()
         }
     }
