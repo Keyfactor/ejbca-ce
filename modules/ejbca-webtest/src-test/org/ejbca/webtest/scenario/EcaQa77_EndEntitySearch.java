@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
@@ -43,9 +42,10 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     
 
     public static class TestData {
-        private static final String SHORTVALIDITY_CERTIFICATE_PROFILE_NAME = "ShortValidity";
-        private static final String SHORTVALIDITY_ENDENTITY_PROFILE_NAME = "ShortValidity";
-        private static final String CA_NAME = "ManagementCA";
+        private static final String CERTIFICATE_PROFILE_NAME = "EcaQa77_ShortValidity";
+        private static final String ENDENTITY_PROFILE_NAME = "EcaQa77_ShortValidity";
+        public static final String ENDENTITY_USERNAME_OTTO = "otto";
+        public static final String ENDENTITY_USERNAME_SVEN = "sven";
         
         static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
                 "-----BEGIN CERTIFICATE REQUEST-----", 
@@ -75,23 +75,27 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
         raWebHelper = new RaWebHelper(webDriver);
+        cleanup();
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
-        // Remove generated artifacts
-        // removeEndEntityByUsername(TestData.END_ENTITY_NAME_1);
-        // removeEndEntityByUsername(TestData.END_ENTITY_NAME_2);
-        // TODO remove cert profile
-        // TODO remove EE profile
-        //afterClass(); // TODO put this back
+    public static void exit() {
+        cleanup();
+        afterClass();
+    }
+
+    private static void cleanup() {
+        removeEndEntityByUsername(TestData.ENDENTITY_USERNAME_OTTO);
+        removeEndEntityByUsername(TestData.ENDENTITY_USERNAME_SVEN);
+        removeEndEntityProfileByName(TestData.ENDENTITY_PROFILE_NAME);
+        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
     }
 
     @Test
     public void stepA_addCertificateProfile() {
         certificateProfileHelper.openPage(getAdminWebUrl());
-        certificateProfileHelper.cloneCertificateProfile("SERVER", TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME);
-        certificateProfileHelper.openEditCertificateProfilePage(TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.cloneCertificateProfile("SERVER", TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
         certificateProfileHelper.editCertificateProfile(null, null, null, null, "2d");
         certificateProfileHelper.saveCertificateProfile();
     }
@@ -99,13 +103,13 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     @Test
     public void stepB_addEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
-        endEntityProfileHelper.addEndEntityProfile(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        endEntityProfileHelper.addEndEntityProfile(TestData.ENDENTITY_PROFILE_NAME);
         // Set Certificate Profile in EEP
-        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.ENDENTITY_PROFILE_NAME);
         endEntityProfileHelper.editEndEntityProfile(
-                TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME,
-                Collections.singletonList(TestData.SHORTVALIDITY_CERTIFICATE_PROFILE_NAME),
-                TestData.CA_NAME,
+                TestData.CERTIFICATE_PROFILE_NAME,
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_NAME),
+                getCaName(),
                 Collections.singletonList(getCaName())
         );
         
@@ -114,31 +118,13 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
         endEntityProfileHelper.saveEndEntityProfile();
         
     }
-    
-    
-    // replaced by stepE
-    /*
-    @Test
-    public void stepC_addEndEntity_sven() {
-        addEndEntityHelper.openPage(getAdminWebUrl());
-        addEndEntityHelper.setEndEntityProfile("ShortValidity");
-        HashMap <String, String> fields = new HashMap<>();
-        fields.put("Username", "sven");
-        fields.put("Password (or Enrollment Code)", "foo123");
-        fields.put("Confirm Password", "foo123");
-        fields.put("CN, Common name", "Sven");
-        fields.put("C, Country (ISO 3166)", "SE");
-        addEndEntityHelper.fillFields(fields);
-        addEndEntityHelper.addEndEntity();
-    }
-*/
 
     @Test
     public void stepD_addEndEntity_otto() {
         addEndEntityHelper.openPage(getAdminWebUrl());
-        addEndEntityHelper.setEndEntityProfile("ShortValidity");
+        addEndEntityHelper.setEndEntityProfile(TestData.ENDENTITY_PROFILE_NAME);
         HashMap <String, String> fields = new HashMap<>();
-        fields.put("Username", "otto");
+        fields.put("Username", TestData.ENDENTITY_USERNAME_OTTO);
         fields.put("Password (or Enrollment Code)", "foo123");
         fields.put("Confirm Password", "foo123");
         fields.put("CN, Common name", "Otto");
@@ -157,7 +143,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
 
     @Test
     public void stepE2_CreateSven() throws InterruptedException {
-        raWebHelper.selectCertificateTypeByEndEntityName(TestData.SHORTVALIDITY_ENDENTITY_PROFILE_NAME);
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENDENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
 
@@ -178,7 +164,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
 
     @Test
     public void stepE6_CreateSven() {
-        raWebHelper.fillUsername("sven");
+        raWebHelper.fillUsername(TestData.ENDENTITY_USERNAME_SVEN);
     }
     
     @Test
@@ -191,7 +177,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     public void stepF_searchEndEntity_otto() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
         searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
-        searchEndEntitiesHelper.fillSearchCriteria("otto",null,null,null);
+        searchEndEntitiesHelper.fillSearchCriteria(TestData.ENDENTITY_USERNAME_OTTO, null, null, null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.assertNumberOfSearchResults(1);
     }

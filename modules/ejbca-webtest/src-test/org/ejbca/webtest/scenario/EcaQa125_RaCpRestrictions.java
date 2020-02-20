@@ -12,8 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import java.util.Collections;
+
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
@@ -24,8 +25,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-import java.util.Collections;
 
 // TODO Current scenario depends on the success of previous steps, thus, may limit/complicate the discovery of other problems by blocking data prerequisites for next steps. Improve isolation of test data and flows?
 /**
@@ -80,7 +79,7 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove generated artifacts
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
