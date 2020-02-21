@@ -324,6 +324,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain,
                                     null, privateKey, signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
+                            // TODO Build OcspPreProductionConfigCache
+
                             // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
@@ -364,7 +366,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                 null, null, null, ocspConfiguration.getOcspResponderIdType()));
-
+                        // TODO Build OcspPreProductionConfigCache
                     }
                 }
                 // Add all potential InternalKeyBindings as OCSP responders to the staging area, overwriting CA entries from before
