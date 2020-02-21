@@ -13,6 +13,11 @@
 
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
@@ -40,11 +45,6 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * System test for {@link CaImportMsCaCertificates}.
@@ -257,7 +257,8 @@ public class CaImportMsCaCertificatesTest {
             FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3", 
-                    "-f", file.getAbsolutePath(), 
+                    "-f", file.getAbsolutePath(),
+                    "--ee-username", "UPN"
             };
             assertEquals("Import should be successful.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
             assertTrue("User for the 1st cert should be created.",
@@ -383,6 +384,67 @@ public class CaImportMsCaCertificatesTest {
                     EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser("DontCreateMe"));
         } finally {
             FileUtils.deleteQuietly(file);
+        }
+    }
+    
+    @Test
+    public void testUpnInCertificate() throws Exception {
+        final File file = File.createTempFile("certutil_dump_", ".txt");
+        try {
+            final String testData = "\n" 
+                    + "Schema:\n" 
+                    + "  Column Name                   Localized Name                Type    MaxLength\n"
+                    + "  ----------------------------  ----------------------------  ------  ---------\n"
+                    + "  UPN                           User Principal Name           String  2048 -- Indexed\n"
+                    + "  CertificateTemplate           Certificate Template          String  254 -- Indexed\n"
+                    + "  Request.Disposition           Request Disposition           Long    4 -- Indexed\n"
+                    + "  RawCertificate                Binary Certificate            Binary  16384\n" 
+                    + "\n" 
+                    + "Row 1:\n"
+                    + "  User Principal Name: EMPTY\n" 
+                    + "  Certificate Template: \"1.2.3.4.5.6.7.8.9\" MS_CA_CertificateTemplate\n"
+                    + "  Request Disposition: 0x14 (20) -- Issued\n" 
+                    + "  Binary Certificate:\n" 
+                    + "-----BEGIN CERTIFICATE-----\n"
+                    + "MIICOjCCAeGgAwIBAgIQMjxP77K4d3G9k/IVyh+0ezAKBggqhkjOPQQDAjBVMR8w\n"
+                    + "HQYDVQQDDBZTdG9ybWh1YiBFQyBTdGFnaW5nIEcxMSUwIwYDVQQKDBxTdG9ybWh1\n"
+                    + "YiBUcnVzdCBTZXJ2aWNlcyBMdGQuMQswCQYDVQQGEwJTRTAeFw0yMDAyMjExNDU3\n"
+                    + "NDdaFw0yMDAyMjIxNDU3NDdaMB0xGzAZBgNVBAMMEmZvb2JhckBzdmVuc3Nvbi5z\n"
+                    + "ZTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABBrnq+8jE5+rg1vywRYZ1dnpctA7\n"
+                    + "ivYt8L0FXRPIyLXXIvKe9z3bwd1rITNvlxMyea5HWxJ137HQkRxhK2DRPDejgcow\n"
+                    + "gccwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBSbbISVgg5QHpL1ho0a6w2wArM5\n"
+                    + "XDA+BgNVHREENzA1gg9mb29iYXIuc3ZlbnNzb26gIgYKKwYBBAGCNxQCA6AUDBJm\n"
+                    + "b29iYXJAc3ZlbnNzb24uc2UwJwYDVR0lBCAwHgYIKwYBBQUHAwIGCCsGAQUFBwME\n"
+                    + "BggrBgEFBQcDATAdBgNVHQ4EFgQUg8u0psGW2GeoJIY9pkfoVGKYcBQwDgYDVR0P\n"
+                    + "AQH/BAQDAgWgMAoGCCqGSM49BAMCA0cAMEQCIEi49/MuZ1nTLg5MTc1cSUC9pqhd\n"
+                    + "4uq1xbgB7PCHq17lAiBlKCK7Y+/tG0TyIKDa36lel5iUlEUW8og4er3SRKqsmQ==\n" + 
+                    "-----END CERTIFICATE-----";
+
+            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            final String[] args = new String[] { 
+                    "--caname", "Let's Encrypt Authority X3", 
+                    "-f", file.getAbsolutePath(),
+                    "--ee-username", "universalPrincipalName,UPN"
+            };
+            assertEquals("Import of certificate dump failed.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
+            final X509Certificate certificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                    .findCertificateByFingerprint("889dc476c010bc1e5ba243dc704ba6b0aaed7333");
+            assertNotNull("Certificate should be imported.", certificate);
+            assertTrue("User should be created.", EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                    .existsUser("foobar@svensson.se"));
+            final boolean revoked = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                    .isRevoked(CertTools.getIssuerDN(certificate), certificate.getSerialNumber());
+            assertFalse("Certificate should be imported as active.", revoked);
+        } finally {
+            FileUtils.deleteQuietly(file);
+
+            if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                    .existsUser("foobar@svensson.se")) {
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(),
+                        "foobar@svensson.se");
+            }
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+                    .removeCertificate("889dc476c010bc1e5ba243dc704ba6b0aaed7333");
         }
     }
 
@@ -515,6 +577,7 @@ public class CaImportMsCaCertificatesTest {
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3",
                     "-f", file.getAbsolutePath(),
+                    "--ee-username", "UPN"
             };
             assertEquals("Import of certificate dump failed.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
             assertTrue("User should be created.", EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
