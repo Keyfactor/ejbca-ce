@@ -128,14 +128,19 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The name of an existing CA in EJBCA, whose certificates are going to be imported."));
         registerParameter(new Parameter(EE_USERNAME, "End Entity Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Specify the field in the certificate from where the end entity username is extracted. Possible values are:" + System.lineSeparator()
-                        + System.lineSeparator() + "    SERIAL_NUMBER - Use the certificate serial number" + System.lineSeparator()
-                        + "    SERIAL_NUMBER_HEX - Use the certificate serial number in hexadecimal format" + System.lineSeparator()
-                        + "    DN - Use the whole subject distinguished name" + System.lineSeparator()
-                        + "    CN - Use the first common name in the subject distinguished name" + System.lineSeparator()
-                        + "    O - Use the first organization in the subject distinguished name" + System.lineSeparator()
-                        + "    OU - Use the first organizational unit in the subject distinguished name" + System.lineSeparator()
-                        + System.lineSeparator() + "If the certificate does not contain the specified field, the UPN is used instead."));
+                "Specify a single field, or a comma-separated list of fields in the certificate from where the end entity username is extracted. Possible values are:" 
+                    + System.lineSeparator() + System.lineSeparator() 
+                    + "    SERIAL_NUMBER - Use the certificate serial number" + System.lineSeparator()
+                    + "    SERIAL_NUMBER_HEX - Use the certificate serial number in hexadecimal format" + System.lineSeparator()
+                    + "    DN - Use the whole subject distinguished name" + System.lineSeparator()
+                    + "    CN - Use the first common name in the subject distinguished name" + System.lineSeparator()
+                    + "    O - Use the first organization in the subject distinguished name" + System.lineSeparator()
+                    + "    OU - Use the first organizational unit in the subject distinguished name" + System.lineSeparator()
+                    + "    UPN - Use a non-empty Microsoft UPN from the certutil dump file" + System.lineSeparator()
+                    + "    universalPrincipalName - Use the first Microsoft UPN in the subject alternative name"
+                    + System.lineSeparator() + System.lineSeparator() + 
+                    "If multiple fields are specified, the first non-empty one is used. If the certificate does not contain any of " + 
+                    "the specified fields, the certificate serial number is used instead."));
         registerParameter(new Parameter(EE_PASSWORD, "End Entity Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The password (enrollment code) to use for new end entities. If no password is specified, the default password 'foo123' is used."));
     }
@@ -165,9 +170,9 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 + "Once the dump file has been created, it can be imported to EJBCA using the 'importcertsms' command. For example:"
                 + System.lineSeparator() + System.lineSeparator() + "    ./ejbca.sh ca importcertsms '/path/to/certdump.txt' 'Name of CA'"
                 + System.lineSeparator() + System.lineSeparator()
-                + "During the import, an end entity is created in EJBCA if one does not already exist. The UPN in the dump file is used as the username of the end "
-                + "entity. If the UPN is 'EMPTY', the certificate serial number is used. If desired, the username can be derived from a field in the certificate "
-                + "instead, by using the --ee-username argument." + System.lineSeparator() + System.lineSeparator()
+                + "During the import, an end entity is created in EJBCA if one does not already exist. The serial number of the certificate is used as the "
+                + "username of the end entity by default. If desired, the username can be derived from a field in the certificate instead, by using the "
+                + "--ee-username argument." + System.lineSeparator() + System.lineSeparator()
                 + "The certificate is evaluated against the certificate profile and end entity profile with names corresponding to the 'Certificate Template' "
                 + "specified in the dump file." + System.lineSeparator() + System.lineSeparator()
                 + "Once the certificate has been imported successfully to EJBCA's database, its revocation status is set. Revoked certificates will appear on the "
@@ -370,40 +375,63 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
     }
 
     private String getEndEntityUsername(final ParameterContainer parameters, final String upn, final X509Certificate certificate) {
-        final String eeUsernameField = parameters.get(EE_USERNAME);
-        if (eeUsernameField == null) {
-            if (StringUtils.equals(upn, "EMPTY")) {
+        if (parameters.get(EE_USERNAME) == null) {
+            return certificate.getSerialNumber().toString();
+        }
+        for (final String eeUsernameField : parameters.get(EE_USERNAME).split(",")) {
+            if (StringUtils.equals(eeUsernameField, "SERIAL_NUMBER")) {
                 return certificate.getSerialNumber().toString();
-            } else {
+            }
+            if (StringUtils.equals(eeUsernameField, "SERIAL_NUMBER_HEX")) {
+                return certificate.getSerialNumber().toString(16);
+            }
+            if (StringUtils.equals(eeUsernameField, "DN")) {
+                final String subjectDn = CertTools.getSubjectDN(certificate);
+                if (StringUtils.isEmpty(subjectDn)) {
+                    continue;
+                }
+                return subjectDn;
+            }
+            if (StringUtils.equals(eeUsernameField, "CN")) {
+                final String subjectDn = CertTools.getSubjectDN(certificate);
+                final String cn = CertTools.getPartFromDN(subjectDn, "CN");
+                if (StringUtils.isEmpty(cn)) {
+                    continue;
+                }
+                return cn;
+            }
+            if (StringUtils.equals(eeUsernameField, "O")) {
+                final String subjectDn = CertTools.getSubjectDN(certificate);
+                final String o = CertTools.getPartFromDN(subjectDn, "O");
+                if (StringUtils.isEmpty(o)) {
+                    continue;
+                }
+                return o;
+            }
+            if (StringUtils.equals(eeUsernameField, "OU")) {
+                final String subjectDn = CertTools.getSubjectDN(certificate);
+                final String ou = CertTools.getPartFromDN(subjectDn, "OU");
+                if (StringUtils.isEmpty(ou)) {
+                    continue;
+                }
+                return ou;
+            }
+            if (StringUtils.equals(eeUsernameField, "UPN")) {
+                if (StringUtils.equals(upn, "EMPTY")) {
+                    continue;
+                }
                 return upn;
             }
+            if (StringUtils.equals(eeUsernameField, "universalPrincipalName")) {
+                final String upnFromCertificate = CertTools.getPartFromDN(CertTools.getSubjectAlternativeName(certificate), CertTools.UPN);
+                if (StringUtils.isEmpty(upnFromCertificate)) {
+                    continue;
+                }
+                return upnFromCertificate;
+            }
+            throw new IllegalArgumentException("Cannot extract an end entity username from the unknown certificate field " + eeUsernameField + ".");
         }
-        if (StringUtils.equals(eeUsernameField, "SERIAL_NUMBER")) {
-            return certificate.getSerialNumber().toString();
-        }
-        if (StringUtils.equals(eeUsernameField, "SERIAL_NUMBER_HEX")) {
-            return certificate.getSerialNumber().toString(16);
-        }
-        final String subjectDn = CertTools.getSubjectDN(certificate);
-        if (StringUtils.isEmpty(subjectDn)) {
-            return certificate.getSerialNumber().toString();
-        }
-        if (StringUtils.equals(eeUsernameField, "DN")) {
-            return subjectDn;
-        }
-        if (StringUtils.equals(eeUsernameField, "CN")) {
-            final String cn = CertTools.getPartFromDN(subjectDn, "CN");
-            return StringUtils.isNotEmpty(cn) ? cn : certificate.getSerialNumber().toString();
-        }
-        if (StringUtils.equals(eeUsernameField, "O")) {
-            final String o = CertTools.getPartFromDN(subjectDn, "O");
-            return StringUtils.isNotEmpty(o) ? o : certificate.getSerialNumber().toString();
-        }
-        if (StringUtils.equals(eeUsernameField, "OU")) {
-            final String ou = CertTools.getPartFromDN(subjectDn, "OU");
-            return StringUtils.isNotEmpty(ou) ? ou : certificate.getSerialNumber().toString();
-        }
-        throw new IllegalArgumentException("Cannot extract an end entity username from the unknown certificate field " + eeUsernameField + ".");
+        return certificate.getSerialNumber().toString();
     }
 
     private String getEndEntityPassword(final ParameterContainer parameters) {
