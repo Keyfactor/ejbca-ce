@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.cesecore.certificates.ocsp.cache;
 
 import java.math.BigInteger;
@@ -32,6 +45,7 @@ public enum OcspPreProductionConfigCache {
     private final static Logger log = Logger.getLogger(OcspPreProductionConfigCache.class);
     
     private Map<Integer, OcspPreProductionConfigCacheEntry> cache = new HashMap<>();
+    private Map<Integer, OcspPreProductionConfigCacheEntry> staging = new HashMap<>();
     
     /**
      * @param certID CertificateId to lookup in cache
@@ -49,9 +63,37 @@ public enum OcspPreProductionConfigCache {
     public void stagingAdd(OcspPreProductionConfigCacheEntry ocspPreProductionConfigCacheEntry) {
         final List<CertificateID> certIDs = ocspPreProductionConfigCacheEntry.getCertificateID();
         for (CertificateID certID : certIDs) {
-            // TODO replace cache --> staging if we're gonna use staging
             // CertificateID doesn't have a unique identifier. Construct one using issue hashes
-            cache.put(getCacheIdFromCertificateID(certID), ocspPreProductionConfigCacheEntry);            
+            staging.put(getCacheIdFromCertificateID(certID), ocspPreProductionConfigCacheEntry);            
+        }
+    }
+
+    /** Clears the staging cache from old entries. Invoke before populating the staging cache */
+    public void stagingStart() {
+        staging = new HashMap<>();
+    }
+    
+    /** Commits the staged cache to the live one. Invoke when staging cache is considered ready. */
+    public void stagingCommit() {
+        cache = staging;
+        staging = new HashMap<>();
+    }
+    
+    /**
+     * We currently support SHA1 and SHA256 AlgorithmIdentifiers. Hence the list.
+     * @return the CertificateID's based on the provided certificate. 
+     */
+    static List<CertificateID> getCertificateIdFromCertificate(final X509Certificate certificate) {
+        try {
+            if (log.isTraceEnabled()) {
+                log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
+            }
+            final List<CertificateID> ret = new ArrayList<>();
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
+            return ret;
+        } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
+            throw new OcspFailureException(e);
         }
     }
     
@@ -66,25 +108,6 @@ public enum OcspPreProductionConfigCache {
                     + issuerKeyHash.toString(16) + " to produce id " + result);
         }
         return result;
-    }
-    
-    
-    /**
-     * We currently support SHA1 and SHA256 AlgorithmIdentifiers. Hence the list.
-     * @return the CertificateID's based on the provided certificate. 
-     */
-    static List<CertificateID> getCertificateIDFromCertificate(final X509Certificate certificate) {
-        try {
-            if (log.isTraceEnabled()) {
-                log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
-            }
-            List<CertificateID> ret = new ArrayList<>();
-            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
-            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
-            return ret;
-        } catch (OCSPException | CertificateEncodingException | OperatorCreationException e) {
-            throw new OcspFailureException(e);
-        }
     }
     
     private static BigInteger bigIntFromBytes(final byte[] bytes) {
