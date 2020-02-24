@@ -57,7 +57,7 @@
                             <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
                                 <h:selectBooleanCheckbox id="web-express-enrollment" class="web-express tablet"/>
             					<label for="web-express-enrollment" class="web-express tablet">&nbsp;</label>
-            					<a href="#" id="enrollment" class="pure-menu-link enroll-menu-link">Enroll</a>                            
+            					<a href="#" id="enrollment" class="pure-menu-link enroll-menu-link">#{msg.menu_pagetitle_enroll}</a>                            
                                 <ul class="pure-menu-children">
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
                                     	<li class="pure-menu-item">
@@ -81,7 +81,7 @@
                         	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
                                 <h:selectBooleanCheckbox id="web-express-search" class="web-express tablet"/>
             					<label for="web-express-search" class="web-express tablet">&nbsp;</label>
-                                <a href="#" id="search" class="pure-menu-link search-menu-link">Search</a>
+                                <a href="#" id="search" class="pure-menu-link search-menu-link">#{msg.menu_pagetitle_search}</a>
                                	<ul class="pure-menu-children">
                                    	<ui:fragment rendered="#{raAccessBean.authorizedToSearchCerts}">
                                        	<li class="pure-menu-item">
@@ -117,7 +117,7 @@
                         <hr class="web-express tablet"/>
                         <ui:remove>
                         <!-- Language change is enabled, but there are no translations yet and left-to-right is not
-                             fully supported, so we disable it until lwe have some actual traslations -->
+                             fully supported, so we disable it until we have some actual translations -->
                     	<li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
 				            <h:selectBooleanCheckbox id="web-express-language" class="web-express tablet" type="checkbox"/>
             				<label for="web-express-language" class="web-express tablet">&nbsp;</label>
