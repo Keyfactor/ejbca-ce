@@ -12,13 +12,15 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,9 +46,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * @version $Id$
  *
@@ -57,7 +56,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
     private static final Logger log = Logger.getLogger(UpdatePublicKeyBlacklistCommandTest.class);
 
     // Directory and file constants (see ${project.dir}/resources)
-    private static final String TEST_RESOURCE_EMPTY_FOLDER = "resources/empty";
+    private static File emptyFolder;
     private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "resources/publickey/rsa2048.pub.pem";
     private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "resources/publickeyfingerprint/public_key_fingerprints_add_remove_test.txt";
 
@@ -80,6 +79,9 @@ public class UpdatePublicKeyBlacklistCommandTest {
         // Remove test entries from blacklist.
         removePublicKeyFingerprintsFromBlacklist(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         removePublicKeysFromBlacklist(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
+        
+        emptyFolder = FileTools.createTempDirectory();
+        emptyFolder.deleteOnExit();
 
         log.trace("<beforeClass()");
     }
@@ -91,6 +93,9 @@ public class UpdatePublicKeyBlacklistCommandTest {
         // Remove test entries from blacklist.
         removePublicKeyFingerprintsFromBlacklist(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         removePublicKeysFromBlacklist(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
+        if (emptyFolder.exists()) {
+            emptyFolder.delete();
+        }
 
         log.trace("<afterClass()");
     }
@@ -114,7 +119,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that public key blacklist entries were imported.
         File[] files = dir.listFiles();
-        Map<String, String> keySpecifications = new HashMap<String, String>();
+        Map<String, String> keySpecifications = new HashMap<>();
         PublicKey publicKey;
         BlacklistEntry entry;
         byte[] asn1Encodedbytes;
@@ -159,15 +164,10 @@ public class UpdatePublicKeyBlacklistCommandTest {
 
         // Other error cases.
         // B-1: Try add command with an empty folder.
-        url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_EMPTY_FOLDER);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_EMPTY_FOLDER);
-        }
-        dir = new File(url.getPath());
-        log.info("Using directory (empty folder): " + dir.getAbsolutePath());
+        log.info("Using directory (empty folder): " + emptyFolder.getAbsolutePath());
         final int countEntries = blacklistSession.getBlacklistEntryIdToValueMap().size();
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
-                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, emptyFolder.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         result = command.execute(args);
         Assert.assertTrue("Add empty dir for lists of public key must exit with success: " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
@@ -179,7 +179,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
     }
 
     @Test
-    public void test02AddAndRemoveCommandModeByFingerprint() throws CertificateException, IOException {
+    public void test02AddAndRemoveCommandModeByFingerprint() throws IOException {
         log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
 
         URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
@@ -202,7 +202,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
         String fingerprint;
         FileReader reader;
         List<String> lines;
-        List<String> fingerprints = new ArrayList<String>();
+        List<String> fingerprints = new ArrayList<>();
         for (File file : files) {
             reader = new FileReader(file);
             lines = IOUtils.readLines(reader);
@@ -237,15 +237,10 @@ public class UpdatePublicKeyBlacklistCommandTest {
         // Other error cases.
         // B-1: Try add command with an empty folder.
         final int countEntries = blacklistSession.getBlacklistEntryIdToValueMap().size();
-        url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_EMPTY_FOLDER);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_EMPTY_FOLDER);
-        }
-        dir = new File(url.getPath());
-        log.info("Using directory (empty folder): " + dir.getAbsolutePath());
+        log.info("Using directory (empty folder): " + emptyFolder.getAbsolutePath());
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
                 UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPINT,
-                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, emptyFolder.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         result = command.execute(args);
         Assert.assertTrue("Add empty dir for lists of fingerprints must exit with success: " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
