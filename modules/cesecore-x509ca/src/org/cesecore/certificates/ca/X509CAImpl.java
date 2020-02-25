@@ -249,6 +249,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setNameConstraintsPermitted(cainfo.getNameConstraintsPermitted());
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
+        setDoPreProduceOcspResponses(cainfo.isDoPreProduceOcspResponses());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
@@ -292,6 +293,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCaToken(getCAToken())
                 .setDescription(getDescription())
                 .setCaSerialNumberOctetSize(getSerialNumberOctetSize())
+                .setDoPreProduceOcspResponses(isDoPreProduceOcspResponses())
                 .setRevocationReason(getRevocationReason())
                 .setRevocationDate(getRevocationDate())
                 .setPolicies(getPolicies())
@@ -734,6 +736,26 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public void setCaSerialNumberOctetSize(int serialNumberOctetSize) {
         data.put(SERIALNUMBEROCTETSIZE, serialNumberOctetSize);
     }
+    
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#isDoPreProduceOcspResponses()
+     */
+    @Override
+    public boolean isDoPreProduceOcspResponses() {
+        if(data.containsKey(DO_PRE_PRODUCE_OCSP_RESPONSES)) {
+            return (Boolean) data.get(DO_PRE_PRODUCE_OCSP_RESPONSES);
+        } else {
+            return false;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#setDoPreProduceOcspResponses(boolean)
+     */
+    @Override
+    public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
+        data.put(DO_PRE_PRODUCE_OCSP_RESPONSES, doPreProduceOcspResponses);
+    }
 
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#updateCA(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
@@ -764,6 +786,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setExternalCdp(info.getExternalCdp());
         setSubjectAltName(info.getSubjectAltName());
         setCaSerialNumberOctetSize(info.getCaSerialNumberOctetSize());
+        setDoPreProduceOcspResponses(info.isDoPreProduceOcspResponses());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());

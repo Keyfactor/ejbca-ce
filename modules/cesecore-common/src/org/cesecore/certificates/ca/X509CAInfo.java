@@ -72,6 +72,7 @@ public class X509CAInfo extends CAInfo {
 	private String externalCdp;
 	private boolean nameChanged;
 	private int caSerialNumberOctetSize;
+	private boolean doPreProduceOcspResponses;
 	private boolean usePartitionedCrl;
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
@@ -135,6 +136,7 @@ public class X509CAInfo extends CAInfo {
                 .setUseCertReqHistory(false)
                 .setUseUserStorage(true)
                 .setUseCertificateStorage(true)
+                .setDoPreProduceOcspResponses(false)
                 .setAcceptRevocationNonExistingEntry(false)
                 .setCmpRaAuthSecret(null)
                 .setKeepExpiredCertsOnCRL(false)
@@ -158,8 +160,9 @@ public class X509CAInfo extends CAInfo {
                       final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
                       final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
-                      final boolean useCertificateStorage, final boolean acceptRevocationNonExistingEntry, final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
-                      final int defaultCertprofileId, final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
+                      final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean acceptRevocationNonExistingEntry, 
+                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId, 
+                      final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions) {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
@@ -194,6 +197,7 @@ public class X509CAInfo extends CAInfo {
         this.useCertReqHistory = useCertReqHistory;
         this.useUserStorage = useUserStorage;
         this.useCertificateStorage = useCertificateStorage;
+        this.doPreProduceOcspResponses = doPreProduceOcspResponses;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
         setCmpRaAuthSecret(cmpRaAuthSecret);
         this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
@@ -483,6 +487,16 @@ public class X509CAInfo extends CAInfo {
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
     }
     
+    /** @return true if CA should pre-produce OCSP responses, otherwise false. */
+    public boolean isDoPreProduceOcspResponses() {
+        return doPreProduceOcspResponses;
+    }
+    
+    /** Set whether the CA should pre-produce OCSP responses. */
+    public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
+        this.doPreProduceOcspResponses = doPreProduceOcspResponses;
+    }
+    
     /** 
      * Partitioned crls are used by CAs with very large crls.  
      * It is CA specific configuration using multiple partitions to which certificates randomly are assigned. 
@@ -589,6 +603,7 @@ public class X509CAInfo extends CAInfo {
         private boolean useCertReqHistory = false;
         private boolean useUserStorage = true;
         private boolean useCertificateStorage = true;
+        private boolean doPreProduceOcspResponses = false;
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCRL = false;
@@ -945,6 +960,11 @@ public class X509CAInfo extends CAInfo {
             this.useCertificateStorage = useCertificateStorage;
             return this;
         }
+        
+        public X509CAInfoBuilder setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
+            this.doPreProduceOcspResponses = doPreProduceOcspResponses;
+            return this;
+        }      
 
         public X509CAInfoBuilder setAcceptRevocationNonExistingEntry(boolean acceptRevocationNonExistingEntry) {
             this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
@@ -998,8 +1018,8 @@ public class X509CAInfo extends CAInfo {
                     useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                     certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                     usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
-                    doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry, cmpRaAuthSecret,
-                    keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
+                    doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses,
+                    acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
@@ -1035,8 +1055,8 @@ public class X509CAInfo extends CAInfo {
                     useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                     certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                     usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
-                    doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry, cmpRaAuthSecret,
-                    keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
+                    doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, acceptRevocationNonExistingEntry, 
+                    cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions);
             caInfo.setCAId(caId);
             return caInfo;
         }

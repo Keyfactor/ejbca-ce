@@ -489,6 +489,18 @@
 					<h:outputLabel for="checkboxusecertificatestorage"
 						value="#{editCAsMBean.checkboxUseCertificateStorageText}" />
 				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+					<h:outputLabel for="checkboxpreproduceocspresponses"
+						value="#{web.text.PREPRODUCEOCSPRESPONSES}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
+						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
+						disabled="#{not editCAsMBean.hasEditRight}" />
+					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{web.text.PRE_PRODUCE}" />
+				</h:panelGroup>
 	        </h:panelGrid>
 
             <h:panelGrid id="nonExistingCertRevokeSection" columns="2" cellspacing="3"

@@ -98,6 +98,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String EXTERNALCDP = "externalcdp";
     protected static final String USENOCONFLICTCERTIFICATEDATA = "usenoconflictcertificatedata";
     protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
+    protected static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "dopreproduceocspresponses";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
     /**
      * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
