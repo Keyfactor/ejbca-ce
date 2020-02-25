@@ -1073,7 +1073,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 // Special case: Never expose the NullCryptoToken when creating new tokens
                 continue;
             }
-            if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName())) {
+            if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) ||
+                availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME)) {
                 // Special case: Never expose the PKCS11CryptoToken when creating new tokens if no libraries are detected
                 if (!isAnyP11LibraryAvailable()) {
                     if (log.isDebugEnabled()) {
