@@ -751,7 +751,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                     // no, we have to search for it among all CA certs
                     for (final CAData currentCaData : findAll()) {
                         final CAData currentUpgradedCaData = upgradeAndMergeToDatabase(currentCaData);
-                        final Certificate caCert = currentUpgradedCaData.getCA().getCACertificate();
+                        final CACommon ca = currentUpgradedCaData.getCA();
+                        if (ca == null) {
+                            // This happens if Community Edition is deployed with CVCA's in the database. That won't work,
+                            // but let's print a useful error so you can delete the CA from the database (or deploy EE instead) 
+                            log.error("Implementation class for CA '" + currentUpgradedCaData.getName() + "' was not found, perhaps it is not available in this edition of EJBCA?");
+                            continue;
+                        }
+                        final Certificate caCert = ca.getCACertificate();
                         if (caCert != null && caid == CertTools.getSubjectDN(caCert).hashCode()) {
                             cadata = currentUpgradedCaData; // found.
                             // Do also cache it if someone else is needing it later

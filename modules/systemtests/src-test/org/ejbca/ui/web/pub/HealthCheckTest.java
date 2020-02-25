@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.commons.fileupload.util.Streams;
+import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -43,11 +44,13 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -69,6 +72,7 @@ public class HealthCheckTest {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
 
@@ -165,9 +169,11 @@ public class HealthCheckTest {
     @Test
     public void testAuditLogHealthCheck() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, NoSuchSlotException, IOException {
+        Assume.assumeTrue("This test does not support Community Edition", enterpriseEjbBridgeSession.isRunningEnterprise());
         // Create a crypto token to sign with
         final Properties cryptoTokenProperties = new Properties();
         final String cryptoTokenName = "testAuditLogHealthCheck";
+        CaTestUtils.removeCa(admin, cryptoTokenName, ""); // delete left overs from previous test runs
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, null);
 
