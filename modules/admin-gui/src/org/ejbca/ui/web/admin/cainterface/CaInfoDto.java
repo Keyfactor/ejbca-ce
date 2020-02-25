@@ -45,6 +45,7 @@ public class CaInfoDto {
     private boolean useUserStorage = true;
     private boolean useCertificateStorage = true;
     private boolean acceptRevocationsNonExistingEntry;
+    private boolean doPreProduceOcspResponses = false;
     private String caSubjectAltName;
     private String policyId;
     private boolean useAuthorityKeyIdentifier = true; // Default in create ca page
@@ -271,6 +272,14 @@ public class CaInfoDto {
 
     public void setAcceptRevocationsNonExistingEntry(boolean acceptRevocationsNonExistingEntry) {
         this.acceptRevocationsNonExistingEntry = acceptRevocationsNonExistingEntry;
+    }
+    
+    public boolean isDoPreProduceOcspResponses() {
+        return doPreProduceOcspResponses;
+    }
+    
+    public void setDoPreProduceOcspResponses(boolean preProduceOcspResponses) {
+        this.doPreProduceOcspResponses = preProduceOcspResponses;
     }
 
     public String getCaSubjectAltName() {

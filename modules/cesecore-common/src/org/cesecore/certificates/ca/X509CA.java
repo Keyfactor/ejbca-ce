@@ -120,6 +120,10 @@ public interface X509CA extends CA {
     Integer getSerialNumberOctetSize();
 
     void setCaSerialNumberOctetSize(int serialNumberOctetSize);
+    
+    boolean isDoPreProduceOcspResponses();
+    
+    void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses);
 
     void createOrRemoveLinkCertificateDuringCANameChange(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
             AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
