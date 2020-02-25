@@ -552,6 +552,14 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     if (phase.getIndex() != validator.getPhase()) {
                         continue;
                     }
+                    if (validator instanceof CertificateProfileAwareValidator
+                            && !filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
+                                continue;
+                            }
+                    if (validator instanceof ValidityAwareValidator
+                        && !filterValidityAwareValidator(validator, certificate.getNotBefore(), certificate.getNotAfter())) {
+                            continue;
+                    }
                     try {
                         final String fingerprint = CertTools.createPublicKeyFingerprint(certificate.getPublicKey(), "SHA-256");
                         log.info(intres.getLocalizedMessage("validator.certificate.isbeingprocessed", name, phase, endEntityInformation.getUsername(),
