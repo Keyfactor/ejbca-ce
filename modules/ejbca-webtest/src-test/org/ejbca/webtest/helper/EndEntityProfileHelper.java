@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -236,7 +237,7 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     public void selectAvailableCp(String cPName) {
-        selectOptionByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, cPName);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Arrays.asList(cPName));
     }
 
     /**
