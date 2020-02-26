@@ -447,7 +447,7 @@ CREATE TABLE OcspResponseData (
     serialNumber VARCHAR(256) NOT NULL,
     producedAt BIGINT NOT NULL,
     nextUpdate BIGINT,
-    ocspResponse BLOB,
+    ocspResponse VARBINARY,
     cAId INTEGER,
     rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
