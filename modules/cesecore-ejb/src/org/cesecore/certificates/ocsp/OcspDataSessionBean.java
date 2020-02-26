@@ -57,7 +57,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public byte[] fetchOcspResponse(ResponsePK key) {
+    public byte[] fetchOcspResponse(final ResponsePK key) {
         log.trace(">fetchOcspResponse");
         final OcspResponseData ocspResponseData = this.entityManager.find(OcspResponseData.class, key);
         log.trace("<fetchOcspResponse");
