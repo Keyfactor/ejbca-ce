@@ -48,10 +48,20 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public byte[] fetchOcspData(final ResponsePK key) {
+    public OcspResponseData fetchOcspData(final ResponsePK key) {
         log.trace(">fetchOcspData");
         final OcspResponseData ocspResponseData = this.entityManager.find(OcspResponseData.class, key);
         log.trace("<fetchOcspData");
+        return ocspResponseData != null ? ocspResponseData : null;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public byte[] fetchOcspResponse(ResponsePK key) {
+        log.trace(">fetchOcspResponse");
+        final OcspResponseData ocspResponseData = this.entityManager.find(OcspResponseData.class, key);
+        log.trace("<fetchOcspResponse");
         return ocspResponseData != null ? ocspResponseData.getOcspResponse() : null;
     }
+    
 }
