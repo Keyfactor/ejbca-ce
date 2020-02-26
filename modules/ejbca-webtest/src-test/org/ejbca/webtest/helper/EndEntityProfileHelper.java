@@ -390,6 +390,7 @@ public class EndEntityProfileHelper extends BaseHelper {
         clickLink(Page.INPUT_USE_START_TIME);
     }
     
+    /** Sets the 'Use' checkbox for 'Certificate Validity Start Time' to the given state. */
     public void setUseCertificateValidityStartTime(final boolean use) {
         if (isSelectedElement(Page.INPUT_USE_START_TIME) != use) {
             triggerCertificateValidityStartTime();
@@ -402,7 +403,8 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void triggerCertificateValidityEndTime() {
         clickLink(Page.INPUT_USE_END_TIME);
     }
-    
+
+    /** Sets the 'Use' checkbox for 'Certificate Validity End Time' to the given state. */
     public void setUseCertificateValidityEndTime(final boolean use) {
         if (isSelectedElement(Page.INPUT_USE_END_TIME) != use) {
             triggerCertificateValidityEndTime();
@@ -512,7 +514,8 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void setCertificateValidityStartTime(String startTime) {
         fillInput(Page.INPUT_START_TIME, startTime);
     }
-    
+
+    /** Returns the current value in the 'Certificate Validity Start Time' text field */
     public String getCertificateValidityStartTime() {
         return getElementText(Page.INPUT_START_TIME);
     }
@@ -524,6 +527,7 @@ public class EndEntityProfileHelper extends BaseHelper {
         fillInput(Page.INPUT_END_TIME, endTime);
     }
 
+    /** Returns the current value in the 'Certificate Validity End Time' text field */
     public String getCertificateValidityEndTime() {
         return getElementText(Page.INPUT_END_TIME);
     }

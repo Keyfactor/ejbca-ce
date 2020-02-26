@@ -14,6 +14,7 @@ package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.log4j.Logger;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.junit.AfterClass;
@@ -24,11 +25,17 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
- * 
+ * Tests the text fields 'Custom Validity Start Time' and 'Custom Validity Start Time' in End Entity Profiles.
+ * Only the GUI is tested, not actual certificate issuance.
+ * <p>
+ * The 'Use' checkbox and validation of the text fields is tested.
+ *
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa128_EepCustomValidity extends WebTestBase {
+public class EcaQa128_EepCustomValidityFieldsValidation extends WebTestBase {
+
+    private static final Logger log = Logger.getLogger(EcaQa128_EepCustomValidityFieldsValidation.class);
 
     // Helpers
     private static EndEntityProfileHelper endEntityProfileHelper;
@@ -46,7 +53,11 @@ public class EcaQa128_EepCustomValidity extends WebTestBase {
         // Init helpers
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         // Ensure no test data is left behind from aborted tests
-        cleanup();
+        try {
+            cleanup();
+        } catch (RuntimeException e) {
+            log.error("Clean up failed. This is expected when running against a remote instance without Remote EJB access.", e);
+        }
     }
     
     @AfterClass
