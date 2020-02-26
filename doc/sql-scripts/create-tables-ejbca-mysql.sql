@@ -451,7 +451,7 @@ CREATE TABLE OcspResponseData (
     nextUpdate BIGINT(20),
     ocspResponse LONGBLOB,
     cAId INT(11),
-    rowProtection LONGTEXT VARCHAR,
+    rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (cAId, serialNumber)
 );
