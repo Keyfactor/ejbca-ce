@@ -28,6 +28,8 @@ public interface OcspDataSessionLocal extends OcspDataSession {
     
     void storeOcspData(final OcspResponseData ocspResponseData);
     
-    byte[] fetchOcspData(final ResponsePK key);
+    OcspResponseData fetchOcspData(final ResponsePK key);
+    
+    byte[] fetchOcspResponse(final ResponsePK key);
 
 }
