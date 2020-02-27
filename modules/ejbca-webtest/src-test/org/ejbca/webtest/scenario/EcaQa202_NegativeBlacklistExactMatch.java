@@ -42,7 +42,6 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         private static final String VALIDATOR_PERFORM_TYPE = "Exact match";
         private static final String CA_NAME = "EcaQa202-2C_CA";
         private static final String CA_VALIDITY = "1y";
-        private static final String APPROVAL_PROFILE_NAME = "EcaQa202-2C_ApprovalProfile";
         private static final String CERTIFICATE_PROFILE_NAME = "EcaQa202-2C_CertificateProfile";
         private static final String ENTITY_NAME = "EcaQa202-2C_EntityProfile";
         static final String[] CERTIFICATE_REQUEST_PEM = new String[]{"-----BEGIN CERTIFICATE REQUEST-----", "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w", "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG", "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM", "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7", "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB", "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+", "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr", "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs", "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9", "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM", "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq", "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt", "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==", "-----END CERTIFICATE REQUEST-----"};
@@ -77,7 +76,6 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         // Remove generated artifacts
         removeEndEntityProfileByName(TestData.ENTITY_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
-        removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
         removeCaAndCryptoToken(TestData.CA_NAME);
         removeValidatorByName(TestData.VALIDATOR_NAME);
 

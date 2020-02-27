@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -134,32 +134,32 @@ public class EndEntityProfileHelper extends BaseHelper {
         }
 
         // Other Data / Send Notification  / Delete
-        static final By getDeleteNotificationButtonByIndex(final int index) {
+        static By getDeleteNotificationButtonByIndex(final int index) {
             return By.xpath("//input[contains(@id, ':" + index + ":removeSendNotificationButton')]");
         }
 
         // Other Data / Send Notification  / Notification Sender
-        static final By getNotificationSenderByIndex(final int index) {
+        static By getNotificationSenderByIndex(final int index) {
             return By.xpath("//input[contains(@id, ':" + index + ":textFieldNotificationSender')]");
         }
 
         // Other Data / Send Notification  / Notification Subject
-        static final By getNotificationSubjectByIndex(final int index) {
+        static By getNotificationSubjectByIndex(final int index) {
             return By.xpath("//input[contains(@id, ':" + index + ":textFieldNotificationSubject')]");
         }
 
         // Other Data / Send Notification  / Notification Recipient
-        static final By getNotificationRecipientByIndex(final int index) {
+        static By getNotificationRecipientByIndex(final int index) {
             return By.xpath("//input[contains(@id, ':" + index + ":textFieldNotificationRecipient')]");
         }
 
         // Other Data / Send Notification / Notification Events
-        static final By getNotificationEventsByIndex(final int index) {
+        static By getNotificationEventsByIndex(final int index) {
             return By.xpath("//select[contains(@id, ':" + index + ":notificationEventsListbox')]");
         }
 
         // Other Data / Send Notification / Notification Message
-        static final By getNotificationMessageByIndex(final int index) {
+        static By getNotificationMessageByIndex(final int index) {
             return By.xpath("//textarea[contains(@id, ':" + index + ":textAreaNotificationMessage')]");
         }
     }
@@ -237,7 +237,7 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     public void selectAvailableCp(String cPName) {
-        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Arrays.asList(cPName));
+        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
     }
 
     /**
