@@ -879,7 +879,10 @@
 					rendered="#{editCAsMBean.caExternal and editCAsMBean.caInfoDto.caTypeX509}">
 					<h:inputText name="textfieldexternalcdp" size="45" maxlength="255"
 						value="#{editCAsMBean.crlCaCRLDPExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="urlValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.CRL_CA_CRLDP_EXTERNAL_ERROR}"/>						
+				</h:inputText>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -957,9 +960,12 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
 					<h:inputText size="40" maxlength="256"
-						name="textfieldauthorityinformationaccess"
+						id="textfieldauthorityinformationaccess"
 						value="#{editCAsMBean.caInfoDto.authorityInformationAccess}"
-						disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"	/>
+						disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="urlValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.CRL_EXT_CAISSUERS_URI_ERROR}"/>						
+					</h:inputText>						
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caExternal}"></h:panelGroup>
@@ -1203,7 +1209,10 @@
 						id="textfielddefaultcrlissuer" title="#{web.text.FORMAT_DN}"
 						value="#{editCAsMBean.caInfoDto.defaultCRLIssuer}"
 						rendered="#{not editCAsMBean.caExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="urlValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_CDP_DEFAULTCRLISSUER_ERROR}"/>
+					</h:inputText>
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genDefaultCrlIssuer}"
 						value="#{web.text.GENERATE}"
@@ -1230,6 +1239,7 @@
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:validator validatorId="urlValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_FCRL_DEFAULTURI_ERROR}"/>						
 					</h:inputText>
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genCaDefinedFreshestCrl}"
@@ -1256,7 +1266,10 @@
 						id="textfielddefaultocsplocator" title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.caInfoDto.defaultOCSPServiceLocator}"
 						rendered="#{not editCAsMBean.caExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="urlValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_AIA_OCSP_DEFAULTURI_ERROR}"/>
+			   </h:inputText>
 					<h:commandButton type="button"
 						name="checkbexgeneratedefaultocsplocator"
 						action="#{editCAsMBean.genDefaultOcspLocator}"
@@ -1284,9 +1297,11 @@
 						title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.caInfoDto.certificateAiaDefaultCaIssuerUri}"
 						rendered="#{not editCAsMBean.caExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="urlValidator"/>
+						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_DEFAULTURI_ERROR}"/>
+				</h:inputText>					
 				</h:panelGroup>
-
 			</h:panelGrid>
 
 			<!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->

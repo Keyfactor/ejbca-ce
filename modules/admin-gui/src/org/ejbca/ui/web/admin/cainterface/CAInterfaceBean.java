@@ -677,8 +677,9 @@ public class CAInterfaceBean implements Serializable {
         try {
             return NameConstraint.parseNameConstraintsList(input);
         } catch (CertificateExtensionException e) {
-            throw new ParameterException(MessageFormat.format(ejbcawebbean.getText("INVALIDNAMECONSTRAINT"), e.getMessage()));
+            throw new ParameterException(ejbcawebbean.getText("INVALIDNAMECONSTRAINT", false, e.getMessage()));
         }
+        
     }
 	
     public String isValidityTimeValid(String validityString) {
