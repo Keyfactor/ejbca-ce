@@ -1441,6 +1441,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String importCACertUpdate() {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileImportRenewal);
+        
+        if (fileBuffer==null) {
+           addNonTranslatedErrorMessage("No file selected or upload failed");
+           return "";
+        }
+        
         try {
             cadatahandler.importCACertUpdate(caid, fileBuffer);
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
