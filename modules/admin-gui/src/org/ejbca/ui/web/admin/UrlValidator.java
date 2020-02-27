@@ -32,6 +32,8 @@ import java.net.URISyntaxException;
  */
 public class UrlValidator implements Validator {
     private static final Logger log = Logger.getLogger(UrlValidator.class);
+    
+    
 
     @Override
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
@@ -40,12 +42,22 @@ public class UrlValidator implements Validator {
             if (log.isDebugEnabled()) {
                 log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
             }
-            try {
-                new URI(urlValue.toString());
-            } catch (URISyntaxException e) {
+            boolean error;
+            if (urlValue.toString().indexOf(':') == -1) {
+                error = true;
+            } else {
+                try {
+                    new URI(urlValue.toString());
+                    error = false;
+                } catch (URISyntaxException e) {
+                    error = true;
+                }
+            }
+            if (error) {
                 String msg = (String) uiComponent.getAttributes().get("errorMessage");
                 if (StringUtils.isEmpty(msg)) {
                     msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDURL");
+                    
                 }
                 throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
             }
