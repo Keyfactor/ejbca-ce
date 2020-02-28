@@ -457,8 +457,7 @@ public class ProtocolScepHttpTest {
 
     @Test
     public void test06ScepRequestPostOK() throws Exception {
-        // find a CA, create a user and
-        // send SCEP req to server and get good response with cert
+        // find a CA, create a user and send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
