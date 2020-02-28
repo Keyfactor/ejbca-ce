@@ -88,6 +88,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -1303,6 +1304,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public String getCurrentCertificateSerialNumber() {
+        currentCertificateSerialNumber = StringTools.replaceWihtespaceAndColon(currentCertificateSerialNumber);
         return currentCertificateSerialNumber;
     }
 
