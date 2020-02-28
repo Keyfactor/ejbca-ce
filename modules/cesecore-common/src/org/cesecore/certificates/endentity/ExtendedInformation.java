@@ -126,6 +126,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
     private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
+    private static String SCEP_TRANSACTION_ID = "SCEP_TRANSACTION_ID";
+    
 
     /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
@@ -193,6 +195,27 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(CERTIFICATE_REQUEST, str);
     }
 
+    public void setScepTransactionId(final String scepTransactionId) {
+        if (scepTransactionId == null) {
+            data.put(SCEP_TRANSACTION_ID, "");
+        } else {
+            data.put(SCEP_TRANSACTION_ID, scepTransactionId);
+        }
+    }
+    
+    /**
+     * If this end entity was created using SCEP in RA mode, record the transaction ID here. 
+     * 
+     * @return the transaction ID
+     */
+    public String getScepTransactionId() {
+        String ret = (String) data.get(SCEP_TRANSACTION_ID);
+        if (ret == null) {
+            ret = "";
+        }
+        return ret;
+    }
+    
     public String getSubjectDirectoryAttributes() {
         String ret = (String) data.get(SUBJECTDIRATTRIBUTES);
         if (ret == null) {
@@ -689,7 +712,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
                 // QCETSIPSD2NCANAME
                 // QCETSIPSD2NCAID
             }
-
             data.put(VERSION, LATEST_VERSION);
         }
     }

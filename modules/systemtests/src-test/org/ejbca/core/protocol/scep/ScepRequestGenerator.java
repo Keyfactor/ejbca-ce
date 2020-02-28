@@ -2,13 +2,9 @@ package org.ejbca.core.protocol.scep;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.cert.CertStoreException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -160,10 +156,9 @@ public class ScepRequestGenerator {
         return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey, encryptionAlg);
     }
 
-    public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException {
-        this.cacert = ca;
+    public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate caCertificate, final X509Certificate senderCertificate,
+            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
+        this.cacert = caCertificate;
         this.reqdn = dn;
 
         // pkcsGetCertInitial issuerAndSubject ::= { 
@@ -171,7 +166,7 @@ public class ScepRequestGenerator {
         //	    subject "the requester subject name as given in PKCS#10" 
         //	} 
         ASN1EncodableVector vec = new ASN1EncodableVector();
-        vec.add(new DERUTF8String(ca.getIssuerDN().getName()));
+        vec.add(new DERUTF8String(caCertificate.getIssuerDN().getName()));
         vec.add(new DERUTF8String(dn));
         DERSequence seq = new DERSequence(vec);
 

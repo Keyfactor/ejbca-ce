@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.ca.sign;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -421,17 +420,13 @@ public interface SignSession {
      * @param req           a CRL Request message
      * @param responseClass the implementation class of the desired response
      * @return The newly created certificate or null.
-     * @throws IllegalKeyException           if the public key is of wrong type.
+     * 
      * @throws CADoesntExistsException       if the targeted CA does not exist
-     * @throws SignRequestException          if the provided request is invalid.
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *                                       the CA.
      * @throws CryptoTokenOfflineException
      * @throws AuthorizationDeniedException
      */
     ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass)
-            throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException,
-            SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
      * Returns an object with configuration parameters for extensions (currently only for the CT extension).
