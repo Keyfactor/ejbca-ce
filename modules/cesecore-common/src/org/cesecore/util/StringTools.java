@@ -132,6 +132,10 @@ public final class StringTools {
     private static final CharSet allowedEscapeChars = new CharSet(new char[]{ ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' });
 
     private static final Pattern WS = Pattern.compile("\\s+");
+    
+    private static final Pattern spaceAndColon = Pattern.compile("[: ]");
+
+    
 
     public static final int KEY_SEQUENCE_FORMAT_NUMERIC = 1;
     public static final int KEY_SEQUENCE_FORMAT_ALPHANUMERIC = 2;
@@ -362,6 +366,14 @@ public final class StringTools {
             return null;
         }
         return WS.matcher(str).replaceAll("");
+    }
+    
+    public static String replaceWihtespaceAndColon(final String str) {
+        if(str == null) {
+            return null;
+        }
+        
+        return spaceAndColon.matcher(str).replaceAll("");
     }
 
     /**
