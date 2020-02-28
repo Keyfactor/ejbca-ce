@@ -15,9 +15,10 @@ package org.ejbca.core.protocol.scep;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.ScepConfiguration;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 
 /**
- * Interface for SCEP plugins which require perform operations
+ * Interface for SCEP plugins which perform operations
  * 
  * @version $Id$
  *
@@ -33,6 +34,8 @@ public interface ScepOperationPlugin {
      * @param alias alias of the SCEP configuration
      * @return true if the operation succeeded 
      * @throws AuthorizationDeniedException if request was denied due to authorization error
+     * @throws WaitingForApprovalException 
      */
-    boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig, final String alias) throws AuthorizationDeniedException;
+    boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig,
+            final String alias) throws AuthorizationDeniedException, WaitingForApprovalException;
 }
