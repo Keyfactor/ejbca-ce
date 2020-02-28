@@ -71,6 +71,15 @@ public interface ApprovalProfileSession {
      * @return List of id:s (Integer)
      */
     List<Integer> getAuthorizedApprovalProfileIds(final AuthenticationToken admin);
+    
+    /**
+     * Checks if the administrator is authorized to the given approval profile.
+     *
+     * @param admin Administrator
+     * @param id Profile ID
+     * @return true if authorized, false if not.
+     */
+    boolean isAuthorizedToView(final AuthenticationToken admin, final int id);
 
     /**
      * Finds an approval profile by id.
