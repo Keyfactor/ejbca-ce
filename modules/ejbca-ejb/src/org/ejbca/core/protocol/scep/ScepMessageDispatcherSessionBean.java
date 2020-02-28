@@ -14,11 +14,17 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.SignatureException;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -28,8 +34,10 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -39,22 +47,32 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.protocol.NoSuchAliasException;
@@ -78,12 +96,19 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private transient ScepOperationPlugin scepRaModeExtension = null;
     private transient ScepResponsePlugin scepClientCertificateRenewal = null;
     
+    private static final Random secureRandom = new SecureRandom();
+    
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     @EJB
     private SignSessionLocal signSession;
-    @EJB
-    private CaSessionLocal caSession;
+
     
     
     @PostConstruct
@@ -290,68 +315,160 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CertificateRenewalException, SignatureException, CertificateException {
-      byte[] ret = null;
+        byte[] ret = null;
         if (log.isTraceEnabled()) {
             log.trace(">getRequestMessage(" + msg.length + " bytes)");
         }
         
+    
+        boolean includeCACert = scepConfig.getIncludeCA(alias);
+        ScepRequestMessage reqmsg;
         try {
-            boolean includeCACert = scepConfig.getIncludeCA(alias);
-            final ScepRequestMessage reqmsg = new ScepRequestMessage(msg, includeCACert);        
-            boolean isRAModeOK = scepConfig.getRAMode(alias);
+            reqmsg = new ScepRequestMessage(msg, includeCACert);
+        } catch (IOException e) {
+            log.error("Error receiving ScepMessage: ", e);
+            return null;
+        }
+        boolean isRAModeOK = scepConfig.getRAMode(alias);
 
-            if (reqmsg.getErrorNo() != 0) {
-                log.error("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
+        if (reqmsg.getErrorNo() != 0) {
+            log.error("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
+            return null;
+        }
+        if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
+            if (isRAModeOK && scepRaModeExtension == null) {
+                // Fail nicely
+                log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
                 return null;
-            }
-            if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
-                if (isRAModeOK && scepRaModeExtension == null) {
-                    // Fail nicely
-                    log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
-                    return null;
-                } else if (isRAModeOK) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("SCEP is operating in RA mode: " + isRAModeOK);
-                    }
+            } else if (isRAModeOK) {
+                if (log.isDebugEnabled()) {
+                    log.debug("SCEP is operating in RA mode: " + isRAModeOK);
+                }
+                try {
                     if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
                         String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
                         log.error(errmsg);
                         return null;
                     }
-                }
-                if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("SCEP client certificate renewal/enrollment with alias '"+alias+"'");
-                    }
-                    ResponseMessage resp = scepClientCertificateRenewal.performOperation(administrator, reqmsg, scepConfig, alias);
-                    if (resp != null) {
-                        ret = resp.getResponseMessage();
-                    }
-                } else {                
-                    // Get the certificate 
-                    if (log.isDebugEnabled()) {
-                        log.debug("SCEP certificate enrollment with alias '"+alias+"'");
-                    }
-                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
-                    if (resp != null) {
-                        ret = resp.getResponseMessage();
-                    }
+                } catch (WaitingForApprovalException e) {
+                    //Return a pending response message, because this request is now waiting to be approved
+                    X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
+                    ResponseMessage resp = createPendingResponseMessage(reqmsg, cainfo);
+                    ret = resp.getResponseMessage();
+                    return ret;
                 }
             }
-            if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
-                // create the stupid encrypted CRL message, the below can actually only be made 
-                // at the CA, since CAs private key is needed to decrypt
-                ResponseMessage resp = signSession.getCRL(administrator, reqmsg, ScepResponseMessage.class);
+            if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("SCEP client certificate renewal/enrollment with alias '" + alias + "'");
+                }
+                ResponseMessage resp = scepClientCertificateRenewal.performOperation(administrator, reqmsg, scepConfig, alias);
+                if (resp != null) {
+                    ret = resp.getResponseMessage();
+                }
+            } else {
+                // Get the certificate 
+                if (log.isDebugEnabled()) {
+                    log.debug("SCEP certificate enrollment with alias '" + alias + "'");
+                }
+                ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
             }
-        } catch (IOException e) {
-            log.error("Error receiving ScepMessage: ", e);
-        } 
+        } else if(reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
+            //Only works in RA mode
+            if (isRAModeOK && scepRaModeExtension == null) {
+                // Fail nicely
+                log.warn("GETCERTINITIAL was called but only works in SCEP RA mode, which is not included in the community version of EJBCA. Unable to continue.");
+                return null;
+            } else {
+                CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
+                final String keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                final X509Certificate cacert =  (X509Certificate) ca.getCACertificate();        
+                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+                //Initialize request message to get the username.      
+                reqmsg.setKeyInfo(cacert, cryptoToken.getPrivateKey(keyAlias), cryptoToken.getSignProviderName());
+                //reqmsg.verify();
+                EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(reqmsg.getUsername());
+                if(endEntityInformation == null) {
+                    log.error("Failure to process GETCERTINITIAL message. No such user with username " + reqmsg.getUsername());
+                    return null;
+                }            
+                //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
+                if(!endEntityInformation.getExtendedInformation().getScepTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
+                    log.error("Failure to process GETCERTINITIAL message. Transaction ID did not match up with that used during initial PKCSREQ");
+                    return null;
+                }
+                ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
+                if (resp != null) {
+                    ret = resp.getResponseMessage();
+                }
+            }
+        } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
+            // create the stupid encrypted CRL message, the below can actually only be made 
+            // at the CA, since CAs private key is needed to decrypt
+            ResponseMessage resp = signSession.getCRL(administrator, reqmsg, ScepResponseMessage.class);
+            if (resp != null) {
+                ret = resp.getResponseMessage();
+            }
+        }
+
         if (log.isTraceEnabled()) {
             log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
         }
+        return ret;
+    }
+    
+    /**
+     * Create a response message with the status PENDING to show that enrollment has been performed, but certificate issuance is waiting on an
+     * approval operation
+     * 
+     * @param req the request message
+     * @param signingCa the CA configured to sign responses
+     * @return a response message with the status PENDING
+     * @throws CryptoTokenOfflineException
+     */
+    private ScepResponseMessage createPendingResponseMessage(final RequestMessage req, final X509CAInfo signingCa)
+            throws CryptoTokenOfflineException {
+        ScepResponseMessage ret = new ScepResponseMessage();
+        // Create the response message and set all required fields
+        CAToken caToken = signingCa.getCAToken();
+        X509Certificate signingCertificate = (X509Certificate) signingCa.getCertificateChain().get(0);
+        CryptoToken caCryptoToken = cryptoTokenSession.getCryptoToken(signingCa.getCAToken().getCryptoTokenId());
+        PrivateKey signingKey = caCryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (ret.requireSignKeyInfo()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Signing message with cert: " + signingCertificate.getSubjectDN().getName());
+            }
+            Collection<Certificate> racertColl = new ArrayList<Certificate>();
+            racertColl.add(signingCertificate);
+            ret.setSignKeyInfo(racertColl, signingKey, BouncyCastleProvider.PROVIDER_NAME);
+        }
+        if (req.getSenderNonce() != null) {
+            ret.setRecipientNonce(req.getSenderNonce());
+        }
+        if (req.getTransactionId() != null) {
+            ret.setTransactionId(req.getTransactionId());
+        }
+        // Sendernonce is a random number
+        byte[] senderNonce = new byte[16];
+        secureRandom.nextBytes(senderNonce);
+        ret.setSenderNonce(new String(Base64.encode(senderNonce)));
+        // If we have a specified request key info, use it in the reply
+        if (req.getRequestKeyInfo() != null) {
+            ret.setRecipientKeyInfo(req.getRequestKeyInfo());
+        }
+        // Which digest algorithm to use to create the response, if applicable
+        ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
+        // Include the CA cert or not in the response, if applicable for the response type
+        ret.setIncludeCACert(req.includeCACert());
+        ret.setStatus(ResponseStatus.PENDING);
+        try {
+            ret.create();
+        } catch (CertificateEncodingException | CRLException e) {
+            throw new IllegalStateException("Response message could not be created.", e);
+        } 
         return ret;
     }
 }
