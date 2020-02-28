@@ -117,6 +117,15 @@ public interface EndEntityProfileSession {
     void flushProfileCache();
 
     /**
+     * Checks if the administrator is authorized to the given end entity profile.
+     *
+     * @param admin Administrator
+     * @param id Profile ID
+     * @return true if authorized, false if not.
+     */
+    boolean isAuthorizedToView(final AuthenticationToken admin, final int id);
+
+    /**
      * Finds a end entity profile by id.
      * @return EndEntityProfile (cloned) or null if it does not exist
      */

@@ -57,6 +57,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.HTMLTools;
+import org.ejbca.util.mail.MailSender;
 
 /**
  * JSF MBean backing the approval profile pages.
@@ -612,6 +613,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         return approvalProfile.isNotificationEnabled(approvalPartition);
+    }
+    
+    /** Returns true if any form of notifications are enabled, and e-mail is NOT configured in the application server. */
+    public boolean isNotificationsEnabledWithoutEmail(final int partitionIdentifier) {
+        return (isNotificationEnabled(partitionIdentifier) || isUserNotificationEnabled(partitionIdentifier)) && !MailSender.isMailConfigured();
     }
 
     public void addNotification(final int partitionIdentifier) {

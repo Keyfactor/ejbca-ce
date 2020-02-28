@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
@@ -278,15 +279,37 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return returnval;
     }
+    
+    private boolean isAuthorizedToProfile(final AuthenticationToken admin, final int profileId, final EndEntityProfile profile,
+            final boolean hasRootRuleAccess, final Set<Integer> authorizedCaIds, final Set<Integer> allCaIds, final String endentityAccessRule) {
+        // Check if all profiles available CAs exists in authorizedcaids.
+        final List<Integer> availableCaIds = profile.getAvailableCAs();
+        boolean authorizedToProfile = false;
+        // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + String.valueOf(profileId) + endentityAccessRule)) {
+            authorizedToProfile = true;
+            for (final int caId : availableCaIds) {
+                // with root rule access you can edit profiles with missing CA ids
+                if (!authorizedCaIds.contains(caId) && (!hasRootRuleAccess || allCaIds.contains(caId))) {
+                    authorizedToProfile = false;
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Profile " + profileId + " not authorized to CA with ID " + caId);
+                    }
+                    break;
+                }
+            }
+        }
+        return authorizedToProfile;
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin, String endentityAccessRule) {
-    	final ArrayList<Integer> returnval = new ArrayList<Integer>();
-    	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCaIds(admin));
-    	final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
+    	final ArrayList<Integer> returnval = new ArrayList<>();
+    	final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(admin));
+    	final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
 		// If this is the special value ALLCAs we are authorized
-    	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
+    	authorizedCaIds.add(Integer.valueOf(SecConst.ALLCAS));
 
     	final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
@@ -294,35 +317,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval.add(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         }
         for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
-            // Check if all profiles available CAs exists in authorizedcaids.
-            final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
-            boolean authorizedToProfile = false;
-            // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
-            if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
-                authorizedToProfile = true;
-                if (StringUtils.isNotBlank(availableCasString)) {
-                    for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
-                        try {
-                            final int caIdInt = Integer.parseInt(caidString);
-                            // with root rule access you can edit profiles with missing CA ids
-                            if (!authorizedcaids.contains(caIdInt) && (!rootAccess || allcaids.contains(caIdInt))) {
-                                authorizedToProfile = false;
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Profile " + entry.getKey().toString() + " not authorized to CA with ID " + caIdInt);
-                                }
-                                break;
-                            }
-                        } catch (NumberFormatException e) {
-                            throw new IllegalStateException(
-                                    "CA ID was stored in an end entity profile as something other than a number: " + caidString, e);
-                        }
-                    }
-                    if (authorizedToProfile) {
-                        returnval.add(entry.getKey());
-                    }
-                }
+            if (isAuthorizedToProfile(admin, entry.getKey(), entry.getValue(), rootAccess, authorizedCaIds, allCaIds, endentityAccessRule)) {
+                returnval.add(entry.getKey());
             }
-
         }
         return returnval;
     }
@@ -358,6 +355,17 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             LOG.error(INTRES.getLocalizedMessage("ra.errorgetids"), e);
         }
         return returnval;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean isAuthorizedToView(final AuthenticationToken admin, final int id) {
+        final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(admin));
+        final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
+        authorizedCaIds.add(Integer.valueOf(SecConst.ALLCAS));
+        final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+        final EndEntityProfile profile = getEndEntityProfileNoClone(id);
+        return isAuthorizedToProfile(admin, id, profile, rootAccess, authorizedCaIds, allCaIds, AccessRulesConstants.VIEW_END_ENTITY);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

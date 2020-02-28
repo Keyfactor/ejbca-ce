@@ -44,6 +44,21 @@ public class MailSender {
 	public final static List<String> NO_TO = null;	//List<String>
 	public final static List<String> NO_CC = null;	//List<String>
 	public final static List<MailAttachment> NO_ATTACHMENTS = null;	//List<MailAttachment>
+	
+	/**
+	 * Returns true if mail is configured and available in the application server.
+	 */
+	public static boolean isMailConfigured() {
+	    try {
+	        ServiceLocator.getInstance().getMailSession(MailConfiguration.getMailJndiName());
+	        return true;
+        } catch (ServiceLocatorException e) {
+            return false;
+        } catch (RuntimeException e) {
+            log.debug("Caught runtime exception when checking for presence of mail session", e);
+            return false;
+        }
+	}
 
 	/**
 	 * Helper method for sending mail using the mail service configured in mail.properties.

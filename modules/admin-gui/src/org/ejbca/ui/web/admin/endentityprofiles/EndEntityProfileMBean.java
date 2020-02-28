@@ -62,6 +62,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 import org.ejbca.util.PrinterManager;
+import org.ejbca.util.mail.MailSender;
 
 /**
  * 
@@ -1018,6 +1019,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public void setUseSendNotification(boolean useSendNotification) {
         profiledata.setSendNotificationUsed(useSendNotification);
+    }
+
+    public boolean isEmailConfigurationMissing() {
+        return getUseSendNotification() && !MailSender.isMailConfigured();
     }
 
     public List<UserNotification> getUserNotifications() {

@@ -29,6 +29,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.ejbca.config.ConfigurationCheckerConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.Ticket;
@@ -36,9 +38,11 @@ import org.ejbca.issuechecker.db.TicketRequest;
 import org.ejbca.issuechecker.issues.BasicConstraintsViolation;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
 import org.ejbca.issuechecker.issues.InternalKeyBindingValidityCheck;
+import org.ejbca.issuechecker.issues.MissingEmailConfiguration;
 import org.ejbca.issuechecker.issues.NotInProductionMode;
 import org.ejbca.issuechecker.issuesets.CertificateTransparencyConfigurationIssueSet;
 import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
+import org.ejbca.util.mail.MailSender;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -57,17 +61,21 @@ import com.google.common.collect.ImmutableSet;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSessionLocal, ConfigurationCheckerSessionRemote {
     @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
-    @EJB
-    private InternalKeyBindingDataSessionLocal internalKeyBindingSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateSession;
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingSession;
 
     /**
      * A set of all implemented issue sets. If you create a new issue set, add it to this set.
@@ -86,6 +94,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
                 .add(new EccWithKeyEncipherment(certificateProfileSession))
                 .add(new InternalKeyBindingValidityCheck(internalKeyBindingSession, certificateSession, authorizationSession))
                 .add(new BasicConstraintsViolation(caSession))
+                .add(new MissingEmailConfiguration(approvalProfileSession, endEntityProfileSession, MailSender::isMailConfigured))
                 .build();
         allConfigurationIssueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
                 .add(new EjbcaCommonIssueSet())
