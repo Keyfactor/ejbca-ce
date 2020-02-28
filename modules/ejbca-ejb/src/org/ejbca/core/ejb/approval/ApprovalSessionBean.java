@@ -222,7 +222,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private void updateApprovalData(final ApprovalData approvalData, final ApprovalRequest approvalRequest) {
         approvalData.setApprovalid(approvalRequest.generateApprovalId());
         approvalData.setApprovaltype(approvalRequest.getApprovalType());
-        approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());
+        approvalData.setEndEntityProfileId(approvalRequest.getEndEntityProfileId());
         approvalData.setCaid(approvalRequest.getCAId());
         if (approvalRequest.getRequestAdminCert() != null) {
             approvalData.setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));

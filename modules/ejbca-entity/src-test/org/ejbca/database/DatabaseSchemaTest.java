@@ -177,7 +177,7 @@ public class DatabaseSchemaTest {
         entity.setApprovaldata(CLOB_1MiB);
         entity.setApprovaltype(0);
         entity.setCaid(0);
-        entity.setEndentityprofileid(0);
+        entity.setEndEntityProfileId(0);
         entity.setExpiredate(0);
         entity.setId(Integer.valueOf(0));
         entity.setRemainingapprovals(0);

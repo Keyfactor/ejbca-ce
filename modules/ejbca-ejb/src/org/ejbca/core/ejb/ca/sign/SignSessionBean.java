@@ -1057,8 +1057,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public ResponseMessage getCRL(final AuthenticationToken admin, final RequestMessage req, final Class<? extends ResponseMessage> responseClass)
-            throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException,
-            SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException {
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         if (log.isTraceEnabled()) {
             log.trace(">getCRL(IRequestMessage)");
         }

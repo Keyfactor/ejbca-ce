@@ -19,6 +19,9 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
@@ -34,6 +37,9 @@ import org.ejbca.util.query.Query;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
 
+    @PersistenceContext(unitName = "ejbca")
+    private EntityManager entityManager;
+    
     @EJB
     private ApprovalSessionLocal approvalSession;
 
@@ -53,6 +59,22 @@ public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
     @Override
     public void extendApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalRequestId, final long extendForMillis) {
         approvalSession.extendApprovalRequestNoAuth(authenticationToken, approvalRequestId, extendForMillis);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void removeByEndEntityProfileId(int endEntityProfileId) {     
+        for (ApprovalData approval : findByEndEntityProfileId(endEntityProfileId)) {
+            entityManager.remove(approval);
+        }
+    }
+
+    @Override
+    public List<ApprovalData> findByEndEntityProfileId(int endEntityProfileId) {
+        final TypedQuery<ApprovalData> query = entityManager
+                .createQuery("SELECT a FROM ApprovalData a WHERE a.endEntityProfileId=:endEntityProfileId", ApprovalData.class);
+        query.setParameter("endEntityProfileId", endEntityProfileId);
+        return query.getResultList();
     }
 
 }

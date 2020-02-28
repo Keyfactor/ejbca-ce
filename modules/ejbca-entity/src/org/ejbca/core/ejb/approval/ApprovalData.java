@@ -117,12 +117,12 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
 	 */
 	//@Column
-	public int getEndentityprofileid() { return endEntityProfileId; }
+	public int getEndEntityProfileId() { return endEntityProfileId; }
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
-s	 */
-	public void setEndentityprofileid(int endEntityProfileId) { this.endEntityProfileId = endEntityProfileId; }
+	 */
+	public void setEndEntityProfileId(int endEntityProfileId) { this.endEntityProfileId = endEntityProfileId; }
 
 	/**
 	 * For CA specific approval requests should the related ca id be specified
@@ -283,7 +283,7 @@ s	 */
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndentityprofileid()).append(getCaid()).append(getReqadmincertissuerdn());
+        build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndEntityProfileId()).append(getCaid()).append(getReqadmincertissuerdn());
         build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());
         return build.toString();
     }
@@ -325,7 +325,7 @@ s	 */
     @Transient
     public ApprovalDataVO getApprovalDataVO() {
         hasRequestOrApprovalExpired();
-        ApprovalDataVO result = new ApprovalDataVO(getId(), getApprovalid(), getApprovaltype(), getEndentityprofileid(), getCaid(), getReqadmincertissuerdn(),
+        ApprovalDataVO result = new ApprovalDataVO(getId(), getApprovalid(), getApprovaltype(), getEndEntityProfileId(), getCaid(), getReqadmincertissuerdn(),
                 getReqadmincertsn(), getStatus(), getApprovals(), getApprovalRequest(), getRequestDate(), getExpireDate());
         return result;
     }

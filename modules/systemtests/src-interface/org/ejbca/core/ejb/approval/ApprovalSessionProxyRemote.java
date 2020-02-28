@@ -61,4 +61,18 @@ public interface ApprovalSessionProxyRemote {
      * @param extendForMillis Milliseconds to extend the request by.
      */
     void extendApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalRequestId, long extendForMillis);
+
+    /**
+     * Finds all rows with a given end entity profile ID
+     * 
+     * @param endEntityProfileId the end entity profile ID
+     */
+    List<ApprovalData> findByEndEntityProfileId(int endEntityProfileId);
+    
+    /**
+     * Removes rows in ApprovalData by end entity profile. Used to clean out tests.
+     * 
+     * @param endEntityProfileId the end entity profile ID
+     */
+    void removeByEndEntityProfileId(int endEntityProfileId);
 }
