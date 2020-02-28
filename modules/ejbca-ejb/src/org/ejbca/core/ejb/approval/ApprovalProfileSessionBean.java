@@ -220,6 +220,13 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         }
         return profiles;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean isAuthorizedToView(final AuthenticationToken admin, final int id) {
+        // Currently the authorization is all or nothing for approval profiles
+        return authorizationSession.isAuthorized(admin, StandardRules.APPROVALPROFILEVIEW.resource());
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
