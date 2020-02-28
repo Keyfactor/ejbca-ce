@@ -152,6 +152,11 @@
                                 </f:facet>  
                             </h:column>
                             <h:column>
+                                <f:facet name="header">
+                                    <h:panelGroup styleClass="errorMessage" layout="block" rendered="#{approvalProfileMBean.isNotificationsEnabledWithoutEmail(partition.partitionId)}">
+                                        <h:outputText value="${web.text.MISSING_EMAIL_CONFIGURATION}"/>
+                                    </h:panelGroup>
+                                </f:facet>
                                 <h:panelGroup rendered="#{!property.multiValued}">
                                     <h:inputText id="inputString" disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}"
                                         value="#{property.value}" style="width: 100%" >
