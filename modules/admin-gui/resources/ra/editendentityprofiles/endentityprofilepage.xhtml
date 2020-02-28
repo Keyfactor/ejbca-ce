@@ -1377,6 +1377,9 @@
                         <f:ajax
                             render="userNotificationsWrapper sendNotificationsDeleteAllGroup sendNotificationGrid" />
                     </h:commandButton>
+                    <h:panelGroup styleClass="errorMessage" layout="block" rendered="${endEntityProfileMBean.emailConfigurationMissing}">
+                        <h:outputText value="${web.text.MISSING_EMAIL_CONFIGURATION}"/>
+                    </h:panelGroup>
                 </h:panelGrid>
             </h:panelGrid>
             <h:panelGroup id="userNotificationsWrapper">
