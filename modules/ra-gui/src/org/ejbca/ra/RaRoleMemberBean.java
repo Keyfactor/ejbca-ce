@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,9 +32,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
 
@@ -98,7 +101,7 @@ public class RaRoleMemberBean implements Serializable {
             roleId = roleMember.getRoleId();
             tokenType = roleMember.getTokenType();
             caId = roleMember.getTokenIssuerId();
-            matchKey = roleMember.getTokenMatchKey();
+            matchKey = roleMember.getTokenMatchKey();                  
             matchValue = roleMember.getTokenMatchValue();
             description = roleMember.getDescription();
             if (roleId != RoleMember.NO_ROLE) {
@@ -276,12 +279,29 @@ public class RaRoleMemberBean implements Serializable {
     /** Called when the token type is changed. Does nothing */
     public void update() {
     }
+    
+   
 
     public String save() throws AuthorizationDeniedException {
         final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
         if (!tokenTypeInfo.isIssuedByCA()) {
             caId = RoleMember.NO_ISSUER;
         }
+               
+        if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) &&
+                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() == matchKey) {
+            matchValue = StringTools.replaceWihtespaceAndColon(matchValue);     
+            
+            try {
+                new BigInteger(matchValue, 16);
+            } catch (NumberFormatException e) {
+                raLocaleBean.addMessageError("role_member_page_error_hexadecimal");
+                return "";
+            }
+            
+        } 
+        
+       
 
         // The getRoleMember method returns a reference to an object which should not be edited directly,
         // so we make a deep copy of it here, which we can edit freely. This code is not performance critical,
