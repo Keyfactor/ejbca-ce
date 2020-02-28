@@ -22,6 +22,7 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
@@ -40,6 +41,8 @@ public class OptionalHexSerialNumberValidator implements Validator {
 			log.debug("Validating component " + textField.getClientId(facesContext) + " with value \"" + object + "\"");
 		}
 		if (object != null && !((String)object).trim().isEmpty()) {
+		   object= StringTools.replaceWihtespaceAndColon((String)object);
+
             try {
                 new BigInteger((String) object, 16);
             } catch (NumberFormatException e) {
