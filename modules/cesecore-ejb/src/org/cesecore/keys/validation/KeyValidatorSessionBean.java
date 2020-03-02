@@ -544,7 +544,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             Validator baseValidator;
             CertificateValidator validator;
             String name;
-            for (Integer id : ca.getValidators()) {
+            for (final int id : ca.getValidators()) {
                 baseValidator = getValidatorInternal(id, true);
                 if (baseValidator != null && baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
                     validator = (CertificateValidator) baseValidator;
