@@ -613,7 +613,7 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonMakeRequest) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
                                 .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
-                                .setIncludeInHealthCheck(false)
+                                .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check because it's not active
                                 .build();
 	                    saveRequestInfo(x509cainfo);                
 	                }
