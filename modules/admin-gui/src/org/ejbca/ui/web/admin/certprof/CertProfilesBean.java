@@ -205,8 +205,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public String actionEdit() {
         selectCurrentRowData();
         if (selectedProfileExists()) {
-            viewOnly = false;
-            return "edit"; // Outcome is defined in faces-config.xml
+            return "edit";
         } else {
             return "";
         }
@@ -237,14 +236,14 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public boolean isRunningBuildWithCA() {
         return getEjbcaWebBean().isRunningBuildWithCA();
     }
-    
-    public boolean getViewOnly() {
-        return viewOnly;
-    }
 
     private void selectCurrentRowData() {
         final CertificateProfileItem certificateProfileItem = getCertificateProfiles().getRowData();
         selectedCertProfileId = certificateProfileItem.getId();
+    }
+
+    public int getCurrentCertificateProfileId() {
+        return getCertificateProfiles().getRowData().getId();
     }
 
     public boolean isOperationInProgress() {
