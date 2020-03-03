@@ -82,3 +82,8 @@ CREATE INDEX acmechallengedata_idx1 ON AcmeChallengeData (authorizationId);
 
 -- index for searching for Signed Certificate Timestamps by fingerprint
 CREATE INDEX sctdata_idx1 ON SctData (fingerprint);
+
+-- indeces for searching for OcspResponses by cAId and serialNumber
+CREATE INDEX ocspresponsedata_idx1 ON OcspResponseData (cAId);
+CREATE INDEX ocspresponsedata_idx2 ON OcspResponseData (serialNumber);
+
