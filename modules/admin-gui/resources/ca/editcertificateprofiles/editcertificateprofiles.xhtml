@@ -47,9 +47,14 @@
 				<h:column headerClass="gridColumn2">
 					<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
 					<h:panelGroup styleClass="button-group">
-					<h:commandButton value="#{web.text.VIEW}" action="#{certProfilesBean.actionView}"/>
+					<h:commandButton value="#{web.text.VIEW}" action="#{certProfilesBean.actionView}">
+                        <f:param name="viewOnly" />
+                        <f:param name="id" value="#{certProfilesBean.currentCertificateProfileId}" />  
+                    </h:commandButton>
 					<h:commandButton value="#{web.text.EDIT}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
-						rendered="#{certProfilesBean.authorizedToEdit}"/>
+						rendered="#{certProfilesBean.authorizedToEdit}">
+                        <f:param name="id" value="#{certProfilesBean.currentCertificateProfileId}" />        
+                    </h:commandButton>
 					<h:commandButton value="#{web.text.DELETE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
 						rendered="#{certProfilesBean.authorizedToEdit}"/>
 					<h:commandButton value="#{web.text.RENAME}" action="#{certProfilesBean.actionRename}" disabled="#{certificateProfile.fixed}" 

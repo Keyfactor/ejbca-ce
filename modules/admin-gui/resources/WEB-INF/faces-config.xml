@@ -45,11 +45,7 @@
   <managed-bean>
     	<managed-bean-name>certProfileBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.certprof.CertProfileBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>certProfilesBean</property-name>
-    	    <value>#{certProfilesBean}</value>
-    	</managed-property>
+    	<managed-bean-scope>view</managed-bean-scope>
   </managed-bean>
   
   <managed-bean>
