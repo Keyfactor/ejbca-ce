@@ -24,14 +24,24 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <!-- 
+    <f:metadata>
+        <f:viewParam name="viewOnly"
+            value="#{certProfileBean.viewOnly}">
+            <f:converter converterId="javax.faces.Boolean" />
+        </f:viewParam>
+        <f:viewParam name="id" required="true" requiredMessage="You must specify the ID of a certificate profile to load." value="#{certProfileBean.certificateProfileId}">
+            <f:converter converterId="javax.faces.Integer" />
+        </f:viewParam>
+    </f:metadata>
+     -->
     <ui:define name="content">
-
         <h:panelGroup>
             <h2>
                 <h:outputText value="#{web.text.EDIT}"
-                    rendered="#{!certProfilesBean.viewOnly}" />
+                    rendered="#{!certProfileBean.viewOnly}" />
                 <h:outputText value="#{web.text.VIEW}"
-                    rendered="#{certProfilesBean.viewOnly}" />
+                    rendered="#{certProfileBean.viewOnly}" />
             </h2>
             <h3 id="titleCertificateProfile">
                 <h:outputText
@@ -56,26 +66,26 @@
                 <h:outputLabel for="certificateProfileId"
                     value="#{web.text.CERTIFICATEPROFILEID}" />
                 <h:outputText id="certificateProfileId"
-                    value="#{certProfileBean.selectedCertProfileId}" />
+                    value="#{certProfileBean.certificateProfileId}" />
 
                 <h:outputLabel for="selecttype" value="#{web.text.TYPE}" />
                 <h:panelGroup id="selecttype">
                     <h:commandButton
                         rendered="#{certProfileBean.typeEndEntityAvailable}"
-                        disabled="#{certProfileBean.typeEndEntity or certProfilesBean.viewOnly}"
-                        styleClass="selectButton largeSelectButton #{certProfileBean.typeEndEntity?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+                        disabled="#{certProfileBean.typeEndEntity or certProfileBean.viewOnly}"
+                        styleClass="selectButton largeSelectButton #{certProfileBean.typeEndEntity?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         action="#{certProfileBean.setTypeEndEntity}"
                         value="#{certProfileBean.typeEndEntity?'✓':' '}#{web.text.ENDENTITY}" />
                     <h:commandButton
-                        rendered="#{certProfileBean.typeSubCaAvailable or certProfilesBean.viewOnly}"
-                        disabled="#{certProfileBean.typeSubCa or certProfilesBean.viewOnly}"
-                        styleClass="selectButton largeSelectButton #{certProfileBean.typeSubCa?'selected':''} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+                        rendered="#{certProfileBean.typeSubCaAvailable or certProfileBean.viewOnly}"
+                        disabled="#{certProfileBean.typeSubCa or certProfileBean.viewOnly}"
+                        styleClass="selectButton largeSelectButton #{certProfileBean.typeSubCa?'selected':''} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         action="#{certProfileBean.setTypeSubCa}"
                         value="#{certProfileBean.typeSubCa?'✓':' '}#{web.text.SUBCA}" />
                     <h:commandButton
-                        rendered="#{certProfileBean.typeRootCaAvailable or certProfilesBean.viewOnly}"
-                        disabled="#{certProfileBean.typeRootCa or certProfilesBean.viewOnly}"
-                        styleClass="selectButton largeSelectButton #{certProfileBean.typeRootCa?'selected':''} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+                        rendered="#{certProfileBean.typeRootCaAvailable or certProfileBean.viewOnly}"
+                        disabled="#{certProfileBean.typeRootCa or certProfileBean.viewOnly}"
+                        styleClass="selectButton largeSelectButton #{certProfileBean.typeRootCa?'selected':''} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         action="#{certProfileBean.setTypeRootCa}"
                         value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}" />
                 </h:panelGroup>
@@ -90,7 +100,7 @@
                 <h:selectManyListbox styleClass="select-list"
                     id="selectavailablekeyalgorithms"
                     value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}"
-                    size="5" disabled="#{certProfilesBean.viewOnly}">
+                    size="5" disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.availableKeyAlgorithmsAvailable}" />
                 </h:selectManyListbox>
@@ -105,7 +115,7 @@
                 <h:selectManyListbox styleClass="select-list"
                     id="selectavailableeccurves"
                     value="#{certProfileBean.certificateProfile.availableEcCurves}"
-                    size="5" disabled="#{certProfilesBean.viewOnly}">
+                    size="5" disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.availableEcCurvesAvailable}" />
                 </h:selectManyListbox>
@@ -120,7 +130,7 @@
                 <h:selectManyListbox id="selectavailablebitlengths"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
                     size="5" styleClass="number select-list"
-                    disabled="#{certProfilesBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.availableBitLengthsAvailable}" />
                 </h:selectManyListbox>
@@ -129,7 +139,7 @@
                     value="#{web.text.SIGNATUREALGORITHM}" />
                 <h:selectOneMenu id="selectsignaturealgorithm"
                     value="#{certProfileBean.signatureAlgorithm}"
-                    disabled="#{certProfilesBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
                 </h:selectOneMenu>
@@ -148,7 +158,7 @@
                         value="#{certProfileBean.validity}"
                         title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}"
                         size="25" maxlength="255"
-                        disabled="#{certProfilesBean.viewOnly}"
+                        disabled="#{certProfileBean.viewOnly}"
                         validatorMessage="#{web.text.INVALIDVALIDITYORCERTEND}">
                         <f:validator validatorId="validityDateValidator" />
                         <f:attribute name="precision" value="seconds" />
@@ -182,7 +192,7 @@
                             id="checkusecertificatevalidityoffset"
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useCertificateValidityOffset}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
                                 render=":cpf:certificatevalidityoffsetgrid" />
                         </h:selectBooleanCheckbox>
@@ -199,7 +209,7 @@
                             value="#{certProfileBean.certificateValidityOffset}"
                             title="#{web.text.FORMAT_TIME_YMODHMS}"
                             size="25" maxlength="255"
-                            disabled="#{certProfilesBean.viewOnly}"
+                            disabled="#{certProfileBean.viewOnly}"
                             validatorMessage="#{web.text.INVALIDCERTVALIDITYOFFSET}">
                             <f:validator
                                 validatorId="simpleTimeValidator" />
@@ -231,7 +241,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
                                 render=":cpf:expirationtrestrictionforweekdaysgrid" />
                         </h:selectBooleanCheckbox>
@@ -251,47 +261,47 @@
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionMonday"
                             value="#{certProfileBean.expirationRestrictionMonday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="expirationRestrictionMonday"
                             value="#{web.text.DAY_MONDAY}" />
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionTuesday"
                             value="#{certProfileBean.expirationRestrictionTuesday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel
                             for="expirationRestrictionTuesday"
                             value="#{web.text.DAY_TUESDAY}" />
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionWednesday"
                             value="#{certProfileBean.expirationRestrictionWednesday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel
                             for="expirationRestrictionWednesday"
                             value="#{web.text.DAY_WEDNESDAY}" />
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionThursday"
                             value="#{certProfileBean.expirationRestrictionThursday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel
                             for="expirationRestrictionThursday"
                             value="#{web.text.DAY_THURSDAY}" />
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionFriday"
                             value="#{certProfileBean.expirationRestrictionFriday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="expirationRestrictionFriday"
                             value="#{web.text.DAY_FRIDAY}" />
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionSaturday"
                             value="#{certProfileBean.expirationRestrictionSaturday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel
                             for="expirationRestrictionSaturday"
                             value="#{web.text.DAY_SATURDAY}" />
                         <h:selectBooleanCheckbox
                             id="expirationRestrictionSunday"
                             value="#{certProfileBean.expirationRestrictionSunday}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="expirationRestrictionSunday"
                             value="#{web.text.DAY_SUNDAY}" />
                     </h:panelGrid>
@@ -304,7 +314,7 @@
                         <h:selectOneMenu
                             id="expirationRestrictionWeekdaysBefore"
                             value="#{certProfileBean.certificateProfile.expirationRestrictionForWeekdaysExpireBefore}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:selectItems
                                 value="#{certProfileBean.expirationRestrictionWeekdaysAvailable}" />
                         </h:selectOneMenu>
@@ -322,7 +332,7 @@
                             cols="45"
                             value="#{certProfileBean.certificateProfile.description}"
                             rows="2"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                     </h:panelGroup>
                 </h:panelGrid>
             </h:panelGrid>
@@ -351,7 +361,7 @@
                     <h:selectBooleanCheckbox
                         id="checkallowvalidityoverride"
                         value="#{certProfileBean.certificateProfile.allowValidityOverride}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkallowvalidityoverride"
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
@@ -371,7 +381,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.allowExtensionOverride}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
                                 render=":cpf:allowextensionoverridegrid" />
                         </h:selectBooleanCheckbox>
@@ -391,12 +401,12 @@
                                 size="45" maxlength="500"
                                 title="#{web.text.FORMAT_OIDS}"
                                 value="#{certProfileBean.overridableExtensionOIDs}"
-                                disabled="#{certProfilesBean.viewOnly}"
+                                disabled="#{certProfileBean.viewOnly}"
                                 converter="org.ejbca.OidsObjectLinkedHashSetConverter" />
                             <h:selectBooleanCheckbox
                                 id="checkcustomnonoverridableextension"
                                 value="#{certProfileBean.nonOverridableExtensionOIDs}"
-                                disabled="#{certProfilesBean.viewOnly}" />
+                                disabled="#{certProfileBean.viewOnly}" />
                             <h:outputLabel
                                 for="checkcustomnonoverridableextension"
                                 value=" #{web.text.NONOVERRIDABLEOIDSEXTENSIONLIST}" />
@@ -428,7 +438,7 @@
                         rendered="#{certProfileBean.uniqueCertificateSerialNumberIndex}"
                         id="allowcertserialnumberoverride"
                         value="#{certProfileBean.certificateProfile.allowCertSerialNumberOverride}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel
                         rendered="#{certProfileBean.uniqueCertificateSerialNumberIndex}"
                         for="allowcertserialnumberoverride"
@@ -449,7 +459,7 @@
                 <h:panelGroup id="checkallowdnoverridegroup">
                     <h:selectBooleanCheckbox id="checkallowdnoverride"
                         value="#{certProfileBean.certificateProfile.allowDNOverride}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkallowdnoverride"
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
@@ -465,7 +475,7 @@
                     <h:selectBooleanCheckbox
                         id="checkallowdnoverrideeei"
                         value="#{certProfileBean.certificateProfile.allowDNOverrideByEndEntityInformation}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkallowdnoverrideeei"
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
@@ -481,7 +491,7 @@
                     <h:selectBooleanCheckbox
                         id="checkallowkeyusageoverride"
                         value="#{certProfileBean.certificateProfile.allowKeyUsageOverride}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkallowkeyusageoverride"
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
@@ -498,7 +508,7 @@
                     <h:selectBooleanCheckbox
                         id="checkallowbackdatedrevokation"
                         value="#{certProfileBean.certificateProfile.allowBackdatedRevocation}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkallowbackdatedrevokation"
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
@@ -514,7 +524,7 @@
                     <h:selectBooleanCheckbox
                         id="checkUseCertificateStorage"
                         value="#{certProfileBean.certificateProfile.useCertificateStorage}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkUseCertificateStorage"
                         value="#{web.text.USE} " />
                     <h:panelGroup styleClass="help">
@@ -534,7 +544,7 @@
                     <h:selectBooleanCheckbox
                         id="checkStoreCertificateData"
                         value="#{certProfileBean.certificateProfile.storeCertificateData}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkStoreCertificateData"
                         value="#{web.text.USE} " />
                     <h:panelGroup styleClass="help">
@@ -567,7 +577,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useBasicConstraints}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:cbbasicconstraintsgroup checkusepathlengthconstraintgroup" />
                     </h:selectBooleanCheckbox>
@@ -577,7 +587,7 @@
                     <h:selectBooleanCheckbox
                         id="cbbasicconstraintscritical"
                         value="#{certProfileBean.certificateProfile.basicConstraintsCritical}"
-                        disabled="#{!certProfileBean.certificateProfile.useBasicConstraints or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useBasicConstraints or certProfileBean.viewOnly}" />
                     <h:outputLabel for="cbbasicconstraintscritical"
                         value="#{web.text.EXT_CRITICAL}" />
                 </h:panelGroup>
@@ -597,7 +607,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.usePathLengthConstraint}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{!certProfileBean.certificateProfile.useBasicConstraints or certProfilesBean.viewOnly}">
+                        disabled="#{!certProfileBean.certificateProfile.useBasicConstraints or certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:checkusepathlengthconstraintgroup" />
                     </h:selectBooleanCheckbox>
@@ -609,7 +619,7 @@
                     <h:inputText id="textfieldpathlengthconstraint"
                         value="#{certProfileBean.certificateProfile.pathLengthConstraint}"
                         size="2" maxlength="2"
-                        disabled="#{!certProfileBean.certificateProfile.usePathLengthConstraint || !certProfileBean.certificateProfile.useBasicConstraints || certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.usePathLengthConstraint || !certProfileBean.certificateProfile.useBasicConstraints || certProfileBean.viewOnly}"
                         title="#{web.text.FORMAT_INTEGER}"
                         validatorMessage="#{web.text.ONLYDECNUMBERSINPATHLEN}"
                         converterMessage="#{web.text.ONLYDECNUMBERSINPATHLEN}">
@@ -626,7 +636,7 @@
                     <h:selectBooleanCheckbox
                         id="cbauthoritykeyidentifier"
                         value="#{certProfileBean.certificateProfile.useAuthorityKeyIdentifier}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="cbauthoritykeyidentifier"
                         value="#{web.text.USE} " />
                 </h:panelGroup>
@@ -638,7 +648,7 @@
                 <h:panelGroup id="cbsubjectkeyidentifiergroup">
                     <h:selectBooleanCheckbox id="cbsubjectkeyidentifier"
                         value="#{certProfileBean.certificateProfile.useSubjectKeyIdentifier}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="cbsubjectkeyidentifier"
                         value="#{web.text.USE} " />
                 </h:panelGroup>
@@ -673,7 +683,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useKeyUsage}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax render=":cpf:cbkeyusagegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="cbkeyusage"
@@ -681,7 +691,7 @@
                             styleClass="checkBoxOverlay" />
                         <h:selectBooleanCheckbox id="cbkeyusagecritical"
                             value="#{certProfileBean.certificateProfile.keyUsageCritical}"
-                            disabled="#{!certProfileBean.certificateProfile.useKeyUsage or certProfilesBean.viewOnly}" />
+                            disabled="#{!certProfileBean.certificateProfile.useKeyUsage or certProfileBean.viewOnly}" />
                         <h:outputLabel for="cbkeyusagecritical"
                             value="#{web.text.EXT_CRITICAL}" />
                     </h:panelGroup>
@@ -693,56 +703,56 @@
                         <h:selectBooleanCheckbox
                             id="keyUsageDigitalSignature"
                             value="#{certProfileBean.keyUsageDigitalSignature}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageDigitalSignature"
                             value="#{web.text.KU_DIGITALSIGNATURE}" />
                         <h:selectBooleanCheckbox
                             id="keyUsageDataEncipherment"
                             value="#{certProfileBean.keyUsageDataEncipherment}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageDataEncipherment"
                             value="#{web.text.KU_DATAENCIPHERMENT}" />
                         <h:selectBooleanCheckbox id="keyUsageKeyCrlSign"
                             value="#{certProfileBean.keyUsageKeyCrlSign}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageKeyCrlSign"
                             value="#{web.text.KU_CRLSIGN}" />
 
                         <h:selectBooleanCheckbox
                             id="keyUsageNonRepudiation"
                             value="#{certProfileBean.keyUsageNonRepudiation}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageNonRepudiation"
                             value="#{web.text.KU_NONREPUDIATION}" />
                         <h:selectBooleanCheckbox
                             id="keyUsageKeyAgreement"
                             value="#{certProfileBean.keyUsageKeyAgreement}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageKeyAgreement"
                             value="#{web.text.KU_KEYAGREEMENT}" />
                         <h:selectBooleanCheckbox
                             id="keyUsageEncipherOnly"
                             value="#{certProfileBean.keyUsageEncipherOnly}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageEncipherOnly"
                             value="#{web.text.KU_ENCIPHERONLY}" />
 
                         <h:selectBooleanCheckbox
                             id="keyUsageKeyEncipherment"
                             value="#{certProfileBean.keyUsageKeyEncipherment}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageKeyEncipherment"
                             value="#{web.text.KU_KEYENCIPHERMENT}" />
                         <h:selectBooleanCheckbox
                             id="keyUsageKeyCertSign"
                             value="#{certProfileBean.keyUsageKeyCertSign}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageKeyCertSign"
                             value="#{web.text.KU_KEYCERTSIGN}" />
                         <h:selectBooleanCheckbox
                             id="keyUsageDecipherOnly"
                             value="#{certProfileBean.keyUsageDecipherOnly}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="keyUsageDecipherOnly"
                             value="#{web.text.KU_DECIPHERONLY}" />
                     </h:panelGrid>
@@ -765,7 +775,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useExtendedKeyUsage}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax render=":cpf:extendedkeyusagegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkuseextendedkeyusage"
@@ -774,7 +784,7 @@
                         <h:selectBooleanCheckbox
                             id="cbextendedkeyusagecritical"
                             value="#{certProfileBean.certificateProfile.extendedKeyUsageCritical}"
-                            disabled="#{!certProfileBean.certificateProfile.useExtendedKeyUsage or certProfilesBean.viewOnly}" />
+                            disabled="#{!certProfileBean.certificateProfile.useExtendedKeyUsage or certProfileBean.viewOnly}" />
                         <h:outputLabel for="cbextendedkeyusagecritical"
                             value="#{web.text.EXT_CRITICAL}" />
                     </h:panelGroup>
@@ -783,7 +793,7 @@
                         value="#{certProfileBean.certificateProfile.extendedKeyUsageOids}"
                         size="10"
                         rendered="#{certProfileBean.certificateProfile.useExtendedKeyUsage}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.extendedKeyUsageOidsAvailable}" />
                     </h:selectManyListbox>
@@ -807,7 +817,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useCertificatePolicies}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax render=":cpf:certificatePolicies" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkusecertificatepolicies"
@@ -816,7 +826,7 @@
                         <h:selectBooleanCheckbox
                             id="checkcertificatepoliciescritical"
                             value="#{certProfileBean.certificateProfile.certificatePoliciesCritical}"
-                            disabled="#{!certProfileBean.certificateProfile.useCertificatePolicies or certProfilesBean.viewOnly}" />
+                            disabled="#{!certProfileBean.certificateProfile.useCertificatePolicies or certProfileBean.viewOnly}" />
                         <h:outputLabel
                             for="checkcertificatepoliciescritical"
                             value="#{web.text.EXT_CRITICAL}" />
@@ -868,26 +878,26 @@
                                         value="#{certProfileBean.newCertificatePolicy.policyID}"
                                         size="20" maxlength="255"
                                         title="#{web.text.FORMAT_OID}"
-                                        disabled="#{certProfilesBean.viewOnly}" />
+                                        disabled="#{certProfileBean.viewOnly}" />
                                     <h:panelGrid id="policyqualidinput"
                                         columns="3">
                                         <h:commandButton
                                             value="#{certProfileBean.newCertificatePolicyQualifierIdNone?'✓':' '}#{web.text.EXT_PKIX_CP_NOQUAL}"
-                                            styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdNone?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+                                            styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdNone?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                                             action="#{certProfileBean.actionNewCertificatePolicyQualifierIdNone}"
-                                            disabled="#{certProfileBean.newCertificatePolicyQualifierIdNone or certProfilesBean.viewOnly}"
+                                            disabled="#{certProfileBean.newCertificatePolicyQualifierIdNone or certProfileBean.viewOnly}"
                                             title="#{web.text.EXT_PKIX_CP_POLICYQUALID}" />
                                         <h:commandButton
                                             value="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice?'✓':' '}#{web.text.EXT_PKIX_CP_USERNOTICE}"
-                                            styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdUserNotice?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+                                            styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdUserNotice?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                                             action="#{certProfileBean.actionNewCertificatePolicyQualifierIdUserNotice}"
-                                            disabled="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice or certProfilesBean.viewOnly}"
+                                            disabled="#{certProfileBean.newCertificatePolicyQualifierIdUserNotice or certProfileBean.viewOnly}"
                                             title="#{web.text.EXT_PKIX_CP_POLICYQUALID}" />
                                         <h:commandButton
                                             value="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri?'✓':' '}#{web.text.EXT_PKIX_CP_CPSURI}"
-                                            styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdCpsUri?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
+                                            styleClass="selectButton #{certProfileBean.newCertificatePolicyQualifierIdCpsUri?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                                             action="#{certProfileBean.actionNewCertificatePolicyQualifierIdCpsUri}"
-                                            disabled="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri or certProfilesBean.viewOnly}"
+                                            disabled="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri or certProfileBean.viewOnly}"
                                             title="#{web.text.EXT_PKIX_CP_POLICYQUALID}" />
                                     </h:panelGrid>
                                     <h:inputText
@@ -896,14 +906,14 @@
                                         value="#{certProfileBean.newCertificatePolicy.qualifier}"
                                         size="45" maxlength="200"
                                         title="#{web.text.FORMAT_STRING}"
-                                        disabled="#{certProfilesBean.viewOnly}" />
+                                        disabled="#{certProfileBean.viewOnly}" />
                                     <h:inputText
                                         id="textfielpolicynoticedcpsurl"
                                         rendered="#{certProfileBean.newCertificatePolicyQualifierIdCpsUri}"
                                         value="#{certProfileBean.newCertificatePolicy.qualifier}"
                                         size="45" maxlength="255"
                                         title="#{web.text.FORMAT_URI}"
-                                        disabled="#{certProfilesBean.viewOnly}" />
+                                        disabled="#{certProfileBean.viewOnly}" />
                                 </h:panelGrid>
                             </f:facet>
                         </h:column>
@@ -911,12 +921,12 @@
                             <h:commandButton id="buttondeletepolicy"
                                 value="#{web.text.DELETE}"
                                 action="#{certProfileBean.deleteCertificatePolicy}"
-                                disabled="#{certProfilesBean.viewOnly}" />
+                                disabled="#{certProfileBean.viewOnly}" />
                             <f:facet name="footer">
                                 <h:commandButton id="buttonaddpolicy"
                                     value="#{web.text.ADD}"
                                     action="#{certProfileBean.addCertificatePolicy}"
-                                    disabled="#{certProfilesBean.viewOnly}" />
+                                    disabled="#{certProfileBean.viewOnly}" />
                             </f:facet>
                         </h:column>
                     </h:dataTable>
@@ -947,7 +957,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useSubjectAlternativeName}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:cbsubjectalternativenamegroup" />
                     </h:selectBooleanCheckbox>
@@ -957,14 +967,14 @@
                     <h:selectBooleanCheckbox
                         id="cbsubjectalternativenamecritical"
                         value="#{certProfileBean.certificateProfile.subjectAlternativeNameCritical}"
-                        disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName or certProfileBean.viewOnly}" />
                     <h:outputLabel
                         for="cbsubjectalternativenamecritical"
                         value="#{web.text.EXT_CRITICAL}" />
                     <h:selectBooleanCheckbox
                         id="cbsubjectalternativenamesearchable"
                         value="#{certProfileBean.certificateProfile.storeSubjectAlternativeName}"
-                        disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useSubjectAlternativeName or certProfileBean.viewOnly}" />
                     <h:outputLabel
                         for="cbsubjectalternativenamesearchable"
                         value="#{web.text.STORESUBJECTALTNAME_STORE} " />
@@ -989,7 +999,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useIssuerAlternativeName}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:cbissueralternativenamegroup" />
                     </h:selectBooleanCheckbox>
@@ -999,7 +1009,7 @@
                     <h:selectBooleanCheckbox
                         id="cbissueralternativenamecritical"
                         value="#{certProfileBean.certificateProfile.issuerAlternativeNameCritical}"
-                        disabled="#{!certProfileBean.certificateProfile.useIssuerAlternativeName or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useIssuerAlternativeName or certProfileBean.viewOnly}" />
                     <h:outputLabel for="cbissueralternativenamecritical"
                         value="#{web.text.EXT_CRITICAL}" />
                 </h:panelGroup>
@@ -1012,7 +1022,7 @@
                     <h:selectBooleanCheckbox
                         id="checksubjectdirattributes"
                         value="#{certProfileBean.certificateProfile.useSubjectDirAttributes}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checksubjectdirattributes"
                         value="#{web.text.USE} " />
                 </h:panelGroup>
@@ -1031,7 +1041,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useNameConstraints}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:checknameconstraintsgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checknameconstraints"
@@ -1040,7 +1050,7 @@
                     <h:selectBooleanCheckbox
                         id="checknameconstraintscritical"
                         value="#{certProfileBean.certificateProfile.nameConstraintsCritical}"
-                        disabled="#{!certProfileBean.certificateProfile.useNameConstraints or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useNameConstraints or certProfileBean.viewOnly}" />
                     <h:outputLabel for="checknameconstraintscritical"
                         value="#{web.text.EXT_CRITICAL}" />
                 </h:panelGroup>
@@ -1076,7 +1086,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:extensionsValidationDataGrid" />
                     </h:selectBooleanCheckbox>
@@ -1086,7 +1096,7 @@
                     <h:selectBooleanCheckbox
                         id="cbcrldistributionpointcritical"
                         value="#{certProfileBean.certificateProfile.CRLDistributionPointCritical}"
-                        disabled="#{!certProfileBean.certificateProfile.useCRLDistributionPoint or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useCRLDistributionPoint or certProfileBean.viewOnly}" />
                     <h:outputLabel for="cbcrldistributionpointcritical"
                         value="#{web.text.EXT_CRITICAL}" />
                 </h:panelGroup>
@@ -1103,7 +1113,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:textfieldcrldisturi textfieldcrlissuer" />
                     </h:selectBooleanCheckbox>
@@ -1121,7 +1131,7 @@
                     value="#{certProfileBean.certificateProfile.CRLDistributionPointURI}"
                     size="45" maxlength="4096"
                     rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
-                    disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint or certProfilesBean.viewOnly}"
+                    disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint or certProfileBean.viewOnly}"
                     title="#{web.text.FORMAT_URI}" />
                 <h:panelGroup
                     rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
@@ -1136,7 +1146,7 @@
                     value="#{certProfileBean.certificateProfile.CRLIssuer}"
                     size="45" maxlength="255"
                     rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
-                    disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint or certProfilesBean.viewOnly}"
+                    disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint or certProfileBean.viewOnly}"
                     title="#{web.text.FORMAT_DN}" />
 
                 <!-- PKIX Freshest CRL extension -->
@@ -1153,7 +1163,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useFreshestCRL}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:extensionsValidationDataGrid" />
                     </h:selectBooleanCheckbox>
@@ -1173,7 +1183,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:textfieldfreshestcrluri" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbusecadefinedfreshestcrl"
@@ -1189,7 +1199,7 @@
                     value="#{certProfileBean.certificateProfile.freshestCRLURI}"
                     size="45" maxlength="255"
                     rendered="#{certProfileBean.certificateProfile.useFreshestCRL}"
-                    disabled="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL or certProfilesBean.viewOnly}"
+                    disabled="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL or certProfileBean.viewOnly}"
                     title="#{web.text.FORMAT_URI}" />
 
                 <!-- PKIX Authority Information Access (AIA) extension -->
@@ -1205,7 +1215,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:extensionsValidationDataGrid" />
                     </h:selectBooleanCheckbox>
@@ -1230,7 +1240,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:textfieldocspservicelocatoruri" />
                     </h:selectBooleanCheckbox>
@@ -1254,7 +1264,7 @@
                     size="45" maxlength="255"
                     title="#{web.text.FORMAT_URI}"
                     rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
-                    disabled="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator or certProfilesBean.viewOnly}" />
+                    disabled="#{certProfileBean.certificateProfile.useDefaultOCSPServiceLocator or certProfileBean.viewOnly}" />
 
                 <!-- CA Issuers URIs part of Authority Information Access (AIA) extension -->
 
@@ -1269,7 +1279,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useDefaultCAIssuer}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:caIssuers" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusedefaultcaissuer"
@@ -1297,19 +1307,19 @@
                                 value="#{certProfileBean.newCaIssuer}"
                                 size="45" maxlength="255"
                                 title="#{web.text.FORMAT_URI}"
-                                disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfilesBean.viewOnly}" />
+                                disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfileBean.viewOnly}" />
                         </f:facet>
                     </h:column>
                     <h:column>
                         <h:commandButton id="buttondeletecaissueruri"
                             value="#{web.text.DELETE}"
                             action="#{certProfileBean.deleteCaIssuer}"
-                            disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfileBean.viewOnly}" />
                         <f:facet name="footer">
                             <h:commandButton id="buttonaddcaissueruri"
                                 value="#{web.text.ADD}"
                                 action="#{certProfileBean.addCaIssuer}"
-                                disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfilesBean.viewOnly}" />
+                                disabled="#{certProfileBean.certificateProfile.useDefaultCAIssuer or certProfileBean.viewOnly}" />
                         </f:facet>
                     </h:column>
                 </h:dataTable>
@@ -1330,7 +1340,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
                                 render=":cpf:textfieldprivkeyusageperiodstartoffset" />
                         </h:selectBooleanCheckbox>
@@ -1343,7 +1353,7 @@
                         id="textfieldprivkeyusageperiodstartoffset"
                         value="#{certProfileBean.privateKeyUsagePeriodStartOffset}"
                         size="20" maxlength="255"
-                        disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore or certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotBefore or certProfileBean.viewOnly}"
                         validatorMessage="#{web.text.INVALIDPRIVKEYSTARTOFFSET}">
                         <f:validator validatorId="simpleTimeValidator" />
                         <f:attribute name="precision" value="seconds" />
@@ -1358,7 +1368,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
                                 render=":cpf:textfieldprivkeyusageperiodlength" />
                         </h:selectBooleanCheckbox>
@@ -1370,7 +1380,7 @@
                     <h:inputText id="textfieldprivkeyusageperiodlength"
                         value="#{certProfileBean.privateKeyUsagePeriodLength}"
                         size="20" maxlength="255"
-                        disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter or certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.usePrivateKeyUsagePeriodNotAfter or certProfileBean.viewOnly}"
                         validatorMessage="#{web.text.INVALIDPRIVKEYPERIOD}">
                         <f:validator validatorId="simpleTimeValidator" />
                         <f:attribute name="precision" value="seconds" />
@@ -1406,7 +1416,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useQCStatement}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:qcStatementsGrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkuseqcstatement"
@@ -1415,7 +1425,7 @@
                     <h:selectBooleanCheckbox
                         id="checkqcstatementcritical"
                         value="#{certProfileBean.certificateProfile.QCStatementCritical}"
-                        disabled="#{!certProfileBean.certificateProfile.useQCStatement or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useQCStatement or certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkqcstatementcritical"
                         value="#{web.text.EXT_CRITICAL}" />
                 </h:panelGroup>
@@ -1428,7 +1438,7 @@
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}">
                     <h:selectBooleanCheckbox id="checkpkixqcsyntaxv2"
                         value="#{certProfileBean.certificateProfile.usePkixQCSyntaxV2}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkpkixqcsyntaxv2"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -1442,7 +1452,7 @@
                     size="20" maxlength="255"
                     title="#{web.text.FORMAT_OID}"
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                    disabled="#{certProfilesBean.viewOnly}" />
+                    disabled="#{certProfileBean.viewOnly}" />
 
                 <h:outputLabel for="textfieldqcstatementraname"
                     value="#{web.text.EXT_PKIX_QCS_NAMERAS}"
@@ -1453,7 +1463,7 @@
                     size="45" maxlength="255"
                     title="#{web.text.FORMAT_GENERALNAMES}"
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                    disabled="#{certProfilesBean.viewOnly}" />
+                    disabled="#{certProfileBean.viewOnly}" />
 
                 <h:outputLabel for="checkqcetsiqcompliancegroup"
                     value="#{web.text.EXT_ETSI_QCS_QCCOMPLIANCE}"
@@ -1463,7 +1473,7 @@
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}">
                     <h:selectBooleanCheckbox id="checkqcetsiqcompliance"
                         value="#{certProfileBean.certificateProfile.useQCEtsiQCCompliance}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkqcetsiqcompliance"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -1477,7 +1487,7 @@
                     <h:selectBooleanCheckbox
                         id="checkqcetsisignaturedevice"
                         value="#{certProfileBean.certificateProfile.useQCEtsiSignatureDevice}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkqcetsisignaturedevice"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -1492,7 +1502,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:qcetsivaluelimitgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsivaluelimit"
@@ -1504,7 +1514,7 @@
                         value="#{certProfileBean.certificateProfile.QCEtsiValueLimitCurrency}"
                         size="3" maxlength="3"
                         title="#{web.text.FORMAT_ISO4217}"
-                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiValueLimit or certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiValueLimit or certProfileBean.viewOnly}"
                         style="text-align: center;" />
                     <h:outputLabel for="textfieldqcetsivaluelimit"
                         value=" #{web.text.EXT_ETSI_QCS_VL_AMOUNT} " />
@@ -1512,7 +1522,7 @@
                         value="#{certProfileBean.certificateProfile.QCEtsiValueLimit}"
                         size="3" maxlength="6"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiValueLimit or certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiValueLimit or certProfileBean.viewOnly}"
                         converterMessage="#{web.text.ONLYDECINETSIVALUELIMIT}"
                         validatorMessage="#{web.text.ONLYDECINETSIVALUELIMIT}">
                         <f:validateLength minimum="1" maximum="6" />
@@ -1525,7 +1535,7 @@
                         value="#{certProfileBean.certificateProfile.QCEtsiValueLimitExp}"
                         size="2" maxlength="2"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiValueLimit or certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiValueLimit or certProfileBean.viewOnly}"
                         converterMessage="#{web.text.ONLYDECINETSIVALUELIMIT}"
                         validatorMessage="#{web.text.ONLYDECINETSIVALUELIMIT}">
                         <f:validateLength minimum="1" maximum="2" />
@@ -1544,7 +1554,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:qcetsiretentionperiodgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsiretentionperiod"
@@ -1556,7 +1566,7 @@
                         value="#{certProfileBean.certificateProfile.QCEtsiRetentionPeriod}"
                         size="2" maxlength="3"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiRetentionPeriod or certProfilesBean.viewOnly}">
+                        disabled="#{!certProfileBean.certificateProfile.useQCEtsiRetentionPeriod or certProfileBean.viewOnly}">
                         <f:validateLength minimum="1" maximum="3" />
                         <f:validateLongRange minimum="0" maximum="999" />
                     </h:inputText>
@@ -1569,7 +1579,7 @@
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}">
                     <h:selectOneMenu id="qcetsitype"
                         value="#{certProfileBean.certificateProfile.QCEtsiType}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:selectItem
                             itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_unused}"
                             itemValue="#{null}" />
@@ -1596,7 +1606,7 @@
                         <h:inputText id="textfieldqcetsipdsurl"
                             value="#{pds.url}" size="36" maxlength="256"
                             title="#{web.text.FORMAT_URL}"
-                            disabled="#{certProfilesBean.viewOnly}"
+                            disabled="#{certProfileBean.viewOnly}"
                             validatorMessage="#{web.text.EXT_ETSI_QCS_PDS_error_message}">
                             <f:converter converterId="stringConverter" />
                             <f:validateLength minimum="0" maximum="256" />
@@ -1606,7 +1616,7 @@
                     <h:column>
                         <h:selectOneMenu id="qcetsipdslang"
                             value="#{pds.language}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:selectItem itemLabel="English"
                                 itemValue="en" />
                             <f:selectItem itemLabel="Bulgarian"
@@ -1667,12 +1677,12 @@
                         <h:commandButton id="buttondeleteqcetsipds"
                             value="#{web.text.DELETE}"
                             action="#{certProfileBean.deleteQCEtsiPds}"
-                            disabled="#{certProfilesBean.viewOnly or not certProfileBean.ableToDeletePDSUrl}" />
+                            disabled="#{certProfileBean.viewOnly or not certProfileBean.ableToDeletePDSUrl}" />
                         <f:facet name="footer">
                             <h:commandButton id="buttonaddqcetsipds"
                                 value="#{web.text.ADDANOTHER}"
                                 action="#{certProfileBean.addQCEtsiPds}"
-                                disabled="#{certProfilesBean.viewOnly}" />
+                                disabled="#{certProfileBean.viewOnly}" />
                         </f:facet>
                     </h:column>
                 </h:dataTable>
@@ -1685,7 +1695,7 @@
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}">
                     <h:selectBooleanCheckbox id="checkqcetsipsd2"
                         value="#{certProfileBean.certificateProfile.useQCPSD2}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkqcetsipsd2"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -1700,7 +1710,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useQCCustomString}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
                             render=":cpf:checkqccustomstringgroup textfieldqccustomstringtext" />
                     </h:selectBooleanCheckbox>
@@ -1713,7 +1723,7 @@
                         value="#{certProfileBean.certificateProfile.QCCustomStringOid}"
                         size="20" maxlength="255"
                         title="#{web.text.FORMAT_OID}"
-                        disabled="#{!certProfileBean.certificateProfile.useQCCustomString or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useQCCustomString or certProfileBean.viewOnly}" />
                 </h:panelGroup>
 
                 <h:outputLabel for="textfieldqccustomstringtext"
@@ -1725,7 +1735,7 @@
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}"
                     size="45" maxlength="255"
                     title="#{web.text.FORMAT_STRING}"
-                    disabled="#{!certProfileBean.certificateProfile.useQCCustomString or certProfilesBean.viewOnly}" />
+                    disabled="#{!certProfileBean.certificateProfile.useQCCustomString or certProfileBean.viewOnly}" />
 
             </h:panelGrid>
 
@@ -1756,7 +1766,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:ctgrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
@@ -1769,7 +1779,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:ctgrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
@@ -1782,7 +1792,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCertificateTransparencyInPublishers}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:ctgrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
@@ -1808,7 +1818,7 @@
                     value="#{certProfileBean.enabledCtLabels}"
                     size="#{certProfileBean.distinctCTLabelsAvailableSize}"
                     style="min-width: 280px;"
-                    disabled="#{certProfilesBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.distinctCtLabelsAvailable}" />
                 </h:selectManyListbox>
@@ -1822,7 +1832,7 @@
                     <h:selectOneRadio id="useCtSctNumberBy"
                         value="#{certProfileBean.certificateProfile.numberOfSctBy}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:selectItem
                             itemLabel="#{web.text.EXT_CT_NUMOFSCTS_BY_VALIDITY}"
                             itemValue="ctnumberofsctsbyvalidity" />
@@ -1843,14 +1853,14 @@
                         value="#{certProfileBean.certificateProfile.ctMinScts}"
                         size="2" maxlength="255"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfileBean.viewOnly}" />
                     <h:outputLabel for="textfieldCtMinScts"
                         value=" #{web.text.EXT_CT_PER_CERTIFICATE}" /> &nbsp; &nbsp;
                     <h:inputText id="textfieldCtMinSctsOcsp"
                         value="#{certProfileBean.certificateProfile.ctMinSctsOcsp}"
                         size="2" maxlength="255"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP or certProfileBean.viewOnly}" />
                     <h:outputLabel for="textfieldCtMinSctsOcsp"
                         value=" #{web.text.EXT_CT_PER_OCSPRESPONSE}" />
                 </h:panelGroup>
@@ -1864,7 +1874,7 @@
                     <h:selectOneRadio id="useCtSctMaxNumberBy"
                         value="#{certProfileBean.certificateProfile.maxNumberOfSctBy}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:selectItem
                             itemLabel="#{web.text.EXT_CT_NUMOFSCTS_BY_VALIDITY}"
                             itemValue="ctnumberofsctsbyvalidity" />
@@ -1885,14 +1895,14 @@
                         value="#{certProfileBean.certificateProfile.ctMaxScts}"
                         size="2" maxlength="255"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfileBean.viewOnly}" />
                     <h:outputLabel for="textfieldCtMaxScts"
                         value=" #{web.text.EXT_CT_PER_CERTIFICATE}" /> &nbsp; &nbsp;
                     <h:inputText id="textfieldCtMaxSctsOcsp"
                         value="#{certProfileBean.certificateProfile.ctMaxSctsOcsp}"
                         size="2" maxlength="255"
                         title="#{web.text.FORMAT_INTEGER}"
-                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP or certProfileBean.viewOnly}" />
                     <h:outputLabel for="textfieldCtMaxSctsOcsp"
                         value=" #{web.text.EXT_CT_PER_OCSPRESPONSE}" />
                 </h:panelGroup>
@@ -1906,7 +1916,7 @@
                     rendered="#{certProfileBean.ctInOCSPOrPublishersEnabled}">
                     <h:selectBooleanCheckbox id="checkctsubmitexisting"
                         value="#{certProfileBean.certificateProfile.useCTSubmitExisting}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkctsubmitexisting"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -1922,7 +1932,7 @@
                     value="#{certProfileBean.certificateProfile.CTMaxRetries}"
                     size="3" maxlength="255"
                     title="#{web.text.FORMAT_INTEGER}"
-                    disabled="#{(!certProfileBean.certificateProfile.useCertificateTransparencyInCerts and !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP) || certProfilesBean.viewOnly}" />
+                    disabled="#{(!certProfileBean.certificateProfile.useCertificateTransparencyInCerts and !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP) || certProfileBean.viewOnly}" />
             </h:panelGrid>
 
             <h:panelGrid columns="2" styleClass="edit-top"
@@ -1943,7 +1953,7 @@
                 <h:panelGroup id="checkuseocspnocheckgroup">
                     <h:selectBooleanCheckbox id="checkuseocspnocheck"
                         value="#{certProfileBean.certificateProfile.useOcspNoCheck}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkuseocspnocheck"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -1956,7 +1966,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useMicrosoftTemplate}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:selectmstemplate" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusemstemplate"
@@ -1966,7 +1976,7 @@
                         value="#{web.text.VALUE} " />
                     <h:selectOneMenu id="selectmstemplate"
                         value="#{certProfileBean.certificateProfile.microsoftTemplate}"
-                        disabled="#{!certProfileBean.certificateProfile.useMicrosoftTemplate or certProfilesBean.viewOnly}">
+                        disabled="#{!certProfileBean.certificateProfile.useMicrosoftTemplate or certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.microsoftTemplateAvailable}" />
                     </h:selectOneMenu>
@@ -1986,7 +1996,7 @@
                     rendered="#{!certProfileBean.typeCA}">
                     <h:selectBooleanCheckbox id="checkusecardnumber"
                         value="#{certProfileBean.certificateProfile.useCardNumber}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkusecardnumber"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -2001,7 +2011,7 @@
                     <h:selectBooleanCheckbox
                         id="checkcabforganiationidentifier"
                         value="#{certProfileBean.certificateProfile.useCabfOrganizationIdentifier}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkcabforganiationidentifier"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -2014,7 +2024,7 @@
                 <h:selectManyListbox styleClass="select-list"
                     rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}"
                     id="selectusedcertificateextensions"
-                    disabled="#{certProfilesBean.viewOnly}"
+                    disabled="#{certProfileBean.viewOnly}"
                     value="#{certProfileBean.certificateProfile.usedCertificateExtensions}"
                     size="#{certProfileBean.availableCertificateExtensionsAvailableSize}"
                     converter="javax.faces.Integer">
@@ -2051,7 +2061,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useDocumentTypeList}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax render=":cpf:cbdocumenttypegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="cbusedocumenttype"
@@ -2060,7 +2070,7 @@
                         <h:selectBooleanCheckbox
                             id="cbdocumenttypecritical"
                             value="#{certProfileBean.certificateProfile.documentTypeListCritical}"
-                            disabled="#{!certProfileBean.certificateProfile.useDocumentTypeList or certProfilesBean.viewOnly}" />
+                            disabled="#{!certProfileBean.certificateProfile.useDocumentTypeList or certProfileBean.viewOnly}" />
                         <h:outputLabel for="cbdocumenttypecritical"
                             value="#{web.text.EXT_CRITICAL}" />
                     </h:panelGroup>
@@ -2074,17 +2084,17 @@
                                 <h:inputText
                                     value="#{certProfileBean.documentTypeListNew}"
                                     size="20" maxlength="4096"
-                                    disabled="#{certProfilesBean.viewOnly}" />
+                                    disabled="#{certProfileBean.viewOnly}" />
                             </f:facet>
                         </h:column>
                         <h:column>
                             <h:commandButton value="#{web.text.REMOVE}"
                                 action="#{certProfileBean.documentTypeListRemove}"
-                                disabled="#{certProfilesBean.viewOnly}" />
+                                disabled="#{certProfileBean.viewOnly}" />
                             <f:facet name="footer">
                                 <h:commandButton value="#{web.text.ADD}"
                                     action="#{certProfileBean.documentTypeListAdd}"
-                                    disabled="#{certProfilesBean.viewOnly}" />
+                                    disabled="#{certProfileBean.viewOnly}" />
                             </f:facet>
                         </h:column>
                     </h:dataTable>
@@ -2098,18 +2108,18 @@
                     rendered="#{certProfileBean.cvcAvailable}">
                     <h:commandButton
                         value="#{certProfileBean.cvcTerminalTypeIs?'✓':' '}#{web.text.CVCINSPECTIONSYSTEM}"
-                        styleClass="selectButton #{certProfileBean.cvcTerminalTypeIs?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
-                        disabled="#{certProfileBean.cvcTerminalTypeIs or certProfilesBean.viewOnly}"
+                        styleClass="selectButton #{certProfileBean.cvcTerminalTypeIs?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
+                        disabled="#{certProfileBean.cvcTerminalTypeIs or certProfileBean.viewOnly}"
                         action="#{certProfileBean.setCvcTerminalTypeIs}" />
                     <h:commandButton
                         value="#{certProfileBean.cvcTerminalTypeAt?'✓':' '}#{web.text.CVCAUTHENTICATIONTERMINAL}"
-                        styleClass="selectButton #{certProfileBean.cvcTerminalTypeAt?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
-                        disabled="#{certProfileBean.cvcTerminalTypeAt or certProfilesBean.viewOnly}"
+                        styleClass="selectButton #{certProfileBean.cvcTerminalTypeAt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
+                        disabled="#{certProfileBean.cvcTerminalTypeAt or certProfileBean.viewOnly}"
                         action="#{certProfileBean.setCvcTerminalTypeAt}" />
                     <h:commandButton
                         value="#{certProfileBean.cvcTerminalTypeSt?'✓':' '}#{web.text.CVCSIGNATURETERMINAL}"
-                        styleClass="selectButton #{certProfileBean.cvcTerminalTypeSt?'selected':'notSelected'} #{certProfilesBean.viewOnly?'disabled':'enabled'}"
-                        disabled="#{certProfileBean.cvcTerminalTypeSt or certProfilesBean.viewOnly}"
+                        styleClass="selectButton #{certProfileBean.cvcTerminalTypeSt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
+                        disabled="#{certProfileBean.cvcTerminalTypeSt or certProfileBean.viewOnly}"
                         action="#{certProfileBean.setCvcTerminalTypeSt}" />
                 </h:panelGroup>
 
@@ -2121,7 +2131,7 @@
                     value="#{certProfileBean.certificateProfile.CVCSignTermDVType}"
                     rendered="#{certProfileBean.cvcAvailable and certProfileBean.cvcTerminalTypeSt}"
                     converter="javax.faces.Integer"
-                    disabled="#{certProfilesBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.cvcSignTermDVTypeAvailable}" />
                 </h:selectOneMenu>
@@ -2146,12 +2156,12 @@
                         rendered="#{certProfileBean.cvcTerminalTypeIs}">
                         <h:selectBooleanCheckbox id="cvcAccessRightDg3"
                             value="#{certProfileBean.cvcAccessRightDg3}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="cvcAccessRightDg3"
                             value="#{web.text.CVCACCESSDG3}" />
                         <h:selectBooleanCheckbox id="cvcAccessRightDg4"
                             value="#{certProfileBean.cvcAccessRightDg4}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="cvcAccessRightDg4"
                             value="#{web.text.CVCACCESSDG4}" />
                     </h:panelGrid>
@@ -2161,7 +2171,7 @@
                         enabledClass="cvcoption_at"
                         value="#{certProfileBean.cvcLongAccessRights}"
                         size="8" converter="javax.faces.Integer"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.cvcAccessRightsAtAvailable}" />
                     </h:selectManyListbox>
@@ -2170,13 +2180,13 @@
                         rendered="#{certProfileBean.cvcTerminalTypeSt}">
                         <h:selectBooleanCheckbox id="cvcAccessRightSign"
                             value="#{certProfileBean.cvcAccessRightSign}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="cvcAccessRightSign"
                             value="#{web.text.CVCACCESSSIGN}" />
                         <h:selectBooleanCheckbox
                             id="cvcAccessRightQualSign"
                             value="#{certProfileBean.cvcAccessRightQualSign}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="cvcAccessRightQualSign"
                             value="#{web.text.CVCACCESSQUALSIGN}" />
                     </h:panelGrid>
@@ -2209,7 +2219,7 @@
                     <h:selectOneMenu id="approvalProfile"
                         value="#{requestItem.approvalProfileId}"
                         converter="javax.faces.Integer"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.availableApprovalProfiles}" />
                     </h:selectOneMenu>
@@ -2240,7 +2250,7 @@
                 <h:panelGroup id="checkuseldapdnordergroup">
                     <h:selectBooleanCheckbox id="checkuseldapdnorder"
                         value="#{certProfileBean.certificateProfile.useLdapDnOrder}"
-                        disabled="#{certProfilesBean.viewOnly}" />
+                        disabled="#{certProfileBean.viewOnly}" />
                     <h:outputLabel for="checkuseldapdnorder"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
@@ -2252,7 +2262,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCustomDnOrder}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:customdnordergroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusecustomdnorder"
@@ -2263,7 +2273,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCustomDnOrderWithLdap}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:customdnordergroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusecustomdnorderldap"
@@ -2274,7 +2284,7 @@
                         maxlength="500"
                         title="#{web.text.FORMAT_STRING}"
                         value="#{certProfileBean.certificateProfile.customDnOrder}"
-                        disabled="#{!certProfileBean.certificateProfile.useCustomDnOrder or certProfilesBean.viewOnly}"
+                        disabled="#{!certProfileBean.certificateProfile.useCustomDnOrder or certProfileBean.viewOnly}"
                         converter="org.ejbca.DnObjectArrayListConverter" />
                     <h:outputText styleClass="help"
                         value=" #{web.text.CERT_SUBJECTDN_CUSTOMORDER_HELP}" />
@@ -2287,7 +2297,7 @@
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCNPostfix}"
                         rendered="#{!web.legacyInternetExplorer}"
-                        disabled="#{certProfilesBean.viewOnly}">
+                        disabled="#{certProfileBean.viewOnly}">
                         <f:ajax render=":cpf:cnpostfixgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusecnpostfix"
@@ -2298,7 +2308,7 @@
                         maxlength="255"
                         title="#{web.text.FORMAT_STRING}"
                         value="#{certProfileBean.certificateProfile.CNPostfix}"
-                        disabled="#{!certProfileBean.certificateProfile.useCNPostfix or certProfilesBean.viewOnly}" />
+                        disabled="#{!certProfileBean.certificateProfile.useCNPostfix or certProfileBean.viewOnly}" />
                     <h:outputText styleClass="help"
                         value=" #{web.text.CERT_SUBJECTDN_CNPF_HELP}" />
                 </h:panelGroup>
@@ -2317,7 +2327,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useSubjectDNSubSet}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax render=":cpf:usesubjectdnsubsetgrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkusesubjectdnsubset"
@@ -2326,7 +2336,7 @@
                     </h:panelGroup>
                     <h:selectManyListbox styleClass="select-list"
                         rendered="#{certProfileBean.certificateProfile.useSubjectDNSubSet}"
-                        disabled="#{certProfilesBean.viewOnly}"
+                        disabled="#{certProfileBean.viewOnly}"
                         id="selectsubjectdnsubset"
                         value="#{certProfileBean.certificateProfile.subjectDNSubSet}"
                         size="10"
@@ -2346,7 +2356,7 @@
                             styleClass="checkBoxOverlay"
                             value="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}"
                             rendered="#{!web.legacyInternetExplorer}"
-                            disabled="#{certProfilesBean.viewOnly}">
+                            disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
                                 render=":cpf:usesubjectaltnamesubsetgrid" />
                         </h:selectBooleanCheckbox>
@@ -2357,7 +2367,7 @@
                     </h:panelGroup>
                     <h:selectManyListbox styleClass="select-list"
                         rendered="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}"
-                        disabled="#{certProfilesBean.viewOnly}"
+                        disabled="#{certProfileBean.viewOnly}"
                         id="selectsubjectaltnamesubset"
                         value="#{certProfileBean.certificateProfile.subjectAltNameSubSet}"
                         size="6" converter="javax.faces.Integer">
@@ -2374,7 +2384,7 @@
                     size="#{certProfileBean.availableCAsAvailableSize}"
                     converter="javax.faces.Integer"
                     style="min-width: 280px;"
-                    disabled="#{certProfilesBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.availableCAsAvailable}" />
                 </h:selectManyListbox>
@@ -2390,7 +2400,7 @@
                     size="#{certProfileBean.publisherListAvailableSize}"
                     converter="javax.faces.Integer"
                     style="min-width: 280px;"
-                    disabled="#{certProfilesBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.publisherListAvailable}" />
                 </h:selectManyListbox>
@@ -2411,7 +2421,7 @@
                         <h:selectBooleanCheckbox
                             id="singleActiveCertificateConstraint"
                             value="#{certProfileBean.certificateProfile.singleActiveCertificateConstraint}"
-                            disabled="#{certProfilesBean.viewOnly}" />
+                            disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel
                             for="singleActiveCertificateConstraint"
                             value="#{web.text.USE}" />
@@ -2424,7 +2434,7 @@
                     <h:commandButton id="saveProfileButton"
                         value="#{web.text.SAVE}"
                         action="#{certProfileBean.save}"
-                        rendered="#{certProfilesBean.authorizedToEdit and not certProfilesBean.viewOnly}" />
+                        rendered="#{certProfilesBean.authorizedToEdit and not certProfileBean.viewOnly}" />
                     <h:commandButton id="cancelEditButton"
                         value="#{web.text.CANCEL}"
                         action="#{certProfileBean.cancel}"

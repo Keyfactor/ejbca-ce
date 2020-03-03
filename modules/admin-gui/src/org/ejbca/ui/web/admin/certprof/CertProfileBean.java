@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.DataModelEvent;
@@ -71,17 +72,15 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 // Declarations in faces-config.xml
-//@javax.faces.bean.SessionScoped
+//@javax.faces.bean.ViewScoped
 //@javax.faces.bean.ManagedBean(name="certProfileBean")
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
 
-    // Declarations in faces-config.xml
-    //@javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
-    private CertProfilesBean certProfilesBean;
-
     private int currentCertProfileId = -1;
+    private int certificateProfileId;
+    private boolean isViewOnly;
     private CertificateProfile certificateProfile = null;
     private ListDataModel<CertificatePolicy> certificatePoliciesModel = null;
     private CertificatePolicy newCertificatePolicy = null;
@@ -106,24 +105,43 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         approvalRequestItems = null;
     }
 
-    public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
-    public void setCertProfilesBean(CertProfilesBean certProfilesBean) { this.certProfilesBean = certProfilesBean; }
+    @PostConstruct
+    public void loadParams() {
+        try {
+            final Map<String, String> requestParameterMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+            certificateProfileId = Integer.valueOf(requestParameterMap.get("id"));
+            isViewOnly = requestParameterMap.containsKey("viewOnly");
+        } catch (final NumberFormatException e) {
+            addNonTranslatedErrorMessage("The GET parameter 'id' must contain the ID of the certificate profile to load.");
+        }
+    }
 
+    public int getCertificateProfileId() {
+        return certificateProfileId;
+    }
 
-    public Integer getSelectedCertProfileId() {
-        return certProfilesBean.getSelectedCertProfileId();
+    public void setCertificateProfileId(final int certificateProfileId) {
+        this.certificateProfileId = certificateProfileId;
+    }
+
+    public boolean isViewOnly() {
+        return isViewOnly;
+    }
+
+    public void setViewOnly(final boolean isViewOnly) {
+        this.isViewOnly = isViewOnly;
     }
 
     public String getSelectedCertProfileName() {
-        return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(getSelectedCertProfileId());
+        return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(getCertificateProfileId());
     }
 
     public CertificateProfile getCertificateProfile() {
-        if (currentCertProfileId!=-1 && certificateProfile!=null && getSelectedCertProfileId() != currentCertProfileId) {
+        if (currentCertProfileId != -1 && certificateProfile != null && getCertificateProfileId() != currentCertProfileId) {
             reset();
         }
         if (certificateProfile==null) {
-            currentCertProfileId = getSelectedCertProfileId();
+            currentCertProfileId = getCertificateProfileId();
             final CertificateProfile certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(currentCertProfileId);
             try {
                 this.certificateProfile = certificateProfile.clone();
@@ -550,7 +568,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
         ArrayList<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids();
         //If in view only mode, display only used EKU's
-        if (certProfilesBean.getViewOnly()) {
+        if (isViewOnly()) {
             for(String oid : usedEKUs) {
                 if(ekus.containsKey(oid)) {
                     ret.add(new SelectItem(oid, getEjbcaWebBean().getText(ekus.get(oid))));
@@ -1156,7 +1174,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
 
         List<Integer> usedExtensions = getCertificateProfile().getUsedCertificateExtensions();
-        if (certProfilesBean.getViewOnly()) {
+        if (isViewOnly()) {
             //If in view mode, only display used values.
             for(int id : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(id)) {
@@ -1247,7 +1265,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final Map<Integer, String> caIdToNameMap = getEjbcaWebBean().getEjb().getCaSession().getCAIdToNameMap();
 
         //If in view mode, add only authorized CA's
-        if (certProfilesBean.getViewOnly()) {
+        if (isViewOnly()) {
             for(final Integer caId : authorizedCAs) {
                 ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "", true));
             }
