@@ -732,20 +732,22 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void activateCryptoToken() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList != null) {
             final CryptoTokenGuiInfo current = cryptoTokenGuiList.getRowData();
-            try {
-                cryptoTokenManagementSession.activate(authenticationToken, current.getCryptoTokenId(), current.getAuthenticationCode().toCharArray());
-            } catch (CryptoTokenOfflineException e) {
-                final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
-                        ") by administrator " + authenticationToken.toString() + " failed. Device was unavailable.";
-                super.addNonTranslatedErrorMessage(msg);
-                log.info(msg);
-            } catch (CryptoTokenAuthenticationFailedException e) {
-                final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
-                        ") by administrator " + authenticationToken.toString() + " failed. Authentication code was not correct.";
-                super.addNonTranslatedErrorMessage(msg);
-                log.info(msg);
+            if (current != null) {
+                try {
+                    cryptoTokenManagementSession.activate(authenticationToken, current.getCryptoTokenId(), current.getAuthenticationCode().toCharArray());
+                } catch (CryptoTokenOfflineException e) {
+                    final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
+                            ") by administrator " + authenticationToken.toString() + " failed. Device was unavailable.";
+                    super.addNonTranslatedErrorMessage(msg);
+                    log.info(msg);
+                } catch (CryptoTokenAuthenticationFailedException e) {
+                    final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
+                            ") by administrator " + authenticationToken.toString() + " failed. Authentication code was not correct.";
+                    super.addNonTranslatedErrorMessage(msg);
+                    log.info(msg);
+                }
+                flushCaches();
             }
-            flushCaches();
         }
     }
 
