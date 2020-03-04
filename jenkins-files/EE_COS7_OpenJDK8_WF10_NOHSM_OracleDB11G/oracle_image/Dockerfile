@@ -20,8 +20,8 @@ RUN mkdir $INSTALL_DIR
 
 # Copy SQL scripts from EJBCA
 #----------------------------
-COPY doc/sql-scripts/create-tables-ejbca-oracle.sql $INSTALL_DIR/
-COPY doc/sql-scripts/create-index-ejbca.sql $INSTALL_DIR/
+COPY create-tables-ejbca-oracle.sql /tmp/
+COPY create-index-ejbca.sql /tmp/
 
 # Copy binaries
 # -------------
