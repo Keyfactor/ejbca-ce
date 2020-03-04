@@ -64,8 +64,8 @@ RUN yum -y install unzip libaio bc initscripts net-tools openssl compat-libstdc+
     rm -rf $INSTALL_DIR && \
     chmod ug+x $ORACLE_BASE/*.sh
 
-COPY create-tables-ejbca-oracle.sql $ORACLE_BASE/scripts/setup/01_create-tables-ejbca-oracle.sql
-COPY create-index-ejbca.sql $ORACLE_BASE/scripts/setup/02_create-index-ejbca.sql
+COPY create-tables-ejbca-oracle.sql $ORACLE_BASE/scripts/setup/01_create-tables-ejbca-oracle.ejbca.sql
+COPY create-index-ejbca.sql $ORACLE_BASE/scripts/setup/02_create-index-ejbca.ejbca.sql
 
 VOLUME ["$ORACLE_BASE/oradata"]
 EXPOSE 1521 8080
