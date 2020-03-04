@@ -18,11 +18,6 @@ ENV PATH=$ORACLE_HOME/bin:$PATH
 
 RUN mkdir $INSTALL_DIR
 
-# Copy SQL scripts from EJBCA
-#----------------------------
-COPY create-tables-ejbca-oracle.sql /tmp/
-COPY create-index-ejbca.sql /tmp/
-
 # Copy binaries
 # -------------
 COPY $CONFIG_RSP $RUN_FILE $CHECK_DB_FILE $INSTALL_DIR/
@@ -68,6 +63,9 @@ RUN yum -y install unzip libaio bc initscripts net-tools openssl compat-libstdc+
     cd /tmp && \
     rm -rf $INSTALL_DIR && \
     chmod ug+x $ORACLE_BASE/*.sh
+
+COPY create-tables-ejbca-oracle.sql $ORACLE_BASE/scripts/setup/
+COPY create-index-ejbca.sql $ORACLE_BASE/scripts/setup/
 
 VOLUME ["$ORACLE_BASE/oradata"]
 EXPOSE 1521 8080
