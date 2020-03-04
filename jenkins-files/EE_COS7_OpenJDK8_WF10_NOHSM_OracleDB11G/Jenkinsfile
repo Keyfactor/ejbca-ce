@@ -19,6 +19,9 @@ pipeline {
 		stage('database') {
             steps {
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_OracleDB11G/oracle_image') {
+                    sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-tables-ejbca-oracle.sql ./"
+                    sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ./"
+
                     sh "docker build -t oracledb ."
                     sh "docker run -d --name oracledb --net=net_ee_cos7_openjdk8_wf10_nohsm_oracledb11g --shm-size=2g oracledb"
                     
