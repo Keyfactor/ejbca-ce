@@ -18,6 +18,11 @@ ENV PATH=$ORACLE_HOME/bin:$PATH
 
 RUN mkdir $INSTALL_DIR
 
+# Copy SQL scripts from EJBCA
+#----------------------------
+COPY doc/sql-scripts/create-tables-ejbca-oracle.sql $INSTALL_DIR/
+COPY doc/sql-scripts/create-index-ejbca.sql $INSTALL_DIR/
+
 # Copy binaries
 # -------------
 COPY $CONFIG_RSP $RUN_FILE $CHECK_DB_FILE $INSTALL_DIR/

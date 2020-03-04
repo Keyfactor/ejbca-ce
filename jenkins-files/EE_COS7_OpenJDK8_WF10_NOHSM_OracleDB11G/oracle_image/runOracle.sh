@@ -193,6 +193,9 @@ EXTPROC_CONNECTION_DATA =
       exit;
 EOF"
 
+  su -p oracle -c "sqlplus / as sysdba" < create-tables-ejbca-oracle.sql
+  su -p oracle -c "sqlplus / as sysdba" < create-index-ejbca.sql
+
   # Move database operational files to oradata
   moveFiles;
 }
