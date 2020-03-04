@@ -22,7 +22,8 @@ function runUserScripts {
     ls -1 $SCRIPTS_ROOT/* | while IFS="$linefeed" read f; do
         case "$f" in
             *.sh)     echo "$0: running $f"; . "$f" ;;
-            *.sql)    echo "$0: running $f"; echo "exit" | su -p oracle -c "$ORACLE_HOME/bin/sqlplus / as sysdba @$f"; echo ;;
+            *.ejbca.sql)    echo "$0: importing $f as ejbca user"; echo "exit" | su -p oracle -c "$ORACLE_HOME/bin/sqlplus ejbca/ejbca @$f"; echo ;;
+            *.sql)    echo "$0: importing $f"; echo "exit" | su -p oracle -c "$ORACLE_HOME/bin/sqlplus / as sysdba @$f"; echo ;;
             *)        echo "$0: ignoring $f" ;;
         esac
         echo "";
