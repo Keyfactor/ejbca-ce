@@ -40,6 +40,8 @@ pipeline {
                             }
                         }
                     }
+                    // Print output so it can be viewed in Jenkins
+                    sh "docker logs oracledb"
                 }
             }
         }
