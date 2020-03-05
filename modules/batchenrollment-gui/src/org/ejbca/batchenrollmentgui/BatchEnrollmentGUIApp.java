@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.batchenrollmentgui;
 
+import java.awt.Dimension;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
@@ -46,6 +47,7 @@ public class BatchEnrollmentGUIApp extends SingleFrameApplication {
      * builder, so this additional configuration is not needed.
      */
     @Override protected void configureWindow(java.awt.Window root) {
+        root.setMinimumSize(new Dimension(450, 350));
     }
 
     /**
