@@ -588,9 +588,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public void setCaSubjectAltName(final String subjectAltName) throws ParameterException {
-        if (!caBean.checkSubjectAltName(subjectAltName)) {
-            throw new ParameterException(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
-        }
         caInfoDto.setCaSubjectAltName(subjectAltName);
     }
     
@@ -1586,10 +1583,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cainfo.setDefaultCertificateProfileId(caInfoDto.getDefaultCertProfileId());
             cainfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
             cainfo.setSignedBy(caInfoDto.getSignedBy());
-
-            if (!caBean.checkSubjectAltName(caInfoDto.getCaSubjectAltName())) {
-                throw new ParameterException(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
-            }
 
             List<CertificatePolicy> policies = null;
             if (cainfo instanceof X509CAInfo) {
