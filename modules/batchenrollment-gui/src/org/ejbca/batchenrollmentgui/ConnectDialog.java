@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.batchenrollmentgui;
 
-import java.awt.Frame;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,8 +64,13 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CertTools;
@@ -104,8 +108,8 @@ public class ConnectDialog extends JDialog {
         TRUSTSTORE_TYPE_PEM
     };
 
-    /** Creates new form ConnectDialog. */
-    public ConnectDialog(final Frame parent, final boolean modal) {
+    /** Creates new form ConnectDialog. Uses the super-constructor that takes a Dialog object (rather than Frame), so the dialog appears in the taskbar. */
+    public ConnectDialog(final java.awt.Dialog parent, final boolean modal) {
         super(parent, modal);
         initComponents();
         truststoreTypeComboBox.setModel(new DefaultComboBoxModel<String>(TRUSTSTORE_TYPES));
@@ -534,16 +538,35 @@ public class ConnectDialog extends JDialog {
                 // KeyManagers, and the TrustManagers. We still use a null
                 // SecureRandom, indicating that the defaults should be used.
                 SSLContext context = SSLContext.getInstance("TLS");
+                
+                if (LOG.isDebugEnabled()) {
+                    StringBuilder buff = new StringBuilder();
+                    buff.append("Available providers: \n");
+                    for (Provider p : Security.getProviders()) {
+                       buff.append(p).append("\n");
+                    }
+                    LOG.debug(buff.toString());
+                }
+                
                 context.init(keyManagers, tTrustManagerFactory.getTrustManagers(), new SecureRandom());
 
                 // Finally, we get a SocketFactory, and pass it to SimpleSSLClient.
                 SSLSocketFactory factory = context.getSocketFactory();
 
                 HttpsURLConnection.setDefaultSSLSocketFactory(factory);
-
+                
                 QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
                   EjbcaWSService service = new EjbcaWSService(new URL(urlstr),qname);
                   ejbcaWS = service.getEjbcaWSPort();
+                  if (factory != null) {
+                      final BindingProvider bp = (BindingProvider) ejbcaWS;
+                      final Client client = ClientProxy.getClient(bp);
+                      final HTTPConduit http = (HTTPConduit) client.getConduit();
+                      final TLSClientParameters params = new TLSClientParameters();
+
+                      params.setSSLSocketFactory(factory);
+                      http.setTlsClientParameters(params);
+                  }
             dispose();
         } catch (Exception ex) {
             LOG.error("Connection failed", ex);
