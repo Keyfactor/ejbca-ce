@@ -31,6 +31,7 @@
         <path refid="lib.commons-logging.classpath"/>
         <path refid="lib.log4j.classpath"/>
         <path refid="lib.swing-app-framework.classpath"/>
+        <path refid="soapclient.classpath"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.ejbca-common.lib}"/>
         <path location="${mod.ejbca-ws-cli.lib}"/>
