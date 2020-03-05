@@ -220,5 +220,8 @@
 	<classpathentry kind="lib" path="lib/ext/webtest/extentreports-3.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/byte-buddy-1.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-5.4.4.Final.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.4.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.4.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.4.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
