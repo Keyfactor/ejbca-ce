@@ -502,9 +502,13 @@ public class CAInterfaceBean implements Serializable {
 	            if (caInfoDto.getCaSubjectAltName() == null) {
                     caInfoDto.setCaSubjectAltName("");
 	            }
-	            if (!checkSubjectAltName(caInfoDto.getCaSubjectAltName())) {
-	               illegaldnoraltname = true;
+
+	            // Check for invalid or malformed SAN
+	            String errorMessage = checkSubjectAltName(caInfoDto.getCaSubjectAltName());
+	            if (!StringUtils.isEmpty(errorMessage)) {
+	               throw new ParameterException(errorMessage);
 	            }
+	            
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
@@ -746,14 +750,18 @@ public class CAInterfaceBean implements Serializable {
         return extendedcaservices;
     }
 
-    public boolean checkSubjectAltName(String subjectaltname) {
-        if (subjectaltname != null && !subjectaltname.trim().equals("")) {
-            final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
-            if (subtest.isIllegal() || subtest.existsOther()) {
-                return false;
+    public String checkSubjectAltName(String subjectaltname) {
+        try {
+            if (subjectaltname != null && !subjectaltname.trim().equals("")) {
+                final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+                if (subtest.isIllegal() || subtest.existsOther()) {
+                    return ejbcawebbean.getText("INVALIDSUBJECTALT");
+                }
             }
+            return StringUtils.EMPTY;
+        } catch (IllegalArgumentException e) {
+            return ejbcawebbean.getText("INVALIDSUBJECTALT");
         }
-        return true;
     }
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
