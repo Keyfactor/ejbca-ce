@@ -751,17 +751,13 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public String checkSubjectAltName(String subjectaltname) {
-        try {
-            if (subjectaltname != null && !subjectaltname.trim().equals("")) {
-                final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-                if (subtest.isIllegal() || subtest.existsOther()) {
-                    return ejbcawebbean.getText("INVALIDSUBJECTALT");
-                }
+        if (subjectaltname != null && !subjectaltname.trim().equals("")) {
+            final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+            if (subtest.isIllegal() || subtest.existsOther()) {
+                return ejbcawebbean.getText("INVALIDSUBJECTALT");
             }
-            return StringUtils.EMPTY;
-        } catch (IllegalArgumentException e) {
-            return ejbcawebbean.getText("INVALIDSUBJECTALT");
         }
+        return StringUtils.EMPTY;
     }
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
