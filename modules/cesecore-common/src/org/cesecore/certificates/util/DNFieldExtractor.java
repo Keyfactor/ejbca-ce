@@ -324,7 +324,7 @@ public class DNFieldExtractor implements Serializable {
                     dnfields.put(PLACEOFBIRTH * BOUNDRARY, "Illegal Subjectdirectory attribute : " + dn);
                 }
                 if (e instanceof IllegalArgumentException) {
-                    throw new IllegalArgumentException();
+                    throw e;
                 }
             }
         }
