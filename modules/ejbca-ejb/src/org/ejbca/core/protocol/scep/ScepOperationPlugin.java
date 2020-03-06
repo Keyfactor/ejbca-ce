@@ -34,7 +34,7 @@ public interface ScepOperationPlugin {
      * @param alias alias of the SCEP configuration
      * @return true if the operation succeeded 
      * @throws AuthorizationDeniedException if request was denied due to authorization error
-     * @throws WaitingForApprovalException 
+     * @throws WaitingForApprovalException if the request was processed but requires approval
      */
     boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig,
             final String alias) throws AuthorizationDeniedException, WaitingForApprovalException;
