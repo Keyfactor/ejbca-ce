@@ -99,7 +99,7 @@ public class ScepRequestGenerator {
         X500Name name = CertTools.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
-        return wrap(ias.getEncoded(), "22", transactionId, senderCertificate, signatureKey, encryptionAlg);        
+        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, encryptionAlg);        
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
@@ -149,11 +149,11 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
-        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
+        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
                 CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // wrap message in pkcs#7
-        return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey, encryptionAlg);
+        return wrap(p10request.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_PKCSREQ), transactionId, senderCertificate, signatureKey, encryptionAlg);
     }
 
     public byte[] generateGetCertInitial(String dn, String transactionId, X509Certificate caCertificate, final X509Certificate senderCertificate,
@@ -171,7 +171,7 @@ public class ScepRequestGenerator {
         DERSequence seq = new DERSequence(vec);
 
         // wrap message in pkcs#7
-        return wrap(seq.getEncoded(), "20", transactionId, senderCertificate, signatureKey, encryptionAlg);
+        return wrap(seq.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL), transactionId, senderCertificate, signatureKey, encryptionAlg);
     }
     
     /**

@@ -20,6 +20,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -540,5 +541,75 @@ public class PKCS10RequestMessage implements RequestMessage {
     @Override
     public void setAdditionalExtraCertsCertificates(List<Certificate> additionalExtraCertsCertificates) {
         this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((additionalCaCertificates == null) ? 0 : additionalCaCertificates.hashCode());
+        result = prime * result + ((additionalExtraCertsCertificates == null) ? 0 : additionalExtraCertsCertificates.hashCode());
+        result = prime * result + error;
+        result = prime * result + ((errorText == null) ? 0 : errorText.hashCode());
+        result = prime * result + (includeCACert ? 1231 : 1237);
+        result = prime * result + ((notAfter == null) ? 0 : notAfter.hashCode());
+        result = prime * result + ((notBefore == null) ? 0 : notBefore.hashCode());
+        result = prime * result + Arrays.hashCode(p10msg);
+        result = prime * result + ((password == null) ? 0 : password.hashCode());
+        result = prime * result + ((username == null) ? 0 : username.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PKCS10RequestMessage other = (PKCS10RequestMessage) obj;
+        if (additionalCaCertificates == null) {
+            if (other.additionalCaCertificates != null)
+                return false;
+        } else if (!additionalCaCertificates.equals(other.additionalCaCertificates))
+            return false;
+        if (additionalExtraCertsCertificates == null) {
+            if (other.additionalExtraCertsCertificates != null)
+                return false;
+        } else if (!additionalExtraCertsCertificates.equals(other.additionalExtraCertsCertificates))
+            return false;
+        if (error != other.error)
+            return false;
+        if (errorText == null) {
+            if (other.errorText != null)
+                return false;
+        } else if (!errorText.equals(other.errorText))
+            return false;
+        if (includeCACert != other.includeCACert)
+            return false;
+        if (notAfter == null) {
+            if (other.notAfter != null)
+                return false;
+        } else if (!notAfter.equals(other.notAfter))
+            return false;
+        if (notBefore == null) {
+            if (other.notBefore != null)
+                return false;
+        } else if (!notBefore.equals(other.notBefore))
+            return false;
+        if (!Arrays.equals(p10msg, other.p10msg))
+            return false;
+        if (password == null) {
+            if (other.password != null)
+                return false;
+        } else if (!password.equals(other.password))
+            return false;
+        if (username == null) {
+            if (other.username != null)
+                return false;
+        } else if (!username.equals(other.username))
+            return false;
+        return true;
     }
 }
