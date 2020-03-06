@@ -77,6 +77,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new IllegalStateException("This execution requires additional bean references.");
 	}
 
+
 	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID,
 	        final AuthenticationToken lastApprovingAdmin) throws ApprovalRequestExecutionException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
@@ -120,7 +121,18 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		if (log.isTraceEnabled()) {
 		    log.trace(">generateApprovalId '"+getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()+"'");
 		}
-		return new String(getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
+		return generateAddEndEntityApprovalId(userdata.getUsername(), getApprovalProfile().getProfileName());
+	}
+	
+	/**
+	 * Generic static method for generating approval IDs for this type of approval request
+	 * 
+	 * @param username the username of the end entity
+	 * @param approvalProfileName the name of the approval profile
+	 * @return an identifier for this particular request
+	 */
+	public static int generateAddEndEntityApprovalId(final String username, final String approvalProfileName) {
+	    return new String(ApprovalDataVO.APPROVALTYPE_ADDENDENTITY + ";" + username + ";" + approvalProfileName).hashCode();
 	}
 
 	@Override
