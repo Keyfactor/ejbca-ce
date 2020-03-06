@@ -22,14 +22,14 @@ import org.bouncycastle.cert.ocsp.CertificateID;
  * OCSP Cache entry mapping CertificateId to CA Id for faster lookups of CA configuration 
  * @version $Id$
  */
-public class OcspPreProductionConfigCacheEntry {
+public class OcspDataConfigCacheEntry {
 
     private final List<CertificateID> certificateID;
     private final int caId;
     private final boolean preProducionEnabled;
     
-    public OcspPreProductionConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled) {
-        certificateID = OcspPreProductionConfigCache.getCertificateIdFromCertificate(issuerCertificate);
+    public OcspDataConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled) {
+        certificateID = OcspDataConfigCache.getCertificateIdFromCertificate(issuerCertificate);
         this.caId = caId;
         this.preProducionEnabled = preProductionEnabled;
     }
