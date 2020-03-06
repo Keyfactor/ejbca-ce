@@ -19,17 +19,34 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -329,7 +346,7 @@ public class MessagesTest {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
 
-        KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
+        KeyStore keyStore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
         InputStream is = new ByteArrayInputStream(p12);
         String keyStorePass = "foo123";
         keyStore.load(is, keyStorePass.toCharArray());
@@ -568,6 +585,51 @@ public class MessagesTest {
         // Get altNames if we can find them
         String altNames = msg.getRequestAltNames();
         assertEquals("rfc822name=foo@bar.se",altNames);
+    }
+    
+    @Test
+    public void testSerializeScepMessage() throws OperatorCreationException, CertificateException, InvalidAlgorithmParameterException, InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchProviderException, SignatureException, CertStoreException, IOException, CMSException {
+        final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
+        final X509Certificate caCert = CertTools.genSelfCert("CN=testSerializationCA", 10*365, null, keypair.getPrivate(), keypair.getPublic(), "SHA256withRSA", false);
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        String userdn = "CN=testSerialization";
+        byte[] request = genScepRequest(caCert, createTransactionId(), false, CMSSignedGenerator.DIGEST_SHA1, userdn, keys);
+        ScepRequestMessage reqmsg = new ScepRequestMessage(request, false);
+        String encodedRequest = reqmsg.getEncoded();
+        ScepRequestMessage decodedRequest = ScepRequestMessage.instance(encodedRequest);
+        assertTrue("Decoded message did not match original", decodedRequest.equals(reqmsg));
+    }
+    
+    private String createTransactionId() {
+        // Create a transactionId
+        byte[] randBytes = new byte[16];
+        new Random().nextBytes(randBytes);
+        byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
+        return new String(Base64.encode(digest));
+    }
+    
+    private byte[] genScepRequest(X509Certificate issuerCertificate, String transactionId, boolean makeCrlReq, String digestoid, String userDN,
+            KeyPair keyPair) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
+            InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, OperatorCreationException, CertificateException {
+        ScepRequestGenerator gen = new ScepRequestGenerator();
+        gen.setKeys(keyPair, BouncyCastleProvider.PROVIDER_NAME);
+        gen.setDigestOid(digestoid);
+        byte[] msgBytes = null;
+
+        final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null, keyPair.getPrivate(),
+                keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        if (makeCrlReq) {
+            msgBytes = gen.generateCrlReq(userDN, transactionId, issuerCertificate, senderCertificate, keyPair.getPrivate(), SMIMECapability.dES_CBC);
+        } else {
+            msgBytes = gen.generateCertReq(userDN, "foo123", transactionId, issuerCertificate, senderCertificate, keyPair.getPrivate(),
+                    SMIMECapability.dES_CBC);
+        }
+        assertNotNull(msgBytes);
+        String senderNonce = gen.getSenderNonce();
+        byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
+        assertTrue(nonceBytes.length == 16);
+        return msgBytes;
     }
 
     
