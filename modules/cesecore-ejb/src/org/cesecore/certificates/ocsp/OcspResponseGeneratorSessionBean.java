@@ -113,6 +113,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
@@ -126,6 +127,8 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
+import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
+import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
 import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
@@ -273,6 +276,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
          // Verify card key holder
             GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             OcspSigningCache.INSTANCE.stagingStart();
+            OcspDataConfigCache.INSTANCE.stagingStart();
             try {
                 // Populate OcspSigningCache
                 // Add all potential CA's as OCSP responders to the staging area
@@ -284,6 +288,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         // Bravely ignore OCSP for CVC CAs
                         continue;
                     }
+                    boolean preProduceOcspResponse = false;
+                    // Should always be true since CVCAs are ignored here. Better safe than sorry though.
+                    if (caInfo instanceof X509CAInfo) {
+                        preProduceOcspResponse = ((X509CAInfo)caInfo).isDoPreProduceOcspResponses();
+                    }
+                    
                     if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                         //Cache active CAs as signers
                         if (log.isDebugEnabled()) {
@@ -324,8 +334,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain,
                                     null, privateKey, signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
-                            // TODO Build OcspPreProductionConfigCache
-
+                            // Build OcspPreProductionConfigCache
+                            OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificate, caId, preProduceOcspResponse));
                             // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
@@ -367,6 +377,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                 null, null, null, ocspConfiguration.getOcspResponderIdType()));
                         // TODO Build OcspPreProductionConfigCache
+                        OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse));
                     }
                 }
                 // Add all potential InternalKeyBindings as OCSP responders to the staging area, overwriting CA entries from before
@@ -407,6 +418,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
                 OcspSigningCache.INSTANCE.stagingCommit(ocspConfiguration.getOcspDefaultResponderReference());
+                OcspDataConfigCache.INSTANCE.stagingCommit();
             } finally {
                 OcspSigningCache.INSTANCE.stagingRelease();
             }
