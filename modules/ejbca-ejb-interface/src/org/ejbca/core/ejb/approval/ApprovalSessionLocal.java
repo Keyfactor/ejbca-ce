@@ -135,4 +135,12 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired,
              final Date startDate, final Date endDate, final Date expiresBefore, int index, int numberofrows, String caAuthorizationString,
              String endEntityProfileAuthorizationString);
+
+    /**
+     * Returns a list of all approvals matching the given ID
+     * 
+     * @param approvalid an approval ID
+     * @return a list of all approvals matching the given ID
+     */
+    List<ApprovalData> findByApprovalId(int approvalid);
 }

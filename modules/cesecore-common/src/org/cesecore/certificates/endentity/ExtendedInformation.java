@@ -30,6 +30,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.DecoderException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -126,7 +127,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
     private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
-    private static String SCEP_TRANSACTION_ID = "SCEP_TRANSACTION_ID";
+    /** If using SCEP in RA mode with approvals, the incoming enrollment request together with the transactions need to be cached for later use. */
+    private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     
 
     /** Creates a new instance of ExtendedInformation */
@@ -195,25 +197,23 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(CERTIFICATE_REQUEST, str);
     }
 
-    public void setScepTransactionId(final String scepTransactionId) {
-        if (scepTransactionId == null) {
-            data.put(SCEP_TRANSACTION_ID, "");
-        } else {
-            data.put(SCEP_TRANSACTION_ID, scepTransactionId);
-        }
+    /**
+     * If using SCEP in RA mode with approvals, the incoming enrollment request needs to be cached for later use.
+     * 
+     * @param requestMessage the ScepRequestMessage to cache
+     */
+    public void cacheScepRequest(final String requestMessage) {
+        data.put(SCEP_CACHED_REQUEST, requestMessage);
     }
     
+
     /**
-     * If this end entity was created using SCEP in RA mode, record the transaction ID here. 
+     * If using SCEP in RA mode with approvals, the incoming enrollment request together with the transaction need to be cached for later use. 
      * 
-     * @return the transaction ID
+     * @return the cached request, or null if none exisst
      */
-    public String getScepTransactionId() {
-        String ret = (String) data.get(SCEP_TRANSACTION_ID);
-        if (ret == null) {
-            ret = "";
-        }
-        return ret;
+    public String getCachedScepRequest() {
+        return (String) data.get(SCEP_CACHED_REQUEST);
     }
     
     public String getSubjectDirectoryAttributes() {

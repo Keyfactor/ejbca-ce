@@ -893,8 +893,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return entityManager.find(ApprovalData.class, id);
     }
     
-    /** @return return the query results as a List. */
-    private List<ApprovalData> findByApprovalId(final int approvalid) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<ApprovalData> findByApprovalId(final int approvalid) {
         final TypedQuery<ApprovalData> query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId",
                 ApprovalData.class);
         query.setParameter("approvalId", approvalid);

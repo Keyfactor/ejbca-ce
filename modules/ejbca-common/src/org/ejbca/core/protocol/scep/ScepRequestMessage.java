@@ -16,6 +16,8 @@ package org.ejbca.core.protocol.scep;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchProviderException;
@@ -23,6 +25,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -37,6 +40,8 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.ContentInfo;
@@ -115,10 +120,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      * GetCRL  (22)  -- Retrieve a CRL
      */
     private int messageType = 0;
-    public static int SCEP_TYPE_PKCSREQ = 19;
-    public static int SCEP_TYPE_GETCERTINITIAL = 20; // Used when request is in pending state.
-    public static int SCEP_TYPE_GETCRL = 22;
-    public static int SCEP_TYPE_GETCERT = 21;
+    public static final int SCEP_TYPE_PKCSREQ = 19;
+    public static final int SCEP_TYPE_GETCERTINITIAL = 20; // Used when request is in pending state.
+    public static final int SCEP_TYPE_GETCRL = 22;
+    public static final int SCEP_TYPE_GETCERT = 21;
 
     /**
      * SenderNonce in a request is used as recipientNonce when the server sends back a reply to the
@@ -176,7 +181,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
 
 	private transient Certificate signercert;
+	
+	/**
+	 * If this message type is a SCEP_TYPE_GETCERTINITIAL, the subject DN will be part of the message and not in the (non-existant) PKCS10
+	 */
+	private transient String getCertInitialSubject;
 
+	
     /**
      * Constructs a new SCEP/PKCS7 message handler object.
      *
@@ -195,6 +206,37 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         if (log.isTraceEnabled()) {
         	log.trace("<ScepRequestMessage");
         }
+    }
+    
+    /**
+     * Recreate a request message from an encoded 
+     *
+     * @param encodedStep an approval step that has been encoded as a string
+     */
+    public static ScepRequestMessage instance(final String encoded) {
+        byte[] bytes = Base64.decode(encoded.getBytes());
+        try {
+            final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+            final ScepRequestMessage result = (ScepRequestMessage) ois.readObject();
+            ois.close();
+            return result;
+        } catch (IOException | ClassNotFoundException e) {
+            throw new IllegalArgumentException("Could not decode encoded ScepRequestMessage", e);
+        }
+
+    }
+
+    public String getEncoded() {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            final ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+            oos.close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not encode ScepRequestMessage", e);
+        }
+        byte[] byteArray = baos.toByteArray();
+        return new String(Base64.encode(byteArray, false));
     }
     
     /**
@@ -313,8 +355,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
             // If this is a PKCSReq
             if ((messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL)) {
-                // Extract the contents, which is an encrypted PKCS10 if messageType == 19
-                // , and an encrypted issuer and subject if messageType == 20 (not extracted)
+                // Extract the contents, which is an encrypted PKCS10 if messageType == 19, and an encrypted issuer and subject if messageType == 20 (not extracted)
                 // and an encrypted IssuerAndSerialNumber if messageType == 22
                 ci = sd.getEncapContentInfo();
                 ctoid = ci.getContentType().getId();
@@ -378,8 +419,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         if (log.isTraceEnabled()) {
         	log.trace(">decrypt");
         }
-        // Now we are getting somewhere (pheew),
-        // Now we just have to get the damn key...to decrypt the PKCS10
+
         if (privateKey == null) {
             errorText = "Need private key to decrypt!";
             error = 5;
@@ -416,14 +456,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             decBytes = recipient.getContent(rec);
             break;
         }
+        
 
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
             if (log.isDebugEnabled()) {
             	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
             }
-        }
-        if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
+        } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             ASN1InputStream derAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(decBytes));
             ASN1Primitive derobj = null;
             try {
@@ -433,6 +473,12 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             }
             issuerAndSerno = IssuerAndSerialNumber.getInstance(derobj);
             log.debug("Successfully extracted IssuerAndSerialNumber.");
+        } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
+            ASN1Sequence derSequence = (ASN1Sequence) DERSequence.fromByteArray(decBytes);
+            //Issuer and subject have been encoded in the envelope as per section 3.2.3 in the draft
+            issuerDN = DERUTF8String.getInstance(derSequence.getObjectAt(0)).getString();
+            getCertInitialSubject = DERUTF8String.getInstance(derSequence.getObjectAt(1)).getString();
+            
         }
         if (log.isTraceEnabled()) {
         	log.trace("<decrypt");
@@ -555,22 +601,22 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 // For Cisco boxes they can sometimes send DN as SN instead of CN
                 String name = CertTools.getPartFromDN(getRequestDN(), "SN");
                 if (name == null) {
-                    log.error("No SN in DN: "+getRequestDN());
+                    log.error("No SN in DN: " + getRequestDN());
                     return null;
                 }
                 // Special if the DN contains unstructuredAddress where it becomes: 
                 // SN=1728668 + 1.2.840.113549.1.9.2=pix.primekey.se
                 // We only want the SN and not the oid-part.
                 int index = name.indexOf(' ');
-                ret = name; 
+                ret = name;
                 if (index > 0) {
-                    ret = name.substring(0,index);        
+                    ret = name.substring(0, index);
                 } else {
                     // Perhaps there is no space, only +
                     index = name.indexOf('+');
                     if (index > 0) {
                         ret = name.substring(0, index);
-                    }            	
+                    }
                 }
             }
         } catch (IOException e) {
@@ -672,12 +718,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         	log.trace(">getRequestDN()");
         }
         String ret = null;
-        try {
+        
+        try {         
             if (pkcs10 == null) {
                 init();
                 decrypt();
             }
-            ret = super.getRequestDN();
+            if (messageType == SCEP_TYPE_PKCSREQ) {
+                ret = super.getRequestDN();
+            } else if (messageType == SCEP_TYPE_GETCERTINITIAL) {
+                ret = getCertInitialSubject;
+            }
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
         } catch (GeneralSecurityException e) {
@@ -740,7 +791,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     
     /** Returns the type of SCEP message it is
      * 
-     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT  
+     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT, SCEP_TYPE_GETCERTINITIAL  
      */
     public int getMessageType() {
         return messageType;
@@ -780,6 +831,55 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             return signerInformationVerifier;
         }
         
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + error;
+        result = prime * result + ((errorText == null) ? 0 : errorText.hashCode());
+        result = prime * result + messageType;
+        result = prime * result + Arrays.hashCode(requestKeyInfo);
+        result = prime * result + Arrays.hashCode(scepmsg);
+        result = prime * result + ((senderNonce == null) ? 0 : senderNonce.hashCode());
+        result = prime * result + ((transactionId == null) ? 0 : transactionId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ScepRequestMessage other = (ScepRequestMessage) obj;
+        if (error != other.error)
+            return false;
+        if (errorText == null) {
+            if (other.errorText != null)
+                return false;
+        } else if (!errorText.equals(other.errorText))
+            return false;
+        if (messageType != other.messageType)
+            return false;
+        if (!Arrays.equals(requestKeyInfo, other.requestKeyInfo))
+            return false;
+        if (!Arrays.equals(scepmsg, other.scepmsg))
+            return false;
+        if (senderNonce == null) {
+            if (other.senderNonce != null)
+                return false;
+        } else if (!senderNonce.equals(other.senderNonce))
+            return false;
+        if (transactionId == null) {
+            if (other.transactionId != null)
+                return false;
+        } else if (!transactionId.equals(other.transactionId))
+            return false;
+        return true;
     }
         
 } 

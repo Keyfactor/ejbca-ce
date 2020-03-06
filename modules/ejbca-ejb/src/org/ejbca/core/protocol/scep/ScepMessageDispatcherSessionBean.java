@@ -14,6 +14,9 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
@@ -24,6 +27,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import javax.annotation.PostConstruct;
@@ -34,9 +39,11 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -56,9 +63,12 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -68,11 +78,16 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalData;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.protocol.NoSuchAliasException;
@@ -99,7 +114,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private static final Random secureRandom = new SecureRandom();
     
     @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
+    @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
@@ -312,7 +333,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private byte[] scepCertRequest(AuthenticationToken administrator, byte[] msg, final String alias, final ScepConfiguration scepConfig)
             throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
-            AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
+            AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CertificateRenewalException, SignatureException, CertificateException {
         byte[] ret = null;
@@ -354,27 +375,35 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     //Return a pending response message, because this request is now waiting to be approved
                     X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
                     ResponseMessage resp = createPendingResponseMessage(reqmsg, cainfo);
-                    ret = resp.getResponseMessage();
-                    return ret;
-                }
+                    return resp.getResponseMessage();
+                } 
             }
-            if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("SCEP client certificate renewal/enrollment with alias '" + alias + "'");
+            try {
+                if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("SCEP client certificate renewal/enrollment with alias '" + alias + "'");
+                    }
+                    ResponseMessage resp = scepClientCertificateRenewal.performOperation(administrator, reqmsg, scepConfig, alias);
+                    if (resp != null) {
+                        ret = resp.getResponseMessage();
+                    }
+                } else {
+                    // Get the certificate 
+                    if (log.isDebugEnabled()) {
+                        log.debug("SCEP certificate enrollment with alias '" + alias + "'");
+                    }
+                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
+                    if (resp != null) {
+                        ret = resp.getResponseMessage();
+                    }
                 }
-                ResponseMessage resp = scepClientCertificateRenewal.performOperation(administrator, reqmsg, scepConfig, alias);
-                if (resp != null) {
-                    ret = resp.getResponseMessage();
-                }
-            } else {
-                // Get the certificate 
-                if (log.isDebugEnabled()) {
-                    log.debug("SCEP certificate enrollment with alias '" + alias + "'");
-                }
-                ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
-                if (resp != null) {
-                    ret = resp.getResponseMessage();
-                }
+            } catch (AuthStatusException e) {
+                String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
+                        + ") with incorrect status: " + e.getLocalizedMessage();
+                log.error(failMessage, e);
+                CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
+                ResponseMessage resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failMessage);
+                return resp.getResponseMessage();
             }
         } else if(reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
             //Only works in RA mode
@@ -387,23 +416,99 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final String keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 final X509Certificate cacert =  (X509Certificate) ca.getCACertificate();        
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                //Initialize request message to get the username.      
                 reqmsg.setKeyInfo(cacert, cryptoToken.getPrivateKey(keyAlias), cryptoToken.getSignProviderName());
-                //reqmsg.verify();
-                EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(reqmsg.getUsername());
-                if(endEntityInformation == null) {
-                    log.error("Failure to process GETCERTINITIAL message. No such user with username " + reqmsg.getUsername());
-                    return null;
-                }            
-                //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
-                if(!endEntityInformation.getExtendedInformation().getScepTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
-                    log.error("Failure to process GETCERTINITIAL message. Transaction ID did not match up with that used during initial PKCSREQ");
-                    return null;
+                //Retrieve the original request and transaction ID based on the username 
+                final String username = ScepRaModeExtension.generateUsername(scepConfig, alias, new X500Name(reqmsg.getRequestDN()));
+                final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(scepConfig.getRACertProfile(alias));
+                final String approvalProfileName = approvalProfileSession
+                        .getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, ca.getCAInfo(), certificateProfile).getProfileName();
+                List<ApprovalData> approvals = approvalSession
+                        .findByApprovalId(AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName));
+                //Iterate through the list, find the last approval available. We don't care if it's expired in this context.
+                Collections.reverse(approvals);
+                ApprovalData approval = null;
+                if(approvals.size() > 0) {
+                    approval = approvals.get(0);
                 }
-                ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
-                if (resp != null) {
-                    ret = resp.getResponseMessage();
-                }
+                if (approval != null) {
+                    //Approval is still around - which either means that it's been approved but not removed, rejected or is still waiting approval
+                    //Verify that the transaction ID in the request is correct
+                    EndEntityInformation endEntityInformation = ((AddEndEntityApprovalRequest) approval.getApprovalRequest())
+                            .getEndEntityInformation();
+                    ScepRequestMessage originalRequest = ScepRequestMessage
+                            .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());
+                    ResponseMessage resp;
+                    //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
+                    if (originalRequest == null) {
+                        String failText = "SCEP request was not stored for user " + reqmsg.getUsername() + ", cannot continue with issuance.";
+                        log.error(failText);
+                        resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                        return resp.getResponseMessage();
+                    }
+                    if (!originalRequest.getTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
+                        String failText = "Failure to process GETCERTINITIAL message. Transaction ID did not match up with that used during initial PKCSREQ";
+                        log.error(failText);
+                        resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                        return resp.getResponseMessage();
+                    }
+                    
+                    String failText;
+                    switch (approval.getStatus()) {
+                    case ApprovalDataVO.STATUS_EXECUTED:
+                        //Now go ahead and process the cached certificate request     
+                        try {
+                            resp = signSession.createCertificate(administrator, originalRequest, ScepResponseMessage.class, null);
+                        } catch (AuthStatusException e) {
+                            final String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
+                                    + ") with incorrect status: " + e.getLocalizedMessage();
+                            log.error(failMessage, e);
+                            resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failMessage);
+                            return resp.getResponseMessage();
+                        }
+                        if (resp != null) {
+                            //Since the client will be expecting the nonce to be that of the poll request instead of the original request, set it here. 
+                            resp.setRecipientNonce(reqmsg.getSenderNonce());
+                            try {
+                                resp.create();
+                            } catch (InvalidKeyException | CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException
+                                    | CRLException e) {
+                                throw new IllegalStateException("Could not recreate response with proper recipient nonce.", e);
+                            }
+                            ret = resp.getResponseMessage();
+                        }
+                        
+                        break;
+                    case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
+                        //Still waiting for approval
+                        resp = createPendingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo());
+                        ret = resp.getResponseMessage();
+                        break;
+                    case ApprovalDataVO.STATUS_EXECUTIONDENIED:
+                    case ApprovalDataVO.STATUS_REJECTED:
+                        failText = "Could not process GETCERTINITIAL request for username " + username
+                                + ". Enrollment was not approved by administrator.";
+                        log.error(failText);
+                        resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                        ret = resp.getResponseMessage();
+                        break;
+                    case ApprovalDataVO.STATUS_EXECUTIONFAILED:
+                        failText = "Could not process GETCERTINITIAL request for username " + username + ". Enrollment execution failed.";
+                        log.error(failText);
+                        resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                        ret = resp.getResponseMessage();
+                        break;
+                    default:
+                        failText = "Approval state was unknown for this request.";
+                        resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                        ret = resp.getResponseMessage();
+                        break;
+                    }
+                } else {
+                    log.error("GETCERTINITIAL was called on user with name " + username
+                            + ", but no approval request for an end entity with that name using the approval profile " + approvalProfileName
+                            + " exists");
+                    return null;
+                }       
             }
         } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             // create the stupid encrypted CRL message, the below can actually only be made 
@@ -419,14 +524,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
         return ret;
     }
-    
+        
     /**
-     * Create a response message with the status PENDING to show that enrollment has been performed, but certificate issuance is waiting on an
-     * approval operation
+     * Create a response message with status FAILURE
      * 
      * @param req the request message
      * @param signingCa the CA configured to sign responses
-     * @return a response message with the status PENDING
+     * @return a response message with the given status 
      * @throws CryptoTokenOfflineException
      */
     private ScepResponseMessage createPendingResponseMessage(final RequestMessage req, final X509CAInfo signingCa)
@@ -451,10 +555,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         if (req.getTransactionId() != null) {
             ret.setTransactionId(req.getTransactionId());
         }
-        // Sendernonce is a random number
+        
+        // SenderNonce is a random number
         byte[] senderNonce = new byte[16];
         secureRandom.nextBytes(senderNonce);
         ret.setSenderNonce(new String(Base64.encode(senderNonce)));
+             
         // If we have a specified request key info, use it in the reply
         if (req.getRequestKeyInfo() != null) {
             ret.setRecipientKeyInfo(req.getRequestKeyInfo());
@@ -464,6 +570,61 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         // Include the CA cert or not in the response, if applicable for the response type
         ret.setIncludeCACert(req.includeCACert());
         ret.setStatus(ResponseStatus.PENDING);
+        try {
+            ret.create();
+        } catch (CertificateEncodingException | CRLException e) {
+            throw new IllegalStateException("Response message could not be created.", e);
+        } 
+        return ret;
+    }
+    
+    /**
+     * Create a response message with status FAILURE
+     * 
+     * @param req the request message
+     * @param signingCa the CA configured to sign responses
+     * @return a response message with the given status 
+     * @throws CryptoTokenOfflineException
+     */
+    private ScepResponseMessage createFailingResponseMessage(final RequestMessage req, final X509CAInfo signingCa, final FailInfo failInfo, final String failText)
+            throws CryptoTokenOfflineException {
+        ScepResponseMessage ret = new ScepResponseMessage();
+        // Create the response message and set all required fields
+        CAToken caToken = signingCa.getCAToken();
+        X509Certificate signingCertificate = (X509Certificate) signingCa.getCertificateChain().get(0);
+        CryptoToken caCryptoToken = cryptoTokenSession.getCryptoToken(signingCa.getCAToken().getCryptoTokenId());
+        PrivateKey signingKey = caCryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (ret.requireSignKeyInfo()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Signing message with cert: " + signingCertificate.getSubjectDN().getName());
+            }
+            Collection<Certificate> racertColl = new ArrayList<Certificate>();
+            racertColl.add(signingCertificate);
+            ret.setSignKeyInfo(racertColl, signingKey, BouncyCastleProvider.PROVIDER_NAME);
+        }
+        if (req.getSenderNonce() != null) {
+            ret.setRecipientNonce(req.getSenderNonce());
+        }
+        if (req.getTransactionId() != null) {
+            ret.setTransactionId(req.getTransactionId());
+        }
+        
+        // SenderNonce is a random number
+        byte[] senderNonce = new byte[16];
+        secureRandom.nextBytes(senderNonce);
+        ret.setSenderNonce(new String(Base64.encode(senderNonce)));
+             
+        // If we have a specified request key info, use it in the reply
+        if (req.getRequestKeyInfo() != null) {
+            ret.setRecipientKeyInfo(req.getRequestKeyInfo());
+        }
+        // Which digest algorithm to use to create the response, if applicable
+        ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
+        // Include the CA cert or not in the response, if applicable for the response type
+        ret.setIncludeCACert(req.includeCACert());
+        ret.setStatus(ResponseStatus.FAILURE);
+        ret.setFailInfo(failInfo);
+        ret.setFailText(failText);
         try {
             ret.create();
         } catch (CertificateEncodingException | CRLException e) {
