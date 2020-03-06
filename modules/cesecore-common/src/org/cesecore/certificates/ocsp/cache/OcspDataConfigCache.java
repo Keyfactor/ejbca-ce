@@ -39,19 +39,19 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  *
  */
-public enum OcspPreProductionConfigCache {
+public enum OcspDataConfigCache {
     INSTANCE;
     
-    private final static Logger log = Logger.getLogger(OcspPreProductionConfigCache.class);
+    private final static Logger log = Logger.getLogger(OcspDataConfigCache.class);
     
-    private Map<Integer, OcspPreProductionConfigCacheEntry> cache = new HashMap<>();
-    private Map<Integer, OcspPreProductionConfigCacheEntry> staging = new HashMap<>();
+    private Map<Integer, OcspDataConfigCacheEntry> cache = new HashMap<>();
+    private Map<Integer, OcspDataConfigCacheEntry> staging = new HashMap<>();
     
     /**
      * @param certID CertificateId to lookup in cache
      * @return Cache entry related to the given CertificateId
      */
-    public OcspPreProductionConfigCacheEntry getEntry(final CertificateID certID) {
+    public OcspDataConfigCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
     
@@ -60,7 +60,7 @@ public enum OcspPreProductionConfigCache {
      * one AlgorithmIdentifier for OCSP.
      * @param ocspPreProductionConfigCacheEntry cache entry to add
      */
-    public void stagingAdd(OcspPreProductionConfigCacheEntry ocspPreProductionConfigCacheEntry) {
+    public void stagingAdd(OcspDataConfigCacheEntry ocspPreProductionConfigCacheEntry) {
         final List<CertificateID> certIDs = ocspPreProductionConfigCacheEntry.getCertificateID();
         for (CertificateID certID : certIDs) {
             // CertificateID doesn't have a unique identifier. Construct one using issue hashes
