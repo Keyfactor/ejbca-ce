@@ -499,9 +499,30 @@
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
-					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{web.text.PRE_PRODUCE}" />
+					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{web.text.USE}" />
 				</h:panelGroup>
 	        </h:panelGrid>
+	        
+	        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumn1,editColumn2"
+				rendered="#{editCAsMBean.caExternal}">
+				<h:outputLabel for="header_directives_ext"
+					value="#{web.text.DIRECTIVES}" style="font-weight: bold;" />
+				<h:panelGroup id="header_directives_ext" />
+				
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+					<h:outputLabel for="checkboxpreproduceocspresponsesext"
+						value="#{web.text.PREPRODUCEOCSPRESPONSES}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponsesext"
+						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
+						disabled="#{not editCAsMBean.hasEditRight}" />
+					<h:outputLabel for="checkboxpreproduceocspresponsesext" value="#{web.text.USE}" />
+				</h:panelGroup>				
+			</h:panelGrid>
 
             <h:panelGrid id="nonExistingCertRevokeSection" columns="2" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
