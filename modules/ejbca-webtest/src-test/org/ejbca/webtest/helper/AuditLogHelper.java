@@ -16,6 +16,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -50,6 +52,8 @@ public class AuditLogHelper extends BaseHelper {
         static final By INPUT_DISPLAY_START_POSITION = By.id("search2:startIndex2");
         static final By INPUT_NR_OF_RESULTS_PER_PAGE = By.id("search2:maxResults");
         static final By BUTTON_RELOAD_VIEW = By.xpath("//input[@class='commandLinkAudit reload']");
+        static final By RESULT_ROWS = By.xpath("//table[caption[text()='Search results']]/tbody/tr");
+        static final By RESULT_EVENT_COLUMN_CELLS = By.xpath("//table[caption[text()='Search results']]/tbody/tr/td[2]");
 
         /**
          * Child elements for Event Log Row.
@@ -210,7 +214,32 @@ public class AuditLogHelper extends BaseHelper {
      * @param webDriver the WebDriver to use
      */
     public static int entryCount(WebDriver webDriver) {
-        return webDriver.findElements(By.xpath("//table[caption[text()='Search results']]/tbody/tr")).size();
+        return webDriver.findElements(Page.RESULT_ROWS).size();
+    }
+    
+    /**
+     * Returns the "Event" column for all displayed audit log entries in the table, in the same order as in the table.
+     * @param webDriver the WebDriver to use
+     * @return List of text from the table cells in the "Event" column.
+     */
+    public static List<String> getEntries(final WebDriver webDriver) {
+        final List<String> ret = new ArrayList<>();
+        final List<WebElement> elements = webDriver.findElements(Page.RESULT_EVENT_COLUMN_CELLS);
+        for (final WebElement element : elements) {
+            ret.add(element.getText());
+        }
+        return ret;
+    }
+    
+    /**
+     * Checks that the expected events appear in the "Event" column in the audit log table.
+     * The table must have exactly these events, in the same order.
+     * @param webDriver the WebDriver to use
+     * @param expectedEntries Array with expected Event entries.
+     */
+    public static void assertEntries(final WebDriver webDriver, final String... expectedEntries) {
+        final List<String> actualEntries = AuditLogHelper.getEntries(webDriver);
+        assertEquals("Unexpected elements found in table", Arrays.asList(expectedEntries), actualEntries);
     }
 
 }

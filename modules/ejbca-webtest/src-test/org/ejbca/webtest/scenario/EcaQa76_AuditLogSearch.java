@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.log4j.Logger;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
@@ -52,6 +53,8 @@ import org.openqa.selenium.WebElement;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa76_AuditLogSearch extends WebTestBase {
+    
+    private static final Logger log = Logger.getLogger(EcaQa76_AuditLogSearch.class);
 
     private static WebDriver webDriver;
     // Helpers
@@ -166,14 +169,14 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
                 "Success",
                 null,
                 Arrays.asList(
-                        "msg=Edited end entity " + TestData.ADD_EE_FIELDMAP.get("Username"),
+                        "msg=Edited end entity " + TestData.EE_NAME,
                         "subjectDN=CN=" + TestData.ADD_EE_FIELDMAP.get("CN, Common name") + " -> CN=" + TestData.CN_CHANGED)
         );
         auditLogHelper.assertLogEntryByEventText(
                 "End Entity Add",
                 "Success",
                 null,
-                Collections.singletonList("msg=Added end entity " + TestData.ADD_EE_FIELDMAP.get("Username"))
+                Collections.singletonList("msg=Added end entity " + TestData.EE_NAME)
         );
         auditLogHelper.assertLogEntryByEventText(
                 "CRL Create",
@@ -210,28 +213,16 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     @Test
     public void stepE_eeEvents() {
         // Add condition and check that the correct entries are displayed
-        auditLogHelper.setViewFilteringCondition("Username", "Equals", TestData.ADD_EE_FIELDMAP.get("Username"));
-        assertEquals("Unexpected number of entries in the Audit Log", 2, AuditLogHelper.entryCount(webDriver));
-        assertEquals("Unexpected element found in table", "End Entity Edit",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[1]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "End Entity Add",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[2]/td[2]")).getText());
+        auditLogHelper.setViewFilteringCondition("Username", "Equals", TestData.EE_NAME);
+        AuditLogHelper.assertEntries(webDriver, "End Entity Edit", "End Entity Add");
 
         // Click the down arrow in the 'Event' column and check that the order of the elements are changed
         webDriver.findElement(By.xpath("(//input[@class='sortButton'])[3]")).click();
-        assertEquals("Unexpected number of entries in the Audit Log", 2, AuditLogHelper.entryCount(webDriver));
-        assertEquals("Unexpected element found in table", "End Entity Add",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[1]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "End Entity Edit",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[2]/td[2]")).getText());
+        AuditLogHelper.assertEntries(webDriver, "End Entity Add", "End Entity Edit");
 
         // Click the up arrow in the 'Event' column and check that the order of the elements are changed back
         webDriver.findElement(By.xpath("(//input[@class='sortButton'])[4]")).click();
-        assertEquals("Unexpected number of entries in the Audit Log", 2, AuditLogHelper.entryCount(webDriver));
-        assertEquals("Unexpected element found in table", "End Entity Edit",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[1]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "End Entity Add",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[2]/td[2]")).getText());
+        AuditLogHelper.assertEntries(webDriver, "End Entity Edit", "End Entity Add");
     }
 
     @Test
@@ -244,11 +235,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         } catch (NoSuchElementException e) {}
 
         // Check that the Audit Log still looks the same
-        assertEquals("Unexpected number of entries in the Audit Log", 2, AuditLogHelper.entryCount(webDriver));
-        assertEquals("Unexpected element found in table", "End Entity Edit",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[1]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "End Entity Add",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[2]/td[2]")).getText());
+        AuditLogHelper.assertEntries(webDriver, "End Entity Edit", "End Entity Add");
 
         // Clear all conditions, sort by Module and check that there are only Access Control rules listed
         auditLogHelper.clearConditions();
@@ -263,22 +250,15 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         auditLogHelper.openPage(getAdminWebUrl());
         // Sort by time and set 'Displaying results' and 'Entries per page'
         webDriver.findElement(By.xpath("(//input[@class='sortButton'])[2]")).click();
-        auditLogHelper.setViewFilteringCondition("Event", "Not equals", "Administrator Session Ended");
+        if (log.isDebugEnabled()) {
+            log.debug("Displayed entries after sorting, but before pagination: " + AuditLogHelper.getEntries(webDriver));
+        }
+        auditLogHelper.setViewFilteringCondition("Event", "Not equals", "Administrator Session Ended"); // this happens occasionally, how often depends on the setup
         auditLogHelper.setViewPaginationProperties(2, 5);
         auditLogHelper.reloadView();
 
         // Check that the Audit Log has the expected look
-        assertEquals("Unexpected number of entries in the Audit Log", 5, AuditLogHelper.entryCount(webDriver));
-        assertEquals("Unexpected element found in table", "End Entity Add",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[1]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "CRL Create",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[2]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "CRL Store",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[3]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "Certificate Store",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[4]/td[2]")).getText());
-        assertEquals("Unexpected element found in table", "CA Edit",
-                webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[5]/td[2]")).getText());
+        AuditLogHelper.assertEntries(webDriver, "End Entity Add", "CRL Create", "CRL Store", "Certificate Store", "CA Edit");
 
         // Click 'Download shown results', this will automatically download the XML file
         webDriver.findElement(By.xpath("//input[contains(@value, 'Download shown results') and not(contains(@value, 'CMS'))]")).click();
@@ -296,8 +276,8 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
             }
         });
         String results = new String(Files.readAllBytes(Paths.get(xmlFiles.get(0).getAbsolutePath())));
-        assertTrue("Results did not contain expected contents", results.contains("<string>" + TestData.ADD_EE_FIELDMAP.get("Username") + "</string>"));
-        assertTrue("Results did not contain expected contents", results.contains("&lt;string&gt;Added end entity " + TestData.ADD_EE_FIELDMAP.get("Username") + ".&lt;/string&gt;"));
+        assertTrue("Results did not contain expected contents", results.contains("<string>" + TestData.EE_NAME + "</string>"));
+        assertTrue("Results did not contain expected contents", results.contains("&lt;string&gt;Added end entity " + TestData.EE_NAME + ".&lt;/string&gt;"));
     }
 
     @Test
@@ -305,7 +285,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
         searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
         // Search for End Entity, make sure there is exactly 1 result
-        searchEndEntitiesHelper.fillSearchCriteria(TestData.ADD_EE_FIELDMAP.get("Username"), null, null, null);
+        searchEndEntitiesHelper.fillSearchCriteria(TestData.EE_NAME, null, null, null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.assertNumberOfSearchResults(1);
 
