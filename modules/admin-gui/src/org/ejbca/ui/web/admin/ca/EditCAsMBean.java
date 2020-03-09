@@ -1334,6 +1334,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (caInfoDto.getCaType()==CAInfo.CATYPE_X509) {
             final X509CAInfo x509caInfo = (X509CAInfo)cainfo;
             x509caInfo.setExternalCdp(crlCaCRLDPExternal.trim());
+            x509caInfo.setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses());
             return saveCaInternal(x509caInfo);
         }
         return "";
