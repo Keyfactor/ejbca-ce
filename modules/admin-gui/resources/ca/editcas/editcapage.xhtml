@@ -1230,10 +1230,7 @@
 						id="textfielddefaultcrlissuer" title="#{web.text.FORMAT_DN}"
 						value="#{editCAsMBean.caInfoDto.defaultCRLIssuer}"
 						rendered="#{not editCAsMBean.caExternal}"
-						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:validator validatorId="urlValidator"/>
-						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_CDP_DEFAULTCRLISSUER_ERROR}"/>
-					</h:inputText>
+						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:commandButton type="button"
 						action="#{editCAsMBean.genDefaultCrlIssuer}"
 						value="#{web.text.GENERATE}"
