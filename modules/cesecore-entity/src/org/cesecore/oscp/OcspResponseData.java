@@ -43,7 +43,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
 
     private ResponsePK responsePrimaryKey;
     private long producedAt;
-    private long nextUpdate;
+    private Long nextUpdate;
     private byte[] ocspResponse;
     private int rowVersion = 0;
     private String rowProtection;
