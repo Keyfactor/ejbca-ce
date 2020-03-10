@@ -63,5 +63,13 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         log.trace("<fetchOcspResponse");
         return ocspResponseData != null ? ocspResponseData.getOcspResponse() : null;
     }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void deleteOcspData(final ResponsePK key) {
+        log.trace(">deleteOcspResponse");
+        this.entityManager.remove(key);
+        log.trace("<deleteOcspResponse");
+    }
     
 }
