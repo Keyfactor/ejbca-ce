@@ -31,5 +31,6 @@ public interface OcspDataSessionLocal extends OcspDataSession {
     OcspResponseData fetchOcspData(final ResponsePK key);
     
     byte[] fetchOcspResponse(final ResponsePK key);
-
+    
+    void deleteOcspData(final ResponsePK key);
 }
