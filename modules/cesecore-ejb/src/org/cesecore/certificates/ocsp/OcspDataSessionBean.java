@@ -67,9 +67,9 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void deleteOcspData(final ResponsePK key) {
-        log.trace(">deleteOcspResponse");
+        log.trace(">deleteOcspData");
         this.entityManager.remove(key);
-        log.trace("<deleteOcspResponse");
+        log.trace("<deleteOcspData");
     }
     
 }
