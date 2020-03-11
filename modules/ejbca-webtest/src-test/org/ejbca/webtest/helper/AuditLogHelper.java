@@ -104,6 +104,10 @@ public class AuditLogHelper extends BaseHelper {
         configureFilteredView();
     }
 
+    /**
+     * Sets the "base" filtering for tests. Log entries from before the test are hidden, and the filtering and
+     * pagination is otherwise set to the default (hiding Access Control events, and showing the first 40 results)
+     */
     public void configureFilteredView() {
         // Set conditions
         clearConditions();
@@ -115,6 +119,9 @@ public class AuditLogHelper extends BaseHelper {
         reloadView();
     }
 
+    /**
+     * Clears all filtering condition.
+     */
     public void clearConditions() {
         clickLinkIfExists(Page.BUTTON_CLEAR_ALL_CONDITIONS);
     }
@@ -138,11 +145,11 @@ public class AuditLogHelper extends BaseHelper {
         // Set 'Value'
         final By valueElementReference = Page.getFilterValueElementByColumnName(columnName);
         // If text field, input the correct value
-        if(isInputElement(valueElementReference)) {
+        if (isInputElement(valueElementReference)) {
             fillInput(valueElementReference, columnValue);
         }
         // If drop-down, select the correct value
-        if(isSelectElement(valueElementReference)) {
+        if (isSelectElement(valueElementReference)) {
             selectOptionByName(valueElementReference, columnValue);
         }
         // Apply the condition
@@ -150,30 +157,39 @@ public class AuditLogHelper extends BaseHelper {
     }
 
     /**
-     * Sets the 'Displaying results' field.
-     * Sets the 'Entries per page' field.
+     * Sets the pagination fields.
+     * @param displayStartPositionNr The 'Displaying results' field, i.e. the index of the first result to show.
+     * @param nrOfResultsPerPage The 'Entries per page' field, i.e. total number of results to show at most.
      */
     public void setViewPaginationProperties(final int displayStartPositionNr, final int nrOfResultsPerPage) {
         fillInput(Page.INPUT_DISPLAY_START_POSITION, "" + displayStartPositionNr);
         fillInput(Page.INPUT_NR_OF_RESULTS_PER_PAGE, "" + nrOfResultsPerPage);
     }
 
+    /** Reloads the results. This will apply any changed filtering conditions. */
     public void reloadView() {
         clickLink(Page.BUTTON_RELOAD_VIEW);
     }
 
+    /**
+     * Asserts that a specific row is present in the results table. The row is searched for by the 'Event' column.
+     *
+     * @param eventText Event text to search for.
+     * @param outcomeText If not null, this is the expected outcome ("Success" or "Failure").
+     * @param certificateAuthorityText If not null, this is the expected name of Certification Authority.
+     * @param detailsList If not null or empty, these strings are expected to appear in the 'Details' column of the row.
+     */
     public void assertLogEntryByEventText(
             final String eventText,
             final String outcomeText,
             final String certificateAuthorityText,
-            final List<String> detailsList
-    ) {
+            final List<String> detailsList) {
 
         // Find the row which has the event parameter as its 'Event' value
         final WebElement eventRowWebElement = findElement(Page.getEventLogRowByEventText(eventText));
         assertNotNull("The event [" + eventText + "] was not found in the Audit Log", eventRowWebElement);
         // Assert expected value of 'Outcome' field
-        if(outcomeText != null) {
+        if (outcomeText != null) {
             final WebElement outcomeWebElement = findElement(eventRowWebElement, Page.EVENT_LOG_ROW.TEXT_OUTCOME);
             assertNotNull("Outcome field was not found.", outcomeWebElement);
             assertEquals("Unexpected outcome for event [" + eventText + "]", outcomeText, outcomeWebElement.getText());
