@@ -32,7 +32,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
- * Test to verify that Accumulative Approval Profiles work as expected.
+ * Web Test to verify that Accumulative Approval Profiles work as expected.
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-51>ECAQA-51</a>
  * 
