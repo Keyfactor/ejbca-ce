@@ -100,6 +100,12 @@ public class CaHelper extends BaseHelper {
          * CA Certificate Data / Validity(*y *mo *d *h *m *s) or end date of the certificate
          */
         static final By INPUT_VALIDITY = By.id("editcapage:textfieldvalidity");
+        
+        /**
+         * CA Subject Alternative Name
+         */
+        static final By INPUT_SAN = By.id("editcapage:textfieldsubjectaltname");
+        
         /**
          * CA Certificate Data / Subject DN
          */
@@ -333,6 +339,15 @@ public class CaHelper extends BaseHelper {
      */
     public void setValidity(final String validityString) {
         fillInput(Page.INPUT_VALIDITY, validityString);
+    }
+    
+    /**
+     * Sets the CA's SAN
+     * 
+     * @param subjectAlternativeName
+     */
+    public void setSubjectAlternativeName(final String subjectAlternativeName) {
+        fillInput(Page.INPUT_SAN, subjectAlternativeName);
     }
 
     /**
