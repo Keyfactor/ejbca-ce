@@ -88,7 +88,10 @@ public class CaHelper extends BaseHelper {
          * Approval Settings / Next CA key
          */
         static final By SELECT_APPROVALPROFILES = By.xpath("//select[contains(@name, ':approvalProfile')]");
-
+        /**
+         * Approval Settings / CA Service Activation
+         */
+        static final By SELECT_CA_SERVICE_ACTIVATION_APPROVAL_PROFILE = By.xpath("//select[contains(@name, ':approvalProfile')]//following::select[3]");
         /**
          * Select validator from Other Data list.
          *
@@ -376,7 +379,16 @@ public class CaHelper extends BaseHelper {
     public void setCrlOverlapTime(final String crlOverlapTime) {
         fillInput(Page.INPUT_CRLOVERLAPTIME, crlOverlapTime);
     }
-
+    
+    /**
+     * Sets approval profile for CA service activation
+     * 
+     * @param approvelProfile is the approval profile name
+     */
+    public void setCaServiceActivationApprovalProfile(final String approvalProfile) {
+        selectOptionByName(Page.SELECT_CA_SERVICE_ACTIVATION_APPROVAL_PROFILE, approvalProfile);
+    }
+    
     /**
      * Check 'Use CA Name Change' checkbox  is  shown on page.
      */
