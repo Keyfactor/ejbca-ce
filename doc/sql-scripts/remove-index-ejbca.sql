@@ -45,4 +45,3 @@ DROP INDEX acmeauthorizationdata_idx2 ON AcmeAuthorizationData;
 DROP INDEX acmechallengedata_idx1 ON AcmeChallengeData;
 
 DROP INDEX ocspresponsedata_idx1 ON OcspResponseData;
-DROP INDEX ocspresponsedata_idx2 ON OcspResponseData;
