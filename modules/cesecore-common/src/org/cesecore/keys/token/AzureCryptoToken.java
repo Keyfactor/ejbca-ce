@@ -172,7 +172,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private static void checkAliasName(final String alias) throws IllegalArgumentException {
         if (!aliasPattern.matcher(alias).matches()) {
-            throw new IllegalArgumentException("Key Vault only supports numbers, letters and hyphen in alias names");
+            throw new IllegalArgumentException("Key Vault only supports numbers, letters and hyphen in alias names. Invalid name: " + alias);
         }
     }
     
