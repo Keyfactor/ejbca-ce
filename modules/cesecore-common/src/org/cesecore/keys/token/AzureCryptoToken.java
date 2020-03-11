@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -162,6 +163,20 @@ public class AzureCryptoToken extends BaseCryptoToken {
         return "AzureKeyVaultProvider-" + id;
     }
     
+    // Pre-compile regexp pattern to make it more efficient
+    private static final Pattern aliasPattern = Pattern.compile("^[0-9a-zA-Z-]+$");
+    /** Checks that an alias name confirms to the Key Vault requirements, ^[0-9a-zA-Z-]+$
+     * 
+     * @param alias the alias name to check
+     * @throws IllegalArgumentException in case the alias does not match ^[0-9a-zA-Z-]+$
+     */
+    private static void checkAliasName(final String alias) throws IllegalArgumentException {
+        if (!aliasPattern.matcher(alias).matches()) {
+            throw new IllegalArgumentException("Key Vault only supports numbers, letter and hyphen in alias names");
+        }
+
+    }
+    
     @Override
     public void init(final Properties properties, final byte[] data, final int id) throws CryptoTokenOfflineException, NoSuchSlotException {
 
@@ -172,6 +187,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
         if (keyVaultName == null) {
             throw new NoSuchSlotException("No key vault Name defined for crypto token");
         }
+        // Check that key vault name does not have any bad characters, should follow the same regexp as aliases
+        checkAliasName(keyVaultName);
         clientID = properties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);
         log.info("Initializing Azure Key Vault: Type=" + properties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE) + 
                 ", Name=" + keyVaultName + ", clientID=" + clientID);
@@ -243,12 +260,31 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 } else {
                     aliasCache.flush();
                     status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
-                    throw new CryptoTokenOfflineException("Can not list keys, response code is " + response.getStatusLine().getStatusCode());                    
+                    String message = "No parseable JSON response";
+                    try {
+                        final JSONParser jsonParser = new JSONParser();
+                        final JSONObject parse = (JSONObject) jsonParser.parse(s);
+                        if (parse != null) {
+                            // Parse out the error message and skip the JSON code
+                            final JSONObject value = (JSONObject) parse.get("error");
+                            if (value != null) {
+                                message = (String) value.get("code");
+                                final String logmessage = (String) value.get("message");
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Error code when listing aliases: " + response.getStatusLine().getStatusCode() + ", error message: " + logmessage);
+                                }
+                            }
+                        }
+                    } catch (ParseException | ClassCastException e) {
+                        // NOPMD: Ignore, message is above
+                    }
+
+                    throw new CryptoTokenOfflineException("Can not list keys, response code is " + response.getStatusLine().getStatusCode() + ", message: " + message);                    
                 }
             } catch (IOException | ParseException | CryptoTokenAuthenticationFailedException e) {
                 aliasCache.flush();
                 status = STATUS_OFFLINE; // make sure the crypto token is off-line for getTokenStatus
-                throw new CryptoTokenOfflineException(e);
+                throw new CryptoTokenOfflineException("Exception listing keys:", e);
             }
             status = STATUS_ACTIVE; // make sure the crypto token is on-line for getTokenStatus
             return new ArrayList<>(aliasCache.getAllNames());
@@ -410,6 +446,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException,
             CertificateException, IOException, CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
+            checkAliasName(alias);
             final Map<String, Integer> nameToId = aliasCache.getNameToIdMap();
             final Integer id = nameToId.get(alias);
             if (id == null) {
@@ -459,6 +496,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             log.debug(">generateKeyPair(keyspec): " + keySpec + ", " + alias);
         }
         if (StringUtils.isNotEmpty(alias)) {
+            checkAliasName(alias);
             // validate that keySpec matches some of the allowed Azure Key Vault key types/lengths.
             // Allow kty RSA-HSM or EC-HSM. RSA key_size or "crv" (P-256, P-384, P-521), 
             // {"kty": "RSA-HSM", "key-size": 2048, "attributes": {"enabled": true}}
@@ -609,6 +647,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
     @Override
     public PublicKey getPublicKey(String alias) throws CryptoTokenOfflineException {
         PublicKey publicKey = null;
+        if (StringUtils.isEmpty(alias)) {
+            return null;
+        }
+        checkAliasName(alias);
         if (aliasCache.shouldCheckForUpdates(alias.hashCode()) || aliasCache.getEntry(alias.hashCode()).equals(AzureCryptoToken.getDummyCacheKey()) ) {
             if (log.isDebugEnabled()) {
                 log.debug("Looking for public key with alias " + alias + ", and cache is expired or filled with dummyCacheKey. Will try to read it from Key Vault.");
