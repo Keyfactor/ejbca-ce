@@ -77,7 +77,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
             ADD_EE_FIELDMAP.put("CN, Common name", "testauditlog");
         }
     }
-    private static final String deleteAlert = "Are you sure you want to delete the CA " + TestData.CA_NAME + "? You should revoke the CA instead if you already have used it to issue certificates.";
+    private static final String DELETE_ALERT = "Are you sure you want to delete the CA " + TestData.CA_NAME + "? You should revoke the CA instead if you already have used it to issue certificates.";
 
     @BeforeClass
     public static void init() {
@@ -118,7 +118,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
         // Select the CA, click 'Delete CA' and then 'Cancel'
-        caHelper.deleteCaAndAssert(deleteAlert, false, false, null, TestData.CA_NAME);
+        caHelper.deleteCaAndAssert(DELETE_ALERT, false, false, null, TestData.CA_NAME);
     }
 
    @Test
@@ -211,7 +211,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     }
 
     @Test
-    public void stepE_eeEvents() {
+    public void stepE_sortEndEntityEvents() {
         // Add condition and check that the correct entries are displayed
         auditLogHelper.setViewFilteringCondition("Username", "Equals", TestData.EE_NAME);
         AuditLogHelper.assertEntries(webDriver, "End Entity Edit", "End Entity Add");
