@@ -16,7 +16,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 /**
- * Helper class for EJBCA Web Tests using CA Activation functions.
+ * Helper class for EJBCA Web Tests using the CA Activation functions.
  * @version $Id$
  */
 
