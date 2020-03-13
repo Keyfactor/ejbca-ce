@@ -59,6 +59,8 @@ public class EcaQa116_CACreationValidityCheck extends WebTestBase {
         caHelper.setValidity(TestData.CA_VALIDITY_BAD_FORMAT);
         caHelper.createCa();
         caHelper.assertHasErrorMessage(TestData.INVALID_SAN_ERROR);
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.assertNotExists(TestData.CA_NAME);        
     }
     
     @Test
@@ -68,6 +70,8 @@ public class EcaQa116_CACreationValidityCheck extends WebTestBase {
         caHelper.setValidity(TestData.CA_VALIDITY_EMPTY);
         caHelper.createCa();
         caHelper.assertHasErrorMessage(TestData.EMPTY_SAN_ERROR);
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.assertNotExists(TestData.CA_NAME);        
     }
     
     @Test
