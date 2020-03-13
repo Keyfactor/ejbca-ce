@@ -54,6 +54,8 @@ public class EcaQa113_CACreationSANFieldValidationCheck extends WebTestBase {
         caHelper.setSubjectAlternativeName(TestData.INVALID_SAN);
         caHelper.createCa();
         caHelper.assertHasErrorMessage(TestData.INVALID_SAN_ERROR);
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.assertNotExists(TestData.CA_NAME);
     }
     
     @Test
@@ -64,6 +66,8 @@ public class EcaQa113_CACreationSANFieldValidationCheck extends WebTestBase {
         caHelper.setSubjectAlternativeName(TestData.INVALID_SAN_SPACE);
         caHelper.createCa();
         caHelper.assertHasErrorMessage(TestData.INVALID_SAN_ERROR);
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.assertNotExists(TestData.CA_NAME);
     }
     
     @Test
