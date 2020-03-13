@@ -20,6 +20,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -413,12 +414,24 @@ public class CaHelper extends BaseHelper {
     /**
      * Checks that a given CA exists in 'List of Certificate Authorities'.
      *
-     * @param caName the name of the Certificate Profile
+     * @param caName the name of the Certificate Authority
      */
     public void assertExists(final String caName) {
         final List<String> selectNames = getSelectNames(Page.SELECT_CA);
         assertNotNull(caName + " was not found in the List of Certificate Authorities", selectNames);
         assertTrue(caName + " was not found in the List of Certificate Authorities", selectNames.contains(caName + ", (Active)"));
+    }
+
+    /**
+     * Checks that a given CA does not exists in 'List of Certificate Authorities'.
+     * 
+     * @param caName the name of the Certificate Authority
+     */
+    public void assertNotExists(final String caName) {
+        final List<String> selectNames = getSelectNames(Page.SELECT_CA);
+        if (selectNames != null) {
+            assertFalse(caName + " was found in the List of Certificate Authorities", selectNames.contains(caName + ", (Active)"));
+        }
     }
 
     /**
