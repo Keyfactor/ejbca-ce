@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
@@ -61,6 +62,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String SLOT_REFERENCE_KEY = "--slotlabel";
     private static final String PKCS11_ATTR_FILE_KEY = "--attr";
     private static final String PKCS11_SLOTCOLLIDE_IGNORE= "--forceusedslots";
+    private static final String AWSKMS_ACCESSKEYID= "--awskmsaccesskeyid";
+    private static final String AWSKMS_REGION= "--awskmsregion";
 
     {
         registerParameter(new Parameter(CRYPTOTOKEN_NAME_KEY, "Token Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -86,6 +89,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         registerParameter(new Parameter(PKCS11_ATTR_FILE_KEY, "Attribute File", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 Attribute File"));
         registerParameter(new Parameter(PKCS11_SLOTCOLLIDE_IGNORE, "Ignore used P11 slots", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Ignore warnings, and confirm yes, for P11 slots that are already used."));
+        registerParameter(new Parameter(AWSKMS_ACCESSKEYID, "Access Key ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "Access Key ID for AWS KMS, example AKIA2I6NL4C3YGQJ6YY3"));
+        registerParameter(new Parameter(AWSKMS_REGION, "Region", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "AWS KMS region, example us-east-1."));
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
@@ -106,6 +111,11 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             final Class<?> jackJni11Class = Class.forName(CryptoTokenFactory.JACKNJI_NAME);
             sb.append(", ");
             sb.append(jackJni11Class.getSimpleName());
+        } catch (ClassNotFoundException e) { /* Ignored */ }
+        try {
+            final Class<?> awsKmsClass = Class.forName(CryptoTokenFactory.AWSKMS_NAME);
+            sb.append(", ");
+            sb.append(awsKmsClass.getSimpleName());
         } catch (ClassNotFoundException e) { /* Ignored */ }
         return sb.toString();
     }
@@ -131,6 +141,10 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY,
                     Boolean.toString(Boolean.valueOf(parameters.get(PRIVATE_KEY_EXPORT_KEY))));
             cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
+        } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(type)) {
+            className = CryptoTokenFactory.AWSKMS_NAME;
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
         } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
             if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
                 className = PKCS11CryptoToken.class.getName();

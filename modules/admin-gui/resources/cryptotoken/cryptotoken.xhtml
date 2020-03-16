@@ -261,6 +261,41 @@
 						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
 				</h:panelGroup>
 
+                <h:panelGroup id="currentCryptoTokenAWSKMSRegionPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <h:outputText id="currentCryptoTokenAWSKMSRegionLabel"
+                        for="currentCryptoTokenAWSKMSRegion"
+                        value="#{web.text.CRYPTOTOKEN_AWSKMS_REGION} " />
+                    <h:outputText id="currentCryptoTokenAWSKMSRegion" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <h:inputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+                <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <h:outputLabel id="currentCryptoTokenAWSKMSAccessKeyIDLabel"
+                        for="currentCryptoTokenAWSKMSAccessKeyID"
+                        value="#{web.text.CRYPTOTOKEN_AWSKMS_ACCESSKEYID} " />
+                    <h:outputText id="currentCryptoTokenAWSKMSAccessKeyID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <h:inputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+
                 <h:panelGroup id="currentCryptoTokenKeyVaultTypePanelGroup"
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
                     <h:outputLabel id="currentCryptoTokenKeyVaultTypeLabel"

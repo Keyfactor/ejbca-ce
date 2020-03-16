@@ -289,6 +289,11 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("keyvault.cryptotoken.enabled"));
     }
 
+    /** @return true if we have AWS KMS Crypto Token enabled in the Admin GUI. */
+    public static boolean isAWSKMSEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("awskms.cryptotoken.enabled"));
+    }
+
     public static String getStatedumpTemplatesBasedir() {
         return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
     }

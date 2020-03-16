@@ -293,3 +293,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Enable usage of Azure Key Vault Crypto Token in the Admin UI
 # Default: false (not enabled)
 #keyvault.cryptotoken.enabled=true
+
+#
+# Enable usage of AWS KMS Crypto Token in the Admin UI
+# Default: false (not enabled)
+#awskms.cryptotoken.enabled=true

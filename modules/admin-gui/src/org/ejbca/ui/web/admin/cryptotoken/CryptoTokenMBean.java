@@ -56,6 +56,7 @@ import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
@@ -207,6 +208,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isAzureType() {
             return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType());
         }
+        public boolean isAWSKMSType() {
+            return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
+        }
+
     }
 
     /**
@@ -232,6 +237,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultType = "premium";
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
+        private String awsKMSRegion = "us-east-1"; // default value
+        private String awsKMSAccessKeyID = ""; // default value
 
         private CurrentCryptoTokenGuiInfo() {
         }
@@ -332,6 +339,23 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             this.keyVaultClientID = keyVaultClientID;
         }
 
+        public String getAWSKMSRegion() {
+            return awsKMSRegion;
+        }
+
+        public void setAWSKMSRegion(String awsKMSRegion) {
+            this.awsKMSRegion = awsKMSRegion;
+        }
+
+        public void setAWSKMSAccessKeyID(String awsKMSAccessKeyID) {
+            this.awsKMSAccessKeyID = awsKMSAccessKeyID;
+        }
+
+        public String getAWSKMSAccessKeyID() {
+            return awsKMSAccessKeyID;
+        }
+
+
         public boolean isActive() {
             return active;
         }
@@ -411,6 +435,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public boolean isShowAzureCryptoToken() {
             return AzureCryptoToken.class.getSimpleName().equals(getType());
+        }
+
+        public boolean isShowAWSKMSCryptoToken() {
+            return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getType());
         }
 
         public boolean isSlotOfTokenLabelType() {
@@ -739,12 +767,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
                             ") by administrator " + authenticationToken.toString() + " failed. Device was unavailable.";
                     super.addNonTranslatedErrorMessage(msg);
-                    log.info(msg);
+                    log.info(msg + " Base message: " + e.getMessage());
                 } catch (CryptoTokenAuthenticationFailedException e) {
                     final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
                             ") by administrator " + authenticationToken.toString() + " failed. Authentication code was not correct.";
                     super.addNonTranslatedErrorMessage(msg);
-                    log.info(msg);
+                    log.info(msg + " Base message: " + e.getMessage());
                 }
                 flushCaches();
             }
@@ -892,7 +920,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             } else if (SoftCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = SoftCryptoToken.class.getName();
                 properties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
-            } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) { // TODO see note above to avoid this conditional.
+            } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = AzureCryptoToken.class.getName();
                 String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
                 String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
@@ -900,6 +928,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, vaultType);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
+            } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
+                className = CryptoTokenFactory.AWSKMS_NAME;
+                String region = getCurrentCryptoToken().getAWSKMSRegion().trim();
+                String keyid = getCurrentCryptoToken().getAWSKMSAccessKeyID().trim();
+                properties.setProperty(CryptoTokenConstants.AWSKMS_REGION, region);
+                properties.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, keyid);
             }
             if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                 properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
@@ -1086,10 +1120,19 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             }
             if (availableCryptoToken.getClassPath().equals(AzureCryptoToken.class.getName())) {
-                // Special case: Never expose the AzureCryptoToken when creating new tokens if it is not enabled in web.properties
+                // Never expose the AzureCryptoToken when creating new tokens if it is not enabled in web.properties
                 if (!WebConfiguration.isAzureKeyVaultEnabled()) {
                     if (log.isDebugEnabled()) {
                         log.debug("Azure Key Vault Crypto Token support is not enabled in GUI. See web.properties for enabling Azure Key Vault.");
+                    }
+                    continue;
+                }
+            }
+            if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.AWSKMS_NAME)) {
+                // Never expose the AWSKMSCryptoToken when creating new tokens if it is not enabled in web.properties
+                if (!WebConfiguration.isAWSKMSEnabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("AWS KMS Crypto Token support is not enabled in GUI. See web.properties for enabling AWS KMS.");
                     }
                     continue;
                 }
@@ -1172,6 +1215,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setKeyVaultType(cryptoTokenInfo.getKeyVaultType());
                     currentCryptoToken.setKeyVaultName(cryptoTokenInfo.getKeyVaultName());
                     currentCryptoToken.setKeyVaultClientID(cryptoTokenInfo.getKeyVaultClientID());
+                }
+                if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
+                    currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
+                    currentCryptoToken.setAWSKMSAccessKeyID(cryptoTokenInfo.getAWSKMSAccessKeyID());
                 }
                 currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                 currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(cryptoTokenId));
@@ -1368,7 +1415,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         try {
             cryptoTokenManagementSession.createKeyPair(getAdmin(), getCurrentCryptoTokenId(), getNewKeyPairAlias(), keyGenParamsBuilder.build());
         } catch (CryptoTokenOfflineException e) {
-            final String msg = "Token is offline. Keypair cannot be generated.";
+            final String msg = "Token is offline. Keypair cannot be generated. " + e.getMessage();
             log.debug(msg, e);
             addNonTranslatedErrorMessage(msg);
         } catch (Exception e) {

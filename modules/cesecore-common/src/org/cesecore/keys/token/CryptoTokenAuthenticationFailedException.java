@@ -40,4 +40,14 @@ public class CryptoTokenAuthenticationFailedException extends CesecoreException 
     public CryptoTokenAuthenticationFailedException(String msg) {
         super(msg);
     }
+
+    /**
+     * Constructs an instance of <code>CryptoTokenAuthenticationFailedException</code> with the specified detail message and exception cause.
+     * @param msg the detail message.
+     * @param cause exception to be embedded.
+     */
+    public CryptoTokenAuthenticationFailedException(String msg, final Throwable cause) {
+        super(msg, cause);
+    }
+
 }

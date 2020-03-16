@@ -110,6 +110,12 @@ public class CryptoTokenInfo implements Named, Serializable {
     public String getKeyVaultClientID() {
         return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);        
     }
+    public String getAWSKMSRegion() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_REGION);        
+    }
+    public String getAWSKMSAccessKeyID() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID);
+    }
     public Properties getCryptoTokenProperties() {
         return cryptoTokenProperties;
     }
