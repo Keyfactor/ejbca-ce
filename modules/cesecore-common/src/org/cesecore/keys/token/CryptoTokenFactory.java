@@ -37,6 +37,8 @@ public class CryptoTokenFactory {
     public static final String JACKNJI_NAME = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
     public static final String PRIME_CA_TOKEN_SIMPLE_NAME = "PrimeCAToken";
     public static final String PRIME_CA_TOKEN_NAME = "se.primeKey.caToken.card.PrimeCAToken";
+    public static final String AWSKMS_SIMPLE_NAME = "AWSKMSCryptoToken";
+    public static final String AWSKMS_NAME = "org.ejbca.keys.token.AWSKMSCryptoToken";
 
     /** Registry of available hard ca token classes that can be instantiated. */
     private Map<String, AvailableCryptoToken> availabletokens = new HashMap<>(4);
@@ -57,6 +59,8 @@ public class CryptoTokenFactory {
             instance.addAvailableCryptoToken(AzureCryptoToken.class.getName(), "Azure Key Vault", false, true);
             instance.addAvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
             instance.addAvailableCryptoToken(NullCryptoToken.class.getName(), "Null", false, false);
+            // Enterprise only. May not be available don't reference class.
+            instance.addAvailableCryptoToken(AWSKMS_NAME, "AWS KMS", false, true);
             // Enterprise only. May not be available don't reference class.
             instance.addAvailableCryptoToken(JACKNJI_NAME, "PKCS#11 CP5", false, true); 
         }

@@ -74,8 +74,10 @@
 						rendered="#{cryptoTokenGuiInfo.p11SlotType}" />
                     <h:outputText value="#{web.text.CRYPTOTOKEN_TYPE_AZURE}"
                         rendered="#{cryptoTokenGuiInfo.azureType}" />
+                    <h:outputText value="#{web.text.CRYPTOTOKEN_TYPE_AWSKMS}"
+                        rendered="#{cryptoTokenGuiInfo.AWSKMSType}" />
 					<h:outputText value="#{web.text.CRYPTOTOKEN_TYPE_SOFT}"
-						rendered="#{!cryptoTokenGuiInfo.p11SlotType &amp;&amp; !cryptoTokenGuiInfo.azureType }" />
+						rendered="#{!cryptoTokenGuiInfo.p11SlotType &amp;&amp; !cryptoTokenGuiInfo.azureType &amp;&amp; !cryptoTokenGuiInfo.AWSKMSType}" />
 				</h:column>
 				<h:column>
 					<f:facet name="header">
