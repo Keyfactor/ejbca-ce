@@ -207,7 +207,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.debug("Found blacklist with " + list.size() + " items.");
         }
         for (BlacklistData data : list) {
-            // TODO: this could populate the cache, and read form the cache
+            // TODO: this could populate the cache, and read from the cache
             result.put(data.getId(), data.getValue());
         }
         return result;
