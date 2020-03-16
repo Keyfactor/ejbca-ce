@@ -32,6 +32,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.OcspResponseUpdaterType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
@@ -88,6 +89,7 @@ public class ServiceTypeManager implements Serializable {
 		ServiceTypeManager.registerServiceType(new RolloverWorkerType());
 		ServiceTypeManager.registerServiceType(new PublishQueueWorkerType());
 		ServiceTypeManager.registerServiceType(new HsmKeepAliveWorkerType());
+		ServiceTypeManager.registerServiceType(new OcspResponseUpdaterType());
 	}
 
 	@SuppressWarnings("unchecked")

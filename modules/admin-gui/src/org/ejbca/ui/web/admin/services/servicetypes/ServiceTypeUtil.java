@@ -34,5 +34,6 @@ public final class ServiceTypeUtil {
     public static final String CRLUPDATEWORKER_SUB_PAGE = "crlupdateworker.xhtml";
     public static final String CRLDOWNLOADWORKER_SUB_PAGE = "crldownloadworker.xhtml";
     public static final String CERTNOTIFICATIONWORKER_SUB_PAGE = "certnotificationworker.xhtml";
+    public static final String OCSPRESPONSEUPDATEWORKER_SUB_PAGE = "ocspresponseworker.xhtml";
 
 }
