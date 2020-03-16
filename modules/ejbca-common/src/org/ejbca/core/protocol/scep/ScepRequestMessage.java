@@ -53,6 +53,7 @@ import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.cms.SignedData;
 import org.bouncycastle.asn1.cms.SignerInfo;
 import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
@@ -74,6 +75,9 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.ScepConfiguration;
+import org.ejbca.core.model.ra.UsernameGenerator;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 
 /**
@@ -880,6 +884,25 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         } else if (!transactionId.equals(other.transactionId))
             return false;
         return true;
+    }
+    
+    /**
+     * Utility method for divining the generated username when using SCEP in RA mode based on the given configuration.
+     * 
+     * @param scepConfiguration the SCEP configuration
+     * @param configAlias the SCEP alias
+     * @param dnname the DN name in the request
+     * @return the generated username
+     */
+    public String generateUsername(final ScepConfiguration scepConfiguration, final String configAlias) {
+        final X500Name dnname = new X500Name(getRequestDN());
+        UsernameGeneratorParams usernameGenParams = new UsernameGeneratorParams();
+        usernameGenParams.setMode(scepConfiguration.getRANameGenerationScheme(configAlias));
+        usernameGenParams.setDNGeneratorComponent(scepConfiguration.getRANameGenerationParameters(configAlias));
+        usernameGenParams.setPrefix(scepConfiguration.getRANameGenerationPrefix(configAlias));
+        usernameGenParams.setPostfix(scepConfiguration.getRANameGenerationPostfix(configAlias));
+        final UsernameGenerator gen = UsernameGenerator.getInstance(usernameGenParams);
+        return gen.generateUsername(dnname.toString());
     }
         
 } 

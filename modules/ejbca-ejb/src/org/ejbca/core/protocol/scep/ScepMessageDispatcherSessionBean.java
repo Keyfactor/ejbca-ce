@@ -39,7 +39,6 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -418,7 +417,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
                 reqmsg.setKeyInfo(cacert, cryptoToken.getPrivateKey(keyAlias), cryptoToken.getSignProviderName());
                 //Retrieve the original request and transaction ID based on the username 
-                final String username = ScepRaModeExtension.generateUsername(scepConfig, alias, new X500Name(reqmsg.getRequestDN()));
+                final String username = reqmsg.generateUsername(scepConfig, alias);
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(scepConfig.getRACertProfile(alias));
                 final String approvalProfileName = approvalProfileSession
                         .getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, ca.getCAInfo(), certificateProfile).getProfileName();
