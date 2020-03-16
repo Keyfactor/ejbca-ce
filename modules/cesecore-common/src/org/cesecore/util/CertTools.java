@@ -4573,11 +4573,11 @@ public abstract class CertTools {
     }
     
     /**
-     * Creates a public key fingerprint with the given digest algorithm. 
+     * Creates a public key fingerprint with the given digest algorithm and returns it hex encoded. 
      * 
      * @param publicKey the public key.
      * @param algorithm the digest algorithm (i.e. MD-5, SHA-1, SHA-256, etc.)
-     * @return the public key fingerprint or null.
+     * @return the public key fingerprint, hex encoded, or null.
      */
     public static final String createPublicKeyFingerprint(final PublicKey publicKey, final String algorithm) {
         try {
