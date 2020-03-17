@@ -14,10 +14,11 @@
 package org.ejbca.core.model.validation;
 
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -26,8 +27,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.ValidationException;
@@ -85,6 +86,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     /**
      * Initializes uninitialized data fields.
      */
+    @Override
     public void init() {
         super.init();
         if (data.get(KEY_ALGORITHMS) == null) {
@@ -152,6 +154,17 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
 
     @Override
     public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidationException {
+        final List<String> messages = new ArrayList<String>();
+        messages.addAll(validateWithFingerprint(publicKey, PublicKeyBlacklistEntry.createFingerprint(publicKey), certificateProfile));
+        if (publicKey instanceof RSAPublicKey) {
+            messages.addAll(validateWithFingerprint(publicKey, PublicKeyBlacklistEntry.createDebianFingerprint((RSAPublicKey) publicKey),
+                    certificateProfile));
+        }
+        return messages;
+    }
+
+    public List<String> validateWithFingerprint(final PublicKey publicKey, final String fingerprint, final CertificateProfile certificateProfile)
+            throws ValidationException {
         List<String> messages = new ArrayList<String>();
         final int keyLength = KeyTools.getKeyLength(publicKey);
         final String keyAlgorithm = publicKey.getAlgorithm(); // AlgorithmTools.getKeyAlgorithm(publicKey);
@@ -159,8 +172,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
             log.debug("Validating public key with algorithm " + keyAlgorithm + ", length " + keyLength + ", format " + publicKey.getFormat()
                     + ", implementation " + publicKey.getClass().getName() + " against public key blacklist.");
         }
-        // Use the entry class to create a correct fingerprint
-        final String fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
         log.info("Matching public key with blacklist fingerprint " + fingerprint + " with public key blacklist.");
         if (!useOnlyCache) {
             // A bit hackish, make a call to blacklist session to ensure that blacklist cache has this entry loaded

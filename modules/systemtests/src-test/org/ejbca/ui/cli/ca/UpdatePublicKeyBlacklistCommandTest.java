@@ -47,8 +47,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
+ * <p>Run these tests with:
+ * 
+ * <pre>ant test:runone -Dtest.runone=UpdatePublicKeyBlacklistCommandTest</pre>.
+ * 
  * @version $Id$
- *
  */
 public class UpdatePublicKeyBlacklistCommandTest {
 
@@ -59,6 +62,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
     private static File emptyFolder;
     private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "resources/publickey/rsa2048.pub.pem";
     private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "resources/publickeyfingerprint/public_key_fingerprints_add_remove_test.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "resources/publickeyfingerprint/public_key_debian_fingerprints_add_remove_test.txt";
 
     /** Always allow authentication token. */
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
@@ -190,8 +194,9 @@ public class UpdatePublicKeyBlacklistCommandTest {
         log.info("Using directory (fingerprints): " + dir.getAbsolutePath());
 
         // A-1: Insert public key blacklist entries that does not exist, including invalid files (wrong format, unknown key).
-        String[] args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
-                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPINT,
+        String[] args = new String[] { 
+                UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
+                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPRINT,
                 UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         CommandResult result = command.execute(args);
         Assert.assertTrue("Add lists of fingerprints which do not exists must exit with success: " + result,
@@ -224,7 +229,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
 
         // A-2: Remove again.
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_REMOVE,
-                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPINT,
+                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPRINT,
                 UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         result = command.execute(args);
         Assert.assertTrue("Remove lists of fingerprints which do exist must exit with success: " + result,
@@ -239,7 +244,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
         final int countEntries = blacklistSession.getBlacklistEntryIdToValueMap().size();
         log.info("Using directory (empty folder): " + emptyFolder.getAbsolutePath());
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
-                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPINT,
+                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPRINT,
                 UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, emptyFolder.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         result = command.execute(args);
         Assert.assertTrue("Add empty dir for lists of fingerprints must exit with success: " + result,
@@ -247,6 +252,44 @@ public class UpdatePublicKeyBlacklistCommandTest {
         // Verify that nothing was imported ~
         Assert.assertEquals("After importing an empty folder, the number of blacklist entries must still be the same.",
                 countEntries, blacklistSession.getBlacklistEntryIdToValueMap().size());
+
+        log.trace("<test02AddAndRemoveCommandModeByFingerprint()");
+    }
+
+    @Test
+    public void test02AddAndRemoveCommandModeByDebianFingerprint() throws IOException {
+        log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
+
+        final URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
+        if (null == url) {
+            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
+        }
+        final File dir = new File(url.getPath()).getParentFile();
+        log.info("Using directory of Debian fingerprints: " + dir.getAbsolutePath());
+
+        // Add
+        String[] args = new String[] {
+                UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
+                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_DEBIAN_FINGERPRINT,
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), 
+                UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+        CommandResult result = command.execute(args);
+        Assert.assertTrue("Add lists of fingerprints which do not not exist must exit with success: " + result,
+                result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
+        final BlacklistEntry addedEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "0504bb261ca99c3d392e");
+        assertTrue("Debian weak key 2048/i386/rnd/pid17691 should have been added to the blacklist.", null != addedEntry);
+
+        // Remove
+        args = new String[] { 
+                UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_REMOVE,
+                UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_DEBIAN_FINGERPRINT,
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), 
+                UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+        result = command.execute(args);
+        Assert.assertTrue("Remove lists of Debian fingerprints which do exist must exit with success: " + result,
+                result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
+        final BlacklistEntry removedEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "0504bb261ca99c3d392e");
+        assertTrue("Debian weak key 2048/i386/rnd/pid17691 should have been removed from the blacklist.", null == removedEntry);
 
         log.trace("<test02AddAndRemoveCommandModeByFingerprint()");
     }

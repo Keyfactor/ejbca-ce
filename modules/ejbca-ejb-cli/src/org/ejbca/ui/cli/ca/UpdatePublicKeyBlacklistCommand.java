@@ -16,16 +16,12 @@ package org.ejbca.ui.cli.ca;
 import java.io.File;
 import java.io.FileReader;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -47,12 +43,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  * @version $Id$
  */
 public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
-
-    /** Class logger. */
     private static final Logger log = Logger.getLogger(UpdatePublicKeyBlacklistCommand.class);
 
     public static final String COMMAND_KEY = "--command";
-    public static final String KEY_SPECIFICATIONS_KEY = "--keyspecs";
     public static final String KEY_GENERATION_SOURCES_KEY = "--sources";
     public static final String DIRECTORY_KEY = "--dir";
     public static final String UPDATE_MODE_KEY = "--mode";
@@ -60,21 +53,26 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
     public static final String COMMAND_ADD = "add";
     public static final String COMMAND_REMOVE = "remove";
-    public static final String UPDATE_MODE_FINGERPINT = "fingerprint";
+    public static final String UPDATE_MODE_FINGERPRINT = "fingerprint";
+    public static final String UPDATE_MODE_DEBIAN_FINGERPRINT = "debianfingerprint";
     public static final String CSV_SEPARATOR = ",";
 
     {
         registerParameter(new Parameter(COMMAND_KEY, "Command to execute", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Command to execute. Use " + COMMAND_ADD + " or " + COMMAND_REMOVE + "."));
         registerParameter(new Parameter(UPDATE_MODE_KEY, "Update mode", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Set to fingerprint if the files in --dir shall be treated as CSV files, containing on public key fingerprint per line with "
-                        + PublicKeyBlacklistEntry.DIGEST_ALGORITHM
-                        + " hash and optional additional information (key specification or key generation sources separated by comma: I.e.: fingerprint,keyspec,keygensource"));
-        registerParameter(new Parameter(KEY_SPECIFICATIONS_KEY, "Key specifications", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
-                ParameterMode.ARGUMENT,
-                "Comma separated list of key specifications. Use <Algorithm><Length>, i.e RSA2048,ECDSA256 or all if missing. If --mode fingerprint is chosen, the first value is set as default value when running with --command add. If running with --command remove, only blacklist entries with that key specification are removed."));
+                "Specifies the format of blacklist data. Possible values are" + System.lineSeparator() +
+                "    fingerprint       - If the input files shall be treated as CSV" + System.lineSeparator() +
+                "                        files, where the first column contains" + System.lineSeparator() +
+                "                        a SHA-256 hash of the DER encoded public" + System.lineSeparator() + 
+                "                        key modulus." + System.lineSeparator() +
+                "    debianfingerprint - If the input files shall be treated as a" + System.lineSeparator() +
+                "                        Debian weak key blacklists, where each line" + System.lineSeparator() +
+                "                        is the fingerprint of a weak Debian key." + System.lineSeparator() +
+                "                        See https://wiki.debian.org/SSLkeys" + System.lineSeparator() +
+                "If not specified, the input files are treated as PEM-encoded public keys."));
         registerParameter(new Parameter(DIRECTORY_KEY, "Public key directory", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Directory with public key files or CSV files containing public key fingerprints and additional information."));
+                "Directory with blacklist data."));
         registerParameter(Parameter.createFlag(RESUME_ON_ERROR_KEY,
                 "Set if the command should resume in case of errors, or stop on first one. Default is stop."));
     }
@@ -90,7 +88,6 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         return "updatepublickeyblacklist";
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         log.trace(">execute()");
@@ -99,15 +96,10 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
         try {
             final String command = parameters.get(COMMAND_KEY);
-            final String keySpecificationsString = parameters.get(KEY_SPECIFICATIONS_KEY);
             final String importDirString = parameters.get(DIRECTORY_KEY);
-            final boolean byFingerprint = UPDATE_MODE_FINGERPINT.equals(parameters.get(UPDATE_MODE_KEY));
+            final boolean byFingerprint = UPDATE_MODE_FINGERPRINT.equals(parameters.get(UPDATE_MODE_KEY));
+            final boolean byDebianFingerprint = UPDATE_MODE_DEBIAN_FINGERPRINT.equals(parameters.get(UPDATE_MODE_KEY));
             final boolean resumeOnError = parameters.containsKey(RESUME_ON_ERROR_KEY);
-
-            List<String> keySpecifications = new ArrayList<String>(); // Allows any
-            if (StringUtils.isNotBlank(keySpecificationsString)) {
-                keySpecifications = Arrays.asList(keySpecificationsString.split(CSV_SEPARATOR));
-            }
 
             // Get all files in the directory to add/remove to/from public key blacklist. 
             final File importDir = new File(importDirString);
@@ -133,26 +125,16 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             List<String> lines;
             PublicKey publicKey;
             String fingerprint;
-            String keySpecification;
             byte[] asn1Encodedbytes;
 
             for (final File file : files) {
                 state = STATUS_GENERALIMPORTERROR;
                 try {
-                    keySpecification = null;
                     path = file.getAbsolutePath();
                     log.debug("Read file " + path);
 
                     if (COMMAND_ADD.equals(command)) {
-                        if (!byFingerprint) {
-                            log.info("Read public key file " + path);
-                            asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(path));
-                            if (null == (publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes))) {
-                                state = STATUS_READ_ERROR;
-                            } else {
-                                state = addPublicKeyToBlacklist(publicKey);
-                            }
-                        } else {
+                        if (byFingerprint) {
                             log.info("Read public key fingerprints file " + path);
                             reader = new FileReader(file);
                             lines = IOUtils.readLines(reader);
@@ -162,31 +144,40 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                 tokens = line.split(CSV_SEPARATOR);
                                 if (tokens.length > 0) {
                                     fingerprint = tokens[0];
-                                    keySpecification = null;
-                                    if (CollectionUtils.isNotEmpty(keySpecifications)) {
-                                        keySpecification = keySpecifications.get(0);
-                                    }
-                                    if (tokens.length > 1) {
-                                        keySpecification = tokens[1];
-                                    }
-                                    state = addPublicKeyFingerprintToBlacklist(fingerprint, keySpecification);
+                                    state = addPublicKeyFingerprintToBlacklist(fingerprint);
                                     if (STATUS_OK != state) {
                                         log.info("Update public key blacklist failed on fingerprint: " + fingerprint); 
                                         break;
                                     }
                                 }
                             }
-                        }
-                    } else if (COMMAND_REMOVE.equals(command)) {
-                        if (!byFingerprint) {
-                            log.info("Remove public key by file " + path);
+                        } else if (byDebianFingerprint) {
+                            log.info("Read Debian public key fingerprints file " + path);
+                            reader = new FileReader(file);
+                            lines = IOUtils.readLines(reader);
+                            IOUtils.closeQuietly(reader);
+                            for (final String line : lines) {
+                                final String trimmedLine = StringUtils.trim(line);
+                                if (StringUtils.startsWith(trimmedLine, "#") || StringUtils.isEmpty(trimmedLine)) {
+                                    continue;
+                                }
+                                if (trimmedLine.length() != 20) {
+                                    state = STATUS_READ_ERROR;
+                                    continue;
+                                }
+                                state = addPublicKeyFingerprintToBlacklist(trimmedLine);
+                            }
+                        } else {
+                            log.info("Read public key file " + path);
                             asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(path));
                             if (null == (publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes))) {
                                 state = STATUS_READ_ERROR;
                             } else {
-                                state = removePublicKeyToBlacklist(publicKey);
+                                state = addPublicKeyToBlacklist(publicKey);
                             }
-                        } else {
+                        }
+                    } else if (COMMAND_REMOVE.equals(command)) {
+                        if (byFingerprint) {
                             log.info("Remove public keys by fingerprints listed in file " + path);
                             reader = new FileReader(file);
                             lines = IOUtils.readLines(reader);
@@ -206,6 +197,30 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                         log.info("remove public key blacklist failed on fingerprint: " + fingerprint);                                        
                                     }
                                 }
+                            }
+                        } else if (byDebianFingerprint) {
+                            log.info("Remove Debian public key fingerprints by file " + path);
+                            reader = new FileReader(file);
+                            lines = IOUtils.readLines(reader);
+                            IOUtils.closeQuietly(reader);
+                            for (final String line : lines) {
+                                final String trimmedLine = StringUtils.trim(line);
+                                if (StringUtils.startsWith(trimmedLine, "#") || StringUtils.isEmpty(trimmedLine)) {
+                                    continue;
+                                }
+                                if (trimmedLine.length() != 20) {
+                                    state = STATUS_READ_ERROR;
+                                    continue;
+                                }
+                                state = removeFromBlacklist(PublicKeyBlacklistEntry.TYPE, trimmedLine);
+                            }
+                        } else {
+                            log.info("Remove public key by file " + path);
+                            asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(path));
+                            if (null == (publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes))) {
+                                state = STATUS_READ_ERROR;
+                            } else {
+                                state = removePublicKeyToBlacklist(publicKey);
                             }
                         }
                     }
@@ -267,19 +282,13 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Updates the public key blacklist data store.";
+        return "Updates the public key blacklist datastore.";
     }
 
     @Override
     public String getFullHelpText() {
-        final StringBuilder result = new StringBuilder();
-        result.append("\n\n" + getCommandDescription() + "\n\n");
-        result.append(
-                "Every file in the target directory is parsed and must contain one PEM formatted RSA or ECC public key.\n\nIf --mode fingerpint is chosen only the public key fingerprints with "
-                        + PublicKeyBlacklistEntry.DIGEST_ALGORITHM
-                        + " hash are used to add or remove blacklist entries, and every file is treated as CSV file with one public key fingerprint per line."
-                        + "\n\n");
-        return result.toString();
+        return "Add or remove public keys for which the CA should not issue certificates." + System.lineSeparator() +
+               "Point to a directory of public keys or a list of fingerprints to be processed.";
     }
 
     @Override
@@ -298,8 +307,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         log.trace(">addPublicKeyToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
-        entry.setFingerprint(publicKey); // sets the fingerprint in proper format from the public key
-        entry.setKeyspec(AlgorithmTools.getKeySpecification(publicKey));
+        entry.setFingerprint(publicKey);
         log.info("Try to add public key into public key blacklist (fingerprint=" + entry.getFingerprint() + ").");
         result = addToBlacklist(entry);
         log.trace("<addPublicKeyToBlacklist()");
@@ -314,16 +322,11 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
      * @throws Exception any exception.
      */
-    private int addPublicKeyFingerprintToBlacklist(final String fingerprint, final String keySpecification) throws Exception {
-        log.trace(">addPublicKeyFingerprintToBlacklist()");
-        int result = STATUS_GENERALIMPORTERROR;
+    private int addPublicKeyFingerprintToBlacklist(final String fingerprint) throws Exception {
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(fingerprint);
-        entry.setKeyspec(keySpecification);
-        log.info("Try to add public key into public key blacklist by fingerprint (fingerprint=" + fingerprint + ").");
-        result = addToBlacklist(entry);
-        log.trace("<addPublicKeyFingerprintToBlacklist()");
-        return result;
+        log.info("Blacklisting public key by fingerprint (fingerprint=" + fingerprint + ").");
+        return addToBlacklist(entry);
     }
 
     /**
