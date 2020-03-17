@@ -12,25 +12,27 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
+import java.util.List;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.oscp.ResponsePK;
 
 /**
  * 
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataSessionRemote")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataSessionRemote") // Do we need remote interface?
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessionRemote {
 
     private static final Logger log = Logger.getLogger(OcspDataSessionBean.class);
@@ -38,7 +40,6 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void storeOcspData(final OcspResponseData responseData) {
         log.trace(">persistOcspData");
@@ -46,30 +47,98 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         log.trace("<persistOcspData");
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public OcspResponseData fetchOcspData(final ResponsePK key) {
-        log.trace(">fetchOcspData");
-        final OcspResponseData ocspResponseData = this.entityManager.find(OcspResponseData.class, key);
-        log.trace("<fetchOcspData");
-        return ocspResponseData != null ? ocspResponseData : null;
+    public List<OcspResponseData> findOcspDataByCaId(final Integer caId) {
+        log.trace(">findOcspDataByCaId");
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataByCaId", OcspResponseData.class);
+        query.setParameter("caId", caId);
+        final List<OcspResponseData> result = query.getResultList();
+        if (log.isTraceEnabled()) {
+            log.trace("findOcspDataByCaId(" + caId + ") yielded " + result.size() + " results.");
+        }
+        log.trace("<findOcspDataByCaId");
+        return result;
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public byte[] fetchOcspResponse(final ResponsePK key) {
-        log.trace(">fetchOcspResponse");
-        final OcspResponseData ocspResponseData = this.entityManager.find(OcspResponseData.class, key);
-        log.trace("<fetchOcspResponse");
-        return ocspResponseData != null ? ocspResponseData.getOcspResponse() : null;
+    public List<OcspResponseData> findOcspDataBySerialNumber(final String serialNumber) {
+        log.trace(">findOcspDataBySerialNumber");
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataBySerialNumber", OcspResponseData.class);
+        query.setParameter("serialNumber", serialNumber);
+        final List<OcspResponseData> result = query.getResultList();
+        if (log.isTraceEnabled()) {
+            log.trace("findOcspDataBySerialNumber(" + serialNumber + ") yielded " + result.size() + " results.");
+        }
+        log.trace("<findOcspDataBySerialNumber");
+        return result;
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void deleteOcspData(final ResponsePK key) {
-        log.trace(">deleteOcspData");
-        this.entityManager.remove(key);
-        log.trace("<deleteOcspData");
+    public OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+        log.trace(">findOcspDataByCaIdSerialNumber");
+        final OcspResponseData result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
+        if (log.isTraceEnabled()) {
+            log.trace("findOcspDataByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded caId " + result.getCaId() + " and serial number "
+                    + result.getSerialNumber() + " as result.");
+        }
+        log.trace("<findOcspDataByCaIdSerialNumber");
+        return result;
     }
-    
+
+    @Override
+    public byte[] findOcspResponseByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+        log.trace(">fetchOcspResponseByCaIdSerialNumber");
+        final OcspResponseData result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
+        if (log.isTraceEnabled()) {
+            log.trace("fetchOcspResponseByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded caId " + result.getCaId()
+                    + " and serial number " + result.getSerialNumber() + " as result.");
+        }
+        log.trace("<fetchOcspResponseByCaIdSerialNumber");
+        return result.getOcspResponse();
+    }
+
+    @Override
+    public void deleteOcspDataByCaId(final Integer caId) {
+        log.trace(">deleteOcspDataByCaId");
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("deleteOcspDataByCaId", OcspResponseData.class);
+        query.setParameter("caId", caId);
+        final int rowsDeleted = query.executeUpdate();
+        if (log.isTraceEnabled()) {
+            log.trace("deleteOcspDataByCaId(" + caId + ") yielded the " + rowsDeleted + " rows deleted! ");
+        }
+        log.trace("<deleteOcspDataByCaId");
+    }
+
+    @Override
+    public void deleteOcspDataBySerialNumber(final String serialNumber) {
+        log.trace(">deleteOcspDataBySerialNumber");
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("deleteOcspDataBySerialNumber", OcspResponseData.class);
+        query.setParameter("serialNumber", serialNumber);
+        final int rowsDeleted = query.executeUpdate();
+        if (log.isTraceEnabled()) {
+            log.trace("deleteOcspDataBySerialNumber(" + serialNumber + ") yielded the " + rowsDeleted + " rows deleted! ");
+        }
+        log.trace("<deleteOcspDataBySerialNumber");
+    }
+
+    @Override
+    public void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+        log.trace(">deleteOcspDataByCaIdSerialNumber");
+        final TypedQuery<OcspResponseData> query = this.entityManager.createQuery("deleteOcspDataByCaIdSerialNumber", OcspResponseData.class);
+        query.setParameter("caId", caId);
+        query.setParameter("serialNumber", serialNumber);
+        final int rowsDeleted = query.executeUpdate();
+        if (log.isTraceEnabled()) {
+            log.trace("deleteOcspDataByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded the " + rowsDeleted + " rows deleted! ");
+        }
+        log.trace("<deleteOcspDataByCaIdSerialNumber");
+    }
+
+    private OcspResponseData getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataByCaIdSerialNumber", OcspResponseData.class);
+        query.setParameter("caId", caId);
+        query.setParameter("serialNumber", serialNumber);
+        return query.getSingleResult();
+    }
+
 }
