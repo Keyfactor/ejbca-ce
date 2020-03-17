@@ -642,7 +642,7 @@ public class MessagesTest {
         // Create a transactionId
         byte[] randBytes = new byte[16];
         new Random().nextBytes(randBytes);
-        byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
+        byte[] digest = CertTools.generateSHA256Fingerprint(randBytes);
         return new String(Base64.encode(digest));
     }
     

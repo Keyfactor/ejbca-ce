@@ -82,6 +82,8 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 /**
  * Class to handle SCEP request messages sent to the CA. 
+ * 
+ * This class implements equals/hashcode, so if any members are added please modify those as well.
  *
  * @version $Id$
  */
