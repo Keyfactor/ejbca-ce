@@ -44,13 +44,12 @@
     -->
     <entity class="org.cesecore.oscp.OcspResponseData" access="PROPERTY" metadata-complete="false">
     	<attributes>
-    	    <embedded-id name="responsePrimaryKey">
-        		<attribute-override name="caId"><column name="cAId" column-definition="INT4"/></attribute-override>
-        		<attribute-override name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(256)"/></attribute-override>
-        	</embedded-id>     	
-    		<basic name="producedAt" fetch="EAGER"><column name="producedAt" column-definition="INT8" nullable="false"/></basic>
-    		<basic name="nextUpdate" fetch="EAGER"><column name="nextUpdate" column-definition="INT8"/></basic>
-    		<basic name="ocspResponse" fetch="EAGER"><column name="ocspResponse" column-definition="LONG BYTE"/></basic>
+            <id name="id"><column name="id" column-definition="VARCHAR(256)"/></id>
+       		<basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INT4" nullable="false"/></basic>
+       		<basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(256)" nullable="false"/></basic>
+    		<basic fetch="EAGER" name="producedAt"><column name="producedAt" column-definition="INT8" nullable="false"/></basic>
+    		<basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="INT8"/></basic>
+    		<basic fetch="EAGER" name="ocspResponse"><column name="ocspResponse" column-definition="LONG BYTE"/></basic>
     		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
     	</attributes>
