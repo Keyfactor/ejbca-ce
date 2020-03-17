@@ -53,13 +53,14 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
     public static final String COMMAND_ADD = "add";
     public static final String COMMAND_REMOVE = "remove";
+    public static final String COMMAND_GEN_SQL = "generatesql";
     public static final String UPDATE_MODE_FINGERPRINT = "fingerprint";
     public static final String UPDATE_MODE_DEBIAN_FINGERPRINT = "debianfingerprint";
     public static final String CSV_SEPARATOR = ",";
 
     {
         registerParameter(new Parameter(COMMAND_KEY, "Command to execute", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Command to execute. Use " + COMMAND_ADD + " or " + COMMAND_REMOVE + "."));
+                "Command to execute. Use " + COMMAND_ADD + ", " + COMMAND_REMOVE + " or " + COMMAND_GEN_SQL + "."));
         registerParameter(new Parameter(UPDATE_MODE_KEY, "Update mode", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Specifies the format of blacklist data. Possible values are" + System.lineSeparator() +
                 "    fingerprint       - If the input files shall be treated as CSV" + System.lineSeparator() +
@@ -126,6 +127,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             PublicKey publicKey;
             String fingerprint;
             byte[] asn1Encodedbytes;
+            long counter = 0;
 
             for (final File file : files) {
                 state = STATUS_GENERALIMPORTERROR;
@@ -222,6 +224,20 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                             } else {
                                 state = removePublicKeyToBlacklist(publicKey);
                             }
+                        }
+                    } else if (COMMAND_GEN_SQL.equals(command)) {
+                        reader = new FileReader(file);
+                        lines = IOUtils.readLines(reader);
+                        IOUtils.closeQuietly(reader);
+                        for (final String line : lines) {
+                            if (StringUtils.isEmpty(line)) {
+                                continue;
+                            }
+                            if (line.startsWith("#")) {
+                                continue;
+                            }
+                            System.out.println(String.format("INSERT INTO `BlacklistData` VALUES (%d,NULL,NULL,0,'PUBLICKEY',0,'%s');",
+                                    counter++, line.trim()));
                         }
                     }
 
