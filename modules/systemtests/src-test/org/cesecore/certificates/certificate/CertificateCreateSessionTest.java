@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -95,13 +102,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests creating certificate with extended key usage.
@@ -777,7 +777,6 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             keyValidatorSession.changeKeyValidator(alwaysAllowToken, ecKeyValidator);
             PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint(keyPairEc.getPublic());
-            entry.setKeyspec("secp256r1");
             listSession.addBlacklistEntry(alwaysAllowToken, entry);
             try {
                 final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
