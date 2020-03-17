@@ -12,10 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
+import java.util.List;
+
 import javax.ejb.Local;
 
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.oscp.ResponsePK;
 
 /**
  * Local interface for OcspDataSession.
@@ -28,9 +29,18 @@ public interface OcspDataSessionLocal extends OcspDataSession {
     
     void storeOcspData(final OcspResponseData ocspResponseData);
     
-    OcspResponseData fetchOcspData(final ResponsePK key);
+    List<OcspResponseData> findOcspDataByCaId(final Integer caId);
+
+    List<OcspResponseData> findOcspDataBySerialNumber(final String serialNumber);
     
-    byte[] fetchOcspResponse(final ResponsePK key);
+    OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
     
-    void deleteOcspData(final ResponsePK key);
+    byte[] findOcspResponseByCaIdSerialNumber(final Integer caId, final String serialNumber);
+    
+    void deleteOcspDataByCaId(final Integer caId);
+    
+    void deleteOcspDataBySerialNumber(final String serialNumber);
+    
+    void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
+    
 }
