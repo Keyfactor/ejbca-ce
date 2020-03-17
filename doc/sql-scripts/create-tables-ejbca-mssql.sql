@@ -445,12 +445,13 @@ CREATE TABLE SctData (
 );
 
 CREATE TABLE OcspResponseData (
-    serialNumber VARCHAR(256) NOT NULL,
+    id VARCHAR(256) NOT NULL,
+	serialNumber VARCHAR(256) NOT NULL,
     producedAt BIGINT NOT NULL,
     nextUpdate BIGINT,
     ocspResponse IMAGE,
     cAId INTEGER,
     rowProtection TEXT VARCHAR,
     rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (cAId, serialNumber)
+    PRIMARY KEY (id)
 );
