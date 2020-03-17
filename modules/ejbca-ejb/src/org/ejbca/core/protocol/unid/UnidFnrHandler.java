@@ -30,7 +30,10 @@ import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 /**
- * Adds items to the Unid-Fnr DB.
+ * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation 
+ * requires that the FNR is not unduly exposed, so hence during enrollment the FNR is replaced in the request with a generated unique ID (UnID), 
+ * which will be used as reference for future OCSP requests, which for this purpose will contain the UnID as opposed to the FNR as an extension
+ * in the response. 
  * 
  * @version $Id$
  */
@@ -38,7 +41,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
 	private static final Pattern onlyDecimalDigits = Pattern.compile("^[0-9]+$");
 	private Storage mockStorage;
-	private UnidfnrSessionLocal unidfnrSession;
+	private final UnidfnrSessionLocal unidfnrSession;
 
 	/**
 	 * Used by EJBCA
@@ -89,12 +92,15 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		}
 		return req;
 	}
+	
 	private static boolean hasOnlyDecimalDigits(String s, int first, int last) {
-		return hasOnlyDecimalDigits( s.substring(first, last));
+		return hasOnlyDecimalDigits(s.substring(first, last));
 	}
+	
 	private static boolean hasOnlyDecimalDigits(String s) {
 		return onlyDecimalDigits.matcher(s).matches();
 	}
+	
 	private String getPrefixFromCertProfileName(String certificateProfileName) {
 		if ( certificateProfileName.length()<10 ) {
 			return null;
@@ -146,7 +152,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		return unid;
 	}
 	
-	public void storeUnidFnrData(final String unid, final String fnr) throws HandlerException {
+	private void storeUnidFnrData(final String unid, final String fnr) throws HandlerException {
 	    if (unidfnrSession != null) {
 	        unidfnrSession.stroreUnidFnrData(unid, fnr);
 	    } else if (mockStorage != null) {
