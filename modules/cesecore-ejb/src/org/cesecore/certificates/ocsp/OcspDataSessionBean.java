@@ -74,27 +74,14 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     }
 
     @Override
-    public OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+    public List<OcspResponseData> findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         log.trace(">findOcspDataByCaIdSerialNumber");
-        final OcspResponseData result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
+        final List<OcspResponseData> result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
         if (log.isTraceEnabled()) {
-            log.trace("findOcspDataByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded caId " + result.getCaId() + " and serial number "
-                    + result.getSerialNumber() + " as result.");
+            log.trace("findOcspDataByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded caId " + result.size() + " results.");
         }
         log.trace("<findOcspDataByCaIdSerialNumber");
         return result;
-    }
-
-    @Override
-    public byte[] findOcspResponseByCaIdSerialNumber(final Integer caId, final String serialNumber) {
-        log.trace(">fetchOcspResponseByCaIdSerialNumber");
-        final OcspResponseData result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
-        if (log.isTraceEnabled()) {
-            log.trace("fetchOcspResponseByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded caId " + result.getCaId()
-                    + " and serial number " + result.getSerialNumber() + " as result.");
-        }
-        log.trace("<fetchOcspResponseByCaIdSerialNumber");
-        return result.getOcspResponse();
     }
 
     @Override
@@ -134,11 +121,11 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         log.trace("<deleteOcspDataByCaIdSerialNumber");
     }
 
-    private OcspResponseData getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+    private List<OcspResponseData> getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataByCaIdSerialNumber", OcspResponseData.class);
         query.setParameter("caId", caId);
         query.setParameter("serialNumber", serialNumber);
-        return query.getSingleResult();
+        return query.getResultList();
     }
 
 }

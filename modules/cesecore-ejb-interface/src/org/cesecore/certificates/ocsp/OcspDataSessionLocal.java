@@ -33,9 +33,7 @@ public interface OcspDataSessionLocal extends OcspDataSession {
 
     List<OcspResponseData> findOcspDataBySerialNumber(final String serialNumber);
     
-    OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
-    
-    byte[] findOcspResponseByCaIdSerialNumber(final Integer caId, final String serialNumber);
+    List<OcspResponseData> findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
     
     void deleteOcspDataByCaId(final Integer caId);
     
