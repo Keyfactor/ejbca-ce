@@ -48,6 +48,8 @@ import org.cesecore.util.CertTools;
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
+ * 
+ * This class implements equals/hashcode, so if any members are added please modify those as well.
  *
  * @version $Id$
  */
