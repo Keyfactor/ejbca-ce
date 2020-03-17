@@ -77,7 +77,6 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -411,7 +410,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.warn("GETCERTINITIAL was called but only works in SCEP RA mode, which is not included in the community version of EJBCA. Unable to continue.");
                 return null;
             } else {
-                CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
+                final CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
                 final String keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 final X509Certificate cacert =  (X509Certificate) ca.getCACertificate();        
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
@@ -421,11 +420,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(scepConfig.getRACertProfile(alias));
                 final String approvalProfileName = approvalProfileSession
                         .getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, ca.getCAInfo(), certificateProfile).getProfileName();
-                List<ApprovalData> approvals = approvalSession
-                        .findByApprovalId(AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName));
+                List<ApprovalDataVO> approvals = approvalSession.findApprovalDataVO(AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName));         
                 //Iterate through the list, find the last approval available. We don't care if it's expired in this context.
                 Collections.reverse(approvals);
-                ApprovalData approval = null;
+                ApprovalDataVO approval = null;
                 if(approvals.size() > 0) {
                     approval = approvals.get(0);
                 }
@@ -440,13 +438,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
                     if (originalRequest == null) {
                         String failText = "SCEP request was not stored for user " + reqmsg.getUsername() + ", cannot continue with issuance.";
-                        log.error(failText);
+                        log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         return resp.getResponseMessage();
                     }
                     if (!originalRequest.getTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
-                        String failText = "Failure to process GETCERTINITIAL message. Transaction ID did not match up with that used during initial PKCSREQ";
-                        log.error(failText);
+                        String failText = "Failure to process GETCERTINITIAL message. Transaction ID " + reqmsg.getTransactionId() 
+                        + " did not match up with the one (" + originalRequest.getTransactionId() + ") used during initial PKCSREQ";
+                        log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         return resp.getResponseMessage();
                     }
@@ -460,7 +459,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         } catch (AuthStatusException e) {
                             final String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
                                     + ") with incorrect status: " + e.getLocalizedMessage();
-                            log.error(failMessage, e);
+                            log.info(failMessage, e);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failMessage);
                             return resp.getResponseMessage();
                         }
@@ -484,15 +483,15 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     case ApprovalDataVO.STATUS_EXECUTIONDENIED:
                     case ApprovalDataVO.STATUS_REJECTED:
-                        failText = "Could not process GETCERTINITIAL request for username " + username
+                        failText = "Could not process GETCERTINITIAL request with transaction ID " + reqmsg.getTransactionId() + " for username " + username
                                 + ". Enrollment was not approved by administrator.";
-                        log.error(failText);
+                        log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         ret = resp.getResponseMessage();
                         break;
                     case ApprovalDataVO.STATUS_EXECUTIONFAILED:
                         failText = "Could not process GETCERTINITIAL request for username " + username + ". Enrollment execution failed.";
-                        log.error(failText);
+                        log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         ret = resp.getResponseMessage();
                         break;
