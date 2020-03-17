@@ -15,11 +15,14 @@ package org.cesecore.oscp;
 import java.io.Serializable;
 
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Index;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -32,16 +35,28 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  *
  */
 @Entity
-@Table(name = "OcspResponseData")
+@Table(name = "OcspResponseData", indexes = { 
+        @Index(columnList = "caId", name = "ocspresponsedata_idx1"),
+        @Index(columnList = "serialNumber", name = "ocspresponsedata_idx2"),
+        @Index(columnList = "nextUpdate", name = "ocspresponsedata_idx3")})
+@NamedQueries({ 
+        @NamedQuery(name = "findOcspDataByCaId", query = "SELECT a FROM OcspResponseData a WHERE a.caId = :caId"),
+        @NamedQuery(name = "findOcspDataBySerialNumber", query = "SELECT a FROM OcspResponseData a WHERE a.serialNumber = :serialNumber"),
+        @NamedQuery(name = "findOcspDataByCaIdSerialNumber", query = "SELECT a FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber"),
+        @NamedQuery(name = "deleteOcspDataByCaId", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId"),
+        @NamedQuery(name = "deleteOcspDataBySerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.serialNumber = :serialNumber"),
+        @NamedQuery(name = "deleteOcspDataByCaIdSerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber"), })
 public class OcspResponseData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(OcspResponseData.class);
-    
+
     private static final int LATEST_PROTECT_VERSON = 1;
 
-    private ResponsePK responsePrimaryKey;
+    private String id; // Randomly generated primary key
+    private Integer caId;
+    private String serialNumber;
     private long producedAt;
     private Long nextUpdate;
     private byte[] ocspResponse;
@@ -51,21 +66,40 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     public OcspResponseData() {
     }
 
-    public OcspResponseData(final ResponsePK pk, final long producedAt, final Long nextUpdate, final byte[] ocspResponse) {
-        this.responsePrimaryKey = pk;
+    public OcspResponseData(final String id, final Integer caId, final String serialNumber, final long producedAt, final Long nextUpdate,
+            final byte[] ocspResponse) {
+        this.id = id;
+        this.caId = caId;
+        this.serialNumber = serialNumber;
         this.producedAt = producedAt;
         this.nextUpdate = nextUpdate;
         this.ocspResponse = ocspResponse;
     }
 
-    public ResponsePK getResponsePrimaryKey() {
-        return responsePrimaryKey;
+    public String getId() {
+        return id;
     }
 
-    public void setResponsePrimaryKey(final ResponsePK responsePrimaryKey) {
-        this.responsePrimaryKey = responsePrimaryKey;
+    public void setId(final String id) {
+        this.id = id;
     }
-    
+
+    public Integer getCaId() {
+        return caId;
+    }
+
+    public void setCaId(final Integer caId) {
+        this.caId = caId;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(final String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
     public long getProducedAt() {
         return this.producedAt;
     }
@@ -101,8 +135,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     @Override
     protected String getProtectString(final int rowversion) {
         final ProtectionStringBuilder protectedStringBuilder = new ProtectionStringBuilder(8000);
-        protectedStringBuilder.append(getResponsePrimaryKey().getCaId()).append(getResponsePrimaryKey().getSerialNumber()).append(getProducedAt()).append(getNextUpdate())
-                .append(getOcspResponse());
+        protectedStringBuilder.append(getCaId()).append(getSerialNumber()).append(getProducedAt()).append(getNextUpdate()).append(getOcspResponse());
         if (log.isDebugEnabled()) {
             // Some profiling
             if (protectedStringBuilder.length() > 8000) {
@@ -131,7 +164,7 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     @Override
     @Transient
     protected String getRowId() {
-        return new ProtectionStringBuilder().append(getResponsePrimaryKey().getCaId()).append(getResponsePrimaryKey().getSerialNumber()).toString();
+        return new ProtectionStringBuilder().append(getCaId()).append(getSerialNumber()).toString();
     }
 
     @PrePersist
