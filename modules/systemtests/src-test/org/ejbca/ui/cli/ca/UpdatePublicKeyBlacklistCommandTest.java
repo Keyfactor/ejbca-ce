@@ -257,8 +257,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
     }
 
     @Test
-    public void test02AddAndRemoveCommandModeByDebianFingerprint() throws IOException {
-        log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
+    public void test02AddAndRemoveCommandModeByDebianFingerprint() {
+        log.trace(">test02AddAndRemoveCommandModeByDebianFingerprint()");
 
         final URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
         if (null == url) {
@@ -291,7 +291,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
         final BlacklistEntry removedEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "0504bb261ca99c3d392e");
         assertTrue("Debian weak key 2048/i386/rnd/pid17691 should have been removed from the blacklist.", null == removedEntry);
 
-        log.trace("<test02AddAndRemoveCommandModeByFingerprint()");
+        log.trace("<test02AddAndRemoveCommandModeByDebianFingerprint()");
     }
 
     /**
