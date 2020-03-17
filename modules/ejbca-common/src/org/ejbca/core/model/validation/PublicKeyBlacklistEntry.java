@@ -149,7 +149,6 @@ public class PublicKeyBlacklistEntry extends BlacklistEntry implements Serializa
             return null;
         }
         try {
-            log.error(new String("Modulus=" + publicKey.getModulus().toString(16).toUpperCase()));
             return DatatypeConverter
                     .printHexBinary(MessageDigest.getInstance("SHA-1")
                             .digest(new String("Modulus=" + publicKey.getModulus().toString(16).toUpperCase() + "\n")
