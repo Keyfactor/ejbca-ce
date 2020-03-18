@@ -19,7 +19,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 /**
  * To be implemented by classes that is extending the handling of the user data.
  * Could be to store it or to change something in DN.
- * @author primelars
+ * 
  * @version $Id$
  */
 public interface ExtendedUserDataHandler {
@@ -28,18 +28,7 @@ public interface ExtendedUserDataHandler {
 	 * @param req Request to be modified.
 	 * @param otherData some other data
 	 * @return the modified request
-	 * @throws HandlerException The handle may throw this exception if some error occurs. Throwing it prevents the certificate creation.
 	 */
-	RequestMessage processRequestMessage(RequestMessage req, String otherData) throws HandlerException;
-	/**
-	 * Exception thrown by handler. No certificate should be created if this exception is thrown.
-	 *
-	 */
-	class HandlerException extends Exception {
-		private static final long serialVersionUID = 8502876679948912399L;
+	RequestMessage processRequestMessage(RequestMessage req, String otherData);
 
-        public HandlerException(String message) {
-			super(message);
-		}
-	}
 }
