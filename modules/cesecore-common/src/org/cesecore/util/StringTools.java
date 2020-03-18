@@ -131,9 +131,9 @@ public final class StringTools {
     // Also allow '=' to be escaped.
     private static final CharSet allowedEscapeChars = new CharSet(new char[]{ ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' });
 
-    private static final Pattern WS = Pattern.compile("\\s+");
-    
+    private static final Pattern WS = Pattern.compile("\\s+");    
     private static final Pattern spaceAndColon = Pattern.compile("[: ]");
+    private static final Pattern percentSign= Pattern.compile("[%\"\\\\]");
 
     
 
@@ -368,12 +368,22 @@ public final class StringTools {
         return WS.matcher(str).replaceAll("");
     }
     
-    public static String replaceWihtespaceAndColon(final String str) {
+    /**
+     * Remove all whitespace and colon
+     * Remove "0x" if the serialNumber from input contain a "0x" prefix
+     */
+    public static String replaceWhitespaceAndColon(final String str) {
+        if(str == null) {
+            return null;
+        }        
+        return spaceAndColon.matcher(StringUtils.removeStart(str, "0x")).replaceAll("");
+    }
+
+    public static String replacePercentSign(String str) {
         if(str == null) {
             return null;
         }
-        
-        return spaceAndColon.matcher(str).replaceAll("");
+        return percentSign.matcher(str).replaceAll("");  
     }
 
     /**

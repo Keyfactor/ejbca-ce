@@ -41,7 +41,7 @@ public class OptionalHexSerialNumberValidator implements Validator {
 			log.debug("Validating component " + textField.getClientId(facesContext) + " with value \"" + object + "\"");
 		}
 		if (object != null && !((String)object).trim().isEmpty()) {
-		   object= StringTools.replaceWihtespaceAndColon((String)object);
+		   object= StringTools.replaceWhitespaceAndColon((String)object);
 
             try {
                 new BigInteger((String) object, 16);

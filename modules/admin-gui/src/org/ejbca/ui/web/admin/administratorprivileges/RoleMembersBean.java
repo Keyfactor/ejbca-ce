@@ -336,7 +336,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             // If the tokenMatchValue should be a hex number, validate that it is
             if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) &&
                     X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()==tokenMatchKey) {
-                tokenMatchValue = StringTools.replaceWihtespaceAndColon(tokenMatchValue);                
+                tokenMatchValue = StringTools.replaceWhitespaceAndColon(tokenMatchValue);                
                 try {
                     final BigInteger matchValueSerialNr = new BigInteger(tokenMatchValue, 16);
                     // If we require cert in database, the CA isn't external and the cert serial number doesn't exists for the matched CA,

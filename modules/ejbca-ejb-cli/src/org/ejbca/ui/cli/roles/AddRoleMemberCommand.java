@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.roles;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -24,6 +25,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.Role;
@@ -31,6 +33,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.StringTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -77,6 +80,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         return "addrolemember";
     }
 
+    @SuppressWarnings("unused")
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
@@ -150,9 +154,16 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             getLogger().info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + accessMatchValue.name() + " implies " + accessMatchType.name() + ".");
         }
         final String description = parameters.get(DESCRIPTION_KEY);
-        final String matchValue = parameters.get(MATCH_VALUE_KEY);
+        
+        String matchValue = null;
+        if (accessMatchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
+           matchValue = StringTools.replaceWhitespaceAndColon(parameters.get(MATCH_VALUE_KEY));   
+        } else {
+           matchValue = parameters.get(MATCH_VALUE_KEY);
+        }  
+                
         final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
-                matchValue, role.getRoleId(), description);
+                matchValue , role.getRoleId(), description);
         try {
             final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
             if (roleMemberExists(roleMember, roleMemberSession)) {
@@ -172,8 +183,8 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             throws AuthorizationDeniedException {
         return roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), roleMember.getRoleId()).stream()
                 .anyMatch(existingMember -> existingMember.isSameAs(roleMember));
-    }
-
+    }  
+    
     @Override
     public String getCommandDescription() {
         return "Adds a member to a role.";
