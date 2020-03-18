@@ -167,7 +167,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     state = STATUS_READ_ERROR;
                                     continue;
                                 }
-                                state = addPublicKeyFingerprintToBlacklist(trimmedLine.toLowerCase());
+                                state = addPublicKeyFingerprintToBlacklist(trimmedLine);
                             }
                         } else {
                             log.info("Read public key file " + path);
@@ -340,7 +340,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      */
     private int addPublicKeyFingerprintToBlacklist(final String fingerprint) throws Exception {
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
-        entry.setFingerprint(fingerprint);
+        entry.setFingerprint(fingerprint.toLowerCase());
         log.info("Blacklisting public key by fingerprint (fingerprint=" + fingerprint + ").");
         return addToBlacklist(entry);
     }
