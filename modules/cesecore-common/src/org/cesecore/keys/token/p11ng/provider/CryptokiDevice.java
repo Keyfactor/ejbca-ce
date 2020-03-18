@@ -74,6 +74,7 @@ import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECPointUtil;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -563,7 +564,7 @@ public class CryptokiDevice {
             }
         }
 
-        public PublicKey getPublicKey(final String alias) {
+        public PublicKey getPublicKey(final String alias, final boolean explicitEcParams) {
             Long session = null;
             try {
                 session = aquireSession();
@@ -610,7 +611,22 @@ public class CryptokiDevice {
                                 ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
                         final java.security.spec.ECParameterSpec parameterSpec = EC5Util.convertSpec(ellipticCurve, params);
                         final java.security.spec.ECPublicKeySpec keySpec = new java.security.spec.ECPublicKeySpec(ecPoint, parameterSpec);
-                        return KeyFactory.getInstance("EC", "BC").generatePublic(keySpec);
+                        final PublicKey publicKeyWithExplicitParams = KeyFactory.getInstance("EC", "BC").generatePublic(keySpec);
+                        if (explicitEcParams) {
+                            return publicKeyWithExplicitParams;
+                        } else {
+                            final java.security.spec.ECPublicKeySpec ecPublicKeySpec = new java.security.spec.ECPublicKeySpec((
+                                    (java.security.interfaces.ECPublicKey)publicKeyWithExplicitParams).getW(),
+                                    new ECNamedCurveSpec(
+                                            oid.getId(), 
+                                            parameterSpec.getCurve(), 
+                                            parameterSpec.getGenerator(), 
+                                            parameterSpec.getOrder(), 
+                                            BigInteger.valueOf(parameterSpec.getCofactor())
+                                     )
+                             );
+                            return KeyFactory.getInstance("EC", "BC").generatePublic(ecPublicKeySpec);
+                        }
                     } else {
                         final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
                         final byte[] modulusBytes = modulus.getValue();

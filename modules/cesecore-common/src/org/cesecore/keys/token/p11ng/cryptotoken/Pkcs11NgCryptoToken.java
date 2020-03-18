@@ -194,7 +194,8 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     @Override
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
-        PublicKey publicKey = slot.getPublicKey(alias);
+        PublicKey publicKey = slot.getPublicKey(alias,
+                Boolean.parseBoolean(getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS)));
         if (publicKey == null) {
             final Certificate certificate = slot.getCertificate(alias);
             if (certificate == null) {
