@@ -26,7 +26,7 @@ public interface UnidfnrSessionLocal extends UnidfnrSession {
      * @param unid unique id to store in unid fnr database
      * @param fnr actual fnr to store in the database
      */
-    void stroreUnidFnrData(final String unid, final String fnr);
+    void storeUnidFnrData(final String unid, final String fnr);
     
     
     /**

@@ -40,29 +40,16 @@ import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
 	private static final Pattern onlyDecimalDigits = Pattern.compile("^[0-9]+$");
-	private Storage mockStorage;
-	private final UnidfnrSessionLocal unidfnrSession;
+	protected UnidfnrSessionLocal unidfnrSession;
 
-	/**
-	 * Used by EJBCA
-	 */
 	public UnidFnrHandler() {
 		super();
-		mockStorage = null;
 		unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
 	}
-	/**
-	 * Used by unit test.
-	 * @param mockStorage Emulates the {@link UnidfnrSessionLocal#stroreUnidFnrData(String, String)} call.
-	 */
-	public UnidFnrHandler(final Storage mockStorage) {
-		super();
-		this.mockStorage = mockStorage;
-		unidfnrSession = null;
-	}
+
 	
 	@Override
-	public RequestMessage processRequestMessage(RequestMessage req, final String certificateProfileName) throws HandlerException {
+	public RequestMessage processRequestMessage(RequestMessage req, final String certificateProfileName) {
 	    final X500Name dn = req.getRequestX500Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
@@ -124,14 +111,9 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	 * @param unidPrefix Prefix of the unid
 	 * @return the serial number of the subject DN of the certificate that will be created. Null if the format of the SN is not fnr-lra.
 	 * Returning null means that the handler should not do anything (SN in DN not changed and nothing stored to DB).
-	 * @throws HandlerException if unid-fnr can't be stored in DB. This will prevent any certificate to be created.
 	 */
-	private String storeUnidFrnAndGetNewSerialNr(final String inputSerialNr, final String unidPrefix) throws HandlerException {
-	    
-        if (unidfnrSession == null && mockStorage == null) {
-            throw new HandlerException("Unidfnr session bean is null!");
-        }	    
-	    
+	private String storeUnidFrnAndGetNewSerialNr(final String inputSerialNr, final String unidPrefix) {
+	    	   
 		if ( inputSerialNr.length()!=17 ) {
 			return null;
 		}
@@ -148,30 +130,8 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		}
 		final String random = new LettersAndDigitsPasswordGenerator().getNewPassword(6, 6);
 		final String unid = unidPrefix + lra + random;
-		storeUnidFnrData(unid, fnr);
+		unidfnrSession.storeUnidFnrData(unid, fnr);
 		return unid;
 	}
 	
-	private void storeUnidFnrData(final String unid, final String fnr) throws HandlerException {
-	    if (unidfnrSession != null) {
-	        unidfnrSession.stroreUnidFnrData(unid, fnr);
-	    } else if (mockStorage != null) {
-	        mockStorage.storeIt(unid, fnr);
-	    } else {
-	        throw new IllegalStateException();
-	    }
-    }
-	
-	
-	/**
-	 * To be implemented by unit test.
-	 */
-	public interface Storage {
-		/**
-		 * @param unid
-		 * @param fnr
-		 * @throws HandlerException
-		 */
-		void storeIt(String unid, String fnr) throws HandlerException;
-	}
 }

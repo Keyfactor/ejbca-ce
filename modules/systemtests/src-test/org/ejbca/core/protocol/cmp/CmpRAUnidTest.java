@@ -13,18 +13,17 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -56,19 +55,14 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
+import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
+import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.protocol.unid.UnidFnrHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation 
@@ -110,6 +104,8 @@ public class CmpRAUnidTest extends CmpTestCase {
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST);    
 
     @BeforeClass
     public static void beforeClass() {
@@ -144,7 +140,9 @@ public class CmpRAUnidTest extends CmpTestCase {
         cmpConfiguration.setRACAName(configAlias, testx509ca.getName());
         cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
-        cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
+        //For the purposes of this system test, use UnidFnrHandlerMock instead of UnidFnrHandler. It's essentially the same but isn't
+        //reliant on the existence of a data source. 
+        cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandlerMock.class.getName());
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration);
 
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
@@ -221,37 +219,6 @@ public class CmpRAUnidTest extends CmpTestCase {
      */
     @Test
     public void testCmpEnrollment() throws Exception {
-        final String host = "localhost";
-        final String user = "uniduser";
-        final String pass = "unidpass";
-        final String name = "unid";
-        Connection connection;
-        try {
-            connection = DriverManager.getConnection("jdbc:mysql://" + host + ":3306/" + name, user, pass);
-        } catch (SQLException e) {
-            final StringWriter sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw);
-            pw.println();
-            pw.println("You have not set up a unid-fnr DB properly to run the test.");
-            pw.println("If you don't bother about it (don't if you don't know what it is) please just ignore this error.");
-            pw.println("But if you want to run the test please make sure that the mysql unid-fnr DB is set up.");
-            pw.println("Create a database by:");
-            pw.println("$ mysqladmin -u root create " + name);
-            pw.println("Then log in  to mysql and execute next line at the mysql prompt:");
-            pw.println("$ mysql -u root");
-            pw.println("mysql> grant all on " + name + ".* to " + user + "@'" + host + "' identified by '" + pass + "';");
-            pw.println("And then test access to the DB:");
-            pw.println("$ mysql -u " + user + " -p " + name);
-            pw.println(
-                    "These properties must the also be defined for the jboss data source. The name of the DS must be java:/UnidDS. Note that the datasource must be a 'no-tx-datasource', like OcspDSn (<datasource ... jta=\"false\">).");
-            pw.println(
-                    "You also have to set the path to the 'mysql.jar' as the 'mysql.lib' system property for the test (or add it to the classpath in Eclipse).");
-            pw.println("Example how to the test with this property:");
-            pw.println("ant test:runone -Dtest.runone=CmpRAUnidTest -Dmysql.lib=/usr/share/java/mysql-connector-java.jar");
-            log.error(sw, e);
-            org.junit.Assume.assumeTrue("Running the Unid test without a Unid database does not make sense, ignoring: " + sw.toString(), false);
-            return;
-        }
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
@@ -286,17 +253,10 @@ public class CmpRAUnidTest extends CmpTestCase {
         } finally {
             inputStream.close();
         }
-
-        final PreparedStatement ps = connection.prepareStatement("select fnr from UnidFnrMapping where unid=?");
-        ps.setString(1, unid);
-        final ResultSet result = ps.executeQuery();
-        assertTrue("Unid '" + unid + "' not found in DB.", result.next());
-        final String fnr = result.getString(1);
-        result.close();
-        ps.close();
-        log.debug("FNR read from DB: " + fnr);
-        assertEquals("Right FNR not found in DB.", FNR, fnr);
-
+        
+        String fnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(unid);
+        assertNotNull("Unid value was not stored", fnr);
+        assertEquals("FNR value was not correctly converted", FNR, fnr);
         // Send a confirm message to the CA
         final String hash = "foo123";
         final PKIMessage confirm = genCertConfirm(SUBJECT_DN, cacert, nonce, transid, hash, reqId, null);

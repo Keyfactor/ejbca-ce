@@ -24,6 +24,8 @@ public interface UnidfnrProxySessionRemote {
     
     void removeUnidFnrDataIfPresent(final String unid);
 
-    void stroreUnidFnrData(final String unid, final String fnr);
+    void storeUnidFnrData(final String unid, final String fnr);
+    
+    String fetchUnidFnrDataFromMock(String serialNumber);
     
 }
