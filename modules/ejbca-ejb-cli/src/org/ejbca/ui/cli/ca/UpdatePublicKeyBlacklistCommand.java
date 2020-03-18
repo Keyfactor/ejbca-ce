@@ -167,7 +167,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     state = STATUS_READ_ERROR;
                                     continue;
                                 }
-                                state = addPublicKeyFingerprintToBlacklist(trimmedLine);
+                                state = addPublicKeyFingerprintToBlacklist(trimmedLine.toLowerCase());
                             }
                         } else {
                             log.info("Read public key file " + path);
