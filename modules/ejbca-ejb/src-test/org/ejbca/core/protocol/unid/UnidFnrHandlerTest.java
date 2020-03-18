@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.unid;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -25,7 +26,9 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -33,10 +36,8 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CeSecoreNameStyle;
-import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
+import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
-import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
 import org.junit.Test;
 
 /**
@@ -46,63 +47,54 @@ import org.junit.Test;
  */
 public class UnidFnrHandlerTest {
 	
-    CmpConfiguration cmpConfiguration = new CmpConfiguration();
-    String configAlias = "UnidFnrHandlerTestCmpConfigAlias";
-    
+   
+    /**
+     * Tests basic conversion between Fnr and UnID using a mock session bean to retrieve the data.
+     */
     @Test
-    public void test01() throws Exception {
-        
-        
-        cmpConfiguration.addAlias(configAlias);
-        
-    	final String unidPrefix = "1234-5678-";
-    	final String fnr = "90123456789";
-    	final String lra = "01234";
-    	final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
-    	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
-    	final UnidFnrHandler handler = new UnidFnrHandler(storage);
-    	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
-    	assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
-    	
-    	cmpConfiguration.removeAlias(configAlias);
-    }
-    
-    @Test
-    public void test02() throws Exception {
-        
-        cmpConfiguration.addAlias(configAlias);
-        cmpConfiguration.setCertReqHandlerClass(configAlias, "org.ejbca.core.protocol.unid.UnidFnrHandler");
-        
+    public void testFnrHandler() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         final String unidPrefix = "1234-5678-";
         final String fnr = "90123456789";
         final String lra = "01234";
-        final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
-        final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
-        final UnidFnrHandler handler = new UnidFnrHandler(storage);
-        final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
-        assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
-        
-        cmpConfiguration.removeAlias(configAlias);
+        final RequestMessage reqIn = new MyIRequestMessage(fnr + '-' + lra);
+        final UnidfnrSessionLocal unidfnrSession = new UnidfnrSessionMock();
+        final UnidFnrHandler handler = new UnidFnrHandler();
+        //Insert the mock session bean into the UnidFnrHandler
+        final Field unidfnrSessionField = UnidFnrHandler.class.getDeclaredField("unidfnrSession");
+        unidfnrSessionField.setAccessible(true);
+        unidfnrSessionField.set(handler, unidfnrSession);
+        final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix + "_a_profile_name");
+        //The result should consist of the prefix + lra + six random characters
+        String serialNumber = reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue().toString();
+        assertEquals("Serial number is malformed, missing prefix sequence.", unidPrefix, serialNumber.subSequence(0, unidPrefix.length()));
+        assertEquals("Serial number is malformed, missing LRA sequence.", lra,
+                serialNumber.subSequence(unidPrefix.length(), lra.length() + unidPrefix.length()));
+        assertEquals("FNR was not stored correctly.", fnr, unidfnrSession.fetchUnidFnrData(serialNumber));
     }
     
-	private static class MyStorage implements Storage {
-		final private String unidPrefix;
-		final private String fnr;
-		final private String lra;
-		String unid;
-		MyStorage( String _unidPrefix, String _fnr, String _lra) {
-			this.unidPrefix = _unidPrefix;
-			this.fnr = _fnr;
-			this.lra = _lra;
-		}
-		@Override
-		public void storeIt(String _unid, String _fnr) throws HandlerException {
-			assertEquals(this.fnr, _fnr);
-			assertEquals(this.unidPrefix, _unid.substring(0, 10));
-			assertEquals(this.lra, _unid.substring(10, 15));
-			this.unid = _unid;
-		}
-	}
+    /*
+     * Mock class to simulate the existence of a session bean 
+     */
+    private static class UnidfnrSessionMock implements UnidfnrSessionLocal {
+        private Map<String, String> storage = new HashMap<>();
+        
+        @Override
+        public void storeUnidFnrData(String unid, String fnr) {
+            storage.put(unid, fnr);
+        }
+
+        @Override
+        public String fetchUnidFnrData(String serialNumber) {
+            return storage.get(serialNumber);
+        }
+
+        @Override
+        public void removeUnidFnrDataIfPresent(String unid) {
+            storage.remove(unid);
+        }
+        
+    }
+    
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		private static final long serialVersionUID = -2303591921932083436L;
         final X500Name dn;
