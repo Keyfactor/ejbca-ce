@@ -32,14 +32,13 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -301,8 +300,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 ASN1Encodable dercert = certs.getObjectAt(0);
                 if (dercert != null) {
                     // Requester's self-signed certificate is requestKeyInfo
-                    final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                    final ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
+                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                    DEROutputStream dOut = new DEROutputStream(bOut);
                     dOut.writeObject(dercert);
                     if (bOut.size() > 0) {
                         requestKeyInfo = bOut.toByteArray();
