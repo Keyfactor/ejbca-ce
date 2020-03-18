@@ -229,7 +229,11 @@ public class ScepServlet extends HttpServlet {
 			
             if (operation.equals("PKIOperation")) {
                 if (dispatchResponse == null) {
-                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Can not handle request");
+                    // This is likely due to a faulty configuration of the SCEP alias, or that the request doesn't 
+                    // match the profiles (i.e. end entity can not be added/edited, etc. 
+                    // Hard to give a generic error code for this, details will be in server.log
+                    // We will have to go with BAD_REQUEST (400)
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Can not handle request");
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
