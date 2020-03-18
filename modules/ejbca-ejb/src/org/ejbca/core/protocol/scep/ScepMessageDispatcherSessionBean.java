@@ -502,7 +502,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     }
                 } else {
-                    log.error("GETCERTINITIAL was called on user with name " + username
+                    log.info("GETCERTINITIAL was called on user with name " + username
                             + ", but no approval request for an end entity with that name using the approval profile " + approvalProfileName
                             + " exists");
                     return null;
