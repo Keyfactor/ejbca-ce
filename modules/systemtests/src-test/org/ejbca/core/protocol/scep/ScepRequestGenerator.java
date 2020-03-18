@@ -166,8 +166,8 @@ public class ScepRequestGenerator {
         //	    subject "the requester subject name as given in PKCS#10" 
         //	} 
         ASN1EncodableVector vec = new ASN1EncodableVector();
-        vec.add(new DERUTF8String(caCertificate.getIssuerDN().getName()));
-        vec.add(new DERUTF8String(dn));
+        vec.add(CertTools.stringToBcX500Name(caCertificate.getIssuerDN().getName()));
+        vec.add(CertTools.stringToBcX500Name(dn));
         DERSequence seq = new DERSequence(vec);
 
         // wrap message in pkcs#7

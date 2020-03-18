@@ -482,9 +482,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
             ASN1Sequence derSequence = (ASN1Sequence) DERSequence.fromByteArray(decBytes);
             //Issuer and subject have been encoded in the envelope as per section 3.2.3 in the draft
-            issuerDN = DERUTF8String.getInstance(derSequence.getObjectAt(0)).getString();
-            getCertInitialSubject = DERUTF8String.getInstance(derSequence.getObjectAt(1)).getString();
-            
+            issuerDN = X500Name.getInstance(derSequence.getObjectAt(0)).toString();                     
+            getCertInitialSubject = X500Name.getInstance(derSequence.getObjectAt(1)).toString(); 
         }
         if (log.isTraceEnabled()) {
         	log.trace("<decrypt");
