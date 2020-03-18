@@ -1304,7 +1304,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public String getCurrentCertificateSerialNumber() {
-        currentCertificateSerialNumber = StringTools.replaceWihtespaceAndColon(currentCertificateSerialNumber);
+        currentCertificateSerialNumber = StringTools.replaceWhitespaceAndColon(currentCertificateSerialNumber);
         return currentCertificateSerialNumber;
     }
 

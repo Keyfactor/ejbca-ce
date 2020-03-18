@@ -290,7 +290,7 @@ public class RaRoleMemberBean implements Serializable {
                
         if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) &&
                 X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() == matchKey) {
-            matchValue = StringTools.replaceWihtespaceAndColon(matchValue);     
+            matchValue = StringTools.replaceWhitespaceAndColon(matchValue);     
             
             try {
                 new BigInteger(matchValue, 16);
