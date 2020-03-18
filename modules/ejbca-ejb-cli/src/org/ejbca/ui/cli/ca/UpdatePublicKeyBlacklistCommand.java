@@ -237,8 +237,9 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                 continue;
                             }
                             System.out.println(String.format("INSERT INTO `BlacklistData` VALUES (%d,NULL,NULL,0,'PUBLICKEY',0,'%s');",
-                                    counter++, line.trim()));
+                                    counter++, line.contains(",") ? line.split(",")[0] : line.trim()));
                         }
+                        state = STATUS_OK;
                     }
 
                     switch (state) {
