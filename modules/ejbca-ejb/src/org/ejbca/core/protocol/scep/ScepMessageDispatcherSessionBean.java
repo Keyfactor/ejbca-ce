@@ -345,13 +345,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         try {
             reqmsg = new ScepRequestMessage(msg, includeCACert);
         } catch (IOException e) {
-            log.error("Error receiving ScepMessage: ", e);
+            log.info("Error receiving ScepMessage: ", e);
             return null;
         }
         boolean isRAModeOK = scepConfig.getRAMode(alias);
 
         if (reqmsg.getErrorNo() != 0) {
-            log.error("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
+            log.info("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
             return null;
         }
         if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
@@ -366,7 +366,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 try {
                     if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
                         String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
-                        log.error(errmsg);
+                        log.info(errmsg);
                         return null;
                     }
                 } catch (WaitingForApprovalException e) {
@@ -398,7 +398,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             } catch (AuthStatusException e) {
                 String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
                         + ") with incorrect status: " + e.getLocalizedMessage();
-                log.error(failMessage, e);
+                log.info(failMessage, e);
                 CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
                 ResponseMessage resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failMessage);
                 return resp.getResponseMessage();
