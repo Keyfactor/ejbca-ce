@@ -80,6 +80,9 @@
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
         <path refid="lib.bouncycastle.classpath"/>
+		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
+		<pathelement location="${mod.ejbca-ejb.lib}"/>
+
 	</path>
 
 	<path id="interfaces.classpath">
@@ -160,7 +163,8 @@
             <include name="org/cesecore/keys/validation/DnsNameValidatorMock.java"/>
             <include name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
             <include name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
-            <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>			
+            <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
+			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
 		</javac>
 	</target>
 
@@ -172,7 +176,8 @@
             <exclude name="org/cesecore/audit/impl/*EventTypes.java"/>
             <exclude name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
             <exclude name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
-            <exclude name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>			
+            <exclude name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
+			<exclude name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
 		</javac>
 	</target>
 
@@ -377,8 +382,6 @@
 					<!-- Tests that require the CMP TCP listener -->
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
-					<!-- Tests that require the CMP Unid datahandler -->
-					<exclude name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 					<!-- Tests that require unique index in the database to work -->
 					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
@@ -393,12 +396,6 @@
 				<fileset dir="${systemtests.build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
-				</fileset>
-			</batchtest>
-			<!-- Tests that require the CMP Unid data handler -->
-			<batchtest fork="yes" todir="${reports.dir}" if="cmpunid.enabled">
-				<fileset dir="${systemtests.build.test.dir}">
-					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Run the profiling test last to get stats of all the previous tests -->

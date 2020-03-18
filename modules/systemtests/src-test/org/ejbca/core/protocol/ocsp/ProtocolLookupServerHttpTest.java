@@ -161,7 +161,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
         unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
-        unidfnrProxySessionBean.stroreUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
+        unidfnrProxySessionBean.storeUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
     }
 
     @Override
