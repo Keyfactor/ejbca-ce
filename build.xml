@@ -615,6 +615,7 @@
                 <include name="ra-gui.war" />
                 <include name="ejbca-rest-api.war"/>
             	<include name="acme.war" />
+        		<include name="${in-test-mode-include}systemtests-common.jar"/>
             </fileset>
         	
         	<fileset dir="${ejbca.home}/lib/swagger">

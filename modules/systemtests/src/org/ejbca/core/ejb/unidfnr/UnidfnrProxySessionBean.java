@@ -30,11 +30,20 @@ public class UnidfnrProxySessionBean implements UnidfnrProxySessionRemote {
 
     private UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
 
+    @Override
     public void removeUnidFnrDataIfPresent(final String unid) {
         unidfnrSession.removeUnidFnrDataIfPresent(unid);
     }
 
-    public void stroreUnidFnrData(final String unid, final String fnr) {
-        unidfnrSession.stroreUnidFnrData(unid, fnr);
+    @Override
+    public void storeUnidFnrData(final String unid, final String fnr) {
+        unidfnrSession.storeUnidFnrData(unid, fnr);
+    }
+    
+    @Override
+    public String fetchUnidFnrDataFromMock(String serialNumber) {           
+        //Utilize the fact that the mocked UnidFnrHandler uses a static volatile map 
+        UnidFnrHandlerMock unidFnrHandlerMock = new UnidFnrHandlerMock();
+        return unidFnrHandlerMock.fetchUnidFnrData(serialNumber);
     }
 }
