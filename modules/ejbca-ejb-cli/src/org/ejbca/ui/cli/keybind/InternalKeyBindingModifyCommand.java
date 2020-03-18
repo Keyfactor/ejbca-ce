@@ -35,6 +35,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -207,7 +208,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                         addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
                     } else {
                         try {
-                            final BigInteger serialNumber = new BigInteger(value, 16);
+                            final BigInteger serialNumber = new BigInteger(StringTools.replaceWhitespaceAndColon(value), 16);
                             addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), serialNumber));
                         } catch (NumberFormatException e) {
                             getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
