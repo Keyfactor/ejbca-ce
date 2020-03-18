@@ -74,6 +74,7 @@ import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECPointUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -611,7 +612,8 @@ public class CryptokiDevice {
                                 ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
                         final java.security.spec.ECParameterSpec parameterSpec = EC5Util.convertSpec(ellipticCurve, params);
                         final java.security.spec.ECPublicKeySpec keySpec = new java.security.spec.ECPublicKeySpec(ecPoint, parameterSpec);
-                        final PublicKey publicKeyWithExplicitParams = KeyFactory.getInstance("EC", "BC").generatePublic(keySpec);
+                        final PublicKey publicKeyWithExplicitParams = KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME)
+                                .generatePublic(keySpec);
                         if (explicitEcParams) {
                             return publicKeyWithExplicitParams;
                         } else {
@@ -625,7 +627,7 @@ public class CryptokiDevice {
                                             BigInteger.valueOf(parameterSpec.getCofactor())
                                      )
                              );
-                            return KeyFactory.getInstance("EC", "BC").generatePublic(ecPublicKeySpec);
+                            return KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME).generatePublic(ecPublicKeySpec);
                         }
                     } else {
                         final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
