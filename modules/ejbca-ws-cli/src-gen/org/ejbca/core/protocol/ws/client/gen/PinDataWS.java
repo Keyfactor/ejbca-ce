@@ -17,13 +17,9 @@ package org.ejbca.core.protocol.ws.client.gen;
  * Class containing a web service representation
  * of a PIN data such as type, PIN and PUK
  * 
- * 
- * @author Philip Vendil
- *
  * @version $Id$
  */
 public class PinDataWS {
-	
 	
 	private int type = 0;
 	private String initialPIN = null;
