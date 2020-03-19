@@ -80,27 +80,27 @@
                     <h:selectOneMenu id="statusChangeSelect" value="#{cc.attrs.raEndEntityBean.selectedStatus}" styleClass="pure-input-1-4">
                         <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableStatuses}" var="selectableStatus"
                             itemLabel="#{selectableStatus.statusString}" itemValue="#{selectableStatus.statusConstant}" />
-                        <f:ajax event="change" />
+                        <f:ajax render=":detailsForm:j_idt107:typeEnrollmentCodeLabel :detailsForm:j_idt107:typeEnrollmentCode :detailsForm:j_idt107:repeatEnrollmentCodeLabel :detailsForm:j_idt107:repeatEnrollmentCode" />
                     </h:selectOneMenu>
                 </h:panelGroup>
 
-                <h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}"
+                <h:outputLabel id="typeEnrollmentCodeLabel" for="enrollmentCode" value="#{msg.enroll_password}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                    rendered="#{cc.attrs.editMode}" />
-                <h:panelGroup
+                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}" />
+                <h:panelGroup id="typeEnrollmentCode"
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
-                    rendered="#{cc.attrs.editMode}">
+                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}">
                     <h:inputSecret id="enrollmentCode" autocomplete="off" value="#{cc.attrs.raEndEntityBean.enrollmentCode}">
                         <f:ajax event="change" />
                     </h:inputSecret>
                 </h:panelGroup>
 
-                <h:outputLabel for="enrollmentCodeConfirm" value="#{msg.enroll_confirm_password}"
+                <h:outputLabel id="repeatEnrollmentCodeLabel" for="enrollmentCodeConfirm" value="#{msg.enroll_confirm_password}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                    rendered="#{cc.attrs.editMode}" />
-                <h:panelGroup
+                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}" />
+                <h:panelGroup id="repeatEnrollmentCode"
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
-                    rendered="#{cc.attrs.editMode}">
+                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}">
                     <h:inputSecret id="enrollmentCodeConfirm" autocomplete="off" value="#{cc.attrs.raEndEntityBean.enrollmentCodeConfirm}">
                         <f:ajax event="change" />
                     </h:inputSecret>
@@ -308,11 +308,23 @@
                 </ui:repeat>
             </h:panelGroup>
 
+            <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
+                <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+            </h:panelGroup>
+
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
 
             <h:panelGroup layout="block" rendered="#{not empty cc.attrs.raEndEntityIssuedCerts}">
-            <h:outputLabel for="issuedCertsTable" value="#{msg.component_eedetails_field_certificates}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                <h:outputLabel for="issuedCertsTable" value="#{msg.component_eedetails_field_certificates}"
+                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
                 <h:dataTable id="issuedCertsTable" value="#{cc.attrs.raEndEntityIssuedCerts}" var="issuedCert"
                     styleClass="#{cc.attrs.styleTable}">
                     <h:column>
