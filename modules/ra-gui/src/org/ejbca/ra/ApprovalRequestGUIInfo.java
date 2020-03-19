@@ -48,7 +48,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * @version $Id$
  */
 public class ApprovalRequestGUIInfo implements Serializable {
-    
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
