@@ -56,7 +56,6 @@ import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 @ManagedBean
 @ViewScoped
 public class RaEndEntityBean implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @EJB
@@ -270,6 +269,10 @@ public class RaEndEntityBean implements Serializable {
             getSelectableStatuses();
         }
         return selectedStatus;
+    }
+
+    public boolean isSelectedStatusGenerated() {
+        return selectedStatus == EndEntityConstants.STATUS_GENERATED;
     }
 
     /**

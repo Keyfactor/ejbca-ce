@@ -36,17 +36,6 @@
                             <h:panelGroup styleClass="pure-u-1-3">
                             	<h2><h:outputText value="#{msg.endentity_page_title}"/></h2>
                         	</h:panelGroup>
-                    	    <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
-	                            <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}"
-	                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-	                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
-	                            <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
-	                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-	                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
-	                            <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
-	                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-	                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
-                        	</h:panelGroup>
                         </h:panelGroup>
                         <h:panelGroup styleClass="pure-u-1">
 	                        <component:eedetails
