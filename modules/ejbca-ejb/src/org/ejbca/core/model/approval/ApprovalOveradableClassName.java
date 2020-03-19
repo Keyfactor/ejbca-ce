@@ -62,8 +62,8 @@ public class ApprovalOveradableClassName {
 		
 		boolean retval = false;
 		for(int i=0;i<traces.length;i++){
-		    if (log.isDebugEnabled()) {
-		    	log.debug("Compare " + className + "." + methodName + " with " + traces[i].getClassName() + "." +traces[i].getMethodName() );           
+		    if (log.isTraceEnabled()) {
+		    	log.trace("Compare " + className + "." + methodName + " with " + traces[i].getClassName() + "." +traces[i].getMethodName() );           
 	        }			
 			if(traces[i].getClassName().equals(className)){
 				if(methodName != null){
@@ -80,7 +80,7 @@ public class ApprovalOveradableClassName {
 		
 		
 	    if (log.isDebugEnabled()) {
-	    	log.debug("Result " + retval);           
+	    	log.debug("<isInStackTrace: " + className + "." + methodName + ". Result: " + retval);           
         }	
 		
 		return retval;

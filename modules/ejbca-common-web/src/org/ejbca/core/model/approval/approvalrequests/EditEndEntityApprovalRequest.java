@@ -142,8 +142,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     @Override
     public int generateApprovalId() {
         if (useOrgUsername) {
+            if (log.isTraceEnabled()) {
+                log.trace(">generateApprovalId(orgUsername) '" + ApprovalDataVO.APPROVALTYPE_EDITENDENTITY + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName() +"'");
+            }
             return new String(getApprovalType() + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
         } else {
+            if (log.isTraceEnabled()) {
+                log.trace(">generateApprovalId(newUsername) '" + ApprovalDataVO.APPROVALTYPE_EDITENDENTITY + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName() +"'");
+            }
             return new String(getApprovalType() + ";" + newuserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
         }
     }
