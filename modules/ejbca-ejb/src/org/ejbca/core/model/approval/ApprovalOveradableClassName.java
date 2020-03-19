@@ -15,12 +15,11 @@ package org.ejbca.core.model.approval;
 import org.apache.log4j.Logger;
 
 /**
- * Class used in constants for approvalable methods indicating calling classes/methods
+ * Class used in constants for approvable methods indicating calling classes/methods
  * that don't need to go through approvals
  * 
- * Contains the full classpath and method na,e
+ * Contains the full classpath and method name
  * 
- * @author Philip Vendil
  * $Id$
  */
 public class ApprovalOveradableClassName {
