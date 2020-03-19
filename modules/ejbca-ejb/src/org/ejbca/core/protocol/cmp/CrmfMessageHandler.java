@@ -492,10 +492,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.BAD_REQUEST, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         }
-		//} catch (HandlerException e) {
-		//	LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
-		//	resp = CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-		//} 
 		return resp;
 	}
 	
