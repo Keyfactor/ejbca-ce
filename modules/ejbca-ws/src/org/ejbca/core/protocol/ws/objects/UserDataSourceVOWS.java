@@ -20,9 +20,8 @@ import java.util.Set;
 
 /**
  * Class used to represent userdatasource in the WebService API.
- * because of profilenames is used instead of id's.
+ * because of profile names is used instead of ID's.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class UserDataSourceVOWS implements Serializable{

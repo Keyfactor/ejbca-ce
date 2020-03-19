@@ -16,7 +16,6 @@ package org.ejbca.core.model.ca.publisher;
 /**
  * An exception thrown when someone tries to add a Publisher that already exits
  *
- * @author  Philip Vendil 2003-11-26
  * @version $Id$
  */
 public class PublisherExistsException extends java.lang.Exception {
