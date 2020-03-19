@@ -61,8 +61,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
     // Directory and file constants (see ${project.dir}/resources)
     private static File emptyFolder;
     private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "resources/publickey/rsa2048.pub.pem";
-    private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "resources/publickeyfingerprint/public_key_fingerprints_add_remove_test.txt";
-    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "resources/publickeyfingerprint/public_key_debian_fingerprints_add_remove_test.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "resources/publickeyfingerprint/csv/fingerprints.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "resources/publickeyfingerprint/debian/fingerprints.txt";
 
     /** Always allow authentication token. */
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
@@ -186,68 +186,55 @@ public class UpdatePublicKeyBlacklistCommandTest {
     public void test02AddAndRemoveCommandModeByFingerprint() throws IOException {
         log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
 
-        URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
+        final URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         if (null == url) {
             throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         }
-        File dir = new File(url.getPath()).getParentFile();
-        log.info("Using directory (fingerprints): " + dir.getAbsolutePath());
+        final File dir = new File(url.getPath()).getParentFile();
+        log.info("Using directory with fingerprints in CSV file:" + dir.getAbsolutePath());
 
-        // A-1: Insert public key blacklist entries that does not exist, including invalid files (wrong format, unknown key).
+        // A-1: Insert public key blacklist entries from file
         String[] args = new String[] { 
                 UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
                 UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPRINT,
-                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(),
+                UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY
+        };
         CommandResult result = command.execute(args);
-        Assert.assertTrue("Add lists of fingerprints which do not exists must exit with success: " + result,
+        Assert.assertTrue("Adding 2 fingerprints should be successful. Command " + args.toString() + " did not exit with status " + CommandResult.SUCCESS + " but exited with " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
-        // Verify that public key fingerprints were imported.
-        File[] files = dir.listFiles();
-        BlacklistEntry entry;
-        String fingerprint;
-        FileReader reader;
-        List<String> lines;
-        List<String> fingerprints = new ArrayList<>();
-        for (File file : files) {
-            reader = new FileReader(file);
-            lines = IOUtils.readLines(reader);
-            IOUtils.closeQuietly(reader);
-            String[] tokens;
-            for (String line : lines) {
-                tokens = line.split(UpdatePublicKeyBlacklistCommand.CSV_SEPARATOR);
-                if (tokens.length > 0) {
-                    fingerprint = tokens[0];
-                    fingerprints.add(fingerprint);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Trying to retrieve public key blacklist entry: "+fingerprint);
-                    }
-                    entry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, fingerprint);
-                    assertTrue("Public key fingerprint must have been imported.", null != entry);
-                }
-            }
-        }
+        BlacklistEntry rsa1kEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "4961db269ce56da9447266f6f651369fa503ff4731a26923f762ec9e008005f2");
+        assertTrue("Public key fingerprint '4961db269ce56da9447266f6f651369fa503ff4731a26923f762ec9e008005f2' is not blacklisted.", null != rsa1kEntry);
+        BlacklistEntry rsa2kEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "93271e6b120f7e09487b8ec1bf0e16467a48a257d6d3e13ccd749e948d0cba0d");
+        assertTrue("Public key fingerprint '93271e6b120f7e09487b8ec1bf0e16467a48a257d6d3e13ccd749e948d0cba0d' is not blacklisted.", null != rsa2kEntry);
 
         // A-2: Remove again.
-        args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_REMOVE,
+        args = new String[] {
+                UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_REMOVE,
                 UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPRINT,
-                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(),
+                UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY
+        };
         result = command.execute(args);
-        Assert.assertTrue("Remove lists of fingerprints which do exist must exit with success: " + result,
+        Assert.assertTrue("Removing 2 fingerprints should be successful. Command " + args.toString() + " did not exit with status " + CommandResult.SUCCESS + " but exited with " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
-        for (String string : fingerprints) {
-            entry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, string);
-            assertTrue("Public key must exists in data store anymore.", null == entry);
-        }
+        rsa1kEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "4961db269ce56da9447266f6f651369fa503ff4731a26923f762ec9e008005f2");
+        assertTrue("Public key fingerprint '4961db269ce56da9447266f6f651369fa503ff4731a26923f762ec9e008005f2' should no longer be blacklisted.", null == rsa1kEntry);
+        rsa2kEntry = blacklistSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "93271e6b120f7e09487b8ec1bf0e16467a48a257d6d3e13ccd749e948d0cba0d");
+        assertTrue("Public key fingerprint '93271e6b120f7e09487b8ec1bf0e16467a48a257d6d3e13ccd749e948d0cba0d' should no longer be blacklisted.", null == rsa2kEntry);
 
         // Other error cases.
         // B-1: Try add command with an empty folder.
         final int countEntries = blacklistSession.getBlacklistEntryIdToValueMap().size();
         log.info("Using directory (empty folder): " + emptyFolder.getAbsolutePath());
-        args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
+        args = new String[] {
+                UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
                 UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPRINT,
-                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, emptyFolder.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
+                UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, emptyFolder.getAbsolutePath(),
+                UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY
+        };
         result = command.execute(args);
-        Assert.assertTrue("Add empty dir for lists of fingerprints must exit with success: " + result,
+        Assert.assertTrue("Add empty directory without a CSV file with fingerprints must exit with status " + CommandResult.SUCCESS + " but exited with " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that nothing was imported ~
         Assert.assertEquals("After importing an empty folder, the number of blacklist entries must still be the same.",
