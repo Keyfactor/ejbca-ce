@@ -80,27 +80,27 @@
                     <h:selectOneMenu id="statusChangeSelect" value="#{cc.attrs.raEndEntityBean.selectedStatus}" styleClass="pure-input-1-4">
                         <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableStatuses}" var="selectableStatus"
                             itemLabel="#{selectableStatus.statusString}" itemValue="#{selectableStatus.statusConstant}" />
-                        <f:ajax render=":detailsForm:j_idt107:typeEnrollmentCodeLabel :detailsForm:j_idt107:typeEnrollmentCode :detailsForm:j_idt107:repeatEnrollmentCodeLabel :detailsForm:j_idt107:repeatEnrollmentCode" />
+                        <f:ajax event="change" />
                     </h:selectOneMenu>
                 </h:panelGroup>
 
-                <h:outputLabel id="typeEnrollmentCodeLabel" for="enrollmentCode" value="#{msg.enroll_password}"
+                <h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}" />
-                <h:panelGroup id="typeEnrollmentCode"
+                    rendered="#{cc.attrs.editMode}" />
+                <h:panelGroup
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
-                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}">
+                    rendered="#{cc.attrs.editMode}">
                     <h:inputSecret id="enrollmentCode" autocomplete="off" value="#{cc.attrs.raEndEntityBean.enrollmentCode}">
                         <f:ajax event="change" />
                     </h:inputSecret>
                 </h:panelGroup>
 
-                <h:outputLabel id="repeatEnrollmentCodeLabel" for="enrollmentCodeConfirm" value="#{msg.enroll_confirm_password}"
+                <h:outputLabel for="enrollmentCodeConfirm" value="#{msg.enroll_confirm_password}"
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}" />
-                <h:panelGroup id="repeatEnrollmentCode"
+                    rendered="#{cc.attrs.editMode}" />
+                <h:panelGroup
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
-                    rendered="#{cc.attrs.editMode and !cc.attrs.raEndEntityBean.selectedStatusGenerated}">
+                    rendered="#{cc.attrs.editMode}">
                     <h:inputSecret id="enrollmentCodeConfirm" autocomplete="off" value="#{cc.attrs.raEndEntityBean.enrollmentCodeConfirm}">
                         <f:ajax event="change" />
                     </h:inputSecret>
