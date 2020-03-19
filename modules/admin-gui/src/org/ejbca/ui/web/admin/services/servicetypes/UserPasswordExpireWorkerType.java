@@ -18,8 +18,6 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 /**
  * Class managing the view of the Certificate Exiration Notifier Worker
  * 
- * @author Philip Vendil, Tomas Gustavsson
- *
  * @version $Id$
  */
 public class UserPasswordExpireWorkerType extends BaseEmailNotifyingWorkerType {
