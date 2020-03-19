@@ -67,6 +67,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_TAB_PENDING_REQUESTS = By.id("manageRequestsForm:tabPendingRequests");
         static final By BUTTON_DOWNLOAD_PEM = By.id("requestInfoForm:generatePem"); 
         static final By BUTTON_DOWNLOAD_KEYSTORE_PEM = By.id("requestInfoForm:generateKeyStorePem");
+        static final By BUTTON_DOWNLOAD_P12 = By.id("requestInfoForm:generateP12");
         static final By TABLE_REQUESTS = By.id("manageRequestsForm:manageRequestTable");
         static final By TABLE_REQUEST_ROWS = By.xpath("//tbody/tr");
         static final By TABLE_REQUEST_ROW_CELLS = By.xpath(".//td");
@@ -84,6 +85,10 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
+    }
+
+    public void clickDownloadPkcs12(){
+        clickLink(Page.BUTTON_DOWNLOAD_P12);
     }
 
     /**
