@@ -483,7 +483,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ASN1Sequence derSequence = (ASN1Sequence) DERSequence.fromByteArray(decBytes);
             //Issuer and subject have been encoded in the envelope as per section 3.2.3 in the draft
             issuerDN = X500Name.getInstance(derSequence.getObjectAt(0)).toString();                     
-            getCertInitialSubject = X500Name.getInstance(derSequence.getObjectAt(1)).toString(); 
+            getCertInitialSubject = X500Name.getInstance(derSequence.getObjectAt(1)).toString();
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully extracted IssuerAndName: '" + issuerDN + "', '" + getCertInitialSubject + "'.");
+            }
         }
         if (log.isTraceEnabled()) {
         	log.trace("<decrypt");
