@@ -120,7 +120,7 @@ public class AddEndEntityHelper extends BaseHelper {
      * 
      * Selects Token Tope from the 'Token' drop down.
      * 
-     * @param tokenName - PEM, P12, JKS, User Generated etc.
+     * @param tokenName - PEM file, P12 file, JKS file, User Generated etc.
      */
     public void setToken(final String tokenName) {
         selectOptionByName(Page.SELECT_TOKEN, tokenName);

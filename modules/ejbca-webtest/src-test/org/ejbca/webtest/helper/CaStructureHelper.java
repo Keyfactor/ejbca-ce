@@ -71,6 +71,11 @@ public class CaStructureHelper extends BaseHelper {
         webDriver.get("view-source:" + crlUrl);
         assertElementExists(Page.getPreContainsCaName(caName), "The CRL didn't contain the CA's name.");
     }
+    
+    public void downloadCrl(final String caName){
+        clickLink(Page.getCrlUrl(caName));
+        
+    }
 
     public void clickCrlLinkAndAssertNumberIncreased(final String caName){
         int crlNumber = getCrlNumber(caName);
