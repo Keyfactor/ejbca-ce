@@ -74,7 +74,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 		setId(id);
 		setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);        
 		setRequestdate(System.currentTimeMillis());
-		log.debug("Created approval with id " + id);
+		log.debug("Created approval with ID " + id);
 	}
 
 	public ApprovalData() { 

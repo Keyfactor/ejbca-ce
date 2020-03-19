@@ -118,9 +118,6 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
      */
 	@Override
 	public int generateApprovalId() {
-		if (log.isTraceEnabled()) {
-		    log.trace(">generateApprovalId '"+getApprovalType() + ";" + userdata.getUsername() + ";" + getApprovalProfile().getProfileName()+"'");
-		}
 		return generateAddEndEntityApprovalId(userdata.getUsername(), getApprovalProfile().getProfileName());
 	}
 	
@@ -132,6 +129,9 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	 * @return an identifier for this particular request
 	 */
 	public static int generateAddEndEntityApprovalId(final String username, final String approvalProfileName) {
+        if (log.isTraceEnabled()) {
+            log.trace(">generateApprovalId '" + ApprovalDataVO.APPROVALTYPE_ADDENDENTITY + ";" + username + ";" + approvalProfileName+"'");
+        }
 	    return new String(ApprovalDataVO.APPROVALTYPE_ADDENDENTITY + ";" + username + ";" + approvalProfileName).hashCode();
 	}
 

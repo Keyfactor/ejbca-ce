@@ -157,6 +157,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
+                details.put("type", approvalRequest.getApprovalType());
                 List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
                 for (ApprovalDataText text : texts) {
                     details.put(text.getHeader(), text.getData());                    
@@ -168,6 +169,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 log.error(msg, e1);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
+                details.put("type", approvalRequest.getApprovalType());
                 details.put("Error", e1.getMessage());
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
