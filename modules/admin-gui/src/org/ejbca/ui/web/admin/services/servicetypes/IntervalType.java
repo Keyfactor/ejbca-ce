@@ -17,8 +17,6 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  * Class representing an Interval Type, should be registered in the 
  * ServiceTypesManager. Should be inhereted by all interval managed beans.
  *
- * @author Philip Vendil 2006 sep 29
- *
  * @version $Id$
  */
 public abstract class IntervalType extends ServiceType {

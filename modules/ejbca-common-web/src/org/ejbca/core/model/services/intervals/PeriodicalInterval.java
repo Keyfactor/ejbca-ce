@@ -19,12 +19,10 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseInterval;
 
 /**
- * Class implementing a peridical IInterval for monitoring services
+ * Class implementing a periodical interval for monitoring services
  * 
  * The main method is getTimeToExecution
  * 
- * @author Philip Vendil 2006 sep 27
- *
  * @version $Id$
  */
 public class PeriodicalInterval extends BaseInterval {

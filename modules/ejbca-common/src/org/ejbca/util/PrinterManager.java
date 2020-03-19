@@ -30,10 +30,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
  * Class managing EJBCA print functionality, such as listing printers
- * and managing printjobs
+ * and managing print jobs
  * 
- * @author Philip Vendil 2006 sep 20
- *
  * @version $Id$
  */
 public class PrinterManager {

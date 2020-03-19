@@ -26,8 +26,6 @@ import org.cesecore.util.Base64;
  * Class used to generate a java.security.KeyStore from a 
  * org.ejbca.core.protocol.ws.common.KeyStore
  * 
- * @author Philip Vendil
- *
  * @version $Id$
  */
 public class KeyStoreHelper {

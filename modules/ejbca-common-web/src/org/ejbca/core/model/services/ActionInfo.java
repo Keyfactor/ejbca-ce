@@ -19,8 +19,6 @@ import java.io.Serializable;
  * 
  * Can contain any data that both the worker and action supports.
  * 
- * @author Philip Vendil 2006 sep 27
- *
  * @version $Id$
  */
 public interface ActionInfo extends Serializable {
