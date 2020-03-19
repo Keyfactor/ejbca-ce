@@ -19,14 +19,9 @@ import org.ejbca.core.model.token.TokenConstants;
  * base class that this is a certificate response
  * of either a Certificate or KeyStore
  * 
- * 
- * @author Philip Vendil 2007 feb 8
- *
  * @version $Id$
  */
 public class TokenCertificateResponseWS {
-	
-
 
 	private int type = 0;
 	private Certificate certificate;
