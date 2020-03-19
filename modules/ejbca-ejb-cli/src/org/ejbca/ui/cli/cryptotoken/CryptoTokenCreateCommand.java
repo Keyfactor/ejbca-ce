@@ -89,8 +89,10 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         registerParameter(new Parameter(PKCS11_ATTR_FILE_KEY, "Attribute File", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 Attribute File"));
         registerParameter(new Parameter(PKCS11_SLOTCOLLIDE_IGNORE, "Ignore used P11 slots", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Ignore warnings, and confirm yes, for P11 slots that are already used."));
-        registerParameter(new Parameter(AWSKMS_ACCESSKEYID, "Access Key ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "Access Key ID for AWS KMS, example AKIA2I6NL4C3YGQJ6YY3"));
-        registerParameter(new Parameter(AWSKMS_REGION, "Region", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "AWS KMS region, example us-east-1."));
+        registerParameter(new Parameter(AWSKMS_ACCESSKEYID, "Access Key ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(AWSKMSCryptoToken) Access Key ID for AWS KMS, example AKIA2I6NL4C3YGQJ6YY3"));
+        registerParameter(new Parameter(AWSKMS_REGION, "Region", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(AWSKMSCryptoToken) AWS KMS region, example us-east-1."));
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
