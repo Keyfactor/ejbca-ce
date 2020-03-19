@@ -271,10 +271,6 @@ public class RaEndEntityBean implements Serializable {
         return selectedStatus;
     }
 
-    public boolean isSelectedStatusGenerated() {
-        return selectedStatus == EndEntityConstants.STATUS_GENERATED;
-    }
-
     /**
      * Sets the selected status to a new status
      * 
