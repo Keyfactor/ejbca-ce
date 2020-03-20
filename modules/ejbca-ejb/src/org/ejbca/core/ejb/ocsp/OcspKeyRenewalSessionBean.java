@@ -76,6 +76,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -256,6 +257,8 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         } catch (CertificateImportException e) {
             throw new KeyRenewalFailedException(e);
         } catch (AuthorizationDeniedException e) {
+            throw new KeyRenewalFailedException(e);
+        } catch (InternalKeyBindingNonceConflictException e) {
             throw new KeyRenewalFailedException(e);
         }
         /*

@@ -57,6 +57,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -258,9 +259,10 @@ public class CertificateRequestThrowAwayTest {
      * Change CA configuration for what to store and assert that the changes were made.
      * 
      * @throws CADoesntExistsException
+     * @throws InternalKeyBindingNonceConflictException 
      */
     private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException,
-            CADoesntExistsException, CmsCertificatePathMissingException {
+            CADoesntExistsException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
         CAInfo caInfo = caSession.getCAInfo(admin, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);

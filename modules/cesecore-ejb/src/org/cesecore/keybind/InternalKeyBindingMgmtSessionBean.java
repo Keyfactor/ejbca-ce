@@ -70,6 +70,8 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -340,7 +342,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, 
+                InternalKeyBindingNonceConflictException {
         return createInternalKeyBinding(authenticationToken, type, id, name, status,
             certificateId, cryptoTokenId, keyPairAlias, false, signatureAlgorithm, dataMap,
             trustedCertificateReferences);
@@ -350,7 +353,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, 
+                InternalKeyBindingNonceConflictException {
         if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
                 + "/" + cryptoTokenId)) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
@@ -363,8 +367,34 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
         final LinkedHashMap<Object, Object> initDataMap = new LinkedHashMap<Object, Object>();
         if (dataMap != null) {
+            
             for (final Entry<String, Serializable> entry : dataMap.entrySet()) {
                 String key = entry.getKey();
+                if ("enableNonce".equals(key) && "true".equals(entry.getValue().toString()) && certificateId != null) {
+                    CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(certificateId);
+                    if (certificateDataWrapper == null)  {
+                        continue;
+                    }
+                    CertificateData certificateData = certificateDataWrapper.getCertificateData();
+                    String caFingerprint = certificateData.getCaFingerprint();
+                    CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
+                    if (caCertificateDataWrapper == null)  {
+                        continue;
+                    }
+                    CertificateData caCertificateData = certificateDataWrapper.getCertificateData();
+                    String base64Cert = caCertificateData.getBase64Cert();
+                    
+                    List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
+                    for (CAInfo caInfo : caInfos) {
+                        if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
+                            String caCert = caInfo.getCertificateChain().get(0).toString();
+                            if (caCert.equals(base64Cert) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses() == true) {
+                                throw new InternalKeyBindingNonceConflictException("Can not create OCSP Key Binding with nonce enabled in response when"
+                                        + "the associated CA has pre-production of OCSP responses enabled.");
+                            }                            
+                        }
+                    }
+                }
                 if (key.startsWith(InternalKeyBindingBase.SUBCLASS_PREFIX)) {
                     initDataMap.put(key, entry.getValue());
                 } else {
@@ -421,7 +451,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, 
+                InternalKeyBindingNonceConflictException {
         return createInternalKeyBinding(authenticationToken, type, 0, name, status, certificateId, cryptoTokenId, keyPairAlias, signatureAlgorithm,
                 dataMap,trustedCertificateReferences);
     }
@@ -752,7 +783,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @Override
     public void importCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] derEncodedCertificate)
-            throws AuthorizationDeniedException, CertificateImportException {
+            throws AuthorizationDeniedException, CertificateImportException, InternalKeyBindingNonceConflictException {
         if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
                     authenticationToken.toString());
@@ -766,6 +797,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException(e);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBindingForEdit(internalKeyBindingId);
+        
         final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String originalCertificateId = internalKeyBinding.getCertificateId();
         final String originalKeyPairAlias = internalKeyBinding.getKeyPairAlias();
@@ -780,6 +812,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         boolean updated = false;
         try {
             String certificateId = CertTools.getFingerprintAsString(certificate);
+            
+            checkForPreProductionAndNonceConflictBeforeImport(authenticationToken, internalKeyBinding, certificateId);
+            
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalKeyPairAlias).getPublicKey();
             if (log.isDebugEnabled()) {
                 log.debug("currentPublicKey: "
@@ -844,6 +879,34 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             }
         } else {
             throw new CertificateImportException("No keys matching the certificate were found.");
+        }
+    }
+
+    private void checkForPreProductionAndNonceConflictBeforeImport(AuthenticationToken authenticationToken, final InternalKeyBinding internalKeyBinding,
+            String certificateId) throws InternalKeyBindingNonceConflictException {
+        if ("OcspKeyBinding".equals(internalKeyBinding.getImplementationAlias())) {
+            DynamicUiProperty<? extends Serializable> nonceProperty = internalKeyBinding.getProperty("enableNonce");
+            if (nonceProperty != null && "true".equals(nonceProperty.getValue().toString()) && certificateId != null) {
+                CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(certificateId);
+                if (certificateDataWrapper != null)  {
+                    CertificateData certificateData = certificateDataWrapper.getCertificateData();
+                    String caFingerprint = certificateData.getCaFingerprint();
+                    CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
+                    if (caCertificateDataWrapper != null)  {
+                        Certificate caCertificate = caCertificateDataWrapper.getCertificate();                        
+                        List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
+                        for (CAInfo caInfo : caInfos) {
+                            if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
+                                Certificate caCert = caInfo.getCertificateChain().get(0);
+                                if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses() == true) {
+                                    throw new InternalKeyBindingNonceConflictException("Can not import certificate for OCSP Key Binding with nonce enabled in response when "
+                                            + "the associated CA has pre-production of OCSP responses enabled.");
+                                }                            
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

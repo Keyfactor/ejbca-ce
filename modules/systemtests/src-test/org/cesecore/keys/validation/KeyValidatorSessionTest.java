@@ -77,6 +77,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -928,7 +929,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         return (EndEntityInformation) o;
     }
 
-    private void setKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException {
+    private void setKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException {
         ca.getCAInfo().getValidators().clear();
         for (int validatorId : validatorIds) {
             ca.getCAInfo().getValidators().add(validatorId);
@@ -937,7 +938,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         ca.setCAInfo(caSession.getCAInfo(internalAdmin, ca.getCAId()));
     }
 
-    private void removeKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException {
+    private void removeKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException {
         Collection<Integer> ids = ca.getCAInfo().getValidators();
         for (int validatorId : validatorIds) {
             ids.remove(validatorId);
