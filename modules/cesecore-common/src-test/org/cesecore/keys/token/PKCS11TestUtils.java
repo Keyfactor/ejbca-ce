@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
@@ -36,6 +37,9 @@ public class PKCS11TestUtils {
     public static final String PKCS11_SECURITY_PROVIDER = "pkcs11.provider";
     public static final String PKCS11_SLOT_TYPE = "pkcs11.slottype"; 
     public static final String PKCS11_SLOT_VALUE = "pkcs11.slottypevalue"; 
+    private static final String PKCS11_TOKEN_NUMBER = "pkcs11.token_number";
+    private static final String PKCS11_TOKEN_INDEX = "pkcs11.token_index";
+    private static final String PKCS11_TOKEN_LABEL = "pkcs11.token_label";
 
     private static final String UTIMACO_PKCS11_LINUX_LIB = "/etc/utimaco/libcs2_pkcs11.so";
     private static final String UTIMACO_PKCS11_WINDOWS_LIB = "C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll";
@@ -87,7 +91,7 @@ public class PKCS11TestUtils {
             ret = "SunPKCS11-cryptoki.dll-slot1";
         }
         // Override auto-detected properties if configuration exists
-        ret = getSystemTestsProperties().getProperty(PKCS11_SECURITY_PROVIDER, ret);
+        ret = StringUtils.trim(getSystemTestsProperties().getProperty(PKCS11_SECURITY_PROVIDER, ret));
         if (log.isDebugEnabled()) {
             log.debug("getHSMProvider: "+ret);
         }
@@ -122,33 +126,80 @@ public class PKCS11TestUtils {
             ret = protectServerWindows.getAbsolutePath();
         }
         // Override auto-detected properties if configuration exists
-        ret = getSystemTestsProperties().getProperty(PKCS11_LIBRARY, ret);
+        ret = StringUtils.trim(getSystemTestsProperties().getProperty(PKCS11_LIBRARY, ret));
         if (log.isDebugEnabled()) {
             log.debug("getHSMLibrary: "+ret);
         }
         return ret;
     }
+    
+    /**
+     * Returns the configured PKCS#11 slot/token type as a string. The default is "1", if not configured.
+     */
+    public static String getPkcs11SlotValue() {
+        return getPkcs11SlotValue("1");
+    }
 
-    public static String getPkcs11SlotValue(final String defaultValue) {
-        final String ret = getSystemTestsProperties().getProperty(PKCS11_SLOT_VALUE, defaultValue);
+    /**
+     * Returns the configured PKCS#11 slot/token type as a string, or the given default value if not configured.
+     * <p>
+     * <strong>Note:</strong> If the user has configured a different value in systemtests.properties, then that will be returned. Using this method can result in fragile tests.
+     */
+    public static String getPkcs11SlotValue(String defaultValue) {
+        final String ret = getSystemTestsProperties().getProperty(PKCS11_SLOT_VALUE, defaultValue).trim();
         if (log.isDebugEnabled()) {
             log.debug("PKCS11_SLOT_VALUE: "+ret);
         }
         return ret;
     }
 
-    public static Pkcs11SlotLabelType getPkcs11SlotType(final String defaultValue) {
-        final Pkcs11SlotLabelType ret = Pkcs11SlotLabelType.getFromKey(getSystemTestsProperties().getProperty(PKCS11_SLOT_TYPE, defaultValue));
+    /**
+     * Returns the configured PKCS#11 slot/token type. The default is Pkcs11SlotLabelType.SLOT_NUMBER
+     * 
+     * @return A Pkcs11SlotLabelType enum value
+     */
+    public static Pkcs11SlotLabelType getPkcs11SlotType() {
+        final String defaultValue = Pkcs11SlotLabelType.SLOT_NUMBER.getKey();
+        final String propertyValue = getSystemTestsProperties().getProperty(PKCS11_SLOT_TYPE, defaultValue);
+        final Pkcs11SlotLabelType ret = Pkcs11SlotLabelType.getFromKey(propertyValue.trim());
         if (log.isDebugEnabled()) {
             log.debug("PKCS11_SLOT_TYPE: "+ret.getKey());
         }
         return ret;
     }
 
-    public static String getPkcs11SlotPin(String defaultValue) {
-        final String ret = getSystemTestsProperties().getProperty(PKCS11_SLOT_PIN, defaultValue);
+    /** Returns the configured PKCS#11 slot/token PIN as a string. The default is "userpin1", if not configured. */
+    public static String getPkcs11SlotPin() {
+        final String ret = getSystemTestsProperties().getProperty(PKCS11_SLOT_PIN, "userpin1").trim();
         if (log.isDebugEnabled()) {
             log.debug("PKCS11_SLOT_PIN: "+ret);
+        }
+        return ret;
+    }
+    
+    /** Returns the token number for the configured token, or null if not configured. Use in tests that require specifically a token number. */
+    public static String getPkcs11TokenNumber() {
+        final String ret = StringUtils.trimToNull(getSystemTestsProperties().getProperty(PKCS11_TOKEN_NUMBER, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_NUMBER: "+ret);
+        }
+        return ret;
+    }
+    
+    /** Returns the token index for the configured token, or null if not configured. Use in tests that require specifically a token index. */
+    public static String getPkcs11TokenIndex() {
+        final String ret = StringUtils.trimToNull(getSystemTestsProperties().getProperty(PKCS11_TOKEN_INDEX, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_INDEX: "+ret);
+        }
+        return ret;
+    }
+    
+    /** Returns the token label for the configured token, or null if not configured. Use in tests that require specifically a token label. */
+    public static String getPkcs11TokenLabel() {
+        final String ret = StringUtils.trimToNull(getSystemTestsProperties().getProperty(PKCS11_TOKEN_LABEL, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_LABEL: "+ret);
         }
         return ret;
     }
