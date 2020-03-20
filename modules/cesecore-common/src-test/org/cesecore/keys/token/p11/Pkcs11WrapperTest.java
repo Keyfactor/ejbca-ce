@@ -13,11 +13,15 @@
 package org.cesecore.keys.token.p11;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
+import java.util.Arrays;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.util.CryptoProviderTools;
@@ -35,9 +39,6 @@ public class Pkcs11WrapperTest {
 
     private static final Logger log = Logger.getLogger(Pkcs11WrapperTest.class);
 
-    private static final String SLOT_LABEL = "ejbca";
-    private static final long SLOT_NUMBER = 1;
-
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -46,7 +47,7 @@ public class Pkcs11WrapperTest {
     @Before
     public void checkPkcs11DriverAvailable() {
         // Skip test if no PKCS11 driver is installed
-        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
+        assumeTrue("No PKCS#11 library configured", PKCS11TestUtils.getHSMLibrary() != null);
     }
 
     @Test
@@ -60,16 +61,73 @@ public class Pkcs11WrapperTest {
         }
 
     }
+    
+    private Pkcs11Wrapper getPkcs11Wrapper() {
+        final String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
+        return Pkcs11Wrapper.getInstance(new File(pkcs11Library));
+    }
 
     /**
      * Verifies that the getTokenLabel method works. Note that this method will fail in HSMs without
      * fixed slot numbers, e.g. nCypher
+     * <p>
+     * Requires that pkcs11.token_number and pkcs11.token_label properties to be set in systemtests.properties
      */
     @Test
-    public void testGetSlotLabel() {
-        String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
-        Pkcs11Wrapper pkcs11Wrapper = Pkcs11Wrapper.getInstance(new File(pkcs11Library));
-        assertEquals("Correct slot label was not found.", SLOT_LABEL, new String(pkcs11Wrapper.getTokenLabel(SLOT_NUMBER)));
+    public void testGetTokenLabel() {
+        assumeTrue("pkcs11.token_number and pkcs11.token_label must be set for this test to work",
+                PKCS11TestUtils.getPkcs11TokenNumber() != null && PKCS11TestUtils.getPkcs11TokenLabel() != null);
+        final Pkcs11Wrapper pkcs11Wrapper = getPkcs11Wrapper();
+        final long tokenId = Long.valueOf(PKCS11TestUtils.getPkcs11TokenNumber());
+        final char[] foundLabel = pkcs11Wrapper.getTokenLabel(tokenId);
+        assertNotNull("Label was not found", foundLabel);
+        assertEquals("Wrong token label was returned.", PKCS11TestUtils.getPkcs11TokenLabel(), new String(foundLabel));
+    }
+
+    /**
+     * Tests the getSlotList method. Depending on the PKCS#11 configuration, it will test different things:
+     * <ul>
+     * <li>For SLOT_INDEX, we check that the index is present in the list.
+     * <li>For SLOT_NUMBER, we check that the number (token ID) is present in the list.
+     * <li>For SLOT_LABEL, we check that there is a slot/token with the configured label.
+     */
+    @Test
+    public void testGetSlotList() {
+        final Pkcs11Wrapper pkcs11Wrapper = getPkcs11Wrapper();
+        final long[] tokenIds = pkcs11Wrapper.getSlotList();
+        assertTrue("Should have at least one slot/token.", tokenIds.length > 0);
+        final Pkcs11SlotLabelType tokenReferenceType = PKCS11TestUtils.getPkcs11SlotType();
+        log.info("Testing " + tokenReferenceType);
+        switch (tokenReferenceType) {
+        case SLOT_INDEX:
+            assertTrue("Configured slot/token index was not found.", tokenIds.length >= Integer.valueOf(PKCS11TestUtils.getPkcs11SlotValue()));
+            break;
+        case SLOT_LABEL:
+            final String expectedLabel = PKCS11TestUtils.getPkcs11SlotValue();
+            assertTrue("Configured slot/token label was not found.", Arrays.stream(tokenIds).anyMatch(
+                    tokenId -> expectedLabel.equals(String.valueOf(pkcs11Wrapper.getTokenLabel(tokenId)))));
+            break;
+        case SLOT_NUMBER:
+            final long expectedId = Long.valueOf(PKCS11TestUtils.getPkcs11SlotValue());
+            assertTrue("Configured slot/token label was not found.", ArrayUtils.contains(tokenIds, expectedId));
+            break;
+        case SUN_FILE:
+            assumeTrue("Cannot test slot/token type " + PKCS11TestUtils.getPkcs11SlotType(), false);
+        }
+    }
+    
+    /**
+     * Tests the getSlotList method and getSlotLabel methods together. Works regardless of PKCS#11 slot/token configuration,
+     * but cannot check the results. 
+     */
+    @Test
+    public void testGetSlotListLabels() {
+        Pkcs11Wrapper pkcs11Wrapper = getPkcs11Wrapper();
+        long[] tokenIds = pkcs11Wrapper.getSlotList();
+        assertTrue("Should have at least one slot/token.", tokenIds.length > 0);
+        for (final long tokenId : tokenIds) {
+            pkcs11Wrapper.getTokenLabel(tokenId);
+        }
     }
 
 }
