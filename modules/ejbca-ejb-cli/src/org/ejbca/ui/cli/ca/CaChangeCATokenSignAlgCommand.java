@@ -19,6 +19,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -82,7 +83,11 @@ public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
             log.error("CA " + caName + " could not be modified, CMS certificate path was missing");
             log.trace("<execute()");
             return CommandResult.FUNCTIONAL_FAILURE;
-        } 
+        } catch (InternalKeyBindingNonceConflictException e) {
+            log.error("CA " + caName + " conflict detected. OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response."
+                    + "Ignoring since the pre-production of OCSP responses setting was not modified here.");
+            log.trace("<execute()");
+        }
 
         log.trace("<execute()");
         return CommandResult.SUCCESS;

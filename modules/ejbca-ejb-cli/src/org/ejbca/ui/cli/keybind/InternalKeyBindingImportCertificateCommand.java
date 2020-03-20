@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -83,6 +84,9 @@ public class InternalKeyBindingImportCertificateCommand extends RudInternalKeyBi
             return CommandResult.SUCCESS;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to read PEM format certificate from \"" + filename + "\". " + e.getMessage());
+        } catch (InternalKeyBindingNonceConflictException e) {
+            throw new IllegalStateException("Failed to import certificate. OCSP key binding should not have nonce enabled when "
+                    + "the corresponding CA has pre-production of OCSP responses enabled. " + e.getMessage());
         } catch (CertificateException e) {
             log.error("Failed to read PEM format certificate from \"" + filename + "\". " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;

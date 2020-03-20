@@ -32,6 +32,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
@@ -137,7 +138,7 @@ public class HealthCheckTest {
 
     @Test
     public void testPublisherHealthCheck() throws PublisherExistsException, AuthorizationDeniedException, IOException, CADoesntExistsException,
-            CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+            CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InternalKeyBindingNonceConflictException {
         //Make sure that publishers are checked by health check
         String originalValue = configurationSession.getProperty("healthcheck.publisherconnections");
         if (!originalValue.equals("true")) {

@@ -55,6 +55,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -105,9 +106,10 @@ public class OcspTestUtils {
      * @throws AuthorizationDeniedException
      * @throws InternalKeyBindingNameInUseException
      * @throws InvalidAlgorithmException
+     * @throws InternalKeyBindingNonceConflictException 
      */
     public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName, String keyspec, String sigAlg) throws InvalidKeyException,
-            CryptoTokenOfflineException, InvalidAlgorithmParameterException, AuthorizationDeniedException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+            CryptoTokenOfflineException, InvalidAlgorithmParameterException, AuthorizationDeniedException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE

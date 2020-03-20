@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -173,6 +174,7 @@ public interface CAAdminSession {
      * @param certificates contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
      * @throws CmsCertificatePathMissingException 
+     * @throws InternalKeyBindingNonceConflictException 
      */
     void updateCACertificate(final AuthenticationToken authenticationToken, final int caId, final Collection<CertificateWrapper> wrappedCerts)
             throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CmsCertificatePathMissingException;
@@ -195,9 +197,10 @@ public interface CAAdminSession {
      * @throws AuthorizationDeniedException if user was denied authorization to edit CAs
      * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys
      * @throws InvalidAlgorithmException if the CA signature algorithm is invalid
+     * @throws InternalKeyBindingNonceConflictException 
      */
     void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, InvalidAlgorithmException;
+            CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException;
 
     /**
      * Renews a existing CA certificate using the requested keys or by
@@ -522,11 +525,12 @@ public interface CAAdminSession {
      * may in fact be changed, which is not possible otherwise. 
      * 
      * @param cainfo CAInfo object containing values that will be updated
+     * @throws InternalKeyBindingNonceConflictException 
      * 
      * @see org.ejbca.core.model.ca.caadmin.CAInfo
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
      */
-    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException;
+    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException;
 
     /**
      * Method used to check if certificate profile id exists in any CA.

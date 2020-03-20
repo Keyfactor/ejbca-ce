@@ -24,6 +24,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
@@ -102,7 +103,9 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
                         }
                     }
                 } catch (CADoesntExistsException e) {
-                    log.error("CA with id "+caid+"suddenly disappeared...ignoring.");
+                    log.error("CA with id " + caid + "suddenly disappeared...ignoring.");
+                } catch (InternalKeyBindingNonceConflictException e) {
+                    log.error("CA with id " + caid + "has a related OCSPKeyBinding with nonce enabled in response...ignoring.");
                 }
             }
             final CertificateProfileSessionRemote cpSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);

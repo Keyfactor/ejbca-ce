@@ -155,6 +155,7 @@ import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -2058,7 +2059,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades. */
     @Deprecated //Remove this method as soon as upgrading from 5->6 is dropped
-    private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException {
+    private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, 
+    CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
         final Enumeration<String> aliases = keyStore.aliases();
         boolean noAliases = true;
         while (aliases.hasMoreElements()) {

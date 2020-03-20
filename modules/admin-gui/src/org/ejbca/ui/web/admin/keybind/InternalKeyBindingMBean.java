@@ -63,6 +63,9 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -78,6 +81,7 @@ import org.cesecore.keybind.InternalKeyBindingCache;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
@@ -501,6 +505,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         } catch (CertificateImportException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
         } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
+        } catch (InternalKeyBindingNonceConflictException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
         }
     }
@@ -1439,13 +1445,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             } catch (InvalidAlgorithmException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            } catch (InternalKeyBindingNonceConflictException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
         }
     }
 
-    /** Invoked when the user is done re-configuring an InternalKeyBinding and wants to persist it */
+    /** Invoked when the user is done re-configuring an InternalKeyBinding and wants to persist it 
+     * @throws InternalKeyBindingNonceConflictException */
     @SuppressWarnings("unchecked")
-    public void saveCurrent() {
+    public void saveCurrent() throws InternalKeyBindingNonceConflictException {
         try {
             final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
                     Integer.parseInt(currentInternalKeyBindingId));
@@ -1480,14 +1489,40 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                     .getWrappedData();
             for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
+                if (isOcspKeyBinding() && "enableNonce".equals(property.getName()) && "true".equals(property.getValue().toString()) && internalKeyBinding.getCertificateId() != null) {
+                    CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(internalKeyBinding.getCertificateId());
+                    if (certificateDataWrapper == null)  {
+                        continue;
+                    }
+                    CertificateData certificateData = certificateDataWrapper.getCertificateData();
+                    String caFingerprint = certificateData.getCaFingerprint();
+                    CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
+                    if (caCertificateDataWrapper == null)  {
+                        continue;
+                    }
+                    Certificate caCertificate = caCertificateDataWrapper.getCertificate();
+                    
+                    List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
+                    for (CAInfo caInfo : caInfos) {
+                        if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
+                            Certificate caCert = caInfo.getCertificateChain().get(0);
+                            if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses() == true) {
+                                throw new InternalKeyBindingNonceConflictException("Can not save OCSP Key Binding with nonce enabled in response when"
+                                        + "the associated CA has pre-production of OCSP responses enabled.");
+                            }                            
+                        }
+                    }
+                }
+                
                 internalKeyBinding.setProperty(property.getName(), property.getValue());
-            }
+            }          
+            
             currentInternalKeyBindingId = String
                     .valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " saved"));
         } catch (AuthorizationDeniedException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (InternalKeyBindingNameInUseException e) {
+        } catch (InternalKeyBindingNameInUseException | InternalKeyBindingNonceConflictException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }

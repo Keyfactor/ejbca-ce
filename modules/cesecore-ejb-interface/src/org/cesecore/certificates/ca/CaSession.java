@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 
 /*! \mainpage The CESeCore project
 *
@@ -76,8 +77,9 @@ public interface CaSession {
      * @param cainfo the CAInfo to change values of the CA
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
+     * @throws InternalKeyBindingNonceConflictException 
      */
-    void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException;
+    void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException;
 
     /**
      * Method returning id's of all CA's in system.
