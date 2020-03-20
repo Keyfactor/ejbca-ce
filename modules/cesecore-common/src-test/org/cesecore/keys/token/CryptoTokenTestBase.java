@@ -51,7 +51,7 @@ import static org.junit.Assert.fail;
  */
 public abstract class CryptoTokenTestBase {
 
-    public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin("userpin1");
+    public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin();
 
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -422,7 +422,7 @@ public abstract class CryptoTokenTestBase {
                 cryptoToken.activate(PKCS11TestUtils.WRONG_PIN.toCharArray());
                 fail("Should have thrown");
             } catch (CryptoTokenAuthenticationFailedException e) {
-                strp11 = strp11 + "'" + PKCS11TestUtils.getPkcs11SlotValue("1") + "'.";
+                strp11 = strp11 + "'" + PKCS11TestUtils.getPkcs11SlotValue() + "'.";
                 assertTrue("exception is not one of the expected: " + e.getMessage(), e.getMessage().equals(strsoft) || e.getMessage().equals(strp11) || e.getMessage().equals(strP11Ng));
             }
             cryptoToken.activate(tokenpin.toCharArray());
