@@ -20,6 +20,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.PKCS11CryptoToken;
@@ -146,7 +147,11 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             log.error("No such CA with by name " + caName);
             log.error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
-        }
+        } catch (InternalKeyBindingNonceConflictException e) {
+            log.error("Conflict for " + caName + "detected. OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response. "
+                    + "Ignoring since the pre-production of OCSP responses setting was not modified here.");
+            log.error(getCaList());
+        } 
         log.trace("<execute()");
         return CommandResult.SUCCESS;
     }

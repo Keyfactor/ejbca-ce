@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -116,7 +117,8 @@ public class CaRemovePublisherCommandTest {
     }
 
     @Test
-    public void testExecuteRemoveWithRefs() throws PublisherExistsException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileExistsException {
+    public void testExecuteRemoveWithRefs() throws PublisherExistsException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileExistsException, 
+            InternalKeyBindingNonceConflictException {
         try {
             LdapPublisher publisher = new LdapPublisher();
             int id = publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
