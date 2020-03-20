@@ -24,6 +24,7 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.keybind.InternalKeyBindingFactory;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -144,6 +145,9 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (AuthorizationDeniedException e) {
             return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (InternalKeyBindingNonceConflictException e) {
+            log.error("ERROR: Keybinding's nonce setting conflicts with CA's OCSP response pre-production setting.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
         getLogger().info("InternalKeyBinding with id " + internalKeyBindingIdNew + " created successfully.");
         return CommandResult.SUCCESS;

@@ -25,6 +25,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
@@ -187,6 +188,10 @@ nextCertSignKey fooalias03
             getLogger().error("No such CA with name: " + caName);
             getLogger().error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (InternalKeyBindingNonceConflictException e) {
+            getLogger().error("CA " + caName + " can not be modified, OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response. "
+                    + "Ignoring since the pre-production of OCSP responses setting was not modified here.");
+            getLogger().error(getCaList());
         } 
         log.trace("<execute()");
         return CommandResult.SUCCESS;
