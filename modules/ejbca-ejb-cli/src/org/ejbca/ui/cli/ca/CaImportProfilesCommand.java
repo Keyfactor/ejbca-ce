@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.cli.ca;
 
 import java.beans.XMLDecoder;
@@ -25,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -69,6 +69,11 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                 "Name of a CA to restrict imported profiles to."));
     }
 
+    private CaSessionRemote caSession = null;
+    private CertificateProfileSessionRemote certificateProfileSession = null;
+    private EndEntityProfileSessionRemote endEntityProfileSession = null;
+    private PublisherSessionRemote publisherSession = null;
+
     @Override
     public String getMainCommand() {
         return "importprofiles";
@@ -76,300 +81,242 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String inpath = parameters.get(DIRECTORY_KEY);
-        Integer caid = null;
-        String caName = parameters.get(CA_NAME_KEY);
+        final String inputDir = parameters.get(DIRECTORY_KEY);
+        if(inputDir == null) {
+            getLogger().error("Directory parameter is mandatory.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        final String caName = parameters.get(CA_NAME_KEY);
+        Integer caId = null;
         if (caName != null) {
             CAInfo ca;
             try {
-                ca = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
+                ca = getCaSession().getCAInfo(getAuthenticationToken(), caName);
                 if (ca == null) {
                     getLogger().error("CA '" + caName + "' does not exist.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
             } catch (AuthorizationDeniedException e) {
-                getLogger().error("CLI user not authorized to CA '" + caName);
+                getLogger().error("CLI user not authorized to CA '" + caName + "'.");
                 return CommandResult.AUTHORIZATION_FAILURE;
             }
-            caid = ca.getCAId();
-
+            caId = ca.getCAId();
         }
-        CryptoProviderTools.installBCProvider();
-        // Mapping used to translate certificate profile ids when importing end entity profiles. Used when the profile id of a cert profile changes
-        // and we need to change the mapping from the ee profile to cert profiles
-        HashMap<Integer, Integer> certificateProfileIdMapping = new HashMap<Integer, Integer>();
-        getLogger().info("Importing certificate and end entity profiles: ");
-        File inFile = new File(inpath);
-        if (!inFile.isDirectory()) {
-            getLogger().error("'" + inpath + "' is not a directory.");
+        final File inputDirFile = new File(inputDir);
+        if(!inputDirFile.canRead()) {
+            getLogger().error("'" + inputDir + "' cannot be read.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        if (!inputDirFile.isDirectory()) {
+            getLogger().error("'" + inputDir + "' is not a directory.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         // List all filenames in the given directory, we will try to import them all
-        File[] infiles = inFile.listFiles();
-        FileTools.sortByName(infiles);
+        final File[] inputDirFiles = inputDirFile.listFiles();
+        if(inputDirFiles == null || inputDirFiles.length == 0) {
+            getLogger().error("'" + inputDir + "' is empty.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        //
+        CryptoProviderTools.installBCProvider();
+        // Mapping used to translate certificate profile ids when importing end entity profiles. Used when the profile id of a cert profile changes
+        // and we need to change the mapping from the ee profile to cert profiles
+        HashMap<Integer, Integer> certificateProfileIdMapping = new HashMap<>();
+        getLogger().info("Importing certificate and end entity profiles: ");
+        CommandResult commandResult = CommandResult.SUCCESS;
+        FileTools.sortByName(inputDirFiles);
         try {
-            for (int i = 0; i < infiles.length; i++) {
-                getLogger().info("Filename: " + infiles[i].getName());
-                if (infiles[i].isFile()
-                        && ((infiles[i].getName().indexOf("certprofile_") > -1) || (infiles[i].getName().indexOf("entityprofile_") > -1))) {
-                    boolean entityprofile = false;
-                    if (infiles[i].getName().indexOf("entityprofile_") > -1) {
-                        entityprofile = true;
+            for (File inputFile : inputDirFiles) {
+                getLogger().info("Filename: '" + inputFile.getName() + "'");
+                if (inputFile.isFile()) {
+                    final String fileName = inputFile.getName();
+                    ProfileInfo profileInfo = getProfileInfoFromFileName(fileName);
+                    if(profileInfo == null) {
+                        getLogger().info("Skipped: '" + fileName + "'");
+                        commandResult = CommandResult.FUNCTIONAL_FAILURE;
                     }
-                    int index1 = infiles[i].getName().indexOf("_");
-                    int index2 = infiles[i].getName().lastIndexOf("-");
-                    int index3 = infiles[i].getName().lastIndexOf(".xml");
-                    if (index1 < 0 || index2 < 0 || index3 < 0) {
-                        getLogger().error("Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
-                    } else {
-                        final String filename = infiles[i].getName().substring(index1 + 1, index2);
-                        String profilename;
-                        try {
-                            profilename = URLDecoder.decode(filename, "UTF-8");
-                        } catch (UnsupportedEncodingException e) {
-                            throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-                        }
-                        int profileid = Integer.parseInt(infiles[i].getName().substring(index2 + 1, index3));
-                        // We don't add the fixed profiles, EJBCA handles those automagically
-                        if (!entityprofile && CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
-                            getLogger().error("Not adding fixed certificate profile '" + profilename + "'.");
+                    else {
+                        // We don't add the fixed profiles, EJBCA handles those automatically
+                        if (profileInfo.isCertificateProfile && CertificateProfileConstants.isFixedCertificateProfile(profileInfo.getProfileId())) {
+                            getLogger().error("Not adding fixed certificate profile '" + profileInfo.getProfileName() + "'.");
+                        } else if (profileInfo.isEntityProfile() && profileInfo.getProfileId() == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
+                            getLogger().error("Not adding fixed entity profile '" + profileInfo.getProfileName() + "'.");
                         } else {
-                            if (entityprofile && profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
-                                getLogger().error("Not adding fixed entity profile '" + profilename + "'.");
-                            } else {
-                                // Check if the profiles already exist, and change the name and id if already taken
-                                boolean error = false;
-                                // when we need to create a new certprofile id, this will hodl the original value so we
-                                // can insert a mapping in certificateProfileIdMapping when we have created a new id
-                                int oldprofileid = -1;
-                                if (entityprofile) {
-                                    if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(
-                                            profilename) != null) {
-                                        getLogger().error("Entity profile '" + profilename + "' already exist in database.");
-                                        error = true;
-                                    } else if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(
-                                            profileid) != null) {
-                                        int newprofileid = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
-                                                .findFreeEndEntityProfileId();
-                                        getLogger()
-                                                .warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
-                                                        + " instead.");
-                                        profileid = newprofileid;
+                            // Check if the profiles already exist, and change the name and id if already taken
+                            profileInfo = checkIfProfileExists(profileInfo);
+                            // when we need to create a new certprofile id, this will hold the original value so we
+                            // can insert a mapping in certificateProfileIdMapping when we have created a new id
+                            if (profileInfo.isOk()) {
+                                FileInputStream is;
+                                try {
+                                    is = new FileInputStream(inputFile);
+                                } catch (FileNotFoundException e) {
+                                    // Shouldn't happen, we've already vetted the file directory above
+                                    throw new IllegalStateException("An exception was encountered with an already vetted file directory", e);
+                                }
+                                final XMLDecoder decoder = new XMLDecoder(is);
+                                if (profileInfo.isEntityProfile) {
+                                    // Add end entity profile
+                                    EndEntityProfile endEntityProfile = new EndEntityProfile();
+                                    endEntityProfile.loadData(decoder.readObject());
+                                    // Translate cert profile ids that have changed after import
+                                    String availableCertProfiles = "";
+                                    String defaultCertProfile = endEntityProfile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
+                                    final int defaultCertProfileId = Integer.parseInt(defaultCertProfile);
+                                    for (int currentCertProfileId : endEntityProfile.getAvailableCertificateProfileIds()) {
+                                        Integer replacementCertProfileId = certificateProfileIdMapping.get(currentCertProfileId);
+                                        if (replacementCertProfileId != null) {
+                                            if (replacementCertProfileId != currentCertProfileId) {
+                                                getLogger().warn("Replacing cert profile with id " + currentCertProfileId + " with " + replacementCertProfileId + ".");
+                                            }
+                                            availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + replacementCertProfileId;
+                                            if (currentCertProfileId == defaultCertProfileId) {
+                                                defaultCertProfile = "" + replacementCertProfileId;
+                                            }
+                                        } else {
+                                            if (getCertificateProfileSession().getCertificateProfile(currentCertProfileId) != null || CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
+                                                availableCertProfiles += (availableCertProfiles.isEmpty() ? "" : ";") + currentCertProfileId;
+                                            } else {
+                                                getLogger().warn("End Entity Profile '" + profileInfo.getProfileName() + "' references certificate profile " + currentCertProfileId + " that does not exist.");
+                                                if (currentCertProfileId == defaultCertProfileId) {
+                                                    defaultCertProfile = "";
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (availableCertProfiles.equals("")) {
+                                        getLogger().warn("End Entity Profile '" + profileInfo.getProfileName() + "' only references certificate profile(s) that does not exist. Using ENDUSER profile.");
+                                        availableCertProfiles = "1"; // At least make sure the default profile is available
+                                    }
+                                    if (defaultCertProfile.equals("")) {
+                                        // Use first available profile from list as default if original default was missing
+                                        defaultCertProfile = availableCertProfiles.split(";")[0];
+                                    }
+                                    endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
+                                    endEntityProfile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultCertProfile);
+
+                                    // Remove any unknown CA and break if none is left
+                                    String defaultCA = endEntityProfile.getValue(EndEntityProfile.DEFAULTCA, 0);
+                                    String availableCAs = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0);
+                                    final List<String> cas = Arrays.asList(availableCAs.split(";"));
+                                    availableCAs = "";
+                                    for (String currentCA : cas) {
+                                        Integer currentCAInt = Integer.parseInt(currentCA);
+                                        // The constant ALLCAS will not be searched for among available CAs
+                                        if (currentCAInt != SecConst.ALLCAS) {
+                                            if (!getCaSession().existsCa(currentCAInt)) {
+                                                getLogger().warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profileInfo.getProfileName() + "'.");
+                                                if (defaultCA.equals(currentCA)) {
+                                                    defaultCA = "";
+                                                }
+                                            } else {
+                                                availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA;
+                                            }
+                                        } else {
+                                            availableCAs += (availableCAs.equals("") ? "" : ";") + SecConst.ALLCAS;
+                                        }
+                                    }
+                                    if ("".equals(availableCAs)) {
+                                        if (caId == null) {
+                                            getLogger().error("No CAs left in end entity profile '" + profileInfo.getProfileName() + "' and no CA specified on command line. Using ALLCAs.");
+                                            availableCAs = Integer.toString(SecConst.ALLCAS);
+                                        } else {
+                                            availableCAs = Integer.toString(caId);
+                                            getLogger().warn("No CAs left in end entity profile '" + profileInfo.getProfileName() + "'. Using CA supplied on command line with id '" + caId + "'.");
+                                        }
+                                    }
+                                    if ("".equals(defaultCA)) {
+                                        defaultCA = availableCAs.split(";")[0]; // Use first available
+                                        getLogger().warn("Changing default CA in end entity profile '" + profileInfo.getProfileName() + "' to " + defaultCA + ".");
+                                    }
+                                    endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
+                                    endEntityProfile.setDefaultCA(Integer.parseInt(defaultCA));
+                                    try {
+                                        getEndEntityProfileSession().addEndEntityProfile(getAuthenticationToken(), profileInfo.getProfileId(), profileInfo.getProfileName(), endEntityProfile);
+                                        getLogger().info("Added entity profile '" + profileInfo.getProfileName() + "' to database.");
+                                    } catch (EndEntityProfileExistsException e) {
+                                        getLogger().error("Error adding entity profile '" + profileInfo.getProfileName() + "' to database.");
+                                        getLogger().error("Error", e);
                                     }
                                 } else {
-                                    if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(
-                                            profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-                                        getLogger().error("Error: Certificate profile '" + profilename + "' already exist in database.");
-                                        error = true;
-                                    } else if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                                            .getCertificateProfile(profileid) != null) {
-                                        getLogger().warn(
-                                                "Certificate profile id '" + profileid
-                                                        + "' already exist in database. Adding with a new profile id instead.");
-                                        oldprofileid = profileid;
-                                        profileid = -1; // means we should create a new id when adding the cert profile
+                                    // Add certificate profile
+                                    final CertificateProfile certificateProfile = new CertificateProfile();
+                                    certificateProfile.loadData(decoder.readObject());
+                                    // Make sure CAs in profile exist
+                                    List<Integer> cas = certificateProfile.getAvailableCAs();
+                                    if (cas == null) {
+                                        cas = new ArrayList<>();
+                                    }
+                                    ArrayList<Integer> casToRemove = new ArrayList<>();
+                                    for (Integer currentCA : cas) {
+                                        // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
+                                        if (currentCA != CertificateProfile.ANYCA) {
+                                            if (!getCaSession().existsCa(currentCA)) {
+                                                casToRemove.add(currentCA);
+                                            }
+                                        }
+                                    }
+                                    for (Integer toRemove : casToRemove) {
+                                        getLogger().warn("CA with id " + toRemove + " was not found and will not be used in certificate profile '" + profileInfo.getProfileName() + "'.");
+                                        cas.remove(toRemove);
+                                    }
+                                    if (cas.size() == 0) {
+                                        if (caId == null) {
+                                            getLogger().error("No CAs left in certificate profile '" + profileInfo.getProfileName() + "' and no CA specified on command line. Using ANYCA.");
+                                            cas.add(CertificateProfile.ANYCA);
+                                        } else {
+                                            getLogger().warn("No CAs left in certificate profile '" + profileInfo.getProfileName() + "'. Using CA supplied on command line with id '" + caId + "'.");
+                                            cas.add(caId);
+                                        }
+                                    }
+                                    certificateProfile.setAvailableCAs(cas);
+                                    // Remove and warn about unknown publishers
+                                    List<Integer> publisherIds = certificateProfile.getPublisherList();
+                                    ArrayList<Integer> publisherIdsToRemove = new ArrayList<>();
+                                    for (Integer publisherId : publisherIds) {
+                                        BasePublisher pub = null;
+                                        try {
+                                            pub = getPublisherSession().getPublisher(publisherId);
+                                        } catch (Exception e) {
+                                            getLogger().warn("There was an error loading publisher with id " + publisherId + ". Use debug logging to see stack trace: " + e.getMessage());
+                                            getLogger().debug("Full stack trace: ", e);
+                                        }
+                                        if (pub == null) {
+                                            publisherIdsToRemove.add(publisherId);
+                                        }
+                                    }
+                                    for (Integer publisherIdToRemove : publisherIdsToRemove) {
+                                        getLogger().warn("Publisher with id " + publisherIdToRemove + " was not found and will not be used in certificate profile '" + profileInfo.getProfileName() + "'.");
+                                        publisherIds.remove(publisherIdToRemove);
+                                    }
+                                    certificateProfile.setPublisherList(publisherIds);
+                                    // Add profile
+                                    try {
+                                        if (profileInfo.getProfileId() == -1) {
+                                            // id already existed, we need to create a new one
+                                            final int newProfileid = getCertificateProfileSession().addCertificateProfile(getAuthenticationToken(), profileInfo.getProfileName(), certificateProfile);
+                                            // make a mapping from the old id (that was already in use) to the new one so we can change end entity profiles
+                                            certificateProfileIdMapping.put(profileInfo.getOriginalProfileId(), newProfileid);
+                                        } else {
+                                            getCertificateProfileSession().addCertificateProfile(getAuthenticationToken(), profileInfo.getProfileId(), profileInfo.getProfileName(), certificateProfile);
+                                        }
+                                        // Make a mapping from the new to the new id, so we have a mapping if the profile id did not change at all
+                                        certificateProfileIdMapping.put(profileInfo.getProfileId(), getCertificateProfileSession().getCertificateProfileId(profileInfo.getProfileName()));
+                                        getLogger().info("Added certificate profile '" + profileInfo.getProfileName() + "', '" + profileInfo.getProfileId() + "' to database.");
+                                    } catch (CertificateProfileExistsException e) {
+                                        getLogger().error("Error adding certificate profile '" + profileInfo.getProfileName() + "', '" + profileInfo.getProfileId() + "' to database.");
                                     }
                                 }
-                                if (!error) {
-                                    CertificateProfile cprofile = null;
-                                    EndEntityProfile eprofile = null;
-                                    FileInputStream is;
-                                    try {
-                                        is = new FileInputStream(infiles[i]);
-                                    } catch (FileNotFoundException e) {
-                                        //Shouldn't happen, we've already vetted the file directory above
-                                        throw new IllegalStateException("An exception was encountered with an already vetted file directory", e);
-                                    }
-                                    XMLDecoder decoder = new XMLDecoder(is);
-                                    if (entityprofile) {
-                                        // Add end entity profile
-                                        eprofile = new EndEntityProfile();
-                                        eprofile.loadData(decoder.readObject());
-                                        // Translate cert profile ids that have changed after import
-                                        String availableCertProfiles = "";
-                                        String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-                                        //getLogger().debug("Debug: Org - AVAILCERTPROFILES " + eprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0) + " DEFAULTCERTPROFILE "+defaultCertProfile);
-                                        for (String currentCertProfile : eprofile.getAvailableCertificateProfileIdsAsStrings()) {
-                                            Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
-                                            Integer replacementCertProfileId = certificateProfileIdMapping.get(currentCertProfileId);
-                                            if (replacementCertProfileId != null) {
-                                                if (!replacementCertProfileId.toString().equals(currentCertProfile)) {
-                                                    getLogger().warn(
-                                                            "Replacing cert profile with id " + currentCertProfile + " with "
-                                                                    + replacementCertProfileId + ".");
-                                                }
-                                                availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + replacementCertProfileId;
-                                                if (currentCertProfile.equals(defaultCertProfile)) {
-                                                    defaultCertProfile = "" + replacementCertProfileId;
-                                                }
-                                            } else {
-                                                if (EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                                                        .getCertificateProfile(currentCertProfileId) != null
-                                                        || CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
-                                                    availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + currentCertProfile;
-                                                } else {
-                                                    getLogger().warn(
-                                                            "End Entity Profile '" + profilename + "' references certificate profile "
-                                                                    + currentCertProfile + " that does not exist.");
-                                                    if (currentCertProfile.equals(defaultCertProfile)) {
-                                                        defaultCertProfile = "";
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        if (availableCertProfiles.equals("")) {
-                                            getLogger()
-                                                    .warn("End Entity Profile only references certificate profile(s) that does not exist. Using ENDUSER profile.");
-                                            availableCertProfiles = "1"; // At least make sure the default profile is available
-                                        }
-                                        if (defaultCertProfile.equals("")) {
-                                            defaultCertProfile = availableCertProfiles.split(";")[0]; // Use first available profile from list as default if original default was missing
-                                        }
-                                        eprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
-                                        eprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultCertProfile);
-                                        // Remove any unknown CA and break if none is left
-                                        String defaultCA = eprofile.getValue(EndEntityProfile.DEFAULTCA, 0);
-                                        String availableCAs = eprofile.getValue(EndEntityProfile.AVAILCAS, 0);
-                                        //getOutputStream().println("Debug: Org - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
-                                        List<String> cas = Arrays.asList(availableCAs.split(";"));
-                                        availableCAs = "";
-                                        for (String currentCA : cas) {
-                                            Integer currentCAInt = Integer.parseInt(currentCA);
-                                            // The constant ALLCAS will not be searched for among available CAs
-                                            if (currentCAInt.intValue() != SecConst.ALLCAS) {
-                                                if (!EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(currentCAInt)) {
-                                                    getLogger().warn("CA with id " + currentCA
-                                                            + " was not found and will not be used in end entity profile '" + profilename + "'.");
-                                                    if (defaultCA.equals(currentCA)) {
-                                                        defaultCA = "";
-                                                    }
-                                                } else {
-                                                    availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; 
-                                                }
-                                            } else {
-                                                availableCAs += (availableCAs.equals("") ? "" : ";") + SecConst.ALLCAS;
-                                            }
-                                           
-
-                                        }
-                                        if (availableCAs.equals("")) {
-                                            if (caid == null) {
-                                                getLogger().error(
-                                                        "No CAs left in end entity profile '" + profilename
-                                                                + "' and no CA specified on command line. Using ALLCAs.");
-                                                availableCAs = Integer.toString(SecConst.ALLCAS);
-                                            } else {
-                                                availableCAs = Integer.toString(caid);
-                                                getLogger().warn(
-                                                        "No CAs left in end entity profile '" + profilename
-                                                                + "'. Using CA supplied on command line with id '" + caid + "'.");
-                                            }
-                                        }
-                                        if (defaultCA.equals("")) {
-                                            defaultCA = availableCAs.split(";")[0]; // Use first available
-                                            getLogger().warn("Changing default CA in end entity profile '" + profilename + "' to " + defaultCA + ".");
-                                        }
-                                        //getLogger().debug("New - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
-                                        eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
-                                        eprofile.setDefaultCA(Integer.parseInt(defaultCA));
-                                        try {
-                                            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(
-                                                    getAuthenticationToken(), profileid, profilename, eprofile);
-                                            getLogger().info("Added entity profile '" + profilename + "' to database.");
-                                        } catch (EndEntityProfileExistsException eepee) {
-                                            getLogger().error("Error adding entity profile '" + profilename + "' to database.");
-                                        }
-                                    } else {
-                                        // Add certificate profile
-                                        cprofile = new CertificateProfile();
-                                        cprofile.loadData(decoder.readObject());
-                                        // Make sure CAs in profile exist
-                                        List<Integer> cas = cprofile.getAvailableCAs();
-                                        if (cas == null) {
-                                            cas = new ArrayList<Integer>();
-                                        }
-                                        ArrayList<Integer> casToRemove = new ArrayList<Integer>();
-                                        for (Integer currentCA : cas) {
-                                            // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
-                                            if (currentCA != CertificateProfile.ANYCA) {
-                                                if (!EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(currentCA)) {
-                                                    casToRemove.add(currentCA);
-                                                }
-                                            }
-                                        }
-                                        for (Integer toRemove : casToRemove) {
-                                            getLogger().warn(
-                                                    "Warning: CA with id " + toRemove
-                                                            + " was not found and will not be used in certificate profile '" + profilename + "'.");
-                                            cas.remove(toRemove);
-                                        }
-                                        if (cas.size() == 0) {
-                                            if (caid == null) {
-                                                getLogger().error(
-                                                        "Error: No CAs left in certificate profile '" + profilename
-                                                                + "' and no CA specified on command line. Using ANYCA.");
-                                                cas.add(Integer.valueOf(CertificateProfile.ANYCA));
-                                            } else {
-                                                getLogger().warn(
-                                                        "Warning: No CAs left in certificate profile '" + profilename
-                                                                + "'. Using CA supplied on command line with id '" + caid + "'.");
-                                                cas.add(caid);
-                                            }
-                                        }
-                                        cprofile.setAvailableCAs(cas);
-                                        // Remove and warn about unknown publishers
-                                        List<Integer> publishers = cprofile.getPublisherList();
-                                        ArrayList<Integer> allToRemove = new ArrayList<Integer>();
-                                        for (Integer publisher : publishers) {
-                                            BasePublisher pub = null;
-                                            try {
-                                                pub = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).getPublisher(publisher);
-                                            } catch (Exception e) {
-                                                getLogger().warn(
-                                                        "Warning: There was an error loading publisher with id " + publisher
-                                                                + ". Use debug logging to see stack trace: " + e.getMessage());
-                                                getLogger().debug("Full stack trace: ", e);
-                                            }
-                                            if (pub == null) {
-                                                allToRemove.add(publisher);
-                                            }
-                                        }
-                                        for (Integer toRemove : allToRemove) {
-                                            getLogger().warn(
-                                                    "Warning: Publisher with id " + toRemove
-                                                            + " was not found and will not be used in certificate profile '" + profilename + "'.");
-                                            publishers.remove(toRemove);
-                                        }
-                                        cprofile.setPublisherList(publishers);
-                                        // Add profile
-                                        try {
-                                            if (profileid == -1) {
-                                                // id already existed, we need to create a new one
-                                                profileid = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                                                        .addCertificateProfile(getAuthenticationToken(), profilename, cprofile);
-                                                // make a mapping from the old id (that was already in use) to the new one so we can change end entity profiles
-                                                certificateProfileIdMapping.put(oldprofileid, profileid);
-                                            } else {
-                                                EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                                                        .addCertificateProfile(getAuthenticationToken(), profileid, profilename, cprofile);
-                                            }
-                                            // Make a mapping from the new to the new id, so we have a mapping if the profile id did not change at all
-                                            certificateProfileIdMapping.put(profileid,
-                                                    EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                                                            .getCertificateProfileId(profilename));
-                                            getLogger().info("Added certificate profile '" + profilename + "', '" + profileid + "' to database.");
-                                        } catch (CertificateProfileExistsException cpee) {
-                                            getLogger().error(
-                                                    "Error adding certificate profile '" + profilename + "', '" + profileid + "' to database.");
-                                        }
-                                    }
-                                    decoder.close();
-                                    try {
-                                        is.close();
-                                    } catch (IOException e) {
-                                        throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
-                                    }
+                                // Close resources
+                                decoder.close();
+                                try {
+                                    is.close();
+                                } catch (IOException e) {
+                                    throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
                                 }
+                            }
+                            else {
+                                commandResult = CommandResult.FUNCTIONAL_FAILURE;
                             }
                         }
                     }
@@ -378,14 +325,16 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
         } catch (AuthorizationDeniedException e) {
             log.error("Current CLI user doesn't have sufficient privileges to import profiles.");
             return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (IllegalStateException e) {
+            log.error("CLI execution got a general failure.");
+            return CommandResult.CLI_FAILURE;
         }
-        return CommandResult.SUCCESS;
+        return commandResult;
     }
 
     @Override
     public String getCommandDescription() {
         return "Import profiles from XML-files to the database";
-
     }
 
     @Override
@@ -396,5 +345,137 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    private class ProfileInfo {
+
+        private final String profileName;
+        private final int originalProfileId;
+        private int profileId;
+        private final boolean isCertificateProfile;
+        private final boolean isEntityProfile;
+        private boolean hasError = false;
+
+        ProfileInfo(final String profileName, final int profileId, final boolean isCertificateProfile, final boolean isEntityProfile) {
+            this.profileName = profileName;
+            this.originalProfileId = profileId;
+            this.profileId = profileId;
+            this.isCertificateProfile = isCertificateProfile;
+            this.isEntityProfile = isEntityProfile;
+        }
+
+        String getProfileName() {
+            return profileName;
+        }
+
+        int getProfileId() {
+            return profileId;
+        }
+
+        void setProfileId(final int profileId) {
+            this.profileId = profileId;
+        }
+
+        int getOriginalProfileId() {
+            return originalProfileId;
+        }
+
+        boolean isCertificateProfile() {
+            return isCertificateProfile;
+        }
+
+        boolean isEntityProfile() {
+            return isEntityProfile;
+        }
+
+        void setError(final boolean hasError) {
+            this.hasError = hasError;
+        }
+
+        boolean isOk() {
+            return !hasError;
+        }
+    }
+
+    private ProfileInfo getProfileInfoFromFileName(final String fileName) {
+        if(StringUtils.isNotEmpty(fileName)) {
+            final boolean isCertificateProfile = fileName.contains("certprofile_");
+            final boolean isEntityProfile = fileName.contains("entityprofile_");
+            if(!isCertificateProfile && !isEntityProfile) {
+                return null;
+            }
+            int profileNameBeginIndex = fileName.indexOf("_");
+            int profileNameSeparatorIndex = fileName.lastIndexOf("-");
+            int profileIdEndIndex = fileName.lastIndexOf(".xml");
+            if (profileNameBeginIndex < 0 || profileNameSeparatorIndex < 0 || profileIdEndIndex < 0) {
+                getLogger().error("Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
+                return null;
+            } else {
+                try {
+                    final String profileName = URLDecoder.decode(fileName.substring(profileNameBeginIndex + 1, profileNameSeparatorIndex), "UTF-8");
+                    final int profileId = Integer.parseInt(fileName.substring(profileNameSeparatorIndex + 1, profileIdEndIndex));
+                    return new ProfileInfo(profileName, profileId, isCertificateProfile, isEntityProfile);
+                } catch (UnsupportedEncodingException e) {
+                    getLogger().error("UTF-8 was not a known character encoding.");
+                } catch (NumberFormatException e) {
+                    getLogger().error("Profile ID is not a number.");
+                }
+            }
+        }
+        return null;
+    }
+
+    private ProfileInfo checkIfProfileExists(final ProfileInfo profileInfo) {
+        final String profileName = profileInfo.getProfileName();
+        final int profileId = profileInfo.getProfileId();
+        if (profileInfo.isEntityProfile) {
+            if (getEndEntityProfileSession().getEndEntityProfile(profileName) != null) {
+                getLogger().error("Entity profile '" + profileName + "' already exist in database.");
+                profileInfo.setError(true);
+            } else if (getEndEntityProfileSession().getEndEntityProfile(profileId) != null) {
+                int freeEndEntityProfileId = getEndEntityProfileSession().findFreeEndEntityProfileId();
+                getLogger().warn("Entity profileid '" + profileId + "' already exist in database. Using '" + freeEndEntityProfileId + "' instead.");
+                profileInfo.setProfileId(freeEndEntityProfileId);
+            }
+        }
+        if(profileInfo.isCertificateProfile) {
+            if (getCertificateProfileSession().getCertificateProfileId(profileName) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+                getLogger().error("Certificate profile '" + profileName + "' already exist in database.");
+                profileInfo.setError(true);
+            } else if (getCertificateProfileSession().getCertificateProfile(profileId) != null) {
+                getLogger().warn("Certificate profile id '" + profileId + "' already exist in database. Adding with a new profile id instead.");
+                // means we should create a new id when adding the cert profile
+                profileInfo.setProfileId(-1);
+            }
+        }
+        return profileInfo;
+    }
+
+    private CaSessionRemote getCaSession() {
+        if(caSession == null) {
+            caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        }
+        return caSession;
+    }
+
+    private CertificateProfileSessionRemote getCertificateProfileSession() {
+        if(certificateProfileSession == null) {
+            certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        }
+        return certificateProfileSession;
+    }
+
+    private EndEntityProfileSessionRemote getEndEntityProfileSession() {
+        if(endEntityProfileSession == null) {
+            endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        }
+        return endEntityProfileSession;
+    }
+
+    private PublisherSessionRemote getPublisherSession() {
+        if(publisherSession == null) {
+            publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+        }
+        return publisherSession;
     }
 }

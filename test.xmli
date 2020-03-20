@@ -56,6 +56,7 @@
     	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestunidfnr" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
@@ -157,6 +158,7 @@
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
                     <include name="modules/cli-util/src-test/**/${test.runone}.java" />
+                    <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -245,6 +247,9 @@
         </condition>
         <condition property="module" value="modules/cli-util">
             <matches string="${test-fullname}" pattern="^modules/cli-util/.*$"/>
+        </condition>
+        <condition property="module" value="modules/ejbca-ejb-cli">
+            <matches string="${test-fullname}" pattern="^modules/ejbca-ejb-cli/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
@@ -380,6 +385,11 @@
 
     <target name="test:unit:common" description="run all JUnit tests for ejbca-common." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:ejbca-ejb-cli" description="run all JUnit tests for ejbca-ejb-cli." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

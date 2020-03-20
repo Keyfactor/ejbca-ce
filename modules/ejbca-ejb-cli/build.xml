@@ -9,7 +9,10 @@
     <import file="${ejbca-ejb-cli.dir}/../build-helpers.xml"/>
 	
 	<property name="ejbca-ejb-cli.build.dir" location="${ejbca-ejb-cli.dir}/build"/>
+    <property name="ejbca-ejb-cli.resources-test.dir" location="${ejbca-ejb-cli.dir}/resources-test"/>
+	<property name="ejbca-ejb-cli.build-test.dir" location="${ejbca-ejb-cli.dir}/build-test"/>
 	<property name="ejbca-ejb-cli.src.dir" location="${ejbca-ejb-cli.dir}/src"/>
+    <property name="ejbca-ejb-cli.src-test.dir" location="${ejbca-ejb-cli.dir}/src-test"/>
 
 	<path id="compile.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
@@ -39,7 +42,23 @@
         <path location="${mod.plugins-ee.lib}"/>
 		<path refid="lib.xstream.classpath"/>
 	</path>
-	
+
+    <path id="compile-test.classpath">
+        <path location="${ejbca-ejb-cli.build-test.dir}"/>
+        <path refid="compile.classpath"/>
+        <path refid="lib.easymock.classpath"/>
+        <path refid="lib.test.powermock.classpath"/>
+        <path refid="lib.junit.classpath"/>
+        <path location="${ejbca-ejb-cli.build.dir}"/>
+        <path location="${ejbca-ejb-cli.dir}/../dist/systemtests-interfaces.jar"/>
+    </path>
+
+    <path id="test.classpath">
+        <path refid="compile-test.classpath"/>
+        <path location="${ejbca-ejb-cli.build-test.dir}/resources-test"/>
+        <pathelement path="${clover.jar}"/>
+    </path>
+
     <target name="build" description="Build this module" depends="compile">
     	<!-- Upgrade of certificate profiles requires extendedkeyusage.properties -->
     	<mkdir dir="${ejbca-ejb-cli.build.dir}/conf"/>
@@ -74,6 +93,7 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${ejbca-ejb-cli.build.dir}" />
+        <delete dir="${ejbca-ejb-cli.build-test.dir}" />
 		<delete file="${mod.ejbca-ejb-cli.lib}" />
     	<delete dir="${mod.ejbca-ejb-cli.dist}" />
     </target>
@@ -118,6 +138,49 @@
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ejb-cli.dist}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${mod.ejbca-ejb-cli.dist}/jndi.properties" failonerror="true"/>
 		<copy file="${jboss-ejb-client.properties}" todir="${mod.ejbca-ejb-cli.dist}" failonerror="false"/>
+    </target>
+
+    <!-- Tests -->
+    <target name="compile-unit-tests" depends="build, with.clover">
+        <mkdir dir="${ejbca-ejb-cli.build-test.dir}" />
+        <javac srcdir="${ejbca-ejb-cli.src-test.dir}" destdir="${ejbca-ejb-cli.build-test.dir}" debug="on" includeantruntime="no"
+               encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
+        <mkdir dir="${ejbca-ejb-cli.build-test.dir}/resources-test"/>
+        <copy todir="${ejbca-ejb-cli.build-test.dir}/resources-test">
+            <fileset dir="${ejbca-ejb-cli.dir}/resources-test"/>
+        </copy>
+    </target>
+
+    <target name="test:unit" depends="compile-unit-tests" description="Run Unit tests for this module">
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ejb-cli.dir}">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${ejbca-ejb-cli.build-test.dir}" includes="**/*UnitTest.class">
+                </fileset>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+        </junit>
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="runone" depends="compile-unit-tests">
+        <fail message="'test.runone' is not set. Example -Dtest.runone=Test . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${ejbca-ejb-cli.build-test.dir}">
+                    <include name="**/${test.runone}.class" />
+                </fileset>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+        </junit>
     </target>
 
 </project>
