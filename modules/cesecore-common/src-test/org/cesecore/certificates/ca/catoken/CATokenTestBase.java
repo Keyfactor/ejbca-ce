@@ -49,7 +49,7 @@ import org.cesecore.util.StringTools;
 public abstract class CATokenTestBase {
 
 	private static final Logger log = Logger.getLogger(CATokenTestBase.class);
-	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin("userpin1");
+	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin();
 	private static final String DEFAULT_KEY = "defaultKey ÅaÄÖbåäöc«»©“”nµA";
 	protected static final String ENCRYPTION_KEY = "encryptionKey ÅaÄbbÖcccäâãêëẽć©A";
     private static final InternalResources intres = InternalResources.getInstance();
@@ -500,7 +500,7 @@ public abstract class CATokenTestBase {
 				assertTrue("should throw", false);
 			} catch (CryptoTokenAuthenticationFailedException e) {
 				String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
-				String strp11 = "Failed to initialize PKCS11 provider slot '" + PKCS11TestUtils.getPkcs11SlotValue("1") + "'.";
+				String strp11 = "Failed to initialize PKCS11 provider slot '" + PKCS11TestUtils.getPkcs11SlotValue() + "'.";
 				assert(e.getMessage().equals(strsoft)||e.getMessage().equals(strp11));
 			}
 			cryptoToken.activate(TOKEN_PIN.toCharArray());

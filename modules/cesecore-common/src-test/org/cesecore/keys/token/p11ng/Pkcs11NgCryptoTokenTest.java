@@ -106,8 +106,8 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull(hsmlib);
         prop.setProperty(Pkcs11NgCryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue("1"));
-        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
+        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
+        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
         if (file != null) {
             prop.setProperty(Pkcs11NgCryptoToken.ATTRIB_LABEL_KEY, file);
         }

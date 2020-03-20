@@ -17,6 +17,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.security.Provider;
 
+import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
@@ -26,16 +27,22 @@ import org.junit.Test;
 
 /**
  * Some general test methods for Pkcs11SlotLabel
- *
+ * <p>
+ * Requires the following properties to be set in systemtests.proeprties:
+ * <ul>
+ * <li>pkcs11.library
+ * <li>pkcs11.token_number
+ * <li>pkcs11.token_label
+ * <li>pkcs11.token_index
+ * <p>
+ * Since pkcs11.token_number might not be a deterministic number, that test may or may not be possible to run in all configurations.
  *
  * @version $Id$
  *
  */
 public class Pkcs11SlotLabelTest {
 
-    private static final String SLOT_NUMBER = "1";
-    private static final String SLOT_INDEX = "i1";
-    private static final String SLOT_LABEL = "ejbca";
+    private static final Logger log = Logger.getLogger(Pkcs11SlotLabelTest.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -50,20 +57,41 @@ public class Pkcs11SlotLabelTest {
 
     @Test
     public void testgetProviderWithNumber() throws NoSuchSlotException {
-        Provider provider = Pkcs11SlotLabel.getP11Provider(SLOT_NUMBER, Pkcs11SlotLabelType.SLOT_NUMBER, PKCS11TestUtils.getHSMLibrary(), null);
-        assertNotNull("No provider for slot number : " + SLOT_NUMBER + " was found.", provider);
+        final String number = PKCS11TestUtils.getPkcs11TokenNumber();
+        assumeTrue("pkcs11.token_number must be set in systemtests.properties", number != null);
+        Provider provider = Pkcs11SlotLabel.getP11Provider(number, Pkcs11SlotLabelType.SLOT_NUMBER, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for slot number : " + number + " was found.", provider);
     }
 
     @Test
     public void testgetProviderWithIndex() throws NoSuchSlotException {
-        Provider provider = Pkcs11SlotLabel.getP11Provider(SLOT_INDEX, Pkcs11SlotLabelType.SLOT_INDEX, PKCS11TestUtils.getHSMLibrary(), null);
-        assertNotNull("No provider for slot index : " + SLOT_INDEX + " was found.", provider);
+        final String index = PKCS11TestUtils.getPkcs11TokenIndex();
+        assumeTrue("pkcs11.token_index must be set in systemtests.properties", index != null);
+        Provider provider = Pkcs11SlotLabel.getP11Provider(index, Pkcs11SlotLabelType.SLOT_INDEX, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for slot index : " + index + " was found.", provider);
     }
 
     @Test
     public void testgetProviderWithLabel() throws NoSuchSlotException {
-        Provider provider = Pkcs11SlotLabel.getP11Provider(SLOT_LABEL, Pkcs11SlotLabelType.SLOT_LABEL, PKCS11TestUtils.getHSMLibrary(), null);
-        assertNotNull("No provider for slot label : " + SLOT_LABEL + " was found.", provider);
+        final String label = PKCS11TestUtils.getPkcs11TokenLabel();
+        assumeTrue("pkcs11.token_label must be set in systemtests.properties", label != null);
+        Provider provider = Pkcs11SlotLabel.getP11Provider(label, Pkcs11SlotLabelType.SLOT_LABEL, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for slot label : " + label + " was found.", provider);
+    }
+    
+    /** 
+     * Creates a PKCS#11 Provider using the configured token type and value in systemtests.properties
+     * (pkcs11.slottype and pkcs11.slottypevalue).
+     * <p>
+     * This test is just a safety net, to have one test running even if pkcs11.token_* isn't configured.
+     */
+    @Test
+    public void testgetProviderWithTestDefault() throws NoSuchSlotException {
+        final Pkcs11SlotLabelType tokenReferenceType = PKCS11TestUtils.getPkcs11SlotType();
+        final String tokenReferenceValue = PKCS11TestUtils.getPkcs11SlotValue();
+        log.info("Testing using token type '" + tokenReferenceType + "' and value '" + tokenReferenceValue + "'");
+        Provider provider = Pkcs11SlotLabel.getP11Provider(tokenReferenceValue, tokenReferenceType, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for " + tokenReferenceType + " : " + tokenReferenceValue + " was found.", provider);
     }
 
 }

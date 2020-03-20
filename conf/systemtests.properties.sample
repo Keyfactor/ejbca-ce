@@ -48,3 +48,10 @@
 
 # The PIN of the slot referenced by the pkcs11.slottypevalue.* properties. 
 #pkcs11.slotpin=userpin1 
+
+# Some tests test a specific way of referencing the PKCS#11 token.
+# To run these tests (Pkcs11WrapperTest and Pkcs11SlotLabelTest currently), you need to set the following properties.
+# If a token cannot be reliably referenced in a specific way (e.g. token number), you can leave that property commented out or blank.
+#pkcs11.token_number=1
+#pkcs11.token_label=TEST
+#pkcs11.token_index=i0
