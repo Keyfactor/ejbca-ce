@@ -44,8 +44,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
     @Before
     public void checkPkcs11DriverAvailable() {
         // Skip test if no PKCS11 driver is installed
-        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
-        assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
+        assumeTrue("No PKCS#11 library configured", PKCS11TestUtils.getHSMLibrary() != null);
+        assumeTrue("No PKCS#11 Provider configured", PKCS11TestUtils.getHSMProvider() != null);
     }
 
     @After
