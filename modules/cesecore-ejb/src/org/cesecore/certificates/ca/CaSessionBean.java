@@ -14,7 +14,9 @@ package org.cesecore.certificates.ca;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
@@ -57,6 +59,9 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CaCache;
 import org.cesecore.certificates.ca.internal.CaIDCacheBean;
+import org.cesecore.certificates.certificate.BaseCertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
@@ -64,6 +69,9 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -75,6 +83,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.QueryResultWrapper;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -98,9 +107,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal keyBindMgmtSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
@@ -205,7 +218,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException {
+    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException {
         if (cainfo != null) {
         	if (log.isTraceEnabled()) {
         		log.trace(">editCA (CAInfo): "+cainfo.getName());
@@ -213,6 +226,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     		try {
     			final CACommon ca = getCAInternal(cainfo.getCAId(), null, false);
     			// Check if we can edit the CA (also checks authorization)
+                checkForPreProductionAndNonceConflict(cainfo, ca);
     			int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
     			if (cainfo.getCAToken() != null) {
     			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
@@ -242,12 +256,41 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 mergeCa(ca);
     		} catch (InvalidAlgorithmException e) {
                 throw new CADoesntExistsException(e);
-            }
+            } 
         	if (log.isTraceEnabled()) {
         		log.trace("<editCA (CAInfo): "+cainfo.getName());
         	}
         } else {
             log.debug("Trying to edit null CAInfo, nothing done.");
+        }
+    }
+
+    private void checkForPreProductionAndNonceConflict(final CAInfo cainfo, final CACommon ca) throws InternalKeyBindingNonceConflictException {
+        if (CAInfo.CATYPE_X509 == ca.getCAInfo().getCAType() && ((X509CAInfo)cainfo).isDoPreProduceOcspResponses()) {
+            List<InternalKeyBindingInfo> keyBindingInfos = keyBindMgmtSession.getAllInternalKeyBindingInfos("OcspKeyBinding");
+            for (InternalKeyBindingInfo keyBindInfo : keyBindingInfos) {
+                DynamicUiProperty<? extends Serializable> property = keyBindInfo.getProperty("enableNonce");
+                if (keyBindInfo.getCertificateId() != null && property != null && "true".equals(property.getValue().toString())) {
+                    CertificateDataWrapper certDataWrapper = certificateStoreSession.getCertificateData(keyBindInfo.getCertificateId());
+                    if (certDataWrapper == null) {
+                        continue;
+                    }
+                    BaseCertificateData baseCertData = certDataWrapper.getBaseCertificateData();
+                    if (baseCertData == null) {
+                        continue;
+                    }
+                    String caFingerPrint = baseCertData.getCaFingerprint();
+                    CertificateDataWrapper caCertDataWrapper = certificateStoreSession.getCertificateData(caFingerPrint);
+                    if (caCertDataWrapper == null) {
+                        continue;
+                    }
+                    Certificate caCert = caCertDataWrapper.getCertificate();
+                    if (ca.getCACertificate() != null && ca.getCACertificate().equals(caCert)) {
+                        throw new InternalKeyBindingNonceConflictException("CA can't have pre-production of OCSP responses enabled while there are OCSPKeybindings "
+                                + "related to that CA with nonce enabled in response.");
+                    }
+                }
+            }
         }
     }
 

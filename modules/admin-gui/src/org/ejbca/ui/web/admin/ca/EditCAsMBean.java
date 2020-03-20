@@ -76,6 +76,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -1358,7 +1359,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caAdminSession.initializeCa(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (CryptoTokenOfflineException | InvalidAlgorithmException |
-                NumberFormatException | ParameterException | AuthorizationDeniedException e) {
+                NumberFormatException | ParameterException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1524,7 +1525,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             caAdminSession.editCA(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException e) {
+        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
