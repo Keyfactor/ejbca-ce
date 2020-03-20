@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -114,6 +115,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -145,8 +147,10 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -325,7 +329,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initializeCa(final AuthenticationToken authenticationToken, final CAInfo caInfo)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException {
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
 
         if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new IllegalArgumentException("CA Status was not CA_UNINITIALIZED (" + CAConstants.CA_UNINITIALIZED + ")");
@@ -870,7 +874,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException {
+    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
         boolean cmsrenewcert = false;
         final int caid = cainfo.getCAId();
 
@@ -1837,14 +1841,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Don't set CA-ID here, it is derived later by the CA certificates subject DN in editCA(), if we set state to UNINITIALIZED.
             // caInfo.setCAId(CAData.calculateCAId(ca.getSubjectDN()));
             caInfo.setStatus(CAConstants.CA_UNINITIALIZED);
-            editCA(authenticationToken, caInfo);
+            try {
+                editCA(authenticationToken, caInfo);
+            } catch (InternalKeyBindingNonceConflictException e) {
+                // Do nothing
+            }
             caInfo.setStatus(currentCaState);
             // Add CA certificate chain again, because it is removed in createCA() for CAs with state CAConstants.CA_UNINITIALIZED.
             caInfo.setCertificateChain(certificates);
         }
 
         // Update CA in database
-        editCA(authenticationToken, caInfo);
+        try {
+            editCA(authenticationToken, caInfo);
+        } catch (InternalKeyBindingNonceConflictException e) {
+            // Do nothing
+        }
         // Update the CA certificate in the local database
         publishCACertificate(authenticationToken, certificates, null, ca.getSubjectDN());
     }
