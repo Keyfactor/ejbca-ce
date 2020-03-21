@@ -17,7 +17,7 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-4>ECAQA-4</a>
  * 
- * @version $Id:$
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
