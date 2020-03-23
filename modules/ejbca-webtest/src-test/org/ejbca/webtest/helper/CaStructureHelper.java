@@ -72,9 +72,13 @@ public class CaStructureHelper extends BaseHelper {
         assertElementExists(Page.getPreContainsCaName(caName), "The CRL didn't contain the CA's name.");
     }
     
-    public void downloadCrl(final String caName){
-        clickLink(Page.getCrlUrl(caName));
-        
+    /**
+     * Clicks the 'Get CRL' link with matching CA.
+     * 
+     * @param caName Name of CA. 
+     */
+    public void downloadCrl(final String caName) {
+        clickLink(Page.getCrlUrl(caName));    
     }
 
     public void clickCrlLinkAndAssertNumberIncreased(final String caName){
