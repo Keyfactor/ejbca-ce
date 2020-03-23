@@ -16,10 +16,14 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Local interface for EndEntityManagementSession.
@@ -85,4 +89,32 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * @param newCAId CA id to change to.
      */
     void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, NoSuchEndEntityException;
+    
+    /**
+     * Change user information, ignoring approval requirements. Only to be used internally.
+     * 
+     * @param admin the administrator performing the action
+     * @param userdata a EndEntityInformation object, timecreated and timemodified will
+     *             not be used.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *             db, otherwise it is hashed.
+     * @param force 
+     * @throws AuthorizationDeniedException
+     *             if administrator isn't authorized to add user
+     * @throws EndEntityProfileValidationException
+     *             if data doesn't fullfil requirements of end entity profile
+     * @throws ApprovalException
+     *             if an approval already is waiting for specified action
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
+     * @throws CADoesntExistsException
+     *             if the caid of the user does not exist
+     * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws NoSuchEndEntityException if the end entity was not found
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
+     */
+    void changeUserForceApproval(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
+
 }

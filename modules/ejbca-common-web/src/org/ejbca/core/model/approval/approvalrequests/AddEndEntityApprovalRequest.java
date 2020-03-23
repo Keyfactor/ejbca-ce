@@ -43,6 +43,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.EndEntityApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -53,7 +54,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
  *
  * @version $Id$
  */
-public class AddEndEntityApprovalRequest extends ApprovalRequest {
+public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndEntityApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
 	private static final Logger log = Logger.getLogger(AddEndEntityApprovalRequest.class);
@@ -140,6 +141,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		return ApprovalDataVO.APPROVALTYPE_ADDENDENTITY;
 	}
 
+	@Override
 	public EndEntityInformation getEndEntityInformation() {
 	    return userdata;
 	}

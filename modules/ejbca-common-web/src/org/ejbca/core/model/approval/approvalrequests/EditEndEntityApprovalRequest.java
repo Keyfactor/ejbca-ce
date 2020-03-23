@@ -44,6 +44,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.EndEntityApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -54,7 +55,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
  *
  * @version $Id$
  */
-public class EditEndEntityApprovalRequest extends ApprovalRequest {
+public class EditEndEntityApprovalRequest extends ApprovalRequest implements EndEntityApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
 
@@ -65,7 +66,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	private EndEntityInformation newuserdata;
 	private boolean clearpwd;
 	private EndEntityInformation orguserdata;
-	private boolean useOrgUsername;
 
 	/** Constructor used in externalization only */
 	public EditEndEntityApprovalRequest() {}
@@ -77,16 +77,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         this.newuserdata = newuserdata;
         this.clearpwd = clearpwd;
         this.orguserdata = orguserdata;
-    }
-
-    public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
-            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile,
-            boolean useOrgUsername, final List<ValidationResult> validationResults) {
-        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile, validationResults);
-        this.newuserdata = newuserdata;
-        this.clearpwd = clearpwd;
-        this.orguserdata = orguserdata;
-        this.useOrgUsername = useOrgUsername;
     }
 
 	@Override
@@ -137,21 +127,26 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     }
 
     /**
-     * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
+     * Approval Id is generated of this approval type (i.e EditEndEntityApprovalRequest) and username
      */
     @Override
     public int generateApprovalId() {
-        if (useOrgUsername) {
-            if (log.isTraceEnabled()) {
-                log.trace(">generateApprovalId(orgUsername) '" + ApprovalDataVO.APPROVALTYPE_EDITENDENTITY + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName() +"'");
-            }
-            return new String(getApprovalType() + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
-        } else {
-            if (log.isTraceEnabled()) {
-                log.trace(">generateApprovalId(newUsername) '" + ApprovalDataVO.APPROVALTYPE_EDITENDENTITY + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName() +"'");
-            }
-            return new String(getApprovalType() + ";" + newuserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
+        return generateEditEndEntityApprovalId(orguserdata.getUsername(), getApprovalProfile().getProfileName());
+    }
+    
+    /**
+     * Generic static method for generating approval IDs for this type of approval request
+     * 
+     * @param username the username of the end entity
+     * @param approvalProfileName the name of the approval profile
+     * @return an identifier for this particular request
+     */
+    public static int generateEditEndEntityApprovalId(final String username, final String approvalProfileName) {
+        if (log.isTraceEnabled()) {
+            log.trace(">generateApprovalId(orgUsername) '" + ApprovalDataVO.APPROVALTYPE_EDITENDENTITY + ";" + username + ";" + approvalProfileName
+                    + "'");
         }
+        return new String(ApprovalDataVO.APPROVALTYPE_EDITENDENTITY + ";" + username + ";" + approvalProfileName).hashCode();
     }
 
     @Override
@@ -300,4 +295,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     		orguserdata = (EndEntityInformation) in.readObject();
         }
 	}
+
+    @Override
+    public EndEntityInformation getEndEntityInformation() {
+        return getNewEndEntityInformation();
+    }
 }
