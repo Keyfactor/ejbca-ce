@@ -25,18 +25,26 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
+// TODO JavaDoc
+/**
+ * Selenium WebTesst class for EJBCAQA-161.
+ *
+ * @version $Id$
+ */
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
 
     private static WebDriver webDriver;
+
     //helpers
     private static RaWebHelper raWebHelper;
     private static CertificateProfileHelper certificateProfileHelper;
     private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static AddEndEntityHelper addEndEntityHelper;
-    //private static BaseHelper baseHelper;
 
+    //private static BaseHelper baseHelper;
     public static class TestData {
         private static final String END_ENTITY_PROFILE_NAME = "EcaQa161_EndEntity";
         private static final String END_ENTITY_NAME = "EcaQa161_TestEndEntity";
@@ -55,7 +63,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         caHelper = new CaHelper(webDriver);
-        cleanup();
+        // cleanup();
     }
 
     @AfterClass
@@ -63,13 +71,15 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         cleanup();
     }
 
+    /**
+     * Method intended to clean up artifacts post testing.
+     */
     private static void cleanup() {
         // Remove generated artifacts
         removeEndEntityByUsername(TestData.END_ENTITY_NAME);
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         removeCaAndCryptoToken(TestData.CA_NAME);
-
     }
 
     @Test
@@ -81,7 +91,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     }
 
     @Test
-    public void stepB_CreateEndEntityProfile(){
+    public void stepB_CreateEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
         //endEntityProfileHelper.editEndEntityProfile();
@@ -89,11 +99,12 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     }
 
     @Test
-    public void stepC_CreateCA(){
+    public void stepC_CreateCA() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
         caHelper.createCa();
     }
+
     /*
     @Test
     public void stepD_AddEndEntity(){                       THIS STEP IS REDUNDANT SINCE RA WEB DOES THE SAME THING
@@ -112,6 +123,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
 
     }
     */
+
     @Test
     public void stepE_MakeRequest() throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
@@ -122,7 +134,6 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         raWebHelper.fillMakeRequestEditCommonName("EcaQa161_TestEndEntity");
         raWebHelper.fillCredentials("EcaQa161_TestEndEntity","foo123");
         raWebHelper.clickDownloadPkcs12();
-
     }
 
 }
