@@ -66,7 +66,7 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
     // Prerequisite (manual test is executed on appliance) 
     // Create SubCA CryptoToken
     @Test
-    public void stepA_createSubCaCryptotoken() throws InterruptedException {
+    public void stepA_createSubCaCryptotoken() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.openPageNewCryptoToken();
         cryptoTokenHelper.setNewCryptoTokenName(TestData.SUBCA_CRYPTOTOKEN_NAME);
@@ -80,7 +80,7 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
     
     // Create CA
     @Test
-    public void stepB_createCa() throws InterruptedException {
+    public void stepB_createCa() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity(TestData.CA_VALIDITY);
@@ -88,9 +88,16 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
         caHelper.assertExists(TestData.CA_NAME);
     }
     
+    // Assert new CryptoToken
+    @Test
+    public void stepC_verifyNewCryptoToken() {
+        cryptoTokenHelper.openPage(getAdminWebUrl());
+        cryptoTokenHelper.assertTokenExists(TestData.CA_NAME);
+    }
+    
     // Create SubCA CryptoToken key pair
     @Test
-    public void stepC_createSubCaSignKey() throws InterruptedException {
+    public void stepD_createSubCaSignKey() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.openCryptoTokenPageByName(TestData.SUBCA_CRYPTOTOKEN_NAME);
         cryptoTokenHelper.generateKey(TestData.KEY_ALIAS, TestData.ALGORITH_AND_SPECIFICATION);
@@ -98,7 +105,7 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
     
     // Create and assert SubCA
     @Test
-    public void stepD_createSubCa() throws InterruptedException {
+    public void stepE_createSubCa() throws InterruptedException {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.SUBCA_NAME);
         caHelper.setCryptoToken(TestData.SUBCA_CRYPTOTOKEN_NAME);
@@ -106,11 +113,14 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
         caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.createCa();
         caHelper.assertExists(TestData.SUBCA_NAME);
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.edit(TestData.SUBCA_NAME);
+        caHelper.assertDefaultKeyValue(TestData.KEY_ALIAS);
     }
     
     // Asserts that no new CryptoToken was created for the SubCA
     @Test
-    public void stepE_assertNoNewCrytoToken() throws InterruptedException {
+    public void stepF_assertNoNewCrytoToken() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.assertTokenExists(TestData.SUBCA_CRYPTOTOKEN_NAME);
         cryptoTokenHelper.assertTokenDoesNotExist(TestData.SUBCA_NAME);
