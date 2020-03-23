@@ -702,7 +702,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void changeUserAfterApproval(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final int approvalRequestId, final AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
-        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin, null);
+        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin, null, false);
 
     }
 
@@ -712,7 +712,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         String newUsername = endEntityInformation.getUsername();
         endEntityInformation.setUsername(oldUsername);
-        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin, newUsername);
+        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin, newUsername, false);
     }
 
     @Override
@@ -726,19 +726,26 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final boolean fromWebService) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
-        changeUser(admin, endEntityInformation, clearpwd, fromWebService, 0, null, null);
+        changeUser(admin, endEntityInformation, clearpwd, fromWebService, 0, null, null, false);
     }
 
 
     @Override
-    public void changeUser(final AuthenticationToken admin, final EndEntityInformation userdata, final boolean clearpwd, String newUsername)
+    public void changeUser(final AuthenticationToken admin, final EndEntityInformation userdata, final boolean clearpwd, final String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
             ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
-        changeUser(admin, userdata, clearpwd, false, 0, null, newUsername);
+        changeUser(admin, userdata, clearpwd, false, 0, null, newUsername, false);
+    }
+    
+    @Override
+    public void changeUserForceApproval(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
+            throws ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException,
+            AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException {
+        changeUser(admin, endEntityInformation, clearpwd, false, 0, null, null, true);
     }
 
     private void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
-            final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin, String newUsername)
+            final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin, final String newUsername, final boolean force)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         final int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
@@ -888,22 +895,25 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw e;
             }
         }
-        // Check if approvals is required.
-        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo,
-                certificateProfile);
-        if (approvalProfile != null) {
-            final EndEntityInformation orguserdata = userData.toEndEntityInformation();
-            final EndEntityInformation requestInfo = new EndEntityInformation(endEntityInformation);
-            if (newUsername != null && !newUsername.equals(username)) {
-                requestInfo.setUsername(newUsername);
-            }
-            final List<ValidationResult> validationResults = runApprovalRequestValidation(admin, requestInfo, ca);
-            final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(requestInfo, clearpwd, orguserdata, admin, null,
-                    caid, endEntityProfileId, approvalProfile, true, validationResults);
-            if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
-                final int requestId = approvalSession.addApprovalRequest(admin, ar);
-                throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
+        if(!force) {
+            // Check if approvals are required.
+            final CertificateProfile certificateProfile = certificateProfileSession
+                    .getCertificateProfile(endEntityInformation.getCertificateProfileId());
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo,
+                    certificateProfile);
+            if (approvalProfile != null) {
+                final EndEntityInformation orguserdata = userData.toEndEntityInformation();
+                final EndEntityInformation requestInfo = new EndEntityInformation(endEntityInformation);
+                if (newUsername != null && !newUsername.equals(username)) {
+                    requestInfo.setUsername(newUsername);
+                }
+                final List<ValidationResult> validationResults = runApprovalRequestValidation(admin, requestInfo, ca);
+                final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(requestInfo, clearpwd, orguserdata, admin, null, caid,
+                        endEntityProfileId, approvalProfile, validationResults);
+                if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
+                    final int requestId = approvalSession.addApprovalRequest(admin, ar);
+                    throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
+                }
             }
         }
         // Rename the end entity if there's a new username
