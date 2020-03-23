@@ -44,7 +44,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * A Java encryption provider for encrypting small values with Azure Key Vault. Only does two types of "engineDoInit and engineDoFinal"
+ * A Java encryption provider for decrypting small values (key unwrapping) with Azure Key Vault. Only does two types of "engineDoInit and engineDoFinal"
  * 
  * @version $Id$
  */
