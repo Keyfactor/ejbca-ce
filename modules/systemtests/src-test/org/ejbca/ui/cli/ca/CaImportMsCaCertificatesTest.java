@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Map;
@@ -254,11 +255,11 @@ public class CaImportMsCaCertificatesTest {
                     + "qQVM8q8ClLXRWmzS+ohT8jDbnsSMa5sM4/HCxORE70WdYHc=\n"
                     + "-----END CERTIFICATE-----\n";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3", 
                     "-f", file.getAbsolutePath(),
-                    "--ee-username", "UPN"
+                    "--ee-username", "UPN",
             };
             assertEquals("Import should be successful.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
             assertTrue("User for the 1st cert should be created.",
@@ -316,8 +317,11 @@ public class CaImportMsCaCertificatesTest {
                     + "  Request Disposition: 0x0 (0) -- Foobar\n" 
                     + "  Binary Certificate: EMPTY";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
-            final String[] args = new String[] { "--caname", "Let's Encrypt Authority X3", "-f", file.getAbsolutePath(), };
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
+            final String[] args = new String[] {
+                    "--caname", "Let's Encrypt Authority X3",
+                    "-f", file.getAbsolutePath()
+            };
             assertEquals("Nothing imported should be successful.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
             assertFalse("User should not be created.",
                     EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser("DontCreateMe"));
@@ -345,8 +349,11 @@ public class CaImportMsCaCertificatesTest {
                     + "  Request Disposition: 0x15 (21) -- Pending\n" 
                     + "  Binary Certificate:";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
-            final String[] args = new String[] { "--caname", "Let's Encrypt Authority X3", "-f", file.getAbsolutePath(), };
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
+            final String[] args = new String[] {
+                    "--caname", "Let's Encrypt Authority X3",
+                    "-f", file.getAbsolutePath(),
+            };
             assertEquals("Nothing imported should be successful.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
             assertFalse("User should not be created.",
                     EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser("DontCreateMe"));
@@ -374,7 +381,7 @@ public class CaImportMsCaCertificatesTest {
                     + "  Request Disposition: 0x1f (31) -- Denied\n" 
                     + "  Binary Certificate: EMPTY";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3", 
                     "-f", file.getAbsolutePath(), 
@@ -391,20 +398,20 @@ public class CaImportMsCaCertificatesTest {
     public void testUpnInCertificate() throws Exception {
         final File file = File.createTempFile("certutil_dump_", ".txt");
         try {
-            final String testData = "\n" 
-                    + "Schema:\n" 
+            final String testData = "\n"
+                    + "Schema:\n"
                     + "  Column Name                   Localized Name                Type    MaxLength\n"
                     + "  ----------------------------  ----------------------------  ------  ---------\n"
                     + "  UPN                           User Principal Name           String  2048 -- Indexed\n"
                     + "  CertificateTemplate           Certificate Template          String  254 -- Indexed\n"
                     + "  Request.Disposition           Request Disposition           Long    4 -- Indexed\n"
-                    + "  RawCertificate                Binary Certificate            Binary  16384\n" 
-                    + "\n" 
+                    + "  RawCertificate                Binary Certificate            Binary  16384\n"
+                    + "\n"
                     + "Row 1:\n"
-                    + "  User Principal Name: EMPTY\n" 
+                    + "  User Principal Name: EMPTY\n"
                     + "  Certificate Template: \"1.2.3.4.5.6.7.8.9\" MS_CA_CertificateTemplate\n"
-                    + "  Request Disposition: 0x14 (20) -- Issued\n" 
-                    + "  Binary Certificate:\n" 
+                    + "  Request Disposition: 0x14 (20) -- Issued\n"
+                    + "  Binary Certificate:\n"
                     + "-----BEGIN CERTIFICATE-----\n"
                     + "MIICOjCCAeGgAwIBAgIQMjxP77K4d3G9k/IVyh+0ezAKBggqhkjOPQQDAjBVMR8w\n"
                     + "HQYDVQQDDBZTdG9ybWh1YiBFQyBTdGFnaW5nIEcxMSUwIwYDVQQKDBxTdG9ybWh1\n"
@@ -417,12 +424,12 @@ public class CaImportMsCaCertificatesTest {
                     + "b29iYXJAc3ZlbnNzb24uc2UwJwYDVR0lBCAwHgYIKwYBBQUHAwIGCCsGAQUFBwME\n"
                     + "BggrBgEFBQcDATAdBgNVHQ4EFgQUg8u0psGW2GeoJIY9pkfoVGKYcBQwDgYDVR0P\n"
                     + "AQH/BAQDAgWgMAoGCCqGSM49BAMCA0cAMEQCIEi49/MuZ1nTLg5MTc1cSUC9pqhd\n"
-                    + "4uq1xbgB7PCHq17lAiBlKCK7Y+/tG0TyIKDa36lel5iUlEUW8og4er3SRKqsmQ==\n" + 
+                    + "4uq1xbgB7PCHq17lAiBlKCK7Y+/tG0TyIKDa36lel5iUlEUW8og4er3SRKqsmQ==\n" +
                     "-----END CERTIFICATE-----";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
-            final String[] args = new String[] { 
-                    "--caname", "Let's Encrypt Authority X3", 
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
+            final String[] args = new String[]{
+                    "--caname", "Let's Encrypt Authority X3",
                     "-f", file.getAbsolutePath(),
                     "--ee-username", "universalPrincipalName,UPN"
             };
@@ -496,7 +503,7 @@ public class CaImportMsCaCertificatesTest {
                     + "qQVM8q8ClLXRWmzS+ohT8jDbnsSMa5sM4/HCxORE70WdYHc=\n"
                     + "-----END CERTIFICATE-----\n";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3", 
                     "-f", file.getAbsolutePath(), 
@@ -571,7 +578,7 @@ public class CaImportMsCaCertificatesTest {
                     + "qQVM8q8ClLXRWmzS+ohT8jDbnsSMa5sM4/HCxORE70WdYHc=\n"
                     + "-----END CERTIFICATE-----\n";
 
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3",
                     "-f", file.getAbsolutePath(), 
@@ -649,7 +656,7 @@ public class CaImportMsCaCertificatesTest {
                     + "qQVM8q8ClLXRWmzS+ohT8jDbnsSMa5sM4/HCxORE70WdYHc=\n"
                     + "-----END CERTIFICATE-----\n";
             
-            FileUtils.writeStringToFile(file, testData, Charset.defaultCharset(), false);
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
             final String[] args = new String[] { 
                     "--caname", "Let's Encrypt Authority X3",
                     "-f", file.getAbsolutePath(),

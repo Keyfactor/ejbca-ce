@@ -17,9 +17,13 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -118,6 +122,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
     private static final String INPUT_FILE = "-f";
     private static final String EE_USERNAME = "--ee-username";
     private static final String EE_PASSWORD = "--ee-password";
+    private static final String CHARSET_KEY = "--charset";
 
     {
         registerParameter(new Parameter(INPUT_FILE, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -143,6 +148,8 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                     "the specified fields, the certificate serial number is used instead."));
         registerParameter(new Parameter(EE_PASSWORD, "End Entity Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The password (enrollment code) to use for new end entities. If no password is specified, the default password 'foo123' is used."));
+        registerParameter(new Parameter(CHARSET_KEY, "File encoding", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The file encoding of the certutil dump file. Using UTF-16 if omitted."));
     }
 
     @Override
@@ -189,12 +196,12 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
 
     @Override
     public CommandResult execute(final ParameterContainer parameters) {
-        try (final BufferedReader reader = new BufferedReader(new FileReader(new File(parameters.get(INPUT_FILE))))) {
+        try (final BufferedReader reader = Files.newBufferedReader(Paths.get(parameters.get(INPUT_FILE)), getCharset(parameters.get(CHARSET_KEY)))) {
             int processedCount = 0;
             int skippedCount = 0;
             final long startTime = System.currentTimeMillis();
-            for (String line; (line = reader.readLine()) != null;) {
-                if (line.startsWith("Row")) {
+            for (String line; (line = reader.readLine()) != null; ) {
+                if (StringUtils.startsWith(line, "Row")) {
                     final int rowNumber = getRowNumber(line);
                     final ImportResult importResult = importEntry(parameters, reader, rowNumber);
                     if (importResult.getStatus() == ImportResult.Status.ERROR) {
@@ -207,6 +214,8 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                     } else {
                         skippedCount++;
                     }
+                } else {
+                    getLogger().trace("Skipping line '" + line + "'.");
                 }
             }
             final long duration = System.currentTimeMillis() - startTime;
@@ -242,13 +251,24 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         } catch (final FileNotFoundException e) {
             getLogger().error(String.format("The file '%s' does not exist or cannot be read.", parameters.get(INPUT_FILE)));
             return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (MalformedInputException e) {
+            getLogger().error("A problem occurred when reading the certutil dump file. Are you using the correct charset? Problem description: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         } catch (final IOException e) {
-            getLogger().error(e.getMessage());
+            getLogger().error("The certutil dump file could not be parsed. Problem description: " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (final CertificateParsingException e) {
             getLogger().error("Unable to parse X.509 certificate: " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
+    }
+
+    private Charset getCharset(final String charsetName) {
+        if (charsetName == null) {
+            // This is the default charset on Windows machines
+            return StandardCharsets.UTF_16;
+        }
+        return Charset.forName(charsetName);
     }
 
     private int getRowNumber(final String line) throws IOException {
@@ -268,10 +288,6 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
 
         if (requestDisposition == RequestDisposition.DENIED || requestDisposition == RequestDisposition.PENDING) {
             return ImportResult.empty();
-        }
-
-        if (certificateTemplate == null) {
-            throw new IOException("The name of the certificate template is missing for row #" + rowNumber);
         }
 
         final String pem = parseCertificateAsPem(reader);
@@ -346,16 +362,18 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
 
     private String parseCertificateTemplate(final BufferedReader reader) throws IOException {
         final String line = parseProperty(reader, "Certificate Template");
-        final String[] parts = line.split("\"");
+        final String lineWithoutProperty = StringUtils.removeStart(line, "Certificate Template:");
+        final String[] parts = StringUtils.trim(lineWithoutProperty).split(" ");
+        if (parts.length == 1) {
+            // Format is either 'Certificate Template: "<OID>" or Certificate Template: "<NAME>"'
+            return StringUtils.strip(parts[0], "\"");
+        }
         if (parts.length == 2) {
-            // This is expected if the Request Disposition is 0x1f (Denied).
-            return null;
+            // Format is 'Certificate Template: "<OID>" "<NAME>"'
+            return StringUtils.strip(parts[1], "\"");
         }
-        if (parts.length != 3) {
-            throw new IOException("Certificate template could not be parsed. Expected [ 'Certificate Template', "
-                    + "'<OID>', '<TemplateName>' ], but parsed " + Arrays.asList(parts) + ".");
-        }
-        return StringUtils.strip(parts[2]);
+        throw new IOException("Certificate template could not be parsed. Expected [ '<OID>', '<TemplateName>' ] " +
+                "or [ '<TemplateName>' ], but parsed " + Arrays.asList(parts) + ".");
     }
 
     private String parseUpn(final BufferedReader reader) throws IOException {
