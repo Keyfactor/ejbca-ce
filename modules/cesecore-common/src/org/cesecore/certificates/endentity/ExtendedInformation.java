@@ -763,8 +763,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         Object obj = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
         @SuppressWarnings("unchecked")
         ArrayList<Integer> ids = obj==null? new ArrayList<>() : (ArrayList<Integer>) obj;
-        ids.add(requestId);
-        data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
+        if (!ids.contains(requestId)) {
+            ids.add(requestId);
+            data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
+        }
     }
 
     public List<Integer> getRevokeEndEntityApprovalRequestIds() {
