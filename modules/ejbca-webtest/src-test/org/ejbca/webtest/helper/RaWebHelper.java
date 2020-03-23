@@ -20,6 +20,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -60,6 +61,12 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
         static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
+        static final By BUTTON_ENROLL = By.id("enrollment");
+        static final By BUTTON_ENROLL_WITH_USERNAME = By.xpath("//a[@href='enrollwithusername.xhtml']");
+        static final By ENROLL_USERNAME_INPUT = By.id("enrollWithUsernameForm:username");
+        static final By ENROLL_ENROLLMENTCODE_INPUT = By.id("enrollWithUsernameForm:enrollmentCode");
+        static final By BUTTON_ENROLL_DOWNLOAD_PKCS12 = By.id("enrollWithUsernameForm:generatePkcs12");
+        
         // Manage Requests
         static final By BUTTON_TAB_CONFIRM_REQUESTS = By.id("requestInfoForm:confirmRequestButton");
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -85,10 +92,6 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
-    }
-
-    public void clickDownloadPkcs12(){
-        clickLink(Page.BUTTON_DOWNLOAD_P12);
     }
 
     /**
@@ -489,5 +492,36 @@ public class RaWebHelper extends BaseHelper {
      */
     public void assertApproveMessageDoesNotExist() {
                 assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
+    }
+    
+    /**
+     * Helps you hover over 'Enroll' and takes you to 'Use Username'.
+     * 
+     * @param Webdriver webdriver.
+     */
+    public void clickToEnrollUseUsernamen(WebDriver webDriver) {
+        Actions action = new Actions(webDriver);
+        action.moveToElement(webDriver.findElement(Page.BUTTON_ENROLL))
+              .moveToElement(webDriver.findElement(Page.BUTTON_ENROLL_WITH_USERNAME))
+              .click().build().perform(); 
+    }
+    
+    /**
+    * Fills the 'Username' and 'Enrollment code' textfields with text.
+    *
+    * @param Username
+    * @param Enrollment Code
+    */
+    public void fillEnrollUsernameAndCode(String username,String enrollmentCode) {
+        fillInput(Page.ENROLL_USERNAME_INPUT, username );
+        fillInput(Page.ENROLL_ENROLLMENTCODE_INPUT, enrollmentCode);        
+    }
+    
+    /**
+     * Clicks the 'Download PKCS#12' button
+     * 
+     * */
+    public void clickEnrollDownloadPKCS12Button() {
+            clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PKCS12);
     }
 }
