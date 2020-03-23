@@ -225,7 +225,10 @@ public class RaWebHelper extends BaseHelper {
     public void clickDownloadKeystorePem() {
         clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
     }
-    
+
+    /**
+     * Click to "Download PKCS#12" button in the requestInfoform form.
+     */
     public void clickDownloadPkcs12(){
         clickLink(Page.BUTTON_DOWNLOAD_P12);
     }
