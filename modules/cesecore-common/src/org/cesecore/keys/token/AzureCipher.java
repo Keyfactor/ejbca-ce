@@ -180,7 +180,7 @@ public class AzureCipher extends CipherSpi {
         }
         this.opmode = opmode;
         if (this.opmode != Cipher.DECRYPT_MODE && this.opmode != Cipher.UNWRAP_MODE) {
-            throw new IllegalArgumentException("Only DECRYPT_MODE (1) or UNWRAP_MODE (4) can be used: " + opmode);
+            throw new IllegalArgumentException("Only DECRYPT_MODE (2) or UNWRAP_MODE (4) can be used: " + opmode);
         }
         this.privateKey = (AzureCryptoToken.KeyVaultPrivateKey)key;            
     }
