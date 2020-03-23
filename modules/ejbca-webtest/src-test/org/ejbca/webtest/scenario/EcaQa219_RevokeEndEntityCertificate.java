@@ -1,7 +1,18 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertEquals;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,14 +23,11 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.util.HashMap;
 import java.util.Set;
-
 import org.cesecore.util.CertTools;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CaStructureHelper;
-import org.ejbca.webtest.helper.CertificateProfileHelper;
-import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
@@ -31,10 +39,6 @@ import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.interactions.Actions;
-import org.junit.Assert.*;
-
 
 
 
@@ -53,19 +57,9 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     private static final String END_ENTITY_PASSWORD = "foo123";
     private static final String END_ENTITY_COMMON_NAME = "ECAQA71EE";
     private static final String END_ENTITY_CA = "ManagementCA";
-
     private static final String CA_NAME = "ECAQA71CA";
     private static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
     private static final String CA_VALIDITY = "15y";
-    
-    private static final By ENROLL_XPATH = By.xpath("//*[@id='enrollment']");
-    private static final By USE_USERNAME_XPATH = By.xpath("//a[@href='enrollwithusername.xhtml']");
-    private static final By USERNAME_INPUTFIELD_ID = By.id("enrollWithUsernameForm:username");
-    private static final By ENROLLMENT_CODE_TEXTFIELD_ID = By.id("enrollWithUsernameForm:enrollmentCode");
-    private static final By CHECKBOX_ID = By.id("enrollWithUsernameForm:checkButton");
-    private static final By DOWNLOAD_PKCS12 = By.id("enrollWithUsernameForm:generatePkcs12");
-    private static final By SEARCH_END_ENTITIES_WITH_STATUS_HAMBURGERLIST_XPATH = By.xpath("//select[@name='selectliststatus']");
-    private static final By SEARCH_END_ENTITIES_WITH_STATUS_ALL_XPATH = By.xpath("//select[@name='selectliststatus']/option[2]");
     private static final By REVOKE_SELECTED_BUTTON_XPATH = By.xpath("//input[@name='buttonrevokeusers']");
     private static final By CERTIFICATE_SERIAL_NUMBER_XPATH = By.xpath("//*[@id='contentBlock']//label[contains(text(),'Certificate Serial Number')]/../following-sibling::td/label");
 
@@ -125,42 +119,15 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     @Test
     public void testC_RaWebSaveP12() {
         raWebHelper.openPage(getRaWebUrl());
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //Clicks trough to Enroll with Use Username
-        Actions action = new Actions(getWebDriver());
-        WebElement element = webDriver.findElement(ENROLL_XPATH);
-        action.moveToElement(element).moveToElement(webDriver.findElement(USE_USERNAME_XPATH)).click().build().perform();
-        WebElement usernameElement = webDriver.findElement(USERNAME_INPUTFIELD_ID);
-        usernameElement.sendKeys(END_ENTITY_NAME);
-        WebElement enrollmentCodeElement = webDriver.findElement(ENROLLMENT_CODE_TEXTFIELD_ID);
-        enrollmentCodeElement.sendKeys(END_ENTITY_PASSWORD);
-        WebElement checkBoxElement = webDriver.findElement(CHECKBOX_ID);
-        checkBoxElement.click();
-        WebElement downloadP12BoxElement = webDriver.findElement(DOWNLOAD_PKCS12);
-        downloadP12BoxElement.click();
-
+        raWebHelper.clickToEnrollUseUsernamen(webDriver);
+        raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
+        raWebHelper.clickEnrollDownloadPKCS12Button();
     }
 
     @Test
     public void testD_SearchEndEntities() {
         String mainWindow = webDriver.getWindowHandle();
         getStringFromSearchEndEntities();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         webDriver.close();
         webDriver.switchTo().window(mainWindow);
     }
@@ -168,23 +135,10 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     @Test
     public void testE_DownloadCrl() {
         caStructureHelper.openCrlPage(getAdminWebUrl());
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         caStructureHelper.clickCrlLinkAndAssertNumberIncreased(CA_NAME);
         caStructureHelper.assertCrlLinkWorks(CA_NAME);
         caStructureHelper.openCrlPage(getAdminWebUrl());
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         caStructureHelper.downloadCrl(CA_NAME);
-       
     }
     
     @Test
@@ -195,7 +149,6 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
                 crlData = getFileFromDisk(file);
             } catch (IOException e) {
                 e.printStackTrace();
-                //log.error("File '" + filename + "' could not be read.");
             }
             
        X509CRL crl = CertTools.getCRLfromByteArray(crlData);
@@ -211,31 +164,19 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     
     private String getStringFromSearchEndEntities() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
-        //Revokes the end entity
-        WebElement hamburgerList = webDriver.findElement(SEARCH_END_ENTITIES_WITH_STATUS_HAMBURGERLIST_XPATH);
-        WebElement allElementInHamburgerList = webDriver.findElement(SEARCH_END_ENTITIES_WITH_STATUS_ALL_XPATH);
-        hamburgerList.click();
-        allElementInHamburgerList.click();
-        searchEndEntitiesHelper.fillSearchCriteria(END_ENTITY_NAME, null, null, null);
+        searchEndEntitiesHelper.fillSearchCriteria(END_ENTITY_NAME, null, "All", null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
-        searchEndEntitiesHelper.triggerSearchResultFirstRowSelect();
+        searchEndEntitiesHelper.triggerSearchResultUsernameRowSelect(END_ENTITY_COMMON_NAME);
         WebElement revokeButton = webDriver.findElement(REVOKE_SELECTED_BUTTON_XPATH);
         revokeButton.click();
 
         //Handles the CertificateView Popup-window.
-        Alert alert = webDriver.switchTo().alert();
-        alert.accept();
-        String mainWindow = webDriver.getWindowHandle();
-        try {
-            Thread.sleep(4000);
-            searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        acceptAlert();
+        String mainWindow = webDriver.getWindowHandle(); 
+        searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
         for (String windowHandle : webDriver.getWindowHandles()) {
             webDriver.switchTo().window(windowHandle);
         }
-        
         WebElement certificateSerialNumberElement = webDriver.findElement(CERTIFICATE_SERIAL_NUMBER_XPATH);
         return certificateSerialNumberElement.getText();
     }
@@ -252,6 +193,8 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         return baos.toByteArray();
     }
     
-
-    
+    private static void acceptAlert() {
+        Alert alert = webDriver.switchTo().alert();
+        alert.accept();
+    }    
 }
