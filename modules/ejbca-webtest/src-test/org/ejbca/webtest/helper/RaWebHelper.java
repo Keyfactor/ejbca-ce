@@ -219,12 +219,17 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.BUTTON_DOWNLOAD_PEM);
     }
 
-    /**
+    /** 
      * Click to "Download PEM" button in requestInfoForm form.
      */
     public void clickDownloadKeystorePem() {
         clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
     }
+    
+    public void clickDownloadPkcs12(){
+        clickLink(Page.BUTTON_DOWNLOAD_P12);
+    }
+
     
     public void assertCsrUploadError() {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
