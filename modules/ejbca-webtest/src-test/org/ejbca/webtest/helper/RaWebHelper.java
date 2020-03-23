@@ -502,7 +502,7 @@ public class RaWebHelper extends BaseHelper {
     /**
      * Helps you hover over 'Enroll' and takes you to 'Use Username'.
      * 
-     * @param Webdriver webdriver.
+     * @param webDriver
      */
     public void clickToEnrollUseUsernamen(WebDriver webDriver) {
         Actions action = new Actions(webDriver);
@@ -514,8 +514,8 @@ public class RaWebHelper extends BaseHelper {
     /**
     * Fills the 'Username' and 'Enrollment code' textfields with text.
     *
-    * @param Username
-    * @param Enrollment Code
+    * @param username
+    * @param enrollmentCode
     */
     public void fillEnrollUsernameAndCode(String username,String enrollmentCode) {
         fillInput(Page.ENROLL_USERNAME_INPUT, username );
