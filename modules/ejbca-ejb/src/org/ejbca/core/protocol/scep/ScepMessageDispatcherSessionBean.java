@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -69,6 +70,7 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -81,13 +83,19 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.EndEntityApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
@@ -120,9 +128,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     @EJB
@@ -420,7 +432,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(scepConfig.getRACertProfile(alias));
                 final String approvalProfileName = approvalProfileSession
                         .getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, ca.getCAInfo(), certificateProfile).getProfileName();
-                List<ApprovalDataVO> approvals = approvalSession.findApprovalDataVO(AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName));         
+                //We need to divine if the initial request was for an enrollment or a renewal. 
+                int approvalId;
+                if(endEntityAccessSession.findUser(username) == null || certificateStoreSession.findCertificatesByUsername(username).size() == 0) {
+                    approvalId = AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName);
+                } else {
+                    approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
+                }
+                List<ApprovalDataVO> approvals = approvalSession.findApprovalDataVO(approvalId);         
                 //Iterate through the list, find the last approval available. We don't care if it's expired in this context.
                 Collections.reverse(approvals);
                 ApprovalDataVO approval = null;
@@ -430,7 +449,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 if (approval != null) {
                     //Approval is still around - which either means that it's been approved but not removed, rejected or is still waiting approval
                     //Verify that the transaction ID in the request is correct
-                    EndEntityInformation endEntityInformation = ((AddEndEntityApprovalRequest) approval.getApprovalRequest())
+                    EndEntityInformation endEntityInformation = ((EndEntityApprovalRequest) approval.getApprovalRequest())
                             .getEndEntityInformation();
                     ScepRequestMessage originalRequest = ScepRequestMessage
                             .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());
@@ -456,6 +475,21 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         //Now go ahead and process the cached certificate request     
                         try {
                             resp = signSession.createCertificate(administrator, originalRequest, ScepResponseMessage.class, null);
+                            //That done, let's erase the cached request from the end entity
+                            EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
+                            ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
+                            extendedInformation.cacheScepRequest(null);
+                            updatedEndEntityInformation.setExtendedInformation(extendedInformation);
+                            try {
+                                endEntityManagementSession.changeUserForceApproval(administrator, updatedEndEntityInformation, false);
+                            } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
+                                    | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
+                                    | EndEntityProfileValidationException | WaitingForApprovalException e) {
+                                failText = "Failed to edit end entity: " + username + ": " + e.getLocalizedMessage();
+                                log.info(failText);
+                                resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                                return resp.getResponseMessage();
+                            }
                         } catch (AuthStatusException e) {
                             final String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
                                     + ") with incorrect status: " + e.getLocalizedMessage();
@@ -502,10 +536,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     }
                 } else {
-                    log.info("GETCERTINITIAL was called on user with name " + username
-                            + ", but no approval request for an end entity with that name using the approval profile " + approvalProfileName
-                            + " exists");
-                    return null;
+                    String failText = "GETCERTINITIAL was called on user with name " + username + " using transaction ID " + reqmsg.getTransactionId()
+                            + ", but waiting no approval request for an end entity with that name using the approval profile " + approvalProfileName
+                            + " exists";
+                    log.info(failText);
+                    return createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText).getResponseMessage();
                 }       
             }
         } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
