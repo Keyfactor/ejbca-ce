@@ -343,7 +343,7 @@ public class CryptokiDevice {
         }
         
         /** Finds a PrivateKey object by either certificate label or by private key label */
-        // TODO: Support alias that is hexademical or label or Id
+        // TODO: Support alias that is hexadecimal or label or Id
         private Long getPrivateKeyByLabel(final Long session, final String alias) {
             long[] certificateRefs = findCertificateObjectsByLabel(session, alias);
             if (LOG.isDebugEnabled()) {
@@ -381,7 +381,7 @@ public class CryptokiDevice {
         }
         
         /** Finds a PublicKey object by either certificate label or by private key label */
-        // TODO: Support alias that is hexademical or label or Id
+        // TODO: Support alias that is hexadecimal or label or Id
         private Long getPublicKeyByLabel(final Long session, final String alias) {
             long[] certificateRefs = findCertificateObjectsByLabel(session, alias);
             if (LOG.isDebugEnabled()) {
@@ -1762,6 +1762,7 @@ public class CryptokiDevice {
         }
 
         // This method is currently private and can be reused later on to fetch value for particular attribute
+        @SuppressWarnings("unused")
         private CKA getAttribute(String alias, long cka) { // TODO: Support for alias that is hexadecimal of label or ID
             Long session = null;
             try {
