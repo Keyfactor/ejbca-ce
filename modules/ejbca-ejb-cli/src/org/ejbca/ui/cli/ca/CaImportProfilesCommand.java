@@ -84,7 +84,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
         final String inputDir = parameters.get(DIRECTORY_KEY);
         if(inputDir == null) {
             getLogger().error("Directory parameter is mandatory.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.CLI_FAILURE;
         }
         final String caName = parameters.get(CA_NAME_KEY);
         Integer caId = null;
