@@ -108,7 +108,7 @@ public class CaImportProfilesCommandUnitTest {
         // when
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
-        assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
+        assertEquals("CLI return code mismatch.", CommandResult.CLI_FAILURE, commandResult);
         assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Directory parameter is mandatory."));
     }
 
