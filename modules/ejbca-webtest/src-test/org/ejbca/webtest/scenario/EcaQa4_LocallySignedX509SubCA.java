@@ -1,7 +1,6 @@
 package org.ejbca.webtest.scenario;
 
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
@@ -51,7 +50,7 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
     }
     
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove CA
         removeCaByName(TestData.CA_NAME);
         // Remove SubCA
@@ -105,7 +104,7 @@ public class EcaQa4_LocallySignedX509SubCA extends WebTestBase{
     
     // Create and assert SubCA
     @Test
-    public void stepE_createSubCa() throws InterruptedException {
+    public void stepE_createSubCa() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.SUBCA_NAME);
         caHelper.setCryptoToken(TestData.SUBCA_CRYPTOTOKEN_NAME);
