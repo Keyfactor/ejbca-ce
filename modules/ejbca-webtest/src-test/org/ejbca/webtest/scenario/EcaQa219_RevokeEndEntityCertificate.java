@@ -12,22 +12,11 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.cert.CRLException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
 import java.util.HashMap;
-import java.util.Set;
-import org.cesecore.util.CertTools;
+
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CaHelper;
-import org.ejbca.webtest.helper.CaStructureHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
@@ -50,7 +39,6 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
     private static CaHelper caHelper;
     private static RaWebHelper raWebHelper;
-    private static CaStructureHelper caStructureHelper;
     
     //String variables.
     private static final String END_ENTITY_NAME = "ECAQA71EE";
@@ -79,8 +67,6 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
         raWebHelper = new RaWebHelper(webDriver);
-        caStructureHelper = new CaStructureHelper(webDriver);
-
     }
 
     @AfterClass
@@ -119,8 +105,15 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     @Test
     public void testC_RaWebSaveP12() {
         raWebHelper.openPage(getRaWebUrl());
+        //Use sleep to find element.
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         raWebHelper.clickToEnrollUseUsernamen(webDriver);
         raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
+        raWebHelper.clickCheck();
         raWebHelper.clickEnrollDownloadPKCS12Button();
     }
 
@@ -130,36 +123,6 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         getStringFromSearchEndEntities();
         webDriver.close();
         webDriver.switchTo().window(mainWindow);
-    }
-    
-    @Test
-    public void testE_DownloadCrl() {
-        caStructureHelper.openCrlPage(getAdminWebUrl());
-        caStructureHelper.clickCrlLinkAndAssertNumberIncreased(CA_NAME);
-        caStructureHelper.assertCrlLinkWorks(CA_NAME);
-        caStructureHelper.openCrlPage(getAdminWebUrl());
-        caStructureHelper.downloadCrl(CA_NAME);
-    }
-    
-    @Test
-    public void testF_compareSerialNumber() throws CRLException {
-        final File file = new File("/tmp/"+ CA_NAME +".crl");
-        byte[] crlData = null;
-            try {
-                crlData = getFileFromDisk(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            
-       X509CRL crl = CertTools.getCRLfromByteArray(crlData);
-       Set<? extends X509CRLEntry> crlEntries = crl.getRevokedCertificates();
-       if(crlEntries != null) {
-           for(X509CRLEntry crlEntry : crlEntries) {
-               BigInteger serial = crlEntry.getSerialNumber();
-               String serialNumber = serial.toString();
-               assertEquals(serialNumber, getStringFromSearchEndEntities());
-           }
-       }
     }
     
     private String getStringFromSearchEndEntities() {
@@ -172,25 +135,12 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
 
         //Handles the CertificateView Popup-window.
         acceptAlert();
-        String mainWindow = webDriver.getWindowHandle(); 
         searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
         for (String windowHandle : webDriver.getWindowHandles()) {
             webDriver.switchTo().window(windowHandle);
         }
         WebElement certificateSerialNumberElement = webDriver.findElement(CERTIFICATE_SERIAL_NUMBER_XPATH);
         return certificateSerialNumberElement.getText();
-    }
-    
-    private byte[] getFileFromDisk(final File file) throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(file);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
-        byte[] buffer = new byte[10000];
-        int bytes;
-        while ((bytes = fileInputStream.read(buffer)) != -1) {
-            baos.write(buffer, 0, bytes);
-        }
-        fileInputStream.close();
-        return baos.toByteArray();
     }
     
     private static void acceptAlert() {

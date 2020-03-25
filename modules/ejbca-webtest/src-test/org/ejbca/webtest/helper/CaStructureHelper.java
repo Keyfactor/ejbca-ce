@@ -15,7 +15,6 @@ package org.ejbca.webtest.helper;
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -80,7 +79,12 @@ public class CaStructureHelper extends BaseHelper {
     public void downloadCrl(final String caName) {
         clickLink(Page.getCrlUrl(caName));    
     }
-
+    
+    /**
+     * Checks that 'Get CRL' number have been increased with matching CA.
+     * 
+     * @param caName Name of the CA. 
+     */
     public void clickCrlLinkAndAssertNumberIncreased(final String caName){
         int crlNumber = getCrlNumber(caName);
         // Click 'Create CRL' button
@@ -89,7 +93,11 @@ public class CaStructureHelper extends BaseHelper {
         assertEquals("The CRL number was not incremented.", crlNumber + 1, getCrlNumber(caName));
     }
 
-
+    /**
+     * Gets the number of 'Get CRL' with matching CA.
+     * 
+     * @param caName Name of the CA.
+     */
     public int getCrlNumber(String caName) {
         String crlText = StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
         return Integer.parseInt(StringUtils.substringAfter(crlText, "number "));

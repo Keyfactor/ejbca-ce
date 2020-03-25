@@ -1,15 +1,12 @@
 package org.ejbca.webtest.helper;
 
-import java.util.List;
-
-import org.ejbca.webtest.helper.RaWebHelper.Page;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import java.util.List;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * Search End Entities helper class for EJBCA Web Tests.
@@ -250,6 +247,10 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         clickLink(Page.BUTTON_REVOKE_SELECTED);
     }
     
+    /**
+     * Clicks the 'Reactive' button in certificate view.
+     * 
+     */
     public void clickReactive() {
         clickLink(Page.BUTTON_REACTIVE);
     }
