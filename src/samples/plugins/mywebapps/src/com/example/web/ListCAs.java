@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.ejbca.util.HTMLTools;
 
 /**
  * This is a demo servlet that list all CAs in the system
@@ -49,7 +50,7 @@ public class ListCAs extends HttpServlet {
         StringBuffer out = new StringBuffer ("<html><body><h3>List CAs</h3>");
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(this.getClass().getSimpleName() + ": "+request.getRemoteAddr()));
         for (String ca : caSession.getAuthorizedCaNames(admin)) {
-        	out.append("<br>").append(ca);
+        	out.append("<br>").append(HTMLTools.htmlescape(ca));
         }
         out.append("</body></html>");
         response.getOutputStream ().print (out.toString ());

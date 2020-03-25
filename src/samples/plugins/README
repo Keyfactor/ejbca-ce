@@ -4,13 +4,17 @@ preferably be managed outside of the EJBCA source tree.
 
 By performing
 
-    ant deploy -Dejbca.plugin.conf.path=ABSOLUTEPATHTOEJBCA/src/samples/plugins
+    ant build -Dejbca.plugin.conf.path=ABSOLUTEPATHTOEJBCA/src/samples/plugins
 
-all the sample plugins will be added to EJBCA without any configuration.
+all the sample plugins will be added to ejbca.ear without any configuration.
 
-A subsequent "ant deploy" will restore EJBCA in its unextended state.
+Deploy EJBCA with the plugins using:
+    ant deployear
+Check server.log of the application server to verify that everything deployed correctly.
+The plugin webapp will be available at http://localhost:8080/ejbca/pluginweb/
+
+A subsequent "ant build deployear" will restore EJBCA in its unextended state.
 
 The file EJBCA/conf/plugins/plugin.properties.sample describes how
 a plugin build gets access to the core EJBCA environment.
- 
  
