@@ -2,6 +2,7 @@ package org.ejbca.webtest.helper;
 
 import java.util.List;
 
+import org.ejbca.webtest.helper.RaWebHelper.Page;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -37,6 +38,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         static final By BUTTON_VIEW_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View End Entity (popup window)']");
         static final By BUTTON_EDIT_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='Edit End Entity (popup window)']");
         static final By BUTTON_REVOKE_SELECTED = By.xpath("//input[@name='buttonrevokeusers']");
+        static final By BUTTON_REACTIVE = By.xpath("//input[@value=\"Reactivate\"]");
 
         static final String TEXT_VIEW_MODE_SWITCH_BASIC = "Basic Mode";
         static final String TEXT_VIEW_MODE_SWITCH_ADVANCED = "Advanced Mode";
@@ -246,5 +248,9 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     public void clickRevokeSelected() {
         clickLink(Page.BUTTON_REVOKE_SELECTED);
+    }
+    
+    public void clickReactive() {
+        clickLink(Page.BUTTON_REACTIVE);
     }
 }
