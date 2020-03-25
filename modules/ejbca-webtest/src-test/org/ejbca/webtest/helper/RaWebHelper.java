@@ -66,6 +66,7 @@ public class RaWebHelper extends BaseHelper {
         static final By ENROLL_USERNAME_INPUT = By.id("enrollWithUsernameForm:username");
         static final By ENROLL_ENROLLMENTCODE_INPUT = By.id("enrollWithUsernameForm:enrollmentCode");
         static final By BUTTON_ENROLL_DOWNLOAD_PKCS12 = By.id("enrollWithUsernameForm:generatePkcs12");
+        static final By BUTTON_CHECKBOX = By.id("enrollWithUsernameForm:checkButton");
         
         // Manage Requests
         static final By BUTTON_TAB_CONFIRM_REQUESTS = By.id("requestInfoForm:confirmRequestButton");
@@ -93,7 +94,7 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
     }
-
+    
     /**
      * Opens the 'RA Web' page and asserts the correctness of URI path.
      *
@@ -531,5 +532,13 @@ public class RaWebHelper extends BaseHelper {
      * */
     public void clickEnrollDownloadPKCS12Button() {
             clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PKCS12);
+    }
+    
+    /**
+     * Clicks the 'Check' next to 'Username' and 'Enrollment code' textfields.
+     * 
+     * */
+    public void clickCheck() {
+        clickLink(Page.BUTTON_CHECKBOX);
     }
 }
