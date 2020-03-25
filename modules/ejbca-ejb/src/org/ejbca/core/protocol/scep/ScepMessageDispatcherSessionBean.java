@@ -536,9 +536,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     }
                 } else {
-                    String failText = "GETCERTINITIAL was called on user with name " + username + " using transaction ID " + reqmsg.getTransactionId()
-                            + ", but waiting no approval request for an end entity with that name using the approval profile " + approvalProfileName
-                            + " exists";
+                    String failText = "GETCERTINITIAL was called on user with name '" + username + "' using transaction ID " + reqmsg.getTransactionId()
+                            + ", but no waiting approval request for an end entity with that name using the approval profile '" + approvalProfileName
+                            + "' exists";
                     log.info(failText);
                     return createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText).getResponseMessage();
                 }       
