@@ -15,7 +15,7 @@
     <echo message="Available targets are help and dist."/>
   </target>
 
-  <target name="dist" depends="with.clover">
+  <target name="dist">
   	<echo message="Building EJBCA MyPublisher plugin"/>
     <!-- Compile the java code from ${src.dir} into ${bin.dir} -->
     <javac srcdir="${src.dir}"
