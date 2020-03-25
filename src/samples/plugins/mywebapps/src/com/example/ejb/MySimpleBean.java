@@ -26,12 +26,11 @@ import javax.persistence.EntityManager;
 
 import javax.annotation.PostConstruct;
 
-@Stateless(name="mysimplebean")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
-@Local(MySimpleBeanLocal.class)
 /**
  * @version $Id$
  */
+@Stateless
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class MySimpleBean implements MySimpleBeanLocal {
 
     private final static Logger log = Logger.getLogger(MySimpleBean.class);
