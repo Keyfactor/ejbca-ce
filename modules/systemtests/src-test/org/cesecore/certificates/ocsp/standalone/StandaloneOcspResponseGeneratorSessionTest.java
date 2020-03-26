@@ -455,7 +455,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         String signerDN = "CN=ocspTestSigner";
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
                 OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId(), certificateProfileId,
-                new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 12));
+                new Date(System.currentTimeMillis()));
         try {
             CertTools.checkValidity(ocspSigningCertificate, new Date(System.currentTimeMillis() + 1000 * 60 * 60));
             fail("Certificate is not expired, test cannot continue.");
@@ -472,7 +472,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             // Do the OCSP request
             final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
             final OCSPResp response = sendRequest(ocspRequest);           
-            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", OCSPRespBuilder.UNAUTHORIZED, response.getStatus());
             assertNull("Response should not have contained a response object.", response.getResponseObject());
         } finally {
             certificateProfileSession.removeCertificateProfile(authenticationToken, profileName);

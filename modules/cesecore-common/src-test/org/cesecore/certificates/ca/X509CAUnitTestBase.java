@@ -14,9 +14,11 @@ package org.cesecore.certificates.ca;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,6 +27,7 @@ import java.util.Properties;
 
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -33,6 +36,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
@@ -55,11 +59,14 @@ public class X509CAUnitTestBase {
         CryptoProviderTools.installBCProvider();
     }
 
-    protected static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws Exception {
+    protected static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws CertificateParsingException,
+            InvalidAlgorithmParameterException, CryptoTokenOfflineException, InvalidAlgorithmException, OperatorCreationException {
         return createTestCA(cryptoToken, cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
     }
 
-    protected static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg, Date notBefore, Date notAfter) throws Exception {
+    protected static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg, Date notBefore, Date notAfter)
+            throws InvalidAlgorithmParameterException, CryptoTokenOfflineException, InvalidAlgorithmException, CertificateParsingException,
+            OperatorCreationException {
         cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATESIGNKEYALIAS);
         cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create CAToken

@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -25,6 +33,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
@@ -129,14 +138,6 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /** JUnit test for X.509 CA
  *
@@ -1376,6 +1377,74 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // The EV DN components do not have names in standard java/BC
         desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,SERIALNUMBER=1234567890,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,CN=evssltest6.test.lan";
         assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
+    }
+    
+
+    /**
+     * Regression test to make sure that a certificate can't be created with notBefore and notAfter both in the past. 
+     */
+    @Test
+    public void testNotBeforeAndNotAfterInPast() throws InvalidAlgorithmParameterException, CertificateParsingException, CryptoTokenOfflineException,
+            InvalidAlgorithmException, OperatorCreationException, CAOfflineException, IllegalValidityException, IllegalNameException,
+            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+        final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
+        final String username = "testNotBeforeAndNotAfterInPast";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAllowValidityOverride(true);
+        EndEntityInformation endEntityInformation = new EndEntityInformation();
+        endEntityInformation.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+        endEntityInformation.setUsername(username);
+        endEntityInformation.setDN("CN=" + username);
+        endEntityInformation.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityInformation.setPassword("foo123");
+        //Two days ago
+        Date notBefore = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 2);
+        //One day ago
+        Date notAfter = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 1);
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA testCa = createTestCA(cryptoToken, caDn);
+
+        try {
+            testCa.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), 0, notBefore, notAfter, certificateProfile, null, "00000", cceConfig);
+            fail("Certificate creation using both notBefore and notAfter in the past should have failed.");
+        } catch (IllegalValidityException e) {
+            //NOMPD: All is well
+        }
+    }
+    
+    /**
+     * Regression test to make sure that back dated revocation is still allowed
+     */
+    @Test
+    public void testAllowBackdatedRevocation() throws InvalidAlgorithmParameterException, CertificateParsingException, CryptoTokenOfflineException,
+            InvalidAlgorithmException, OperatorCreationException, CAOfflineException, IllegalValidityException, IllegalNameException,
+            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+        final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
+        final String username = "testNotBeforeAndNotAfterInPast";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAllowValidityOverride(true);
+        EndEntityInformation endEntityInformation = new EndEntityInformation();
+        endEntityInformation.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+        endEntityInformation.setUsername(username);
+        endEntityInformation.setDN("CN=" + username);
+        endEntityInformation.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endEntityInformation.setStatus(EndEntityConstants.STATUS_REVOKED);
+        endEntityInformation.setPassword("foo123");
+        //Two days ago
+        Date notBefore = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 2);
+        //One day ago
+        Date notAfter = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 1);
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA testCa = createTestCA(cryptoToken, caDn);
+
+        try {
+            testCa.generateCertificate(cryptoToken, endEntityInformation, null, keyPair.getPublic(), 0, notBefore, notAfter, certificateProfile, null, "00000", cceConfig);
+        } catch (IllegalValidityException e) {
+            fail("Back dated revoked certificate should have been created.");
+        }
     }
 
     /**
