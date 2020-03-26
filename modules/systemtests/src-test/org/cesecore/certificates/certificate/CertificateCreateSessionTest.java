@@ -1035,7 +1035,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     public void testCreateSingleActiveCertificateConstraint() throws CertificateProfileExistsException, AuthorizationDeniedException,
             CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException,
             CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
-            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, CertificateExpiredException, CertificateNotYetValidException {
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, CertificateExpiredException, CertificateNotYetValidException, InterruptedException {
         final String profileName = "testCreateSingleActiveCertificateConstraint";
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowValidityOverride(true);
@@ -1064,9 +1064,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 throw new IllegalStateException("Could not update certificate status, test can't continue.");
             }
             notifiedAboutExpiration = CertTools.getSerialNumber(responseMessage.getCertificate());
-            //Third certificate, expired. Shouldn't be touched. 
+            //Create a certificate that expires right now. It'll expire by the time the test is done. 
             SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), endEntity.getUsername(), endEntity.getPassword(), new Date(
-                    System.currentTimeMillis() - 1000*60*60*12));
+                    System.currentTimeMillis()));
             responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, expiredReq,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             try {
