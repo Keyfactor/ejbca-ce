@@ -48,7 +48,6 @@ public class JackNJI11Provider extends Provider {
 
     public static final String NAME = "JackNJI11";
 
-    @SuppressWarnings("OverridableMethodCallInConstructor")
     public JackNJI11Provider() {
         super(NAME, 0.3, "JackNJI11 Provider");
 
@@ -329,7 +328,6 @@ public class JackNJI11Provider extends Provider {
         }
         
         @Override
-        @SuppressWarnings("deprecation")
         protected void finalize() throws Throwable {
             try {
                 if (hasActiveSession) {
