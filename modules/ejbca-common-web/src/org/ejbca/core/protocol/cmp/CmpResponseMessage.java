@@ -375,7 +375,18 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
-                myPKIMessage = new PKIMessage(header, myPKIBody);
+                CMPCertificate [] extraCertsList = null;
+                if (!extraCerts.isEmpty()) {
+                    extraCertsList = new CMPCertificate[extraCerts.size()];
+                    if (log.isDebugEnabled()) {
+                        log.debug("Adding extraCerts to PBE protected message: " + extraCerts.size());
+                    }
+                    int i = 0;
+                    for (Certificate certificate : extraCerts) {
+                        extraCertsList[i++] = CMPCertificate.getInstance(((X509Certificate)certificate).getEncoded());
+                    }
+                }
+                myPKIMessage = new PKIMessage(header, myPKIBody, null, extraCertsList);
                 responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
                         pbeIterationCount);
             } else {
@@ -388,6 +399,9 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 PKIHeader header = myPKIHeader.build();
                 final Collection<Certificate> extraCertsList = new ArrayList<Certificate>(signCertChain);
                 for (Certificate extraCert : extraCerts) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Adding extraCerts to Signature protected message: " + extraCerts.size());
+                    }
                     if (!extraCertsList.contains(extraCert)) {
                         extraCertsList.add(extraCert);
                     }

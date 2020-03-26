@@ -52,10 +52,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
@@ -1225,6 +1227,55 @@ public abstract class CmpTestCase extends CaTestCase {
     protected int checkRevokeStatus(String issuerDN, BigInteger serno) {
         return this.certificateStoreSession.getStatus(issuerDN, serno).revocationReason;
     }
+
+    /** Compares two certificate arrays of CMPCertificate, for example what is returned as extraCerts in the CMP response message
+     * 
+     * @param message assert error message if failure
+     * @param expected the expected CMPCertificate array
+     * @param actual the CMPCertificate array that was received in a PKIMessage.getExtraCerts()
+     */
+    protected void assertCmpCertificateArrayEquals(final String message, final CMPCertificate[] expected, final CMPCertificate[] actual) {
+        log.info("Compare CMP list expected / actual size: "  + (expected != null ? expected.length : "null") + " / " + (actual != null ? actual.length : "null"));
+        if (expected == null && actual == null) {
+            return;
+        }
+        if (expected != null && actual == null) {
+            assertTrue("Expected extraCerts, but received null", false);
+        }
+        if (expected == null && actual != null) {
+            assertTrue("Was not expecting any extraCerts, but received some: " + actual.length, false);
+        }
+        org.bouncycastle.asn1.x509.Certificate certificate;
+        for (CMPCertificate cmpCertificate : expected) {
+            certificate = cmpCertificate.getX509v3PKCert();
+            log.info("Expected " + certificate.getSerialNumber() + " - " + certificate.getSubject());
+        }
+        for (CMPCertificate cmpCertificate : actual) {
+            certificate = cmpCertificate.getX509v3PKCert();
+            log.info("Actual   " + certificate.getSerialNumber() + " - " + certificate.getSubject());
+        }
+        assertArrayEquals(message, expected, actual);
+    }
+    
+    /** Converts a set of X.509 Certificate objects into a CMPCertificate array, which is what is used in PKIMessage.extarCerts and caPubs
+     * 
+     * @param certs the X.509 certificates to convert into CMPCertificates
+     * @return CMPCertificate[]
+     * @throws CertificateEncodingException if a passed in certificate can not be encoded (getEncoded()) 
+     * @throws IOException if a passed in certificate can not be decoded, i.e. not valid ASN.1
+     */
+    protected CMPCertificate[] getCMPCert(Certificate... certs) throws CertificateEncodingException, IOException {
+        CMPCertificate[] res = new CMPCertificate[certs.length];
+        for (int i = 0; i < certs.length; i++) {
+            ASN1InputStream ins = new ASN1InputStream(certs[i].getEncoded());
+            ASN1Primitive pcert = ins.readObject();
+            ins.close();
+            org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
+            res[i] = new CMPCertificate(c);
+        }
+        return res;
+    }
+    
 
     protected static void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);

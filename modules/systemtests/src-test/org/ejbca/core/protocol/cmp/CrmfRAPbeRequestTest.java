@@ -29,6 +29,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -228,7 +229,13 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         // In this test userDN contains special, escaped characters to verify
         // that that works with CMP RA as well
         final PKIMessage certRequest = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
-        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false);
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, null);        
+        // Verify that we can get extraCerts with PBE protection
+        this.cmpConfiguration.setResponseExtraCertsCA(ALIAS, String.valueOf(this.testx509ca.getCAId()));
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        final CMPCertificate[] expectedExtraCerts = getCMPCert(this.testx509ca.getCACertificate());
+        assertEquals("Should be one cert in expectedExtraCerts", 1, expectedExtraCerts.length);
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, expectedExtraCerts);
     }
 
     @Test
@@ -254,7 +261,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         // that that works with CMP RA as well
         final PKIMessage certRequest = genCertReqWithSAN(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null,
                 null);
-        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, true);
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, true, null);
     }
     
     /** Tests issuance of certificates with multi-value RDN using CMP.
@@ -714,7 +721,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         return approvedRevocations;
     } // approveRevocation
     
-    private void runCrmfHttpOkUser(final PKIMessage one, final byte[] nonce, final byte[] transid, final Date notAfter, final boolean SANTest) throws Exception {
+    private void runCrmfHttpOkUser(final PKIMessage one, final byte[] nonce, final byte[] transid, final Date notAfter, final boolean SANTest, final CMPCertificate[] expectedExtraCerts) throws Exception {
         try {
             PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
             assertNotNull(req);
@@ -745,6 +752,14 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             if (SANTest) {
                 assertContains("Subject Alt Name", altNames, "directoryName=c=SE\\,cn=foobar");
             }
+            // check for extraCerts
+            PKIMessage respObject = PKIMessage.getInstance(resp);
+            CMPCertificate[] extraCerts = respObject.getExtraCerts();
+            if (expectedExtraCerts == null) {
+                assertNull("There should be no extraCerts", extraCerts);                
+            } else {
+                assertCmpCertificateArrayEquals("Expected PKI response message 'extraCerts' field does not match after certificate issuance.", expectedExtraCerts, extraCerts);
+            }
 
             // Send a confirm message to the CA
             String hash = "foo123";
@@ -760,6 +775,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
+            // no extraCerts in Confirm Message
+            respObject = PKIMessage.getInstance(resp);
+            extraCerts = respObject.getExtraCerts();
+            assertNull("We did not expect any extraCerts in CMP confirm message, but we got some", extraCerts);
 
             // Now revoke the bastard including the CMPv2 reason code extension!
             PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, false, null, null);
@@ -776,6 +795,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
             int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            // no extraCerts in Revoke Response Message
+            respObject = PKIMessage.getInstance(resp);
+            extraCerts = respObject.getExtraCerts();
+            assertNull("We did not expect any extraCerts in CMP confirm message, but we got some", extraCerts);
 
             // Create a revocation request for a non existing cert, should fail (revocation response with status failure)!
             rev = genRevReq(issuerDN, userDN, new BigInteger("1"), this.cacert, nonce, transid, true, null, null);
@@ -790,6 +813,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, false);
+            // no extraCerts in Revoke Response Message
+            respObject = PKIMessage.getInstance(resp);
+            extraCerts = respObject.getExtraCerts();
+            assertNull("We did not expect any extraCerts in CMP confirm message, but we got some", extraCerts);
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
