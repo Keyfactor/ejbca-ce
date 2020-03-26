@@ -24,7 +24,9 @@ import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
@@ -185,6 +187,14 @@ public class CertificateValidity {
         if (lastDate == null) {
         	lastDate = certProfileLastDate;
         }
+        // Limit validity: No not allow lastDate to be set in the past, unless certificate is being created as a backdated revocation
+        if(lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED) {
+            String msg = "notAfter in request for user " + subject.getUsername() + " set before the current date (" + lastDate.toString()
+                    + "), which is only allowed for backdated revocations.";
+            log.error(msg);
+            throw new IllegalValidityException(msg);
+        }
+        
         // Limit validity: Do not allow last date to be before first date
         if (lastDate.before(firstDate)) {
 			log.info(intres.getLocalizedMessage("createcert.errorinvalidcausality",firstDate,lastDate));
@@ -202,6 +212,8 @@ public class CertificateValidity {
 			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile));
     		// Update lastDate if we use maximum validity
     	}
+
+    	
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
     		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
@@ -228,6 +240,7 @@ public class CertificateValidity {
         	log.info(msg);
             throw new IllegalValidityException(msg);
         }
+        
 	}
 
 	/** 

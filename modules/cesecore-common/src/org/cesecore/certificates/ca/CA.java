@@ -173,12 +173,23 @@ public interface CA extends CACommon {
     * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
     *            CVC CAs for sequence field. Can be set to null.
     * @param cceConfig containing a list of available custom certificate extensions
-    * @return The newly created certificate
-    * @throws Exception
+    * @return The newly created certificate, never null
+    * 
+    * @throws CryptoTokenOfflineException if the crypto token was unavailable
+    * @throws CertificateExtensionException  if any of the certificate extensions were invalid
+    * @throws CertificateCreateException if an error occurred when trying to create a certificate.
+    * @throws OperatorCreationException  if CA's private key contained an unknown algorithm or provider
+    * @throws IllegalNameException if the name specified in the certificate request contains illegal characters
+    * @throws IllegalValidityException  if validity was invalid
+    * @throws InvalidAlgorithmException  if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+    * @throws CAOfflineException if the CA wasn't active
+    * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
+    * @throws IllegalKeyException if the using public key is not allowed to be used by specified certProfile
     */
-   Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore,
-           String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-           throws Exception;
+    Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore,
+            String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException;
 
    /**
     *
@@ -198,7 +209,7 @@ public interface CA extends CACommon {
     *            CVC CAs for sequence field. Can be set to null.
     * @param certGenParams Extra parameters for certificate generation, e.g. for the CT extension. May contain references to session beans.
     * @param cceConfig containing a list of available custom certificate extensions
-    * @return the generated certificate
+    * @return the generated certificate, never null
     *
     * @throws CryptoTokenOfflineException if the crypto token was unavailable
     * @throws CertificateExtensionException  if any of the certificate extensions were invalid
@@ -224,6 +235,8 @@ public interface CA extends CACommon {
     * publicKey == null && subject.extendedInformation.certificateRequest == null
     * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
+    * 
+    * @return the generated certificate, never null. 
     */
    Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
