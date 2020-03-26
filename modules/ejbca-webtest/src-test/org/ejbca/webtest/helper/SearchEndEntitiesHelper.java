@@ -212,7 +212,6 @@ public class SearchEndEntitiesHelper extends BaseHelper {
 
     /**
      * Switches the view to 'Basic Mode' if the link with proper text exists.
-     *
      */
     public void switchViewModeFromAdvancedToBasic() {
         if (Page.TEXT_VIEW_MODE_SWITCH_BASIC.equals(getElementText(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED))) {
@@ -222,7 +221,6 @@ public class SearchEndEntitiesHelper extends BaseHelper {
 
     /**
      * Switches the view to 'Advanced Mode' if the link with proper text exists.
-     *
      */
     public void switchViewModeFromBasicToAdvanced() {
         if (Page.TEXT_VIEW_MODE_SWITCH_ADVANCED.equals(getElementText(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED))) {
@@ -241,15 +239,13 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     
     /**
      * Clicks the 'Revoke Selected' button.
-     *
      */
     public void clickRevokeSelected() {
         clickLink(Page.BUTTON_REVOKE_SELECTED);
     }
     
     /**
-     * Clicks the 'Reactive' button in certificate view.
-     * 
+     * Clicks the 'Reactivate' button in certificate view.
      */
     public void clickReactive() {
         clickLink(Page.BUTTON_REACTIVE);
