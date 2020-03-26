@@ -413,12 +413,10 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      *            CVC CAs for sequence field. Can be set to null.
      * @param cceConfig containing a list of available custom certificate extensions
      * @return The newly created certificate
-     * @throws Exception
      */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore,
-            String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws Exception {
+            String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
         // Calculate the notAfter date
         if (notBefore == null) {
             notBefore = new Date();
