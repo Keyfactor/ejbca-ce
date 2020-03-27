@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -76,6 +78,8 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_DOWNLOAD_PEM = By.id("requestInfoForm:generatePem"); 
         static final By BUTTON_DOWNLOAD_KEYSTORE_PEM = By.id("requestInfoForm:generateKeyStorePem");
         static final By BUTTON_DOWNLOAD_P12 = By.id("requestInfoForm:generateP12");
+        static final By BUTTON_DOWNLOAD_JKS = By.id("requestInfoForm:generateJks");
+        static final By BUTTON_RESET = By.id("requestInfoForm:resetButton");
         static final By TABLE_REQUESTS = By.id("manageRequestsForm:manageRequestTable");
         static final By TABLE_REQUEST_ROWS = By.xpath("//tbody/tr");
         static final By TABLE_REQUEST_ROW_CELLS = By.xpath(".//td");
@@ -228,13 +232,48 @@ public class RaWebHelper extends BaseHelper {
     }
 
     /**
+     * Click to download jks
+     */
+
+    public void clickDownloadJks() {
+        clickLink(Page.BUTTON_DOWNLOAD_JKS);
+    }
+
+    /**
      * Click to "Download PKCS#12" button in the requestInfoform form.
      */
     public void clickDownloadPkcs12(){
         clickLink(Page.BUTTON_DOWNLOAD_P12);
+
+        String MainWindow=webDriver.getWindowHandle();
+
+        // To handle all new opened window.
+        Set<String> s1=webDriver.getWindowHandles();
+        Iterator<String> i1=s1.iterator();
+
+        while(i1.hasNext()) {
+            String ChildWindow=i1.next();
+
+            if(!MainWindow.equalsIgnoreCase(ChildWindow)) {
+                // Switching to Child window
+                webDriver.switchTo().window(ChildWindow);
+                webDriver.findElement(By.tagName("submit")).submit();
+            }
+        }
+        // Switching to Parent window i.e Main Window.
+        webDriver.switchTo().window(MainWindow);
     }
 
-    
+    /**
+     * Click to reset Make Request page
+     */
+
+    public void clickMakeRequestReset() {
+        clickLink(Page.BUTTON_RESET);
+    }
+
+
+
     public void assertCsrUploadError() {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
         assertNotNull("No/wrong error message displayed when uploading forbidden CSR.", errorMessageWebElement);
