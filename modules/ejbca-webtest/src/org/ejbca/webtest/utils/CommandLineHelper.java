@@ -11,24 +11,17 @@
  *                                                                       *
  *************************************************************************/
 package org.ejbca.webtest.utils;
-/*************************************************************************
- *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
- *                                                                       *
- *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
- *  License as published by the Free Software Foundation; either         *
- *  version 2.1 of the License, or any later version.                    *
- *                                                                       *
- *  See terms of license at gnu.org.                                     *
- *                                                                       *
- *************************************************************************/
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import static org.junit.Assert.assertTrue;
+
 
 import org.apache.log4j.Logger;
 
@@ -41,12 +34,21 @@ import org.apache.log4j.Logger;
 public class CommandLineHelper {
 
     private static final Logger log = Logger.getLogger(CommandLineHelper.class);
-    
+
+    /**
+     * Assert the existence of a file at a specific location
+     *
+     * @param pathToFile
+     */
+    public void assertFileExists(String pathToFile)  {
+        assertTrue("File " + pathToFile + " not found", Files.exists(Paths.get(pathToFile)));
+    }
+
     /**
      * Run the designated command line method.
      *
      * @param cmd command to run.
-     * @return isSuccessful
+     * @return Boolean
      */
     public Boolean runCommand(final String cmd) {
         boolean isSuccessful = false;
@@ -82,6 +84,9 @@ public class CommandLineHelper {
         return isSuccessful;
     }
 
+    /**
+     * Utility method for gobbling screen content
+     */
     private static class StreamGobbler implements Runnable {
         private InputStream inputStream;
         private Consumer<String> consumer;

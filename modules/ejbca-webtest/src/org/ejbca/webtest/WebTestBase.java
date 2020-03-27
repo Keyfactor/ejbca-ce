@@ -117,8 +117,14 @@ public abstract class WebTestBase extends ExtentReportCreator {
             firefoxProfile.setPreference("browser.download.folderList", 2);
             firefoxProfile.setPreference("browser.download.useDownloadDir", true);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
-            firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream;application/json");
+            firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/pkcs7-mime;application/octet-stream;application/json");
             firefoxProfile.setPreference("browser.download.panel.shown", false);
+
+            firefoxProfile.setPreference("browser.helperApps.alwaysAsk.force", false);
+            firefoxProfile.setPreference("browser.download.manager.showWhenStarting",false);
+
+            firefoxProfile.setPreference("browser.download.manager.useWindow", false);
+            firefoxProfile.setPreference("browser.download.manager.closeWhenDone", false);
 
             firefoxProfile.setPreference("intl.accept_languages", "en_US, en");
 
