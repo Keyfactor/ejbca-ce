@@ -456,6 +456,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
                 OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId(), certificateProfileId,
                 new Date(System.currentTimeMillis()));
+        //Wait two seconds to make sure the certificate is expired
+        Thread.sleep(2000);
         try {
             CertTools.checkValidity(ocspSigningCertificate, new Date(System.currentTimeMillis() + 1000 * 60 * 60));
             fail("Certificate is not expired, test cannot continue.");

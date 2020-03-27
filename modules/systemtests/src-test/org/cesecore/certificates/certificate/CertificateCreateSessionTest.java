@@ -1069,6 +1069,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                     System.currentTimeMillis()));
             responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, expiredReq,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
+            //Wait two seconds to make sure the certificate is expired
+            Thread.sleep(2000);
             try {
                 CertTools.checkValidity(responseMessage.getCertificate(), new Date(System.currentTimeMillis() + 1000*60*60));
                 fail("Certificate is not expired, test cannot continue.");
