@@ -188,10 +188,10 @@ public class CertificateValidity {
         	lastDate = certProfileLastDate;
         }
         // Limit validity: No not allow lastDate to be set in the past, unless certificate is being created as a backdated revocation
-        if(lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED) {
+        if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED) {
             String msg = "notAfter in request for user " + subject.getUsername() + " set before the current date (" + lastDate.toString()
                     + "), which is only allowed for backdated revocations.";
-            log.error(msg);
+            log.info(msg);
             throw new IllegalValidityException(msg);
         }
         

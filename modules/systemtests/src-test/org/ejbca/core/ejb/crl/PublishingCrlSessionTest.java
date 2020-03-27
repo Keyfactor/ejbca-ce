@@ -231,6 +231,8 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             fp = CertTools.getFingerprintAsString(cert);
+            //Wait two seconds to make sure the certificate is expired
+            Thread.sleep(2000);
             assertTrue("Certificate should be expired, but is not. notAfter: "+cert.getNotAfter()+", now: "+new Date(), cert.getNotAfter().before(new Date()));
 
             // Create a CRL verify that our expired, but unrevoked certificate is not on it
