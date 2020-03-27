@@ -1240,7 +1240,7 @@ public abstract class CmpTestCase extends CaTestCase {
             return;
         }
         if (expected != null && actual == null) {
-            assertTrue("Expected extraCerts, but received null", false);
+            fail("Expected extraCerts, but received null");
         }
         if (expected == null && actual != null) {
             assertTrue("Was not expecting any extraCerts, but received some: " + actual.length, false);
