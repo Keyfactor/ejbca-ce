@@ -81,8 +81,6 @@ public class AzureProvider extends Provider {
 
     /**
      * A Java signature provider for creating signatures with Azure Key Vault. Only does "engineInitSign, engineUpdate and engineSign"
-     * 
-     * @version $Id$
      */
     public static class AzureSignature extends SignatureSpi {
 
@@ -268,8 +266,6 @@ public class AzureProvider extends Provider {
         
     /**
      * A Java Cipher provider for decrypting small values (key unwrapping) with Azure Key Vault. Only does two types of "engineDoInit and engineDoFinal"
-     * 
-     * @version $Id$
      */
     public static class AzureCipher extends CipherSpi {
 
@@ -439,6 +435,10 @@ public class AzureProvider extends Provider {
         }
     }
 
+    /** PrivateKey to be used for Azure Key Vault signing and decryption. 
+     * An Azure key vault private key is identified by a URL, example for a private key sign alias 'signKey':
+     * https://ejbca-keyvault.vault.azure.net/keys/signKey
+     */
     public static class KeyVaultPrivateKey implements PrivateKey {
         private static final long serialVersionUID = 1L;
         private String keyURL;
