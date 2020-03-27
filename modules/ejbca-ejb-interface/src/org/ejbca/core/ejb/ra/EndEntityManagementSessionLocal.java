@@ -91,7 +91,10 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, NoSuchEndEntityException;
     
     /**
-     * Change user information, ignoring approval requirements. Only to be used internally.
+     * Change user information, ignoring approval requirements. 
+     * 
+     * <b>Warning:</b> This method should only be used internally when the system needs to modify the information about an end entity in a way that bypasses 
+     * approval requirements. Do not use this method unless that is the understood intention. 
      * 
      * @param admin the administrator performing the action
      * @param userdata a EndEntityInformation object, timecreated and timemodified will
@@ -113,7 +116,7 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * @throws NoSuchEndEntityException if the end entity was not found
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      */
-    void changeUserForceApproval(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
+    void changeUserIgnoreApproval(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
 

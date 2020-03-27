@@ -344,8 +344,7 @@ public class ScepServlet extends HttpServlet {
             log.info(errMsg, ee);
             response.sendError(HttpServletResponse.SC_FORBIDDEN, ee.getMessage());    
         } catch(IllegalKeyException e) {
-            String errMsg = intres.getLocalizedMessage("scep.errorclientcertificaterenewal");
-            errMsg += " Reusing the old keys was attempted, but this action is prohibited by configuration.";
+            String errMsg = "Keys were either invalid according to the certificate profile, or their use was otherwise prohibited.";
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());    
         } catch(SignatureException e) {

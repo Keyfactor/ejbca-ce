@@ -738,12 +738,32 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
     
     @Override
-    public void changeUserForceApproval(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
+    public void changeUserIgnoreApproval(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
             throws ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException,
             AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException {
         changeUser(admin, endEntityInformation, clearpwd, false, 0, null, null, true);
     }
 
+    /**
+     * Change user information
+     * 
+     * @param admin an authentication token
+     * @param endEntityInformation the end entity being modified
+     * @param clearpwd true if using a cleartext password
+     * @param fromWebService if this request comes from the web service API
+     * @param approvalRequestId the approval request ID associated with this change. 0 if none.
+     * @param lastApprovingAdmin the last approval, null if none
+     * @param newUsername the new usename, if any. null if none
+     * @param force true if approvals are to be ignored. <b>Only</b to be used in internal operations. 
+     * @throws AuthorizationDeniedException if the administrator was not authorized to this operation
+     * @throws EndEntityProfileValidationException the end entity profile associated with this end entity did not exist
+     * @throws WaitingForApprovalException thrown if this operation requires further approval
+     * @throws ApprovalException thrown if this operation is already awaiting approval
+     * @throws CertificateSerialNumberException if the serial number in the subject DN was not unique
+     * @throws IllegalNameException if the any of the fields in the DN or altName did not follow name constraints, or if the username was already taken
+     * @throws NoSuchEndEntityException if the end entity specified as a parameter did not exist in the database
+     * @throws CustomFieldException if the changes invalidae the EEP 
+     */
     private void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin, final String newUsername, final boolean force)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
