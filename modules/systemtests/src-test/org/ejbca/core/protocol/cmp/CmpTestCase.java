@@ -1243,7 +1243,7 @@ public abstract class CmpTestCase extends CaTestCase {
             fail("Expected extraCerts, but received null");
         }
         if (expected == null && actual != null) {
-            assertTrue("Was not expecting any extraCerts, but received some: " + actual.length, false);
+            fail("Was not expecting any extraCerts, but received some: " + actual.length);
         }
         org.bouncycastle.asn1.x509.Certificate certificate;
         for (CMPCertificate cmpCertificate : expected) {
