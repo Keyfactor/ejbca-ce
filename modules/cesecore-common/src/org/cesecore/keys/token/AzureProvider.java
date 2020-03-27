@@ -82,7 +82,7 @@ public class AzureProvider extends Provider {
     /**
      * A Java signature provider for creating signatures with Azure Key Vault. Only does "engineInitSign, engineUpdate and engineSign"
      * 
-     * @version $Id: AzureSignature.java 33885 2019-11-19 12:34:08Z anatom $
+     * @version $Id$
      */
     public static class AzureSignature extends SignatureSpi {
 
@@ -269,7 +269,7 @@ public class AzureProvider extends Provider {
     /**
      * A Java Cipher provider for decrypting small values (key unwrapping) with Azure Key Vault. Only does two types of "engineDoInit and engineDoFinal"
      * 
-     * @version $Id: AzureCipher.java 34697 2020-03-23 14:22:36Z anatom $
+     * @version $Id$
      */
     public static class AzureCipher extends CipherSpi {
 
