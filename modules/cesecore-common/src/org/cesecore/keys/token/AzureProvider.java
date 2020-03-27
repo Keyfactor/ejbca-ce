@@ -72,6 +72,9 @@ public class AzureProvider extends Provider {
         put("Signature.SHA256WITHRSA" , AzureSignature.SHA256WithRSA.class.getName());
         put("Signature.SHA384WITHRSA" , AzureSignature.SHA384WithRSA.class.getName());
         put("Signature.SHA512WITHRSA" , AzureSignature.SHA512WithRSA.class.getName());
+        put("Signature.SHA256WITHRSAANDMGF1" , AzureSignature.SHA256withRSAandMGF1.class.getName());
+        put("Signature.SHA384WITHRSAANDMGF1" , AzureSignature.SHA384withRSAandMGF1.class.getName());
+        put("Signature.SHA512WITHRSAANDMGF1" , AzureSignature.SHA512withRSAandMGF1.class.getName());
         put("Signature.SHA256WITHECDSA" , AzureSignature.SHA256WithECDSA.class.getName());
         put("Signature.SHA384WITHECDSA" , AzureSignature.SHA384WithECDSA.class.getName());
         put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
@@ -242,6 +245,27 @@ public class AzureProvider extends Provider {
             }
         }
 
+        public static final class SHA256withRSAandMGF1 extends AzureSignature {
+            public SHA256withRSAandMGF1() {
+                hashAlg = "SHA256";
+                azureSignAlg = "PS256";
+            }
+        }
+
+        public static final class SHA384withRSAandMGF1 extends AzureSignature {
+            public SHA384withRSAandMGF1() {
+                hashAlg = "SHA384";
+                azureSignAlg = "PS384";
+            }
+        }
+
+        public static final class SHA512withRSAandMGF1 extends AzureSignature {
+            public SHA512withRSAandMGF1() {
+                hashAlg = "SHA512";
+                azureSignAlg = "PS512";
+            }
+        }
+        
         public static final class SHA256WithECDSA extends AzureSignature {
             public SHA256WithECDSA() {
                 hashAlg = "SHA256";
