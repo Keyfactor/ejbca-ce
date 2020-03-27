@@ -474,21 +474,24 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     case ApprovalDataVO.STATUS_EXECUTED:
                         //Now go ahead and process the cached certificate request     
                         try {
-                            resp = signSession.createCertificate(administrator, originalRequest, ScepResponseMessage.class, null);
-                            //That done, let's erase the cached request from the end entity
-                            EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
-                            ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
-                            extendedInformation.cacheScepRequest(null);
-                            updatedEndEntityInformation.setExtendedInformation(extendedInformation);
                             try {
-                                endEntityManagementSession.changeUserForceApproval(administrator, updatedEndEntityInformation, false);
-                            } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
-                                    | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
-                                    | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                                failText = "Failed to edit end entity: " + username + ": " + e.getLocalizedMessage();
-                                log.info(failText);
-                                resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                                return resp.getResponseMessage();
+                                resp = signSession.createCertificate(administrator, originalRequest, ScepResponseMessage.class, null);
+                            } finally {
+                                //That done, let's erase the cached request from the end entity
+                                EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
+                                ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
+                                extendedInformation.cacheScepRequest(null);
+                                updatedEndEntityInformation.setExtendedInformation(extendedInformation);
+                                try {
+                                    endEntityManagementSession.changeUserIgnoreApproval(administrator, updatedEndEntityInformation, false);
+                                } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
+                                        | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
+                                        | EndEntityProfileValidationException | WaitingForApprovalException e) {
+                                    failText = "Failed to edit end entity: " + username + ": " + e.getLocalizedMessage();
+                                    log.info(failText);
+                                    resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                                    return resp.getResponseMessage();
+                                }
                             }
                         } catch (AuthStatusException e) {
                             final String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
