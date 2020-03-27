@@ -12,25 +12,26 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+/**
+ * WebTest class for testing RA/Make New Request.
+ *
+ * @version $Id$
+ *
+ */
+
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.helper.AddEndEntityHelper;
-import org.ejbca.webtest.helper.CaHelper;
-import org.ejbca.webtest.helper.CertificateProfileHelper;
-import org.ejbca.webtest.helper.EndEntityProfileHelper;
-import org.ejbca.webtest.helper.RaWebHelper;
+import org.ejbca.webtest.helper.*;
+import org.ejbca.webtest.utils.CommandLineHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-// TODO JavaDoc
-/**
- * Selenium WebTesst class for EJBCAQA-161.
- *
- * @version $Id$
- */
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
@@ -43,6 +44,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static AddEndEntityHelper addEndEntityHelper;
+    private static CommandLineHelper commandLineHelper;
 
     //private static BaseHelper baseHelper;
     public static class TestData {
@@ -63,7 +65,8 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         caHelper = new CaHelper(webDriver);
-        // cleanup();
+        commandLineHelper = new CommandLineHelper();
+        cleanup();
     }
 
     @AfterClass
@@ -72,7 +75,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     }
 
     /**
-     * Method intended to clean up artifacts post testing.
+     * Method to clean up added entities by the defined test cases
      */
     private static void cleanup() {
         // Remove generated artifacts
@@ -83,7 +86,15 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     }
 
     @Test
-    public void stepA_CreateCertificateProfile() {
+    public void stepA_CreateCA() {
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.addCa(TestData.CA_NAME);
+        caHelper.setValidity("1y");
+        caHelper.createCa();
+    }
+
+    @Test
+    public void stepB_CreateCertificateProfile() {
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.addCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
@@ -91,49 +102,93 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     }
 
     @Test
-    public void stepB_CreateEndEntityProfile() {
+    public void stepC_CreateEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
-        //endEntityProfileHelper.editEndEntityProfile();
-        //endEntityProfileHelper.saveEndEntityProfile();
     }
 
     @Test
-    public void stepC_CreateCA() {
-        caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa(TestData.CA_NAME);
-        caHelper.createCa();
-    }
+    public void stepD_MakePEMOnServerRequest() throws InterruptedException {
+        String endEntity =  "Pem";
 
-    /*
-    @Test
-    public void stepD_AddEndEntity(){                       THIS STEP IS REDUNDANT SINCE RA WEB DOES THE SAME THING
-        addEndEntityHelper.openPage(getAdminWebUrl());
-        addEndEntityHelper.setEndEntityProfile("EMPTY");
-        HashMap<String, String> fields = new HashMap<>();
-
-        fields.put("Username", TestData.END_ENTITY_NAME);
-        fields.put("Password (or Enrollment Code)", "foo123");
-        fields.put("Confirm Password", "foo123");
-        fields.put("CN, Common name", TestData.END_ENTITY_NAME);
-        addEndEntityHelper.fillFields(fields);
-        addEndEntityHelper.setCertificateProfile("ENDUSER");
-        addEndEntityHelper.setCa(getCaName());
-        addEndEntityHelper.addEndEntity();
-
-    }
-    */
-
-    @Test
-    public void stepE_MakeRequest() throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationOnServer();
+        //Wait for screen update
+        Thread.sleep(5000);
         raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
-        raWebHelper.fillMakeRequestEditCommonName("EcaQa161_TestEndEntity");
-        raWebHelper.fillCredentials("EcaQa161_TestEndEntity","foo123");
-        raWebHelper.clickDownloadPkcs12();
+        //Wait for screen update
+        Thread.sleep(5000);
+        //Enter common name
+        raWebHelper.fillDnAttribute0(endEntity);
+        raWebHelper.fillCredentials(endEntity, "foo123");
+        //Wait for screen update
+        Thread.sleep(5000);
+        raWebHelper.clickDownloadKeystorePem();
+
+        //Assert the existence of the downloaded certificate
+        commandLineHelper.assertFileExists("/tmp/" + endEntity + ".pem");
+
+        //Reset Make Request page
+        raWebHelper.clickMakeRequestReset();
+    }
+
+    @Test
+    public void stepE_MakeJKSOnServerRequest() throws InterruptedException {
+        String endEntity =  "Jks";
+
+        raWebHelper.openPage(getRaWebUrl());
+        raWebHelper.makeNewCertificateRequest();
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
+        raWebHelper.selectKeyPairGenerationOnServer();
+        //Wait for screen update
+        Thread.sleep(5000);
+        raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
+        //Wait for screen update
+        Thread.sleep(5000);
+        //Enter common name
+        raWebHelper.fillDnAttribute0(endEntity);
+        raWebHelper.fillCredentials(endEntity, "foo123");
+        //Wait for screen update
+        Thread.sleep(5000);
+        raWebHelper.clickDownloadJks();
+
+        //Assert the existence of the downloaded certificate
+        commandLineHelper.assertFileExists("/tmp/" + endEntity + ".jks");
+
+        //Click to reset Make Request page
+        raWebHelper.clickMakeRequestReset();
+    }
+
+
+    @Test
+    public void stepF_MakePKCS12OnServerRequest() throws InterruptedException {
+        String endEntity =  "Pkcs123";
+
+        raWebHelper.openPage(getRaWebUrl());
+        raWebHelper.makeNewCertificateRequest();
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
+        raWebHelper.selectKeyPairGenerationOnServer();
+        //Wait for screen update
+        Thread.sleep(5000);
+        raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
+        //Wait for screen update
+        Thread.sleep(5000);
+        //Enter common name
+        raWebHelper.fillDnAttribute0(endEntity);
+        raWebHelper.fillCredentials(endEntity, "foo123");
+        //Wait for screen update
+
+        //** Still seeking solution to force Firefox to download PKCS12 **
+        //Thread.sleep(5000);
+        //raWebHelper.clickDownloadPkcs12();
+
+        //Assert the existence of the downloaded certificate
+        //commandLineHelper.assertFileExists("/tmp/" + endEntity + ".p12");
     }
 
 }
