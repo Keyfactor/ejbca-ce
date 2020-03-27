@@ -624,7 +624,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
     }
 
     /** Makes a REST API call to Azure, the REST call may need an authorizationToken, and if one does not exist (in this class) one is retrieved.
-     * This means that is a valid authorizationToken exists, only one HTTP request is made, but if no valid authorizationToken exists three HTTP 
+     * This means that if a valid authorizationToken exists, only one HTTP request is made, but if no valid authorizationToken exists three HTTP 
      * request are made:
      * 1. First request - response is "unauthorized" and authorization URL is parsed from the response
      * 2. Authorization request - response is an authorizationToken which is set for further use
@@ -637,8 +637,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
      * 
      * @param request HttpRequestBase with the either GET or POST request
      * @return CloseableHttpResponse with the response, the caller is responsible for closing it, use try-with-resource
-     * @throws CryptoTokenAuthenticationFailedException is authentication to Azure failed 401 or 400 returned, or no Bearer authorization_uri exists in the response input
-     * @throws CryptoTokenOfflineException is there is no clientSecret to authenticate with
+     * @throws CryptoTokenAuthenticationFailedException if authentication to Azure failed 401 or 400 returned, or no Bearer authorization_uri exists in the response input
+     * @throws CryptoTokenOfflineException if there is no clientSecret to authenticate with
      */
     CloseableHttpResponse azureHttpRequest(HttpRequestBase request) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         // Don't even try to make a request if we don't have a client secret as it is required. Better fail fast
