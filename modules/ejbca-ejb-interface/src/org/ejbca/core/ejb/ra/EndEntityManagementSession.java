@@ -164,7 +164,7 @@ public interface EndEntityManagementSession {
      *             not be used.
      * @param clearpwd true if the password will be stored in clear form in the
      *             db, otherwise it is hashed.
-     * @param force 
+     *             
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws EndEntityProfileValidationException
