@@ -27,10 +27,7 @@ import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -81,18 +78,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     List<String> extCaNameList;
     private String crlImportCaName;
 
-    public void initialize(final ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-
-            final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
-            extCaNameList = new ArrayList<String>(externalCANames.keySet());
-        }
+    public CAFunctionsMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+        globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
+        final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
+        extCaNameList = new ArrayList<String>(externalCANames.keySet());
     }
-
-
+    
     /** GUI representation of a CA for the CA Structure page */
     public class CAGuiInfo {
         private final String name;

@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -88,6 +89,10 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     // @javax.faces.bean.ManagedProperty(value="#{validatorsBean}")
     private ValidatorsBean validatorsBean;
 
+    public ValidatorBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
+    }
+    
     /** The validators ID. */
     private int validatorId;
     

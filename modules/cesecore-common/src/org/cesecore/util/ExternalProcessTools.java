@@ -279,6 +279,8 @@ public final class ExternalProcessTools {
             if (log.isDebugEnabled()) {
                 log.debug("Wrote file " + file.getName() + " (" + bytes.length + " bytes) to disk.");
             }
+            // Delete temp file on JVM exit. 
+            file.deleteOnExit();
             return file;
         } catch (final IOException e) {
             log.error(intres.getLocalizedMessage("process.errortempfile"));

@@ -40,7 +40,7 @@
             <h1><h:outputText value="#{raRoleBean.pageTitle}"/></h1>
         </h:panelGroup>
         <h:outputText value="#{msg.roles_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToRoleRules}"/>
-        <h:panelGroup layout="block" styleClass="content-body #{raRoleBean.canEdit ? &quot;&quot; : &quot;readOnlyView&quot;}" rendered="#{raAccessBean.authorizedToRoleRules}">
+        <h:panelGroup layout="block" styleClass="content-body #{raRoleBean.canEdit ? &quot;&quot; : &quot;readOnlyView&quot;}">
             <h:panelGroup styleClass="topLinks" layout="block">
                 <h:link outcome="roles" styleClass="backLink" includeViewParams="true">
                     <h:outputText value="#{msg.role_page_back_to_roles_page}"/>

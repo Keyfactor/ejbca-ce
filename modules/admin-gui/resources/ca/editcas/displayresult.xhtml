@@ -24,13 +24,7 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-
-    <ui:define name="metadata">
-        <f:metadata>
-        	<f:event type="preRenderView" listener="#{displayResultMBean.initAccess}" />
-        </f:metadata>
-    </ui:define>
-
+    <ui:param name="resourceBean" value="#{displayResultMBean}" />
 	<ui:define name="content">
 		<h2>
 			<h:outputText value="#{displayResultMBean.headline}" />

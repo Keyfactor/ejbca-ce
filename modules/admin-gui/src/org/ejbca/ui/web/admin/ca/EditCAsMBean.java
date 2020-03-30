@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
-import java.beans.Beans;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -92,10 +91,14 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceIn
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.attribute.AttributeMapping.REQUEST;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
+
+import static org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 
 /**
  * 
@@ -224,37 +227,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.fileRecieveFileMakeRequest = fileRecieveFileMakeRequest;
     }
     
-    public void initAccess() throws Exception {
-        // To check access 
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        }
+    public EditCAsMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+        globalconfiguration = getEjbcaWebBean().getGlobalConfiguration();
     }
-       
+    
     @PostConstruct
-    public void initialize() {
+    public void initialize() throws Exception {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
         
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
-        if (caBean == null) {
-            try {
-                caBean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
-            } catch (ClassNotFoundException | IOException e) {
-                log.error("Error while initializing ca bean!", e);
-                throw new FacesException("Error while initializing ca bean!", e);
-            }
-            request.getSession().setAttribute("cabean", caBean);
-        }
-        caBean.initialize(getEjbcaWebBean());
+        caBean = SessionBeans.getCaBean(request);
 
-        try {
-            globalconfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        } catch (final Exception e) {
-            log.error("Error while initializing the global configuration!", e);
-            throw new FacesException("Error while initializing the global configuration!", e);
-        }
         cadatahandler = caBean.getCADataHandler();
         caIdToNameMap = caSession.getCAIdToNameMap();
         isUniqueIssuerDnSerialNoIndexPresent = caBean.isUniqueIssuerDNSerialNoIndexPresent();
@@ -1258,7 +1242,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (makeRequest && !illegaldnoraltname) {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", caInfoDto.getCaName());
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put(SESSION.CA_INTERFACE_BEAN, caBean);
             return EditCaUtil.DISPLAY_RESULT_NAV;
         }
         return EditCaUtil.MANAGE_CA_NAV;
@@ -1466,6 +1450,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             HttpServletRequest request = (HttpServletRequest) ectx.getRequest();
             HttpServletResponse response = (HttpServletResponse) ectx.getResponse();
             RequestDispatcher dispatcher = request.getRequestDispatcher(EditCaUtil.CA_EXPORT_PATH);
+            request.setAttribute(REQUEST.AUTHENTICATION_TOKEN, getAdmin());
             dispatcher.forward(request, response);
             ctx.responseComplete();
         } catch (ServletException | IOException ex) {
@@ -1516,7 +1501,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", editCaName);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put(SESSION.CA_INTERFACE_BEAN, caBean);
 
         return EditCaUtil.DISPLAY_RESULT_NAV;
     }
