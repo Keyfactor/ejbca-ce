@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web;
+package org.ejbca.ui.web.jsf;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,45 +30,45 @@ import static org.junit.Assert.fail;
  *
  * @version $Id$
  */
-public class OidsObjectLinkedHashSetConverterUnitTest {
+public class OIDStringLinkedHashSetConverterUnitTest {
 
     @SuppressWarnings("unchecked")
     @Test
     public void testStringToSet() {
-        LinkedHashSet<String> set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("");
+        LinkedHashSet<String> set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("");
         assertTrue("Set from nothing should be empty", set.isEmpty());
-        set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString(null);
+        set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString(null);
         assertTrue("Set from null should be empty", set.isEmpty());
-        set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1.1.1.1");
+        set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1.1.1.1");
         assertEquals("Set should have the right size", 1, set.size());
         assertEquals("Set should have the right content", "1.1.1.1", set.toArray()[0]);
         try {
-            set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1");
+            set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1");
             fail("'1' is not a valid OID and should give validation error");
         } catch (ConverterException e) {
             assertEquals("Should give a good validation error message", "The value '1' is not a valid OID.", e.getMessage());
         }
-        set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1.1.1.1,2.2.2.2");
+        set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1.1.1.1,2.2.2.2");
         assertEquals("Set should have the right size", 2, set.size());
         assertEquals("Set should have the right content", "1.1.1.1", set.toArray()[0]);
         assertEquals("Set should have the right content", "2.2.2.2", set.toArray()[1]);
         try {
-            set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1.1.1.1,2.2.2.2,3.3.3.3");
+            set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1.1.1.1,2.2.2.2,3.3.3.3");
             fail("'3.3.3.3' is not a valid OID and should give validation error");
         } catch (ConverterException e) {
             assertEquals("Should give a good validation error message", "The value '3.3.3.3' is not a valid OID.", e.getMessage());
         }
-        set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1.1.1.1,2.2.2.2,1.3.3.3.3");
+        set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1.1.1.1,2.2.2.2,1.3.3.3.3");
         assertEquals("Set should have the right size", 3, set.size());
         assertEquals("Set should have the right content", "1.1.1.1", set.toArray()[0]);
         assertEquals("Set should have the right content", "2.2.2.2", set.toArray()[1]);
         assertEquals("Set should have the right content", "1.3.3.3.3", set.toArray()[2]);
-        set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1.1.1.1, 2.2.2.2 , 1.3.3.3.3 ");
+        set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1.1.1.1, 2.2.2.2 , 1.3.3.3.3 ");
         assertEquals("Set should have the right size", 3, set.size());
         assertEquals("Set should have the right content", "1.1.1.1", set.toArray()[0]);
         assertEquals("Set should have the right content", "2.2.2.2", set.toArray()[1]);
         assertEquals("Set should have the right content", "1.3.3.3.3", set.toArray()[2]);
-        set = (LinkedHashSet<String>) OidsObjectLinkedHashSetConverter.getSetFromString("1.1.1.1, , 1.3.3.3.3 ");
+        set = (LinkedHashSet<String>) OIDStringLinkedHashSetConverter.getSetFromString("1.1.1.1, , 1.3.3.3.3 ");
         assertEquals("Set should have the right size", 2, set.size());
         assertEquals("Set should have the right content", "1.1.1.1", set.toArray()[0]);
         assertEquals("Set should have the right content", "1.3.3.3.3", set.toArray()[1]);
@@ -77,22 +77,22 @@ public class OidsObjectLinkedHashSetConverterUnitTest {
     @Test
     public void testSetToString() {
         try {
-            final String str = OidsObjectLinkedHashSetConverter.getStringFromSet(new HashSet<String>());
+            final String str = OIDStringLinkedHashSetConverter.getStringFromSet(new HashSet<String>());
             fail("Should throw IllegalArgumentException: " + str);
         } catch (IllegalArgumentException e) {
-            assertEquals("Wrong error message", "Cannot convert class java.util.HashSet object to LinkedHashSet in OidsObjectLinkedHashSetConverter.", e.getMessage());
+            assertEquals("Wrong error message", "Cannot convert class java.util.HashSet object to LinkedHashSet in OIDStringLinkedHashSetConverter.", e.getMessage());
         }
-        String str = OidsObjectLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<Integer>(Arrays.asList(1)));
+        String str = OIDStringLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<Integer>(Arrays.asList(1)));
         assertEquals("Integer HashSet should give the string format", "1", str);
-        str = OidsObjectLinkedHashSetConverter.getStringFromSet(null);
+        str = OIDStringLinkedHashSetConverter.getStringFromSet(null);
         assertNull("Null input should give null output", str);
-        str = OidsObjectLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<Integer>());
+        str = OIDStringLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<Integer>());
         assertEquals("Empty LinkedHashSet should give empty string", "", str);
-        str = OidsObjectLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<String>(Arrays.asList("1.1.1.1")));
+        str = OIDStringLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<String>(Arrays.asList("1.1.1.1")));
         assertEquals("Should be 1 item", "1.1.1.1", str);
-        str = OidsObjectLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<String>(Arrays.asList("1.1.1.1", "2.2.2.2")));
+        str = OIDStringLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<String>(Arrays.asList("1.1.1.1", "2.2.2.2")));
         assertEquals("Should be 2 items", "1.1.1.1,2.2.2.2", str);
-        str = OidsObjectLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<String>(Arrays.asList("1.1.1.1", "2.2.2.2", "3.3.3.3")));
+        str = OIDStringLinkedHashSetConverter.getStringFromSet(new LinkedHashSet<String>(Arrays.asList("1.1.1.1", "2.2.2.2", "3.3.3.3")));
         assertEquals("Should be 3 items", "1.1.1.1,2.2.2.2,3.3.3.3", str);
         
     }
