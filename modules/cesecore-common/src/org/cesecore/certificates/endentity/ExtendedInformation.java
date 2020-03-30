@@ -30,7 +30,6 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.DecoderException;
-import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -129,6 +128,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** If using SCEP in RA mode with approvals, the incoming enrollment request together with the transactions need to be cached for later use. */
     private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
+    /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
+    private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
     
 
     /** Creates a new instance of ExtendedInformation */
@@ -210,7 +211,21 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * If using SCEP in RA mode with approvals, the incoming enrollment request together with the transaction need to be cached for later use. 
      * 
-     * @return the cached request, or null if none exisst
+     * @return the cached request, or null if none exists
+     */
+    @SuppressWarnings("unchecked")
+    public Class<? extends EndEntityApprovalRequest> getCachedApprovalType() {
+        return (Class<? extends EndEntityApprovalRequest>) data.get(SCEP_CACHED_APROVAL_TYPE);
+    }
+    
+    public void cacheApprovalType(final Class<? extends EndEntityApprovalRequest> approvalType) {
+        data.put(SCEP_CACHED_APROVAL_TYPE, approvalType);
+    }
+    
+    /**
+     * If using SCEP in RA mode with approvals, the incoming enrollment request together with the transaction need to be cached for later use. 
+     * 
+     * @return the cached request, or null if none exists
      */
     public String getCachedScepRequest() {
         return (String) data.get(SCEP_CACHED_REQUEST);
