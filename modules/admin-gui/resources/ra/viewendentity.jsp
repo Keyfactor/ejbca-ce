@@ -7,9 +7,9 @@
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
                  org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, 
-                 org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils, java.util.Locale,
-                 org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.crl.RevokedCertInfo,
-                 org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.util.CertTools, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" %>
+                 org.apache.commons.lang.StringUtils, org.ejbca.core.model.ra.ExtendedInformationFields,
+                 org.cesecore.certificates.crl.RevokedCertInfo, org.ejbca.core.model.authorization.AccessRulesConstants,
+                 org.cesecore.util.CertTools" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />

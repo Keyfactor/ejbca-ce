@@ -23,9 +23,6 @@ import java.util.Properties;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -62,14 +59,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	private static final long serialVersionUID = -2660384552215596717L;
 	
-    // Authentication check and audit log page access request
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        }
-    }
+	public CAActivationMBean() {
+	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+	}
 	
 	/** GUI representation of a CA for the activation view */
 	public class CaActivationGuiInfo {

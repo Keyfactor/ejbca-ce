@@ -23,6 +23,7 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
@@ -66,7 +67,7 @@ public final class CustomPublisherMBData implements Serializable {
         this.customPublisherCurrentClass = customPublisherCurrentClass;
     }
     
-    public void setCustomPublisherData(final CustomPublisherContainer publisher) {
+    public void setCustomPublisherData(final CustomPublisherContainer publisher) throws PublisherException {
         publisher.setClassPath(customPublisherCurrentClass);
         if (publisher.isCustomUiRenderingSupported()) {
             final StringBuilder sb = new StringBuilder();

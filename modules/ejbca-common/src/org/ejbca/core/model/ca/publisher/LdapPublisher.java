@@ -1787,4 +1787,9 @@ public class LdapPublisher extends BasePublisher {
     public boolean willPublishCertificate(int status, int revocationReason) {
         return true;
     }
+
+    @Override
+    public void validateDataSource(String dataSource) throws PublisherException {
+        // Method not applicable for this publisher type!
+    }
 }

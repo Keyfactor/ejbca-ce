@@ -13,14 +13,15 @@
 
 package org.ejbca.core.ejb.ca.store;
 
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +31,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -40,6 +41,7 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -94,9 +96,9 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 		try {
 			// Save the user admin data in xml encoding.
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			final XMLEncoder encoder = new XMLEncoder(baos);
-			encoder.writeObject(endEntityInformation);
-			encoder.close();
+			try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+			    encoder.writeObject(endEntityInformation);
+			}
 			final String s = baos.toString("UTF-8");
 			if (log.isDebugEnabled()) {
 				log.debug(printEndEntityInformationXML("endEntityInformation:",s));
@@ -248,15 +250,11 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	 * in a nice way.  
 	 */
     private EndEntityInformation decodeXML(final String sXML, final boolean lastTry) {
-		final byte baXML[];
-		try {
-			baXML = sXML.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-		final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baXML));
+		final byte baXML[] = sXML.getBytes(StandardCharsets.UTF_8);
 		EndEntityInformation endEntityInformation = null;
-		try {
+		// The EndEntityInformation object is not fully serializable by XMLEncoder/Decoder
+		// (the "type" field is not serialized correctly), so we set ignoreErrors to true
+		try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baXML), true)) {
 			Object o = decoder.readObject();
 			try  {
 				endEntityInformation  = (EndEntityInformation)o;
@@ -275,6 +273,15 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 			// 
 			try {
 				if ( lastTry ) {
+				    if (t instanceof IOException) {
+				        final String msg = "Failed to parse data map for certificate request history for '" + getFingerprint() + "': " + t.getMessage();
+			            if (log.isDebugEnabled()) {
+			                log.debug(msg + ". Data:\n" + sXML);
+			            }
+			            throw new IllegalStateException(msg, t);
+				    } else if (t instanceof RuntimeException) {
+				        throw (RuntimeException) t;
+				    }
 					return null;
 				}
 				final String sFixedXML = FixEndOfBrokenXML.fixXML(sXML, "string", "</void></object></java>");
@@ -292,8 +299,6 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 				log.error(printEndEntityInformationXML("Not possible to decode EndEntityInformation. No way to fix the XML.", sXML), t);
 				return null;
 			}
-		} finally {
-			decoder.close();
 		}
 		if (log.isTraceEnabled() ) {
 			log.trace(printEndEntityInformationXML("Successfully decoded EndEntityInformation XML.",sXML));
@@ -374,18 +379,16 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	}
 	
 	/** @return return the query results as a List. */
-	@SuppressWarnings("unchecked")
     public static List<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-		Query query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+		final TypedQuery<CertReqHistoryData> query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", CertReqHistoryData.class);
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
-	@SuppressWarnings("unchecked")
     public static List<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
-		Query query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.username=:username");
+	    final TypedQuery<CertReqHistoryData> query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.username=:username", CertReqHistoryData.class);
 		query.setParameter("username", username);
 		return query.getResultList();
 	}

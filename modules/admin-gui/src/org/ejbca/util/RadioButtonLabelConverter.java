@@ -43,7 +43,7 @@ public class RadioButtonLabelConverter implements Converter{
         if (value == null) {
             return null;
         }
-        return ((RadioButton) DynamicUiProperty.getAsObject((String) value)).toString();
+        return DynamicUiProperty.getAsObject((String) value, RadioButton.class).toString();
     }
 
 }

@@ -26,7 +26,6 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -93,14 +92,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     private ServiceConfigurationView serviceConfigurationView;
     private String serviceName = "";
     
-    public void initAccess() throws Exception {
-        // To check access 
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
-        }
-    }
-    
+
     public boolean isActionClassPathTextFieldDisabled() {
         return !getCustomActionType().getAutoClassPath().equals(StringUtils.EMPTY);
     }
@@ -138,6 +130,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     }
 
     public EditServiceManagedBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
         setServiceConfiguration(new ServiceConfiguration());
     }
 
@@ -198,7 +191,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     }
 
     /** Help method used to edit data in the custom worker type. */
-    public CustomWorkerType getCustomWorkerType() {
+    public CustomWorkerType getCustomWorkerType() { 
         return (CustomWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomWorkerType.NAME);
     }
 

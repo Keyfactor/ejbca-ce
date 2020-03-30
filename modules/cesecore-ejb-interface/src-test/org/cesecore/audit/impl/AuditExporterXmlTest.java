@@ -12,14 +12,15 @@
  *************************************************************************/
 package org.cesecore.audit.impl;
 
-import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.audit.AuditExporter;
+import org.cesecore.util.SecureXMLDecoder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,32 +31,32 @@ import org.junit.Test;
  */
 public class AuditExporterXmlTest {
 
-	private static final Logger log = Logger.getLogger(AuditExporterXmlTest.class);
-	
-	@Test
-	public void testExportAndParse() throws IOException {
-		final String KEY1 = "key1";
-		final String KEY2 = "key2";
-		final Long VALUE1 = Long.MIN_VALUE;
-		final String VALUE2 = "ĞİŞğışÅÄÖåäözxcvbnm;<>&!;&lt;&amp;";
-		final AuditExporter auditExporter = new AuditExporterXml();
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		auditExporter.setOutputStream(baos);
-		auditExporter.writeStartObject();
-		auditExporter.writeField(KEY1, VALUE1);
-		auditExporter.writeField(KEY2, VALUE2);
-		auditExporter.writeEndObject();
-		auditExporter.close();
-		final String result = baos.toString("UTF8");
-		log.info(result);
-		// Verify that we can parse the "export"
-		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(result.getBytes("UTF8")));
-		@SuppressWarnings("unchecked")
-        final LinkedHashMap<String,Object> parsed = (LinkedHashMap<String,Object>) decoder.readObject();
-		decoder.close();
-		log.info(KEY1 + "=" + parsed.get(KEY1));
-		Assert.assertEquals(VALUE1, parsed.get(KEY1));
-		log.info(KEY2 + "=" + parsed.get(KEY2));
-		Assert.assertEquals(VALUE2, parsed.get(KEY2));
-	}
+    private static final Logger log = Logger.getLogger(AuditExporterXmlTest.class);
+
+    @Test
+    public void testExportAndParse() throws IOException {
+        final String KEY1 = "key1";
+        final String KEY2 = "key2";
+        final Long VALUE1 = Long.MIN_VALUE;
+        final String VALUE2 = "ĞİŞğışÅÄÖåäözxcvbnm;<>&!;&lt;&amp;";
+        final AuditExporter auditExporter = new AuditExporterXml();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        auditExporter.setOutputStream(baos);
+        auditExporter.writeStartObject();
+        auditExporter.writeField(KEY1, VALUE1);
+        auditExporter.writeField(KEY2, VALUE2);
+        auditExporter.writeEndObject();
+        auditExporter.close();
+        final String result = baos.toString("UTF8");
+        log.info(result);
+        // Verify that we can parse the "export"
+        final LinkedHashMap<?,?> parsed;
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8)))) {
+            parsed = (LinkedHashMap<?,?>) decoder.readObject();
+        }
+        log.info(KEY1 + "=" + parsed.get(KEY1));
+        Assert.assertEquals(VALUE1, parsed.get(KEY1));
+        log.info(KEY2 + "=" + parsed.get(KEY2));
+        Assert.assertEquals(VALUE2, parsed.get(KEY2));
+    }
 }

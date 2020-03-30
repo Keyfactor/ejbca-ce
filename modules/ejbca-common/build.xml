@@ -65,6 +65,7 @@
 		<path location="${mod.ejbca-common.lib}" />
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
+		<path refid="lib.xmlpull.classpath"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
 
