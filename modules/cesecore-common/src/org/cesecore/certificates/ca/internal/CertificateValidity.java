@@ -24,7 +24,6 @@ import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -180,7 +179,7 @@ public class CertificateValidity {
                 log.warn("Expiration restriction of certificate profile could not be applied!");
             }
         }
-        //If it is a link certificate that we create, we use the old ca's expire date, as requested, as link certificate expire date
+        //If it is a link certificate that we create, we use the old CA's expire date, as requested, as link certificate expire date
         if (isLinkCertificate) {
             lastDate = notAfter;
         }
