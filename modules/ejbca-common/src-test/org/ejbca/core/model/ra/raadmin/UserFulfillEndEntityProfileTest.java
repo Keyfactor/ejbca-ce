@@ -29,7 +29,9 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * Tests the end entity profile entity bean profile checks only
@@ -42,6 +44,8 @@ public class UserFulfillEndEntityProfileTest {
     private static final String STANDARD_DN = "CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE";
     private static final int TEST_CA_1 = 2;
     private static final int TEST_CA_2 = 3;
+    
+    private static final String SAMPLECABFORGANICATIONID = "VATSE-123456789"; 
     
     private static CertificateProfile certProfileEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     private static CertificateProfile certProfileRootCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
@@ -1136,5 +1140,27 @@ public class UserFulfillEndEntityProfileTest {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
                 TEST_CA_1, null, certProfileEndUser);
         log.trace("<testProfileWithRfc822name");
+    }
+    
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+    
+    @Test
+    public void testCapfOrganizationIdentifierNotSetInEEP() throws EndEntityProfileValidationException {
+        log.trace(">testCapfOrganizationIdentifierNotSetInEEP");
+        
+        expectedException.expect(EndEntityProfileValidationException.class);
+        expectedException.expectMessage("CA/B Forum Organization Identifier is not set to Use in end entity profile but is present in extended information.");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setCabfOrganizationIdentifierUsed(false);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+
+        final ExtendedInformation ei = new ExtendedInformation();
+        ei.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                certProfileEndUser);
+        log.trace("<testCapfOrganizationIdentifierNotSetInEEP");
     }
 } 
