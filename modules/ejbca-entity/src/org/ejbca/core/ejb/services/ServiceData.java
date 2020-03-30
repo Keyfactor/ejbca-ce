@@ -13,8 +13,12 @@
 
 package org.ejbca.core.ejb.services;
 
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import javax.persistence.Entity;
@@ -33,6 +37,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
@@ -119,20 +124,22 @@ public class ServiceData extends ProtectedData implements Serializable {
      */
     @Transient
     public ServiceConfiguration getServiceConfiguration() {
-    	java.beans.XMLDecoder decoder;
-    	try {
-    		decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-    	} catch (UnsupportedEncodingException e) {
-    		throw new RuntimeException(e);
-    	}
-    	HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
-    	decoder.close();
+        final HashMap<?, ?> h;
+    	try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(getData().getBytes(StandardCharsets.UTF_8)))) {
+    	    h = (HashMap<?, ?>) decoder.readObject();
+    	} catch (IOException e) {
+            final String msg = "Failed to parse ServiceData data map in database: " + e.getMessage();
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ". Data:\n" + getData());
+            }
+            throw new IllegalStateException(msg, e);
+        }
     	// Handle Base64 encoded string values
     	HashMap<?, ?> data = new Base64GetHashMap(h);
     	float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
     	ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
     	serviceConfiguration.loadData(data);
-    	if ( ((serviceConfiguration != null) && (Float.compare(oldversion, serviceConfiguration.getVersion()) != 0))) {
+    	if (Float.compare(oldversion, serviceConfiguration.getVersion()) != 0) {
     		// Upgrade in version 4 of ServiceConfiguration. If we do not have nextRunTimeStamp and runTimeStamp set in
     		// the database, but we have them in serviceConfiguration, we will simply copy the values over.
     		// After this we will not use the values in ServiceConfiguration any more 
@@ -162,9 +169,9 @@ public class ServiceData extends ProtectedData implements Serializable {
         HashMap<Object, Object> a = new Base64PutHashMap();
         a.putAll((HashMap<Object, Object>)serviceConfiguration.saveData());
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(a);
+        }
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Service data: \n" + baos.toString("UTF8"));

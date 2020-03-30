@@ -66,7 +66,11 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase im
         this.data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
         //Then set defaults if any were missing.        
         if (StringUtils.isEmpty(properties.getProperty(DATASOURCE))) {
-            setDataSource(DEFAULT_DATASOURCE);
+            try {
+                setDataSource(DEFAULT_DATASOURCE);
+            } catch (PublisherException e) {
+                throw new IllegalStateException();
+            }
         }
         if (StringUtils.isEmpty(properties.getProperty(PROTECT))) {
             setProtect(false);
@@ -95,7 +99,8 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase im
     /**
      *  Sets the data source property for the publisher.
      */
-    public void setDataSource(String dataSource) {
+    public void setDataSource(String dataSource) throws PublisherException {
+        validateDataSource(dataSource);
         this.data.put(DATASOURCE, dataSource);
     }
     
@@ -181,7 +186,9 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase im
         return true;
     }
 
-
-    
+    @Override
+    public void validateDataSource(String dataSource) throws PublisherException {
+        super.validateDataSource(dataSource);
+    }
 }
 

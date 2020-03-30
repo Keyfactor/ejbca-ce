@@ -29,9 +29,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -106,16 +104,10 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private boolean viewOnly = true;
     private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
 
-
-    // Authentication check and audit log page access request
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
-        }
+    public CertProfilesBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
     }
-    
+
     public Integer getSelectedCertProfileId() {
         return selectedCertProfileId;
     }

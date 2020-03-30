@@ -276,7 +276,7 @@ public class RevokedCertInfo implements Serializable {
                 tempRevoked.put(serial, revoked);
             }
         }
-        final CompressedCollection<RevokedCertInfo> mergedRevokedData = new CompressedCollection<>();
+        final CompressedCollection<RevokedCertInfo> mergedRevokedData = new CompressedCollection<>(RevokedCertInfo.class);
         mergedRevokedData.addAll(permRevoked.values()); // Permanently revoked entries are always added
         for (final RevokedCertInfo revoked : tempRevoked.values()) {
             if (!revoked.isRevoked() && (lastBaseCrlDate <= 0 || revoked.getRevocationDate().getTime() <= lastBaseCrlDate)) {

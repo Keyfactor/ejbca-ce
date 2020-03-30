@@ -17,11 +17,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,11 +31,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 
 /**
@@ -49,7 +47,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  *
  * @version $Id$
  */
-public class CACertServlet extends HttpServlet {
+public class CACertServlet extends BaseAdminServlet {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(CACertServlet.class);
@@ -85,46 +83,23 @@ public class CACertServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
-        // Check if authorized
-        EjbcaWebBean ejbcawebbean= (EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
-        if ( ejbcawebbean == null ) {
-          try {
-            ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBeanImpl.class.getName());
-           } catch (ClassNotFoundException exc) {
-               throw new ServletException(exc.getMessage());
-           }catch (Exception exc) {
-               throw new ServletException (" Cannot create bean of class "+EjbcaWebBeanImpl.class.getName(), exc);
-           }
-           req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
-        }
-
-        try{
-          ejbcawebbean.initialize(req, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-        } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");
-        }
-        
         RequestHelper.setDefaultCharacterEncoding(req);
 
         // HttpServetRequets.getParameter URLDecodes the value for you
         // No need to do it manually, that will cause problems with + characters
-        String issuerdn = req.getParameter(ISSUER_PROPERTY);
-        issuerdn = CertTools.stringToBCDNString(issuerdn);
+        final String issuerDn = CertTools.stringToBCDNString(req.getParameter(ISSUER_PROPERTY));
 
-        String command;
         // Keep this for logging.
-        log.debug("Got request from "+req.getRemoteAddr());
-        command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null) {
-            command = "";
-        }
-        String lev = req.getParameter(LEVEL_PROPERTY);
-        if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)
-        		|| command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null && StringUtils.isNumeric(lev)) {
+        log.debug("Got request from " + req.getRemoteAddr());
+        final String command = req.getParameter(COMMAND_PROPERTY_NAME);
+        final String lev = req.getParameter(LEVEL_PROPERTY);
+        final List<String> validCommands = Arrays.asList(COMMAND_NSCACERT, COMMAND_IECACERT, COMMAND_JKSTRUSTSTORE, COMMAND_CACERT);
+        if (StringUtils.isNotBlank(issuerDn) && StringUtils.isNumeric(lev)
+                && validCommands.stream().anyMatch(validCommand -> validCommand.equalsIgnoreCase(command))) {
             final int level = Integer.parseInt(lev);
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                Certificate[] chain = signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
+                Certificate[] chain = signSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
@@ -163,7 +138,7 @@ public class CACertServlet extends HttpServlet {
                     res.getOutputStream().write(out.getBytes());
                     log.debug("Sent CA cert to client, len="+out.length()+".");
                 } else if (command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)) {
-                    String jksPassword = req.getParameter(JKSPASSWORD_PROPERTY).trim();
+                    final String jksPassword = StringUtils.trim(req.getParameter(JKSPASSWORD_PROPERTY));
                     int passwordRequiredLength = 6;
                     if ( jksPassword != null && jksPassword.length() >= passwordRequiredLength ) {
                     	KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -176,21 +151,17 @@ public class CACertServlet extends HttpServlet {
                         res.setContentType("text/plain");
                         res.getOutputStream().println(COMMAND_JKSTRUSTSTORE + " requires " + JKSPASSWORD_PROPERTY +
                         		" with a minimum of " + passwordRequiredLength+ " chars to be set");
-                        return;
                     }
                 } else {
                     res.setContentType("text/plain");
                     res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT+" || "+COMMAND_JKSTRUSTSTORE);
-                    return;
                 }
             } catch (Exception e) {
                 log.error("Error getting CA certificates: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
-                return;
             }
         } else {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
-            return;
         }
     } // doGet
 }

@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,8 +26,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,6 +97,25 @@ public class LookAheadObjectInputStreamTest {
         private static final long serialVersionUID = 6L;
     }
     
+    private static interface AnimalInterface extends Serializable {
+        String getValue();
+    }
+
+    private static class BadDog implements AnimalInterface {
+        private static final long serialVersionUID = 7L;
+        public Object object;
+        @SuppressWarnings("unused")
+        public GoodClass1 goodClass1 = new GoodClass1(123);
+
+        public BadDog(final Object object) {
+            this.object = object;
+        }
+        @Override
+        public String getValue() {
+            return String.valueOf(object);
+        }
+    }
+
     private static class ExternalizableClass implements Externalizable {
         private final boolean writeExploitObject;
         
@@ -123,23 +147,14 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingAcceptedJavaObject() throws Exception {
         log.trace(">testDeserializingAcceptedJavaObject");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new GoodClass2(2));
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
-            lookAheadObjectInputStream.setMaxObjects(1);
-            GoodClass2 goodClass = (GoodClass2) lookAheadObjectInputStream.readObject();
+        final byte[] serializedData = getEncoded(new GoodClass2(2));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
+            laois.setMaxObjects(1);
+            GoodClass2 goodClass = (GoodClass2) laois.readObject();
             assertEquals("Data corrupted during testDeserializingAcceptedJavaObject", 2, goodClass.getData());
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingAcceptedJavaObject");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingAcceptedJavaObject");
     }
@@ -150,29 +165,17 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingNonAcceptedJavaObject() throws Exception {
         log.trace(">testDeserializingNonAcceptedJavaObject");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new ExploitClass());
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
-            acceptedClasses.add(GoodClass1.class);
-            acceptedClasses.add(GoodClass2.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            @SuppressWarnings("unused")
-            GoodClass2[] deserialized = (GoodClass2[]) lookAheadObjectInputStream.readObject();
+        final byte[] serializedData = getEncoded(new ExploitClass());
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
+            laois.readObject();
+            fail("Deserialization was unexpectedly successful.");
         } catch (IllegalStateException e) {
             fail("ExploitClass code was not caught with LookAheadSerializer");
         } catch (SecurityException e) {
             //Good
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingNonAcceptedJavaObject");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingNonAcceptedJavaObject");
     }
@@ -183,25 +186,17 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testNonInitializedLookAheadObjectInputStream() throws Exception {
         log.trace(">testNonInitializedLookAheadObjectInputStream");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new ExploitClass());
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            @SuppressWarnings("unused")
-            GoodClass2[] deserialized = (GoodClass2[]) lookAheadObjectInputStream.readObject();
+        final byte[] serializedData = getEncoded(new ExploitClass());
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList());
+            laois.readObject();
+            fail("Deserialization was unexpectedly successful.");
         } catch (IllegalStateException e) {
             fail("ExploitClass code was not caught with LookAheadObjectInputStream");
         } catch (SecurityException e) {
             //Good
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testNonInitializedLookAheadObjectInputStream");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testNonInitializedLookAheadObjectInputStream");
     }
@@ -212,25 +207,13 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingAcceptedJavaObjectArray() throws Exception {
         log.trace(">testDeserializingAcceptedJavaObjectArray");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new GoodClass2[3]);
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
-            acceptedClasses.add(GoodClass1.class);
-            acceptedClasses.add(GoodClass2.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            GoodClass2[] deserialized = (GoodClass2[]) lookAheadObjectInputStream.readObject();
+        final byte[] serializedData = getEncoded((Object)new GoodClass2[3]);
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
+            GoodClass2[] deserialized = (GoodClass2[]) laois.readObject();
             assertEquals("Data corrupted during testDeserializingAcceptedJavaObjectArray", 3, deserialized.length);
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingAcceptedJavaObjectArray");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingAcceptedJavaObjectArray");
     }
@@ -242,29 +225,17 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingNonAcceptedJavaObjectArray() throws Exception {
         log.trace(">testDeserializingNonAcceptedJavaObjectArray");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new ExploitClass[3]);
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
-            acceptedClasses.add(GoodClass1.class);
-            acceptedClasses.add(GoodClass2.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            @SuppressWarnings("unused")
-            GoodClass2[] deserialized = (GoodClass2[]) lookAheadObjectInputStream.readObject();
+        final byte[] serializedData = getEncoded((Object)new ExploitClass[3]);
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
+            laois.readObject();
+            fail("Deserialization was unexpectedly successful.");
         } catch (IllegalStateException e) {
             fail("ExploitClass code was not caught with LookAheadObjectInputStream");
         } catch (SecurityException e) {
             //Good
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingNonAcceptedJavaObjectArray");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingNonAcceptedJavaObjectArray");
     }
@@ -275,53 +246,29 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingMixedObjectArray() throws Exception {
         log.trace(">testDeserializingMixedObjectArray");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            Object[] mixedObjects = new Object[3];
-            mixedObjects[0] = "Dummy string";
-            mixedObjects[1] = new ExploitClass();
-            mixedObjects[2] = new GoodClass1(1);
-            o.writeObject(mixedObjects);
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
-            acceptedClasses.add(GoodClass1.class);
-            acceptedClasses.add(GoodClass2.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            @SuppressWarnings("unused")
-            Object[] deserialized = (Object[]) lookAheadObjectInputStream.readObject();
+        final Object[] mixedObjects = new Object[] {"Dummy string", new ExploitClass(), new GoodClass1(1)};
+        final byte[] serializedData = getEncoded((Object)mixedObjects);
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
+            laois.readObject();
             fail("ExploitClass code was not caught with LookAheadObjectInputStream during testDeserializingMixedObjectArray");
         } catch (SecurityException e) {
             //Good
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingMixedObjectArray");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingMixedObjectArray");
     }
 
     @Test
     public void testDeserializeExternalizable() throws Exception {
-        //ExternalizableClass
         log.trace(">testDeserializeExternalizable");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new ExternalizableClass(true)); // Write exploit object that will be read be readExternal
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(2);
-            acceptedClasses.add(GoodClass1.class);
-            acceptedClasses.add(ExternalizableClass.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            @SuppressWarnings("unused")
-            ExternalizableClass deserialized = (ExternalizableClass) lookAheadObjectInputStream.readObject(); // deserializing Externalizable object
+        // Write exploit object that will be read be readExternal
+        final byte[] serializedData = getEncoded(new ExternalizableClass(true));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, ExternalizableClass.class));
+            // deserializing Externalizable object
+            laois.readObject();
             fail("Deserialization was successful. This could be a bug in the test");
         } catch (IllegalStateException e) {
             fail("ExploitClass code was not caught with LookAheadSerializer");
@@ -329,10 +276,6 @@ public class LookAheadObjectInputStreamTest {
             // Good
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializeExternalizable");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializeExternalizable");
     }
@@ -343,35 +286,21 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testLimitingMaxObjects() throws Exception {
         log.trace(">testLimitingMaxObjects");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new GoodClass1(1));
-            o.writeObject(new GoodClass1(2));
-            o.writeObject(new GoodClass2(3));
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
-            acceptedClasses.add(GoodClass1.class);
-            acceptedClasses.add(GoodClass2.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            lookAheadObjectInputStream.setEnabledSubclassing(true);
-            lookAheadObjectInputStream.setEnabledMaxObjects(true);
-            lookAheadObjectInputStream.setMaxObjects(2);
+        final byte[] serializedData = getEncoded(new GoodClass1(1), new GoodClass1(2), new GoodClass2(3));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodClass1.class, GoodClass2.class));
+            laois.setEnabledSubclassing(true);
+            laois.setEnabledMaxObjects(true);
+            laois.setMaxObjects(2);
             int i = 0;
             while (i++ < 3) {
-                lookAheadObjectInputStream.readObject();
+                laois.readObject();
             }
             fail("Deserialized more then specified max objects during testLimitingMaxObjects");
         } catch (SecurityException e) {
             //Good
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testLimitingMaxObjects");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testLimitingMaxObjects");
     }
@@ -383,69 +312,58 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingPrimitiveTypes() throws Exception {
         log.trace(">testDeserializingPrimitiveTypes");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject((byte) 0);
-            o.writeObject((short) 1);
-            o.writeObject(2);
-            o.writeObject((long) 3);
-            o.writeObject((float) 4);
-            o.writeObject((double) 5);
-            // These should be exactly the same as above, due to auto-boxing 
-            o.writeObject(Byte.valueOf((byte) 6));
-            o.writeObject(Short.valueOf((short) 7));
-            o.writeObject(Integer.valueOf(8));
-            o.writeObject(Long.valueOf(9));
-            o.writeObject(Float.valueOf(10));
-            o.writeObject(Double.valueOf(11));
-            o.writeObject(false);
-            o.writeObject(Boolean.valueOf(true));
-            o.writeObject('c');
-            o.writeObject("String");
-            o.writeObject(new byte[1]);
-            o.writeObject(new short[1]);
-            o.writeObject(new int[1]);
-            o.writeObject(new long[1]);
-            o.writeObject(new float[1]);
-            o.writeObject(new double[1]);
-            o.writeObject(new boolean[1]);
-
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
-            lookAheadObjectInputStream.setEnabledMaxObjects(false);
-
-            assertEquals("Data 0 corrupted during testDeserializingPrimitiveTypes", (byte) 0, (byte) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 1 corrupted during testDeserializingPrimitiveTypes", (short) 1, (short) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 2 corrupted during testDeserializingPrimitiveTypes", 2, (int) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 3 corrupted during testDeserializingPrimitiveTypes", 3L, (long) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 4 corrupted during testDeserializingPrimitiveTypes", 4.0F, (float) lookAheadObjectInputStream.readObject(), 0);
-            assertEquals("Data 5 corrupted during testDeserializingPrimitiveTypes", 5.0, (double) lookAheadObjectInputStream.readObject(), 0);
-            assertEquals("Data 6 corrupted during testDeserializingPrimitiveTypes", 6, ((Byte) lookAheadObjectInputStream.readObject()).byteValue());
-            assertEquals("Data 7 corrupted during testDeserializingPrimitiveTypes", 7, ((Short) lookAheadObjectInputStream.readObject()).shortValue());
-            assertEquals("Data 8 corrupted during testDeserializingPrimitiveTypes", 8, ((Integer) lookAheadObjectInputStream.readObject()).intValue());
-            assertEquals("Data 9 corrupted during testDeserializingPrimitiveTypes", 9, ((Long) lookAheadObjectInputStream.readObject()).longValue());
-            assertEquals("Data 10 corrupted during testDeserializingPrimitiveTypes", 10, ((Float) lookAheadObjectInputStream.readObject()).floatValue(), 0);
-            assertEquals("Data 11 corrupted during testDeserializingPrimitiveTypes", 11, ((Double) lookAheadObjectInputStream.readObject()).doubleValue(), 0);
-            assertEquals("Data 12 corrupted during testDeserializingPrimitiveTypes", false, (boolean) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 13 corrupted during testDeserializingPrimitiveTypes", true, ((Boolean) lookAheadObjectInputStream.readObject()).booleanValue());
-            assertEquals("Data 14 corrupted during testDeserializingPrimitiveTypes", 'c', (char) lookAheadObjectInputStream.readObject());
-            assertEquals("Data 15 corrupted during testDeserializingPrimitiveTypes", "String", lookAheadObjectInputStream.readObject());
-            assertEquals("Data 16 corrupted during testDeserializingPrimitiveTypes", 1, ((byte[]) lookAheadObjectInputStream.readObject()).length);
-            assertEquals("Data 17 corrupted during testDeserializingPrimitiveTypes", 1, ((short[]) lookAheadObjectInputStream.readObject()).length);
-            assertEquals("Data 18 corrupted during testDeserializingPrimitiveTypes", 1, ((int[]) lookAheadObjectInputStream.readObject()).length);
-            assertEquals("Data 19 corrupted during testDeserializingPrimitiveTypes", 1, ((long[]) lookAheadObjectInputStream.readObject()).length);
-            assertEquals("Data 20 corrupted during testDeserializingPrimitiveTypes", 1, ((float[]) lookAheadObjectInputStream.readObject()).length);
-            assertEquals("Data 21 corrupted during testDeserializingPrimitiveTypes", 1, ((double[]) lookAheadObjectInputStream.readObject()).length);
-            assertEquals("Data 22 corrupted during testDeserializingPrimitiveTypes", 1, ((boolean[]) lookAheadObjectInputStream.readObject()).length);
-
+        final byte[] serializedData = getEncoded(
+                (byte) 0,
+                (short) 1,
+                2,
+                (long) 3,
+                (float) 4,
+                (double) 5,
+                Byte.valueOf((byte) 6),
+                Short.valueOf((short) 7),
+                Integer.valueOf(8),
+                Long.valueOf(9),
+                Float.valueOf(10),
+                Double.valueOf(11),
+                false,
+                Boolean.valueOf(true),
+                'c',
+                "String",
+                new byte[1],
+                new short[1],
+                new int[1],
+                new long[1],
+                new float[1],
+                new double[1],
+                new boolean[1]
+                );
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setEnabledMaxObjects(false);
+            assertEquals("Data 0 corrupted during testDeserializingPrimitiveTypes", (byte) 0, (byte) laois.readObject());
+            assertEquals("Data 1 corrupted during testDeserializingPrimitiveTypes", (short) 1, (short) laois.readObject());
+            assertEquals("Data 2 corrupted during testDeserializingPrimitiveTypes", 2, (int) laois.readObject());
+            assertEquals("Data 3 corrupted during testDeserializingPrimitiveTypes", 3L, (long) laois.readObject());
+            assertEquals("Data 4 corrupted during testDeserializingPrimitiveTypes", 4.0F, (float) laois.readObject(), 0);
+            assertEquals("Data 5 corrupted during testDeserializingPrimitiveTypes", 5.0, (double) laois.readObject(), 0);
+            assertEquals("Data 6 corrupted during testDeserializingPrimitiveTypes", 6, ((Byte) laois.readObject()).byteValue());
+            assertEquals("Data 7 corrupted during testDeserializingPrimitiveTypes", 7, ((Short) laois.readObject()).shortValue());
+            assertEquals("Data 8 corrupted during testDeserializingPrimitiveTypes", 8, ((Integer) laois.readObject()).intValue());
+            assertEquals("Data 9 corrupted during testDeserializingPrimitiveTypes", 9, ((Long) laois.readObject()).longValue());
+            assertEquals("Data 10 corrupted during testDeserializingPrimitiveTypes", 10, ((Float) laois.readObject()).floatValue(), 0);
+            assertEquals("Data 11 corrupted during testDeserializingPrimitiveTypes", 11, ((Double) laois.readObject()).doubleValue(), 0);
+            assertEquals("Data 12 corrupted during testDeserializingPrimitiveTypes", false, (boolean) laois.readObject());
+            assertEquals("Data 13 corrupted during testDeserializingPrimitiveTypes", true, ((Boolean) laois.readObject()).booleanValue());
+            assertEquals("Data 14 corrupted during testDeserializingPrimitiveTypes", 'c', (char) laois.readObject());
+            assertEquals("Data 15 corrupted during testDeserializingPrimitiveTypes", "String", laois.readObject());
+            assertEquals("Data 16 corrupted during testDeserializingPrimitiveTypes", 1, ((byte[]) laois.readObject()).length);
+            assertEquals("Data 17 corrupted during testDeserializingPrimitiveTypes", 1, ((short[]) laois.readObject()).length);
+            assertEquals("Data 18 corrupted during testDeserializingPrimitiveTypes", 1, ((int[]) laois.readObject()).length);
+            assertEquals("Data 19 corrupted during testDeserializingPrimitiveTypes", 1, ((long[]) laois.readObject()).length);
+            assertEquals("Data 20 corrupted during testDeserializingPrimitiveTypes", 1, ((float[]) laois.readObject()).length);
+            assertEquals("Data 21 corrupted during testDeserializingPrimitiveTypes", 1, ((double[]) laois.readObject()).length);
+            assertEquals("Data 22 corrupted during testDeserializingPrimitiveTypes", 1, ((boolean[]) laois.readObject()).length);
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingPrimitiveTypes");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingPrimitiveTypes");
     }
@@ -456,31 +374,221 @@ public class LookAheadObjectInputStreamTest {
     @Test
     public void testDeserializingExtendedClasses() throws Exception {
         log.trace(">testDeserializingExtendedClasses");
-        LookAheadObjectInputStream lookAheadObjectInputStream = null;
-        try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(buf);
-            o.writeObject(new GoodExtendedClass());
-            o.writeObject(new GoodExtendedExtendedClass());
-            o.close();
-            lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(buf.toByteArray()));
+        final byte[] serializedData = getEncoded(new GoodExtendedClass(), new GoodExtendedExtendedClass());
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData));) {
             Collection<Class<? extends Serializable>> acceptedClasses = new ArrayList<>(3);
             acceptedClasses.add(GoodAbstractClass.class);
-            lookAheadObjectInputStream.setAcceptedClasses(acceptedClasses);
-            lookAheadObjectInputStream.setEnabledMaxObjects(false);
-            lookAheadObjectInputStream.setEnabledSubclassing(true);
+            laois.setAcceptedClasses(acceptedClasses);
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(true);
             @SuppressWarnings("unused")
-            GoodExtendedClass goodExtendedClass = (GoodExtendedClass) lookAheadObjectInputStream.readObject();
+            GoodExtendedClass goodExtendedClass = (GoodExtendedClass) laois.readObject();
             @SuppressWarnings("unused")
-            GoodExtendedExtendedClass goodExtendedExtendedClass = (GoodExtendedExtendedClass) lookAheadObjectInputStream.readObject();
+            GoodExtendedExtendedClass goodExtendedExtendedClass = (GoodExtendedExtendedClass) laois.readObject();
         } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testDeserializingExtendedClasses");
-        } finally {
-            if (lookAheadObjectInputStream != null) {
-                lookAheadObjectInputStream.close();
-            }
         }
         log.trace("<testDeserializingExtendedClasses");
     }
 
+    /**
+     * Test deserializing inherited class without allowing the superclass
+     */
+    @Test
+    public void testDeserializingExtendedClassesWithoutAllowingSuperclass() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new GoodExtendedExtendedClass());
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodExtendedExtendedClass.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(false);
+            laois.readObject();
+            fail("SecurityException should have been thrown.");
+        } catch (SecurityException e) {
+            //Good
+            log.info("Succuessfully prevented deserialization of non-whitelisted super class: " + e.getMessage());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodExtendedExtendedClass.class, GoodExtendedClass.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(false);
+            laois.readObject();
+            fail("SecurityException should have been thrown.");
+        } catch (SecurityException e) {
+            //Good
+            log.info("Succuessfully prevented deserialization of non-whitelisted super class: " + e.getMessage());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(GoodExtendedExtendedClass.class, GoodExtendedClass.class, GoodAbstractClass.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(false);
+            assertEquals(GoodExtendedExtendedClass.class, laois.readObject().getClass());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
+     * Test deserializing interface implementations
+     */
+    @Test
+    public void testDeserializingInterfaceImplementationDenied() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new BadDog("regular String"));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(AnimalInterface.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(true);
+            laois.readObject();
+            fail("SecurityException should have been thrown.");
+        } catch (SecurityException e) {
+            //Good
+            log.info("Succuessfully prevented deserialization of non-whitelisted implementation of whitelisted interface: " + e.getMessage());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
+     * Test deserializing interface implementations where implementation is not belonging to the correct package
+     */
+    @Test
+    public void testDeserializingInterfaceImplementationRestrictedToPackageFail() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new BadDog("regular String"));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(AnimalInterface.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(false);
+            laois.setEnabledInterfaceImplementations(true, "com.sploitsrus");
+            laois.readObject();
+            fail("SecurityException should have been thrown.");
+        } catch (SecurityException e) {
+            //Good
+            log.info("Succuessfully prevented deserialization of non-whitelisted implementation of whitelisted interface: " + e.getMessage());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
+     * Test deserializing interface implementations where implementation is not belonging to the correct package
+     */
+    @Test
+    public void testDeserializingInterfaceImplementationRestrictedToPackageOk() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new BadDog("regular String"));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(AnimalInterface.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(false);
+            laois.setEnabledInterfaceImplementations(true, "org.cesecore", "org.ejbca");
+            assertEquals("regular String", ((BadDog) laois.readObject()).getValue());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
+     * Test deserializing interface implementations
+     */
+    @Test
+    public void testDeserializingInterfaceImplementationAllowedWithoutSubclassing() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new BadDog("regular String"));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(AnimalInterface.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(false);
+            laois.setEnabledInterfaceImplementations(true);
+            assertEquals("regular String", ((BadDog) laois.readObject()).getValue());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
+     * Test deserializing interface implementations (when also subclassing is enabled)
+     */
+    @Test
+    public void testDeserializingInterfaceImplementationAllowedWithSubclassing() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new BadDog("regular String"));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(AnimalInterface.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(true);
+            laois.setEnabledInterfaceImplementations(true);
+            assertEquals("regular String", ((BadDog) laois.readObject()).getValue());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
+     * Test deserializing class where field object is not whitelisted
+     */
+    @Test
+    public void testDeserializingWithNonWhitelistedField() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new BadDog(new ExploitClass()));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(BadDog.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(true);
+            ((BadDog) laois.readObject()).getValue();
+        } catch (SecurityException e) {
+            //Good
+            log.info("Succuessfully prevented deserialization of non-whitelisted class: " + e.getMessage());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+    
+    /** Test commonly serialized class combo */
+    @Test
+    public void testAuthenticationToken() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
+        final byte[] serializedData = getEncoded(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("test")));
+        try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(serializedData))) {
+            laois.setAcceptedClasses(Arrays.asList(AuthenticationToken.class, HashSet.class, UsernamePrincipal.class));
+            laois.setEnabledMaxObjects(false);
+            laois.setEnabledSubclassing(true, "org.cesecore");
+            assertEquals("test", ((AlwaysAllowLocalAuthenticationToken) laois.readObject()).getPrincipals().iterator().next().getName());
+        } catch (Exception e) {
+            log.trace(e.getMessage(), e);
+            fail("Unexpected exception: " + e.getMessage());
+        }
+        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+    
+    private byte[] getEncoded(final Object...objects) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final ObjectOutputStream oos = new ObjectOutputStream(baos);) {
+            for (final Object object : objects) {
+                oos.writeObject(object);
+            }
+        }
+        return baos.toByteArray();
+    }
 }

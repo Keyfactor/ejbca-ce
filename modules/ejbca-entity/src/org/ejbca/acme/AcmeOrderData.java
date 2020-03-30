@@ -10,10 +10,10 @@
 
 package org.ejbca.acme;
 
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
@@ -27,11 +27,13 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 
 
 /**
@@ -44,6 +46,7 @@ import org.cesecore.util.Base64PutHashMap;
 public class AcmeOrderData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(AcmeOrderData.class);
 
     @Id
     private String orderId;
@@ -108,9 +111,15 @@ public class AcmeOrderData extends ProtectedData implements Serializable {
     @Transient
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Object,Object> getDataMap() {
-        try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(getRawData().getBytes(StandardCharsets.UTF_8)));) {
+        try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(getRawData().getBytes(StandardCharsets.UTF_8)))) {
             // Handle Base64 encoded string values
             return new Base64GetHashMap((Map<?,?>)decoder.readObject());
+        } catch (IOException e) {
+            final String msg = "Failed to parse AcmeOrderData data map in database: " + e.getMessage();
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ". Data:\n" + getRawData());
+            }
+            throw new IllegalStateException(msg, e);
         }
     }
 
@@ -118,7 +127,7 @@ public class AcmeOrderData extends ProtectedData implements Serializable {
     public void setDataMap(final LinkedHashMap<Object,Object> dataMap) {
         // We must base64 encode string for UTF safety
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (final XMLEncoder encoder = new XMLEncoder(baos);) {
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(new Base64PutHashMap(dataMap));
         }
         setRawData(new String(baos.toByteArray(), StandardCharsets.UTF_8));
@@ -128,8 +137,10 @@ public class AcmeOrderData extends ProtectedData implements Serializable {
     public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
     
+    @Override
     public String getRowProtection() { return rowProtection; }
     
+    @Override
     public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
     

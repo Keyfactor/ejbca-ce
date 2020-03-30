@@ -399,17 +399,17 @@ if(configheaderprinted){
 %>
 
 <% if (ejbcawebbean.isRunningBuildWithRAWeb()) { %>
-		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcaraweb"><%=ejbcawebbean.getText("RAWEB") %></a>
+		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcaraweb" rel="noopener noreferer"><%=ejbcawebbean.getText("RAWEB") %></a>
 		</li>
 <% } %>
 
 <% if (ejbcawebbean.isRunningBuildWithCA()) { %>
-		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
+		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" rel="noopener noreferer"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
 		</li>
 <% } %>
 
 <% if (ejbcawebbean.isHelpEnabled()) { %>
-		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
+		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>" rel="noopener noreferer"
 			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
 		</li>
 <% } %>

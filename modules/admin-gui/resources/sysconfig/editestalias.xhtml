@@ -25,6 +25,7 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{estConfigMBean}" />
     <ui:define name="content">
         <h2><h:outputText
                 value="#{(estConfigMBean.authorizedToEdit and !editEstConfigMBean.viewOnly) ? web.text.ESTEDITALIAS : web.text.EST_VIEW_ALIAS}"/>

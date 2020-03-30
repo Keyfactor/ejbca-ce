@@ -25,7 +25,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -54,7 +53,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfilesFactory;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.mail.MailSender;
@@ -128,14 +126,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     @ManagedProperty(value = "#{approvalProfilesMBean}")
     private ApprovalProfilesMBean approvalProfilesMBean;
     
-    // Authentication check and audit log page access request
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.APPROVALPROFILEVIEW.resource());
-            RequestHelper.setDefaultCharacterEncoding(request);
-        }
+    public ApprovalProfileMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.APPROVALPROFILEVIEW.resource());
     }
     
     private int currentApprovalProfileId = -1;
@@ -371,7 +363,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public String removeRowFromRadioButton(int partitionId, String encodedRadioButton) {
         final Integer currentStep = steps.getRowData().getIdentifier();
         final ApprovalProfile updatedApprovalProfile = getApprovalProfile();
-        final RadioButton radioButton = (RadioButton) DynamicUiProperty.getAsObject(encodedRadioButton);
+        final RadioButton radioButton = DynamicUiProperty.getAsObject(encodedRadioButton, RadioButton.class);
         final List<ApprovalPartitionProfileGuiObject> guiPartitions = steps.getRowData().getPartitionGuiObjects();
         for(ApprovalPartitionProfileGuiObject approvalPartitionProfileGuiObject : guiPartitions) {
             //find the right partition
@@ -708,7 +700,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         List<Integer> currentIds = new ArrayList<>();
 
         for (final String value : property.getEncodedValues()) {
-            RoleInformation roleInfo = (RoleInformation)DynamicUiProperty.getAsObject(value);
+            RoleInformation roleInfo = DynamicUiProperty.getAsObject(value, RoleInformation.class);
             currentIds.add(roleInfo.getIdentifier());
         }
 

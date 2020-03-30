@@ -13,7 +13,9 @@
 
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.ProfileID;
+import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -464,7 +467,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      *    or
      *    If the userdatasource have "ANYCA" set.
      * 3. The admin is authorized to the fetch or remove rule depending on the remove parameter
-     * @param if the call is aremove call, othervise fetch authorization is used.
+     * @param remove if the call is a remove call, othervise fetch authorization is used.
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToUserDataSource(AuthenticationToken admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
@@ -540,14 +543,16 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     private BaseUserDataSource getUserDataSource(UserDataSourceData udsData) {
     	BaseUserDataSource userdatasource = udsData.getCachedUserDataSource();
         if (userdatasource == null) {
-        	java.beans.XMLDecoder decoder;
-        	try {
-        		decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(udsData.getData().getBytes("UTF8")));
-        	} catch (UnsupportedEncodingException e) {
-        		throw new EJBException(e);
-        	}
-        	HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
-        	decoder.close();
+            final HashMap<?, ?> h;
+        	try (SecureXMLDecoder decoder = new SecureXMLDecoder(new java.io.ByteArrayInputStream(udsData.getData().getBytes(StandardCharsets.UTF_8)))) {
+        	    h = (HashMap<?, ?>) decoder.readObject();
+        	} catch (IOException e) {
+                final String msg = "Failed to parse AcmeOrderData data map in database: " + e.getMessage();
+                if (log.isDebugEnabled()) {
+                    log.debug(msg + ". Data:\n" + udsData.getData());
+                }
+                throw new IllegalStateException(msg, e);
+            }
         	// Handle Base64 encoded string values
         	HashMap<?, ?> data = new Base64GetHashMap(h);
         	switch (((Integer) (data.get(BaseUserDataSource.TYPE))).intValue()) {

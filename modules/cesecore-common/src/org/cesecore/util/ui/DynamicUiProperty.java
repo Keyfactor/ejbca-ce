@@ -16,12 +16,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +34,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.util.Base64;
+import org.cesecore.util.LookAheadObjectInputStream;
 
 /**
  * Allows creation of dynamic properties for display in the UI.
@@ -131,6 +136,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     /**
      * Constructor required by java.lang.Serializable.
+     * Type must be set if this constructor is used.
      */
     public DynamicUiProperty() {
     }
@@ -186,7 +192,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }  
         this.possibleValues = null;
         this.type = type;
-        if (File.class.getName().equals(getType().getName())) {
+        if (File.class.getName().equals(getType().getName()) || byte[].class.getName().equals(getType().getName())) {
             setRenderingHint(RENDER_FILE_CHOOSER);
         }
     }
@@ -195,7 +201,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * Constructor. Note the T must implement toString().
      *
      * @param name the name of this property, for display in the UI.
-     * @param defaultValue the default value, if any.
+     * @param defaultValue the default value, if any. May not be null.
      * @param possibleValues a Collection of possible values. If set to null no validation will be performed, if set to an empty list then values
      *        are presumed to be set at runtime.
      */
@@ -635,7 +641,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     @SuppressWarnings("unchecked")
     public void setEncodedValue(final String encodedValue) {
         try {
-            setValue((T) getAsObject(Base64.decode(encodedValue.getBytes())));
+            setValue((T) getAsObject(Base64.decode(encodedValue.getBytes()), getType()));
         } catch (PropertyValidationException e) {
             throw new IllegalArgumentException("Invalid value was intercepted from an encoded source, which should not happen.", e);
         }
@@ -650,7 +656,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setEncodedValues(final List<String> encodedValues) throws PropertyValidationException {
         List<T> decodedValues = new ArrayList<>();
         for (String encodedValue : encodedValues) {
-            decodedValues.add((T) getAsObject(Base64.decode(encodedValue.getBytes())));
+            decodedValues.add((T) getAsObject(Base64.decode(encodedValue.getBytes()), getType()));
         }
         setValues(decodedValues);
     }
@@ -733,7 +739,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     @SuppressWarnings("unchecked")
     @Override
     public DynamicUiProperty<T> clone() {
-        return (DynamicUiProperty<T>) getAsObject(getAsByteArray(this));
+        return (DynamicUiProperty<T>) SerializationUtils.clone(this);
     }
 
     /**
@@ -751,18 +757,28 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return baos.toByteArray();
     }
 
-    public static Serializable getAsObject(final String encodedValue) {
-        return getAsObject(Base64.decode(encodedValue.getBytes()));
+    public static <T extends Serializable> T  getAsObject(final String encodedValue, Class<T> type) {
+        return getAsObject(Base64.decode(encodedValue.getBytes()), type);
     }
 
-    private static Serializable getAsObject(final byte[] bytes) {
-        try (final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));) {
-            return (Serializable) ois.readObject();
+    private static <T extends Serializable> T getAsObject(final byte[] bytes, Class<T> type) {
+        try (final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(bytes))) {
+            lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(type, LinkedHashMap.class, HashMap.class, HashSet.class, DynamicUiPropertyCallback.class, 
+                  AccessMatchType.class, UrlString.class, MultiLineString.class, String.class,
+                  PositiveIntegerValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
+                  Collections.emptyList().getClass().asSubclass(Serializable.class), 
+                  Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
+                  Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class),
+                  Class.forName("org.cesecore.authorization.user.AccessUserAspectData").asSubclass(Serializable.class)));
+            lookAheadObjectInputStream.setEnabledMaxObjects(false);
+            lookAheadObjectInputStream.setEnabledSubclassing(false);
+            lookAheadObjectInputStream.setEnabledInterfaceImplementations(false);
+            return type.cast(lookAheadObjectInputStream.readObject());
         } catch (IOException | ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
     }
-
+    
     /**
      * Gets the action callback.
      * @return the callback.
@@ -936,6 +952,10 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return File.class.getName().equals(getType().getName());
     }
 
+    public boolean isByteArrayType() {
+        return byte[].class.getName().equals(getType().getName());
+    }
+    
     /**
      * Returns true if a check box should be rendered.
      * @return true or false.

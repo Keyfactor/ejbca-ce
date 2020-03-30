@@ -28,10 +28,8 @@ import java.util.Set;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -118,16 +116,8 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	private List<AuditSearchCondition> conditions = new ArrayList<>();
 	private boolean automaticReload = true;
 	
-    // Authentication check and audit log page access request
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AuditLogRules.VIEW.resource());
-        }
-    }
-	
 	public AuditorManagedBean() {
+	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, AuditLogRules.VIEW.resource());
 		final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
 		columnNameMap.put(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR"));
 		columnNameMap.put(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CUSTOM_ID"));

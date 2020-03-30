@@ -127,7 +127,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         uiModel.add(new DynamicUiProperty<>(Boolean.class, LOG_STANDARD_OUT, isLogStandardOut()));
         uiModel.add(new DynamicUiProperty<>(Boolean.class, LOG_ERROR_OUT, isLogErrorOut()));
         uiModel.add(new DynamicUiProperty<>("test"));
-        final DynamicUiProperty<File> testPath = new DynamicUiProperty<>(File.class, "testPath", null);
+        final DynamicUiProperty<byte[]> testPath = new DynamicUiProperty<>(byte[].class, "testPath", null);
         testPath.setTransientValue(true);
         uiModel.add(testPath);
         // ECA-6320 Bug. MyFaces HtmlOutputText and HtmlOutputLabel throw NPE in JSF life cycle -> use disabled text field.
@@ -360,51 +360,60 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @SuppressWarnings("unchecked")
     public List<String> testCommand() throws DynamicUiCallbackException {
         log.info("Test external command certificate validator: " + getProfileName());
-        final DynamicUiProperty<File> property = (DynamicUiProperty<File>) uiModel.getProperties().get("testPath");
+        final DynamicUiProperty<byte[]> property = (DynamicUiProperty<byte[]>) uiModel.getProperties().get("testPath");
         final List<String> out = new ArrayList<>();
-        File file = null;
+        byte[] data = null;
         String message = null;
-        if (property != null && (file=property.getValue()) != null && file.exists()) {
-            if (!file.canRead()) {
-                message = intres.getLocalizedMessage("validator.certificate.externalcommand.testfilenopermission", file.getAbsolutePath());
+        if (property != null && (data=property.getValue()) != null) {
+            final File file;
+            try {
+                file = ExternalProcessTools.writeTemporaryFileToDisk("validator_test_cert", /* use .tmp as file extension */ null, data);
+            } catch (ExternalProcessException e) {
+                throw new IllegalStateException("Failed to save upload to temporary file", e);
             }
-            if (message == null) {
-                try {
-                    setTestCertificates(CertTools.getCertsFromPEM(file.getAbsolutePath(), Certificate.class));
-                } catch(IOException e) {
-                    message = intres.getLocalizedMessage("process.certificate.filenotfound", file.getAbsolutePath());
-                    log.warn(message, e);
-                } catch(CertificateParsingException e) {
-                    message = intres.getLocalizedMessage("process.certificate.couldnotbeparsed", file.getAbsolutePath());
-                    log.warn(message, e);
+            try {
+                if (!file.canRead()) {
+                    message = intres.getLocalizedMessage("validator.certificate.externalcommand.testfilenopermission", file.getAbsolutePath());
                 }
-            }
-            if (message == null) { // Run command.
-                try {
-                    out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates()));
-                    if (log.isDebugEnabled()) {
-                        log.debug("Tested certificate with external command STOUT/ERROUT:" + System.getProperty("line.separator") + out);
+                if (message == null) {
+                    try {
+                        setTestCertificates(CertTools.getCertsFromPEM(file.getAbsolutePath(), Certificate.class));
+                    } catch(IOException e) {
+                        message = intres.getLocalizedMessage("process.certificate.filenotfound", file.getAbsolutePath());
+                        log.warn(message, e);
+                    } catch(CertificateParsingException e) {
+                        message = intres.getLocalizedMessage("process.certificate.couldnotbeparsed", file.getAbsolutePath());
+                        log.warn(message, e);
                     }
-                } catch (CertificateEncodingException e) {
-                    message = intres.getLocalizedMessage("process.certificate.couldnotbeencoded", file.getAbsolutePath());
-                    log.info(message, e);
-                // 1. command not found, no permission or other exception; 2. not in whitelist.
-                } catch (ExternalProcessException | ValidatorNotApplicableException e) {
-                    message = e.getMessage();
-                    log.info(message, e);
+                }
+                if (message == null) { // Run command.
+                    try {
+                        out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates()));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Tested certificate with external command STOUT/ERROUT:" + System.getProperty("line.separator") + out);
+                        }
+                    } catch (CertificateEncodingException e) {
+                        message = intres.getLocalizedMessage("process.certificate.couldnotbeencoded", file.getAbsolutePath());
+                        log.info(message, e);
+                    // 1. command not found, no permission or other exception; 2. not in whitelist.
+                    } catch (ExternalProcessException | ValidatorNotApplicableException e) {
+                        message = e.getMessage();
+                        log.info(message, e);
+                    }
+                }
+            } finally {
+                // Delete temporary file (file is written because of file upload).
+                if (file != null) {
+                    try {
+                        file.delete();
+                    } catch (RuntimeException e) {
+                        log.trace("Could not delete temporary file: " + file.getAbsolutePath(), e);
+                    }
                 }
             }
         } else {
             message = intres.getLocalizedMessage("validator.certificate.externalcommand.testfilemissing", getExternalCommand());
             log.info(message);
-        }
-        // Delete temporary file (file is written because of file upload).
-        if (file != null && file.exists()) {
-            try {
-                file.delete();
-            } catch(Exception | Error e) {
-                log.trace("Could not delete temporary file: " + file.getAbsolutePath(), e);
-            }
         }
         if (StringUtils.isNotBlank(message)) {
             throw new DynamicUiCallbackException(message);

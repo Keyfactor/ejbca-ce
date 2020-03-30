@@ -12,17 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.services;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
 import org.ejbca.ui.web.admin.services.servicetypes.CRLDownloadWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CRLUpdateWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
@@ -43,114 +37,75 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
  * Central class managing available services types. New workers, actions, intervals
- * should be registered in the class in order to proved GUI to it.
+ * should be registered in the class in order to provide GUI to it.
  * 
  * To this there is also a need for a JSFSubView page with it's managed beans.
+ * 
+ * This class currently hard-codes all classes, but could be rewritten to
+ * use ServiceLoader if needed.
  *
  * @version $Id$
  */
 public class ServiceTypeManager implements Serializable {
-	
-    /**
-     * Determines if a de-serialized file is compatible with this class.
-     *
-     * Maintainers must change this value if and only if the new version
-     * of this class is not compatible with old versions. See Sun docs
-     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
-     * /serialization/spec/version.doc.html> details. </a>
-     *
-     */
+
 	private static final long serialVersionUID = -7328709803784066077L;
 
-	private static Logger log = Logger.getLogger(ServiceTypeManager.class);
-	
-	// static variables common for the application
-	private static HashMap<String, ServiceType> availableTypesByName = new HashMap<>();
-	private static HashMap<String, ServiceType> availableTypesByClassPath = new HashMap<>();
-	private static ArrayList<ServiceType> workerTypes = new ArrayList<>();
-	
+	private final HashMap<String, ServiceType> availableTypesByName = new HashMap<>();
+	private final HashMap<String, ServiceType> availableTypesByClassPath = new HashMap<>();
+	private final ArrayList<ServiceType> workerTypes = new ArrayList<>();
 
-	private HashMap<?, ?> localAvailableTypesByName;
-	private HashMap<?, ?> localAvailableTypesByClassPath;
-	private ArrayList<ServiceType> localWorkerTypes;
-	
-	static{
-		ServiceTypeManager.registerServiceType(new CustomIntervalType());
-		ServiceTypeManager.registerServiceType(new PeriodicalIntervalType());
-		ServiceTypeManager.registerServiceType(new CustomActionType());
-		ServiceTypeManager.registerServiceType(new NoActionType());	
-		ServiceTypeManager.registerServiceType(new MailActionType());	
-		ServiceTypeManager.registerServiceType(new CustomWorkerType());
-        ServiceTypeManager.registerServiceType(new CRLDownloadWorkerType());
-		ServiceTypeManager.registerServiceType(new CRLUpdateWorkerType());
-		ServiceTypeManager.registerServiceType(new CertificateExpirationNotifierWorkerType());
-		ServiceTypeManager.registerServiceType(new UserPasswordExpireWorkerType());
-		ServiceTypeManager.registerServiceType(new RenewCAWorkerType());
-		ServiceTypeManager.registerServiceType(new RolloverWorkerType());
-		ServiceTypeManager.registerServiceType(new PublishQueueWorkerType());
-		ServiceTypeManager.registerServiceType(new HsmKeepAliveWorkerType());
-		ServiceTypeManager.registerServiceType(new OcspResponseUpdaterType());
-	}
-
-	@SuppressWarnings("unchecked")
-    public  ServiceTypeManager(){
-		// Create a deep clone of the static global data.
-		try{
-		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		  ObjectOutputStream oos = new ObjectOutputStream(baos);
-		  oos.writeObject(availableTypesByName);
-		  oos.writeObject(availableTypesByClassPath);
-		  oos.writeObject(workerTypes);
-		  ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		  ObjectInputStream ois = new ObjectInputStream(bais);
-		  localAvailableTypesByName = (HashMap<?, ?>) ois.readObject();
-		  localAvailableTypesByClassPath = (HashMap<?, ?>) ois.readObject();
-		  localWorkerTypes = (ArrayList<ServiceType>) ois.readObject();
-		}catch(IOException e){
-			log.error(e);
-		} catch (ClassNotFoundException e) {
-			log.error(e);
-		}
-
-		
+    public ServiceTypeManager() {
+        registerServiceType(new CustomIntervalType());
+        registerServiceType(new PeriodicalIntervalType());
+        registerServiceType(new CustomActionType());
+        registerServiceType(new NoActionType()); 
+        registerServiceType(new MailActionType());   
+        registerServiceType(new CustomWorkerType());
+        registerServiceType(new CRLDownloadWorkerType());
+        registerServiceType(new CRLUpdateWorkerType());
+        registerServiceType(new CertificateExpirationNotifierWorkerType());
+        registerServiceType(new UserPasswordExpireWorkerType());
+        registerServiceType(new RenewCAWorkerType());
+        registerServiceType(new RolloverWorkerType());
+        registerServiceType(new PublishQueueWorkerType());
+        registerServiceType(new HsmKeepAliveWorkerType());
+        registerServiceType(new OcspResponseUpdaterType());
 	}
 	
 	/**
-	 * Method that registers a service type in system.
-	 * Should mainly be called from the static block in this class.
-	 * @param serviceType
+	 * Registers a service type in this instance. Called by the constructor.
+	 * @param serviceType Service type to register
 	 */
-	public static void registerServiceType(ServiceType serviceType){		
+	private void registerServiceType(final ServiceType serviceType) {		
 		availableTypesByName.put(serviceType.getName(), serviceType);
-		if(!serviceType.isCustom()){
+		if (!serviceType.isCustom()) {
 			availableTypesByClassPath.put(serviceType.getClassPath(), serviceType);
 		}
-		if(serviceType instanceof WorkerType){
+		if (serviceType instanceof WorkerType) {
 			workerTypes.add(serviceType);
 		}
-		
 	}
 	
 	/**
 	 * Returns the service type with the given name.
 	 */
-	public  ServiceType getServiceTypeByName(String name){
-		return (ServiceType) localAvailableTypesByName.get(name);
+	public ServiceType getServiceTypeByName(String name) {
+		return availableTypesByName.get(name);
 	}
 	
 	/**
 	 * Returns the service type with the classpath or
 	 * null if the classpath should have a custom page.
 	 */
-	public ServiceType getServiceTypeByClassPath(String classPath){		
-		return (ServiceType) localAvailableTypesByClassPath.get(classPath);
+	public ServiceType getServiceTypeByClassPath(String classPath) {		
+		return availableTypesByClassPath.get(classPath);
 	}
 	
 	/**
 	 * @return returns all available workers in the GUI
 	 */
-	public Collection<ServiceType> getAvailableWorkerTypes(){
-		return localWorkerTypes;
+	public Collection<ServiceType> getAvailableWorkerTypes() {
+		return workerTypes;
 	}
 }
 

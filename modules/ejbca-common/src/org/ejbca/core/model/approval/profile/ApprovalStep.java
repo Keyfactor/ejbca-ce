@@ -15,16 +15,28 @@ package org.ejbca.core.model.approval.profile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.Base64;
+import org.cesecore.util.LookAheadObjectInputStream;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.DynamicUiPropertyCallback;
+import org.cesecore.util.ui.DynamicUiPropertyValidator;
+import org.cesecore.util.ui.MultiLineString;
+import org.cesecore.util.ui.RadioButton;
+import org.cesecore.util.ui.UrlString;
 
 /**
  * This class represents an approval step, to sum of which is a collective series of events, in serial order, which must occur for an approval
@@ -35,6 +47,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * @version $Id$
  *
  */
+@SuppressWarnings("deprecation")
 public class ApprovalStep implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -68,16 +81,21 @@ public class ApprovalStep implements Serializable {
     }
 
     /**
-     * Create an approval step from an encoded string
+     * Create an approval step from a base64 encoded string representing
+     * a serialized {@link ApprovalStep}.
      *
-     * @param encodedStep an approval step that has been encoded as a string
+     * @param encodedStep a serialized approval step encoded as a string.
      */
     public ApprovalStep(final String encodedStep) {
-        byte[] bytes = Base64.decode(encodedStep.getBytes());
-        try {
-            final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+        final byte[] bytes = Base64.decode(encodedStep.getBytes());
+        try (final LookAheadObjectInputStream ois = new LookAheadObjectInputStream(new ByteArrayInputStream(bytes))) {
+            ois.setEnabledMaxObjects(false);
+            ois.setAcceptedClasses(Arrays.asList(ApprovalStep.class, ApprovalPartition.class, LinkedHashMap.class, HashMap.class,
+                    DynamicUiProperty.class, DynamicUiPropertyCallback.class, Enum.class, ArrayList.class, DynamicUiPropertyValidator.class,
+                    RoleInformation.class, HashSet.class, AccessUserAspectData.class, AccessMatchType.class, RoleData.class, RadioButton.class, MultiLineString.class, 
+                    UrlString.class));
+            ois.setEnabledInterfaceImplementations(true, "org.cesecore.util.ui");
             final ApprovalStep step = (ApprovalStep) ois.readObject();
-            ois.close();
             this.id = step.getStepIdentifier();
             this.nextStep = step.getNextStep();
             this.previousStep = step.getPreviousStep();
@@ -85,7 +103,6 @@ public class ApprovalStep implements Serializable {
         } catch (IOException | ClassNotFoundException e) {
             throw new IllegalArgumentException("Could not decode encoded ApprovalStep", e);
         }
-
     }
 
     public String getEncoded() {

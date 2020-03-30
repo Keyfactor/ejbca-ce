@@ -48,7 +48,14 @@ public class RaExceptionHandlerFactory extends ExceptionHandlerFactory {
 
     private final ExceptionHandlerFactory parentExceptionHandlerFactory;
 
-    public RaExceptionHandlerFactory(final ExceptionHandlerFactory parent) {
+    public RaExceptionHandlerFactory(ExceptionHandlerFactory parent) {
+        while (parent instanceof RaExceptionHandlerFactory) {
+            log.warn("Attempted to wrap a RaExceptionHandlerFactory in a RaExceptionHandlerFactory");
+            if (parent == this) {
+                throw new IllegalStateException("Circular reference in exception handler");
+            }
+            parent = parent.getWrapped();
+        }
         this.parentExceptionHandlerFactory = parent;
     }
 

@@ -13,7 +13,10 @@
 
 package org.cesecore.util;
 
-import java.beans.XMLDecoder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,9 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
@@ -48,7 +48,7 @@ public class HashMapTest {
         //log.error(data);
         
         final HashMap<?, ?> b;
-        try (XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             b = (HashMap<?, ?>) decoder.readObject();
         }
         assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
@@ -74,7 +74,7 @@ public class HashMapTest {
         String data = baos.toString("UTF8");
         //log.error(data);
 
-        try (XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
         // We can get two different errors, I don't know if it is different java versions or what...
@@ -84,7 +84,7 @@ public class HashMapTest {
         } catch (ArrayIndexOutOfBoundsException e) {
             return;
         }
-        assertTrue(true);        	
+        assertTrue(true);
     }
     @Test
     public void testHashMapStrangeCharsSafe() throws Exception {
@@ -105,7 +105,7 @@ public class HashMapTest {
         String data = baos.toString("UTF8");
         //log.error(data);
 
-        try (XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             @SuppressWarnings("unchecked")
             HashMap<Object, Object> c = new Base64GetHashMap(b);
@@ -139,7 +139,7 @@ public class HashMapTest {
         String data = baos.toString("UTF8");
         //log.error(data);
 
-        try (XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
+        try (SecureXMLDecoder decoder = new  SecureXMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             @SuppressWarnings("unchecked")
             HashMap<Object, Object> c = new Base64GetHashMap(b);

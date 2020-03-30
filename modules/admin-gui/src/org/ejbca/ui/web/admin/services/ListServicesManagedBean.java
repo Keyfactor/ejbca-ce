@@ -22,7 +22,6 @@ import javax.faces.application.Application;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -49,16 +48,10 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	private String selectedServiceName;
 	private String newServiceName = "";
 
-	public ListServicesManagedBean() { }
+	public ListServicesManagedBean() { 
+	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
+	}
 	
-    public void initAccess() throws Exception {
-        // To check access 
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
-        }
-    }
-
 	public String getSelectedServiceName() {
 		return selectedServiceName;
 	}

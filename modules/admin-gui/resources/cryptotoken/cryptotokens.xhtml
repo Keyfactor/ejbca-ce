@@ -36,10 +36,8 @@
 	}
 //]]>
 </script>
-<f:metadata>
-	<f:event type="preRenderView" listener="#{cryptoTokenMBean.initialize}"/>
-</f:metadata>
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{cryptoTokenMBean}" />
 	<ui:define name="content">
 		<h:outputText value=""
 			rendered="#{cryptoTokenMBean.pageLoadResetTrigger}" />

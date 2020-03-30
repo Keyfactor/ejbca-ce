@@ -66,6 +66,10 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     private String publisherId;
     private boolean isLastPage;
 
+    public InspectPublisherQueueManagedBean() {
+        super(AccessRulesConstants.REGULAR_VIEWPUBLISHER);
+    }
+    
     /**
      * A publisher queue item, displayed as a row in the GUI.
      */

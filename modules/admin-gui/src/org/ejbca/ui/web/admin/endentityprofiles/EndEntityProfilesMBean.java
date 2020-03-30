@@ -33,7 +33,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
@@ -121,19 +120,16 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private String uploadFilename;
     private List<SelectItem> endEntityProfileItems = null;
 
-
+    public EndEntityProfilesMBean() {
+        super(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
+    }
+    
     @PostConstruct
     private void postConstruct() { 
-        try {
-            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-            profileSaved = null != FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getRequestParameterMap()
-                    .get(PARAMETER_PROFILE_SAVED);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        profileSaved = null != FacesContext.getCurrentInstance()
+            .getExternalContext()
+            .getRequestParameterMap()
+            .get(PARAMETER_PROFILE_SAVED);
     }
 
     public void preRenderView() {

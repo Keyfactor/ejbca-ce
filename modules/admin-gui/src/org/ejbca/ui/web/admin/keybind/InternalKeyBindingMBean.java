@@ -42,7 +42,6 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -114,13 +113,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     @EJB(description = "Used to reload ocsp signing cache when user disables the internal ocsp key binding.")
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
-    // Authentication check and audit log page access request
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.VIEW.resource());
-        }
+    public InternalKeyBindingMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.VIEW.resource());
     }
     
     public class GuiInfo {

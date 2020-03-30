@@ -26,13 +26,7 @@
 
 <h:body>
 	<ui:composition template="/WEB-INF/include/template.xhtml">
-	
-    <ui:define name="metadata">
-        <f:metadata>
-        	<f:event type="preRenderView" listener="#{importCaCertMBean.initAccess}" />
-        </f:metadata>
-    </ui:define>
-	
+    	<ui:param name="resourceBean" value="#{importCaCertMBean}" />	
 		<ui:define name="content">
 			<h2>
 				<h:outputText value="#{web.text.IMPORTCA_CERTIFICATE}" />

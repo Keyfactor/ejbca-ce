@@ -24,11 +24,9 @@
      version: $Id$
       -->
 </ui:remove>
-<f:metadata>
-	<f:event type="preRenderView" listener="#{internalKeyBindingMBean.initialize}"/>
-</f:metadata>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{internalKeyBindingMBean}" />
 	<ui:define name="content">
 
 	<h:outputText value="" rendered="#{internalKeyBindingMBean.pageLoadResetTrigger}"/>

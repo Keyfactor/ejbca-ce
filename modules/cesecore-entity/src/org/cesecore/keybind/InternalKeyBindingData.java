@@ -13,8 +13,11 @@
 
 package org.cesecore.keybind;
 
+import java.beans.XMLEncoder;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -26,11 +29,13 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 
 /**
  * Database representation of an InternalKeyBinding.
@@ -42,7 +47,7 @@ import org.cesecore.util.Base64PutHashMap;
 public class InternalKeyBindingData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(InternalKeyBindingData.class);
+    private static final Logger log = Logger.getLogger(InternalKeyBindingData.class);
 
     private int id;                 // Internal and static over time representation when referencing this object
     private String name;            // A human friendly representation of this object
@@ -176,29 +181,31 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
     @Transient
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Object, Object> getDataMap() {
-        try {
-            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getRawData().getBytes("UTF8")));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new java.io.ByteArrayInputStream(getRawData().getBytes(StandardCharsets.UTF_8)))) {
             final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
-            decoder.close();
             // Handle Base64 encoded string values
             final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
             return dataMap;
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);  // No UTF8 would be real trouble
+        } catch (IOException e) {
+            final String msg = "Failed to parse InternalKeyBindingData data map in database: " + e.getMessage();
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ". Data:\n" + getRawData());
+            }
+            throw new IllegalStateException(msg, e);
         }
     }
 
     @Transient
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void setDataMap(final LinkedHashMap<Object, Object> dataMap) {
+        // We must base64 encode string for UTF safety
+        final LinkedHashMap<?, ?> a = new Base64PutHashMap();
+        a.putAll((LinkedHashMap)dataMap);
+        final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         try {
-            // We must base64 encode string for UTF safety
-            final LinkedHashMap<?, ?> a = new Base64PutHashMap();
-            a.putAll((LinkedHashMap)dataMap);
-            final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-            final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-            encoder.writeObject(a);
-            encoder.close();
+            try (XMLEncoder encoder = new XMLEncoder(baos)) {
+                encoder.writeObject(a);
+            }
             final String data = baos.toString("UTF8");
             setRawData(data);
         } catch (UnsupportedEncodingException e) {

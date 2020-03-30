@@ -257,8 +257,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * Set the number of remaining login attempts. -1 means unlimited.
      *
-     * @param remainingLoginAttempts
-     *            The number to set
+     * @param remainingLoginAttempts The number to set
      */
     public void setRemainingLoginAttempts(int remainingLoginAttempts) {
         data.put(REMAININGLOGINATTEMPTS, remainingLoginAttempts);
@@ -322,8 +321,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
-     * @param sn
-     *            the serial number to be used for the certificate
+     * @param sn the serial number to be used for the certificate
      */
     public void setCertificateSerialNumber(BigInteger sn) {
         if (sn == null) {
@@ -342,10 +340,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      */
     public int getIssuanceRevocationReason() {
         int ret = RevokedCertInfo.NOT_REVOKED;
-            final String revocationReason = getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
-            if (revocationReason != null) {
-                ret = Integer.valueOf(revocationReason);
-            }
+        final String revocationReason = getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+        if (revocationReason != null) {
+            ret = Integer.valueOf(revocationReason);
+        }
         if (log.isDebugEnabled()) {
             log.debug("User issuance revocation reason is " + ret);
         }
@@ -353,10 +351,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
-    * Sets the issuance revocation code configured on the end entity extended information.
-    *
-    * @param reason issuance revocation code, a constant from RevokedCertInfo such as RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD.
-    */
+     * Sets the issuance revocation code configured on the end entity extended information.
+     *
+     * @param reason issuance revocation code, a constant from RevokedCertInfo such as RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD.
+     */
     public void setIssuanceRevocationReason(int reason) {
     	setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + reason);
     }
@@ -547,7 +545,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** @return the subject DN exactly as requested (via WS ) */
     public String getRawSubjectDn() {
         final String value = (String) data.get(RAWSUBJECTDN);
-        if (value == null || value.isEmpty()) {
+        if (StringUtils.isEmpty(value)) {
             return null;
         }
         // It could/should B64 encoded to avoid XML baddies
@@ -556,7 +554,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Gets generic string data from the ExtendedInformation map.
-     * @return a string from the ExtendedInformation map.
+     * @return a string from the ExtendedInformation map or null.
      */
     public String getMapData(String key) {
         String ret = null;

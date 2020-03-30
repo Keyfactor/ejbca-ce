@@ -24,7 +24,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 
-
 /**
  * BasePublisher is a basic class that should be inherited by all types
  * of publishers in the system.
@@ -255,6 +254,14 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     	// Performing upgrade routines
     }
     
-	
-
+    /**
+     * Utility method that must be implemented in the custom publisher classes (those which use a data-source) 
+     * and is used for validating the data source field. 
+     * See {@link CustomPublisherContainer#validateDataSource(String)} for a sample validation.
+     * 
+     * @param dataSource
+     * @throws PublisherException in case of invalid data source. 
+     * 
+     */
+    public abstract void validateDataSource(final String dataSource) throws PublisherException;
 }

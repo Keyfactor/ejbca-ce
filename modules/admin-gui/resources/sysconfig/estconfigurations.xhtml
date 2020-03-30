@@ -23,11 +23,8 @@
    -->
 </ui:remove>
 
-<f:metadata>
-  <f:event type="preRenderView" listener="#{estConfigMBean.initialize}"/>
-</f:metadata>
-
 <ui:composition template="/WEB-INF/include/template.xhtml">
+  <ui:param name="resourceBean" value="#{estConfigMBean}" />
   <ui:define name="content">
     <h1>
       <h:outputText value="#{estConfigMBean.authorizedToEdit ? web.text.ESTMANAGEALIASES : web.text.EST_VIEW_ALIASES}"/>

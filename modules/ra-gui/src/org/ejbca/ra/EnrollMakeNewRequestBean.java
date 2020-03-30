@@ -1170,7 +1170,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public final void checkSubjectDn() {
         try {
-
             final EndEntityInformation endEntityInformation = getEndEntityInformation();
             endEntityInformation.setCAId(getCAInfo().getCAId());
             if (log.isDebugEnabled()) {
@@ -1181,7 +1180,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } catch (AuthorizationDeniedException e) {
             log.error(e);
         } catch (EjbcaException e) {
-            if (e.getErrorCode().equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+            if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode())) {
                 FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
                         raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
             } else {

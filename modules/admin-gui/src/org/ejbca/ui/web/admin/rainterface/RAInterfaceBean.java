@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -126,7 +127,7 @@ public class RAInterfaceBean implements Serializable {
     		if (request.getAttribute( "javax.servlet.request.X509Certificate" ) != null) {
     			administrator = ejbcawebbean.getAdminObject();
     		} else {
-                administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("RAInterface", request.getRemoteAddr()));
+                administrator = new PublicAccessAuthenticationToken(request.getRemoteAddr(), true);
     		}
     		endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     		certificatesession = ejbLocalHelper.getCertificateStoreSession();

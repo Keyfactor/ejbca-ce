@@ -12,14 +12,16 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 /**
  * This is a helper classed that handles the serialization to and deserialization from XML.
@@ -30,15 +32,23 @@ import java.util.Map;
  */
 public class XmlSerializer {
 
+    private static final Logger log = Logger.getLogger(XmlSerializer.class);
+
 	@SuppressWarnings("unchecked")
     public static Map<String, Object> decode(final String input) {
 		Map<String, Object> ret = null;
 		if (input != null) {
-			try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)))) {
+            try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)))) {
                 final LinkedHashMap<String,Object> h = (LinkedHashMap<String,Object>) decoder.readObject();
-				// Handle Base64 encoded string values
-				ret = new Base64GetHashMap(h);
-			}
+                // Handle Base64 encoded string values
+                ret = new Base64GetHashMap(h);
+            } catch (IOException e) {
+                final String msg = "Failed to parse data map: " + e.getMessage();
+                if (log.isDebugEnabled()) {
+                    log.debug(msg + ". Data:\n" + input);
+                }
+                throw new IllegalStateException(msg, e);
+            }
 		}
 		return ret;
 	}

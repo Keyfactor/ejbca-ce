@@ -88,7 +88,7 @@ public class RaRoleMemberBean implements Serializable {
     private String matchValue;
     private String description;
 
-    public void initialize() throws AuthorizationDeniedException {
+    public void initialize() {
         if (tokenType != null && tokenTypeInfos != null) {
             // Don't re-initialize, that would overwrite the fields (tokenType, etc.)
             return;
@@ -97,18 +97,29 @@ public class RaRoleMemberBean implements Serializable {
         tokenTypeInfos = raMasterApiProxyBean.getAvailableRoleMemberTokenTypes(raAuthenticationBean.getAuthenticationToken());
 
         if (roleMemberId != null) {
-            roleMember = raMasterApiProxyBean.getRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberId);
-            roleId = roleMember.getRoleId();
-            tokenType = roleMember.getTokenType();
-            caId = roleMember.getTokenIssuerId();
-            matchKey = roleMember.getTokenMatchKey();                  
-            matchValue = roleMember.getTokenMatchValue();
-            description = roleMember.getDescription();
-            if (roleId != RoleMember.NO_ROLE) {
-                role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleId);
-                if (role == null) {
-                    log.debug("Reference to missing role with ID " + roleId + " in role member with ID " + roleMemberId);
+            try {
+                roleMember = raMasterApiProxyBean.getRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberId);
+                if (roleMember == null) {
+                    log.debug("Role member with ID " + roleMemberId + " was not found.");
+                    return;
                 }
+                roleId = roleMember.getRoleId();
+                tokenType = roleMember.getTokenType();
+                caId = roleMember.getTokenIssuerId();
+                matchKey = roleMember.getTokenMatchKey();
+                matchValue = roleMember.getTokenMatchValue();
+                description = roleMember.getDescription();
+                if (roleId != RoleMember.NO_ROLE) {
+                    role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleId);
+                    if (role == null) {
+                        log.debug("Reference to missing role with ID " + roleId + " in role member with ID " + roleMemberId);
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Authorization denied to role member " + roleMemberId + ". " + e.getMessage(), e);
+                }
+                roleMember = null;
             }
         } else {
             roleMember = new RoleMember("", RoleMember.NO_ISSUER, 0, 0, "", 0, "");
@@ -279,8 +290,6 @@ public class RaRoleMemberBean implements Serializable {
     /** Called when the token type is changed. Does nothing */
     public void update() {
     }
-    
-   
 
     public String save() throws AuthorizationDeniedException {
         final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
@@ -344,7 +353,7 @@ public class RaRoleMemberBean implements Serializable {
 
 
     public String getRemovePageTitle() {
-        return raLocaleBean.getMessage("remove_role_member_page_title", matchValue);
+        return raLocaleBean.getMessage("remove_role_member_page_title", StringUtils.defaultString(matchValue));
     }
 
     public String getRemoveConfirmationText() {

@@ -54,9 +54,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -111,6 +110,7 @@ import org.ejbca.util.HTMLTools;
  * The main bean for the web interface, it contains all basic functions.
  * <p>
  * Do not add page specific code here, use a ManagedBean for that.
+ * </p>
  *
  * @version $Id$
  */
@@ -179,7 +179,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         reloadAvailableCustomCertExtensionsConfiguration();
     }
 
-    private X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
+    @Override
+    public X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
         final X509Certificate[] certificates = (X509Certificate[]) httpServletRequest.getAttribute("javax.servlet.request.X509Certificate");
         return certificates == null || certificates.length==0 ? null : certificates[0];
     }
@@ -328,7 +329,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (!errorpage_initialized) {
             if (administrator == null) {
                 final String remoteAddr = request.getRemoteAddr();
-                administrator = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(remoteAddr));
+                administrator = new PublicAccessAuthenticationToken(remoteAddr, true);
             }
             commonInit();
             // Set ServletContext for reading language files from resources
@@ -1085,7 +1086,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (!isHelpEnabled()) {
             return "";
         }
-        return "[<a href=\"" + getHelpBaseURI() + lastPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" title=\""
+        return "[<a href=\"" + getHelpBaseURI() + lastPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" rel=\"noopener noreferer\" title=\""
                 + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
 
@@ -1094,7 +1095,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (!isHelpEnabled()) {
             return "";
         }
-        return "[<a href=\"" + linkPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
+        return "[<a href=\"" + linkPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" rel=\"noopener noreferer\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
 
     @Override

@@ -12,12 +12,13 @@
  *************************************************************************/
 package org.cesecore.profiles;
 
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,11 +26,12 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.profiles.Profile;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 
 /**
  * Implementation of the "ProfileData" table in the database
@@ -41,6 +43,7 @@ import org.cesecore.util.Base64PutHashMap;
 public class ProfileData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(ProfileData.class);
 
     private int id;
     private String profileName;
@@ -91,15 +94,17 @@ public class ProfileData extends ProtectedData implements Serializable {
     @Transient
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Object, Object> getDataMap() {
-        try {
-            XMLDecoder decoder = new  XMLDecoder(new ByteArrayInputStream(getRawData().getBytes("UTF8")));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(getRawData().getBytes(StandardCharsets.UTF_8)))) {
             final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
-            decoder.close();
             // Handle Base64 encoded string values
             final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
             return dataMap;
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);  // No UTF8 would be real trouble
+        } catch (IOException e) {
+            final String msg = "Failed to parse data map for " + profileType + " '" + profileName + "': " + e.getMessage();
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ". Data:\n" + getRawData());
+            }
+            throw new IllegalStateException(msg, e);
         }
     }
 

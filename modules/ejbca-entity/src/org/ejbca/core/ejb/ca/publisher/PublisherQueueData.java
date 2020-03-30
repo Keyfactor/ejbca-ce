@@ -13,8 +13,11 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.beans.XMLEncoder;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +38,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.GUIDGenerator;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
@@ -168,24 +172,26 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     @Transient
     public PublisherQueueVolatileInformation getPublisherQueueVolatileData() {
         PublisherQueueVolatileInformation ret = null;
-        try {
-            String vd = getVolatileData();
-            if ((vd != null) && (vd.length() > 0)) {
-                byte[] databytes = vd.getBytes("UTF8");
-                java.beans.XMLDecoder decoder;
-                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(databytes));
-                HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
-                decoder.close();
-                // Handle Base64 encoded string values
-                HashMap<?, ?> data = new Base64GetHashMap(h);
-                ret = new PublisherQueueVolatileInformation();
-                ret.loadData(data);
-                if (ret.isUpgraded()) {
-                    setPublisherQueueVolatileData(ret);
+        String vd = getVolatileData();
+        if ((vd != null) && (vd.length() > 0)) {
+            final byte[] databytes = vd.getBytes(StandardCharsets.UTF_8);
+            final HashMap<?, ?> h;
+            try (SecureXMLDecoder decoder = new SecureXMLDecoder(new java.io.ByteArrayInputStream(databytes))) {
+                h = (HashMap<?, ?>) decoder.readObject();
+            } catch (IOException e) {
+                final String msg = "Failed to parse PublisherQueueVolatileInformation map in database: " + e.getMessage();
+                if (log.isDebugEnabled()) {
+                    log.debug(msg + ". Data:\n" + vd);
                 }
+                throw new IllegalStateException(msg, e);
             }
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            // Handle Base64 encoded string values
+            HashMap<?, ?> data = new Base64GetHashMap(h);
+            ret = new PublisherQueueVolatileInformation();
+            ret.loadData(data);
+            if (ret.isUpgraded()) {
+                setPublisherQueueVolatileData(ret);
+            }
         }
         return ret;
     }
@@ -205,9 +211,9 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
             // typical size of XML is something like 250-400 chars
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(400);
-            java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-            encoder.writeObject(a);
-            encoder.close();
+            try (XMLEncoder encoder = new XMLEncoder(baos)) {
+                encoder.writeObject(a);
+            }
 
             try {
                 if (log.isDebugEnabled()) {

@@ -23,11 +23,8 @@
      -->
 </ui:remove>
 
-<f:metadata> 
-    <f:event type="preRenderView" listener="#{myPreferencesMBean.initialize}"/> 
-</f:metadata> 
-
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{myPreferencesMBean}" />
 	<ui:define name="content">
 		<h:panelGroup>
 			<h1>

@@ -28,9 +28,10 @@
                 <h1><h:outputText value="#{msg.endentity_page_top_title}"/></h1>
             </h:panelGroup>
             <h:panelGroup layout="block" class="content-body" id="content-body">
-                <h:outputText rendered="#{empty raEndEntityBean.username}" value="#{msg.endentity_page_info_nousername}"/>
-                <h:outputText rendered="#{not empty raEndEntityBean.username and empty raEndEntityBean.endEntity}" value="#{msg.endentity_page_info_nosuchee}"/>
-                <h:panelGroup rendered="#{not empty raEndEntityBean.endEntity}">
+                <h:outputText rendered="#{not raEndEntityBean.authorized}" value="#{msg.search_ees_page_error_unauthorized}"/>
+                <h:outputText rendered="#{raEndEntityBean.authorized and empty raEndEntityBean.username}" value="#{msg.endentity_page_info_nousername}"/>
+                <h:outputText rendered="#{raEndEntityBean.authorized and not empty raEndEntityBean.username and empty raEndEntityBean.endEntity}" value="#{msg.endentity_page_info_nosuchee}"/>
+                <h:panelGroup rendered="#{raEndEntityBean.authorized and not empty raEndEntityBean.endEntity}">
                     <h:form id="detailsForm" styleClass="pure-form">
                         <h:panelGroup styleClass="pure-u-1">
                             <h:panelGroup styleClass="pure-u-1-3">

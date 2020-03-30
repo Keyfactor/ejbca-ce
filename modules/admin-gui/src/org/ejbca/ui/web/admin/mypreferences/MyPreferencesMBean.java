@@ -19,9 +19,7 @@ import java.util.List;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -46,19 +44,12 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
     List<SelectItem> availableThemes;
     List<SelectItem> possibleEntriesPerPage;
 
-
-    // Authentication check and audit log page access request
-    public void initialize(final ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
-
-            adminPreference = getEjbcaWebBean().getAdminPreference();
-            initAvailableLanguages();
-            initThemes();
-            initPossibleEntriesPerPage();
-        }
+    public MyPreferencesMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR);
+        adminPreference = getEjbcaWebBean().getAdminPreference();
+        initAvailableLanguages();
+        initThemes();
+        initPossibleEntriesPerPage();
     }
 
     private void initAvailableLanguages() {

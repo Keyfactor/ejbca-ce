@@ -29,6 +29,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
@@ -51,6 +52,10 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
     @EJB
     private UserDataSourceSessionLocal userdatasourcesession;
 
+    public EditUserDatasoucesMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
+    }
+    
     public class DatasourceGui {
         private String name;
         private int type;

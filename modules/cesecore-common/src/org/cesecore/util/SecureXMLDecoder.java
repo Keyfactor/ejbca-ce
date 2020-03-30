@@ -35,8 +35,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.reflect.MethodUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -48,9 +55,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * 
  * <p>Currently unimplemented parts of the XML format:</p>
  * <ul>
- * <li>Multiple references to the same object (id/idref)</li>
  * <li>Non-Unicode characters in strings/chars</li>
- * <li>Deserialization of Class objects</li>
  * <li>Uncommon or custom collection types</li>
  * </ul>
  * 
@@ -63,13 +68,36 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * @version $Id$
  */
 public class SecureXMLDecoder implements AutoCloseable {
+    
+    private static final Logger log = Logger.getLogger(SecureXMLDecoder.class);
+    
     private final InputStream is;
+    private final boolean ignoreErrors;
     private final XmlPullParser parser;
     private boolean seenHeader = false;
     private boolean closed = false;
+    /** Map of id-to-object. Used to handle id references (idref) in the XML */
+    private Map<String,Object> objectIdMap = new HashMap<>();
     
+    public static final class NoValueException extends IOException {
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Creates a SecureXMLDecoder. Errors when calling readObject() will generate an IOException.
+     * @param is
+     */
     public SecureXMLDecoder(final InputStream is) {
+        this(is, false);
+    }
+    
+    /**
+     * @param is Input stream
+     * @param ignoreErrors If recoverable errors should be ignored.
+     */
+    public SecureXMLDecoder(final InputStream is, final boolean ignoreErrors) {
         this.is = is;
+        this.ignoreErrors = ignoreErrors;
         try {
             final XmlPullParserFactory fact = XmlPullParserFactory.newInstance();
             fact.setFeature(XmlPullParser.FEATURE_PROCESS_DOCDECL, false); // can be abused to cause exponential memory usage
@@ -85,6 +113,7 @@ public class SecureXMLDecoder implements AutoCloseable {
     @Override
     public void close() {
         closed = true;
+        objectIdMap = null;
         try {
             is.close();
         } catch (IOException e) {
@@ -154,9 +183,30 @@ public class SecureXMLDecoder implements AutoCloseable {
         return readValue(true);
     }
     
-    /** Reads an object, array or (boxed) elementary type value. */
+    /**
+     * Reads an object, array or (boxed) elementary type value.
+     * @throws XmlPullParserException On low level XML parse errors
+     * @throws IOException On not valid XMLEncoder XML
+     * @throws NoValueException If no value could be parsed
+     */
     private Object readValue(boolean disallowTextAfterElement) throws XmlPullParserException, IOException {
         final String tag = parser.getName();
+        final String id = parser.getAttributeValue(null, "id");
+        final String idRef = parser.getAttributeValue(null, "idref");
+        if (idRef != null) {
+            // This is a reference to an existing object, so there is no value in the XML
+            parser.nextTag();
+            expectEndTag(tag);
+            if (disallowTextAfterElement) {
+                parser.nextTag();
+            }
+            if (!objectIdMap.containsKey(idRef)) {
+                final String msg = errorMessage("Referenced object in 'idref' not found: '" + idRef + "'");
+                throwOrLog(msg, null);
+                throw new NoValueException();
+            }
+            return objectIdMap.get(idRef);
+        }
         final Object value;
         // Read the element contents depending on the type
         switch (tag) {
@@ -201,9 +251,9 @@ public class SecureXMLDecoder implements AutoCloseable {
             break;
         case "class":
             try {
-                //Only allow classes from our own hierarchy 
-                String className = readText();
-                if(!(className.startsWith("org.ejbca") || className.startsWith("org.cesecore"))) {
+                // Only allow classes from our own hierarchy 
+                final String className = readText();
+                if (!(className.startsWith("org.ejbca.") || className.startsWith("org.cesecore.") || className.startsWith("org.signserver."))) {
                     throw new IOException("Unauthorized class was decoded from XML: " + className);
                 }
                 value = Class.forName(className);
@@ -272,10 +322,30 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "org.cesecore.certificates.certificateprofile.PKIDisclosureStatement":
                 value = parseObject(new PKIDisclosureStatement());
                 break;
+            case "org.cesecore.certificates.endentity.EndEntityInformation":
+                // End Entity Type is not exported correctly by XMLEncoder,
+                // so we can't recover that property
+                value = parseObject(new EndEntityInformation());
+                break;
+            case "org.cesecore.certificates.endentity.ExtendedInformation":
+                value = parseObject(new ExtendedInformation());
+                break;
+            case "org.cesecore.keybind.InternalKeyBindingTrustEntry":
+                value = parseObject(new InternalKeyBindingTrustEntry());
+                break;
             case "org.ejbca.core.model.ra.raadmin.UserNotification":
+            case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
+            case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
+            case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
+            case "org.ejbca.core.protocol.acme.logic.AcmeOrderImpl":
+            case "org.ejbca.core.protocol.acme.storage.AcmeAccountImpl":
+            case "org.signserver.common.CertificateMatchingRule":
+            case "org.signserver.common.AuthorizedClient":
+            case "org.cesecore.util.SecureXMLDecoderTest$MockEnum":
+            case "org.cesecore.util.SecureXMLDecoderTest$MockObject":
                 try {
-                    // EJBCA class, so not available in CESeCore.
-                    // In the long run we should consider whitelisting parts of the org.ejbca and org.cesecore package namespaces (ECA-4916)
+                    // EJBCA, SignServer and test classes, so not available in CESeCore.
+                    // In the long run we should make the whitelisted class names configurable, e.g. by subclassing (ECA-4916)
                     value = parseObject(Class.forName(className).getConstructor().newInstance());
                 } catch (IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
                     throw new IOException(errorMessage("Deserialization of class '" + className + "' failed: " + e.getMessage()), e);
@@ -296,15 +366,22 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "java.lang.Enum":
                 parser.getName();
                 String enumType = readString();
+                if (!enumType.startsWith("org.cesecore.") && !enumType.startsWith("org.ejbca.") && !enumType.startsWith("org.signserver.")) {
+                    throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not allowed"));
+                }
                 parser.nextTag();
                 parser.getName();
-                String instance = readString();
+                String valueName = readString();
+                if (valueName.endsWith("INSTANCE")) {
+                    throw new IOException(errorMessage("Not allowed to use singleton \"" + valueName + "\" from enum type \"" + enumType + "\""));
+                }
                 try {
-                    @SuppressWarnings({ "rawtypes", "unchecked" })
-                    Enum<?> enumValue = Enum.valueOf((Class<? extends Enum>) Class.forName(enumType), instance);
+                    Enum<?> enumValue = Enum.valueOf(Class.forName(enumType).asSubclass(Enum.class), valueName);
                     value = enumValue;
                 } catch (ClassNotFoundException e) {
-                    throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not supported or not allowed."));
+                    throw new IOException(errorMessage("Enum class \"" + enumType + "\" was not found"), e);
+                } catch (IllegalArgumentException e) {
+                    throw new IOException(errorMessage("Invalid enum value \"" + valueName + "\" for enum type \"" + enumType + "\""), e);
                 }
                 method = null;
                 parser.nextTag();
@@ -330,6 +407,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         default:
             throw new IOException(errorMessage("Unsupported tag \"" + tag + "\"."));
         }
+        storeObjectById(id, value);
         
         expectEndTag(tag);
         if (disallowTextAfterElement) {
@@ -338,10 +416,22 @@ public class SecureXMLDecoder implements AutoCloseable {
         return value;
     }
     
+    private void storeObjectById(final String id, final Object value) {
+        if (id != null && value != null) {
+            // The object (or getter) has an ID, so it can be referenced again later
+            if (log.isTraceEnabled()) {
+                log.trace("Binding id '" + id + "' to " + value);
+            }
+            objectIdMap.put(id, value);
+        }
+    }
+
     private void expectEndTag(final String tag) throws XmlPullParserException, IOException {
         if (parser.getEventType() != XmlPullParser.END_TAG ||
                 !tag.equals(parser.getName())) {
-            throw new IOException(errorMessage("Expected end tag of " + tag + "."));
+            final String msg = "Cannot parse XML. Expected end tag of " + tag;
+            log.info(errorMessage(msg + ", but got type " + parser.getEventType() + ", name " + parser.getName()));
+            throw new IOException(errorMessage(msg));
         }
     }
     
@@ -363,6 +453,8 @@ public class SecureXMLDecoder implements AutoCloseable {
     
     /**
      * Reads a string, possibly containing &lt;char code="#xxx"/&gt; escapes.
+     *
+     * @returns String, never null.
      */
     private String readString() throws XmlPullParserException, IOException {
         final StringBuilder sb = new StringBuilder();
@@ -411,8 +503,8 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "double": elemClass = Double.TYPE; break;
             case "boolean": elemClass = Boolean.TYPE; break;
             default:
-                // Note that we do not instantiate the class, so this is OK security-wise
-                elemClass = Class.forName(className);
+                // Note that we do not instantiate or initialize the class, so this is OK security-wise
+                elemClass = Class.forName(className, false, getClass().getClassLoader());
             }
             
             final int length = Integer.parseInt(lengthStr);
@@ -545,42 +637,61 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
     }
     
-    /**
-     * Reads a property start tag, e.g. &lt;void property="name"&gt;.
-     * The data inside the void element is the property value.
-     */
-    private String readProperty() throws XmlPullParserException, IOException {
-        if (parser.getEventType() != XmlPullParser.START_TAG || !"void".equals(parser.getName())) {
-            throw new IOException(errorMessage("Expected <void> start tag."));
-        }
-        
-        final String property = parser.getAttributeValue(null, "property");
-        if (property == null) {
-            throw new IOException(errorMessage("Element <void> is missing a \"property\" attribute."));
-        }
-        parser.nextTag();
-        return property;
-    }
-    
     /** Parses an arbitrary object. Note that this method will allow any property to be set. */
     private Object parseObject(final Object obj) throws XmlPullParserException, IOException {
-        Class<?> klass = obj.getClass();
         while (true) {
             if (parser.getEventType() == XmlPullParser.END_TAG) {
                 break;
             }
             
-            final String property = readProperty();
-            final String method = "set" + property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
+            if (parser.getEventType() != XmlPullParser.START_TAG || !"void".equals(parser.getName())) {
+                throw new IOException(errorMessage("Expected <void> start tag."));
+            }
             
-            final Object value = readValue();
-            try {
-                final Method setter = klass.getMethod(method, value.getClass());
-                setter.invoke(obj, value);
-            } catch (NoSuchMethodException e) {
-                throw new IOException(errorMessage("Setter \"" + method + "\"(" + value.getClass().getName() + ") does not exist in class " + klass.getName() + "."), e);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-                throw new IOException(errorMessage("Method \"" + method + "\" could not be called."), e);
+            final String id = parser.getAttributeValue(null, "id");
+            final String property = parser.getAttributeValue(null, "property");
+            if (property == null) {
+                throw new IOException(errorMessage("Element <void> is missing a \"property\" attribute."));
+            }
+            parser.nextTag();
+            
+            final String methodBase = property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
+            final String setterName = "set" + methodBase;
+            
+            if (parser.getEventType() != XmlPullParser.END_TAG) {
+                try {
+                    final Object value = readValue(true);
+                    try {
+                        // invokeMethod handles mapping to primitive types and superclasses also, if the parameters don't match exactly
+                        MethodUtils.invokeMethod(obj, setterName, value);
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+                        throw new IOException(errorMessage("Method \"" + setterName + "\" could not be called."), e);
+                    } catch (NoSuchMethodException e) {
+                        throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null")), e);
+                    }
+                } catch (NoValueException e) {
+                    // Ignore
+                }
+            } else {
+                // Empty = call getter and store by ID
+                try {
+                    if (!methodExists(obj.getClass(), setterName)) {
+                        // Disallow getting non-properties as a safety measure
+                        throwOrLog(errorMessage("Property \"" + property + "\" has no setter and may not be used as a property"), null);
+                    } else {
+                        Object value;
+                        try {
+                            value = MethodUtils.invokeMethod(obj, "get" + methodBase, ArrayUtils.EMPTY_OBJECT_ARRAY);
+                        } catch (NoSuchMethodException e) {
+                            value = MethodUtils.invokeMethod(obj, "is" + methodBase, ArrayUtils.EMPTY_OBJECT_ARRAY);
+                        }
+                        storeObjectById(id, value);
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+                    throw new IOException(errorMessage("Getter for " + property + " could not be called."), e);
+                } catch (NoSuchMethodException e) {
+                    throwOrLog(errorMessage("Could not find a getter for " + property), e);
+                }
             }
             
             expectEndTag("void");
@@ -589,6 +700,24 @@ public class SecureXMLDecoder implements AutoCloseable {
         return obj;
     }
     
+    private boolean methodExists(final Class<?> klass, final String methodName) {
+        for (final Method method : klass.getMethods()) {
+            if (methodName.equals(method.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void throwOrLog(final String message, final Throwable cause) throws IOException {
+        if (ignoreErrors) {
+            // When ignoreErrors is true, errors are expected, so just log a debug level
+            log.debug(message, cause);
+        } else {
+            throw new IOException(message, cause);
+        }
+    }
+
     private String errorMessage(final String msg) {
         return msg + " (line: " + parser.getLineNumber() + ", column: " + parser.getColumnNumber() + ")";
     }

@@ -37,6 +37,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -74,7 +75,11 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         reloadRolesAndNameSpaces();
         editReset();
     }
-
+    
+    public RolesBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource());
+    }
+    
     /** @return true when admin is authorized to view roles */
     public boolean isAuthorizedToViewRoles() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.VIEWROLES.resource());

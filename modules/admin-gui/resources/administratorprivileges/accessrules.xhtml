@@ -22,7 +22,9 @@
      version: $Id$
      -->
     </ui:remove>
+    
     <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{accessRulesBean}" />
         <ui:define name="content">
             <h:panelGrid columns="2" styleClass="fullwidth">
                 <h:panelGroup>

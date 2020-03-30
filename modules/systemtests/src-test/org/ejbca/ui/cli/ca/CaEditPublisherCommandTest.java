@@ -26,6 +26,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Before;
@@ -66,7 +67,7 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws PublisherExistsException, AuthorizationDeniedException {
+    public void testExecuteHappyPath() throws PublisherExistsException, AuthorizationDeniedException, PublisherException {
         LdapPublisher publisher = new LdapPublisher();
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);

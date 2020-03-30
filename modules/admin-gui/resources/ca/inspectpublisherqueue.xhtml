@@ -26,6 +26,7 @@
 
 <body>
     <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:param name="resourceBean" value="#{inspectPublisherQueue}" />
         <ui:define name="content">
             <f:metadata>
                 <f:viewParam name="publisherId"
@@ -47,7 +48,7 @@
                                     value="#{web.text.INSPECT_PUBLISHER_QUEUE_DESCRIPTION_HEADER}" />
                             </f:facet>
                             <div>
-                                <h:outputLink rendered="#{item.canView}" value="#{item.link}"  target="_blank">
+                                <h:outputLink rendered="#{item.canView}" value="#{item.link}" rel="noopener noreferer" target="_blank">
                                     <h:outputText value="#{item.fingerprint}" />
                                 </h:outputLink>
                                 <h:outputText rendered="#{not item.canView}" value="#{item.fingerprint}" />

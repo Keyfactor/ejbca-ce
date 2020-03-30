@@ -172,6 +172,10 @@ public class JsfDynamicUiPsmFactory {
             } else if (DynamicUiProperty.RENDER_FILE_CHOOSER.equals(hint)) {
                 component = createFileChooserInstance(property);
             }
+        } else if (property.isByteArrayType()) {
+            if (DynamicUiProperty.RENDER_FILE_CHOOSER.equals(hint)) {
+                component = createFileChooserInstance(property);
+            }
         }
         if (component == null) {
             throw new DynamicUiModelException("DynamicUiRendering component could not be found: " + property);

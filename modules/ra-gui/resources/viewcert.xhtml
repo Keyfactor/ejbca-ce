@@ -28,7 +28,8 @@
                 <h1><h:outputText value="#{msg.viewcert_page_top_title}"/></h1>
             </h:panelGroup>
             <h:panelGroup layout="block" class="content-body" id="content-body">
-	            <h:form id="detailsForm" styleClass="pure-form">
+                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToSearchCerts}"/>
+	            <h:form id="detailsForm" styleClass="pure-form" rendered="#{raAccessBean.authorizedToSearchCerts}">
 	            	<h:panelGroup styleClass="pure-u-1">
 	            		<h:panelGroup styleClass="pure-u-1-3">
                             <h2><h:outputText value="#{msg.viewcert_page_title}"/></h2>

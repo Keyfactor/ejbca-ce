@@ -23,9 +23,6 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
@@ -83,12 +80,8 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR);
-        }
+    public AdminIndexMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR);
     }
 
     public List<CaCrlStatusInfo> getAuthorizedInternalCaCrlStatusInfos() throws Exception {
@@ -146,5 +139,9 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     
     public String getPublisherQueueInspectionLink(final String publisherName) {
         return "ca/inspectpublisherqueue.xhtml?publisherId=" + publisherSession.getPublisher(publisherName).getPublisherId();
+    }
+    
+    public boolean isAuthorizedToViewPublishers() {
+        return getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWPUBLISHER);
     }
 }

@@ -89,7 +89,7 @@ public abstract class BaseCertificateDataSessionBean {
         final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
         query.setMaxResults(maxResults);
         int firstResult = 0;
-        final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<>();
+        final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<>(RevokedCertInfo.class);
         while (true) {
             query.setFirstResult(firstResult);
             @SuppressWarnings("unchecked")

@@ -12,8 +12,10 @@
  *************************************************************************/  
 package org.cesecore.certificates.ca;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -33,6 +35,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.SecureXMLDecoder;
 
 /**
  * Representation of a CA instance.
@@ -168,16 +171,18 @@ public class CAData extends ProtectedData implements Serializable {
 
 	@Transient
 	public LinkedHashMap<Object, Object> getDataMap() {
-        try {
-            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes(StandardCharsets.UTF_8)))) {
             final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
-            decoder.close();
             // Handle Base64 encoded string values
             @SuppressWarnings("unchecked")
             final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
             return dataMap;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);  // No UTF8 would be real trouble
+        } catch (IOException e) {
+            final String msg = "Failed to parse data map for CA '" + getName() + "': " + e.getMessage();
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ". Data:\n" + getData());
+            }
+            throw new IllegalStateException(msg, e);
         }
 	}
 

@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -31,7 +32,6 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.legacy.Eca7277CertificateProfileData;
-import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
@@ -115,14 +115,19 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     public void setRowProtection(final String rowProtection) {
         this.rowProtection = rowProtection;
     }
-
+    
     @Transient
     private LinkedHashMap<?, ?> getData() {
-		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
+        final Serializable map = getDataUnsafe();
+        if (map instanceof LinkedHashMap<?, ?>) {
+            return (LinkedHashMap<?, ?>) map;
+        } else {
+            return new LinkedHashMap<>((Map<?, ?>) map);
+        }
     }
 
     private final void setData(final LinkedHashMap<?, ?> data) {
-        setDataUnsafe(JBossUnmarshaller.serializeObject(data));
+        setDataUnsafe(data);
     }
 
     /**

@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -32,11 +33,13 @@ import org.junit.Test;
  */
 public class DynamicUiPropertyTest {
 
+    final static private String roleName = "anybody";
+    
     @Test
     public void testEncodingAndDecodingOfComplexType() throws PropertyValidationException {
-        RoleData anybody = new RoleData(new Role(null, "anybody"));
+        RoleData anybody = new RoleData(new Role(null, roleName));
         DynamicUiProperty<RoleData> roleProperty = new DynamicUiProperty<>("test",
-                anybody, new HashSet<>(Arrays.asList(anybody)));
+                anybody, new HashSet<>(Collections.singletonList(anybody)));
         roleProperty.setHasMultipleValues(true);
         List<String> encodedValues = roleProperty.getEncodedValues();  
         DynamicUiProperty<RoleData> rolePropertyCopy = new DynamicUiProperty<>("test",
@@ -48,7 +51,7 @@ public class DynamicUiPropertyTest {
 
     @Test
     public void testConstructors() {
-        final RoleData anybody = new RoleData(new Role(null, "anybody"));
+        final RoleData anybody = new RoleData(new Role(null, roleName));
         DynamicUiProperty<RoleData> property = new DynamicUiProperty<>("someproperty", anybody);
         checkPropertyState(property, "constructor with default value");
 
@@ -58,8 +61,9 @@ public class DynamicUiPropertyTest {
 
     @Test
     public void testSetValue() throws PropertyValidationException {
-        final RoleData anybody = new RoleData(new Role(null, "anybody"));
+        final RoleData anybody = new RoleData(new Role(null, roleName));
         DynamicUiProperty<RoleData> property = new DynamicUiProperty<>();
+        property.setType(RoleData.class);
         property.setValue(anybody);
         checkPropertyState(property, "setValue(something)");
         assertEquals(anybody, property.getValue());
@@ -91,7 +95,7 @@ public class DynamicUiPropertyTest {
         assertNotNull("Should return an empty list, not null.", property.getValues());
         assertEquals("Should return an empty list.", 0, property.getValues().size());
         property.setValues(Arrays.asList("ABC"));
-        assertEquals("Should return {\"ABC\"}.", new ArrayList<>(Arrays.asList("ABC")), property.getValues());
+        assertEquals("Should return {\"ABC\"}.", new ArrayList<>(Collections.singletonList("ABC")), property.getValues());
         property.setValues(Arrays.asList("ABC", "123"));
         assertEquals("Should return {\"ABC\", \"123\"}.", new ArrayList<>(Arrays.asList("ABC", "123")), property.getValues());
         property.setValues(new ArrayList<>());

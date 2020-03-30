@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.HTMLTools;
 
 
 /**
@@ -58,11 +59,12 @@ public class ServletDebug {
             request.getRequestDispatcher("error.jsp").forward(request, response);
     	}
     	else{
+    	    errorform = HTMLTools.htmlescape(errorform);
     		int i = errorform.indexOf("@ERROR@");
     		if (i > 0){
     			errorform = errorform.substring (0, i) + errormessage + errorform.substring(i + 7);
     		}
-    		response.setContentType("text/html");
+    		response.setContentType("text/html;charset=UTF-8");
     		response.getOutputStream().print(errorform);
     	}
     }

@@ -107,6 +107,11 @@ public class MultiGroupPublisherUnitTest {
         public float getLatestVersion() {
             return 0;
         }
+        @Override
+        public void validateDataSource(String dataSource) throws PublisherException {
+            // Method not applicable for the publisher type.
+            
+        }
     }
 
     /**

@@ -13,8 +13,11 @@
  
 package org.ejbca.core.model.ra;
 
+import java.beans.XMLEncoder;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -24,6 +27,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 
 
@@ -271,11 +275,9 @@ public class UserDataVO implements Serializable {
     public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
         ExtendedInformation returnval = null;
         if ( (extendedinfostring != null) && (extendedinfostring.length() > 0) ) {
-            try {
-            	java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));            	
+            try (SecureXMLDecoder decoder = new SecureXMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)))) {            	
             	@SuppressWarnings("rawtypes")
                 HashMap h = (HashMap) decoder.readObject();
-            	decoder.close();
                 // Handle Base64 encoded string values
                 @SuppressWarnings("rawtypes")
                 HashMap data = new Base64GetHashMap(h);
@@ -286,7 +288,7 @@ public class UserDataVO implements Serializable {
               		returnval.loadData(data);
               		break;
             	}            	
-            }catch (Exception e) {
+            } catch (IOException e) {
             	throw new RuntimeException("Problems generating extended information from String",e);
             }
         }
@@ -301,15 +303,16 @@ public class UserDataVO implements Serializable {
             HashMap a = new Base64PutHashMap();
             a.putAll((HashMap)extendedinformation.saveData());
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-    		encoder.writeObject(a);
-    		encoder.close();
-    		ret = baos.toString("UTF8");
+    	    try (XMLEncoder encoder = new XMLEncoder(baos)) {
+                encoder.writeObject(a);
+    	    }
+    	    ret = baos.toString("UTF8");
     	}
     	return ret;
     }
 
-    /** @return the DN to be used when creating a certificate (without empty fields).
+    /**
+     * Returns the DN to be used when creating a certificate (without empty fields).
      * If the registered DN has unused DN fields the empty ones are kept, i.e.
      * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
      * Use method getCertificateDN() to get the DN stripped from empty fields, getDN() returns DN with empty fields.

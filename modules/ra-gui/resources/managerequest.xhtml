@@ -145,7 +145,7 @@
                     					<h:panelGroup layout="block">
                         					<h:outputText value="#{kvp.value}" rendered="#{not empty kvp.value and not raManageRequestBean.isValueUrl(kvp.value)}" styleClass="pure-u-lg-2-3 ra-outputText"/>
                         					<h:outputText value="&nbsp;" rendered="#{empty kvp.value}" styleClass="pure-u-lg-2-3 ra-outputText"/>
-                  					        <h:outputLink value="#{kvp.value}" target="_blank" rendered="#{raManageRequestBean.isValueUrl(kvp.value)}">
+                  					        <h:outputLink value="#{kvp.value}" target="_blank" rel="noopener noreferer" rendered="#{raManageRequestBean.isValueUrl(kvp.value)}">
   												<h:outputText value="#{kvp.value}"/>
   											</h:outputLink>
                     					</h:panelGroup>

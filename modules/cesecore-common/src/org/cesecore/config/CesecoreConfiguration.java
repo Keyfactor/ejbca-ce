@@ -272,15 +272,6 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * Option if we should keep JBoss serialized objects as such, or convert them to JPA/hibernate serialization. Used for backwards compatibility
-     * with older versions of EJBCA than 4.0.0.
-     */
-    public static boolean isKeepJbossSerializationIfUsed() {
-        final String value = ConfigurationHolder.getString("db.keepjbossserialization");
-        return value != null && value.trim().equalsIgnoreCase(TRUE);
-    }
-
-    /**
      * Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
      * Default to true. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
      * then internal keystore in CAData will be replaced with a foreign key in to the migrated entry in CryptotokenData.

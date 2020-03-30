@@ -15,6 +15,7 @@ package org.cesecore.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.beans.XMLDecoder;
@@ -24,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,6 +43,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.junit.Test;
 
 /**
@@ -145,6 +148,7 @@ public class SecureXMLDecoderTest {
         unmodifiable.add('A');
         unmodifiable.add('B');
         root.put("testemptylist", Collections.unmodifiableList(unmodifiable));
+        root.put("testbiginteger", new BigInteger("123456789123456789"));
         root.put("testbyte", Byte.valueOf((byte)123));
         root.put("testshort", Short.valueOf((short)12345));
         final Set<Object> set = new HashSet<>();
@@ -209,6 +213,94 @@ public class SecureXMLDecoderTest {
         log.trace("<testComplexEncodeDecode");
     }
     
+    private static final class MockObject {
+        private Integer integerValue;
+        private int intValue;
+        private boolean booleanValue;
+        public Integer getIntegerValue() { return integerValue; }
+        public void setIntegerValue(final Integer integerValue) { this.integerValue = integerValue; }
+        public int getIntValue() { return intValue; }
+        public void setIntValue(int intValue) { this.intValue = intValue; }
+        public boolean getBooleanValue() { return booleanValue; }
+        public void setBooleanValue(boolean booleanValue) { this.booleanValue = booleanValue; }
+    }
+
+    /** Tests properties with primitive types */
+    @Test
+    public void testPrimitiveTypeProperty() throws IOException {
+        log.trace(">testPrimitiveTypeProperty");
+        // Given
+        final MockObject obj = new MockObject();
+        obj.setIntegerValue(123);
+        obj.setIntValue(456);
+        obj.setBooleanValue(true);
+        // When
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(obj);
+        }
+        decodeCompare(baos.toByteArray());
+        log.trace("<testPrimitiveTypeProperty");
+    }
+    
+    /** Tests property with null value */
+    @Test
+    public void testNullProperty() throws IOException {
+        log.trace(">testNullProperty");
+        // Given
+        final CertificatePolicy certPolicy = new CertificatePolicy("2.999.123", null, null);
+        // When
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(certPolicy);
+        }
+        decodeCompare(baos.toByteArray());
+        log.trace("<testNullProperty");
+    }
+
+    /** Tests decoding of an empty object */
+    @Test
+    public void testEmptyObject() throws IOException {
+        log.trace(">testEmptyObject");
+        // Given
+        final CertificatePolicy certPolicy = new CertificatePolicy(null, null, null);
+        // When
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(certPolicy);
+        }
+        decodeCompare(baos.toByteArray());
+        log.trace("<testEmptyObject");
+    }
+
+    /** Tests properties with referenced object */
+    @Test
+    public void testReferencedObject() throws IOException {
+        log.trace(">testReferencedObject");
+        // Given
+        final PKIDisclosureStatement obj = new PKIDisclosureStatement("http://example.com", "sv");
+        final Map<String,Object> map = new LinkedHashMap<>();
+        map.put("A", obj);
+        map.put("B", obj);
+        // When
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(map);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("Encoded:\n" + baos.toString("UTF-8"));
+        }
+        final Map<?,?> decodedMap;
+        try (SecureXMLDecoder securedec = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            decodedMap = (Map<?,?>) securedec.readObject();
+        }
+        // Then
+        assertNotNull("Decoded map was null.", decodedMap);
+        assertEquals("Object was not equal after decoding.", obj, decodedMap.get("A"));
+        assertSame("Reference was not same.", decodedMap.get("A"), decodedMap.get("B"));
+        log.trace("<testReferencedObject");
+    }
+
     @Test
     public void testNotAllowedType() {
         log.trace(">testNotAllowedType");
@@ -388,6 +480,16 @@ public class SecureXMLDecoderTest {
                 final Object actualElem = Array.get(actual, i);
                 compareObjects(expectedElem, actualElem);
             }
+        } else if (expected instanceof CertificatePolicy) {
+            final CertificatePolicy expectedCertPolicy = (CertificatePolicy) expected;
+            final CertificatePolicy actualCertPolicy = (CertificatePolicy) actual;
+            assertEquals("Deserialized CertificatePolicy object differ", expectedCertPolicy, actualCertPolicy);
+        } else if (expected instanceof MockObject) {
+            final MockObject expectedMock = (MockObject) expected;
+            final MockObject actualMock = (MockObject) actual;
+            assertEquals("Deserialized Integer properties differ", expectedMock.getIntegerValue(), actualMock.getIntegerValue());
+            assertEquals("Deserialized int properties differ", expectedMock.getIntValue(), actualMock.getIntValue());
+            assertEquals("Deserialized boolean properties differ", expectedMock.getBooleanValue(), actualMock.getBooleanValue());
         } else {
             assertEquals("Deserialized values differ.", expected, actual);
         }

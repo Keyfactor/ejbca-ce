@@ -63,15 +63,13 @@ public class RadioButton implements Serializable {
             return false;
         RadioButton other = (RadioButton) obj;
         if (label == null) {
-            if (other.label != null)
-                return false;
-        } else if (!label.equals(other.label))
-            return false;
-        return true;
+            return other.label == null;
+        }
+        return label.equals(other.label);
     }
 
     public boolean equals(String encodedValue) {
-        return equals(DynamicUiProperty.getAsObject(encodedValue));
+        return equals(DynamicUiProperty.getAsObject(encodedValue, RadioButton.class));
     }
 
 

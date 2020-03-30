@@ -23,10 +23,9 @@
   $Id$
   -->
 </ui:remove>
-<f:metadata>
-	<f:event type="preRenderView" listener="#{adminIndexMBean.initialize}"/>
-</f:metadata>
+
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{adminIndexMBean}" />
     <ui:define name="content">
 
         <h:panelGroup class="version-info">
