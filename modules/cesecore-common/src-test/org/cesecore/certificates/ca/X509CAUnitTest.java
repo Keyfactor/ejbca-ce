@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -110,6 +112,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -1445,6 +1448,42 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         } catch (IllegalValidityException e) {
             fail("Back dated revoked certificate should have been created.");
         }
+    }
+    
+    /**
+     * Regression test to make sure that back dated link certificates are still allowed
+     */
+    @Test
+    public void testAllowBackdatedLinkCertificates() throws Throwable {
+        final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAllowValidityOverride(true);
+        //Two days ago
+        Date notBefore = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 2);
+        //One day ago
+        Date notAfter = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 1);
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA testCa = createTestCA(cryptoToken, caDn);
+        Method generateCertificate = X509CAImpl.class.getDeclaredMethod("generateCertificate", EndEntityInformation.class, RequestMessage.class,
+                PublicKey.class, int.class, Date.class, Date.class, CertificateProfile.class, Extensions.class, PublicKey.class, PrivateKey.class,
+                String.class, CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class,
+                boolean.class);
+        generateCertificate.setAccessible(true);
+        CAToken caToken = testCa.getCAToken();       
+        final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+        final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+        final EndEntityInformation cadata = new EndEntityInformation("nobody", testCa.getSubjectDN(), testCa.getSubjectDN().hashCode(), testCa.getSubjectAltName(), null,
+                0, new EndEntityType(EndEntityTypes.INVALID), 0, testCa.getCertificateProfileId(), null, null, 0, null);
+        try {
+            generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)), 0, notBefore, notAfter, certificateProfile,
+                    null, previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME, null, cceConfig, true, false);
+        } catch (InvocationTargetException e) {
+            if(e.getCause() instanceof IllegalValidityException) {
+            fail("Back dated revoked certificate should have been created.");
+            } else {
+                throw e.getCause();
+            }
+       }      
     }
 
     /**
