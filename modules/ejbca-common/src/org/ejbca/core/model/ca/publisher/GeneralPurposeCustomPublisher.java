@@ -308,4 +308,9 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
     public boolean isReadOnly() {
         return false;
     }
+
+    @Override
+    public void validateDataSource(String dataSource) throws PublisherException {
+        // Method not applicable for this publisher type
+    }
 } 

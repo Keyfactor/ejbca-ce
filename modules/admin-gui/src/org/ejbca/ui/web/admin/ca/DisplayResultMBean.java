@@ -27,8 +27,8 @@ import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
-
 
 /**
  * 
@@ -60,14 +60,9 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
     private String pkcs7link = StringUtils.EMPTY;
     private String caName;
     
-    public void initAccess() throws Exception {
-        // To check access 
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        }
-    }  
-    
+    public DisplayResultMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+    }
     
     @PostConstruct
     public void init() {
@@ -84,7 +79,7 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
         
         filemode = (Integer) requestMap.get("filemode");
         caName = (String) requestMap.get("caname");
-        caBean = (CAInterfaceBean) requestMap.get("cabean");
+        caBean = (CAInterfaceBean) requestMap.get(SESSION.CA_INTERFACE_BEAN);
         filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
 
         if (filemode == EditCaUtil.CERTGENMODE) {

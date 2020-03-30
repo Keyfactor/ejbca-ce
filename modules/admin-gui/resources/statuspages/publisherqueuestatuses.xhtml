@@ -26,7 +26,7 @@
 		<div class="status" id="publishqueuestatus"  >
 			<h4><h:outputText value="#{web.text.PUBLISHERQUEUESTATUS}"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Operations_Guide.html#Publisher%20Queue%20Status')}" escape="false"/></h4>
-			<h:panelGroup rendered="#{ejbcawebbean.adminPreference.frontpagePublisherQueueStatus}">
+			<h:panelGroup rendered="#{ejbcawebbean.adminPreference.frontpagePublisherQueueStatus and adminIndexMBean.authorizedToViewPublishers}">
 				<h:dataTable value="#{ejbcawebbean.authorizedPublisherNames}" var="publisherName"
 							 styleClass="grid">
 					<h:column>

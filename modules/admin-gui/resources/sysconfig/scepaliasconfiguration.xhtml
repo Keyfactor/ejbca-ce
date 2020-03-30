@@ -21,11 +21,9 @@
      $Id$
      -->
 </ui:remove>
-<f:metadata>
-	<f:event type="preRenderView" listener="#{scepConfigMBean.initialize}"/>
-</f:metadata>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{scepConfigMBean}" />
 	<ui:define name="content">
 	
 	<h1>

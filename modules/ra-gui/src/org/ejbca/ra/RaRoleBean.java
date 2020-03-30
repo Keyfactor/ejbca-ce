@@ -156,6 +156,7 @@ public class RaRoleBean implements Serializable {
             }
         } else {
             role = new Role(getDefaultNamespace(), "");
+            name = "";
         }
 
         // Get available access rules and their values in this role
@@ -273,11 +274,11 @@ public class RaRoleBean implements Serializable {
 
     public String getPageTitle() {
         if (!getCanEdit()) {
-            return raLocaleBean.getMessage("role_page_title_view", role.getRoleName());
+            return raLocaleBean.getMessage("role_page_title_view", name);
         } else if (roleId != null) {
-            return raLocaleBean.getMessage("role_page_title_edit", role.getRoleName());
+            return raLocaleBean.getMessage("role_page_title_edit", name);
         } else if (cloneFromRoleId != null) {
-            return raLocaleBean.getMessage("role_page_title_clone", role.getRoleName());
+            return raLocaleBean.getMessage("role_page_title_clone", name);
         } else {
             return raLocaleBean.getMessage("role_page_title_add");
         }
@@ -353,7 +354,7 @@ public class RaRoleBean implements Serializable {
                 raLocaleBean.addMessageError("role_page_error_already_exists_with_namespace", roleWithChanges.getRoleName(), roleWithChanges.getNameSpace());
             } else {
                 raLocaleBean.addMessageError("role_page_error_already_exists", roleWithChanges.getRoleName());
-            } 
+            }
             return "";
         }
         roleId = role.getRoleId();
@@ -361,7 +362,7 @@ public class RaRoleBean implements Serializable {
     }
 
     public String getDeletePageTitle() {
-        return raLocaleBean.getMessage("delete_role_page_title", role.getRoleName());
+        return raLocaleBean.getMessage("delete_role_page_title", name);
     }
 
     public String getDeleteConfirmationText() {

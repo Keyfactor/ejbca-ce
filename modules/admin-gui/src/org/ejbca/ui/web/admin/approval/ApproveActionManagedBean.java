@@ -137,18 +137,13 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    // Authentication check and audit log page access request
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            final boolean approveendentity = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-            final boolean approvecaaction = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
-            
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
-            if (!approveendentity && !approvecaaction) {
-                throw new AuthorizationDeniedException("Not authorized to view approval pages");
-            }
+    
+    public ApproveActionManagedBean() throws AuthorizationDeniedException {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR);
+        final boolean approveendentity = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        final boolean approvecaaction = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
+        if (!approveendentity && !approvecaaction) {
+            throw new AuthorizationDeniedException("Not authorized to view approval pages");
         }
     }
 
@@ -727,7 +722,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
          List<Integer> currentIds = new ArrayList<>();
 
          for (final String value : property.getEncodedValues()) {
-             RoleInformation roleInfo = (RoleInformation) DynamicUiProperty.getAsObject(value);
+             RoleInformation roleInfo = DynamicUiProperty.getAsObject(value, RoleInformation.class);
              currentIds.add(roleInfo.getIdentifier());
          }
 

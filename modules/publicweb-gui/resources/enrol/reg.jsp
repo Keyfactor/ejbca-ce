@@ -12,9 +12,9 @@
   <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
       For administrators: See the
       <% if ("internal".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
-          <a href="../doc/Self_Registration.html" target="<%= org.ejbca.config.GlobalConfiguration.DOCWINDOW %>">admin guide</a>
+          <a href="../doc/Self_Registration.html" target="<%= org.ejbca.config.GlobalConfiguration.DOCWINDOW %>" rel="noopener noreferer">admin guide</a>
       <% } else { %>
-          <a href="<%= org.ejbca.config.WebConfiguration.getDocBaseUri() %>/Self_Registration.html" target="<%= org.ejbca.config.GlobalConfiguration.DOCWINDOW %>">admin guide</a>
+          <a href="<%= org.ejbca.config.WebConfiguration.getDocBaseUri() %>/Self_Registration.html" target="<%= org.ejbca.config.GlobalConfiguration.DOCWINDOW %>" rel="noopener noreferer">admin guide</a>
       <% } %>
       for instructions on how to configure self-registration.
   <% } %>

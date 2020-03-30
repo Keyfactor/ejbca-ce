@@ -92,7 +92,7 @@ public class OcspTestUtils {
     }
 
     /**
-     * 
+     * Creates an internal key binding. Removes it if it already exists, for example from previous aborted or failed test runs.
      * @param authenticationToken
      * @param cryptoTokenId
      * @param type internal key binding typ, i.e. OcspKeyBinding.IMPLEMENTATION_ALIAS
@@ -114,6 +114,7 @@ public class OcspTestUtils {
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        removeInternalKeyBinding(authenticationToken, testName);
         // First create a new CryptoToken
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, testName)) {
             cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, KeyGenParams.builder(keyspec).build());

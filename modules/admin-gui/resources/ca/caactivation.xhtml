@@ -22,11 +22,9 @@
      @version $Id$
      -->
      </ui:remove>
-     <f:metadata>
-		<f:event type="preRenderView" listener="#{cAActivationMBean.initialize}"/>
-	</f:metadata>
 
      <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:param name="resourceBean" value="#{cAActivationMBean}" />
 	 	<ui:define name="content">
 	 		<h1>
 				<h:outputText value="#{web.text.ACTIVATECAS}"/>

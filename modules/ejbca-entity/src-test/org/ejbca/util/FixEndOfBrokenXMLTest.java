@@ -14,7 +14,6 @@ package org.ejbca.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.SecureXMLDecoder;
 import org.junit.Test;
 
 /**
@@ -55,21 +55,15 @@ public class FixEndOfBrokenXMLTest {
 			final byte brokenXml[] = Arrays.copyOf(xml, xml.length-nrOfBytesMissing);
 			final byte fixedXml[] = FixEndOfBrokenXML.fixXML(new String(brokenXml, CHAR_ENCODING), "string", "</void></object></java>").getBytes(CHAR_ENCODING);
 
-			final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(fixedXml));
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			final XMLEncoder encoder = new XMLEncoder(baos);
-            try {
-                try {
+            try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(fixedXml), true)) {
+                try (XMLEncoder encoder = new XMLEncoder(baos)) {
                     encoder.writeObject(decoder.readObject());
                 } catch (Throwable t) {
                     log.error("Exception: ", t);
                     notPossibleToRemoveMoreBytes(nrOfBytesMissing, brokenXml, limit);
                     return;
-                } finally {
-                    encoder.close();
                 }
-            } finally {
-                decoder.close();
             }
 			final byte decodedXml[] = baos.toByteArray();
 			if ( !Arrays.equals(xml,decodedXml) ) {
@@ -108,18 +102,12 @@ public class FixEndOfBrokenXMLTest {
 		assertFalse("Only possible to fix "+nrOfBytesMissing+" missing bytes. We should be able to handle "+limit+" missing bytes.", nrOfBytesMissing<limit);
 	}
 
-    private byte[] decodeAndEncode(final byte[] testXml) {
-        final XMLDecoder dec = new XMLDecoder(new ByteArrayInputStream(testXml));
+    private byte[] decodeAndEncode(final byte[] testXml) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            final XMLEncoder encoder = new XMLEncoder(baos);
-            try {
+        try (SecureXMLDecoder dec = new SecureXMLDecoder(new ByteArrayInputStream(testXml), true)) {
+            try (XMLEncoder encoder = new XMLEncoder(baos)) {
                 encoder.writeObject(dec.readObject());
-            } finally {
-                encoder.close();
             }
-        } finally {
-            dec.close();
         }
         return baos.toByteArray();
     }
