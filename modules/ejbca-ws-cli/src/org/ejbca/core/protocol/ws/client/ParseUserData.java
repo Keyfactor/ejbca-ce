@@ -33,6 +33,7 @@ class ParseUserData {
 	static final String qcEtsiPSD2RolesOfPsp = "QCETSIPSD2ROLESOFPSP";
     static final String qcEtsiPSD2Ncaname = "QCETSIPSD2NCANAME";
     static final String qcEtsiPSD2Ncaid = "QCETSIPSD2NCAID";
+    static final String CABFORGANIZATIONIDENTIFIER = "cabforganizationidentifier";
 	
 	private static final String hexPrefix = "0x";
 
@@ -73,6 +74,8 @@ class ParseUserData {
                 lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
             } else if ( key.equalsIgnoreCase(qcEtsiPSD2Ncaid) ) {
                 lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
+			} else if ( key.equalsIgnoreCase(CABFORGANIZATIONIDENTIFIER) ) {
+			    lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
 			}
 			if ( OID.isStartingWithValidOID(key) ) {
 				lei.add(new ExtendedInformationWS(key, value));
