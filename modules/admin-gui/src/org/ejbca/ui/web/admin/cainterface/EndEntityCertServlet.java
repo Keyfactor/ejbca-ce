@@ -19,19 +19,16 @@ import java.net.URLEncoder;
 import java.security.cert.Certificate;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 
 
@@ -48,7 +45,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  *
  * @version $Id$
  */
-public class EndEntityCertServlet extends HttpServlet {
+public class EndEntityCertServlet extends BaseAdminServlet {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(EndEntityCertServlet.class);
@@ -71,40 +68,6 @@ public class EndEntityCertServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doGet()");
-        // Check if authorized
-        EjbcaWebBean ejbcawebbean= (EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
-        
-        RAInterfaceBean rabean =  (org.ejbca.ui.web.admin.rainterface.RAInterfaceBean)
-                                   req.getSession().getAttribute("rabean");
-        if ( ejbcawebbean == null ){
-          try {
-            ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBeanImpl.class.getName());
-           } catch (ClassNotFoundException exc) {
-               throw new ServletException(exc.getMessage());
-           }catch (Exception exc) {
-               throw new ServletException (" Cannot create bean of class "+ EjbcaWebBeanImpl.class.getName(), exc);
-           }
-           req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
-        }
-        
-        if ( rabean == null ){
-            try {
-              rabean = (org.ejbca.ui.web.admin.rainterface.RAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
-             } catch (ClassNotFoundException exc) {
-                 throw new ServletException(exc.getMessage());
-             }catch (Exception exc) {
-                 throw new ServletException (" Cannot create bean of class "+ org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName(), exc);
-             }
-             req.getSession().setAttribute("rabean", ejbcawebbean);
-          }
-
-        try{
-          ejbcawebbean.initialize(req,AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-          rabean.initialize(req,ejbcawebbean);                    
-        } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");
-        }
-        
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = req.getParameter(ISSUER_PROPERTY);        
         String certificatesn = req.getParameter(CERTIFICATESN_PROPERTY);
@@ -124,8 +87,9 @@ public class EndEntityCertServlet extends HttpServlet {
         	// Fetch the certificate and at the same time check that the user is authorized to it.
         	
         	try {
-				rabean.loadCertificates(certsn, issuerdn);
-				CertificateView certview = rabean.getCertificate(0);
+        	    final RAInterfaceBean raBean = SessionBeans.getRaBean(req);
+				raBean.loadCertificates(certsn, issuerdn);
+				CertificateView certview = raBean.getCertificate(0);
 				if (certview == null) {
 				    throw new NotFoundException("No certificate exists with issuerDN '" + issuerdn + "', serial " + certsn.toString(16));
 				}
@@ -154,17 +118,14 @@ public class EndEntityCertServlet extends HttpServlet {
 				} else {
 					res.setContentType("text/plain");
 					res.getOutputStream().println("Commands="+COMMAND_NSCERT+" || "+COMMAND_IECERT+" || "+COMMAND_CERT);
-					return;
 				}
             } catch (Exception e) {
                 log.info("Error getting certificates: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
-                return;
             }
         } else {
             res.setContentType("text/plain");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
-            return;
         }
     } // doGet
 }

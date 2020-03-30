@@ -2,11 +2,13 @@ package org.cesecore.internal;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.lang.Thread.State;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.SecureXMLDecoder;
 import org.junit.Test;
 
 /**
@@ -66,11 +68,14 @@ public class UpgradeableDataHashMapTest {
         @SuppressWarnings("unchecked")
         @Override
         public void run() {
-            try (final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(decodeXML.getBytes(StandardCharsets.UTF_8)))) {
+            try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new java.io.ByteArrayInputStream(decodeXML.getBytes(StandardCharsets.UTF_8)))) {
                 final HashMap<Object,Object> h = (HashMap<Object,Object>) decoder.readObject();
                 for (Object o : h.keySet()) {
                     log.info(o.toString() + ": " + h.get(o));
                 }
+            } catch (IOException e) {
+                log.error("Failed to decode XML", e);
+                throw new IllegalStateException(e);
             }
         }
     }

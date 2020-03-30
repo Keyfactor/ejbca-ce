@@ -14,6 +14,7 @@ package org.cesecore.certificates.endentity;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -23,9 +24,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 
 
@@ -35,6 +38,8 @@ import org.cesecore.util.StringTools;
  * @version $Id$
  */
 public class EndEntityInformation implements Serializable {
+
+    private static final Logger log = Logger.getLogger(EndEntityInformation.class);
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -310,7 +315,7 @@ public class EndEntityInformation implements Serializable {
     public static ExtendedInformation getExtendedInformationFromStringData(final String extendedinfostring) {
         ExtendedInformation returnval = null;
         if (extendedinfostring != null && !extendedinfostring.isEmpty() ) {
-            try (final java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)));) {
+            try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)))) {
             	final HashMap<?, ?> data = (HashMap<?, ?>) decoder.readObject();
             	// No need to b64 decode Integer value, just read it
             	final int type = (Integer) data.get(ExtendedInformation.TYPE);
@@ -320,6 +325,11 @@ public class EndEntityInformation implements Serializable {
             	    returnval.loadData(data);
             	    break;
             	}
+            } catch (IOException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Failed to parse ExtendedInformation for End Entity. Data:\n" + extendedinfostring);
+                }
+                throw new IllegalStateException("Failed to parse ExtendedInformation data map for End Entity: " + e.getMessage(), e);
             }
         }
         return returnval;

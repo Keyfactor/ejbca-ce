@@ -20,10 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -55,13 +52,9 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
      */
     private boolean deleteInProgress = false;
 
-
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
+    public UserDatasoucesMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
     }
-
 
     public List<SelectItem> getUserDatasourceSeletItemList() {
         TreeMap<String, Integer> userdatasourcenames = getAuthorizedUserDataSourceNames();

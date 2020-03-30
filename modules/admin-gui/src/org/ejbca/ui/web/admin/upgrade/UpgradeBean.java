@@ -85,6 +85,10 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
     private void postConstruct() {
     }
 
+    public UpgradeBean() {
+        super("/system_functionality/edit_systemconfiguration");
+    }
+    
     /** @see UpgradeSessionLocal#isPostUpgradeNeeded() */
     public boolean isPostUpgradeRequired() {
         return upgradeSession.isPostUpgradeNeeded();

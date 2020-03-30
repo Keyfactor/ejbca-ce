@@ -25,11 +25,8 @@
      -->
 </ui:remove>
 
-<f:metadata>
-    <f:event type="preRenderView" listener="#{systemConfigMBean.initialize}"/>
-</f:metadata>
-
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{systemConfigMBean}" />
 	<ui:define name="content">
 
 	<h1>
@@ -623,11 +620,11 @@
                  action="#{systemConfigMBean.ctLogManager.addCtLog}"
                  rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
         </h:panelGrid>
-        <h:outputLink value="https://www.certificate-transparency.org/known-logs" target="_blank" styleClass="tableFooter">
+        <h:outputLink value="https://www.certificate-transparency.org/known-logs" target="_blank" rel="noopener noreferer" styleClass="tableFooter">
         	<h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS1}"/>
         </h:outputLink>
         <br/>
-        <h:outputLink value="https://support.apple.com/en-us/HT205280" target="_blank" styleClass="tableFooter">
+        <h:outputLink value="https://support.apple.com/en-us/HT205280" target="_blank" rel="noopener noreferer" styleClass="tableFooter">
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS2}"/>
         </h:outputLink>
         <div class="section-label">

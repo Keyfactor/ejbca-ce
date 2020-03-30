@@ -18,27 +18,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -47,15 +42,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.validation.KeyValidatorSessionLocal;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.ui.web.admin.cainterface.BaseAdminServlet;
 
 /**
  * Servlet used to export certificate profiles and end entity profiles in a downloadable zip file.<br>
@@ -70,7 +62,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  *
  * @version $Id$
  */
-public class ProfilesExportServlet extends HttpServlet {
+public class ProfilesExportServlet extends BaseAdminServlet {
 
     private static final long serialVersionUID = -8091852234056712787L;
     private static final Logger log = Logger.getLogger(ProfilesExportServlet.class);
@@ -81,12 +73,6 @@ public class ProfilesExportServlet extends HttpServlet {
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private KeyValidatorSessionLocal keyValidatorSession;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private WebAuthenticationProviderSessionLocal authenticationSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -103,8 +89,11 @@ public class ProfilesExportServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
-        final String type = request.getParameter("profileType");
+        final AuthenticationToken admin = getAuthenticationToken(request);
         final String profileId = request.getParameter("profileId");
+        final String type = request.getParameter("profileType");
+        final boolean exportCertificateProfiles = StringUtils.equalsIgnoreCase(type, "cp");
+        final boolean exportEndEntityProfiles = StringUtils.equalsIgnoreCase(type, "eep");
         String zipfilename = null;
         int exportedprofiles = 0;
         int totalprofiles = 0;
@@ -112,25 +101,12 @@ public class ProfilesExportServlet extends HttpServlet {
         ByteArrayOutputStream zbaos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(zbaos);
 
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        if (certs == null) {
-            throw new ServletException("This servlet requires certificate authentication!");
-        }
-
-        final Set<X509Certificate> credentials = new HashSet<>();
-        credentials.add(certs[0]);
-        AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-        AuthenticationToken authenticationToken = authenticationSession.authenticate(subject);
-        if (authenticationToken == null) {
-            throw new IOException("Authorization denied for certificate: " + CertTools.getSubjectDN(certs[0]));
-        }
-
-        if(StringUtils.equalsIgnoreCase(type, "cp")) {
+        if (exportCertificateProfiles) {
             zipfilename = "certprofiles.zip";
 
             final List<Integer> certificateProfileTypes = new ArrayList<>();
             certificateProfileTypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
-            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+            if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
                 //Only root users may use CA profiles
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_ROOTCA);
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_SUBCA);
@@ -139,7 +115,7 @@ public class ProfilesExportServlet extends HttpServlet {
             Collection<Integer> certprofids = new LinkedHashSet<>();
             if(profileId == null) {
                 for (Integer certificateProfileType : certificateProfileTypes) {
-                    certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
+                    certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, certificateProfileType));
                 }
             } else {
                 certprofids.add(Integer.valueOf(profileId));
@@ -179,15 +155,14 @@ public class ProfilesExportServlet extends HttpServlet {
                 }
             }
 
-        } else if(StringUtils.equalsIgnoreCase(type, "eep")) {
-
+        } else if (exportEndEntityProfiles) {
             zipfilename = "entityprofiles.zip";
 
             Collection<Integer> endentityprofids;
             if(profileId == null) {
-                endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+                endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_END_ENTITY);
             } else {
-                endentityprofids = Arrays.asList(Integer.valueOf(profileId));
+                endentityprofids = Collections.singletonList(Integer.valueOf(profileId));
             }
             totalprofiles = endentityprofids.size();
             log.info("Exporting non-fixed end entity profiles");
@@ -240,15 +215,12 @@ public class ProfilesExportServlet extends HttpServlet {
         log.trace("<doGet()");
     } // doGet
 
-    private byte[] getProfileBytes(UpgradeableDataHashMap profile) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(profile.saveData());
-        encoder.close();
-        byte[] ba = baos.toByteArray();
-        baos.close();
-        return ba;
+    private byte[] getProfileBytes(UpgradeableDataHashMap profile) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(profile.saveData());
+        }
+        return baos.toByteArray();
     }
-
 
 }

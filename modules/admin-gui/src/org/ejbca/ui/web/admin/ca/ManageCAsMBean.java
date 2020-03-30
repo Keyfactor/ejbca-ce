@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
-import java.beans.Beans;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,7 +25,6 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
@@ -35,6 +32,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
@@ -50,7 +48,6 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(ManageCAsMBean.class);
 
     @EJB
     private CaSessionLocal caSession;
@@ -69,29 +66,15 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     public void setCreateCaName(String createCaName) {
         this.createCaName = createCaName;
     }
-
-    public void initAccess() throws Exception {
-        // To check access 
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        }
-    }
     
+    public ManageCAsMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+    }
+
     @PostConstruct
-    public void init() {
+    public void init() throws Exception {
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
-        if (caBean == null) {
-            try {
-                caBean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(),
-                        CAInterfaceBean.class.getName());
-            } catch (ClassNotFoundException | IOException e) {
-                log.error("Error while instantiating the ca bean!", e);
-            }
-            request.getSession().setAttribute("cabean", caBean);
-        }
-        caBean.initialize(getEjbcaWebBean());
+        caBean = SessionBeans.getCaBean(request);
         cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caSession.getCAIdToNameMap();
     }

@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -32,7 +33,6 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -91,9 +91,15 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
 
 	@Transient
 	private LinkedHashMap<?, ?> getData() {
-		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
+        final Serializable map = getDataUnsafe();
+        if (map instanceof LinkedHashMap<?, ?>) {
+            return (LinkedHashMap<?, ?>) map;
+        } else {
+            return new LinkedHashMap<>((Map<?, ?>) map);
+        }	    
 	}
-	private void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+
+	private void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(data); }
 
     /**
      * Method that returns the end entity profile and updates it if necessary.
