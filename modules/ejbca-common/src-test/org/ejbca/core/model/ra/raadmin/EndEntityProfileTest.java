@@ -410,6 +410,7 @@ public class EndEntityProfileTest {
         certProfileWithExt.setUseCabfOrganizationIdentifier(true); // use extension in CP
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
+        profile.setCabfOrganizationIdentifierUsed(true);
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=CP Extension Check", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
@@ -424,6 +425,7 @@ public class EndEntityProfileTest {
         log.trace(">testUserEepCpExtensionsNoMatch");
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
+        profile.setCabfOrganizationIdentifierUsed(true);
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=CP Extension Check", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
