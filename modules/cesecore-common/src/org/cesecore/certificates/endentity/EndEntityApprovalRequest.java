@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,9 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.approval;
-
-import org.cesecore.certificates.endentity.EndEntityInformation;
+package org.cesecore.certificates.endentity;
 
 /**
  * Interface common for all approval requests regarding end entities.
