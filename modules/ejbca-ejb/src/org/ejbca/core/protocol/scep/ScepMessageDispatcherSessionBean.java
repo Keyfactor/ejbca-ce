@@ -69,6 +69,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -88,7 +89,6 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.EndEntityApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
@@ -432,12 +432,25 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(scepConfig.getRACertProfile(alias));
                 final String approvalProfileName = approvalProfileSession
                         .getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, ca.getCAInfo(), certificateProfile).getProfileName();
-                //We need to divine if the initial request was for an enrollment or a renewal. 
+                //We need to divine if the initial request was for an enrollment, issuance, renewal or a new attempt from a failed request
                 int approvalId;
-                if(endEntityAccessSession.findUser(username) == null || certificateStoreSession.findCertificatesByUsername(username).size() == 0) {
+                EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(username);
+                ResponseMessage resp;
+                if (endEntityInformation == null) {
+                    //Enrollment
                     approvalId = AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName);
                 } else {
-                    approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
+                    Class<? extends EndEntityApprovalRequest> cachedApprovalType = endEntityInformation.getExtendedInformation().getCachedApprovalType();
+                    if(cachedApprovalType == null) {
+                        // Likely Renewal prior to approval
+                        approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
+                    } else if (cachedApprovalType.equals(AddEndEntityApprovalRequest.class)) {
+                        //Issuance
+                        approvalId = AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName);
+                    } else {
+                        //Renewal post approval or new attempt from a failed request
+                        approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
+                    }
                 }
                 List<ApprovalDataVO> approvals = approvalSession.findApprovalDataVO(approvalId);         
                 //Iterate through the list, find the last approval available. We don't care if it's expired in this context.
@@ -449,11 +462,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 if (approval != null) {
                     //Approval is still around - which either means that it's been approved but not removed, rejected or is still waiting approval
                     //Verify that the transaction ID in the request is correct
-                    EndEntityInformation endEntityInformation = ((EndEntityApprovalRequest) approval.getApprovalRequest())
-                            .getEndEntityInformation();
+                    endEntityInformation = ((EndEntityApprovalRequest) approval.getApprovalRequest()).getEndEntityInformation();
                     ScepRequestMessage originalRequest = ScepRequestMessage
-                            .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());
-                    ResponseMessage resp;
+                            .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());           
                     //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
                     if (originalRequest == null) {
                         String failText = "SCEP request was not stored for user " + reqmsg.getUsername() + ", cannot continue with issuance.";
@@ -481,6 +492,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
                                 ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
                                 extendedInformation.cacheScepRequest(null);
+                                extendedInformation.cacheApprovalType(null);
                                 updatedEndEntityInformation.setExtendedInformation(extendedInformation);
                                 try {
                                     endEntityManagementSession.changeUserIgnoreApproval(administrator, updatedEndEntityInformation, false);
