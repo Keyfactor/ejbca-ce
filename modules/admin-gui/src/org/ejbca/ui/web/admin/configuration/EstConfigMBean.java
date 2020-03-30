@@ -18,10 +18,7 @@ import java.util.List;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -47,10 +44,8 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
      */
     private boolean deleteInProgress = false;
 
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+    public EstConfigMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
 
     public List<SelectItem> getEstConfigAliasesSeletItemList() {

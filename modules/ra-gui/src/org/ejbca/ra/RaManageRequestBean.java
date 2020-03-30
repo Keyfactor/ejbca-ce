@@ -120,6 +120,10 @@ public class RaManageRequestBean implements Serializable {
 
     public void initializeRequestInfo() {
         if (requestInfo == null) {
+            if (!raAccessBean.isAuthorizedToManageRequests()) {
+                log.debug("Not authorized to manage requests");
+                return;
+            }
             if (!StringUtils.isBlank(idParam)) {
                 final int id = Integer.parseInt(idParam);
                 loadRequest(id);
@@ -153,7 +157,7 @@ public class RaManageRequestBean implements Serializable {
     }
 
     public String getPageTitle() {
-        return raLocaleBean.getMessage("view_request_page_title", requestInfo.getDisplayName());
+        return raLocaleBean.getMessage("view_request_page_title", requestInfo != null ? requestInfo.getDisplayName() : "");
     }
 
     public boolean isViewDataVisible() { return !editing; }

@@ -22,11 +22,8 @@
      -->
 </ui:remove>
 
-<f:metadata>
-    <f:event type="preRenderView" listener="#{editCmpConfigMBean.authorize}"/>
-</f:metadata>
-
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{editCmpConfigMBean}" />
 	<ui:define name="content">
 
 		<h2><h:outputText value="#{cmpConfigMBean.authorizedToEdit ? web.text.CMPEDITALIAS : web.text.CMP_VIEW_ALIAS}" /></h2>

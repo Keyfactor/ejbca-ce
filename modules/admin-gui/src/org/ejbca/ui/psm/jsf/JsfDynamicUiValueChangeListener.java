@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.psm.jsf;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -25,8 +24,6 @@ import javax.faces.event.ValueChangeListener;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.cesecore.util.ExternalProcessException;
-import org.cesecore.util.ExternalProcessTools;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -82,21 +79,17 @@ public class JsfDynamicUiValueChangeListener implements Serializable, ValueChang
             log.debug("Registered UIComponent " + eventSource + " for dynamic UI property " + property.getName() + " single value changed from "
                     + property.getValue() + " to " + value + ".");
         }
-        if (!property.isFileType()) {
-            property.setValueGenericIncludeNull((Serializable) value);
-        } else {
-            if (value instanceof UploadedFile) {
-                final String fileName = ((UploadedFile) value).getName();
-                try {
-                    final File file = ExternalProcessTools.writeTemporaryFileToDisk(fileName, /* use .tmp as file extension */ null,
-                            ((UploadedFile) value).getBytes());
-                    property.setValueGenericIncludeNull(file);
-                } catch (ExternalProcessException | IOException e) {
-                    if (log.isTraceEnabled()) {
-                    	log.trace("Could not delete temp. file " + fileName + ": " + e.getMessage(), e);
-                    }
+        if (value instanceof UploadedFile) {
+            final String fileName = ((UploadedFile) value).getName();
+            try {
+                property.setValueGenericIncludeNull(((UploadedFile) value).getBytes());
+            } catch (IOException e) {
+                if (log.isTraceEnabled()) {
+                	log.trace("Could not delete temp. file " + fileName + ": " + e.getMessage(), e);
                 }
             }
+        } else {
+            property.setValueGenericIncludeNull((Serializable) value);
         }
     }
 

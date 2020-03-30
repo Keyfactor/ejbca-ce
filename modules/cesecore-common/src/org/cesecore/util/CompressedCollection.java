@@ -15,18 +15,21 @@ package org.cesecore.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.apache.commons.collections.SetUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -51,9 +54,14 @@ public class CompressedCollection<T extends Serializable> implements Collection<
     private ObjectOutputStream oos = null;
     private byte[] compressedData = null;
     private int size = 0;
-    private final List<ObjectInputStream> oiss = new ArrayList<>();
+    private final List<LookAheadObjectInputStream> oiss = new ArrayList<>();
+    private final Set<Class<? extends Serializable>> acceptedClasses;
 
-    public CompressedCollection() {
+    @SafeVarargs
+    public CompressedCollection(final Class<T> elementClass, final Class<? extends Serializable>... nestedClasses) {
+        acceptedClasses = SetUtils.typedSet(new HashSet<>(nestedClasses.length + 1), Serializable.class); // generic varargs are not type safe
+        acceptedClasses.add(elementClass);
+        acceptedClasses.addAll(Arrays.asList(nestedClasses));
         clear();
     }
     
@@ -107,7 +115,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
         size = 0;
         compressedData = null;
         // Clean up all InputStreams, unless this has already been done
-        for (final ObjectInputStream ois : oiss) {
+        for (final LookAheadObjectInputStream ois : oiss) {
             try {
                 ois.close();
             } catch (IOException e) {
@@ -175,12 +183,14 @@ public class CompressedCollection<T extends Serializable> implements Collection<
         // Create a new decompression stream over the data that belongs to the Iterator
         final ByteArrayInputStream bais = new ByteArrayInputStream(compressedData);
         final InflaterInputStream iis = new InflaterInputStream(bais);
-        final ObjectInputStream ois;
+        final LookAheadObjectInputStream ois;
         if (compressedData.length==0) {
             ois = null;
         } else {
             try {
-                ois = new ObjectInputStream(iis);
+                ois = new LookAheadObjectInputStream(iis);
+                ois.setAcceptedClasses(acceptedClasses);
+                ois.setEnabledMaxObjects(false);
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }

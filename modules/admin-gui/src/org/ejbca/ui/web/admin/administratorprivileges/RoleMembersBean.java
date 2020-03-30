@@ -52,6 +52,7 @@ import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -97,6 +98,10 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private void postConstruct() {
         // Read HTTP param "roleId" that should be interpreted as an integer
         roleIdParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("roleId");
+    }
+    
+    public RoleMembersBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource());
     }
     
     /** Redirect back to this page with the correct roleId for non-ajax requests */

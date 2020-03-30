@@ -32,10 +32,8 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -91,14 +89,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     private static final String CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX = "CRYPTOTOKEN_LABEL_TYPE_";
 
-    public void initialize(ComponentSystemEvent event) throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, CryptoTokenRules.VIEW.resource());
-        }
+    public CryptoTokenMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, CryptoTokenRules.VIEW.resource());
     }
-
+    
     /**
      * GUI table representation of a CryptoToken that can be interacted with.
      */

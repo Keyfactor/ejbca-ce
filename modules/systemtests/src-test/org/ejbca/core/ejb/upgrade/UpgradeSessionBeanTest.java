@@ -107,6 +107,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -163,6 +164,10 @@ public class UpgradeSessionBeanTest {
     @BeforeClass
     public static void beforeClass() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        // Clean up from previous aborted tests
+        CaTestUtils.removeCa(alwaysAllowtoken, "NoActions", "NoActions");
+        CaTestUtils.removeCa(alwaysAllowtoken, "TwoApprovals", "TwoApprovals");
+        CaTestUtils.removeCa(alwaysAllowtoken, "ThreeApprovals", "ThreeApprovals");
         // Add dummy CA
         CaTestUtils.removeCa(alwaysAllowtoken, TESTCA, TESTCA);
         final X509CA ca = CaTestUtils.createTestX509CA("CN=" + TESTCA, "foo123".toCharArray(), false);
@@ -332,7 +337,7 @@ public class UpgradeSessionBeanTest {
        //This CA should not be assigned an approval profile on account of lacking approvals
        List<Integer> approvalRequirements = new ArrayList<>();
        approvalRequirements.add(ApprovalRequestType.ACTIVATECA.getIntegerValue());
-      
+
        //This CA should not be assigned an approval profile on account of lacking any actions
        X509CA noActionsCa =  CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
        noActionsCa.setNumOfRequiredApprovals(2);
@@ -746,6 +751,7 @@ public class UpgradeSessionBeanTest {
         //This Certificate profile should not be assigned an approval profile on account of lacking any actions
         CertificateProfile noApprovals = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         final String noApprovalsName = "noApprovals";
+        certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, noApprovalsName); // clean up from previous aborted tests
         certificateProfileSession.addCertificateProfile(alwaysAllowtoken, noApprovalsName, noApprovals);
 
         ApprovalProfile requireTwoApprovals = new AccumulativeApprovalProfile("testUpgradeTo680Approvals");
@@ -758,6 +764,7 @@ public class UpgradeSessionBeanTest {
         List<Integer> approvalSettings = new ArrayList<>(Arrays.asList(ApprovalRequestType.ACTIVATECA.getIntegerValue(), ApprovalRequestType.KEYRECOVER.getIntegerValue()));
         withApprovals.setApprovalSettings(approvalSettings);
         final String withApprovalsName = "withApprovals";
+        certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, withApprovalsName);
         certificateProfileSession.addCertificateProfile(alwaysAllowtoken, withApprovalsName, withApprovals);
 
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
@@ -1176,7 +1183,7 @@ public class UpgradeSessionBeanTest {
     }
 
     @Test
-    public void testExternalScriptsSetting() throws AuthorizationDeniedException, PublisherExistsException {
+    public void testExternalScriptsSetting() throws AuthorizationDeniedException, PublisherExistsException, PublisherException {
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean savedEnableExternalScripts = gc.getEnableExternalScripts();
         gc.setEnableExternalScripts(true);

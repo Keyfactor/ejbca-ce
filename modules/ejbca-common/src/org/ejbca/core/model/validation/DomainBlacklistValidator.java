@@ -36,8 +36,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -101,7 +101,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     private static final String TEST_RESULT_KEY = "test_result";
 
     private static final int MAX_LOG_DOMAINS = 100;
-    
+
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
 
@@ -116,7 +116,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             this.checkers = checkers;
         }
     }
-    
+
     @Override
     public List<Integer> getApplicablePhases() {
         return new ArrayList<>(Arrays.asList(IssuancePhase.DATA_VALIDATION.getIndex(), IssuancePhase.APPROVAL_VALIDATION.getIndex()));
@@ -147,16 +147,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
     }
 
-    /** Replaces the existing domain blacklist with the uploaded one. Takes a File object. 
-     * @throws DomainBlacklistFileException */
-    private void changeBlacklist(File file) throws DomainBlacklistFileException {
-        try {
-            final byte[] bytes = FileUtils.readFileToByteArray(file);
-            changeBlacklist(bytes);
-        } catch (IOException e) {
-            throw new DomainBlacklistFileException("Unable to parse domain black list. " + e.getMessage());
-        }
-    }
 
     /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. 
      * @throws DomainBlacklistFileException */
@@ -278,19 +268,12 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 final Map<String, Object> rawData = super.getRawData();
                 // Parse file data
                 final DynamicUiProperty<?> uploadUiProperty = getProperties().get(BLACKLIST_UPLOAD_KEY);
-                final File uploadedFile = (File) uploadUiProperty.getValue();
+                final byte[] uploadedFile = (byte[]) uploadUiProperty.getValue();
                 if (uploadedFile != null) {
-                    if (!uploadedFile.exists()) {
-                        throw new DomainBlacklistFileException("Please select the blacklist file again.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Parsing uploaded file: " + uploadedFile);
                     }
-                    try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Parsing uploaded file: " + uploadedFile.getName());
-                        }
-                        changeBlacklist(uploadedFile);
-                    } finally {
-                        uploadedFile.delete();
-                    }
+                    changeBlacklist(uploadedFile);
                 } else {
                     log.debug("No new blacklist file was uploaded.");
                 }

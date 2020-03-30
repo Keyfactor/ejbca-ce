@@ -218,7 +218,7 @@ public class ContentSecurityPolicyFilter implements Filter {
         httpResponse.setHeader("Feature-Policy", "vibrate 'none'; autoplay 'none'; camera 'none'; microphone 'none'; midi 'none'; gyroscope 'none'; accelerometer 'none'; magnetometer 'none'; payment 'none'" );            
         // Referrer policy: https://www.w3.org/TR/referrer-policy/
         httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade" );            
-        
+
         /* Step 3 : Let request continue chain filter */
         fchain.doFilter(request, response);
     }
