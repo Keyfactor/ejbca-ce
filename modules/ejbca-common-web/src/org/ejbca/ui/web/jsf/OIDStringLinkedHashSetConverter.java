@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web;
+package org.ejbca.ui.web.jsf;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,14 +35,14 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
  * The converter makes validation on the OID inputs when converting String input to LinkedHashSet.
  * 
  * To Use:
- * <h:inputText ... converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
+ * <h:inputText ... converter="org.ejbca.OIDStringLinkedHashSetConverter"/>
  *  
  * @version $Id$
  */
-@FacesConverter(value="org.ejbca.OidsObjectLinkedHashSetConverter")
-public class OidsObjectLinkedHashSetConverter implements Converter {
+@FacesConverter(value="org.ejbca.OIDStringLinkedHashSetConverter")
+public class OIDStringLinkedHashSetConverter implements Converter {
     
-    private static final Logger log = Logger.getLogger(OidsObjectLinkedHashSetConverter.class);
+    private static final Logger log = Logger.getLogger(OIDStringLinkedHashSetConverter.class);
 
     
     /** Input in the JSF page, convert to LinkedHashSet, which is what is used in the CertificateProfile to store in the database
@@ -101,7 +101,7 @@ public class OidsObjectLinkedHashSetConverter implements Converter {
             // or throw a ConverterException prompting the user to enter a valid OID 
             return StringUtils.join(l, ",");
         } else {
-            throw new IllegalArgumentException( "Cannot convert " + value.getClass() + " object to LinkedHashSet in OidsObjectLinkedHashSetConverter." );                
+            throw new IllegalArgumentException( "Cannot convert " + value.getClass() + " object to LinkedHashSet in OIDStringLinkedHashSetConverter." );                
         }
     }
 }

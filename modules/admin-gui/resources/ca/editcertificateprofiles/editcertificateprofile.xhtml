@@ -391,7 +391,7 @@
                                 title="#{web.text.FORMAT_OIDS}"
                                 value="#{certProfileBean.overridableExtensionOIDs}"
                                 disabled="#{certProfileBean.viewOnly}"
-                                converter="org.ejbca.OidsObjectLinkedHashSetConverter" />
+                                converter="org.ejbca.OIDStringLinkedHashSetConverter" />
                             <h:selectBooleanCheckbox
                                 id="checkcustomnonoverridableextension"
                                 value="#{certProfileBean.nonOverridableExtensionOIDs}"
