@@ -1684,7 +1684,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public EndEntityInformation searchUser(final AuthenticationToken admin, String username) {
-        return endEntityAccessSession.findUser(username);
+        try {
+            return endEntityAccessSession.findUser(admin, username);
+        } catch (AuthorizationDeniedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Not authorized to end entity '" + username + "'");
+            }
+            return null;
+        }
     }
 
     @Override

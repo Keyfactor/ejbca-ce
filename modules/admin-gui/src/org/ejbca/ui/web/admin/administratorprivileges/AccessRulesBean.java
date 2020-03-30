@@ -313,6 +313,10 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         reinitSelection();
     }
 
+    public AccessRulesBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource());
+    }
+    
     /** Perform POST-REDIRECT-GET when this method is invoked from a non-AJAX context. */
     private void nonAjaxPostRedirectGet() {
         String requestParams = "?roleId=" + role.getRoleId();

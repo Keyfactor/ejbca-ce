@@ -88,6 +88,10 @@ public class ValidatorsBean extends BaseManagedBean {
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
     
+    public ValidatorsBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
+    }
+    
     /**
      * Gets the selected validator ID.
      * @return the ID.

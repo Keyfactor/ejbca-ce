@@ -20,11 +20,8 @@
      -->
 </ui:remove>
 
-<f:metadata>
-    <f:event type="preRenderView" listener="#{acmeConfigMBean.authorize}"/>
-</f:metadata>
-
 <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{acmeConfigMBean}" />
 	<ui:define name="content">
 	
 	<h1>

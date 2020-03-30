@@ -16,10 +16,17 @@ package org.cesecore.configuration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
@@ -29,11 +36,19 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.config.RaStyleInfo;
+import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.JBossUnmarshaller;
+import org.cesecore.util.LookAheadObjectInputStream;
 
 /**
  * Entity Bean for database persisted configurations
@@ -46,7 +61,24 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(GlobalConfigurationData.class);
-
+	private static final HashSet<Class<? extends Serializable>> ACCEPTED_SERIALIZATION_CLASSES_SET = new HashSet<>(Arrays.asList(
+	        ArrayList.class,
+	        Base64GetHashMap.class,
+	        BasicCertificateExtension.class, 
+            CertificateExtension.class,
+	        CTLogInfo.class,
+	        Enum.class,
+	        GoogleCtPolicy.class,
+	        HashMap.class,
+	        HashSet.class,
+	        Hashtable.class,
+	        LinkedHashMap.class,
+	        LinkedHashSet.class,
+	        OcspKeyBinding.ResponderIdType.class, 
+            Properties.class, 
+            RaCssInfo.class, 
+            RaStyleInfo.class));
+	
 	/** Unique ID defined by respective configuration object, such as 
 	 * @link GlobalCesecoreConfiguration#CESECORE_CONFIGURATION_ID 
 	 */
@@ -58,8 +90,8 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	/**
 	 * Entity holding data of admin's configuration.
 	 * Create by sending in the id and string representation of global configuration
-	 * @param id the unique id of global configuration.
-	 * @param globalconfiguration is the serialized string representation of the global configuration.
+	 * @param configurationId the unique id of global configuration.
+	 * @param configuration is the serialized string representation of the global configuration.
 	 */
 	public GlobalConfigurationData(String configurationId, ConfigurationBase configuration) {
 		setConfigurationId(configurationId);
@@ -87,15 +119,19 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	 */
 	@Transient
 	public Serializable getObjectUnsafe() {
-	    try (final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(getDataUnsafe()));) {
-	        return (Serializable) ois.readObject();
-	    } catch (IOException e) {
-	        log.error("Failed to load Global Configuration as byte[].", e);
+	    try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(getDataUnsafe()));) {
+            laois.setEnabledMaxObjects(false);
+            laois.setAcceptedClasses(ACCEPTED_SERIALIZATION_CLASSES_SET);
+            laois.setEnabledSubclassing(true, "org.cesecore");
+            return (Serializable) laois.readObject();
+        } catch (IOException e) {
+            log.error("Failed to load Global Configuration as byte[].", e);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
-	    return null;
+        return null;
 	}
+	
 	public void setObjectUnsafe(Serializable data) {
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 final ObjectOutputStream oos = new ObjectOutputStream(baos);) {
@@ -120,11 +156,16 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	@SuppressWarnings("rawtypes")
     @Transient
 	public HashMap getData() {
-		return JBossUnmarshaller.extractLinkedHashMap(getObjectUnsafe());
+        final Serializable map = getObjectUnsafe();
+        if (map instanceof LinkedHashMap<?, ?>) {
+            return (LinkedHashMap<?, ?>) map;
+        } else {
+            return new LinkedHashMap<>((Map<?, ?>) map);
+        }
 	}
 	
 	@SuppressWarnings("rawtypes")
-    private void setData(HashMap data) { setObjectUnsafe(JBossUnmarshaller.serializeObject(data)); }
+    private void setData(HashMap data) { setObjectUnsafe(data); }
 
 	/** 
 	 * Method that saves the global configuration to database.
@@ -182,5 +223,4 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
     //
     // End Database integrity protection methods
     //
-
 }

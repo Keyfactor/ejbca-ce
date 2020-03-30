@@ -40,7 +40,7 @@ public class CompressedCollectionTest {
         log.trace(">testCompression");
         logMemUnreliably();
         log.trace("Adding plenty of (identical) RevokedCertInfos...");
-        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<>();
+        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<>(RevokedCertInfo.class);
         for (int i=0; i<100000; i++) {
             compressedCollection.add(new RevokedCertInfo("fingerprint".getBytes(), new BigInteger("1").toByteArray(), System.currentTimeMillis(), CertificateConstants.CERT_REVOKED, System.currentTimeMillis()));
         }
@@ -69,7 +69,7 @@ public class CompressedCollectionTest {
     @Test
     public void testEmpty() {
         log.trace(">testEmpty");
-        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<>();
+        Collection<RevokedCertInfo> compressedCollection = new CompressedCollection<>(RevokedCertInfo.class);
         for (final RevokedCertInfo x : compressedCollection) {
             log.info("  " + x.toString());
         }
@@ -79,7 +79,7 @@ public class CompressedCollectionTest {
 
     @Test
     public void testNoAddAfterClose() {
-        final CompressedCollection<Integer> compressedCollection = new CompressedCollection<>();
+        final CompressedCollection<Integer> compressedCollection = new CompressedCollection<>(Integer.class);
         compressedCollection.add(4711);
         assertEquals("Compressed collection with single entry should have size 1.", 1, compressedCollection.size());
         // For loop with invoke compressedCollection.iterator() that will invoke closeForWrite() making it impossible for future changes

@@ -22,10 +22,8 @@
      version: $Id$
      -->
     </ui:remove>
-    
-
-    
     <ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{roleMembersBean}" />
         <ui:define name="content">
             <h:panelGrid columns="2" styleClass="fullwidth">
                 <h:panelGroup>
@@ -93,7 +91,7 @@
                             </h:panelGroup>
                         </f:facet>
                         <h:outputText rendered="#{!roleMembersBean.isRenderCertificateLink(roleMember)}" value="#{roleMember.tokenMatchValue}"/>
-	 		            <h:outputLink rendered="#{roleMembersBean.isRenderCertificateLink(roleMember)}" target="_blank"
+	 		            <h:outputLink rendered="#{roleMembersBean.isRenderCertificateLink(roleMember)}"
 			                value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml">
                             <f:param name="serno" value="#{roleMember.tokenMatchValue}"/>
                             <f:param name="caid" value="#{roleMember.tokenIssuerId}"/>
