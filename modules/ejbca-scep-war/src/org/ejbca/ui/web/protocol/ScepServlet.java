@@ -344,7 +344,7 @@ public class ScepServlet extends HttpServlet {
             log.info(errMsg, ee);
             response.sendError(HttpServletResponse.SC_FORBIDDEN, ee.getMessage());    
         } catch(IllegalKeyException e) {
-            String errMsg = "Keys were either invalid according to the certificate profile, or their use was otherwise prohibited.";
+            String errMsg = "Keys were either invalid according to the certificate profile, or their use was otherwise prohibited. " + e.getMessage();
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());    
         } catch(SignatureException e) {
