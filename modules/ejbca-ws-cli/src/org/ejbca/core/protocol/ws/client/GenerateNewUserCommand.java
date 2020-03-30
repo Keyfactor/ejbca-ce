@@ -62,7 +62,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 	private static final int ARG_OUTPUTPATH         = 16;
 
 	private static final int NR_OF_MANDATORY_ARGS = ARG_OUTPUTPATH;
-	private static final int MAX_NR_OF_ARGS = ARG_OUTPUTPATH+1;
+	private static final int MAX_NR_OF_ARGS = ARG_OUTPUTPATH+2;
 
     public GenerateNewUserCommand(String[] args) {
         super(args);
