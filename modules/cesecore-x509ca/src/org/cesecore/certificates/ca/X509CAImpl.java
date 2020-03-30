@@ -1329,32 +1329,29 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             ASN1ObjectIdentifier[] oids = extensions.getExtensionOIDs();
             for(ASN1ObjectIdentifier oid : oids ) {
                 // Start by excluding non overridable extensions
-                // If there are no nonOverridableExtensionOIDs set, or if the set does not contain our oid, we allow it so move on
-                // (nonOverridableExtensionOIDs can never by null)
-                if (!nonOverridableExtensionOIDs.contains(oid.getId())) {
+                // If there are no nonOverridableExtensionOIDs set, or if the set does not contain our OID, we allow it so move on
+                if (!nonOverridableExtensionOIDs.contains(oid.getId())) { // nonOverridableExtensionOIDs can never by null
                     // Now check if we have specified which ones are allowed, if this is not set we allow everything
-                    // (overridableExtensionOIDs can never by null)
                     if (overridableExtensionOIDs.isEmpty() || overridableExtensionOIDs.contains(oid.getId())) {
                         final Extension ext = extensions.getExtension(oid);
                         if (log.isDebugEnabled()) {
-                            log.debug("Overriding extension with oid: " + oid.getId());
+                            log.debug("Overriding extension with OID: " + oid.getId());
                         }
                         try {
                             extgen.addExtension(oid, ext.isCritical(), ext.getParsedValue());
                         } catch (IOException e) {
-                            throw new IllegalStateException("Caught unexpected IOException.", e);
+                            throw new IllegalStateException("IOException adding overridden extension with OID " + oid.getId() + ": ", e);
                         }
                     } else {
                         if (log.isDebugEnabled()) {
-                            log.debug("Extension is not among overridable extensions, ignoring extension from request with oid "+oid.getId());
+                            log.debug("Extension is not among overridable extensions, not adding extension with OID " + oid.getId() + " from request.");
                         }
                     }
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Extension is among non-overridable extensions, ignoring extension from request with oid "+oid.getId());
+                        log.debug("Extension is among non-overridable extensions, not adding extension with OID " + oid.getId() + " from request.");
                     }
                 }
-
             }
         }
 

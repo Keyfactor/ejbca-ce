@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -23,10 +24,15 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+
 
 /**
- * A JSF converter that makes it possible to input a comma separated list of Oids Strings (2.5.29.15,2.5.29.37,2.5.29.32,etc) and store it into an LinkedHashSet<String>.
- * The converter makes validation that it is Oids Strings that are input.
+ * A JSF converter that converts a comma separated list of strings with OIDs (2.5.29.15,2.5.29.37,2.5.29.32,etc) into a LinkedHashSet<String>,
+ * which is what is stored in CertificateProfiles
+ * The converter makes validation on the OID inputs when converting String input to LinkedHashSet.
  * 
  * To Use:
  * <h:inputText ... converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
@@ -35,47 +41,67 @@ import javax.faces.convert.FacesConverter;
  */
 @FacesConverter(value="org.ejbca.OidsObjectLinkedHashSetConverter")
 public class OidsObjectLinkedHashSetConverter implements Converter {
-    final String oid_pattern = "^[0-9]+(\\.?[0-9]+)*$";
     
+    private static final Logger log = Logger.getLogger(OidsObjectLinkedHashSetConverter.class);
+
+    
+    /** Input in the JSF page, convert to LinkedHashSet, which is what is used in the CertificateProfile to store in the database
+     * 
+     * @param values comma separated OIDs "1.1.1.1, 2.2.2.2", etc.
+     * @return LinkedHashSet with the OID strings
+     * @throws ConverterException if an input OID is not a valid OID, i.e. "1", or "3.3.3.3", etc
+     */
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String values) {
-
-        final LinkedHashSet<String> result = new LinkedHashSet<>(); 
-        for (String value : values.split(",", 0)) {           
-            final String trimmedValue = value.trim();
-            if (!trimmedValue.isEmpty()) {
-                // Validate the OID object here, as this is called when we save the value from the GUI
-                if(!trimmedValue.matches(oid_pattern)){                
-                    throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "The value '" + value + "' is not a valid OID object.",""));                
-                }
-                result.add(trimmedValue);
+        return getSetFromString(values);
+    }
+    static Object getSetFromString(final String values) {
+        // LinkedHashSet is the object used in CertificateProfile for these types of lists, must be Linked to maintain order
+        // Null or empty input returned empty list
+        if (StringUtils.isNotEmpty(values)) { 
+            // Split on ',', remove null items, trim the values, check that each item is a valid OID, finally create a List
+            final List<String> l = Stream.of(values.split(",", 0)).filter(e -> e != null).map(String::trim).filter(e -> StringUtils.isNotEmpty(e)).filter(e -> isValidOID(e.trim())).collect(Collectors.toList());
+            return new LinkedHashSet<String>(l);
+        }
+        return new LinkedHashSet<String>(); // never return null
+    }
+    private static boolean isValidOID(final String o) {
+        try {
+            // Just call constructor to make validation
+            new ASN1ObjectIdentifier(o);
+        } catch (IllegalArgumentException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("'" + o + "' is not a valid OID: " + e.getMessage());
             }
-        }       
-        return result;
+            throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "The value '" + o + "' is not a valid OID.",""));                                        
+        }
+        return true;
     }
 
+    /** Convert data that is stored in the CertificateProfile in the database, as a LinkedHashMap to regular String that is shown in the JSF page
+     * 
+     * @param value LinkedHashSet with the OID strings
+     * @return String with comma separated OIDs "1.1.1.1, 2.2.2.2", etc.
+     * @throws IllegalArgumentException if the contents of the database does not have the right objects "LinkedHashMap<String>"
+     */
     @Override
     public String getAsString(final FacesContext context, final UIComponent component, final Object value) {
+        return getStringFromSet(value);
+    }
+    // We don't do validation of the OID in this method, because the Set comes from our database and we don't want to break the Admin UI
+    // because an admin put something bad in the database
+    static String getStringFromSet(final Object value) {
+        if (value == null) {
+            return null;
+        }
         if (value instanceof LinkedHashSet<?>) {
-            final StringBuffer result = new StringBuffer();
-
-            @SuppressWarnings("unchecked")
-            final LinkedHashSet<String> lhs = (LinkedHashSet<String>) value;
-            final List<?> list = new ArrayList<>(lhs);
-
-            for (int i = 0; i < list.size(); i++) {               
-                if (list.get(i) instanceof String) {
-                    result.append(list.get(i));
-                    if (i < list.size()-1) {
-                        result.append(", ");
-                    }
-                } else {
-                    throw new IllegalArgumentException( "Cannot convert " + value + " object to String in OidsObjectLinkedHashSetConverter." );
-                }
-            }
-            return result.toString();
+            final LinkedHashSet<?> l = (LinkedHashSet<?>) value;
+            // Allow non String values, for example if the database would contain LinkedHashSet<Integer>,
+            // give it back to the Admin UI nicely, and it should be converted into the right type on next save, 
+            // or throw a ConverterException prompting the user to enter a valid OID 
+            return StringUtils.join(l, ",");
         } else {
-            throw new IllegalArgumentException( "Cannot convert " + value + " object to List in OidsObjectLinkedHashSetConverter." );
+            throw new IllegalArgumentException( "Cannot convert " + value.getClass() + " object to LinkedHashSet in OidsObjectLinkedHashSetConverter." );                
         }
     }
 }
