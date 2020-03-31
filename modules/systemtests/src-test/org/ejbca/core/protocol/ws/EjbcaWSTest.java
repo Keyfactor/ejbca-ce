@@ -156,6 +156,7 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -2476,7 +2477,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             final CertificateProfile profile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             profile.setUseCabfOrganizationIdentifier(true);
             certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, profile);
-            createEndEndtityProfile(WS_EEPROF_EI, certificateProfileId);
+            createEndEndtityProfile(WS_EEPROF_EI, certificateProfileId, true);
             // Given
             final UserDataVOWS userData = new UserDataVOWS();
             userData.setUsername(testUser);
@@ -2516,7 +2517,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      */
     @Test
     public void testAddUserWithUnconfiguredExtension() throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, WaitingForApprovalException_Exception {
-        log.trace(">test78AddUserWithExtendedInformation");
+        log.trace(">testAddUserWithUnconfiguredExtension");
         final String testUser = "ejbcawstest_extdata";
         final String testSubjectDn = "CN=" + testUser;
         final String testOrgIdent = "NTRUS+CA-123-456+789";
@@ -2546,7 +2547,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertEquals("org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException: Certificate Extension 'cabforganizationidentifier' is not allowed in Certificate Profile, but was present with value 'NTRUS+CA-123-456+789'", e.getMessage());
         } finally {
             deleteUser(testUser);
-            log.trace("<test78AddUserWithExtendedInformation");
+            log.trace("<testAddUserWithUnconfiguredExtension");
         }
     }
 
@@ -2747,4 +2748,34 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             log.warn("Error when deleting user ' " + username + "': " + e.getMessage(), e);
         }
     }
+    
+    private void createEndEndtityProfile(String profileName, int certificateProfileId, boolean useCabFOrgId) throws  AuthorizationDeniedException {
+        // Create suitable EE prof
+           try {
+               EndEntityProfile profile = new EndEntityProfile();
+               profile.addField(DnComponents.ORGANIZATION);
+               profile.addField(DnComponents.COUNTRY);
+               profile.addField(DnComponents.COMMONNAME);
+               profile.addField(DnComponents.JURISDICTIONLOCALITY);
+               profile.addField(DnComponents.JURISDICTIONSTATE);
+               profile.addField(DnComponents.JURISDICTIONCOUNTRY);
+               profile.addField(DnComponents.DATEOFBIRTH);
+               profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+               profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false); // not allowing clear text password is the most common option
+               profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+               profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);         
+               profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileId));
+
+               if(useCabFOrgId) {
+                   profile.setCabfOrganizationIdentifierUsed(true);
+               }
+               
+               if (this.endEntityProfileSession.getEndEntityProfile(profileName) == null) {
+                   this.endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, profile);
+               }
+           } catch (EndEntityProfileExistsException pee) {
+               log.error("Error creating end entity profile: ", pee);
+               throw new IllegalStateException("Can not create end entity profile");
+           }
+       }
 }

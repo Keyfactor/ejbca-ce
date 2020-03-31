@@ -1807,16 +1807,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	    throw new EndEntityProfileValidationException("ETSI PSD2 QC Statements was requested but not permitted by end entity profile.");
     	}
 
-    	// Requirement from customer. See ECA-8779.
-    	if (!isCabfOrganizationIdentifierUsed() && ei != null && !StringUtils.isBlank(ei.getCabfOrganizationIdentifier())) {
+    	// Check for certificate extensions that are requested but not enable in the Certificate Profile
+    	checkUnusableExtensionsByCertificateProfile(certProfile, ei);
+
+        // Requirement from customer. See ECA-8779.
+        if (!isCabfOrganizationIdentifierUsed() && ei != null && !StringUtils.isBlank(ei.getCabfOrganizationIdentifier())) {
             throw new EndEntityProfileValidationException("CA/B Forum Organization Identifier is not set to Use in end entity profile but is present in extended information.");
         }
     	
-    	if (log.isTraceEnabled()) {
-    		log.trace("<doesUserFulfillEndEntityProfileWithoutPassword()");
-    	}
-    	// Check for certificate extensions that are requested but not enable in the Certificate Profile
-    	checkUnusableExtensionsByCertificateProfile(certProfile, ei);
+        if (log.isTraceEnabled()) {
+            log.trace("<doesUserFulfillEndEntityProfileWithoutPassword()");
+        }
     }
 
     /**
