@@ -1145,9 +1145,16 @@ public class UserFulfillEndEntityProfileTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     
+    /**
+     * Test that if Cab Forum Organization Identifier is set to be Used in CP but not in EEP and it is
+     * present in the extended information an end entity profile validation exception must be thrown 
+     * with the appropriate message. 
+     * 
+     * @throws EndEntityProfileValidationException
+     */
     @Test
-    public void testCapfOrganizationIdentifierNotSetInEEP() throws EndEntityProfileValidationException {
-        log.trace(">testCapfOrganizationIdentifierNotSetInEEP");
+    public void testCabFOrganizationIdentifierNotSetInEEP() throws EndEntityProfileValidationException {
+        log.trace(">testCabFOrganizationIdentifierNotSetInEEP");
         
         expectedException.expect(EndEntityProfileValidationException.class);
         expectedException.expectMessage("CA/B Forum Organization Identifier is not set to Use in end entity profile but is present in extended information.");
@@ -1158,9 +1165,38 @@ public class UserFulfillEndEntityProfileTest {
 
         final ExtendedInformation ei = new ExtendedInformation();
         ei.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
+        
+        final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
-                certProfileEndUser);
-        log.trace("<testCapfOrganizationIdentifierNotSetInEEP");
+                certProfileEndUserWithCabFOIdUse);
+        log.trace("<testCabFOrganizationIdentifierNotSetInEEP");
     }
+    
+    /**
+     * Tests that if Cab Forum Organization Identifier is set to be Used in CP and also in EEP and it is
+     * present in the extended information test should go through without any errors. 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testCabFOrganizationIdentifierSetInEEP() throws Exception {
+        log.trace(">testCabFOrganizationIdentifierSetInEEP");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setCabfOrganizationIdentifierUsed(true);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+
+        final ExtendedInformation ei = new ExtendedInformation();
+        ei.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
+        
+        final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                certProfileEndUserWithCabFOIdUse);
+        log.trace("<testCabFOrganizationIdentifierSetInEEP");
+    }
+    
 } 
