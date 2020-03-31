@@ -435,7 +435,6 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 //We need to divine if the initial request was for an enrollment, issuance, renewal or a new attempt from a failed request
                 int approvalId;
                 EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(username);
-                ResponseMessage resp;
                 if (endEntityInformation == null) {
                     //Enrollment
                     approvalId = AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName);
@@ -456,24 +455,25 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 //Iterate through the list, find the last approval available. We don't care if it's expired in this context.
                 Collections.reverse(approvals);
                 ApprovalDataVO approval = null;
-                if(approvals.size() > 0) {
+                if (approvals.size() > 0) {
                     approval = approvals.get(0);
                 }
+                ResponseMessage resp;
                 if (approval != null) {
                     //Approval is still around - which either means that it's been approved but not removed, rejected or is still waiting approval
                     //Verify that the transaction ID in the request is correct
                     endEntityInformation = ((EndEntityApprovalRequest) approval.getApprovalRequest()).getEndEntityInformation();
-                    ScepRequestMessage originalRequest = ScepRequestMessage
+                    final ScepRequestMessage originalRequest = ScepRequestMessage
                             .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());           
                     //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
                     if (originalRequest == null) {
-                        String failText = "SCEP request was not stored for user " + reqmsg.getUsername() + ", cannot continue with issuance.";
+                        final String failText = "SCEP request was not stored for user " + reqmsg.getUsername() + ", cannot continue with issuance.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         return resp.getResponseMessage();
                     }
                     if (!originalRequest.getTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
-                        String failText = "Failure to process GETCERTINITIAL message. Transaction ID " + reqmsg.getTransactionId() 
+                        final String failText = "Failure to process GETCERTINITIAL message. Transaction ID " + reqmsg.getTransactionId() 
                         + " did not match up with the one (" + originalRequest.getTransactionId() + ") used during initial PKCSREQ";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
@@ -506,10 +506,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 }
                             }
                         } catch (AuthStatusException e) {
-                            final String failMessage = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
+                            failText = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
                                     + ") with incorrect status: " + e.getLocalizedMessage();
-                            log.info(failMessage, e);
-                            resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failMessage);
+                            log.info(failText, e);
+                            resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                             return resp.getResponseMessage();
                         }
                         if (resp != null) {
@@ -532,14 +532,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     case ApprovalDataVO.STATUS_EXECUTIONDENIED:
                     case ApprovalDataVO.STATUS_REJECTED:
-                        failText = "Could not process GETCERTINITIAL request with transaction ID " + reqmsg.getTransactionId() + " for username " + username
-                                + ". Enrollment was not approved by administrator.";
+                        failText = "Could not process GETCERTINITIAL request with transaction ID " + reqmsg.getTransactionId() + " for username '" + username
+                                + "'. Enrollment was not approved by administrator.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         ret = resp.getResponseMessage();
                         break;
                     case ApprovalDataVO.STATUS_EXECUTIONFAILED:
-                        failText = "Could not process GETCERTINITIAL request for username " + username + ". Enrollment execution failed.";
+                        failText = "Could not process GETCERTINITIAL request for username '" + username + "'. Enrollment execution failed.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         ret = resp.getResponseMessage();
@@ -552,10 +552,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     }
                 } else {
                     String failText = "GETCERTINITIAL was called on user with name '" + username + "' using transaction ID " + reqmsg.getTransactionId()
-                            + ", but no waiting approval request for an end entity with that name using the approval profile '" + approvalProfileName
-                            + "' exists";
+                            + ", but no waiting approval request for an end entity with that name exists";
                     log.info(failText);
-                    return createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText).getResponseMessage();
+                    ret = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText).getResponseMessage();
                 }       
             }
         } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
