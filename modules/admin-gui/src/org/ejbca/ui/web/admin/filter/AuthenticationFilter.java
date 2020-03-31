@@ -105,7 +105,7 @@ public class AuthenticationFilter implements Filter {
                 return AccessRulesConstants.REGULAR_CREATEENDENTITY;
             }
             else if(requestURI.endsWith("/ca/editcas/cacertreq")) {
-                return StandardRules.ROLE_ROOT.resource();
+                return StandardRules.CAEDIT.resource();
             }
             else if(requestURI.endsWith("/ca/cacert")) {
                 return AccessRulesConstants.REGULAR_VIEWCERTIFICATE;
