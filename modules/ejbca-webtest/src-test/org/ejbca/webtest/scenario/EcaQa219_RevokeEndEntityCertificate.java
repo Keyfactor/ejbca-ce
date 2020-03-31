@@ -44,7 +44,6 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     private static final String END_ENTITY_NAME = "ECAQA71EE";
     private static final String END_ENTITY_PASSWORD = "foo123";
     private static final String END_ENTITY_COMMON_NAME = "ECAQA71EE";
-    private static final String END_ENTITY_CA = "ManagementCA";
     private static final String CA_NAME = "ECAQA71CA";
     private static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
     private static final String CA_VALIDITY = "15y";
@@ -98,7 +97,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         addEndEntityHelper.setToken("P12 file");
         addEndEntityHelper.fillFields(fields);
         addEndEntityHelper.setCertificateProfile(CERTIFICATE_PROFILE_NAME);
-        addEndEntityHelper.setCa(END_ENTITY_CA);
+        addEndEntityHelper.setCa(getCaName());
         addEndEntityHelper.addEndEntity();
     }
 
