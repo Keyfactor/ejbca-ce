@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.jsf;
+package org.ejbca.ui.web;
 
 import java.util.LinkedHashSet;
 import java.util.List;
