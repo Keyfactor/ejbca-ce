@@ -110,12 +110,12 @@ public class WebConfiguration {
 	 */
 	public static String getDocBaseUri() {
 		final String  uri = EjbcaConfigurationHolder.getExpandedString(CONFIG_DOCBASEURI);
-		if(uri.toLowerCase().startsWith("disabled") || uri.toLowerCase().startsWith("internal")) {
+		if(uri.equalsIgnoreCase("disabled") || uri.equalsIgnoreCase("internal")) {
 		    return uri;
 		}
 		if (!StringTools.isValidUri(uri) || !(uri.indexOf("?") == -1) ) {
 		    log.warn("\"web.docbaseuri\" is not a valid URI. Using default value: " + "internal");
-            return "internal,"+uri;
+            return "internal";
 		}
 		return uri;
 	}
