@@ -42,7 +42,8 @@ public class ejbcawsracli  {
                     "getpublisherqueuelength | revoketoken | revokeuser | checkrevocationstatus | generatenewuser | " +
                     "createcrl | cacertrequest | cacertresponse | customlog | getprofile | createcryptotoken | " + 
                     "generatectkeys | createca | importcacert | updatecacert | addadmintorole | removeadminfromrole | getexpiredcerts | " +
-                    "getexpiredcertsbyissuer | getexpiredcertsbytype | stress | keyrecover | keyrecoverenroll | getremainingnumberofapprovals");
+                    "getexpiredcertsbyissuer | getexpiredcertsbytype | stress | keyrecover | keyrecoverenroll | getremainingnumberofapprovals |" +
+                    "getClientToolBoxVersion");
             }
         } catch (ErrorAdminCommandException e) {
             final Throwable cause = e.getCause();
