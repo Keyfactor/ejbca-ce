@@ -109,6 +109,8 @@ public class EJBCAWSRACommandFactory {
             return new KeyRecoverEnrollCommand(args);
         } else if (args[0].equals("getremainingnumberofapprovals")) {
             return new GetRemainingNumberOfApprovalsCommand(args);
+        } else if (args[0].equals("getClientToolBoxVersion")) {
+            return new GetClientToolBoxVersionCommand(args);
         } else {
             return null;
         }

@@ -95,7 +95,10 @@
 				<include name="README"/>
 				<include name="properties/**/*.*"/>
 			</fileset>
-		</copy>
+		</copy>		                
+		<copy todir="${mod.clientToolBox.dist}/properties">
+			<fileset file="${mod.ejbca-properties.path}/build/internal.properties"/>				
+		</copy>	
 		<chmod file="${mod.clientToolBox.dist}/*.sh" perm="a+rx"/>
 	</target>
 
