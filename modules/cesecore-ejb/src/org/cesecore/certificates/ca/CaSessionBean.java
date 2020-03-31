@@ -171,6 +171,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         return ret;
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public CAData findBySubjectDN(final String subjectDN) {
+        final Query query = entityManager.createQuery("SELECT a FROM CAData a WHERE a.subjectDN=:subjectDN");
+        query.setParameter("subjectDN", subjectDN);
+        return (CAData) QueryResultWrapper.getSingleResult(query);
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

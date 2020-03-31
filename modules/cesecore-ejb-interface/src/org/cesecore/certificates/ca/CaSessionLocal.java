@@ -75,6 +75,12 @@ public interface CaSessionLocal extends CaSession {
     CAData findByNameOrThrow(final String name) throws CADoesntExistsException;
     
     /**
+     * @throws javax.persistence.NonUniqueResultException if more than one entity with the subjectDN exists
+     * @return the found entity instance or null if the entity does not exist
+     */
+    CAData findBySubjectDN(String subjectDN);
+    
+    /**
      * Makes sure that no CAs are cached to ensure that we read from database
      * next time we try to access it.
      */
