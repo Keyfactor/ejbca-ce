@@ -25,6 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.Base64;
@@ -76,6 +80,8 @@ public class CACertReqServlet extends BaseAdminServlet {
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private SignSessionLocal signSession;
+    @EJB
+    private CaSessionLocal caSession;
     
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
@@ -113,6 +119,9 @@ public class CACertReqServlet extends BaseAdminServlet {
                     if (parsedObject instanceof CVCAuthenticatedRequest) {
                         CVCAuthenticatedRequest cvcreq = (CVCAuthenticatedRequest) parsedObject;
                         cvccert = cvcreq.getRequest();
+                        CVCRequestMessage reqMessage = RequestMessageUtils.genCVCRequestMessage(request);
+                        String subjectDN = reqMessage.getRequestDN();
+                        isAuthorizedToCABySubjectDN(caBean, subjectDN);
                     } else {
                         cvccert = (CVCertificate) parsedObject;
                     }
@@ -125,6 +134,10 @@ public class CACertReqServlet extends BaseAdminServlet {
                     try {
                         PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
                         filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
+                        String subjectDN = p10.getRequestDN();
+                        isAuthorizedToCABySubjectDN(caBean, subjectDN);
+                    } catch (AuthorizationDeniedException e) {
+                        throw new AuthorizationDeniedException();
                     } catch (Exception e) { // NOPMD
                         // Nope, not a certificate request either, see if it was an X.509 certificate
                         Certificate cert = CertTools.getCertfromByteArray(request, Certificate.class);
@@ -134,6 +147,8 @@ public class CACertReqServlet extends BaseAdminServlet {
                         }
                         isx509cert = true;
                     }
+                } catch (AuthorizationDeniedException ex) {
+                    throw new AuthorizationDeniedException();
                 }
 
                 int length = request.length;
@@ -170,6 +185,11 @@ public class CACertReqServlet extends BaseAdminServlet {
                 res.getOutputStream().write(outbytes);
         		String iMsg = intres.getLocalizedMessage("certreq.sentlatestcertreq", remoteAddr);
                 log.info(iMsg);
+            } catch (AuthorizationDeniedException e) {
+                String errMsg = intres.getLocalizedMessage("certreq.authorizationdenied", remoteAddr);
+                log.error(errMsg, e);
+                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, errMsg);
+                return;
             } catch (Exception e) {
         		String errMsg = intres.getLocalizedMessage("certreq.errorsendlatestcertreq", remoteAddr);
                 log.error(errMsg, e);
@@ -223,6 +243,18 @@ public class CACertReqServlet extends BaseAdminServlet {
                 log.error(errMsg, e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
             }
+        }
+    }
+
+    private void isAuthorizedToCABySubjectDN(CAInterfaceBean caBean, String subjectDN) throws AuthorizationDeniedException {
+        try {
+            int caId = caSession.findBySubjectDN(subjectDN).getCaId();
+            boolean authorized = caSession.authorizedToCA(caBean.getAuthenticationToken(), caId);
+            if (!authorized) {
+                throw new AuthorizationDeniedException();
+            }
+        } catch (Exception e) {
+            throw new AuthorizationDeniedException("User is not authorized to CA");
         }
     }
 }
