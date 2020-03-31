@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.jsf;
+package org.ejbca.ui.web;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 
 import javax.faces.convert.ConverterException;
 
+import org.ejbca.ui.web.OIDStringLinkedHashSetConverter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
