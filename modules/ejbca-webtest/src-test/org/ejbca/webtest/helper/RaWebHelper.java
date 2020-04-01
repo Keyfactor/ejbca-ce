@@ -108,8 +108,9 @@ public class RaWebHelper extends BaseHelper {
         openPageByUrlAndAssert(webUrl, Page.PAGE_URI);
     }
 
-    public void makeNewCertificateRequest() {
+    public void makeNewCertificateRequest() throws InterruptedException {
         clickLink(Page.BUTTON_MAKE_NEW_REQUEST);
+        TimeUnit.SECONDS.sleep(2);
     }
 
     /**
@@ -237,6 +238,15 @@ public class RaWebHelper extends BaseHelper {
 
     public void clickDownloadJks() {
         clickLink(Page.BUTTON_DOWNLOAD_JKS);
+    }
+
+    /**
+     * Click to "Download PKCS#12" button in the requestInfoform form.
+     * <p>
+     * This method works in the 'Enroll - Make New Request' workflow.
+     */
+    public void clickDownloadPkcs12(){
+        clickLink(Page.BUTTON_DOWNLOAD_P12);
     }
 
     /**
@@ -541,8 +551,9 @@ public class RaWebHelper extends BaseHelper {
     }
     
     /**
-     * Clicks the 'Download PKCS#12' button
-     * 
+     * Clicks the 'Download PKCS#12' button.
+     * <p>
+     * This method works in the 'Enroll - Use Username' workflow.
      * */
     public void clickEnrollDownloadPKCS12Button() {
             clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PKCS12);
