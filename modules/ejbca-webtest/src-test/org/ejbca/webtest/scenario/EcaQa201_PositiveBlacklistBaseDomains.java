@@ -211,8 +211,8 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     }
 
     @Test
-    public void stepQ_MakeNewCertificate() {
-        raWebHelper.openPage(this.getRaWebUrl());
+    public void stepQ_MakeNewCertificate() throws InterruptedException {
+        raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
     }
 

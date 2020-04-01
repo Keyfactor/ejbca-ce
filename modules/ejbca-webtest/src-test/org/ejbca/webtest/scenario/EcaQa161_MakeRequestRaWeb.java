@@ -19,7 +19,6 @@ package org.ejbca.webtest.scenario;
  *
  */
 
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.*;
 import org.ejbca.webtest.utils.CommandLineHelper;
@@ -40,13 +39,14 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     private static CertificateProfileHelper certificateProfileHelper;
     private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
-    private static AddEndEntityHelper addEndEntityHelper;
     private static CommandLineHelper commandLineHelper;
 
     //private static BaseHelper baseHelper;
     public static class TestData {
         private static final String END_ENTITY_PROFILE_NAME = "EcaQa161_EndEntity";
-        private static final String END_ENTITY_NAME = "EcaQa161_TestEndEntity";
+        private static final String END_ENTITY_NAME_PEM = "EcaQa161_pem";
+        private static final String END_ENTITY_NAME_JKS = "EcaQa161_jks";
+        private static final String END_ENTITY_NAME_PKCS12 = "EcaQa161_pkcs12";
         private static final String CA_NAME = "EcaQa161";
         private static final String SELECT_KEY_ALGORITHM = "RSA 2048 bits";
         private static final String CERTIFICATE_PROFILE_NAME = "EcaQa161_EndUser";
@@ -56,11 +56,9 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     public static void init() {
         beforeClass(true, null);
         webDriver = getWebDriver();
-        addEndEntityHelper = new AddEndEntityHelper(webDriver);
         raWebHelper = new RaWebHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
-        addEndEntityHelper = new AddEndEntityHelper(webDriver);
         caHelper = new CaHelper(webDriver);
         commandLineHelper = new CommandLineHelper();
         cleanup();
@@ -76,7 +74,9 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
      */
     private static void cleanup() {
         // Remove generated artifacts
-        removeEndEntityByUsername(TestData.END_ENTITY_NAME);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME_PEM);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME_JKS);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME_PKCS12);
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         removeCaAndCryptoToken(TestData.CA_NAME);
@@ -106,38 +106,26 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
 
     @Test
     public void stepD_MakePEMOnServerRequest() throws InterruptedException {
-        String endEntity =  "Pem";
+        makeRequest(TestData.END_ENTITY_NAME_PEM, raWebHelper::clickDownloadKeystorePem, ".pem");
 
-        raWebHelper.openPage(getRaWebUrl());
-        raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
-        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
-        raWebHelper.selectKeyPairGenerationOnServer();
-        //Wait for screen update
-        Thread.sleep(5000);
-        raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
-        //Wait for screen update
-        Thread.sleep(7500);
-        //Enter common name
-        raWebHelper.fillMakeRequestEditCommonName(endEntity);
-        //Enter credentials
-        raWebHelper.fillDnAttribute0(endEntity);
-        raWebHelper.fillCredentials(endEntity, "foo123");
-        //Wait for screen update
-        Thread.sleep(5000);
-        raWebHelper.clickDownloadKeystorePem();
-
-        //Assert the existence of the downloaded certificate
-        commandLineHelper.assertFileExists("/tmp/" + endEntity + ".pem");
-
-        //Reset Make Request page
+        // Reset Make Request page
         raWebHelper.clickMakeRequestReset();
     }
 
     @Test
     public void stepE_MakeJKSOnServerRequest() throws InterruptedException {
-        String endEntity =  "Jks";
+        makeRequest(TestData.END_ENTITY_NAME_JKS, raWebHelper::clickDownloadJks, ".jks");
+        
+        // Click to reset Make Request page
+        raWebHelper.clickMakeRequestReset();
+    }
 
+    @Test
+    public void stepF_MakePKCS12OnServerRequest() throws InterruptedException {
+        makeRequest(TestData.END_ENTITY_NAME_PKCS12, raWebHelper::clickDownloadPkcs12, ".p12");
+    }
+    
+    private void makeRequest(final String endEntityName, final Runnable clickDownloadButton, final String fileExtension) throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
@@ -147,20 +135,17 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         Thread.sleep(5000);
         raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
         //Wait for screen update
-        Thread.sleep(7500);
-        //Enter common name
-        raWebHelper.fillMakeRequestEditCommonName(endEntity);
-        //Enter credentials
-        raWebHelper.fillDnAttribute0(endEntity);
-        raWebHelper.fillCredentials(endEntity, "foo123");
-        //Wait for screen update
         Thread.sleep(5000);
-        raWebHelper.clickDownloadJks();
+        //Enter common name
+        raWebHelper.fillDnAttribute0(endEntityName);
+        raWebHelper.fillCredentials(endEntityName, "foo123");
+        //Wait for screen update
+
+        Thread.sleep(5000);
+        clickDownloadButton.run();
 
         //Assert the existence of the downloaded certificate
-        commandLineHelper.assertFileExists("/tmp/" + endEntity + ".jks");
-
-        //Click to reset Make Request page
-        raWebHelper.clickMakeRequestReset();
+        commandLineHelper.assertFileExists(getDownloadDir() + "/" + endEntityName + fileExtension);
     }
+
 }

@@ -136,7 +136,7 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     
     // For whatever reason the actions for creating an EndEntity need to be in separate steps. Otherwise, when you press 'Download PEM', you'll get a JSF parsingexception
     @Test
-    public void stepE1_CreateSven() {
+    public void stepE1_CreateSven() throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
     }
