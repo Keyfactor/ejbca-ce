@@ -47,8 +47,8 @@ public class CommandLineHelper {
     /**
      * Run the designated command line method.
      *
-     * @param cmd command to run.
-     * @return Boolean
+     * @param cmd CommandLine to run.
+     * @return Boolean True if successful
      */
     public Boolean runCommand(final String cmd) {
         boolean isSuccessful = false;
