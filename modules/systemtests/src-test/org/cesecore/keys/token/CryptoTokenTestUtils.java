@@ -47,7 +47,7 @@ public class CryptoTokenTestUtils {
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenTestUtils.class.getSimpleName()));
 
-    private static final char[] SOFT_TOKEN_PIN = "foo123".toCharArray();
+    public static final char[] SOFT_TOKEN_PIN = "foo123".toCharArray();
     private static final String PKCS11_TOKEN_PIN = "userpin1";
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
