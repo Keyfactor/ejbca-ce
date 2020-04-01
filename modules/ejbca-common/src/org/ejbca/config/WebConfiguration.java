@@ -109,16 +109,21 @@ public class WebConfiguration {
 	 * @return "disabled", "internal" or and URL
 	 */
 	public static String getDocBaseUri() {
-		final String  uri = EjbcaConfigurationHolder.getExpandedString(CONFIG_DOCBASEURI);
-		if(uri.equalsIgnoreCase("disabled") || uri.equalsIgnoreCase("internal")) {
-		    return uri;
-		}
-		if (!StringTools.isValidUri(uri) || !(uri.indexOf("?") == -1) ) {
-		    log.warn("\"web.docbaseuri\" is not a valid URI. Using default value: " + "internal");
+        String  uri = EjbcaConfigurationHolder.getExpandedString(CONFIG_DOCBASEURI);
+        if(uri.equalsIgnoreCase("disabled") || uri.equalsIgnoreCase("internal")) {
+            return uri;
+        }
+        if (!(uri.indexOf("?") == -1)) {
+            String[] sanitizedUri = uri.split("[-?]", 2);
+            uri = sanitizedUri[0];
+        }
+        if (!StringTools.isValidUri(uri) ) {
+            log.warn("\"web.docbaseuri\" is not a valid URI. Using default value: " + "internal");
             return "internal";
-		}
-		return uri;
-	}
+        }
+        return uri;
+    }
+	
 	
 	/**
 	 * Require administrator certificates to be available to access the Admin GUI
