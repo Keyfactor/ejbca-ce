@@ -29,9 +29,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
@@ -120,8 +117,10 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         Thread.sleep(5000);
         raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
         //Wait for screen update
-        Thread.sleep(5000);
+        Thread.sleep(7500);
         //Enter common name
+        raWebHelper.fillMakeRequestEditCommonName(endEntity);
+        //Enter credentials
         raWebHelper.fillDnAttribute0(endEntity);
         raWebHelper.fillCredentials(endEntity, "foo123");
         //Wait for screen update
@@ -148,8 +147,10 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         Thread.sleep(5000);
         raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
         //Wait for screen update
-        Thread.sleep(5000);
+        Thread.sleep(7500);
         //Enter common name
+        raWebHelper.fillMakeRequestEditCommonName(endEntity);
+        //Enter credentials
         raWebHelper.fillDnAttribute0(endEntity);
         raWebHelper.fillCredentials(endEntity, "foo123");
         //Wait for screen update
@@ -162,33 +163,4 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         //Click to reset Make Request page
         raWebHelper.clickMakeRequestReset();
     }
-
-
-    @Test
-    public void stepF_MakePKCS12OnServerRequest() throws InterruptedException {
-        String endEntity =  "Pkcs123";
-
-        raWebHelper.openPage(getRaWebUrl());
-        raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
-        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
-        raWebHelper.selectKeyPairGenerationOnServer();
-        //Wait for screen update
-        Thread.sleep(5000);
-        raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
-        //Wait for screen update
-        Thread.sleep(5000);
-        //Enter common name
-        raWebHelper.fillDnAttribute0(endEntity);
-        raWebHelper.fillCredentials(endEntity, "foo123");
-        //Wait for screen update
-
-        //** Still seeking solution to force Firefox to download PKCS12 **
-        //Thread.sleep(5000);
-        //raWebHelper.clickDownloadPkcs12();
-
-        //Assert the existence of the downloaded certificate
-        //commandLineHelper.assertFileExists("/tmp/" + endEntity + ".p12");
-    }
-
 }
