@@ -60,7 +60,7 @@ public class OIDStringLinkedHashSetConverter implements Converter {
         // Null or empty input returned empty list
         if (StringUtils.isNotEmpty(values)) { 
             // Split on ',', remove null items, trim the values, check that each item is a valid OID, finally create a List
-            final List<String> l = Stream.of(values.split(",", 0)).filter(e -> e != null).map(String::trim).filter(e -> StringUtils.isNotEmpty(e)).filter(e -> isValidOID(e.trim())).collect(Collectors.toList());
+            final List<String> l = Stream.of(values.split(",", 0)).filter(e -> StringUtils.isNotBlank(e)).map(String::trim).filter(e -> isValidOID(e.trim())).collect(Collectors.toList());
             return new LinkedHashSet<String>(l);
         }
         return new LinkedHashSet<String>(); // never return null
