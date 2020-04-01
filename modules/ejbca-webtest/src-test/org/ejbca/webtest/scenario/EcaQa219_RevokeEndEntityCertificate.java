@@ -110,7 +110,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        raWebHelper.clickToEnrollUseUsernamen(webDriver);
+        raWebHelper.clickToEnrollUseUsername(webDriver);
         raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
         raWebHelper.clickCheck();
         raWebHelper.clickEnrollDownloadPKCS12Button();
