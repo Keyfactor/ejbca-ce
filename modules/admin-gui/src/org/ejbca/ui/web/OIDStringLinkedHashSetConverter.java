@@ -95,11 +95,11 @@ public class OIDStringLinkedHashSetConverter implements Converter {
             return null;
         }
         if (value instanceof LinkedHashSet<?>) {
-            final LinkedHashSet<?> l = (LinkedHashSet<?>) value;
+            final LinkedHashSet<?> oidSet = (LinkedHashSet<?>) value;
             // Allow non String values, for example if the database would contain LinkedHashSet<Integer>,
             // give it back to the Admin UI nicely, and it should be converted into the right type on next save, 
             // or throw a ConverterException prompting the user to enter a valid OID 
-            return StringUtils.join(l, ",");
+            return StringUtils.join(oidSet, ",");
         } else {
             throw new IllegalArgumentException( "Cannot convert " + value.getClass() + " object to LinkedHashSet in OIDStringLinkedHashSetConverter." );                
         }
