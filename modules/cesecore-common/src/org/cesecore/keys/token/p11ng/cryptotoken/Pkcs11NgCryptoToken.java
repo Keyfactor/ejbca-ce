@@ -35,6 +35,8 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.jce.ECKeyUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -98,10 +100,6 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
         Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
         String sharedLibrary = properties.getProperty(SHLIB_LABEL_KEY);
-        String attributesFile = properties.getProperty(ATTRIB_LABEL_KEY);
-
-        //        Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
-        //        String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
         String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
         String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());
@@ -194,15 +192,28 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     @Override
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
-        PublicKey publicKey = slot.getPublicKey(alias,
-                Boolean.parseBoolean(getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS)));
+        PublicKey publicKey = slot.getPublicKey(alias);
         if (publicKey == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("No publicKey object object found for alias '" + alias + "', looking for a certificate object instead (i.e. if key was generated using SunP11)"); 
+            }
             final Certificate certificate = slot.getCertificate(alias);
             if (certificate == null) {
                 final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
                 throw new CryptoTokenOfflineException(msg);
             }
             publicKey = certificate.getPublicKey();
+        }
+        final boolean explicitEccParameters = Boolean.parseBoolean(getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS));
+        if (explicitEccParameters && publicKey.getAlgorithm().startsWith("EC")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Using explicit parameter encoding for EC key.");
+            }
+            try {
+                publicKey = ECKeyUtil.publicToExplicitParameters(publicKey, BouncyCastleProvider.PROVIDER_NAME);
+            } catch (NoSuchAlgorithmException | IllegalArgumentException | NoSuchProviderException e) {
+                throw new CryptoTokenOfflineException(e);
+            }
         }
         return publicKey;
     }

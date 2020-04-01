@@ -63,6 +63,11 @@ import javax.crypto.SecretKey;
 import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -73,15 +78,14 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
@@ -107,11 +111,6 @@ import org.pkcs11.jacknji11.CKU;
 import org.pkcs11.jacknji11.CK_SESSION_INFO;
 import org.pkcs11.jacknji11.CK_TOKEN_INFO;
 import org.pkcs11.jacknji11.LongRef;
-
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.LongByReference;
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
@@ -403,6 +402,9 @@ public class CryptokiDevice {
             final long[] publicKeyRefs = findPublicKeyObjectsByID(session, publicKeyId);
             if (publicKeyRefs.length == 0) {
                 // A missing public key is fine, since you can have a certificate + private key instead
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("No publicKeyRef found on object with label '" + alias + "', which may be fine if there is a certificate object.");
+                }
                 return null;
             } else if (publicKeyRefs.length > 1) {
                 LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(publicKeyId));
@@ -565,7 +567,12 @@ public class CryptokiDevice {
             }
         }
 
-        public PublicKey getPublicKey(final String alias, final boolean explicitEcParams) {
+        /**
+         * 
+         * @param alias the alias of the public key object to read from PKCS#11
+         * @return PublicKey which can be an ECPublicKey (BouncyCastle) using named parameters encoding (OID), or an RSAPublicKey (BC as well)
+         */
+        public PublicKey getPublicKey(final String alias) {
             Long session = null;
             try {
                 session = aquireSession();
@@ -576,6 +583,7 @@ public class CryptokiDevice {
                 if (publicKeyRef != null) {
                     final CKA modulus = c.GetAttributeValue(session, publicKeyRef, CKA.MODULUS);
                     if (modulus.getValue() == null) {
+                        // No modulus, we will assume it is an EC key
                         final CKA ckaQ = c.GetAttributeValue(session, publicKeyRef, CKA.EC_POINT);
                         final CKA ckaParams = c.GetAttributeValue(session, publicKeyRef, CKA.EC_PARAMS);
                         if (ckaQ.getValue() == null || ckaParams.getValue() == null) {
@@ -595,39 +603,24 @@ public class CryptokiDevice {
                             }
                             return null;
                         }
-                        final ECParameterSpec params = AlgorithmTools.getEcParameterSpecFromOid(oid);
-                        if (params == null) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.error("Could not find an elliptic curve with the specified CKA_EC_PARAMS. The DER encoded parameters look like this: " 
-                                        + StringTools.hex(ckaParams.getValue()) + ".");
+                        // Construct the public key object (Bouncy Castle)
+                        // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
+                        {
+                            final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
+                            if (bcspec == null) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.error("Could not find an elliptic curve with the specified CKA_EC_PARAMS. The DER encoded parameters look like this: " 
+                                            + StringTools.hex(ckaParams.getValue()) + ".");
+                                }
+                                return null;
                             }
-                            return null;
-                        }
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Trying to decode public elliptic curve point Q using the curve with OID " + oid.getId() 
-                                + ". The DER encoded point looks like this: " + StringTools.hex(ckaQ.getValue()));
-                        }
-                        final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(params.getCurve(), params.getSeed());
-                        final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
-                                ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
-                        final java.security.spec.ECParameterSpec parameterSpec = EC5Util.convertSpec(ellipticCurve, params);
-                        final java.security.spec.ECPublicKeySpec keySpec = new java.security.spec.ECPublicKeySpec(ecPoint, parameterSpec);
-                        final PublicKey publicKeyWithExplicitParams = KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME)
-                                .generatePublic(keySpec);
-                        if (explicitEcParams) {
-                            return publicKeyWithExplicitParams;
-                        } else {
-                            final java.security.spec.ECPublicKeySpec ecPublicKeySpec = new java.security.spec.ECPublicKeySpec((
-                                    (java.security.interfaces.ECPublicKey)publicKeyWithExplicitParams).getW(),
-                                    new ECNamedCurveSpec(
-                                            oid.getId(), 
-                                            parameterSpec.getCurve(), 
-                                            parameterSpec.getGenerator(), 
-                                            parameterSpec.getOrder(), 
-                                            BigInteger.valueOf(parameterSpec.getCofactor())
-                                     )
-                             );
-                            return KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME).generatePublic(ecPublicKeySpec);
+                            final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
+                            final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                    ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                            final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint, false);
+                            final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
+                            final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                            return keyfact.generatePublic(pubKeySpec);
                         }
                     } else {
                         final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
@@ -648,7 +641,7 @@ public class CryptokiDevice {
                         final BigInteger n = new BigInteger(1, modulusBytes);
                         final BigInteger e = new BigInteger(1, publicExponentBytes);
 
-                        return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(n, e));
+                        return KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME).generatePublic(new RSAPublicKeySpec(n, e));
                     }
                 }
                 return null;
