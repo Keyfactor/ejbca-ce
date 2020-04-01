@@ -373,7 +373,7 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:unit:admingui" description="run all JUnit tests for Admin GUI." depends="deleteDirectories">
+    <target name="test:unit:admingui" description="run all JUnit tests for CA UI." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
