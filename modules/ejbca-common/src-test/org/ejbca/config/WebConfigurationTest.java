@@ -31,9 +31,15 @@ public class WebConfigurationTest {
         assertEquals("disabled", WebConfiguration.getDocBaseUri());
         EjbcaConfigurationHolder.updateConfiguration(WebConfiguration.CONFIG_DOCBASEURI, "https://doc.primekey.com/ejbca");
         assertEquals("https://doc.primekey.com/ejbca", WebConfiguration.getDocBaseUri());
+        EjbcaConfigurationHolder.updateConfiguration(WebConfiguration.CONFIG_DOCBASEURI, "https://doc.primekey.com/ejbca?");
+        assertEquals("https://doc.primekey.com/ejbca", WebConfiguration.getDocBaseUri());
         EjbcaConfigurationHolder.updateConfiguration(WebConfiguration.CONFIG_DOCBASEURI, "https://doc.primekey.com/ejbca?foo=bar");
         assertEquals("https://doc.primekey.com/ejbca", WebConfiguration.getDocBaseUri());
         EjbcaConfigurationHolder.updateConfiguration(WebConfiguration.CONFIG_DOCBASEURI, "\"></a><script>window.alert(\"pwnd\");</script><a href=\"https://www.ejbca.org/docs");
+        assertEquals("internal", WebConfiguration.getDocBaseUri());
+        EjbcaConfigurationHolder.updateConfiguration(WebConfiguration.CONFIG_DOCBASEURI, "?https://www.ejbca.org/docs");
+        assertEquals("internal", WebConfiguration.getDocBaseUri());
+        EjbcaConfigurationHolder.updateConfiguration(WebConfiguration.CONFIG_DOCBASEURI, "?");
         assertEquals("internal", WebConfiguration.getDocBaseUri());
     }
 }

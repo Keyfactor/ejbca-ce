@@ -114,8 +114,8 @@ public class WebConfiguration {
             return uri;
         }
         // If the URL contains a query, we remove it
-        if (!(uri.indexOf("?") == -1)) {
-            String[] sanitizedUri = uri.split("[-?]", 2);
+        if (uri.indexOf("?") > -1) {
+            final String[] sanitizedUri = uri.split("[-?]", 2);
             uri = sanitizedUri[0];
         }
         if (!StringTools.isValidUri(uri) ) {
