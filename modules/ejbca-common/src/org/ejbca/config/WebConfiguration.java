@@ -106,13 +106,14 @@ public class WebConfiguration {
 	
 	/**
 	 * Show links to the EJBCA documentation.
-	 * @return "disabled", "internal" or and URL
+	 * @return "disabled", "internal" or an URL
 	 */
 	public static String getDocBaseUri() {
         String  uri = EjbcaConfigurationHolder.getExpandedString(CONFIG_DOCBASEURI);
         if(uri.equalsIgnoreCase("disabled") || uri.equalsIgnoreCase("internal")) {
             return uri;
         }
+        // If the URL contains a query, we remove it
         if (!(uri.indexOf("?") == -1)) {
             String[] sanitizedUri = uri.split("[-?]", 2);
             uri = sanitizedUri[0];
