@@ -240,31 +240,6 @@ public class RaWebHelper extends BaseHelper {
     }
 
     /**
-     * Click to "Download PKCS#12" button in the requestInfoform form.
-     */
-    public void clickDownloadPkcs12(){
-        clickLink(Page.BUTTON_DOWNLOAD_P12);
-
-        String MainWindow=webDriver.getWindowHandle();
-
-        // To handle all new opened window.
-        Set<String> s1=webDriver.getWindowHandles();
-        Iterator<String> i1=s1.iterator();
-
-        while(i1.hasNext()) {
-            String ChildWindow=i1.next();
-
-            if(!MainWindow.equalsIgnoreCase(ChildWindow)) {
-                // Switching to Child window
-                webDriver.switchTo().window(ChildWindow);
-                webDriver.findElement(By.tagName("submit")).submit();
-            }
-        }
-        // Switching to Parent window i.e Main Window.
-        webDriver.switchTo().window(MainWindow);
-    }
-
-    /**
      * Click to reset Make Request page
      */
 
@@ -547,7 +522,7 @@ public class RaWebHelper extends BaseHelper {
      * 
      * @param webDriver
      */
-    public void clickToEnrollUseUsernamen(WebDriver webDriver) {
+    public void clickToEnrollUseUsername(WebDriver webDriver) {
         Actions action = new Actions(webDriver);
         action.moveToElement(webDriver.findElement(Page.BUTTON_ENROLL))
               .moveToElement(webDriver.findElement(Page.BUTTON_ENROLL_WITH_USERNAME))
