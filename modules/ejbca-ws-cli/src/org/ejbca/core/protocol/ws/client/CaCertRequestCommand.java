@@ -98,7 +98,7 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 			getPrintStream().println("Output file: "+outfile);
 			//getPrintStream().println("CA token password: "+keystorepwd);                        
 
-			List<byte[]> cachain = new ArrayList<byte[]>();
+			List<byte[]> cachain = new ArrayList<>();
 			if (!cachainfile.equalsIgnoreCase("NULL")){
 				try {
 					FileInputStream in = new FileInputStream(cachainfile);
