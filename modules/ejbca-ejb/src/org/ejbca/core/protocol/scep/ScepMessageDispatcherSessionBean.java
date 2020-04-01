@@ -417,7 +417,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
         } else if(reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
             //Only works in RA mode
-            if (isRAModeOK && scepRaModeExtension == null) {
+            if (!isRAModeOK || scepRaModeExtension == null) {
                 // Fail nicely
                 log.warn("GETCERTINITIAL was called but only works in SCEP RA mode, which is not included in the community version of EJBCA. Unable to continue.");
                 return null;
@@ -488,18 +488,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                             try {
                                 resp = signSession.createCertificate(administrator, originalRequest, ScepResponseMessage.class, null);
                             } finally {
-                                //That done, let's erase the cached request from the end entity
-                                EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
-                                ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
-                                extendedInformation.cacheScepRequest(null);
-                                extendedInformation.cacheApprovalType(null);
-                                updatedEndEntityInformation.setExtendedInformation(extendedInformation);
+                                //That done, let's erase the cached request from the end entity                              
                                 try {
-                                    endEntityManagementSession.changeUserIgnoreApproval(administrator, updatedEndEntityInformation, false);
+                                    eraseCachedEnrollmentValue(administrator, username);
                                 } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
                                         | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
                                         | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                                    failText = "Failed to edit end entity: " + username + ": " + e.getLocalizedMessage();
+                                    failText = "Failed to erase cached scep enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
                                     log.info(failText);
                                     resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                                     return resp.getResponseMessage();
@@ -532,6 +527,16 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     case ApprovalDataVO.STATUS_EXECUTIONDENIED:
                     case ApprovalDataVO.STATUS_REJECTED:
+                        try {
+                            eraseCachedEnrollmentValue(administrator, username);
+                        } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
+                                | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
+                                | EndEntityProfileValidationException | WaitingForApprovalException e) {
+                            failText = "Failed to erase cached scep enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                            log.info(failText);
+                            resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                            return resp.getResponseMessage();
+                        }
                         failText = "Could not process GETCERTINITIAL request with transaction ID " + reqmsg.getTransactionId() + " for username '" + username
                                 + "'. Enrollment was not approved by administrator.";
                         log.info(failText);
@@ -539,6 +544,16 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         ret = resp.getResponseMessage();
                         break;
                     case ApprovalDataVO.STATUS_EXECUTIONFAILED:
+                        try {
+                            eraseCachedEnrollmentValue(administrator, username);
+                        } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
+                                | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
+                                | EndEntityProfileValidationException | WaitingForApprovalException e) {
+                            failText = "Failed to erase cached scep enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                            log.info(failText);
+                            resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
+                            return resp.getResponseMessage();
+                        }
                         failText = "Could not process GETCERTINITIAL request for username '" + username + "'. Enrollment execution failed.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
@@ -570,6 +585,24 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
         }
         return ret;
+    }
+    
+    /**
+     * Erases the cached scep request and the approval type from the end entity
+     * 
+     * @param authenticationToken an authentication token
+     * @param username the username of the end entity
+     */
+    private void eraseCachedEnrollmentValue(final AuthenticationToken authenticationToken, final String username)
+            throws CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
+            CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException {
+        EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
+        ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
+        extendedInformation.cacheScepRequest(null);
+        extendedInformation.cacheApprovalType(null);
+        updatedEndEntityInformation.setExtendedInformation(extendedInformation);
+        endEntityManagementSession.changeUserIgnoreApproval(authenticationToken, updatedEndEntityInformation, false);
+
     }
         
     /**
