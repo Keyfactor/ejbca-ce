@@ -2550,6 +2550,42 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             log.trace("<testAddUserWithUnconfiguredExtension");
         }
     }
+    
+    @Test
+    public void testCaRenewCertRequest() throws Exception {
+        final String rootCaDn = "CN=testCaRenewCertRequestRoot";
+        final String subCaDn = "CN=testCaRenewCertRequestSubCa";       
+        X509CA root = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, rootCaDn);
+        X509CA subCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaDn, root.getCAId());  
+        final String subCaName = CertTools.getPartFromDN(subCaDn, "CN");
+        List<byte[]> cachain = Arrays.asList(root.getCACertificate().getEncoded());
+        try {
+            byte[] csrBytes = ejbcaraws.caRenewCertRequest(subCaName, cachain, false, false, true, String.valueOf(CryptoTokenTestUtils.SOFT_TOKEN_PIN));
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(csrBytes);
+            assertTrue("CSR was not correctly signed", msg.verify());
+            assertEquals("Request does not have the correct request DN.", subCaDn, msg.getRequestDN());
+        } finally {
+            CaTestUtils.removeCa(intAdmin, root.getCAInfo());
+            CaTestUtils.removeCa(intAdmin, subCa.getCAInfo());
+        }
+    }
+    
+    @Test
+    public void testCaRenewCertRequestForNonExistantCa() throws Exception {
+        final String rootCaDn = "CN=testCaRenewCertRequestRoot";
+        final String subCaDn = "CN=NonExistentCa";       
+        X509CA root = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, rootCaDn);
+        final String subCaName = CertTools.getPartFromDN(subCaDn, "CN");
+        List<byte[]> cachain = Arrays.asList(root.getCACertificate().getEncoded());
+        try {
+            ejbcaraws.caRenewCertRequest(subCaName, cachain, false, false, true, String.valueOf(CryptoTokenTestUtils.SOFT_TOKEN_PIN));
+            fail("CSR should not have been returned for a non-existant CA");
+        } catch(EjbcaException_Exception e) {
+            assertTrue("Other exception than CADoesntExistsException_Exception was thrown", !CADoesntExistsException_Exception.class.isInstance(e.getClass()));            
+        } finally {
+            CaTestUtils.removeCa(intAdmin, root.getCAInfo());
+        }
+    }
 
     private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo)
             throws CertificateParsingException, CertificateEncodingException {
