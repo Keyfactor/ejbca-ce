@@ -185,7 +185,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     }
 
     @Test
-    public void stepN_MakeNewCertificate() {
+    public void stepN_MakeNewCertificate() throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
     }
