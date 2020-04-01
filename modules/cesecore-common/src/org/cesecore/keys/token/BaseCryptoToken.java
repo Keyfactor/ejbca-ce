@@ -545,7 +545,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             }
             final String str = getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS);
             final boolean explicitEccParameters = Boolean.parseBoolean(str);
-            if (explicitEccParameters && publicK.getAlgorithm().equals("EC")) {
+            if (explicitEccParameters && publicK.getAlgorithm().startsWith("EC")) {
                 if (log.isDebugEnabled()) {
                     log.debug("Using explicit parameter encoding for ECC key.");
                 }
