@@ -214,7 +214,7 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
 
 
     @Test
-    public void stepP_MakeNewCertificate() {
+    public void stepP_MakeNewCertificate() throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
     }
