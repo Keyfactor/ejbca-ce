@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -73,6 +75,7 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.SecureZipUnpacker;
 import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
@@ -1287,10 +1290,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         try {
-            // Authorazation check
             if (!isAllowedToEditSystemConfiguration()) {
                 addErrorMessage("CSS_NOT_AUTH");
-                log.info("Administrator '" + getAdmin() + "' attempted to import css / logo files. Authorazation denied: Insufficient privileges");
+                log.info("Administrator '" + getAdmin() + "' attempted to import css / logo files. Authorization denied: Insufficient privileges");
                 return;
             }
             if (raCssFile != null) {
@@ -1346,7 +1348,39 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         addInfoMessage("LOGOIMPORTSUCCESS", logoName);
     }
 
-    private void importCssFromFile() throws IOException, IllegalArgumentException, IllegalStateException {
+    private void importCssFromFile() throws IOException {
+        final byte[] fileBuffer = raCssFile.getBytes();
+        if (fileBuffer.length == 0) {
+            throw new IllegalArgumentException("Empty input file");
+        }
+        final List<String> importedFiles = new ArrayList<>();
+        final List<String> ignoredFiles = new ArrayList<>();
+        final Map<String, RaCssInfo> raCssInfosMap = SecureZipUnpacker.Builder.fromByteArray(fileBuffer)
+                .onFileIgnored((zipEntry, acceptedFileExtensions) -> ignoredFiles.add(zipEntry.getName()))
+                .onFileUnpacked(zipEntry -> importedFiles.add(zipEntry.getName()))
+                .onlyUnpackFilesWithFileExtension(".css")
+                .build()
+                .unpackFilesToMemory()
+                .stream()
+                .map(unpackedFile -> new RaCssInfo(unpackedFile.getContentAsBytes(), unpackedFile.getFileName()))
+                .collect(Collectors.toMap(RaCssInfo::getCssName, Function.identity()));
+        if (raCssInfosMap.isEmpty() && raCssFile.getName().endsWith(".css")) {
+            // Single file selected (not zip)
+            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
+            importedFiles.add(raCssFile.getName());
+        } else if (raCssInfosMap.isEmpty()) {
+            addErrorMessage("ISNOTAZIPFILE");
+            return;
+        }
+        if (ignoredFiles.isEmpty()) {
+            addInfoMessage("CSSIMPORTSUCCESS", importedFiles.size(), importedFiles);
+        } else {
+            addInfoMessage("CSSIMPORTIGNORED", importedFiles.size(), importedFiles, ignoredFiles.size(), ignoredFiles);
+        }
+        importedRaCssInfos = raCssInfosMap;
+    }
+
+    private void importCssFromFileOld() throws IOException, IllegalArgumentException, IllegalStateException {
         byte[] fileBuffer = raCssFile.getBytes();
         if (fileBuffer.length == 0) {
             throw new IllegalArgumentException("Empty input file");
