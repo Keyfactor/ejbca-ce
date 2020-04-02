@@ -17,11 +17,7 @@ import java.util.Set;
 
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
-import org.ejbca.issuechecker.issues.BasicConstraintsViolation;
-import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
-import org.ejbca.issuechecker.issues.InternalKeyBindingValidityCheck;
-import org.ejbca.issuechecker.issues.MissingEmailConfiguration;
-import org.ejbca.issuechecker.issues.NotInProductionMode;
+import org.ejbca.issuechecker.issues.*;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -37,6 +33,7 @@ public class EjbcaCommonIssueSet extends ConfigurationIssueSet {
             .add(InternalKeyBindingValidityCheck.class)
             .add(BasicConstraintsViolation.class)
             .add(MissingEmailConfiguration.class)
+            .add(ProfilePairHasNoUsableCa.class)
             .build();
 
     @Override
