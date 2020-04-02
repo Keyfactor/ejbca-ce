@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -373,7 +374,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 return null;
             } else if (isRAModeOK) {
                 if (log.isDebugEnabled()) {
-                    log.debug("SCEP is operating in RA mode: " + isRAModeOK);
+                    log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                 }
                 try {
                     if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
@@ -383,6 +384,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     }
                 } catch (WaitingForApprovalException e) {
                     //Return a pending response message, because this request is now waiting to be approved
+                    if (log.isDebugEnabled()) {
+                        log.debug("Returning a PENDING message to PKCSREQ request for end entity '" + reqmsg.generateUsername(scepConfig, alias) + "' to SCEP alias '" + alias + "'");
+                    }
                     X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
                     ResponseMessage resp = createPendingResponseMessage(reqmsg, cainfo);
                     return resp.getResponseMessage();
@@ -422,6 +426,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.warn("GETCERTINITIAL was called but only works in SCEP RA mode, which is not included in the community version of EJBCA. Unable to continue.");
                 return null;
             } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Received a SCEP GETCERTINITIAL message, operating in RA mode: " + isRAModeOK);
+                }
                 final CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
                 final String keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 final X509Certificate cacert =  (X509Certificate) ca.getCACertificate();        
@@ -438,43 +445,68 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 if (endEntityInformation == null) {
                     //Enrollment
                     approvalId = AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Generated an AddEndEntityApprovalId: " + approvalId);
+                    }
                 } else {
                     Class<? extends EndEntityApprovalRequest> cachedApprovalType = endEntityInformation.getExtendedInformation().getCachedApprovalType();
                     if(cachedApprovalType == null) {
                         // Likely Renewal prior to approval
                         approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Generated an EditEndEntityApprovalId: " + approvalId);
+                        }
                     } else if (cachedApprovalType.equals(AddEndEntityApprovalRequest.class)) {
                         //Issuance
                         approvalId = AddEndEntityApprovalRequest.generateAddEndEntityApprovalId(username, approvalProfileName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Generated an AddEndEntityApprovalId: " + approvalId);
+                        }
                     } else {
                         //Renewal post approval or new attempt from a failed request
                         approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Generated an EditEndEntityApprovalId: " + approvalId);
+                        }
                     }
                 }
-                List<ApprovalDataVO> approvals = approvalSession.findApprovalDataVO(approvalId);         
-                //Iterate through the list, find the last approval available. We don't care if it's expired in this context.
-                Collections.reverse(approvals);
+                List<ApprovalDataVO> approvals = approvalSession.findApprovalDataVO(approvalId);
+                if (log.isDebugEnabled()) {
+                    log.debug("Found " + approvals.size() + " approvals with approvalID: " + approvalId);
+                }
                 ApprovalDataVO approval = null;
                 if (approvals.size() > 0) {
-                    approval = approvals.get(0);
+                    // Sort the list, find the last approval available. We don't care if it's expired in this context.
+                    Collections.sort(approvals, new Comparator<ApprovalDataVO>() {
+                        @Override
+                        public int compare(ApprovalDataVO vo1, ApprovalDataVO vo2) {
+                            return vo1.getRequestDate().compareTo(vo2.getRequestDate());
+                        }
+                    });
+                    // The last one should be our latest registered approval from the sorting above
+                    approval = approvals.get(approvals.size()-1);
                 }
                 ResponseMessage resp;
                 if (approval != null) {
                     //Approval is still around - which either means that it's been approved but not removed, rejected or is still waiting approval
                     //Verify that the transaction ID in the request is correct
                     endEntityInformation = ((EndEntityApprovalRequest) approval.getApprovalRequest()).getEndEntityInformation();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found an existing approval of type " + approval.getApprovalType() + " with requestDate " + approval.getRequestDate() + " for end entity '" + endEntityInformation.getUsername() + "', with approval status " + approval.getStatus());
+                    }
                     final ScepRequestMessage originalRequest = ScepRequestMessage
                             .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());           
                     //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
                     if (originalRequest == null) {
-                        final String failText = "SCEP request was not stored for user " + reqmsg.getUsername() + ", cannot continue with issuance.";
+                        final String failText = "SCEP request was not stored in for end entity '" + reqmsg.getUsername() + "', cannot continue with issuance.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         return resp.getResponseMessage();
                     }
                     if (!originalRequest.getTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
                         final String failText = "Failure to process GETCERTINITIAL message. Transaction ID " + reqmsg.getTransactionId() 
-                        + " did not match up with the one (" + originalRequest.getTransactionId() + ") used during initial PKCSREQ";
+                        + " did not match up with the one (" + originalRequest.getTransactionId() + ") used during initial PKCSREQ for end entity '" 
+                                + endEntityInformation.getUsername() + "'.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         return resp.getResponseMessage();
@@ -501,7 +533,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 }
                             }
                         } catch (AuthStatusException e) {
-                            failText = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", alias: " + alias
+                            failText = "Attempted to enroll on an end entity (username: " + reqmsg.getUsername() + ", SCEP alias: " + alias
                                     + ") with incorrect status: " + e.getLocalizedMessage();
                             log.info(failText, e);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
@@ -525,8 +557,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         resp = createPendingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo());
                         ret = resp.getResponseMessage();
                         break;
+                    case ApprovalDataVO.STATUS_EXPIRED:
+                    case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
                     case ApprovalDataVO.STATUS_EXECUTIONDENIED:
                     case ApprovalDataVO.STATUS_REJECTED:
+                        // All cases where approval did not happen, and will never happen, i.e. either explicitly rejected or implicitly by letting the request expire
                         try {
                             eraseCachedEnrollmentValue(administrator, username);
                         } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
@@ -596,13 +631,22 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private void eraseCachedEnrollmentValue(final AuthenticationToken authenticationToken, final String username)
             throws CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
             CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException {
-        EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
-        ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
+        final EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
+        final ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
+        final String transactionID;
+        if (extendedInformation.getCachedScepRequest() != null) {
+            final ScepRequestMessage originalRequest = ScepRequestMessage.instance(extendedInformation.getCachedScepRequest());           
+            transactionID = originalRequest.getTransactionId();
+        } else {
+            transactionID = null;
+        }
         extendedInformation.cacheScepRequest(null);
         extendedInformation.cacheApprovalType(null);
         updatedEndEntityInformation.setExtendedInformation(extendedInformation);
         endEntityManagementSession.changeUserIgnoreApproval(authenticationToken, updatedEndEntityInformation, false);
-
+        if (log.isDebugEnabled()) {
+            log.debug("Erased cached SCEP enrollment with transaction ID " + transactionID + " from end entity '" + username + "'.");
+        }
     }
         
     /**
