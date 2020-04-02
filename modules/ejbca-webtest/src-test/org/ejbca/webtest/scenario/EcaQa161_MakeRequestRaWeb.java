@@ -80,6 +80,9 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         removeCaAndCryptoToken(TestData.CA_NAME);
+        deleteDownloadedFile(TestData.END_ENTITY_NAME_PEM + ".pem");
+        deleteDownloadedFile(TestData.END_ENTITY_NAME_JKS + ".jks");
+        deleteDownloadedFile(TestData.END_ENTITY_NAME_PKCS12 + ".p12");
     }
 
     @Test

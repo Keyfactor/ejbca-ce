@@ -55,6 +55,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -465,6 +466,20 @@ public abstract class WebTestBase extends ExtentReportCreator {
             crlDataTestSession.deleteCrlDataByIssuerDn(issuerDn);
         } catch (Exception e) {
             throw new IllegalStateException(e); //Should never happen with always allow token
+        }
+    }
+
+    /**
+     * Deletes a file in the download directory. Does nothing if the file does not exist.
+     *
+     * @param filename File name, relative to the download directory.
+     */
+    protected static void deleteDownloadedFile(final String filename) {
+        final File file = new File(getDownloadDir(), filename);
+        if (file.exists()) {
+            if (!file.delete()) {
+                log.warn("Failed to delete downloaded file: " + file);
+            }
         }
     }
 
