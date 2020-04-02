@@ -35,11 +35,7 @@ import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
-import org.ejbca.issuechecker.issues.BasicConstraintsViolation;
-import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
-import org.ejbca.issuechecker.issues.InternalKeyBindingValidityCheck;
-import org.ejbca.issuechecker.issues.MissingEmailConfiguration;
-import org.ejbca.issuechecker.issues.NotInProductionMode;
+import org.ejbca.issuechecker.issues.*;
 import org.ejbca.issuechecker.issuesets.CertificateTransparencyConfigurationIssueSet;
 import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
 import org.ejbca.util.mail.MailSender;
@@ -95,6 +91,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
                 .add(new InternalKeyBindingValidityCheck(internalKeyBindingSession, certificateSession, authorizationSession))
                 .add(new BasicConstraintsViolation(caSession))
                 .add(new MissingEmailConfiguration(approvalProfileSession, endEntityProfileSession, MailSender::isMailConfigured))
+                .add(new ProfilePairHasNoUsableCa(endEntityProfileSession, certificateProfileSession, caSession))
                 .build();
         allConfigurationIssueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
                 .add(new EjbcaCommonIssueSet())
