@@ -13,6 +13,9 @@
 
 package org.ejbca.issuechecker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.codec.binary.StringUtils;
@@ -37,7 +40,7 @@ import org.ejbca.ui.web.jsf.configuration.WebLanguages;
  */
 public class TicketDescription {
     private String languageKey;
-    private String parameter;
+    private List<String> parameters = new ArrayList<>();
     private String text;
 
     /**
@@ -54,7 +57,7 @@ public class TicketDescription {
 
     /**
      * Factory method creating a new ticket description from a language resource with
-     * one argument.
+     * one parameter.
      *
      * @param languageKey the description of the ticket, as a language key.
      * @param parameter a string to insert into the ticket description.
@@ -63,7 +66,24 @@ public class TicketDescription {
     public static TicketDescription fromResource(final String languageKey, final String parameter) {
         final TicketDescription ticketDescription = new TicketDescription();
         ticketDescription.languageKey = languageKey;
-        ticketDescription.parameter = parameter;
+        ticketDescription.parameters.add(parameter);
+        return ticketDescription;
+    }
+
+    /**
+     * Factory method creating a new ticket description from a language resource with
+     * two parameters.
+     *
+     * @param languageKey the description of the ticket, as a language key.
+     * @param parameter1 the first string to insert into the ticket description.
+     * @param parameter2 the second string to insert into the ticket description.
+     * @return a new instance of {@link TicketDescription} class.
+     */
+    public static TicketDescription fromResource(final String languageKey, final String parameter1, final String parameter2) {
+        final TicketDescription ticketDescription = new TicketDescription();
+        ticketDescription.languageKey = languageKey;
+        ticketDescription.parameters.add(parameter1);
+        ticketDescription.parameters.add(parameter2);
         return ticketDescription;
     }
 
@@ -81,8 +101,10 @@ public class TicketDescription {
     public String toString(final WebLanguages webLanguages) {
         if (text != null) {
             return text;
-        } else if (parameter != null) {
-            return webLanguages.getText(languageKey, parameter);
+        } else if (parameters.size() == 1) {
+            return webLanguages.getText(languageKey, parameters.get(0));
+        } else if (parameters.size() == 2) {
+            return webLanguages.getText(languageKey, parameters.get(0), parameters.get(1));
         } else {
             return webLanguages.getText(languageKey);
         }
@@ -93,7 +115,7 @@ public class TicketDescription {
         if (text != null) {
             return text;
         } else {
-            return String.format("(%s, %s)", languageKey, parameter);
+            return String.format("(%s, %s)", languageKey, parameters);
         }
     }
 
@@ -110,12 +132,12 @@ public class TicketDescription {
         }
         final TicketDescription ticketDescription = (TicketDescription) o;
         return StringUtils.equals(this.languageKey, ticketDescription.languageKey) &&
-               StringUtils.equals(this.parameter, ticketDescription.parameter) &&
+               this.parameters.equals(ticketDescription.parameters) &&
                StringUtils.equals(this.text, ticketDescription.text); 
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(languageKey, parameter, text);
+        return Objects.hash(languageKey, parameters, text);
     }
 }
