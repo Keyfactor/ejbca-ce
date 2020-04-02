@@ -46,6 +46,7 @@
     		<h:inputText id="currentCEDisplayName" value="#{customCertExtensionMBean.currentExtensionGUIInfo.displayName}" size="35" title="#{web.text.FORMAT_STRING}"
     			disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}">
     			<f:validator validatorId="legalCharsValidator"/>
+				<f:converter converterId="trimConverter"/>
     		</h:inputText>
 
 			<h:outputLabel for="currentCustomExtension" value="#{web.text.CUSTOMCERTEXTENSION_CLASS}"/>
