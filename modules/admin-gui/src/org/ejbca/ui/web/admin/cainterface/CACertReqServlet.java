@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
