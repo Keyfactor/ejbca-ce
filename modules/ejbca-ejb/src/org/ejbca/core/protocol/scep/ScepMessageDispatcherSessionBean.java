@@ -494,7 +494,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
                                         | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
                                         | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                                    failText = "Failed to erase cached scep enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                                    failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
                                     log.info(failText);
                                     resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                                     return resp.getResponseMessage();
@@ -532,7 +532,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
                                 | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
                                 | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                            failText = "Failed to erase cached scep enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                            failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
                             log.info(failText);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                             return resp.getResponseMessage();
@@ -549,7 +549,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
                                 | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
                                 | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                            failText = "Failed to erase cached scep enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                            failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
                             log.info(failText);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                             return resp.getResponseMessage();
@@ -588,7 +588,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     }
     
     /**
-     * Erases the cached scep request and the approval type from the end entity
+     * Erases the cached SCEP request and the approval type from the end entity
      * 
      * @param authenticationToken an authentication token
      * @param username the username of the end entity
