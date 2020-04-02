@@ -217,7 +217,9 @@
 				<h:outputText value="#{web.text.AUTOENROLLADSERVER_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:inputText id="dcserver" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment || !systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.autoEnrollAdServer}" size="45"
-				title="#{web.text.FORMAT_DOMAINNAME}"/>
+				title="#{web.text.FORMAT_DOMAINNAME}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 
 			<h:panelGroup>
 				<h:outputLabel for="dcport" value="#{web.text.AUTOENROLLADPORT}" styleClass="titles"/>
@@ -233,7 +235,9 @@
 				<h:outputText value="#{web.text.AUTOENROLLCONNECTIONDN_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:inputText id="dcdn" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment || !systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.autoEnrollConnectionDN}" size="45"
-				 title="#{web.text.FORMAT_DN}"/>
+				 title="#{web.text.FORMAT_DN}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 
 			<h:panelGroup>
 				<h:outputLabel for="dcpwd" value="#{web.text.AUTOENROLLCONNECTIONPWD}" styleClass="titles"/>
@@ -241,7 +245,9 @@
 				<h:outputText value="#{web.text.AUTOENROLLCONNECTIONPWD_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:inputText id="dcpwd" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment || !systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.autoEnrollConnectionPassword}"
-				 size="20" title="#{web.text.FORMAT_STRING}"/>
+				 size="20" title="#{web.text.FORMAT_STRING}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 
 			<h:panelGroup>
 				<h:outputLabel for="dcBaseUserDN" value="#{web.text.AUTOENROLLBASEDNUSER}" styleClass="titles"/>
@@ -249,7 +255,9 @@
 				<h:outputText value="#{web.text.AUTOENROLLBASEDNUSER_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:inputText id="dcBaseUserDN" disabled="#{!systemConfigMBean.currentConfig.useAutoEnrollment || !systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.autoEnrollUserBaseDN}"
-				size="45" title="#{web.text.FORMAT_DN}"/>
+				size="45" title="#{web.text.FORMAT_DN}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 		</h:panelGrid>
 
 
@@ -266,7 +274,9 @@
 						<h:outputText value="#{nodeEntry}"/>
 						<f:facet name="footer">
 							<h:inputText value="#{systemConfigMBean.currentNode}" size="20" maxlength="4096" title="#{web.text.FORMAT_DOMAINNAME}"
-								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
+                                <f:converter converterId="trimConverter"/>
+                            </h:inputText>
 						</f:facet>
 					</h:column>
 					<h:column>
@@ -498,8 +508,10 @@
    				<f:facet name="header"><h:outputText value="#{web.text.LABEL}"/></f:facet>
 				<h:outputText value="#{web.text[eku.name]}"/>
 				<f:facet name="footer">
-					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}" size="35" title="#{web.text.FORMAT_STRING}"
-						rendered="#{systemConfigMBean.allowedToEditExtendedKeyUsages}"/>
+					<h:inputText id="currentReadableName" value="#{systemConfigMBean.currentEKUReadableName}" size="35"
+                                 title="#{web.text.FORMAT_STRING}" rendered="#{systemConfigMBean.allowedToEditExtendedKeyUsages}">
+                        <f:converter converterId="trimConverter"/>
+					</h:inputText>
 				</f:facet>
 			</h:column>
 			<h:column>
@@ -599,9 +611,10 @@
             <h:outputText value="#{web.text.LABEL}"/>
             <h:outputText value="#{web.text.ACTIONS}"/>
             <h:inputText id="ctLogUrlInput" value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogUrl}"
-                title="#{web.text.FORMAT_URI}"
-                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                styleClass="wideCTLogInput" />
+                         title="#{web.text.FORMAT_URI}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+                         styleClass="wideCTLogInput">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 		    <h:panelGroup>
 		        <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}"
                        rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -615,7 +628,9 @@
                  size="10"
                  required="true"/>
 	         <h:inputText id="ctLogLabelInput" value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogLabel}"
-	             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                          rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
+                 <f:converter converterId="trimConverter"/>
+             </h:inputText>
 	         <h:commandButton id="addCtLog" value="#{web.text.ADD}"
                  action="#{systemConfigMBean.ctLogManager.addCtLog}"
                  rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -683,7 +698,9 @@
 				<h:outputText value="#{extension.displayName}"/>
 				<f:facet name="footer">
 					<h:inputText id="newCELabel" value="#{systemConfigMBean.newDisplayName}" size="35" title="#{web.text.FORMAT_STRING}"
-						disabled="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
+                                 disabled="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}">
+                        <f:converter converterId="trimConverter"/>
+                    </h:inputText>
 				</f:facet>
 			</h:column>
 
@@ -766,7 +783,9 @@
 			<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
-			<h:inputText id="archiveName" value="#{systemConfigMBean.archiveName}"/>
+			<h:inputText id="archiveName" value="#{systemConfigMBean.archiveName}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 			<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaStyle}"/>
 		</h:panelGrid>
 
