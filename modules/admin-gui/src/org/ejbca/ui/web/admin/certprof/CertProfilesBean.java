@@ -399,7 +399,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             }
             if (numberOfEndEntitiesReferencingCP > 10) {
                 ret = false;
-                addErrorMessage("CERTPROFILEUSEDINENDENTITIESEXCESSIVE");
+                addErrorMessage("CERTPROFILEUSEDINENDENTITIESEXCESSIVE", numberOfEndEntitiesReferencingCP);
             }
         }
         // Check if certificate profile is in use by any service
