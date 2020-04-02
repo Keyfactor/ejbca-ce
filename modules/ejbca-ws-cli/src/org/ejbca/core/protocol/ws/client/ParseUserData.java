@@ -97,6 +97,8 @@ class ParseUserData {
 		ps.println("For certificate serial number the parameter looks like this '"+certificateSerialNumber+"=<serial number>'. Start the number with '"+hexPrefix+"' to indicated that it is hexadecimal. Example: "+certificateSerialNumber+"=8642378462375036 "+certificateSerialNumber+"=0x5a53875acdaf24");
 		ps.println("For certificate extension the parameter look like this '<oid>[.<type>]=value'. The key '1.2.3.4' is same as '1.2.3.4.value'. Example: 1.2.840.113634.100.6.1.1=00aa00bb 1.2.3.4.value1=1234 1.2.3.4.value2=abcdef");
         ps.println("For ETSI PSD2 QC Statement the parameters (all required) look like this 'QCETSIPSD2ROLESOFPSP=oid;name',  QCETSIPSD2NCANAME='NCA Name', QCETSIPSD2NCAID='NCA ID'");
+        ps.println("An optional CAB forum organization identifier parameter (as part of extended information) provided to the command with a exmaple format like this 'CABFORGANIZATIONIDENTIFIER=VATSE-123456789'");
+
         // For example
         // QCETSIPSD2ROLESOFPSP=0.4.0.19495.1.1;PSP_AS
         // QCETSIPSD2NCANAME=PrimeKey Solutions AB, Solna Access, Plan A8, Sundbybergsvägen 1, SE-17173 Solna
