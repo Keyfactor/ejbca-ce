@@ -389,17 +389,17 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         // Count number of EEs that reference this CP
         if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
             final long numberOfEndEntitiesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityAccessSession().countByCertificateProfileId(certificateProfileId);
-            if (numberOfEndEntitiesReferencingCP > 1000) {
-                ret = false;
-                addErrorMessage("CERTPROFILEUSEDINENDENTITIES");
-                addErrorMessage("CERTPROFILEUSEDINENDENTITIESEXCESSIVE");
-            } else if (numberOfEndEntitiesReferencingCP > 0) {
+            if (numberOfEndEntitiesReferencingCP > 0) {
                 ret = false;
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIES");
                 final List<String> eeNames = getEjbcaWebBean().getEjb().getEndEntityAccessSession()
                         .findByCertificateProfileId(certificateProfileId);
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DISPLAYINGFIRSTTENRESULTS") + numberOfEndEntitiesReferencingCP + " "
-                        + getAsCommaSeparatedString(eeNames));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DISPLAYINGFIRSTTENRESULTS") + " "
+                        + getAsCommaSeparatedString(eeNames.subList(0, Math.min(eeNames.size(), 10))));
+            }
+            if (numberOfEndEntitiesReferencingCP > 10) {
+                ret = false;
+                addErrorMessage("CERTPROFILEUSEDINENDENTITIESEXCESSIVE");
             }
         }
         // Check if certificate profile is in use by any service
