@@ -291,7 +291,7 @@ public class CryptokiDevice {
             }
         }
 
-        /** Aquires the login session. Can be called before login to check distinguish non-authorization related exception */
+        /** Acquires the login session. Can be called before login to check distinguish non-authorization related exception */
         public synchronized void prepareLogin() {
             if (loginSession == null) {
                 loginSession = aquireSession();
@@ -346,7 +346,7 @@ public class CryptokiDevice {
         private Long getPrivateKeyByLabel(final Long session, final String alias) {
             long[] certificateRefs = findCertificateObjectsByLabel(session, alias);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
+                LOG.debug("Certificate Objects for alias '" + alias + "': " +  Arrays.toString(certificateRefs));
             }
           
             final long[] privateKeyRefs;
@@ -358,7 +358,7 @@ public class CryptokiDevice {
                 }
                 privateKeyRefs = findPrivateKeyObjectsByID(session, ckaId.getValue());
                 if (privateKeyRefs.length > 1) {
-                    LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
+                    LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()) + " for alias '" + alias + "'.");
                     return null;
                 }
             } else {
@@ -407,7 +407,7 @@ public class CryptokiDevice {
                 }
                 return null;
             } else if (publicKeyRefs.length > 1) {
-                LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(publicKeyId));
+                LOG.warn("More than one public key object sharing CKA_ID=0x" + Hex.toHexString(publicKeyId) + " for alias '" + alias + "'.");
                 return null;
             }
             if (LOG.isDebugEnabled()) {
@@ -587,31 +587,33 @@ public class CryptokiDevice {
                         final CKA ckaQ = c.GetAttributeValue(session, publicKeyRef, CKA.EC_POINT);
                         final CKA ckaParams = c.GetAttributeValue(session, publicKeyRef, CKA.EC_PARAMS);
                         if (ckaQ.getValue() == null || ckaParams.getValue() == null) {
-                            if (LOG.isDebugEnabled()) {
-                                if (ckaQ.getValue() == null) {
-                                    LOG.error("Mandatory attribute CKA_EC_POINT is missing for key with alias '" + alias + "'.");
-                                } else if (ckaParams.getValue() == null) {
-                                    LOG.error("Mandatory attribute CKA_EC_PARAMS is missing for key with alias '" + alias + "'.");
-                                }
+                            if (ckaQ.getValue() == null) {
+                                LOG.warn("Mandatory attribute CKA_EC_POINT is missing for key with alias '" + alias + "'.");
+                            } else if (ckaParams.getValue() == null) {
+                                LOG.warn("Mandatory attribute CKA_EC_PARAMS is missing for key with alias '" + alias + "'.");
                             }
                             return null;
+                        }
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Trying to decode public elliptic curve OID. The DER encoded parameters look like this: " 
+                                    + StringTools.hex(ckaParams.getValue()) + ".");
                         }
                         final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());
                         if (oid == null) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.error("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
-                            }
+                            LOG.warn("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
                             return null;
                         }
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Trying to decode public elliptic curve point Q using the curve with OID " + oid.getId() 
+                                + ". The DER encoded point looks like this: " + StringTools.hex(ckaQ.getValue()));
+                        }
+
                         // Construct the public key object (Bouncy Castle)
                         // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
                         {
                             final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
                             if (bcspec == null) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.error("Could not find an elliptic curve with the specified CKA_EC_PARAMS. The DER encoded parameters look like this: " 
-                                            + StringTools.hex(ckaParams.getValue()) + ".");
-                                }
+                                LOG.warn("Could not find an elliptic curve with the specified OID " + oid.getId() + ", not returning public key with alias '" + alias +"'.");
                                 return null;
                             }
                             final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
@@ -632,9 +634,7 @@ public class CryptokiDevice {
                                     + StringTools.hex(publicExponentBytes));
                         }
                         if (publicExponentBytes == null) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.error("Mandatory attribute CKA_PUBLIC_EXPONENT is missing for RSA key with alias '" + alias + "'.");
-                            }
+                            LOG.warn("Mandatory attribute CKA_PUBLIC_EXPONENT is missing for RSA key, not returning public key with alias '" + alias +"'.");
                             return null;
                         }
 
@@ -1496,7 +1496,7 @@ public class CryptokiDevice {
                 // 1. Find certificate object
                 long[] certificateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Certificate Objects: " +  Arrays.toString(certificateRefs));
+                    LOG.debug("Certificate Objects for alias '" + alias + "' : " +  Arrays.toString(certificateRefs));
                 }
                 if (certificateRefs.length < 1) {
                     throw new IllegalArgumentException("No such key");
@@ -1508,13 +1508,13 @@ public class CryptokiDevice {
                 // 3. Find the matching private key (just as sanity check)
                 long[] privateRefs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Private Objects: " +  Arrays.toString(privateRefs));
+                    LOG.debug("Private Objects for alias '" + alias + "': " +  Arrays.toString(privateRefs));
                 }
                 if (privateRefs.length < 1) {
-                    throw new IllegalArgumentException("No such key");
+                    throw new IllegalArgumentException("No such key '" + alias +"'");
                 }
                 if (privateRefs.length > 1) {
-                    LOG.error("Warning: More than one private key objects available with CKA_ID: 0x" + Hex.toHexString(ckaId.getValue()));
+                    LOG.warn("Warning: More than one private key objects available with CKA_ID: 0x" + Hex.toHexString(ckaId.getValue()) + " for alias '" + alias +"'.");
                 }
 
                 // 4. 5. 6. Remove old certificate objects
