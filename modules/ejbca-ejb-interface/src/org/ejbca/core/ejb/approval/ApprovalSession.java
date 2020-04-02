@@ -152,7 +152,7 @@ public interface ApprovalSession {
      * To search by ID, use {@link #findApprovalDataByRequestId} instead.
      * 
      * @param approvalId the approvalID (hash) of the request
-     * @return and list of ApprovalDataVO, empty if no approvals exists.
+     * @return an unsorted by request date) list of ApprovalDataVO, empty if no approvals exists, never null.
      */
     List<ApprovalDataVO> findApprovalDataVO(int approvalId);
 
