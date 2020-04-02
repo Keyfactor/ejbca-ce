@@ -125,7 +125,6 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         eeProfileHelper.triggerExtensionData();
         eeProfileHelper.triggerNumberOfAllowedRequests();
         eeProfileHelper.triggerKeyRecoverable();
-        Thread.sleep(10000);
         eeProfileHelper.triggerIssuanceRevocationReason();
         eeProfileHelper.triggerSendNotification();
         eeProfileHelper.addNotification();
