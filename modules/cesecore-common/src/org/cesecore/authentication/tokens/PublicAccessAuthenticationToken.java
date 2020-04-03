@@ -41,6 +41,12 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
         public String getName() {
             return principal;
         }
+        
+        @Override
+        public String toString() {
+            return principal;
+        }
+
     }
 
     private static class PublicAccessCredential implements Serializable {
