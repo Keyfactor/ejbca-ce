@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -46,6 +47,7 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -193,8 +195,12 @@ public class CADataHandler implements Serializable {
   }
   
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean#receiveResponse */  
-  public void receiveResponse(int caid, byte[] certBytes, String nextSignKeyAlias, boolean futureRollover) throws Exception{
+  public void receiveResponse(int caid, byte[] certBytes, String nextSignKeyAlias, boolean futureRollover) throws 
+  IllegalArgumentException, CertificateParsingException, CesecoreException, EjbcaException, AuthorizationDeniedException, CertPathValidatorException {
 	  try {
+          if (certBytes == null || certBytes.length == 0) {
+              throw new IllegalArgumentException("No certificate file input.");
+          }
           final List<Certificate> certChain = new ArrayList<>();
 		  try {
 		      certChain.addAll(CertTools.getCertsFromPEM(new ByteArrayInputStream(certBytes), Certificate.class));
@@ -204,17 +210,20 @@ public class CADataHandler implements Serializable {
               certChain.add(CertTools.getCertfromByteArray(certBytes, Certificate.class));
           }
 		  if (certChain.size()==0) {
-		      throw new Exception("No certificate(s) could be read.");
+		      throw new IllegalArgumentException("No certificate(s) could be read.");
 		  }
 		  Certificate caCertificate = certChain.get(0);
 		  final X509ResponseMessage resmes = new X509ResponseMessage();
 		  resmes.setCertificate(caCertificate);
 		  caadminsession.receiveResponse(administrator, caid, resmes, certChain.subList(1, certChain.size()), nextSignKeyAlias, futureRollover);
-	  } catch (Exception e) {
-	      // log the error here, since otherwise it may be hidden by web pages...
-		  log.error("Error receiving response: ", e);
+	  } catch (IllegalArgumentException | CertificateParsingException e) {
+          log.debug("Error receiving response, invalid input: " + e.getMessage());
 		  throw e;
-	  }
+      } catch (CesecoreException | EjbcaException | CertPathValidatorException | AuthorizationDeniedException e) {
+          // log the error here, since otherwise it may be hidden by web pages...
+          log.info("Error receiving response: ", e);
+          throw e;
+      }
   }
 
   public void renewCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate) throws Exception {
