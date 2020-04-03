@@ -38,6 +38,7 @@
 
                 <h:inputHidden id="newAlias" value="#{acmeConfigMBean.newAlias}">
                     <f:validator validatorId="legalCharsValidator" />
+                    <f:converter converterId="trimConverter"/>
                 </h:inputHidden>
 
                 <h:inputHidden id="currentAliasStr" value="#{acmeConfigMBean.currentAliasStr}">
