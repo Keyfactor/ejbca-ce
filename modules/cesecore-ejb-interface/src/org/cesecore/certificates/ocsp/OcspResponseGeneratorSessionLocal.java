@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
+import java.math.BigInteger;
+import java.security.cert.X509Certificate;
+
 import javax.ejb.Local;
+
 
 /**
  * Local interface for OcspResponseGeneratorSession
@@ -32,5 +36,13 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
     String healthCheck();
 
     /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache#flush() */
-    void clearOcspRequestSignerRevocationStatusCache();    
+    void clearOcspRequestSignerRevocationStatusCache();
+
+    /**
+     * Pre-produces and OCSP response for the proivded CA and serial number. The response will 
+     * be signed according to current OCSP Key Binding settings and OCSP config if applicable.
+     * @param cacert of the CA which signs the OCSP response
+     * @param serialNr of the certificate to produce a response for.
+     */
+    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr);    
 }
