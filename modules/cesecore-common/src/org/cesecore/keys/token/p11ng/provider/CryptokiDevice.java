@@ -619,7 +619,7 @@ public class CryptokiDevice {
                             final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
                             final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
                                     ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
-                            final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint, false);
+                            final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
                             final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
                             final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
                             return keyfact.generatePublic(pubKeySpec);
