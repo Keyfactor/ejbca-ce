@@ -1380,67 +1380,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         importedRaCssInfos = raCssInfosMap;
     }
 
-    private void importCssFromFileOld() throws IOException, IllegalArgumentException, IllegalStateException {
-        byte[] fileBuffer = raCssFile.getBytes();
-        if (fileBuffer.length == 0) {
-            throw new IllegalArgumentException("Empty input file");
-        }
-        String importedFiles = "";
-        String ignoredFiles = "";
-        int numberOfZipEntries = 0;
-        int numberOfImportedFiles = 0;
-        int numberOfignoredFiles = 0;
-        Map<String, RaCssInfo> raCssInfosMap = new HashMap<>();
-        try (final ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(fileBuffer))) {
-            ZipEntry ze;
-            // Read each zip entry
-            while ((ze = zis.getNextEntry()) != null) {
-                String fileName = ze.getName();
-                if (log.isDebugEnabled()) {
-                    log.debug("Reading zip entry: " + fileName);
-                }
-                try {
-                    fileName = URLDecoder.decode(fileName, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-                }
-                numberOfZipEntries++;
-                if (!ze.getName().endsWith(".css")) {
-                    log.info(fileName + " not recognized as a css file. Expected file extension '.css'. Skipping...");
-                    numberOfignoredFiles++;
-                    ignoredFiles += ze.getName() + ", ";
-                    continue;
-                }
-                // Extract bytes from this entry
-                byte[] filebytes = new byte[(int) ze.getSize()];
-                int i = 0;
-                while ((zis.available() == 1) && (i < filebytes.length)) {
-                    filebytes[i++] = (byte) zis.read();
-                }
-                RaCssInfo raCssInfo = new RaCssInfo(filebytes, fileName);
-                raCssInfosMap.put(fileName, raCssInfo);
-                importedFiles += fileName + ", ";
-                numberOfImportedFiles++;
-            }
-        }
-        if (numberOfZipEntries == 0 && raCssFile.getName().endsWith(".css")) {
-            // Single file selected (not zip)
-            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
-            numberOfImportedFiles++;
-            importedFiles = raCssFile.getName();
-        } else if (numberOfZipEntries == 0) {
-            addErrorMessage("ISNOTAZIPFILE");
-            return;
-
-        }
-        if (numberOfignoredFiles == 0) {
-            addInfoMessage("CSSIMPORTSUCCESS", numberOfImportedFiles, importedFiles);
-        } else {
-            addInfoMessage("CSSIMPORTIGNORED", numberOfImportedFiles, importedFiles, numberOfignoredFiles, ignoredFiles);
-        }
-        importedRaCssInfos = raCssInfosMap;
-    }
-
     public void removeRaStyleInfo() {
         final RaStyleInfo styleToRemove = raStyleInfos.getRowData();
         List<RaStyleInfo> raCssInfosList = getRaStyleInfosList();
