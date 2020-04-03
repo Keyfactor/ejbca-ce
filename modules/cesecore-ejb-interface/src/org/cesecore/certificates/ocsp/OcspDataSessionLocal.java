@@ -34,7 +34,7 @@ import org.cesecore.oscp.OcspResponseData;
 public interface OcspDataSessionLocal extends OcspDataSession {
     
     /**
-     * Saves OCSP data in the table
+     * Saves OCSP data in the table. This method runs asynchronous.
      * @param ocspResponseData
      */
     void storeOcspData(final OcspResponseData ocspResponseData);
@@ -54,12 +54,12 @@ public interface OcspDataSessionLocal extends OcspDataSession {
     List<OcspResponseData> findOcspDataBySerialNumber(final String serialNumber);
     
     /**
-     * Returns all the OCSP data matching the caId and serialNumber as a list.
-     * @param caId
-     * @param serialNumber
+     * Returns the OCSP response with the latest 'nextUpdate' given CA and serial number.
+     * @param caId of the CA which signed the OCSP response
+     * @param serialNumber of the certificate which the OCSP response represents
      * @return a list of OCSP data for the caId and serialNubmer, empty list if no such data.
      */
-    List<OcspResponseData> findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
+    OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
     
     /**
      * Deletes all the OCSP data from table corresponding to caId.
@@ -69,15 +69,27 @@ public interface OcspDataSessionLocal extends OcspDataSession {
     
     /**
      * Deletes all the OCSP data from table corresponding to serialNumber.
-     * @param serialNumber
+     * @param serialNumber of the certificate which the OCSP response represents
      */
     void deleteOcspDataBySerialNumber(final String serialNumber);
     
     /**
      * Deletes all the OCSP data from table corresponding to caId and serialNumber.
      * @param caId
-     * @param serialNumber
+     * @param serialNumber of the certificate which the OCSP response represents
      */
     void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
+
+    /**
+     * Returns a list of distinct serial numbers of the responses expired at or before the given
+     * expirationDate. Expiry date is determined by the 'nextUpdate' field of the stored OCSP response.
+     * 
+     * @param caId of the CA which signed the OCSP response
+     * @param expirationDate date before OCSP response expires.
+     * @param maxNumberOfResults Maximum number of results for this query.
+     * @param offset Start offset for this query.
+     * @return Serial numbers of the expired responses.
+     */
+    List<String> findExpiringOcpsData(Integer caId, long expirationDate, int maxNumberOfResults, int offset);
     
 }
