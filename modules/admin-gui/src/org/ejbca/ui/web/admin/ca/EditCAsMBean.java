@@ -38,11 +38,13 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.FacesException;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -76,10 +78,14 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.keys.token.PrivateKeyNotExtractableException;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
@@ -1444,6 +1450,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * Exports the current ca crypto token if allowed be the configuration.
      */
     public void exportCA() {
+        //Try the password before moving on in order to verify       
+        CAToken caToken = caSession.getCAInfoInternal(getCaid()).getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
+        try {
+            ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(getTextFieldExportCaPassword().toCharArray());
+        } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
+            addNonTranslatedErrorMessage(e.getLocalizedMessage());
+            return;
+        }
+        
         try {
             FacesContext ctx = FacesContext.getCurrentInstance();
             ExternalContext ectx = ctx.getExternalContext();
@@ -1456,6 +1472,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } catch (ServletException | IOException ex) {
             log.info("Error happened while trying to forward the request to ca export servlet!", ex);
         }
+        
     }
 
     /**
@@ -1590,6 +1607,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     // ===================================================== Edit CA Actions ============================================= //
+    
     
     // ===================================================== Other helpers   ============================================= //
     

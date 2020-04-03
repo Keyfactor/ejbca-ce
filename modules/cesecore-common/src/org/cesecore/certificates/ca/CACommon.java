@@ -28,7 +28,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
- * Interface containing common methods for all CA implementaations
+ * Interface containing common methods for all CA implementations
  * @version $Id$
  *
  */
