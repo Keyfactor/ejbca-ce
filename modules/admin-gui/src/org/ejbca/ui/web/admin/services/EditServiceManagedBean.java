@@ -41,7 +41,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.IAction;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
-import org.ejbca.core.model.services.OcspResponseUpdaterWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLDownloadWorker;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
@@ -66,7 +65,6 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
-import org.ejbca.ui.web.admin.services.servicetypes.OcspResponseUpdaterType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
@@ -276,9 +274,6 @@ public class EditServiceManagedBean extends BaseManagedBean {
         }
         if ((cp != null) && cp.equals(HsmKeepAliveWorker.class.getName())) {
             ret = HsmKeepAliveWorkerType.NAME;
-        }
-        if ((cp != null) && cp.equals(OcspResponseUpdaterWorker.class.getName())) {
-            ret = OcspResponseUpdaterType.NAME;
         }
         if (ret == null) {
             ret = CustomWorkerType.NAME;

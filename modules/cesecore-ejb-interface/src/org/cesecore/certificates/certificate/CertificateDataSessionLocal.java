@@ -71,6 +71,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return return the query results as a List<String>. */
     List<String> findFingerprintsByIssuerDN(String issuerDN);
     
+    /** @return the query results as a List<String> */
+    List<String> findSerialNrByIssuerWithLimitAndOffset(String issuerDN, int limit, int offset);
+    
     /** @return return the query results as a Collection<RevokedCertInfo>. */
     Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, int crlPartitionIndex, long lastbasecrldate);
     
@@ -142,5 +145,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      */
     List<Object[]> findExpirationInfo(Collection<String> cas, Collection<Integer> certificateProfiles,
             long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
+
+    
     
 }
