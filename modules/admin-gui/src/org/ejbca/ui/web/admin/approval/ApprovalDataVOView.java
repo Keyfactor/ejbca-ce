@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -122,8 +123,19 @@ public class ApprovalDataVOView implements Serializable {
                 .getText(ApprovalDataVO.APPROVALTYPENAMES.get(data.getApprovalRequest().getApprovalType()), true);
     }
 
+    /**
+     * Figures out a printable approval request admin, i.e. who was the originator of an approval request.
+     * In case of a certificate authenticated entity, the CN, or full DN if no CN exists.
+     * In case of Unauthenticated users accessing the RA "RA Web: remoteIp"
+     * In case of Public Web "Public Web: remoteIp"
+     * In case of protocols, f.ex SCEP "ScepServlet: remoteIp"
+     * In case of username authentication, i.e. CLI "Command Line Tool: username"
+     * other cases principal.toString()
+     * 
+     * @return UI presentable request admin String according to above
+     */
     public String getRequestAdminName() {
-        String retval;
+        String retval = null;
         final Certificate cert = data.getApprovalRequest().getRequestAdminCert();
         final AuthenticationToken reqAdmin = data.getApprovalRequest().getRequestAdmin();
         if (cert != null) {
@@ -136,12 +148,12 @@ public class ApprovalDataVOView implements Serializable {
             }
             retval = CertTools.getPartFromDN(dn, "CN") + o;
         } else {
-            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true); // Assume CLI if not match
             if (reqAdmin != null) {
                 for (final Principal principal : reqAdmin.getPrincipals()) {
                     if (principal instanceof PublicAccessAuthenticationToken.PublicAccessPrincipal) {
                         // Unauthenticated users accessing the RA
-                        retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true);
+                        final String ipAddress = principal.toString();
+                        retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true) + ": " + ipAddress;;
                         break;
                     } else if (principal instanceof PublicWebPrincipal) {
                         // Mostly self-registration in the Public Web
@@ -149,14 +161,25 @@ public class ApprovalDataVOView implements Serializable {
                         retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
                         break;
                     } else if (principal instanceof WebPrincipal) {
-                        // Other things, such as CMP, etc. We probably shouldn't ever get here, unless something is miss-configured.
-                        retval = principal.getName(); // e.g. "NameOfServlet: 198.51.100.123"
+                        // Other things, such as CMP, SCEP, etc. We can get here of requests require approval, such as PENDING and GETCERTINITIAL in SCEP
+                        retval = principal.toString(); // e.g. "NameOfServlet: 198.51.100.123"
                         break;
+                    } else if (principal instanceof UsernamePrincipal) {
+                        final String username = principal.toString();
+                        retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true) + ": " + username;
+                    } else {
+                        retval = principal.toString(); // e.g. NestableAuthenticationToken for example                            
                     }
                 }
+            } else {
+                // Should hopefully never happen
+                log.warn("Approval request where we can get no subjectDN and no request admin principal: " + data.getApprovalRequest());
+                retval = "Unknown";
             }
         }
-        log.debug("getRequestAdminName " + retval);
+        if (log.isDebugEnabled()) {
+            log.debug("getRequestAdminName " + retval);
+        }
         return retval;
     }
 
