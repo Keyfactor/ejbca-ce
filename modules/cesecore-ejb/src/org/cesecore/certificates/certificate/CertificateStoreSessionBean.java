@@ -809,6 +809,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    public List<String> findSerialNumbersByIssuerWithLimit(String issuerDN, int limit, int offset) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findCertificatesByIssuerWithLimit()");
+        }
+        final List<String> ret = certificateDataSession.findSerialNrByIssuerWithLimitAndOffset(issuerDN, limit, offset);
+        if (log.isTraceEnabled()) {
+            log.trace("<findCertificatesByIssuerWithLimit()");
+        }
+        return ret;
+    }
+    
+    @Override
     public Collection<Certificate> findCertificatesByIssuerAndSernos(String issuerDN, Collection<BigInteger> sernos) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificateByIssuerAndSernos()");
