@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,13 @@ import java.util.TimeZone;
 
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
+import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -41,6 +47,7 @@ import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Keeps localized information about an approval request.
@@ -334,12 +341,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             endEntityDetails = null;
         }
         
-        final String reqSubjDN = request.getRequesterSubjectDN();
-        if (reqSubjDN != null) {
-            requesterName = getCNOrFallback(reqSubjDN, reqSubjDN);
-        } else {
-            requesterName = "";
-        }
+        requesterName = getRequestAdminName(request);
         
         switch (approvalData.getApprovalType()) {
         case ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN: type = raLocaleBean.getMessage("manage_requests_type_activate_ca_token"); break;
@@ -411,6 +413,65 @@ public class ApprovalRequestGUIInfo implements Serializable {
             previousSteps.add(new Step(stepInfo, request, raLocaleBean));
         }
         
+    }
+    
+    /**
+     * Figures out a printable approval request admin, i.e. who was the originator of an approval request.
+     * In case of a certificate authenticated entity, the CN, or full DN if no CN exists.
+     * In case of Unauthenticated users accessing the RA "RA Web: remoteIp"
+     * In case of Public Web "Public Web: remoteIp"
+     * In case of protocols, f.ex SCEP "ScepServlet: remoteIp"
+     * In case of username authentication, i.e. CLI "Command Line Tool: username"
+     * other cases principal.toString()
+     * 
+     * @param request RaApprovalRequestInfo with the approval request info (including the approval request)
+     * @return UI presentable request admin String according to above
+     */
+    private String getRequestAdminName(RaApprovalRequestInfo request) {
+        String retval = null;
+        final String reqSubjDN = request.getRequesterSubjectDN();
+        if (reqSubjDN != null) {
+            retval = getCNOrFallback(reqSubjDN, reqSubjDN);
+        }
+        if (StringUtils.isEmpty(retval)) {
+            final ApprovalDataVO approvalData = request.getApprovalData();
+            if ((approvalData != null) && (approvalData.getApprovalRequest() != null)) {
+                final AuthenticationToken reqAdmin = approvalData.getApprovalRequest().getRequestAdmin();
+                if (reqAdmin != null) {
+                    for (final Principal principal : reqAdmin.getPrincipals()) {
+                        // We only grab the first principal
+                        if (principal instanceof PublicAccessAuthenticationToken.PublicAccessPrincipal) {
+                            // Unauthenticated users accessing the RA
+                            final String ipAddress = principal.toString();
+                            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true) + ": " + ipAddress;;
+                            break;
+                        } else if (principal instanceof PublicWebPrincipal) {
+                            // Mostly self-registration in the Public Web
+                            final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
+                            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
+                            break;
+                        } else if (principal instanceof WebPrincipal) {
+                            // Other things, such as CMP, SCEP, etc. We can get here of requests require approval, such as PENDING and GETCERTINITIAL in SCEP
+                            retval = principal.toString(); // e.g. "NameOfServlet: 198.51.100.123"
+                            break;
+                        } else if (principal instanceof UsernamePrincipal) {
+                            final String username = principal.toString();
+                            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true) + ": " + username;
+                        } else {
+                            retval = principal.toString(); // e.g. NestableAuthenticationToken for example                            
+                        }
+                    }                    
+                } else {
+                    // Should hopefully never happen
+                    log.warn("Approval request where we can get no subjectDN and no request admin principal: " + approvalData.getApprovalRequest());
+                    retval = "Unknown";
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("getRequestAdminName " + retval);
+        }
+        return retval;
     }
     
     private String getCNOrFallback(final String subjectDN, final String fallback) {
