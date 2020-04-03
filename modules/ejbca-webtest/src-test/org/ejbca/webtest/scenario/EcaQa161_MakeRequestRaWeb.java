@@ -128,6 +128,15 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         makeRequest(TestData.END_ENTITY_NAME_PKCS12, raWebHelper::clickDownloadPkcs12, ".p12");
     }
     
+    /**
+     * Makes Request based on Key Generation on Server on RA Web
+     * 
+     * @param endEntityName
+     * @param clickDownloadButton
+     * @param fileExtension
+     * @throws InterruptedException
+     */
+    
     private void makeRequest(final String endEntityName, final Runnable clickDownloadButton, final String fileExtension) throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
