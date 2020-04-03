@@ -42,7 +42,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @NamedQueries({ 
         @NamedQuery(name = "findOcspDataByCaId", query = "SELECT a FROM OcspResponseData a WHERE a.caId = :caId"),
         @NamedQuery(name = "findOcspDataBySerialNumber", query = "SELECT a FROM OcspResponseData a WHERE a.serialNumber = :serialNumber"),
-        @NamedQuery(name = "findOcspDataByCaIdSerialNumber", query = "SELECT a FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber"),
+        @NamedQuery(name = "findOcspDataByCaIdSerialNumber", query = "SELECT a FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber AND a.nextUpdate>:currentTime ORDER BY a.nextUpdate DESC"),
         @NamedQuery(name = "deleteOcspDataByCaId", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId"),
         @NamedQuery(name = "deleteOcspDataBySerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.serialNumber = :serialNumber"),
         @NamedQuery(name = "deleteOcspDataByCaIdSerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber"), })
