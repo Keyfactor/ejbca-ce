@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -41,6 +43,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     private EntityManager entityManager;
 
     @Override
+    @Asynchronous
     public void storeOcspData(final OcspResponseData responseData) {
         log.trace(">persistOcspData");
         this.entityManager.persist(responseData);
@@ -74,16 +77,34 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     }
 
     @Override
-    public List<OcspResponseData> findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+    public OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         log.trace(">findOcspDataByCaIdSerialNumber");
-        final List<OcspResponseData> result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
+        final OcspResponseData result = getOcspResponseDataByCaIdSerialNumber(caId, serialNumber);
         if (log.isTraceEnabled()) {
-            log.trace("findOcspDataByCaIdSerialNumber(" + caId + ", " + serialNumber + ") yielded caId " + result.size() + " results.");
+            log.trace("findOcspDataByCaIdSerialNumber(" + caId + ", " + serialNumber + ")");
         }
         log.trace("<findOcspDataByCaIdSerialNumber");
         return result;
     }
 
+    @Override
+    public List<String> findExpiringOcpsData(final Integer caId, final long expirationDate, final int maxNumberOfResults, final int offset) {
+        log.trace(">findExpiringOcpsData");
+        final TypedQuery<Object[]> query = entityManager
+                .createQuery("SELECT a.serialNumber, MAX(a.nextUpdate) FROM OcspResponseData a WHERE a.caId=:caId GROUP BY a.serialNumber", Object[].class);
+        query.setParameter("caId", caId);
+        query.setMaxResults(maxNumberOfResults);
+        query.setFirstResult(offset);
+        final List<String> distinctSerialNumbers = new ArrayList<>();
+        for (Object[] result : query.getResultList()) {
+            if ((long)result[1] <= expirationDate) {
+                distinctSerialNumbers.add((String) result[0]);
+            }
+        }
+        log.trace("<findExpiringOcpsData");
+        return distinctSerialNumbers;
+    }
+    
     @Override
     public void deleteOcspDataByCaId(final Integer caId) {
         log.trace(">deleteOcspDataByCaId");
@@ -121,11 +142,14 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         log.trace("<deleteOcspDataByCaIdSerialNumber");
     }
 
-    private List<OcspResponseData> getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+    private OcspResponseData getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataByCaIdSerialNumber", OcspResponseData.class);
+        long now = System.currentTimeMillis();
         query.setParameter("caId", caId);
         query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
+        query.setParameter("currentTime", now);
+        query.setMaxResults(1);
+        return query.getResultList().get(0);
     }
 
 }
