@@ -195,8 +195,9 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.9.10.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-161.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-161.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-165.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-165.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk15on-165.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.3.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/classmate-1.3.4.jar"/>
@@ -212,7 +213,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/jandex-2.0.5.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/istack-commons-runtime-3.0.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/FastInfoset-1.2.15.jar"/>
-    <classpathentry kind="lib" path="lib/ext/test/easymock-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/easymock-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.24.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
