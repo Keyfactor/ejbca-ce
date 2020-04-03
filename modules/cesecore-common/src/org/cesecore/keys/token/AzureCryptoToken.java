@@ -596,7 +596,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                         // Construct the public key object (Bouncy Castle)
                         final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(crv);
                         final java.security.spec.ECPoint p = new java.security.spec.ECPoint(bigIntegerX, bigIntegerY);
-                        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p);
+                        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p, false);
                         final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
                         final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
                         publicKey = keyfact.generatePublic(pubKey);

@@ -275,7 +275,7 @@ public class EccKeyValidator extends KeyValidatorBase {
             // checkOrder is true so subgroup membership is always checked
 
             // First convert the Java.security publicKey into a BC ECPoint
-            ECPoint q = EC5Util.convertPoint(bcEcPublicKey.getParams(), bcEcPublicKey.getW());
+            ECPoint q = EC5Util.convertPoint(bcEcPublicKey.getParams(), bcEcPublicKey.getW(), false);
 
             // --- Begin BC code
             // FSM_STATE:5.9, "FIPS 186-3/SP 800-89 ASSURANCES", "The module is performing FIPS 186-3/SP 800-89 Assurances self-test"
