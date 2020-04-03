@@ -298,4 +298,13 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     int getFirstStatusByIssuerAndSerno(String issuerDN, BigInteger serno);
 
+    /**
+     * Lists serial numbers of all certificates issued by the given issuer within the offset / limit scope.
+     * 
+     * @param issuerDN of the issuing CA.
+     * @param limit Maximum number of results
+     * @param offset Index of first result
+     * @return List of all found entries.
+     */
+    List<String> findSerialNumbersByIssuerWithLimit(String issuerDN, int limit, int offset);
 }

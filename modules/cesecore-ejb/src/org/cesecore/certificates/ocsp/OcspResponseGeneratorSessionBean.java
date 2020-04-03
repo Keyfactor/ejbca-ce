@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,11 +97,13 @@ import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.Req;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -140,7 +143,9 @@ import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
+import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
+import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -171,6 +176,7 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -221,6 +227,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private OcspDataSessionLocal ocspDataSession;
 
     private JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
 
@@ -377,7 +385,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                 null, null, null, ocspConfiguration.getOcspResponderIdType()));
-                        // TODO Build OcspPreProductionConfigCache
                         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse));
                     }
                 }
@@ -1073,7 +1080,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
-            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger)
+            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger, boolean isPreSigning)
             throws MalformedRequestException, OCSPException {
         //Check parameters
         if (auditLogger == null) {
@@ -1102,6 +1109,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
         X509Certificate signerCert = null;
+        String serialNrForResponseStore = null;
+        int caIdForResponseStore = 0;
         try {
             req = translateRequestFromByteArray(request, remoteAddress, transactionLogger);
             // Get the certificate status requests that are inside this OCSP req
@@ -1136,6 +1145,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // If the Extended Revoked Definition should be added for certificates that we can not find in the database, see RFC6960 4.4.8
             boolean addExtendedRevokedExtension = false;
             Date producedAt = null;
+            
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
@@ -1154,11 +1164,50 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                 }
                 final String hash = StringTools.hex(certId.getIssuerNameHash());
-                if (xForwardedFor==null) {
+                if (xForwardedFor==null && !isPreSigning) {
                     log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash, remoteAddress));
-                } else {
+                } else if (!isPreSigning){
                     log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequestwxff", certId.getSerialNumber().toString(16), hash, remoteAddress, xForwardedFor));
                 }
+                
+                final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
+                final boolean storeOnDemand = false; // TODO This is a dummy. Add this as a CA setting and into configCache.
+                // We only store pre-produced single repsponses
+                if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
+                    if (!isPreSigning) {
+                        final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
+                        // 1. If no stored response exists. Skip this, produce and new one and store it later on (if storing on-demand is enabled)
+                        // 2. If a response is stored, still valid and request has no extensions: return it.
+                        // 3. If a response is stored and nextUpdate is null: Ignore it and produce new response.
+                        if (ocspResponseData != null && 
+                            ocspResponseData.getNextUpdate() != null && 
+                            ocspResponseData.getNextUpdate() > System.currentTimeMillis() &&
+                            !isPreSigning &&
+                            !req.hasExtensions()) {
+                            boolean malformedResponseObject = false;
+                            OCSPResp ocspResp = null;
+                            try {
+                                ocspResp = new OCSPResp(ocspResponseData.getOcspResponse());
+                            } catch (IOException e) {
+                                malformedResponseObject = true;
+                                log.warn("Pre-produced OCSP response for certificate with serialNr '" + certId.getSerialNumber() + "' was malformed. Producing new response.");
+                            }
+                            if (!malformedResponseObject) {
+                                // TODO we may need maxAge from key binding here.
+                                log.info("Valid response found. Returning canned response!");
+                                return new OcspResponseInformation(ocspResp, maxAge, signerCert);
+                            }
+                        }
+                        log.info("No valid response found"); // TODO Remove
+                    }
+                    // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
+                    // result in the produced one to be stored. Don't store responses without nextUpdate set.
+                    if ((storeOnDemand || isPreSigning) && !req.hasExtensions()) {
+                        serialNrForResponseStore = certId.getSerialNumber().toString();
+                        caIdForResponseStore = ocspDataConfig.getCaId();
+                    }
+                }
+                
                 // Locate the CA which gave out the certificate
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                 if(ocspSigningCacheEntry == null) {
@@ -1394,7 +1443,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
                                 + status.certificateProfileId);
                     }
-                    log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
+                    if (!isPreSigning) {
+                        log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
+                    }
                     respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
                     if (ocspKeyBinding != null && ocspKeyBinding.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId())) {
@@ -1578,7 +1629,27 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.flush();
             }
         }
+        
+        if (serialNrForResponseStore != null && caIdForResponseStore != 0 && ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL) {
+            try {
+                storeOcspResponse(caIdForResponseStore, serialNrForResponseStore, ocspResponse);
+            } catch (OCSPException | IOException e) {
+                // Log the error and reply anyway
+                log.warn("Error storing OCSP response for certificate with serialNr '" + serialNrForResponseStore);
+            }
+        }
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
+    }
+    
+    private void storeOcspResponse(final int caId, final String serialNr, final OCSPResp ocspResponse) throws OCSPException, IOException {
+        // Redundantly storing producedAt and nextUpdate, next to the canned response itself for faster querying. 
+        // Assuming this is a single response (we don't store it otherwise), we can safely pick nextUpdate from first index.
+        long producedAt = ((BasicOCSPResp)ocspResponse.getResponseObject()).getProducedAt().getTime();
+        Long nextUpdate = null;
+        final Date nextUpdateDate = ((BasicOCSPResp)ocspResponse.getResponseObject()).getResponses()[0].getNextUpdate();
+        nextUpdate = nextUpdateDate != null ? nextUpdateDate.getTime() : null;
+        final OcspResponseData responseData = new OcspResponseData(UUID.randomUUID().toString(), caId, serialNr, producedAt, nextUpdate, ocspResponse.getEncoded());
+        ocspDataSession.storeOcspData(responseData);
     }
     
     private void addArchiveCutoff(final OCSPResponseItem respItem, final X509Certificate issuer, final OcspKeyBinding ocspKeyBinding) {
@@ -1684,6 +1755,36 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         }
         return ocspSigningCacheEntry;
+    }
+    
+    @Override
+    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr) {
+        final OCSPReq req;
+        final OCSPReqBuilder gen = new OCSPReqBuilder();
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        final String remoteAddress = "127.0.0.1";
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
+        CertificateID certId;
+        try {
+            certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, serialNr);
+            gen.addRequest(certId);
+            req = gen.build();
+            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true);
+        }  catch (MalformedRequestException e) {
+            String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+            log.info(errMsg);
+            if (log.isDebugEnabled()) {
+                log.debug(errMsg, e);
+            }
+        } catch (Throwable e) {
+            final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+            log.info(errMsg);
+            if (log.isDebugEnabled()) {
+                log.debug(errMsg, e);
+            }
+        }
+        
     }
     
     private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 

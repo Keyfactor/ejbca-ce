@@ -1333,7 +1333,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
             // Create the audit logger for this transaction.
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger)
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false)
                     .getOcspResponse();
             //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
             assertNotNull("OCSP responder replied null", responseBytes);
@@ -1507,7 +1507,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         final OcspResponseInformation responseInformation = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null,
-                auditLogger, transactionLogger);
+                auditLogger, transactionLogger, false);
         byte[] responseBytes = responseInformation.getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         return new OCSPResp(responseBytes);

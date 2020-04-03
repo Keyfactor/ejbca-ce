@@ -55,6 +55,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.ocsp.OcspDataSessionLocal;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -181,6 +183,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private KeyStoreCreateSessionLocal keyStoreCreateSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspGeneratorResponseSessionLocal;
+    @EJB
+    private OcspDataSessionLocal ocspDataSessionLocal;
 
     @PostConstruct
     public void ejbCreate() {
@@ -578,6 +584,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
         ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
         ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
+        ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
+        ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
         try {
             if (worker != null) {
                 worker.canWorkerRun(ejbs);
@@ -726,6 +734,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
             ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
+            ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
+            ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
             ServiceExecutionResult result = worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
             log.info(msg);

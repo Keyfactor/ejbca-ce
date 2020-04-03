@@ -31,14 +31,14 @@ public interface OcspResponseGeneratorSession {
 
     /**
      * This method delivers an OCSP response to a given request, as provided in the byte[] parameter.
-     * 
-     * @param authenticationToken An authentication token for the user performing the operation.
      * @param requestBytes a byte array representing an encoded OCSPRequest.
      * @param requestCertificates An array of Certificates from the original HttpServletRequest
      * @param remoteAddress Remote address, most likely extracted from the HttpServletRequest
      * @param xForwardedFor Value of X-Forwarded-For header if it was present in the request.
      * @param auditLogger The AuditLogger to use for this transaction
      * @param transactionLogger The TransactionLogger to use for this transaction
+     * @param isPreSigning true if we're using the method to presign responses.
+     * @param authenticationToken An authentication token for the user performing the operation.
      * 
      * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
@@ -46,7 +46,7 @@ public interface OcspResponseGeneratorSession {
      */
     OcspResponseInformation getOcspResponse(byte[] requestBytes,
             X509Certificate[] requestCertificates, String remoteAddress, String xForwardedFor, StringBuffer requestUrl, AuditLogger auditLogger,
-            TransactionLogger transactionLogger) throws MalformedRequestException, OCSPException;
+            TransactionLogger transactionLogger, boolean isPreSigning) throws MalformedRequestException, OCSPException;
     
     /** Reloads the cache of OCSP signers. */
     void reloadOcspSigningCache();
