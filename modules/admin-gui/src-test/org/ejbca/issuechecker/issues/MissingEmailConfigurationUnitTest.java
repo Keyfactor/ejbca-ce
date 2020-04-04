@@ -49,10 +49,9 @@ import org.junit.Test;
 /**
  * Unit tests for {@link MissingEmailConfiguration}.
  * 
- * @version $Ids$
+ * @version $Id$
  */
 public class MissingEmailConfigurationUnitTest {
-    
     private static final Logger log = Logger.getLogger(MissingEmailConfigurationUnitTest.class);
     
     private static final int APPROVALPROFILE1_ID = 51;
