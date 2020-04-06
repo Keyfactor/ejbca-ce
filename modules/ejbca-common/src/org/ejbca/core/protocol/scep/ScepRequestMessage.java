@@ -394,6 +394,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                             if (log.isDebugEnabled()) {
                             	log.debug("IssuerDN: " + issuerDN);
                             	log.debug("SerialNumber: " + iasn.getSerialNumber().getValue().toString(16));
+                            	// Encryption algorithms can not be null here, since we were able to decrypt the message
+                            	log.debug("Key encryption algorithm: " + recipientInfo.getKeyEncryptionAlgorithm().getAlgorithm().getId());
+                            	log.debug("Content encryption algorithm: " + envData.getEncryptedContentInfo().getContentEncryptionAlgorithm().getAlgorithm().getId());
                             }
                         }
                     } else {
