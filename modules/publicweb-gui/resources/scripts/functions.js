@@ -1,8 +1,9 @@
 
 	// Used in apply_exp.jspf
+    // replaced NT 6 with NT 10 april 2020. See thread https://sourceforge.net/p/ejbca/discussion/123123/thread/2b6f8e0c4f/?limit=25
 	function showCSPActiveX() {
 		if (navigator.appName.indexOf("Explorer") != -1) {
-		    if ( navigator.userAgent.indexOf("Windows NT 6") != -1 ) {
+		    if ( navigator.userAgent.indexOf("Windows NT 10") != -1 ) {
 				document.writeln("<object classid=\"clsid:884e2049-217d-11da-b2a4-000e7bbb2b09\" id=\"g_objClassFactory\" height=\"0\" width=\"0\" ></object>");
 			} else {
 				document.writeln("<object classid=\"clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" id=\"newencoder\" codebase=\"/CertControl/xenroll.cab#Version=5,131,3659,0\" height=\"0\" width=\"0\" ></object>");
@@ -18,7 +19,7 @@
 			plugin = navigator.mimeTypes["application/x-iid"];
 		} else {
 			explorer = true;
-			if ( navigator.userAgent.indexOf("Windows NT 6") == -1 ) {
+			if ( navigator.userAgent.indexOf("Windows NT 10") == -1 ) {
 				plugin = ControlExists("IID.iIDCtl");
 			} else {
 				plugin = IsCSPInstalled("Net iD - CSP");
