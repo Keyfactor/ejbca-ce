@@ -632,20 +632,22 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             throws CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
             CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException {
         final EndEntityInformation updatedEndEntityInformation = endEntityAccessSession.findUser(username);
-        final ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
-        final String transactionID;
-        if (extendedInformation.getCachedScepRequest() != null) {
-            final ScepRequestMessage originalRequest = ScepRequestMessage.instance(extendedInformation.getCachedScepRequest());           
-            transactionID = originalRequest.getTransactionId();
-        } else {
-            transactionID = null;
-        }
-        extendedInformation.cacheScepRequest(null);
-        extendedInformation.cacheApprovalType(null);
-        updatedEndEntityInformation.setExtendedInformation(extendedInformation);
-        endEntityManagementSession.changeUserIgnoreApproval(authenticationToken, updatedEndEntityInformation, false);
-        if (log.isDebugEnabled()) {
-            log.debug("Erased cached SCEP enrollment with transaction ID " + transactionID + " from end entity '" + username + "'.");
+        if (updatedEndEntityInformation != null) {
+            final ExtendedInformation extendedInformation = updatedEndEntityInformation.getExtendedInformation();
+            final String transactionID;
+            if (extendedInformation.getCachedScepRequest() != null) {
+                final ScepRequestMessage originalRequest = ScepRequestMessage.instance(extendedInformation.getCachedScepRequest());
+                transactionID = originalRequest.getTransactionId();
+            } else {
+                transactionID = null;
+            }
+            extendedInformation.cacheScepRequest(null);
+            extendedInformation.cacheApprovalType(null);
+            updatedEndEntityInformation.setExtendedInformation(extendedInformation);
+            endEntityManagementSession.changeUserIgnoreApproval(authenticationToken, updatedEndEntityInformation, false);
+            if (log.isDebugEnabled()) {
+                log.debug("Erased cached SCEP enrollment with transaction ID " + transactionID + " from end entity '" + username + "'.");
+            }
         }
     }
         
