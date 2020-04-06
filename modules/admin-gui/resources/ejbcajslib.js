@@ -49,6 +49,23 @@ function checkFileRecieve(element, message) {
 }
 
 /**
+ * Used in listpublishers.xhtml
+ *
+ * @param selectId id of the select element.
+ * @returns boolean true if a select option is selected, otherwise false
+ *          (including if the select element could not be found)
+ */
+function checkSelectionMade(selectId) {
+    var selectBox = document.getElementById(selectId);
+
+    if (!!selectBox) {
+        return selectBox.selectedIndex >= 0;
+    }
+
+    return false;
+}
+
+/**
  * Used in managecas.xhtml
  * 
  * @param message the message to be shown to user before confirming the delete operation
