@@ -6,7 +6,7 @@
 
 <script type="text/vbscript">
 <!--
-	If InStr(navigator.UserAgent, "Windows NT 6") <> 0 Then
+	If InStr(navigator.UserAgent, "Windows NT 10") <> 0 Then
 		InitVistaCSP()
 	End if
 
@@ -219,7 +219,7 @@
 		Dim TheForm, result
 		Set TheForm = Document.CertReqForm
 		err.clear
-		If InStr(navigator.UserAgent, "Windows NT 6") <> 0 Then
+		If InStr(navigator.UserAgent, "Windows NT 10") <> 0 Then
 			If g_certEnrollLoadError <> 0 Then
 				Call MsgBox("Could not load CertEnroll.", 0, "Alert")
 				Exit Sub
@@ -262,7 +262,7 @@
 
 	<script type="text/javascript">
 	<!--
-	    if ( navigator.userAgent.indexOf("Windows NT 6") == -1 ) {
+	    if ( navigator.userAgent.indexOf("Windows NT 10") == -1 ) {
 			document.writeln(	"<p>If you want to, you can manually install the CA certificate(s) in your browser. "+
 								"Otherwise, this will be done automatically when your certificate is retrieved.<\/p>");
 		}
@@ -307,7 +307,7 @@
     <p>
 	<script type="text/javascript">
 	<!--
-	    if ( navigator.userAgent.indexOf("Windows NT 6") != -1 ) {
+	    if ( navigator.userAgent.indexOf("Windows NT 10") != -1 ) {
 			document.writeln(	"If not instructed otherwise by your local administrator:<br/>"+
 								"<ul><li>Install &quot;Root CA&quot; certificate in &quot;Trusted Root Certificate Authorities&quot;-storage.</li>"+
 								"<li>Make sure IE is allowed to run the CertEnroll addon.</li>"+
@@ -391,7 +391,7 @@
 
 <script type="text/vbscript" defer="true">
 <!--
-	If InStr(navigator.UserAgent, "Windows NT 6") <> 0 Then
+	If InStr(navigator.UserAgent, "Windows NT 10") <> 0 Then
 		Call GetCertEnrollCSPList()
 		Document.CertReqForm.classid.value = "clsid:884e2049-217d-11da-b2a4-000e7bbb2b09"
 	Else
