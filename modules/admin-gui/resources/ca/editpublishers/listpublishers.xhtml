@@ -69,7 +69,8 @@
 						<h:commandButton id="deleteButton"
 							action="#{listPublishers.deletePublisher}"
 							value="#{web.text.DELETEPUBLISHER}"
-							onclick="return confirm('#{web.text.AREYOUSURE}');"
+                            onclick="if (checkSelectionMade('listPublishers:selectPublisher')) return confirm('#{web.text.AREYOUSURE}');"
+							disabled="#{listPublishers.availablePublishers.size() == 0}"
 							rendered="#{listPublishers.hasEditRights}" />
 					</h:panelGroup>
 				</h:panelGrid>
