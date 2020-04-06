@@ -33,9 +33,6 @@
         <h:outputText styleClass="alert" rendered="#{!rolesBean.authorizedToViewRoles}" value="#{web.text.ROLES_ERROR_UNAUTH}"/>
 
         <h:form id="roles" rendered="#{rolesBean.authorizedToViewRoles}">
-            <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
-            <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
-
             <h:dataTable id="list" value="#{rolesBean.rolesAvailable}" var="role" headerClass="listHeader" rowClasses="Row0,Row1"
                          columnClasses="alignmiddle,alignmiddle,alignmiddle,alignmiddle">
                 <h:column rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}">
@@ -59,8 +56,9 @@
                 <h:column rendered="#{rolesBean.authorizedToEditRoles}">
                     <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_RASTYLES}"/></f:facet>
                     <h:panelGroup id="actionGroup" styleClass="button-group">
-                        <h:selectOneMenu id="selectCustomStyle" onchange="this.form.submit()" value="#{rolesBean.selectedStyle}" disabled="#{!rolesBean.styleSelectable}">
+                        <h:selectOneMenu id="selectCustomStyle" value="#{rolesBean.selectedStyle}" disabled="#{!rolesBean.styleSelectable}">
                             <f:selectItems value="#{rolesBean.availableStylesList}"/>
+                            <f:ajax execute="@this" />
                         </h:selectOneMenu>
                         <h:commandButton action="#{rolesBean.actionRenameRoleStart}" value="#{web.text.RENAME}">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
