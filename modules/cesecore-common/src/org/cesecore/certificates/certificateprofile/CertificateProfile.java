@@ -36,6 +36,7 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
@@ -1725,13 +1726,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns a List of caids (Integer), indicating which CAs the profile should be applicable to.
+     * Get a list of CA IDs indicating which CAs the profile should be applicable to.
      *
-     * If it contains the constant ANYCA then the profile is applicable to all CAs
+     * May contain the constant {@link CAConstants.ALLCAS} to indicate that the
+     * profile is applicable to all CAs.
+     *
+     * @return a list of CA IDs, never null.
      */
     @SuppressWarnings("unchecked")
     public List<Integer> getAvailableCAs() {
-        return (List<Integer>) data.get(AVAILABLECAS);
+        return data.get(AVAILABLECAS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(AVAILABLECAS);
     }
 
     /**
