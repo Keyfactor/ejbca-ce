@@ -50,7 +50,7 @@ import java.util.zip.ZipInputStream;
 public class SecureZipUnpacker {
     private static final Logger log = Logger.getLogger(SecureZipUnpacker.class);
 
-    private final InputStream inputStream;
+    private final ZipInputStream zipInputStream;
     private final int maxFileCount;
     private final long maxSize;
     private final List<String> acceptedFileExtensions;
@@ -69,7 +69,7 @@ public class SecureZipUnpacker {
      * <p>Events are logged using a {@link Logger} and all file extensions are accepted.
      */
     public static class Builder {
-        private final InputStream inputStream;
+        private final ZipInputStream zipInputStream;
         private int maxFileCount = 256;
         private long maxSize = 1024 * 1024 * 32; // 32 MB
         private List<String> acceptedFileExtensions;
@@ -90,11 +90,21 @@ public class SecureZipUnpacker {
          * @return a builder of {@link SecureZipUnpacker} objects.
          */
         public static Builder fromByteArray(final byte[] byteArray) {
-            return new Builder(new ByteArrayInputStream(byteArray));
+            return new Builder(new ZipInputStream(new ByteArrayInputStream(byteArray)));
         }
 
-        protected Builder(final InputStream inputStream) {
-            this.inputStream = inputStream;
+        /**
+         * Create a new builder from a {@link ZipInputStream}.
+         *
+         * @param zipInputStream a zip input stream
+         * @return a builder
+         */
+        public static Builder fromZipInputStream(final ZipInputStream zipInputStream) {
+            return new Builder(zipInputStream);
+        }
+
+        protected Builder(final ZipInputStream zipInputStream) {
+            this.zipInputStream = zipInputStream;
         }
 
         /**
@@ -227,7 +237,7 @@ public class SecureZipUnpacker {
     }
 
     protected SecureZipUnpacker(final Builder builder) {
-        this.inputStream = builder.inputStream;
+        this.zipInputStream = builder.zipInputStream;
         this.maxFileCount = builder.maxFileCount;
         this.maxSize = builder.maxSize;
         this.acceptedFileExtensions = builder.acceptedFileExtensions;
@@ -251,7 +261,7 @@ public class SecureZipUnpacker {
     }
 
     private List<UnpackedFile> unpackFilesAsList() throws IOException {
-        try (final ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+        try {
             final List<UnpackedFile> unpackedFiles = new ArrayList<>();
             ZipEntry zipEntry;
             int fileCount = 0;
@@ -260,7 +270,7 @@ public class SecureZipUnpacker {
                     continue;
                 }
                 if (++fileCount > maxFileCount) {
-                    throw new SecurityException("Only up to " + maxFileCount + " files is allowed to be processed.");
+                    throw new FileLimitExceededException("Only up to " + maxFileCount + " files is allowed to be processed.");
                 }
                 if (!isAcceptedFileExtension(zipEntry.getName())) {
                     onFileIgnoredListener.onFileIgnored(zipEntry, acceptedFileExtensions);
@@ -272,6 +282,8 @@ public class SecureZipUnpacker {
                 zipInputStream.closeEntry();
             }
             return unpackedFiles;
+        } finally {
+            zipInputStream.close();
         }
     }
 
@@ -291,7 +303,7 @@ public class SecureZipUnpacker {
                 byteArrayOutputStream.write(buffer, 0, bytesRead);
                 totalNumberOfBytesRead += bytesRead;
                 if (totalNumberOfBytesRead > maxSize) {
-                    throw new IOException("The size of the file " + zipEntry.getName() + " exceeds the limit of " + maxSize + " bytes.");
+                    throw new StreamSizeLimitExceededException("The size of the file " + zipEntry.getName() + " exceeds the limit of " + maxSize + " bytes.");
                 }
             }
             return byteArrayOutputStream.toByteArray();
