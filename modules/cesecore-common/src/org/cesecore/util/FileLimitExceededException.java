@@ -10,33 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.cesecore.util;
 
 import java.io.IOException;
 
 /**
- * Thrown when there's too much data, e.g. in a stream when using FileTools.streamCopyWithLimit
+ * Thrown when there are too many files.
  * 
  * @version $Id$
  */
-public class StreamSizeLimitExceededException extends IOException {
-
-    private static final long serialVersionUID = 1L;
-
-    public StreamSizeLimitExceededException() {
-        super();
-    }
-    
-    public StreamSizeLimitExceededException(String message) {
+public class FileLimitExceededException extends IOException {
+    public FileLimitExceededException(final String message) {
         super(message);
     }
-
-    public StreamSizeLimitExceededException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public StreamSizeLimitExceededException(Throwable cause) {
-        super(cause);
-    }
-    
 }

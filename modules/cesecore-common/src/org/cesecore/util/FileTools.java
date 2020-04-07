@@ -210,12 +210,12 @@ public abstract class FileTools {
      * 
      * @param input Stream to copy from.
      * @param output Stream to copy to.
-     * @param maxBytes Throw a SizeLimitExceededException if more than this number of bytes are read.
+     * @param maxBytes The maximum number of bytes to read.
      * @return The number of bytes copied.
      * @throws IOException If reading from or writing to the streams fail.
-     * @throws StreamSizeLimitExceededException If more than maxBytes are read.
+     * @throws StreamSizeLimitExceededException If more than maxBytes was read.
      */
-    public static long streamCopyWithLimit(final InputStream input, final OutputStream output, final long maxBytes) throws IOException, StreamSizeLimitExceededException {
+    public static long streamCopyWithLimit(final InputStream input, final OutputStream output, final long maxBytes) throws IOException {
         if (maxBytes < 0 || (maxBytes == 0 && input.read() != -1)) {
             throw new StreamSizeLimitExceededException("Size limit was reached");
         } else if (maxBytes == 0) {
