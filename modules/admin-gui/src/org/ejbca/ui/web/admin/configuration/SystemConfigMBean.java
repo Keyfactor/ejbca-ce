@@ -1369,7 +1369,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
             importedFiles.add(raCssFile.getName());
         } else if (raCssInfosMap.isEmpty()) {
-            addErrorMessage("ISNOTAZIPFILE");
+            addErrorMessage("CANNOT_PROCESS_ZIP_FILE");
             return;
         }
         if (ignoredFiles.isEmpty()) {

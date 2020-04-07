@@ -303,7 +303,8 @@ public class SecureZipUnpacker {
                 byteArrayOutputStream.write(buffer, 0, bytesRead);
                 totalNumberOfBytesRead += bytesRead;
                 if (totalNumberOfBytesRead > maxSize) {
-                    throw new StreamSizeLimitExceededException("The size of the file " + zipEntry.getName() + " exceeds the limit of " + maxSize + " bytes.");
+                    throw new StreamSizeLimitExceededException("Not permitted to decompress more than " + maxSize
+                            + " bytes of data. The limit was exceeded when extracting the file " + zipEntry.getName() + ".");
                 }
             }
             return byteArrayOutputStream.toByteArray();
