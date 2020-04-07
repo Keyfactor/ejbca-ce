@@ -95,6 +95,7 @@ public class TicketDescription {
 
     /**
      * Get the string representation of this ticket description.
+     *
      * @param webLanguages an instance of the {@link WebLanguages} class.
      * @return the ticket description as a string.
      */
@@ -114,9 +115,11 @@ public class TicketDescription {
     public String toString() {
         if (text != null) {
             return text;
-        } else {
-            return String.format("(%s, %s)", languageKey, parameters);
         }
+        if (parameters.size() == 0) {
+            return languageKey;
+        }
+        return String.format("(%s, %s)", languageKey, String.join(", ", parameters));
     }
 
     @Override
