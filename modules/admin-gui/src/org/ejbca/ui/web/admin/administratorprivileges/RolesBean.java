@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.admin.administratorprivileges;
 
 import java.io.Serializable;
@@ -28,6 +29,12 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -48,16 +55,18 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 @ViewScoped
 @ManagedBean
 public class RolesBean extends BaseManagedBean implements Serializable {
-
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(RolesBean.class);
+    private static final Logger log = Logger.getLogger(RolesBean.class);
+
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    
+    @EJB
+    private SecurityEventsLoggerSessionLocal auditLogSession;
+
     private boolean addRoleInProgress = false;
     private Role roleToRename = null;
     private Role roleToDelete = null;
@@ -201,10 +210,16 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     }
     
     private void saveStyle() {
-        Role roleToSave = rolesAvailable.getRowData();
-        roleToSave.setStyleId(selectedStyle);
         try {
+            final GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
+            final Role roleToSave = rolesAvailable.getRowData();
+            log.info("Saving custom RA style " + selectedStyle +  " for role " + roleToSave.getRoleName() + ".");
+            final RaStyleInfo newRaStyle = globalCustomCssConfiguration.getRaStyleInfo().get(selectedStyle);
+            roleToSave.setStyleId(selectedStyle);
             roleSession.persistRole(getAdmin(), roleToSave, false);
+            auditLogSession.log(EventTypes.ROLE_UPDATE_STYLE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    getAdmin().toString(), null, null, null, newRaStyle.getAsMap());
         } catch (RoleExistsException e) {
             super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ROLEEXISTS");
         } catch (AuthorizationDeniedException e) {
