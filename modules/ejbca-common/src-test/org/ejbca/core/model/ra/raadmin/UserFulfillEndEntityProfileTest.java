@@ -1199,4 +1199,29 @@ public class UserFulfillEndEntityProfileTest {
         log.trace("<testCabFOrganizationIdentifierSetInEEP");
     }
     
+    @Test
+    public void testCabFOrganizationIdentifierSetInEEPButNotInRequest() throws Exception {
+        log.trace(">testCabFOrganizationIdentifierSetInEEPButNotInRequest");
+
+        expectedException.expect(EndEntityProfileValidationException.class);
+        expectedException.expectMessage("CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information.");
+
+        
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setCabfOrganizationIdentifierUsed(true);
+        profile.setCabfOrganizationIdentifierRequired(true);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+
+        final ExtendedInformation ei = new ExtendedInformation();
+
+        
+        final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                certProfileEndUserWithCabFOIdUse);
+        
+        log.trace("<testCabFOrganizationIdentifierSetInEEPButNotInRequest");
+
+    }
 } 
