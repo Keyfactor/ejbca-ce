@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -28,7 +25,6 @@ import java.util.List;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -136,32 +132,6 @@ public interface CA extends CACommon {
      */
     void initExtendedService(CryptoToken cryptoToken, int type, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception;
     
-    /**
-     * General encryption method used to encrypt using a CA
-     *
-     * @param data the data to encrypt
-     * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
-     * @return encrypted data
-     * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
-     * @throws CMSException In case parsing/encryption of CMS data fails.
-     * @throws NoSuchProviderException If encryption provider is not available.
-     * @throws NoSuchAlgorithmException If desired encryption algorithm is not available.
-     * @throws IOException In case reading/writing data streams failed during encryption
-     */
-    byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose)
-            throws CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException, CMSException, IOException;
-
-    /**
-     * General encryption method used to decrypt using a CA
-     *
-     * @param data the data to decrypt
-     * @param cAKeyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
-     * @return decrypted data
-     * @throws CMSException In case parsing/decryption of CMS data fails.
-     * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
-     */
-    byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException;
-
     /**
     *
     * @param publicKey provided public key. Will not have any precedence over subject.extendedInformation.certificateRequest

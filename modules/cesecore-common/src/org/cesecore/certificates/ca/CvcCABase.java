@@ -203,13 +203,4 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		return retval;
 	}
 
-	@Override
-	public byte[] decryptData(CryptoToken cryptoToken, byte[] encryptedData, int cAKeyPurpose) {
-		throw new IllegalArgumentException("decryptData not implemented for CVC CA");
-	}
-
-    @Override
-	public byte[] encryptData(CryptoToken cryptoToken, byte[] dataToEncrypt, int keyPurpose) {
-		throw new IllegalArgumentException("encryptData not implemented for CVC CA");
-	}
 }
