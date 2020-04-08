@@ -1004,7 +1004,7 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     /**
-     * Normally not overridden. Could be overridden if DN in certificate is changed from request by a {@link org.ejbca.core.protocol.ExtendedUserDataHandler}.
+     * Normally not overridden. Could be overridden if DN in certificate is changed from request by a {@link org.cesecore.certificates.ca.ExtendedUserDataHandler}.
      * 
      * @param userDn the users subject DN.
      * @param certificateDn the certificates subject DN.

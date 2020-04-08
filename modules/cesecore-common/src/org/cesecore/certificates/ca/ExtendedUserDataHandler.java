@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -11,7 +11,9 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol;
+package org.cesecore.certificates.ca;
+
+import java.io.Serializable;
 
 import org.cesecore.certificates.certificate.request.RequestMessage;
 
@@ -22,7 +24,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
  * 
  * @version $Id$
  */
-public interface ExtendedUserDataHandler {
+public interface ExtendedUserDataHandler extends Serializable {
 	/**
 	 * Called when the data handling should be done.
 	 * @param req Request to be modified.

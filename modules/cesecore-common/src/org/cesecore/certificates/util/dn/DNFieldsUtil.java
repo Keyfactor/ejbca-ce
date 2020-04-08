@@ -89,7 +89,7 @@ public abstract class DNFieldsUtil {
             return false;
         }
         String key, value1, value2;
-        final String snAttributeKey = CeSecoreNameStyle.DefaultSymbols.get(CeSecoreNameStyle.SN);
+        final String snAttributeKey = CeSecoreNameStyle.DefaultSymbols.get(CeSecoreNameStyle.SERIALNUMBER);
         boolean result = true;
         for (Map.Entry<String,String> entry : map1.entrySet()) {
             key = entry.getKey();

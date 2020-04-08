@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -164,5 +164,12 @@ public interface X509CA extends CA {
      * @throws IOException
      */
     ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException;
+
+    /**
+     * @return the classname of an implementation of the ExtendedUserDataHandler interface, meant to pre-process PKCS10 requests received by this CA. 
+     */
+    String getRequestPreProcessor();
+
+    void setRequestPreProcessor(final String preProcessorClass);
 
 }

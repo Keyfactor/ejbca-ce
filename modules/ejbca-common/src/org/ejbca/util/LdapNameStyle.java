@@ -65,7 +65,7 @@ public class LdapNameStyle extends BCStyle {
         DefaultStringStringLookUp.putAll(CeSecoreNameStyle.DefaultStringStringLookUp);
         
         // Apply differences in LDAP
-        DefaultSymbols.put(SN, "serialNumber");
+        DefaultSymbols.put(SERIALNUMBER, "serialNumber");
         DefaultSymbols.put(EmailAddress, "mail");
         DefaultLookUp.put("mail", E);
         DefaultStringStringLookUp.put("MAIL", E.getId());  // different from CeSecoreNameStyle

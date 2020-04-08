@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -112,7 +113,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         
-        ArrayList<Integer> extendedservicetypes = new ArrayList<>();
+        List<Integer> extendedservicetypes = new ArrayList<>();
         for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
             createExtendedCAService(next);
             if (log.isDebugEnabled()) {
