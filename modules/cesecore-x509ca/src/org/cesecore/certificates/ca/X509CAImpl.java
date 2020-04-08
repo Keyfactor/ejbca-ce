@@ -61,7 +61,6 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -90,20 +89,13 @@ import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cms.CMSEnvelopedData;
-import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
-import org.bouncycastle.cms.RecipientInformation;
-import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
-import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
-import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -2262,44 +2254,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 setCaSerialNumberOctetSize(CesecoreConfiguration.getSerialNumberOctetSizeForExistingCa());
             }
         }
-    }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#decryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
-     */
-    @Override
-    public byte[] decryptData(CryptoToken cryptoToken, byte[] encryptedData, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException {
-        CMSEnvelopedData ed = new CMSEnvelopedData(encryptedData);
-        RecipientInformationStore recipients = ed.getRecipientInfos();
-        RecipientInformation recipient = recipients.getRecipients().iterator().next();
-        final String keyAlias = getCAToken().getAliasFromPurpose(cAKeyPurpose);
-        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(keyAlias));
-        rec.setProvider(cryptoToken.getSignProviderName());
-        rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
-        // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
-        // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
-        // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
-        rec.setMustProduceEncodableUnwrappedKey(true);
-        byte[] recdata = recipient.getContent(rec);
-        log.info("Decrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
-        return recdata;
-    }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#encryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
-     */
-    @Override
-    public byte[] encryptData(CryptoToken cryptoToken, byte[] dataToEncrypt, int keyPurpose) throws IOException, CMSException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
-        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-        CMSEnvelopedData ed;
-        final String keyAlias = getCAToken().getAliasFromPurpose(keyPurpose);
-        final PublicKey pk = cryptoToken.getPublicKey(keyAlias);
-        byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
-        edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
-        JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        ed = edGen.generate(new CMSProcessableByteArray(dataToEncrypt), jceCMSContentEncryptorBuilder.build());
-        log.info("Encrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
-        return ed.getEncoded();
     }
 
     @Override
