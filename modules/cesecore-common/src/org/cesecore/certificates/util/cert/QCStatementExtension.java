@@ -79,7 +79,7 @@ public final class QCStatementExtension extends CertTools {
             if (obj == null) {
                 return ret;
             }
-            final ASN1Sequence seq = (ASN1Sequence)obj;
+            final ASN1Sequence seq = ASN1Sequence.getInstance(obj);
             for (int i = 0; i < seq.size(); i++) {
             	final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
             	final ASN1ObjectIdentifier oid = qc.getStatementId();
@@ -104,7 +104,7 @@ public final class QCStatementExtension extends CertTools {
 	        if (obj == null) {
 	            return null;
 	        }
-	        final ASN1Sequence seq = (ASN1Sequence)obj;
+	        final ASN1Sequence seq = ASN1Sequence.getInstance(obj);
 	        MonetaryValue mv = null;
 	        // Look through all the QCStatements and see if we have a stadard ETSI LimitValue
 	        for (int i = 0; i < seq.size(); i++) {
@@ -155,7 +155,7 @@ public final class QCStatementExtension extends CertTools {
 	        if (obj == null) {
 	            return null;
 	        }
-	        final ASN1Sequence seq = (ASN1Sequence)obj;
+	        final ASN1Sequence seq = ASN1Sequence.getInstance(obj);
 	        SemanticsInformation si = null;
 	        // Look through all the QCStatements and see if we have a standard RFC3739 pkixQCSyntax
 	        for (int i = 0; i < seq.size(); i++) {

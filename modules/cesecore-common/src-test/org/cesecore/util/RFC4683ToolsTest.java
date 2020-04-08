@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -23,15 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.tsp.TSPAlgorithms;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * See <a href="https://tools.ietf.org/html/rfc4683">RFC 4683</a>
@@ -136,11 +135,14 @@ public class RFC4683ToolsTest {
 
     private ASN1Primitive testCreateSimGeneralName(final String[] simParameters, final String[] simTokens) throws IOException {
         final ASN1Primitive generalName = RFC4683Tools.createSimGeneralName(simTokens[0], simTokens[1], simTokens[2]);
-        final DERSequence simSequence = ((DERSequence) ((DERTaggedObject) ((DERSequence) ((DERTaggedObject) generalName.toASN1Primitive())
-                .getObjectParser(0, true)).getObjectAt(1)).getObjectParser(0, true));
-        final String algorithmIdentifier = ((AlgorithmIdentifier) simSequence.getObjectAt(0)).getAlgorithm().getId();
-        final DEROctetString authorityRandom = (DEROctetString) simSequence.getObjectAt(1);
-        final DEROctetString sim = (DEROctetString) simSequence.getObjectAt(2);
+        final ASN1Sequence simSequence = ASN1Sequence.getInstance(
+                ASN1TaggedObject.getInstance(
+                        ASN1Sequence.getInstance(
+                                ASN1TaggedObject.getInstance(
+                                        generalName.toASN1Primitive()).getObjectParser(0, true)).getObjectAt(1)).getObjectParser(0, true));
+        final String algorithmIdentifier = (AlgorithmIdentifier.getInstance(simSequence.getObjectAt(0)).getAlgorithm().getId());
+        final ASN1OctetString authorityRandom = ASN1OctetString.getInstance(simSequence.getObjectAt(1));
+        final ASN1OctetString sim = ASN1OctetString.getInstance(simSequence.getObjectAt(2));
         assertEquals("The SIM algorithm identifier must match.", simParameters[0], algorithmIdentifier);
         assertEquals("The SIM authority random must match.", simTokens[1], new String(authorityRandom.getOctets()));
         assertEquals("The SIM algorithm identifier must match.", simTokens[2], new String(sim.getOctets()));
@@ -148,7 +150,7 @@ public class RFC4683ToolsTest {
     }
 
     private void testGetSimStringSequence(String simString, ASN1Primitive generalName) {
-        final ASN1Sequence otherName = ASN1Sequence.getInstance(((DERTaggedObject) generalName.toASN1Primitive()).getObject());
+        final ASN1Sequence otherName = ASN1Sequence.getInstance(ASN1TaggedObject.getInstance(generalName.toASN1Primitive()).getObject());
         final String simStringBySequence = RFC4683Tools.getSimStringSequence(otherName);
         assertEquals("The SIM string, extracted by its ASN.1 structure must match the original.", simString, simStringBySequence);
     }

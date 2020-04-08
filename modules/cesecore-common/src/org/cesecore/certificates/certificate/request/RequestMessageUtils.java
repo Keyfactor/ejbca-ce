@@ -168,7 +168,7 @@ public abstract class RequestMessageUtils {
                 }
                 final ASN1Sequence spkacSeq;
                 try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer))) {
-                    spkacSeq = (ASN1Sequence) in.readObject();
+                    spkacSeq = ASN1Sequence.getInstance(in.readObject());
                 }
                 NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
                 // Verify POPO, we don't care about the challenge, it's not important.

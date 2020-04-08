@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.certextensions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -25,10 +19,10 @@ import java.util.Iterator;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CAUnitTestBase;
@@ -44,6 +38,12 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.Base64;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests of {@link CabForumOrganizationIdentifier}
@@ -88,7 +88,7 @@ public class CabForumOrganizationIdentifierUnitTest extends X509CAUnitTestBase {
         final Iterator<ASN1Encodable> seqIter = ext.iterator();
         assertAsn1String("Registration Scheme Identifier", DERPrintableString.class, "NTR", seqIter.next());
         assertAsn1String("Registration Country", DERPrintableString.class, "US", seqIter.next());
-        final DERTaggedObject tagged = (DERTaggedObject) seqIter.next();
+        final ASN1TaggedObject tagged = ASN1TaggedObject.getInstance(seqIter.next());
         assertEquals("Wrong tag number for 'Registration State or Province'", 0, tagged.getTagNo());
         assertAsn1String("Registration State or Province", DERPrintableString.class, "CA", DERPrintableString.getInstance(tagged, false));
         assertAsn1String("Registration Reference", DERUTF8String.class, "123456", seqIter.next());

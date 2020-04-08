@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,6 +59,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -204,6 +198,13 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -748,7 +749,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
-                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
+                final ASN1OctetString oct = ASN1OctetString.getInstance(asn1InputStream.readObject());
                 assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
             }
         } finally {
@@ -879,7 +880,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
-                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
+                final ASN1OctetString oct = ASN1OctetString.getInstance(asn1InputStream.readObject());
                 assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
             }
         } finally {
@@ -1237,7 +1238,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             final byte[] extensionValue = cert.getExtensionValue(EXTENSION_OID);
             assertNotNull("There should be an extension in the response certificate.", extensionValue);
-            final DEROctetString extensionOctets = (DEROctetString)DEROctetString.fromByteArray(extensionValue);
+            final ASN1OctetString extensionOctets = (DEROctetString)DEROctetString.fromByteArray(extensionValue);
             assertEquals("Extension did not have the correct value", EXTENSION_CONTENT, (new String(extensionOctets.getOctets())).trim());
         } finally {
             // restore

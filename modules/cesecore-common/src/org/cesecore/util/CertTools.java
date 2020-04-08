@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.novell.ldap.LDAPDN;
+
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -98,6 +100,7 @@ import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -167,8 +170,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-
-import com.novell.ldap.LDAPDN;
 
 /**
  * Tools to handle common certificate operations.
@@ -1995,7 +1996,8 @@ public abstract class CertTools {
      */
     public static String getCertificatePolicyId(Certificate certificate, int pos) throws IOException {
         if (certificate != null && certificate instanceof X509Certificate) {
-            final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
+            final ASN1Sequence asn1Sequence = ASN1Sequence.getInstance(
+                    getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId()));
             if (asn1Sequence != null) {
                 // Check the size so we don't ArrayIndexOutOfBounds
                 if (asn1Sequence.size() >= pos + 1) {
@@ -2016,7 +2018,8 @@ public abstract class CertTools {
     public static List<ASN1ObjectIdentifier> getCertificatePolicyIds(Certificate certificate) throws IOException {
         List<ASN1ObjectIdentifier> ret = new ArrayList<>();
         if (certificate != null && certificate instanceof X509Certificate) {
-            final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
+            final ASN1Sequence asn1Sequence = ASN1Sequence.getInstance(
+                    getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId()));
             if (asn1Sequence != null) {
                 for (ASN1Encodable asn1Encodable : asn1Sequence) {
                     PolicyInformation pi = PolicyInformation.getInstance(asn1Encodable);
@@ -2037,7 +2040,8 @@ public abstract class CertTools {
     public static List<PolicyInformation> getCertificatePolicies(Certificate certificate) throws IOException {
         List<PolicyInformation> ret = new ArrayList<>();
         if (certificate != null && certificate instanceof X509Certificate) {
-            final ASN1Sequence asn1Sequence = (ASN1Sequence) getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId());
+            final ASN1Sequence asn1Sequence = ASN1Sequence.getInstance(
+                    getExtensionValue((X509Certificate) certificate, Extension.certificatePolicies.getId()));
             if (asn1Sequence != null) {
                 for (ASN1Encodable asn1Encodable : asn1Sequence) {
                     PolicyInformation pi = PolicyInformation.getInstance(asn1Encodable);
@@ -2114,7 +2118,7 @@ public abstract class CertTools {
             // First in sequence is the object identifier, that we must check
             ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(oid)) {
-                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
                 ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
@@ -2138,7 +2142,7 @@ public abstract class CertTools {
             // First in sequence is the object identifier, that we must check
             ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(oid)) {
-                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
                 ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
@@ -2162,7 +2166,7 @@ public abstract class CertTools {
             // First in sequence is the object identifier, that we must check
             ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(oid)) {
-                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
                 ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
@@ -2233,7 +2237,7 @@ public abstract class CertTools {
                 String assigner = null;
 
                 // Get the PermanentIdentifier sequence
-                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
                 ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
@@ -2313,7 +2317,7 @@ public abstract class CertTools {
             // First in sequence is the object identifier, that we must check
             ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(CertTools.GUID_OBJECTID)) {
-                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
                 ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
@@ -2355,7 +2359,7 @@ public abstract class CertTools {
             ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(CertTools.KRB5PRINCIPAL_OBJECTID)) {
                 // Get the KRB5PrincipalName sequence
-                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(seq.getObjectAt(1));
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
                 ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
@@ -2363,21 +2367,21 @@ public abstract class CertTools {
                 }
                 ASN1Sequence krb5Seq = ASN1Sequence.getInstance(obj);
                 // Get the Realm tagged as 0
-                ASN1TaggedObject robj = (ASN1TaggedObject) krb5Seq.getObjectAt(0);
+                ASN1TaggedObject robj = ASN1TaggedObject.getInstance(krb5Seq.getObjectAt(0));
                 DERGeneralString realmObj = DERGeneralString.getInstance(robj.getObject());
                 String realm = realmObj.getString();
                 // Get the PrincipalName tagged as 1
-                ASN1TaggedObject pobj = (ASN1TaggedObject) krb5Seq.getObjectAt(1);
+                ASN1TaggedObject pobj = ASN1TaggedObject.getInstance(krb5Seq.getObjectAt(1));
                 // This is another sequence of type and name
                 ASN1Sequence nseq = ASN1Sequence.getInstance(pobj.getObject());
                 // Get the name tagged as 1
-                ASN1TaggedObject nobj = (ASN1TaggedObject) nseq.getObjectAt(1);
+                ASN1TaggedObject nobj = ASN1TaggedObject.getInstance(nseq.getObjectAt(1));
                 // The name is yet another sequence of GeneralString
                 ASN1Sequence sseq = ASN1Sequence.getInstance(nobj.getObject());
+                @SuppressWarnings("unchecked")
                 Enumeration<ASN1Object> en = sseq.getObjects();
                 while (en.hasMoreElements()) {
-                    ASN1Primitive o = (ASN1Primitive) en.nextElement();
-                    DERGeneralString str = DERGeneralString.getInstance(o);
+                    DERGeneralString str = DERGeneralString.getInstance(en.nextElement());
                     if (ret != null) {
                         ret += "/" + str.getString();
                     } else {
@@ -3163,11 +3167,11 @@ public abstract class CertTools {
 
     private static List<String> getCrlDistributionPoints(final ASN1Primitive extensionValue, final boolean onlyfirst) {
         final ArrayList<String> cdps = new ArrayList<>();
-        final ASN1Sequence crlDistributionPoints = (ASN1Sequence) extensionValue;
+        final ASN1Sequence crlDistributionPoints = ASN1Sequence.getInstance(extensionValue);
         for (int i = 0; i < crlDistributionPoints.size(); i++) {
-            ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
+            final ASN1Sequence distributionPoint = ASN1Sequence.getInstance(crlDistributionPoints.getObjectAt(i));
             for (int j = 0; j < distributionPoint.size(); j++) {
-                ASN1TaggedObject tagged = (ASN1TaggedObject) distributionPoint.getObjectAt(j);
+                final ASN1TaggedObject tagged = ASN1TaggedObject.getInstance(distributionPoint.getObjectAt(j));
                 if (tagged.getTagNo() == 0) {
                     String url = getStringFromGeneralNames(tagged.getObject());
                     if(url!=null) {
@@ -3443,11 +3447,11 @@ public abstract class CertTools {
      * @return String with URI if tagNo is 6 (uniformResourceIdentifier), null otherwise
      */
     private static String getStringFromGeneralNames(ASN1Primitive names) {
-        ASN1Sequence namesSequence = ASN1Sequence.getInstance((ASN1TaggedObject) names, false);
+        final ASN1Sequence namesSequence = ASN1Sequence.getInstance(ASN1TaggedObject.getInstance(names), false);
         if (namesSequence.size() == 0) {
             return null;
         }
-        DERTaggedObject taggedObject = (DERTaggedObject) namesSequence.getObjectAt(0);
+        final ASN1TaggedObject taggedObject = ASN1TaggedObject.getInstance(namesSequence.getObjectAt(0));
         if (taggedObject.getTagNo() != GeneralName.uniformResourceIdentifier) { // uniformResourceIdentifier [6] IA5String,
             return null;
         }
@@ -4522,6 +4526,9 @@ public abstract class CertTools {
                 // Skip check for root CAs
                 final X500Name issuerDNName = X500Name.getInstance(issuer.getSubjectX500Principal().getEncoded());
                 if (issuerDNName.equals(subjectDNName)) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Skipping test for Root CA: " + subjectDNName);
+                    }
                     return;
                 }
             }
@@ -4532,10 +4539,21 @@ public abstract class CertTools {
             GeneralSubtree[] excluded = nc.getExcludedSubtrees();
             
             if (permitted != null) {
+                if (log.isTraceEnabled()) {
+                    for (GeneralSubtree subtree : permitted) {
+                        log.trace("Permitted subtree: " + subtree.getBase());
+                        log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+
+                    }
+                }
                 validator.intersectPermittedSubtree(permitted);
             }
             if (excluded != null) {
                 for (GeneralSubtree subtree : excluded) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Excluded subtree: " + subtree.getBase());
+                        log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                    }
                     validator.addExcludedSubtree(subtree);
                 }
             }

@@ -84,7 +84,7 @@ public class SubjectDirAttrExtension extends CertTools {
 	        if (obj == null) {
 	            return null;
 	        }
-	        ASN1Sequence seq = (ASN1Sequence)obj;
+	        ASN1Sequence seq = ASN1Sequence.getInstance(obj);
 	        
 	        String prefix = "";
 			SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
