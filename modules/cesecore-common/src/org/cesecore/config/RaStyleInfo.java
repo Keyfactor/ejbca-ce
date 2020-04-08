@@ -14,7 +14,8 @@
 package org.cesecore.config;
 
 import org.apache.commons.codec.binary.Hex;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -182,7 +183,7 @@ public class RaStyleInfo implements Serializable {
     public Map<String, Object> getAsMap() {
         final Map<String, Object> map = new LinkedHashMap<>();
         final Map<String, Object> hashes = new LinkedHashMap<>();
-        final Keccak.Digest256 sha3 = new Keccak.Digest256();
+        final SHA3.DigestSHA3 sha3 = new SHA3.DigestSHA3(256);
         if (logoBytes != null) {
             final byte[] logoHash = sha3.digest(logoBytes);
             hashes.put("logo_hash", Hex.encodeHexString(logoHash));
