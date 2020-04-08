@@ -427,10 +427,10 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         assertNotNull("CRL has no distribution points", cdpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
-        DistributionPointName distpoint = cdp.getDistributionPoint();
+        final IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
+        final DistributionPointName distpoint = cdp.getDistributionPoint();
 
         assertEquals("CRL distribution point is different", cdpURL,
                 ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
@@ -464,7 +464,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
         DistributionPoint[] distpoints = cdp.getDistributionPoints();

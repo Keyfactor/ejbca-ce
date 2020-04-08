@@ -524,12 +524,12 @@ public class CmpMessageHelper {
         //         has to be preserved, but that is a different story).
 
         // Reconstructing the CertRequest
-        ASN1Encodable o2 = ((DERSequence) messages.toASN1Primitive()).getObjectAt(0);
-        ASN1Encodable o3 = ((DERSequence) o2).getObjectAt(0);
+        ASN1Encodable o2 = ASN1Sequence.getInstance(messages.toASN1Primitive()).getObjectAt(0);
+        ASN1Encodable o3 = ASN1Sequence.getInstance(o2).getObjectAt(0);
         CertRequest cr = CertRequest.getInstance(o3);
 
         // Reconstructing the proof-of-posession
-        ASN1TaggedObject o4 = (ASN1TaggedObject) ((DERSequence) o2).getObjectAt(1);
+        ASN1TaggedObject o4 = ASN1TaggedObject.getInstance(ASN1Sequence.getInstance(o2).getObjectAt(1));
         ProofOfPossession pp;
         int tagnr = o4.getTagNo();
         ASN1Encodable o5;
@@ -552,7 +552,7 @@ public class CmpMessageHelper {
         }
 
         // Reconstructing the regToken
-        ASN1Sequence o6 = (ASN1Sequence) ((ASN1Sequence) o2.toASN1Primitive()).getObjectAt(2);
+        ASN1Sequence o6 = ASN1Sequence.getInstance(ASN1Sequence.getInstance(o2.toASN1Primitive()).getObjectAt(2));
         final AttributeTypeAndValue av = AttributeTypeAndValue.getInstance(o6.getObjectAt(0));
         final AttributeTypeAndValue[] avs = { av };
 
@@ -580,17 +580,17 @@ public class CmpMessageHelper {
         // This means that there is a chance that the request generated using novosec specifies the revocation reason in 'revocationReason' and not
         // as an extension, leading to Ejbca not being able to parse the request using bouncycastle OR not setting the correct revocation reason.
 
-        ASN1Encodable o2 = ((DERSequence) revContent.toASN1Primitive()).getObjectAt(0);
-        ASN1Encodable o3 = ((DERSequence) o2).getObjectAt(0);
+        final ASN1Encodable o2 = ASN1Sequence.getInstance(revContent.toASN1Primitive()).getObjectAt(0);
+        final ASN1Encodable o3 = ASN1Sequence.getInstance(o2).getObjectAt(0);
         CertTemplate ct = CertTemplate.getInstance(o3);
 
         ReasonFlags reasonbits = null;
         Extensions crlEntryDetails = null;
-        int seqSize = ((DERSequence) o2).size();
+        int seqSize = ASN1Sequence.getInstance(o2).size();
         for (int i = 1; i < seqSize; i++) {
-            ASN1Encodable o4 = ((DERSequence) o2).getObjectAt(i);
+            final ASN1Encodable o4 = ASN1Sequence.getInstance(o2).getObjectAt(i);
             if (o4 instanceof DERBitString) {
-                reasonbits = new ReasonFlags((DERBitString) o4);
+                reasonbits = new ReasonFlags(DERBitString.getInstance(o4));
             } else if (o4 instanceof DERGeneralizedTime) {
                 DERGeneralizedTime.getInstance(o4); // bad since time, not used in the bouncycastle class
             } else if (o4 instanceof DERSequence) {
