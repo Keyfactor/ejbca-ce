@@ -14,6 +14,7 @@
 package org.cesecore.config;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.ArrayUtils;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 
 import java.io.Serializable;
@@ -196,7 +197,7 @@ public class RaStyleInfo implements Serializable {
             }
             final byte[] cssHash = sha3.digest();
             hashes.put("css_hash", Hex.encodeHexString(cssHash));
-            map.put("css_files", Arrays.asList(raCssInfos.keySet()));
+            map.put("css_files", ArrayUtils.toString(raCssInfos.keySet()));
         }
         hashes.put("algorithm", sha3.getAlgorithm());
         map.put("archive_name", archiveName);
