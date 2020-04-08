@@ -373,7 +373,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             assertNotNull("Failed to create certificate", cert);
             princ = ((X509Certificate) cert).getSubjectX500Principal();
             name = X500Name.getInstance(princ.getEncoded());
-            assertEquals("C=SE,O=PrimeKey,SURNAME=surname,SERIALNUMBER=12345,CN=DnOrderTest", name.toString());
+            assertEquals("C=SE,O=PrimeKey,SURNAME=surname,SN=12345,CN=DnOrderTest", name.toString());
             // Get device serial number to check that it really is the correct stuff and that SerialNumber and SurName has not gotten mixed up
             rdns = name.getRDNs(new ASN1ObjectIdentifier("2.5.4.5")); // Device serial number
             assertEquals(1, rdns.length);
