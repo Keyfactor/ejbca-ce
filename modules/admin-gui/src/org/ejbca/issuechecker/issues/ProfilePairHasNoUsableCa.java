@@ -14,9 +14,7 @@
 package org.ejbca.issuechecker.issues;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -30,10 +28,9 @@ import org.ejbca.issuechecker.TicketDescription;
 import java.util.*;
 
 /**
- * Produce an error for each certificate/end entity profile pair without usable CAs.
+ * Produce an error for each certificate/end entity profile pair without CAs in common.
  *
- * <p>This could happen if none of the available CAs in the end entity profile is allowed by the certificate profile
- * or if the CAs that a profile has in common have expired.
+ * <p>This could happen if none of the available CAs in the end entity profile is allowed by the certificate profile.
  *
  * <p>Tickets created by this issue can be viewed by anyone who has read access to the end entity profile.
  *
@@ -77,21 +74,21 @@ public class ProfilePairHasNoUsableCa extends ConfigurationIssue {
             final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
             for (final int certificateProfileId : endEntityProfile.getAvailableCertificateProfileIds()) {
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
-                if (!hasUsableCa(endEntityProfile, certificateProfile)) {
+                if (hasNoCaInCommon(endEntityProfile, certificateProfile)) {
                     tickets.add(Ticket.builder(this, TicketDescription.fromResource(
                             "PROFILE_PAIR_HAS_NO_USABLE_CA_TICKET_DESCRIPTION",
-                                endEntityProfileSession.getEndEntityProfileIdToNameMap().get(endEntityProfileId),
-                                certificateProfileSession.getCertificateProfileIdToNameMap().get(certificateProfileId)
-                            ))
-                            .withAccessControl(authenticationToken -> endEntityProfileSession.isAuthorizedToView(authenticationToken, endEntityProfileId))
-                            .build());
+                            endEntityProfileSession.getEndEntityProfileIdToNameMap().get(endEntityProfileId),
+                            certificateProfileSession.getCertificateProfileIdToNameMap().get(certificateProfileId)
+                        ))
+                        .withAccessControl(authenticationToken -> endEntityProfileSession.isAuthorizedToView(authenticationToken, endEntityProfileId))
+                        .build());
                 }
             }
         }
         return tickets;
     }
 
-    private boolean hasUsableCa(final EndEntityProfile endEntityProfile, final CertificateProfile certificateProfile) {
+    private boolean hasNoCaInCommon(final EndEntityProfile endEntityProfile, final CertificateProfile certificateProfile) {
         final Set<Integer> endEntityProfileCas = endEntityProfile.getAvailableCAs().contains(CAConstants.ALLCAS)
                 ? caSession.getCAIdToNameMap().keySet()
                 : new HashSet<>(endEntityProfile.getAvailableCAs());
@@ -99,11 +96,7 @@ public class ProfilePairHasNoUsableCa extends ConfigurationIssue {
                 ? caSession.getCAIdToNameMap().keySet()
                 : new HashSet<>(certificateProfile.getAvailableCAs());
 
-        return intersect(endEntityProfileCas, certificateProfileCas)
-                .stream()
-                .filter(caId -> isUsable(caSession.getCAInfoInternal(caId)))
-                .findAny()
-                .isPresent();
+        return intersect(endEntityProfileCas, certificateProfileCas).isEmpty();
     }
 
     private Set<Integer> intersect(final Set<Integer> endEntityProfileCas, final Set<Integer> certificateProfileCas) {
@@ -114,14 +107,5 @@ public class ProfilePairHasNoUsableCa extends ConfigurationIssue {
             }
         }
         return intersection;
-    }
-
-
-    private boolean isUsable(final CAInfo caInfo) {
-        return caInfo.getStatus() == CAConstants.CA_ACTIVE ||
-                // It is normal to have a profile referring to a CA which is offline
-                caInfo.getStatus() == CAConstants.CA_OFFLINE ||
-                // This is probably not very common, but may be valid configuration for migration installations
-                caInfo.getStatus() == CAConstants.CA_EXTERNAL;
     }
 }
