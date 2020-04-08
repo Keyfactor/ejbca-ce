@@ -207,7 +207,7 @@ public class BasicCertificateExtensionTest {
 		
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DEROctetString);
-		assertTrue(((DEROctetString)value).toString(),((DEROctetString)value).toString().equalsIgnoreCase("#DBE81232"));
+		assertTrue(DEROctetString.getInstance(value).toString(),DEROctetString.getInstance(value).toString().equalsIgnoreCase("#DBE81232"));
 		
 		props = new Properties();
 		props.put("encoding", "DEROCTETSTRING");

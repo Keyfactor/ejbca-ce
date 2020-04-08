@@ -21,6 +21,7 @@ import java.security.Security;
 import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jcajce.provider.config.ConfigurableProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -140,6 +141,7 @@ public final class CryptoProviderTools {
         // as the behavior in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
         // We must be backwards compatible, i.e. serialNumber is SN in EJBCA
         X509Name.DefaultSymbols.put(X509Name.SN, "SN");
+        X500Name.setDefaultStyle(CeSecoreNameStyle.INSTANCE);
         // We hard specify the system security provider in a few cases (see SYSTEM_SECURITY_PROVIDER). 
         // If the SUN provider does not exist, we will always use BC.
         final Provider p = Security.getProvider(SYSTEM_SECURITY_PROVIDER);
