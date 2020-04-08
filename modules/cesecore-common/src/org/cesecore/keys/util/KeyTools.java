@@ -290,7 +290,7 @@ public final class KeyTools {
                 // we did not have the parameter specs, lets create them because we know which curve we are using
                 final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(keySpec);
                 final java.security.spec.ECPoint p = pkec.getW();
-                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p, false);
+                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p);
                 final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
                 final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
                 ret = keyfact.generatePublic(pubKey);
@@ -327,9 +327,9 @@ public final class KeyTools {
             log.info("pkwithparams does not have any params.");
             return pk;
         }
-        final org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec, false);
+        final org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec);
         final java.security.spec.ECPoint p = pkec.getW();
-        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
+        final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p);
         final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
         final KeyFactory keyfact;
         try {

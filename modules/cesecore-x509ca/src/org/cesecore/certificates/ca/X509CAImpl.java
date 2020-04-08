@@ -1282,7 +1282,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo) : null;
 
 
-        // Check that the certificate fulfills name constraints
+        // Check that the certificate fulfills name constraints, as a service to the CA, so they don't issue certificates that 
+        // later fail verification in clients (browsers)
         if (cacert != null) {
             GeneralNames altNameGNs = null;
             String altName = subject.getSubjectAltName();
