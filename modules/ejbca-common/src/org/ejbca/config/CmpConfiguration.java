@@ -77,6 +77,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_ALLOWAUTOMATICKEYUPDATE = "allowautomatickeyupdate";
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
     public static final String CONFIG_ALLOWSERVERGENERATEDKEYS  = "allowservergenkeys";
+    /** @deprecated since 7.4.0, value is instead set per CA. Only remains for upgrades. */
+    @Deprecated
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
     /** @deprecated since 6.12.0. No longer used, and can no longer be set. The datasource is now hard-coded to be UnidDS */
     @Deprecated
@@ -602,10 +604,19 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, Boolean.toString(allowSameKey), alias);
     }
     
+    /**
+     * @deprecated as of 7.4.0 this has setting is set per CA and is universal for all incoming PKCS#10 requests. Only remains for upgrades.
+     */
+    @Deprecated
     public String getCertReqHandlerClass(String alias) {
         String key = alias + "." + CONFIG_CERTREQHANDLER_CLASS;
         return getValue(key, alias);
     }
+    
+    /**
+     * @deprecated as of 7.4.0 this has setting is set per CA and is universal for all incoming PKCS#10 requests. Only remains for upgrades.
+     */
+    @Deprecated
     public void setCertReqHandlerClass(String alias, String certReqClass) {
         String key = alias + "." + CONFIG_CERTREQHANDLER_CLASS;
         setValue(key, certReqClass, alias);

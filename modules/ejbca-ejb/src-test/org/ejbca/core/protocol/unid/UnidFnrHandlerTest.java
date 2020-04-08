@@ -65,7 +65,7 @@ public class UnidFnrHandlerTest {
         unidfnrSessionField.set(handler, unidfnrSession);
         final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix + "_a_profile_name");
         //The result should consist of the prefix + lra + six random characters
-        String serialNumber = reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue().toString();
+        String serialNumber = reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue().toString();
         assertEquals("Serial number is malformed, missing prefix sequence.", unidPrefix, serialNumber.subSequence(0, unidPrefix.length()));
         assertEquals("Serial number is malformed, missing LRA sequence.", lra,
                 serialNumber.subSequence(unidPrefix.length(), lra.length() + unidPrefix.length()));
@@ -103,7 +103,7 @@ public class UnidFnrHandlerTest {
         
 		MyIRequestMessage(String serialNumber) {
 		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
-			nameBuilder.addRDN(CeSecoreNameStyle.SN, serialNumber);
+			nameBuilder.addRDN(CeSecoreNameStyle.SERIALNUMBER, serialNumber);
 			this.dn = nameBuilder.build();
 		}
 		@Override

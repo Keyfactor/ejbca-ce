@@ -846,9 +846,9 @@ class CMPTest extends ClientToolBox {
                     x500nb.addRDN(BCStyle.O, " CMP Test ");
                     x500nb.addRDN(BCStyle.C, "SE");
                     x500nb.addRDN(BCStyle.EmailAddress, "email.address@my.com");
-                    x500nb.addRDN(BCStyle.SN, getFnrLra());
+                    x500nb.addRDN(BCStyle.SERIALNUMBER, getFnrLra());
                 } else {
-                    x500nb.addRDN(BCStyle.SN, getFnrLra());
+                    x500nb.addRDN(BCStyle.SERIALNUMBER, getFnrLra());
                     x500nb.addRDN(BCStyle.EmailAddress, "email.address@my.com");
                     x500nb.addRDN(BCStyle.C, "SE");
                     x500nb.addRDN(BCStyle.O, "CMP Test");
