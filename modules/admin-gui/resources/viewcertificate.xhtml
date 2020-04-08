@@ -70,9 +70,11 @@
                 </h:panelGroup>
                 
                 <h:panelGroup rendered="#{viewCertificateMBean.displayShowOlderButton}">
-	                <h:commandButton rendered="#{!viewCertificateMBean.cacerts}" value="&lt; #{web.text.VIEWOLDER}" tabindex="1" action="#{viewCertificateMBean.actionViewOlder}">
-	                    <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex}"/>
-	                </h:commandButton>
+                    <h:outputLink id="viewOlder" value="#{viewCertificateMBean.link}" styleClass="button">
+                        <f:param name="hiddenindex" value="#{viewCertificateMBean.nextIndex}"/>
+                        <f:param name="username" value="#{viewCertificateMBean.userName}"/>
+                        <h:outputText value="&lt; #{web.text.VIEWOLDER}"/>
+                    </h:outputLink>
 	                <h:commandButton rendered="#{viewCertificateMBean.cacerts}" value="&lt; #{web.text.VIEWISSUING}" tabindex="1" action="#{viewCertificateMBean.actionViewOlder}">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex}"/>
 	                </h:commandButton>
@@ -82,9 +84,11 @@
                 </h:panelGroup>
                 
                 <h:panelGroup rendered="#{viewCertificateMBean.displayShowNewerButton}">
-	                <h:commandButton rendered="#{!viewCertificateMBean.cacerts}" value="#{web.text.VIEWNEWER} &gt;" tabindex="2" action="#{viewCertificateMBean.actionViewNewer}">
-	                    <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex}"/>
-	                </h:commandButton>
+                    <h:outputLink id="viewNewer" value="#{viewCertificateMBean.link}" styleClass="button">
+                        <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex-1}"/>
+                        <f:param name="username" value="#{viewCertificateMBean.userName}"/>
+                        <h:outputText value="#{web.text.VIEWNEWER} &gt;" />
+                    </h:outputLink>
 	                <h:commandButton rendered="#{viewCertificateMBean.cacerts}" value="#{web.text.VIEWSUBORDINATE} &gt;" tabindex="2" action="#{viewCertificateMBean.actionViewNewer}">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex}"/>
 	                </h:commandButton>

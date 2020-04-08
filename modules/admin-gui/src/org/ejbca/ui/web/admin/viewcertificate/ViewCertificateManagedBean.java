@@ -353,7 +353,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             noparameter = false;
             cacerts = true;
         }
-        
+        if (request.getParameter(HIDDEN_INDEX) != null) {
+            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
+            certificateData = raBean.getCertificate(currentIndex);
+        }
         if (!noparameter) {
             numberOfCertificates = raBean.getNumberOfCertificates();
             if (numberOfCertificates > 0)
@@ -532,40 +535,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return aiaCaIssuerUris;
     }
 
-    public void actionViewOlder() {
-        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        
-        numberOfCertificates = raBean.getNumberOfCertificates();
-        noparameter = false;
-        if (request.getParameter(HIDDEN_INDEX) != null) {
-            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) + 1;
-            if (currentIndex > numberOfCertificates - 1) {
-                currentIndex = numberOfCertificates;
-            }
-            certificateData = raBean.getCertificate(currentIndex);
-        }
-        
-        final GlobalConfiguration globalConfiguration = ejbcaBean.getGlobalConfiguration();
-        composeCertificateData(request, globalConfiguration);
+    public String getLink() throws UnsupportedEncodingException {
+        return ejbcaBean.getBaseUrl()+ ejbcaBean.getGlobalConfiguration().getAdminWebPath() + java.net.URLEncoder.encode("viewcertificate.xhtml","UTF-8") ;
     }
-    
-    public void actionViewNewer() {
-        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        
-        numberOfCertificates = raBean.getNumberOfCertificates();
-        noparameter = false;
-        if (request.getParameter(HIDDEN_INDEX) != null) {
-            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) - 1;
-            if (currentIndex < 0) {
-                currentIndex = 0;
-            }
-            certificateData = raBean.getCertificate(currentIndex);
-        }
-        
-        final GlobalConfiguration globalConfiguration = ejbcaBean.getGlobalConfiguration();
-        composeCertificateData(request, globalConfiguration);
-    }
-    
+
     public void actionKeyRecovery() throws CADoesntExistsException, AuthorizationDeniedException {
         if (!cacerts && raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery) {
             try {

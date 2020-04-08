@@ -1281,6 +1281,24 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 	color: #009;
 	background: #eee;
 }
+
+a.button {
+	font-size: 11pt;
+	text-align: left;
+	text-decoration: none;
+	padding: 0px 12px 1px 12px;
+	color: #000;
+	background: #fff;
+	border-left: 1px solid #ddd;
+	border-top: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+	border-bottom: 1px solid #ccc;
+	border-radius: 4px;
+}
+a.button:active {
+	position: relative;
+	top: 1px;
+}
 .infoMessage {
 	font-style: italic;
 	padding: 0.5em;
