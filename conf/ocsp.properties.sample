@@ -110,7 +110,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
 #ocsp.999.untilNextUpdate = 50
 
@@ -122,7 +122,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status..
 #ocsp.999.revoked.untilNextUpdate = 50
@@ -137,7 +137,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
 #ocsp.999.maxAge = 100
 
@@ -152,18 +152,18 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the admin GUI.
+# You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status.
 #ocsp.999.revoked.maxAge = 100
 
 # Specifies OCSP extension by OID that will result in a call to an extension class.
 # Intended for debugging post EJBCA 6.12.0.
-# All other extension configuration may be selected in the Admin Web for each Ocsp Key Binding.
+# All other extension configuration may be selected in the CA UI for each Ocsp Key Binding.
 #ocsp.alwayssendcustomextension=1.3.36.8.3.13
 
-# Setting this to true will enable unidfnr extension in ejbca.
-# Defalult is false since it is not normally used by many customers.
+# Setting this to true will enable unidfnr extension in EJBCA.
+# Default is false since it is not normally used by many customers.
 # Prior to setting this to true the appropriate data source must be set in JBoss.
 #unidfnr.enabled=false
 

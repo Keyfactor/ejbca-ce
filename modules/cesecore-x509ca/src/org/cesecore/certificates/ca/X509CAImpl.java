@@ -195,6 +195,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String USEPARTITIONEDCRL = "usepartitionedcrl";
     protected static final String CRLPARTITIONS = "crlpartitions";
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
+    protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -245,6 +246,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
+        setRequestPreProcessor(cainfo.getRequestPreProcessor());
     }
 
     /**
@@ -329,6 +331,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setUsePartitionedCrl(getUsePartitionedCrl())
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
+                .setRequestPreProcessor(getRequestPreProcessor())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -597,6 +600,17 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(SUSPENDEDCRLPARTITIONS, suspendedCrlPartitions);
     }
     
+    @Override
+    public String getRequestPreProcessor() {
+        return (String) data.get(REQUESTPREPROCESSOR);       
+    }
+    
+    @Override
+    public void setRequestPreProcessor(final String preProcessorClass) {
+        data.put(REQUESTPREPROCESSOR, preProcessorClass);
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#getUsePrintableStringSubjectDN()
      */
@@ -782,6 +796,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
+        setRequestPreProcessor(info.getRequestPreProcessor());
     }
 
     /* (non-Javadoc)
