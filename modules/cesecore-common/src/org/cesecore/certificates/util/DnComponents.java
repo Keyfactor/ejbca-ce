@@ -63,7 +63,7 @@ public class DnComponents {
         oids.put("initials", CeSecoreNameStyle.INITIALS);
         oids.put("givenname", CeSecoreNameStyle.GIVENNAME);
         oids.put("gn", CeSecoreNameStyle.GIVENNAME);
-        oids.put("sn", CeSecoreNameStyle.SN);
+        oids.put("sn", CeSecoreNameStyle.SERIALNUMBER);
         oids.put("serialnumber", CeSecoreNameStyle.SERIALNUMBER);
         oids.put("cn", CeSecoreNameStyle.CN);
         oids.put("uid", CeSecoreNameStyle.UID);
