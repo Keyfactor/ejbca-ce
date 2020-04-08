@@ -178,7 +178,7 @@ public class ExtraAlgorithmsPKCS12Test {
         ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
         ASN1Sequence spkiAsn1;
         try {
-            spkiAsn1 = (ASN1Sequence)ais.readObject();
+            spkiAsn1 = ASN1Sequence.getInstance(ais.readObject());
         } finally {
             ais.close();
         }

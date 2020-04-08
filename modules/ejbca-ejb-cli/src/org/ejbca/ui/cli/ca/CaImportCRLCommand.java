@@ -253,7 +253,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
             final byte[] bytes = entry.getExtensionValue(Extension.reasonCode.getId());
             if (bytes != null) {
                 ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
-                final ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+                final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
                 aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
                 final ASN1Primitive obj = aIn.readObject();
                 if (obj != null) {

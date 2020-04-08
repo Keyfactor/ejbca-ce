@@ -12,13 +12,12 @@
  *************************************************************************/
 package org.cesecore.keys.validation;
 
-import static org.junit.Assert.assertEquals;
-
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +33,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests RSA key validator functions, see {@link RsaKeyValidator}.
@@ -353,6 +354,8 @@ public class RsaKeyValidatorTest {
         final KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_RSA, BouncyCastleProvider.PROVIDER_NAME);
 
         // A-1: Test RSA key validation OK with default settings except key size.
+        // In order to create these keys, we need to override/disable some internal checks in BC
+        org.bouncycastle.util.Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
         BigInteger modulus = BigInteger.valueOf(15);
         BigInteger exponent = BigInteger.valueOf(3);
         PublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
@@ -368,21 +371,51 @@ public class RsaKeyValidatorTest {
         Assert.assertTrue("Key validation should have been successful.", messages.isEmpty());
 
         // A-2: Test RSA key validation failed RSA parameter bounds with even parameters.
+        // Before BC 1.65 we could create a RSA public key like this, but since 1.65 there are built in blocks in BC
         modulus = BigInteger.valueOf(16);
         exponent = BigInteger.valueOf(4);
-        publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
+        // publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
+        publicKey = new RSAPublicKey() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getAlgorithm() {
+                return "RSA";
+            }
+
+            @Override
+            public BigInteger getModulus() {
+                return BigInteger.valueOf(16);
+            }
+
+            @Override
+            public BigInteger getPublicExponent() {
+                return BigInteger.valueOf(4);
+            }
+            
+            @Override
+            public byte[] getEncoded() {
+                return null;
+            }
+
+            @Override
+            public String getFormat() {
+                return null;
+            }
+        };
+
         keyValidator.setPublicKeyExponentMin(exponent.add(BigInteger.ONE));
         keyValidator.setPublicKeyExponentOnlyAllowOdd(true);
         keyValidator.setPublicKeyModulusMin(modulus.add(BigInteger.ONE));
         keyValidator.setPublicKeyModulusMax(modulus.subtract(BigInteger.ONE));
         keyValidator.setPublicKeyModulusOnlyAllowOdd(true);
         bitLengths = new ArrayList<>();
-        bitLengths.add(Integer.toString(modulus.bitLength()));
+        bitLengths.add(Integer.toString(BigInteger.valueOf(16).bitLength()));
         keyValidator.setBitLengths(bitLengths);
         messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have failed because of even RSA parameter and outside parameter bounds.",
-                messages.size() == 4);
+        Assert.assertEquals("Key valildation should have failed because of even RSA parameter and outside parameter bounds.", 4,
+                messages.size());
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key exponent is odd.", messages.get(0));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
@@ -414,9 +447,9 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusOnlyAllowOdd(true);
         keyValidator.setPublicKeyModulusMinFactor(6); // smallest factor = 5
         messages = keyValidator.validate(publicKey, null);
-        log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have failed because of smallest factor restriction for modulus.",
-                messages.size() == 1);
+        log.debug("Key validation error messages: " + messages);
+        Assert.assertEquals("Key valildation should have failed because of smallest factor restriction for modulus.", 1,
+                messages.size());
         Assert.assertEquals("smallest factor failure message isn't right",
                 "Invalid: RSA public key modulus smallest factor is less than 6", messages.get(0));
 
@@ -425,8 +458,8 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusDontAllowPowerOfPrime(true);
         messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have failed because of power of prime restriction for modulus.",
-                messages.size() == 1);
+        Assert.assertEquals("Key valildation should have failed because of power of prime restriction for modulus.", 1,
+                messages.size());
         Assert.assertEquals("Power of prime failure message isn't right.",
                 "Invalid: RSA public key modulus is not allowed to be the power of a prime.", messages.get(0));
 

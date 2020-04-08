@@ -32,13 +32,14 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cms.Attribute;
@@ -280,7 +281,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         ASN1InputStream seqAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(scepmsg));
         ASN1Sequence seq = null;
         try {
-            seq = (ASN1Sequence) seqAsn1InputStream.readObject();
+            seq = ASN1Sequence.getInstance(seqAsn1InputStream.readObject());
         } finally {
             seqAsn1InputStream.close();
         }
@@ -291,7 +292,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             // This is SignedData so it is a pkcsCertReqSigned, pkcsGetCertInitialSigned, pkcsGetCertSigned, pkcsGetCRLSigned
             // (could also be pkcsRepSigned or certOnly, but we don't receive them on the server side
             // Try to find out what kind of message this is
-            sd = SignedData.getInstance((ASN1Sequence) ci.getContent());	
+            sd = SignedData.getInstance(ASN1Sequence.getInstance(ci.getContent()));	
             // Get self signed cert to identify the senders public key
             ASN1Set certs = sd.getCertificates();
             if (certs.size() > 0) {
@@ -299,8 +300,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 ASN1Encodable dercert = certs.getObjectAt(0);
                 if (dercert != null) {
                     // Requester's self-signed certificate is requestKeyInfo
-                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                    DEROutputStream dOut = new DEROutputStream(bOut);
+                    final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                    final ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
                     dOut.writeObject(dercert);
                     if (bOut.size() > 0) {
                         requestKeyInfo = bOut.toByteArray();
@@ -323,11 +324,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             Enumeration<?> sis = sd.getSignerInfos().getObjects();
 
             if (sis.hasMoreElements()) {
-                SignerInfo si = SignerInfo.getInstance((ASN1Sequence) sis.nextElement());
+                final SignerInfo si = SignerInfo.getInstance(ASN1Sequence.getInstance(sis.nextElement()));
                 Enumeration<?> attr = si.getAuthenticatedAttributes().getObjects();
 
                 while (attr.hasMoreElements()) {
-                    Attribute a = Attribute.getInstance((ASN1Sequence) attr.nextElement());
+                    final Attribute a = Attribute.getInstance(ASN1Sequence.getInstance(attr.nextElement()));
                     if (log.isDebugEnabled()) {
                     	log.debug("Found attribute: " + a.getAttrType().getId());
                     }
@@ -366,14 +367,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 ctoid = ci.getContentType().getId();
 
                 if (ctoid.equals(CMSObjectIdentifiers.data.getId())) {
-                    ASN1OctetString content = (ASN1OctetString) ci.getContent();
+                    final ASN1OctetString content = ASN1OctetString.getInstance(ci.getContent());
                     if (log.isDebugEnabled()) {
                     	log.debug("envelopedData is " + content.getOctets().length + " bytes.");
                     }
-                    ASN1InputStream seq1Asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(content.getOctets()));
+                    final ASN1InputStream seq1Asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(content.getOctets()));
                     ASN1Sequence seq1 = null;
                     try {
-                        seq1 = (ASN1Sequence) seq1Asn1InputStream.readObject();
+                        seq1 = ASN1Sequence.getInstance(seq1Asn1InputStream.readObject());
                     } finally {
                         seq1Asn1InputStream.close();
                     }
@@ -381,7 +382,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     ctoid = envEncData.getContentType().getId();
 
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
-                        envData = EnvelopedData.getInstance((ASN1Sequence) envEncData.getContent());
+                        envData = EnvelopedData.getInstance(ASN1Sequence.getInstance(envEncData.getContent()));
                         ASN1Set recipientInfos = envData.getRecipientInfos();
                         Enumeration<?> e = recipientInfos.getObjects();
                         while (e.hasMoreElements()) {

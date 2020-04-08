@@ -27,6 +27,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -221,18 +222,18 @@ public final class RFC4683Tools {
             // First in sequence is the object identifier, that we must check
             final ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
             if (SUBJECTIDENTIFICATIONMETHOD_OBJECTID.equals(id.getId())) {
-                final ASN1Sequence simVector = (ASN1Sequence) ((DERTaggedObject) sequence.getObjectAt(1)).getObject();
+                final ASN1Sequence simVector = ASN1Sequence.getInstance(ASN1TaggedObject.getInstance(sequence.getObjectAt(1)).getObject());
                 // 1. After certificate issuance the method is called with an algorithm identifier in its ASN.1 sequence.
                 // 2. But after reading a stored certificate (PEM or DER) the ASN.1 sequence contains a DERSeqence instead.
                 String algorithmIdentifier = null;
                 if (simVector.getObjectAt(0) instanceof AlgorithmIdentifier) {
-                    algorithmIdentifier = ((AlgorithmIdentifier) simVector.getObjectAt(0)).getAlgorithm().getId();
+                    algorithmIdentifier = (AlgorithmIdentifier.getInstance(simVector.getObjectAt(0)).getAlgorithm().getId());
                 } else {
-                    final ASN1Encodable encodable = ((ASN1Sequence) simVector.getObjectAt(0)).getObjectAt(0);
+                    final ASN1Encodable encodable = (ASN1Sequence.getInstance(simVector.getObjectAt(0)).getObjectAt(0));
                     algorithmIdentifier = encodable.toASN1Primitive().toString();
                 }
-                final ASN1OctetString hash = (ASN1OctetString) simVector.getObjectAt(1);
-                final ASN1OctetString pepsi = (ASN1OctetString) simVector.getObjectAt(2);
+                final ASN1OctetString hash = ASN1OctetString.getInstance(simVector.getObjectAt(1));
+                final ASN1OctetString pepsi = ASN1OctetString.getInstance(simVector.getObjectAt(2));
                 final String hashString = new String(hash.getOctets());
                 final String pepsiString = new String(pepsi.getOctets());
                 final StringBuilder builder = new StringBuilder();

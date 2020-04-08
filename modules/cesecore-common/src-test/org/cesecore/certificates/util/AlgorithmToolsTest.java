@@ -370,7 +370,7 @@ public class AlgorithmToolsTest {
     	// DSA
     	keyPair = KeyTools.genKeys("1024", "DSA");
     	Certificate sha1rsadsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA1WithDSA", true);
-    	assertEquals("DSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsadsa));
+    	assertEquals("SHA1withDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsadsa));
     	assertEquals("SHA1WithDSA", AlgorithmTools.getSignatureAlgorithm(sha1rsadsa));
 
         // ECC

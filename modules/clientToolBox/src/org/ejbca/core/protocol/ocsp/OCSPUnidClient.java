@@ -56,8 +56,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -315,7 +315,7 @@ public class OCSPUnidClient {
     	}
 
 		final RespID id = brep.getResponderId();
-		final DERTaggedObject to = (DERTaggedObject)id.toASN1Primitive().toASN1Primitive();
+		final ASN1TaggedObject to = ASN1TaggedObject.getInstance(id.toASN1Primitive().toASN1Primitive());
 		final RespID respId;
         final X509CertificateHolder[] chain = brep.getCerts();
         JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
@@ -401,9 +401,9 @@ public class OCSPUnidClient {
             return null;            
         }
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep.getExtnValue().getEncoded()));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        final FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
         return fnrobj.getFnr();
     }
 

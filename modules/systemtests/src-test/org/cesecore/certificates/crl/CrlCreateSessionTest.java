@@ -34,7 +34,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -419,10 +419,10 @@ public class CrlCreateSessionTest {
         
         // Check that the correct AKID is used
         final byte[] akidExtBytes = xcrl.getExtensionValue(Extension.authorityKeyIdentifier.getId());
-        ASN1InputStream octAis = new ASN1InputStream(new ByteArrayInputStream(akidExtBytes));
-        DEROctetString oct = (DEROctetString) (octAis.readObject());
-        ASN1InputStream keyidAis = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
-        AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance(keyidAis.readObject());
+        final ASN1InputStream octAis = new ASN1InputStream(new ByteArrayInputStream(akidExtBytes));
+        final ASN1OctetString oct = ASN1OctetString.getInstance(octAis.readObject());
+        final ASN1InputStream keyidAis = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+        final AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance(keyidAis.readObject());
         keyidAis.close();
         octAis.close();
         assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());

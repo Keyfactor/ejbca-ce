@@ -163,7 +163,7 @@ public class RequestHelper {
 
         final ASN1Sequence spkac;
         try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer))) {
-            spkac = (ASN1Sequence) in.readObject();
+            spkac = ASN1Sequence.getInstance(in.readObject());
         } catch (IOException e) {
             throw new IllegalStateException("Unexpected IOException was caught.", e);
         }

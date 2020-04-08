@@ -554,7 +554,7 @@ public class HSMKeyTool extends ClientToolBox {
                     final ASN1ObjectIdentifier extoid = new ASN1ObjectIdentifier(extOidStr);
                     if (!extoid.equals(Extension.authorityKeyIdentifier) && !extoid.equals(Extension.issuerAlternativeName)) {
                         final byte[] extbytes = newCertX509.getExtensionValue(extOidStr);
-                        final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(extbytes);
+                        final ASN1OctetString str = ASN1OctetString.getInstance(ASN1Primitive.fromByteArray(extbytes));
                         extgen.addExtension(extoid, criticalOids.contains(extOidStr), ASN1Primitive.fromByteArray(str.getOctets()));
                     }
                 }
@@ -575,8 +575,8 @@ public class HSMKeyTool extends ClientToolBox {
                 // If the new cert has an AKID, then add that extension but with the key id value of the old cert
                 final byte[] oldSKIDBytes = oldCertX509.getExtensionValue(Extension.subjectKeyIdentifier.getId());
                 if (oldSKIDBytes != null) {
-                    final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSKIDBytes);
-                    final ASN1OctetString innerStr = (ASN1OctetString)ASN1Primitive.fromByteArray(str.getOctets());
+                    final ASN1OctetString str = ASN1OctetString.getInstance(ASN1Primitive.fromByteArray(oldSKIDBytes));
+                    final ASN1OctetString innerStr = ASN1OctetString.getInstance(ASN1Primitive.fromByteArray(str.getOctets()));
                     final AuthorityKeyIdentifier akidExt = new AuthorityKeyIdentifier(innerStr.getOctets());
                     extgen.addExtension(Extension.authorityKeyIdentifier, false, akidExt);
                 } else {
@@ -587,7 +587,7 @@ public class HSMKeyTool extends ClientToolBox {
                 final byte[] oldSANBytes = oldCertX509.getExtensionValue(Extension.subjectAlternativeName.getId());
                 if (oldSANBytes != null) {
                     final ASN1ObjectIdentifier sanOid = new ASN1ObjectIdentifier(Extension.issuerAlternativeName.getId());
-                    final ASN1OctetString str = (ASN1OctetString)ASN1Primitive.fromByteArray(oldSANBytes);
+                    final ASN1OctetString str = (ASN1OctetString) ASN1Primitive.fromByteArray(oldSANBytes);
                     extgen.addExtension(sanOid, criticalOids.contains(Extension.issuerAlternativeName.getId()), ASN1Primitive.fromByteArray(str.getOctets()));
                 }
 

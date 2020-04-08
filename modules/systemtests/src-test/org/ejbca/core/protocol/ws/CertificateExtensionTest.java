@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -76,6 +70,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test of certificate extensions with values from WS.
@@ -389,7 +389,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
             assertNotNull(asn1o);
             log.info("The extension for the OID '"+sOID+"' of class '"+asn1o.getClass().getCanonicalName()+ "' is: "+asn1o);
             assertTrue(asn1o instanceof ASN1OctetString);
-            octets = ((ASN1OctetString)asn1o).getOctets();
+            octets = ASN1OctetString.getInstance(asn1o).getOctets();
             if ( values.length==1 ) {
                 assertArrayEquals( (new DEROctetString(values[0])).getEncoded(), octets);
                 return;
@@ -406,7 +406,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
         for ( int i=0; i < seq.size(); i++ ) {
             final ASN1Primitive derO = seq.getObjectAt(i).toASN1Primitive();
             assertTrue(derO instanceof ASN1OctetString);
-            assertArrayEquals((new DEROctetString(values[i])).getEncoded(), ((ASN1OctetString)derO).getOctets());
+            assertArrayEquals((new DEROctetString(values[i])).getEncoded(), ASN1OctetString.getInstance(derO).getOctets());
         }
     }
 

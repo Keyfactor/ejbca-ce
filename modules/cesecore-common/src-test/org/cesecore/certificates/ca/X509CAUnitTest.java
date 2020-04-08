@@ -320,12 +320,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Getting the revocation reason is a pita...
         byte[] extval = entry.getExtensionValue(Extension.reasonCode.getId());
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         ASN1Primitive obj = aIn.readObject();
         CRLReason reason = CRLReason.getInstance(obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
-        //DEROctetString ostr = (DEROctetString)obj;
 
         // Create a delta CRL
         revcerts = new ArrayList<>();
@@ -353,7 +352,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Getting the revocation reason is a pita...
         extval = entry.getExtensionValue(Extension.reasonCode.getId());
         aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
-        octs = (ASN1OctetString) aIn.readObject();
+        octs = ASN1OctetString.getInstance(aIn.readObject());
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         obj = aIn.readObject();
         reason = CRLReason.getInstance(obj);
@@ -1188,7 +1187,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         byte[] ext1 = cert.getExtensionValue("2.16.840.1.113730.1.13");
         // The Extension value is an Octet String, containing my value
         ASN1InputStream is = new ASN1InputStream(ext1);
-        ASN1OctetString oct = (ASN1OctetString) (is.readObject());
+        ASN1OctetString oct = ASN1OctetString.getInstance(is.readObject());
         is.close();
         ASN1InputStream is2 = new ASN1InputStream(oct.getOctets());
         DERIA5String str = (DERIA5String)is2.readObject();
@@ -1197,10 +1196,10 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         byte[] ext2 = cert.getExtensionValue("1.2.3.4");
         is = new ASN1InputStream(ext2);
-        oct = (ASN1OctetString) (is.readObject());
+        oct = ASN1OctetString.getInstance(is.readObject());
         is.close();
         is2 = new ASN1InputStream(oct.getOctets());
-        ASN1Sequence seq = (ASN1Sequence)is2.readObject();
+        ASN1Sequence seq = ASN1Sequence.getInstance(is2.readObject());
         System.out.println(ASN1Dump.dumpAsString(seq));
         is2.close();
         ASN1Encodable enc = seq.getObjectAt(0);
@@ -1216,7 +1215,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         byte[] ext3 = cert.getExtensionValue("1.2.3.5");
         is = new ASN1InputStream(ext3);
-        oct = (ASN1OctetString) (is.readObject());
+        oct = ASN1OctetString.getInstance(is.readObject());
         is.close();
         // This value can not be parsed as ASN.1
         byte[] bytes = oct.getOctets();
@@ -1357,8 +1356,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Certificate cert = testCa.getCACertificate();
         X500Principal princ = ((X509Certificate) cert).getSubjectX500Principal();
         X500Name name = X500Name.getInstance(princ.getEncoded());
-        // The EV DN components do not have names in standard java/BC
-        assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
+        // From BC 1.65 we set our CeSecoreNameStyle as default style for X500Name, which makes EV DN components available
+        assertEquals("Wrong DN name of Test CA", "JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
+        //assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
 
         // Test generation by calling generateCertificate directly
         final String subjectDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
@@ -1367,8 +1367,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);
         princ = ((X509Certificate) cert).getSubjectX500Principal();
         name = X500Name.getInstance(princ.getEncoded());
-        // The EV DN components do not have names in standard java/BC. This is standard order where EV fields are before CN and in other respects ldap order
-        String desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SERIALNUMBER=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
+        // This is standard order where EV fields are before CN and in other respects ldap order
+        // From BC 1.65 we set our CeSecoreNameStyle as default style for X500Name, which makes EV DN components available, the same with SERIALNUMBER is called SN
+        String desiredDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
         assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
         // Now set a DN order where the EV fields (and serialnumber and businesscategory) comes before C and in other aspects are x500 order
         final ArrayList<String> order = new ArrayList<>(Arrays.asList("jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality","businesscategory","serialnumber","c","dc","st","l","o","ou","t","surname","initials","givenname","gn","sn","name","cn","uid","dn","email","e","emailaddress","unstructuredname","unstructuredaddress","postalcode","postaladdress","telephonenumber","pseudonym","street"));
@@ -1377,8 +1378,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);
         princ = ((X509Certificate) cert).getSubjectX500Principal();
         name = X500Name.getInstance(princ.getEncoded());
-        // The EV DN components do not have names in standard java/BC
-        desiredDN = "1.3.6.1.4.1.311.60.2.1.3=NL,1.3.6.1.4.1.311.60.2.1.2=State,1.3.6.1.4.1.311.60.2.1.1=Åmål,BusinessCategory=Private Organization,SERIALNUMBER=1234567890,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,CN=evssltest6.test.lan";
+        // From BC 1.65 we set our CeSecoreNameStyle as default style for X500Name, which makes EV DN components available, the same with SERIALNUMBER is called SN
+        desiredDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,SN=1234567890,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,CN=evssltest6.test.lan";
         assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
     }
     

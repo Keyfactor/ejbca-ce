@@ -22,12 +22,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -95,16 +95,16 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
             if (values.size() == 0) {
             	return ret;
             }
-            DERSequence seq = (DERSequence) DERSequence.getInstance(values.getObjectAt(0));
+            final ASN1Sequence seq = ASN1Sequence.getInstance(values.getObjectAt(0));
             Enumeration<?> enumeration = seq.getObjects();
             while (enumeration.hasMoreElements()) {
             	Object current = enumeration.nextElement();
             	if (current instanceof DERPrintableString) {
-                	ret.add(((DERPrintableString) current).getString());
+                	ret.add(DERPrintableString.getInstance(current).getString());
             	} else if (current instanceof DERUTF8String) {
-                	ret.add(((DERUTF8String) current).getString());
+                	ret.add(DERUTF8String.getInstance(current).getString());
             	} else if (current instanceof ASN1Integer) {
-                	ret.add(((ASN1Integer) current).toString());
+                	ret.add(ASN1Integer.getInstance(current).toString());
             	} else {
             		ret.add("Unsupported type: " + current.getClass().getName());
             	}
@@ -146,17 +146,17 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         	return null;
         }
         ASN1Set set = attributes[0].getAttrValues();
-        DERSequence seq = (DERSequence) DERSequence.getInstance(set.getObjectAt(0));
+        final ASN1Sequence seq = ASN1Sequence.getInstance(set.getObjectAt(0));
         Enumeration<?> enumeration = seq.getObjects();
         while (enumeration.hasMoreElements()) {
-        	DERSequence seq2 = (DERSequence) DERSequence.getInstance(enumeration.nextElement());
-        	ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq2.getObjectAt(0);
+        	final ASN1Sequence seq2 = ASN1Sequence.getInstance(enumeration.nextElement());
+        	ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(seq2.getObjectAt(0));
         	if (szOID_ENROLL_CERTTYPE_EXTENSION.equals(oid.getId())) {
         		try {
-        			DEROctetString dos = (DEROctetString) seq2.getObjectAt(1);
+        			final ASN1OctetString dos = ASN1OctetString.getInstance(seq2.getObjectAt(1));
         			ASN1InputStream dosAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(dos.getOctets()));
                     try {
-                        ASN1String derobj = (ASN1String) dosAsn1InputStream.readObject();
+                        final ASN1String derobj = (ASN1String) dosAsn1InputStream.readObject();
                         return derobj.getString();
                     } finally {
                         dosAsn1InputStream.close();
@@ -183,32 +183,32 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         // Get attributes
         Attribute[] attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         if (attributes.length != 0) {
-            ASN1Set set = attributes[0].getAttrValues();
-            DERSequence seq = (DERSequence) DERSequence.getInstance(set.getObjectAt(0));
-            Enumeration<?> enumeration = seq.getObjects();
+            final ASN1Set set = attributes[0].getAttrValues();
+            final ASN1Sequence seq = ASN1Sequence.getInstance(set.getObjectAt(0));
+            final Enumeration<?> enumeration = seq.getObjects();
             while (enumeration.hasMoreElements()) {
-            	DERSequence seq2 = (DERSequence) DERSequence.getInstance(enumeration.nextElement());
-            	ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq2.getObjectAt(0);
+            	final ASN1Sequence seq2 = ASN1Sequence.getInstance(enumeration.nextElement());
+            	final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(seq2.getObjectAt(0));
             	if ("2.5.29.17".equals(oid.getId())) {	//SubjectAN
             		try {
-            			DEROctetString dos = (DEROctetString) seq2.getObjectAt(2);
-            			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(dos.getOctets()));
+            			final ASN1OctetString dos = ASN1OctetString.getInstance(seq2.getObjectAt(2));
+            			final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(dos.getOctets()));
             			while (ais.available()>0) {
-                			DERSequence seq3 = (DERSequence) ais.readObject();
+                			ASN1Sequence seq3 = ASN1Sequence.getInstance(ais.readObject());
                 			Enumeration<?> enum1 = seq3.getObjects();
                 			while (enum1.hasMoreElements()) {
-                				DERTaggedObject dto = (DERTaggedObject) enum1.nextElement();
+                				final ASN1TaggedObject dto = ASN1TaggedObject.getInstance(enum1.nextElement());
                 				if (dto.getTagNo() == 0) {
                 					// Sequence of OIDs and tagged objects
-                					DERSequence ds = (DERSequence) dto.getObject();
-                					ASN1ObjectIdentifier doid = (ASN1ObjectIdentifier) ds.getObjectAt(0);
+                					final ASN1Sequence ds = ASN1Sequence.getInstance(dto.getObject());
+                					final ASN1ObjectIdentifier doid = ASN1ObjectIdentifier.getInstance(ds.getObjectAt(0));
                         			if (OID_GUID.equals((doid).getId())) {
-                            			DEROctetString dos3 = (DEROctetString) ((DERTaggedObject)ds.getObjectAt(1)).getObject();
+                            			final ASN1OctetString dos3 = ASN1OctetString.getInstance((ASN1TaggedObject.getInstance(ds.getObjectAt(1)).getObject()));
                             			ret[0] = dos3.toString().substring(1); // Removes the initial #-sign
                         			}
                 				} else if (dto.getTagNo() == 2) {
                 					// DNS
-                					DEROctetString dos3 = (DEROctetString) dto.getObject();
+                					final ASN1OctetString dos3 = ASN1OctetString.getInstance(dto.getObject());
                 					ret[1] = new String(dos3.getOctets());
                 				}
                 			}
