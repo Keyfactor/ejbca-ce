@@ -42,6 +42,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -668,7 +669,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 }
             }
 
-            CertificateProfile cp = getCertificateProfileFromCrmf(eep, (DEROctetString) msg.getHeader().getSenderKID());
+            final CertificateProfile cp = getCertificateProfileFromCrmf(eep, msg.getHeader().getSenderKID());
             if(!isCertificateProfileAuthorizedToCA(cp, caid)) {
                 log.info("CertificateProfile is not authorized to CA with ID: " + caid);
                 return false;
@@ -819,7 +820,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
 
-    private CertificateProfile getCertificateProfileFromCrmf(final EndEntityProfile eep, final DEROctetString keyId) {
+    private CertificateProfile getCertificateProfileFromCrmf(final EndEntityProfile eep, final ASN1OctetString keyId) {
         CertificateProfile profile = null;
         String cpname = this.cmpConfiguration.getRACertProfile(this.confAlias);
         if (StringUtils.equals(cpname, CmpConfiguration.PROFILE_DEFAULT)) {

@@ -494,9 +494,9 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         }
         assertNotNull(fnrrep);
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        final FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
         return fnrobj.getFnr();
     }
 
