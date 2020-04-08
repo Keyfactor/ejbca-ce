@@ -82,7 +82,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(CN, "CN");
         DefaultSymbols.put(L, "L");
         DefaultSymbols.put(ST, "ST");
-        DefaultSymbols.put(SN, "SN");
+        DefaultSymbols.put(SERIALNUMBER, "SN");
         DefaultSymbols.put(EmailAddress, "E");
         DefaultSymbols.put(DC, "DC");
         DefaultSymbols.put(UID, "UID");
@@ -120,8 +120,8 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("cn", CN);
         DefaultLookUp.put("l", L);
         DefaultLookUp.put("st", ST);
-        DefaultLookUp.put("sn", SN);
-        DefaultLookUp.put("serialnumber", SN);
+        DefaultLookUp.put("sn", SERIALNUMBER);
+        DefaultLookUp.put("serialnumber", SERIALNUMBER);
         DefaultLookUp.put("street", STREET);
         DefaultLookUp.put("emailaddress", E);
         DefaultLookUp.put("dc", DC);
@@ -160,8 +160,8 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("CN", CN.getId());
         DefaultStringStringLookUp.put("L", L.getId());
         DefaultStringStringLookUp.put("ST", ST.getId());
-        DefaultStringStringLookUp.put("SN", SN.getId());
-        DefaultStringStringLookUp.put("SERIALNUMBER", SN.getId());
+        DefaultStringStringLookUp.put("SN", SERIALNUMBER.getId());
+        DefaultStringStringLookUp.put("SERIALNUMBER", SERIALNUMBER.getId());
         DefaultStringStringLookUp.put("STREET", STREET.getId());
         DefaultStringStringLookUp.put("EMAILADDRESS", E.getId());
         DefaultStringStringLookUp.put("DC", DC.getId());

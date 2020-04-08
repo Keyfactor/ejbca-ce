@@ -39,9 +39,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -77,7 +78,6 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -107,16 +107,14 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private final String responseProt;
 	/** Determines if it the RA will look for requested custom certificate serial numbers, if false such data is ignored */
 	private final boolean allowCustomCertSerno;
-	/** Extra pre-processing of requests */ 
-	private final ExtendedUserDataHandler extendedUserDataHandler;
 	
-	private final SignSession signSession;
-	private final EndEntityAccessSession endEntityAccessSession;
-	private final CertificateRequestSession certificateRequestSession;
-    private final CertificateStoreSession certStoreSession;
     private final AuthorizationSession authorizationSession;
-    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private final EndEntityAccessSession endEntityAccessSession;
     private final EndEntityManagementSession endEntityManagementSession;
+    private final CertificateStoreSession certStoreSession;
+    private final CertificateRequestSession certificateRequestSession;
+    private final SignSession signSession;
+    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
 
     /** Construct the message handler. */
     public CrmfMessageHandler(final AuthenticationToken authenticationToken, final CmpConfiguration cmpConfiguration, final String configAlias, final EjbBridgeSessionLocal ejbBridgeSession,
@@ -152,23 +150,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             this.userPwdParams = "random";
             this.responseProt = null;
             this.allowCustomCertSerno = false;
-        }
-        // Checks if an extended user data hander is configured and if so, creates the handler class.
-        final String handlerClass = cmpConfiguration.getCertReqHandlerClass(this.confAlias);
-        ExtendedUserDataHandler extendedUserDataHandler = null;
-        if (StringUtils.isNotEmpty(handlerClass)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("CertReqHandlerClass="+handlerClass);
-            }
-            try {
-                //Make sure that the plugin and its interface originate from the same classloader
-                ClassLoader classLoader = ExtendedUserDataHandler.class.getClassLoader();
-                extendedUserDataHandler = (ExtendedUserDataHandler) classLoader.loadClass(handlerClass).newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | RuntimeException e) {
-                LOG.warn("The configured user data plugin class '"+handlerClass+"' can not be loaded.", e);
-            }
-        }
-        this.extendedUserDataHandler = extendedUserDataHandler;         
+        }        
     }
     
     /**
@@ -356,7 +338,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 
         ResponseMessage resp = null;
         //Check the request's authenticity
-        CAInfo cainfo = this.caSession.getCAInfoInternal(caId, null, true);
+        X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(caId, null, true);
         final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(cainfo, this.confAlias, admin, caSession, 
                 endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                 authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
@@ -365,15 +347,23 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             String errmsg = messageVerifyer.getErrorMessage();
             LOG.info(errmsg);
             return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
-        }
-        
-      //  try {
+        }        
         // Create a username and password and register the new user in EJBCA
-        final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
+        final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);      
+        String preProcessorClass = cainfo.getRequestPreProcessor();
+        ExtendedUserDataHandler extendedUserDataHandler;
+        final RequestMessage req;
+        if(preProcessorClass != null) {
+            try {
+                extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                req = extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName);
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+            }
+        } else {
+            req = crmfreq;
+        }
         // Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
-        final RequestMessage req = this.extendedUserDataHandler != null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName)
-                : crmfreq;
-
         final X500Name dnname = req.getRequestX500Name();
         if (dnname == null) {
             final String nullMsg = "Request DN Name can not be null";
