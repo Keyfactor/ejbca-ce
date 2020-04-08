@@ -22,11 +22,11 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 /**
@@ -38,7 +38,8 @@ import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
  * @version $Id$
  */
 public class UnidFnrHandler implements ExtendedUserDataHandler {
-	private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
+	private static final long serialVersionUID = 1L;
+    private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
 	private static final Pattern onlyDecimalDigits = Pattern.compile("^[0-9]+$");
 	protected UnidfnrSessionLocal unidfnrSession;
 

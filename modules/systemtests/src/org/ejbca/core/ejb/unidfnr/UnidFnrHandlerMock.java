@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.unidfnr;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ejbca.core.protocol.ExtendedUserDataHandler;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.unid.UnidFnrHandler;
 
 /**
