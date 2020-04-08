@@ -43,9 +43,6 @@ public class ProfilePairHasNoUsableCaTest {
         final CaSessionLocal caSession = mock(CaSessionLocal.class);
         final EndEntityProfile endEntityProfile = mock(EndEntityProfile.class);
         final CertificateProfile certificateProfile = mock(CertificateProfile.class);
-        final CAInfo caInfo = mock(CAInfo.class);
-        expect(caInfo.getStatus())
-                .andReturn(CAConstants.CA_ACTIVE);
         expect(certificateProfile.getAvailableCAs())
                 .andReturn(Arrays.asList(CertificateProfile.ANYCA))
                 .anyTimes();
@@ -74,15 +71,11 @@ public class ProfilePairHasNoUsableCaTest {
         expect(caSession.getCAIdToNameMap())
                 .andReturn(MapTools.unmodifiableMap(1, "CA 1"))
                 .anyTimes();
-        expect(caSession.getCAInfoInternal(eq(1)))
-                .andReturn(caInfo)
-                .anyTimes();
         replay(endEntityProfileSession,
                 certificateProfileSession,
                 caSession,
                 endEntityProfile,
-                certificateProfile,
-                caInfo);
+                certificateProfile);
         final ProfilePairHasNoUsableCa profilePairHasNoUsableCa = new ProfilePairHasNoUsableCa(
                 endEntityProfileSession,
                 certificateProfileSession,
@@ -93,8 +86,7 @@ public class ProfilePairHasNoUsableCaTest {
                 certificateProfileSession,
                 caSession,
                 endEntityProfile,
-                certificateProfile,
-                caInfo);
+                certificateProfile);
         assertEquals(0, tickets.size());
     }
 
@@ -105,9 +97,6 @@ public class ProfilePairHasNoUsableCaTest {
         final CaSessionLocal caSession = mock(CaSessionLocal.class);
         final EndEntityProfile endEntityProfile = mock(EndEntityProfile.class);
         final CertificateProfile certificateProfile = mock(CertificateProfile.class);
-        final CAInfo caInfo = mock(CAInfo.class);
-        expect(caInfo.getStatus())
-                .andReturn(CAConstants.CA_ACTIVE);
         expect(certificateProfile.getAvailableCAs())
                 .andReturn(Arrays.asList(1))
                 .anyTimes();
@@ -136,15 +125,11 @@ public class ProfilePairHasNoUsableCaTest {
         expect(caSession.getCAIdToNameMap())
                 .andReturn(MapTools.unmodifiableMap(1, "CA 1"))
                 .anyTimes();
-        expect(caSession.getCAInfoInternal(eq(1)))
-                .andReturn(caInfo)
-                .anyTimes();
         replay(endEntityProfileSession,
                 certificateProfileSession,
                 caSession,
                 endEntityProfile,
-                certificateProfile,
-                caInfo);
+                certificateProfile);
         final ProfilePairHasNoUsableCa profilePairHasNoUsableCa = new ProfilePairHasNoUsableCa(
                 endEntityProfileSession,
                 certificateProfileSession,
@@ -155,8 +140,7 @@ public class ProfilePairHasNoUsableCaTest {
                 certificateProfileSession,
                 caSession,
                 endEntityProfile,
-                certificateProfile,
-                caInfo);
+                certificateProfile);
         assertEquals(0, tickets.size());
     }
 
@@ -167,14 +151,6 @@ public class ProfilePairHasNoUsableCaTest {
         final CaSessionLocal caSession = mock(CaSessionLocal.class);
         final EndEntityProfile endEntityProfile = mock(EndEntityProfile.class);
         final CertificateProfile certificateProfile = mock(CertificateProfile.class);
-        final CAInfo caInfo1 = mock(CAInfo.class);
-        final CAInfo caInfo2 = mock(CAInfo.class);
-        expect(caInfo1.getStatus())
-                .andReturn(CAConstants.CA_ACTIVE)
-                .anyTimes();
-        expect(caInfo2.getStatus())
-                .andReturn(CAConstants.CA_ACTIVE)
-                .anyTimes();
         expect(certificateProfile.getAvailableCAs())
                 .andReturn(Arrays.asList(1))
                 .anyTimes();
@@ -205,19 +181,11 @@ public class ProfilePairHasNoUsableCaTest {
                         1, "CA 1",
                         2, "CA 2"))
                 .anyTimes();
-        expect(caSession.getCAInfoInternal(eq(1)))
-                .andReturn(caInfo1)
-                .anyTimes();
-        expect(caSession.getCAInfoInternal(eq(2)))
-                .andReturn(caInfo2)
-                .anyTimes();
         replay(endEntityProfileSession,
                 certificateProfileSession,
                 caSession,
                 endEntityProfile,
-                certificateProfile,
-                caInfo1,
-                caInfo2);
+                certificateProfile);
         final ProfilePairHasNoUsableCa profilePairHasNoUsableCa = new ProfilePairHasNoUsableCa(
                 endEntityProfileSession,
                 certificateProfileSession,
@@ -228,76 +196,7 @@ public class ProfilePairHasNoUsableCaTest {
                 certificateProfileSession,
                 caSession,
                 endEntityProfile,
-                certificateProfile,
-                caInfo1,
-                caInfo2);
-        assertEquals(1, tickets.size());
-        assertEquals(
-                "(PROFILE_PAIR_HAS_NO_USABLE_CA_TICKET_DESCRIPTION, End Entity Profile, Certificate Profile)",
-                tickets.get(0).getTicketDescription().toString()
-        );
-    }
-
-    @Test
-    public void get1TicketForExpiredCa() {
-        final EndEntityProfileSession endEntityProfileSession = mock(EndEntityProfileSession.class);
-        final CertificateProfileSession certificateProfileSession = mock(CertificateProfileSession.class);
-        final CaSessionLocal caSession = mock(CaSessionLocal.class);
-        final EndEntityProfile endEntityProfile = mock(EndEntityProfile.class);
-        final CertificateProfile certificateProfile = mock(CertificateProfile.class);
-        final CAInfo caInfo = mock(CAInfo.class);
-        expect(caInfo.getStatus())
-                .andReturn(CAConstants.CA_EXPIRED)
-                .anyTimes();
-        expect(certificateProfile.getAvailableCAs())
-                .andReturn(Arrays.asList(CertificateProfile.ANYCA))
-                .anyTimes();
-        expect(endEntityProfile.getAvailableCAs())
-                .andReturn(Arrays.asList(CAConstants.ALLCAS))
-                .anyTimes();
-        expect(endEntityProfile.getAvailableCertificateProfileIds())
-                .andReturn(Arrays.asList(1))
-                .anyTimes();
-        expect(endEntityProfileSession.getEndEntityProfileIdToNameMap())
-                .andReturn(MapTools.unmodifiableMap(
-                        1, "EMPTY",
-                        2, "End Entity Profile"))
-                .anyTimes();
-        expect(endEntityProfileSession.getEndEntityProfile(eq(2)))
-                .andReturn(endEntityProfile)
-                .once();
-        expect(certificateProfileSession.getCertificateProfileIdToNameMap())
-                .andReturn(MapTools.unmodifiableMap(
-                        1, "Certificate Profile"
-                ))
-                .anyTimes();
-        expect(certificateProfileSession.getCertificateProfile(eq(1)))
-                .andReturn(certificateProfile)
-                .anyTimes();
-        expect(caSession.getCAIdToNameMap())
-                .andReturn(MapTools.unmodifiableMap(1, "CA 1"))
-                .anyTimes();
-        expect(caSession.getCAInfoInternal(eq(1)))
-                .andReturn(caInfo)
-                .anyTimes();
-        replay(endEntityProfileSession,
-                certificateProfileSession,
-                caSession,
-                endEntityProfile,
-                certificateProfile,
-                caInfo);
-        final ProfilePairHasNoUsableCa profilePairHasNoUsableCa = new ProfilePairHasNoUsableCa(
-                endEntityProfileSession,
-                certificateProfileSession,
-                caSession
-        );
-        final List<Ticket> tickets = profilePairHasNoUsableCa.getTickets();
-        verify(endEntityProfileSession,
-                certificateProfileSession,
-                caSession,
-                endEntityProfile,
-                certificateProfile,
-                caInfo);
+                certificateProfile);
         assertEquals(1, tickets.size());
         assertEquals(
                 "(PROFILE_PAIR_HAS_NO_USABLE_CA_TICKET_DESCRIPTION, End Entity Profile, Certificate Profile)",
