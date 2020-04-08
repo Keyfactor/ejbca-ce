@@ -654,7 +654,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        assertEquals("unknown object in getInstance: org.bouncycastle.asn1.DERSequence", errMsg);
+        assertEquals("unknown object in getInstance: org.bouncycastle.asn1.DLSequence", errMsg);
     }
     
     @Test

@@ -1001,6 +1001,12 @@ public class CertToolsUnitTest {
         log.debug("bcdn1: " + bcdn1);
         assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE", bcdn1);
 
+        String dn1_1 = "CN=CommonName, O=Org, OU=OrgUnit, SN=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE";
+        String bcdn1_1 = CertTools.stringToBCDNString(dn1);
+        log.debug("dn1: " + dn1_1);
+        log.debug("bcdn1: " + bcdn1_1);
+        assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE", bcdn1_1);
+
         dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName,"
                 +" Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);

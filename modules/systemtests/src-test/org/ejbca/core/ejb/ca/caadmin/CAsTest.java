@@ -328,7 +328,7 @@ public class CAsTest extends CaTestCase {
             assertEquals("A not secp256r1", "2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa984914a144", A);
             assertEquals("B not secp256r1", "7b425ed097b425ed097b425ed097b425ed097b425ed097b4260b5e9c7710c864", B);
             final String keySpec = AlgorithmTools.getKeySpecification(pk);
-            assertEquals("Standard keySpec should be unknown", "unknown", keySpec);
+            assertEquals("Standard keySpec should be Curve25519", "curve25519", keySpec);
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");

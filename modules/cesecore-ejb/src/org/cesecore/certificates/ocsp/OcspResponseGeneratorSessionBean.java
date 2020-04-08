@@ -1416,11 +1416,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     } else if (status.equals(CertificateStatus.REVOKED)) {
                         // Revocation info available for this cert, handle it
                         sStatus = "revoked";
+                        int reasonCode = status.revocationReason;
+                        if (reasonCode < 0) {
+                            log.info("Revoked certificate with serial number " + certId.getSerialNumber().toString(16) + " has revocation reason -1 (not revoked), using revocation reason 0 (unspecified) instead.");
+                            reasonCode = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
+                        }
                         certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
-                                CRLReason.lookup(status.revocationReason)));
+                                CRLReason.lookup(reasonCode)));
                         if (transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
-                            transactionLogger.paramPut(TransactionLogger.REV_REASON, status.revocationReason);
+                            transactionLogger.paramPut(TransactionLogger.REV_REASON, reasonCode);
                         }
                         // If we have an explicit value configured for this certificate profile, we override the the current value with this value
                         if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
