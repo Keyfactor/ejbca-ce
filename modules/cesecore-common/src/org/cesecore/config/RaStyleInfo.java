@@ -183,18 +183,22 @@ public class RaStyleInfo implements Serializable {
         final Map<String, Object> map = new LinkedHashMap<>();
         final Map<String, Object> hashes = new LinkedHashMap<>();
         final Keccak.Digest256 sha3 = new Keccak.Digest256();
-        final byte[] logoHash = sha3.digest(logoBytes);
-        for (RaCssInfo raCssInfo : raCssInfos.values()) {
-            sha3.update(raCssInfo.getCssBytes());
+        if (logoBytes != null) {
+            final byte[] logoHash = sha3.digest(logoBytes);
+            hashes.put("logo_hash", Hex.encodeHexString(logoHash));
+            map.put("logo_name", logoName);
+            map.put("logo_type", logoContentType);
         }
-        final byte[] cssHash = sha3.digest();
+        if (raCssInfos != null) {
+            for (RaCssInfo raCssInfo : raCssInfos.values()) {
+                sha3.update(raCssInfo.getCssBytes());
+            }
+            final byte[] cssHash = sha3.digest();
+            hashes.put("css_hash", Hex.encodeHexString(cssHash));
+            map.put("css_files", Arrays.asList(raCssInfos.keySet()));
+        }
         hashes.put("algorithm", sha3.getAlgorithm());
-        hashes.put("css_hash", Hex.encodeHexString(cssHash));
-        hashes.put("logo_hash", Hex.encodeHexString(logoHash));
         map.put("archive_name", archiveName);
-        map.put("css_files", Arrays.asList(raCssInfos.keySet()));
-        map.put("logo_name", logoName);
-        map.put("logo_type", logoContentType);
         map.put("hashes", hashes);
         return map;
     }
