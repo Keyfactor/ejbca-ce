@@ -9,10 +9,12 @@ CREATE UNIQUE INDEX auditrecorddata_idx2 ON AuditRecordData (nodeId,sequenceNumb
 CREATE INDEX auditrecorddata_idx3 ON AuditRecordData (timeStamp);
 CREATE INDEX auditrecorddata_idx4 ON AuditRecordData (searchDetail2);
 
--- unique to ensure that no two CRLs with the same CRLnumber from the same issuer is created
-CREATE UNIQUE INDEX crldata_idx3 ON CRLData (cRLNumber, issuerDN);
+-- Drop old indexes on CRLData used on installations without partitioned CRLs before EJBCA 7.4
+DROP INDEX IF EXISTS crldata_idx3 ON CRLData;
+DROP INDEX IF EXISTS crldata_idx4 ON CRLData;
 -- Index to ensure CRL generation is not slowed down when looking for the next CRL Number, even of you have hundreds of thousands of old CRLs in the DB
-CREATE INDEX crldata_idx4 ON CRLData (issuerDN,deltaCRLIndicator,cRLNumber);
+CREATE INDEX crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);
+CREATE UNIQUE INDEX crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);
 
 -- unique to ensure that no two CAs with the same name is created, since EJBCA code assumes that name is unique
 CREATE UNIQUE INDEX cadata_idx1 ON CAData (name);

@@ -275,18 +275,17 @@ public class CRLData extends ProtectedData implements Serializable {
     }
 
     /**
-     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
-     * @return the found entity instance or null if the entity does not exist
-     * @throws javax.persistence.NonUniqueResultException
-     *             if more than one entity with the name exists
+     * Find a CRL issued by the given issuer, with the given CRL partition index and CRL number.
+     *
+     * @param entityManager an entity manager for reading from CRLData.
+     * @param issuerDN the DN of the CRL issuer.
+     * @param crlPartitionIndex CRL partition index, or -1 if not using CRL partitioning.
+     * @param crlNumber the CRL number.
+     * @return the found entity instance or null if the entity does not exist.
      */
-    public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlPartitionIndex, int crlNumber) {
-        StringBuilder builder = new StringBuilder("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND ");
-        if (crlPartitionIndex != 0) {
-            builder.append("a.crlPartitionIndex=:crlPartitionIndex");
-        } else {
-            builder.append("(a.crlPartitionIndex=:crlPartitionIndex or a.crlPartitionIndex is NULL)");
-        }
+    public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
+        final StringBuilder builder = new StringBuilder(
+                "SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND a.crlPartitionIndex=:crlPartitionIndex");
         final Query query = entityManager.createQuery(builder.toString());
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
@@ -295,33 +294,36 @@ public class CRLData extends ProtectedData implements Serializable {
     }
     
     /**
-     * @return the all list of CRLData for specified issuerDN
+     * Find all CRLs issued by the given issuer.
+     *
+     * @param entityManager an entity manager for reading from CRLData.
+     * @param issuerDN the DN of the CRL issuer.
+     * @return all CRLs for the given issuer.
      */
-    public static List<CRLData> findByIssuerDN(EntityManager entityManager, String issuerDN) {
+    public static List<CRLData> findByIssuerDN(final EntityManager entityManager, final String issuerDN) {
         final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN");
         query.setParameter("issuerDN", issuerDN);
-        @SuppressWarnings("unchecked")
-        List<CRLData> resultList = query.getResultList();
-        return resultList;
+        return (List<CRLData>) query.getResultList();
     }
 
     /**
-     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
+     * Get the highest CRL number issued by the given issuer.
+     *
+     * @param issuerDN the DN of the CRL issuer.
+     * @param crlPartitionIndex CRL partition index, or -1 if not using CRL partitioning.
+     * @param deltaCRL false to fetch the latest base CRL, or true to fetch the latest delta CRL.
      * @return the highest CRL number or null if no CRL for the specified issuer exists.
      */
-    public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
-        final String crlPartitionCondition = crlPartitionIndex != 0 ?
-                " AND a.crlPartitionIndex=:crlPartitionIndex" :
-                " AND (a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex IS NULL)";
+    public static Integer findHighestCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
         if (deltaCRL) {
-            final Query query = entityManager
-                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 " + crlPartitionCondition);
+            final Query query = entityManager.createQuery(
+                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND a.crlPartitionIndex=:crlPartitionIndex");
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
             return (Integer) QueryResultWrapper.getSingleResult(query);
         } else {
-            final Query query = entityManager
-                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1" + crlPartitionCondition);
+            final Query query = entityManager.createQuery(
+                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND a.crlPartitionIndex=:crlPartitionIndex");
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
             return (Integer) QueryResultWrapper.getSingleResult(query);
