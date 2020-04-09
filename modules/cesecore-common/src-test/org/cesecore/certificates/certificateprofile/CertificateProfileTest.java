@@ -31,8 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.primitives.Booleans;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -746,5 +748,146 @@ public class CertificateProfileTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
     }
-  
+
+    @Test
+    public void testDefaultEncodedValiditySetCorrectly() {
+        final CertificateProfile cpRootCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        final CertificateProfile cpSubCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+        final CertificateProfile cpEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        final CertificateProfile ocspSigner = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
+        final CertificateProfile server = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
+
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA, cpRootCa.getEncodedValidity());
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA, cpSubCa.getEncodedValidity());
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY, cpEndUser.getEncodedValidity());
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY, ocspSigner.getEncodedValidity());
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY, server.getEncodedValidity());
+    }
+
+    @Test
+    public void testDefaultExtendedKeyUsageSetCorrectlyForRootCa() {
+        final CertificateProfile cpRootCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+
+        assertFalse(cpRootCa.getUseExtendedKeyUsage());
+        assertFalse(cpRootCa.getExtendedKeyUsageCritical());
+        assertEquals(new ArrayList<>(), cpRootCa.getExtendedKeyUsageOids());
+    }
+
+    @Test
+    public void testDefaultExtendedKeyUsageSetCorrectlyForSubCa() {
+        final CertificateProfile cpSubCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+
+        assertFalse(cpSubCa.getUseExtendedKeyUsage());
+        assertFalse(cpSubCa.getExtendedKeyUsageCritical());
+        assertEquals(new ArrayList<>(), cpSubCa.getExtendedKeyUsageOids());
+    }
+
+    @Test
+    public void testDefaultExtendedKeyUsageSetCorrectlyForEndUser() {
+        final CertificateProfile cpEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final ArrayList<String> expectedEku = new ArrayList<>();
+        expectedEku.add(KeyPurposeId.id_kp_clientAuth.getId());
+        expectedEku.add(KeyPurposeId.id_kp_emailProtection.getId());
+
+        assertTrue(cpEndUser.getUseExtendedKeyUsage());
+        assertFalse(cpEndUser.getExtendedKeyUsageCritical());
+        assertEquals(expectedEku, cpEndUser.getExtendedKeyUsageOids());
+    }
+
+    @Test
+    public void testDefaultExtendedKeyUsageSetCorrectlyForOcspSigner() {
+        final CertificateProfile cpOcspSigner = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
+
+        final ArrayList<String> expectedEku = new ArrayList<>();
+        expectedEku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
+
+        assertTrue(cpOcspSigner.getUseExtendedKeyUsage());
+        assertFalse(cpOcspSigner.getExtendedKeyUsageCritical());
+        assertEquals(expectedEku, cpOcspSigner.getExtendedKeyUsageOids());
+    }
+
+    @Test
+    public void testDefaultExtendedKeyUsageSetCorrectlyForServer() {
+        final CertificateProfile cpServer = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
+
+        final ArrayList<String> expectedEku = new ArrayList<>();
+        expectedEku.add(KeyPurposeId.id_kp_serverAuth.getId());
+
+        assertTrue(cpServer.getUseExtendedKeyUsage());
+        assertFalse(cpServer.getExtendedKeyUsageCritical());
+        assertEquals(expectedEku, cpServer.getExtendedKeyUsageOids());
+    }
+
+    @Test
+    public void testDefaultKeyUsageSetCorrectlyForRootCa() {
+        final CertificateProfile cpRootCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+
+        final long expectedKeyCount = Booleans.asList(cpRootCa.getKeyUsage()).stream().filter(key -> key).count();
+
+        assertTrue(cpRootCa.getUseKeyUsage());
+        assertTrue(cpRootCa.getKeyUsageCritical());
+
+        assertEquals(3, expectedKeyCount);
+        assertTrue(cpRootCa.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
+        assertTrue(cpRootCa.getKeyUsage(CertificateConstants.KEYCERTSIGN));
+        assertTrue(cpRootCa.getKeyUsage(CertificateConstants.CRLSIGN));
+    }
+
+    @Test
+    public void testDefaultKeyUsageSetCorrectlyForSubCa() {
+        final CertificateProfile cpSubCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+
+        final long expectedKeyCount = Booleans.asList(cpSubCa.getKeyUsage()).stream().filter(key -> key).count();
+
+        assertTrue(cpSubCa.getUseKeyUsage());
+        assertTrue(cpSubCa.getKeyUsageCritical());
+
+        assertEquals(3, expectedKeyCount);
+        assertTrue(cpSubCa.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
+        assertTrue(cpSubCa.getKeyUsage(CertificateConstants.KEYCERTSIGN));
+        assertTrue(cpSubCa.getKeyUsage(CertificateConstants.CRLSIGN));
+    }
+
+    @Test
+    public void testDefaultKeyUsageSetCorrectlyForEndUser() {
+        final CertificateProfile cpEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final long expectedKeyCount = Booleans.asList(cpEndUser.getKeyUsage()).stream().filter(key -> key).count();
+
+        assertTrue(cpEndUser.getUseKeyUsage());
+        assertTrue(cpEndUser.getKeyUsageCritical());
+
+        assertEquals(3, expectedKeyCount);
+        assertTrue(cpEndUser.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
+        assertTrue(cpEndUser.getKeyUsage(CertificateConstants.NONREPUDIATION));
+        assertTrue(cpEndUser.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
+    }
+
+    @Test
+    public void testDefaultKeyUsageSetCorrectlyForOcspSigner() {
+        final CertificateProfile cpOcspSigner = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
+
+        final long expectedKeyCount = Booleans.asList(cpOcspSigner.getKeyUsage()).stream().filter(key -> key).count();
+
+        assertTrue(cpOcspSigner.getUseKeyUsage());
+        assertTrue(cpOcspSigner.getKeyUsageCritical());
+
+        assertEquals(1, expectedKeyCount);
+        assertTrue(cpOcspSigner.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
+    }
+
+    @Test
+    public void testDefaultKeyUsageSetCorrectlyForServer() {
+        final CertificateProfile cpServer = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
+
+        final long expectedKeyCount = Booleans.asList(cpServer.getKeyUsage()).stream().filter(key -> key).count();
+
+        assertTrue(cpServer.getUseKeyUsage());
+        assertTrue(cpServer.getKeyUsageCritical());
+
+        assertEquals(2, expectedKeyCount);
+        assertTrue(cpServer.getKeyUsage(CertificateConstants.DIGITALSIGNATURE));
+        assertTrue(cpServer.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
+    }
 }

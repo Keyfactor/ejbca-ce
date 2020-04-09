@@ -556,28 +556,90 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
 
     private void setDefaultValues(int type) {
+        setDefaultEncodedValidity(type);
+        setDefaultExtendedKeyUsage(type);
+        setDefaultKeyUsage(type);
+
         if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA) {
             setType(CertificateConstants.CERTTYPE_ROOTCA);
             setAllowValidityOverride(true);
-            setUseKeyUsage(true);
-            setKeyUsage(new boolean[9]);
-            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
-            setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
-            setKeyUsage(CertificateConstants.CRLSIGN, true);
-            setKeyUsageCritical(true);
-            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
             setType(CertificateConstants.CERTTYPE_SUBCA);
             setAllowValidityOverride(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            setUseOcspNoCheck(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        }
+    }
+
+    // Public Methods.
+
+    /**
+     *
+     * @param type one of CertificateProfileConstants.CERTPROFILE_FIXED_XX, for example CertificateConstants.CERTPROFILE_FIXED_ROOTCA
+     */
+    public void setDefaultEncodedValidity(final int type) {
+        if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
+            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
+        } else {
+            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY);
+        }
+    }
+
+    /**
+     *
+     * @param type one of CertificateProfileConstants.CERTPROFILE_FIXED_XX, for example CertificateConstants.CERTPROFILE_FIXED_ROOTCA
+     */
+    public void setDefaultExtendedKeyUsage(final int type) {
+        if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
+            setUseExtendedKeyUsage(false);
+            setExtendedKeyUsage(new ArrayList<>());
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<>();
+            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<>();
+            eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<>();
+            eku.add(KeyPurposeId.id_kp_serverAuth.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        }
+    }
+
+    /**
+     * @param type one of CertificateProfileConstants.CERTPROFILE_FIXED_XX, for example CertificateConstants.CERTPROFILE_FIXED_ROOTCA
+     */
+    public void setDefaultKeyUsage(final int type) {
+        if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA) {
             setUseKeyUsage(true);
             setKeyUsage(new boolean[9]);
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
             setKeyUsage(CertificateConstants.CRLSIGN, true);
             setKeyUsageCritical(true);
-            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
+            setKeyUsage(CertificateConstants.CRLSIGN, true);
+            setKeyUsageCritical(true);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
             // Standard key usages for end users are: digitalSignature | nonRepudiation, and/or (keyEncipherment or keyAgreement)
             // Default key usage is digitalSignature | nonRepudiation | keyEncipherment
             // Create an array for KeyUsage according to X509Certificate.getKeyUsage()
@@ -587,28 +649,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.NONREPUDIATION, true);
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
             setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
-            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
             // Default key usage for an OCSP signer is digitalSignature
             // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
             setUseKeyUsage(true);
             setKeyUsage(new boolean[9]);
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
-            setUseOcspNoCheck(true);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
-            setType(CertificateConstants.CERTTYPE_ENDENTITY);
             // Standard key usages for server are: digitalSignature | (keyEncipherment or keyAgreement)
             // Default key usage is digitalSignature | keyEncipherment
             // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
@@ -617,15 +665,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
             setKeyUsageCritical(true);
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_serverAuth.getId());
-            setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
         }
     }
 
-    // Public Methods.
     /** Returns the version of the certificate, should be one of the VERSION_ constants defined in CertificateProfile class. */
     public String getCertificateVersion() {
         return (String) data.get(CERTVERSION);
