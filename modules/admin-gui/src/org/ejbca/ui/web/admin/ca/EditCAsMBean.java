@@ -38,13 +38,11 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.FacesException;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -98,13 +96,12 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.REQUEST;
+import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
-
-import static org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 
 /**
  * 
@@ -1449,21 +1446,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     /**
      * Exports the current ca crypto token if allowed be the configuration.
      */
-    public void exportCA() {
-        //Try the password before moving on in order to verify       
-        CAToken caToken = caSession.getCAInfoInternal(getCaid()).getCAToken();
-        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
-        try {
-            ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(getTextFieldExportCaPassword().toCharArray());
-        } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
-            addNonTranslatedErrorMessage(e.getLocalizedMessage());
-            return;
-        }
-        
+    public void exportCA() {        
         try {
             FacesContext ctx = FacesContext.getCurrentInstance();
             ExternalContext ectx = ctx.getExternalContext();
             HttpServletRequest request = (HttpServletRequest) ectx.getRequest();
+            
+            //Try the password before moving on in order to verify       
+            CAToken caToken = caSession.getCAInfoInternal(getCaid()).getCAToken();
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
+            try {
+                 ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
+            } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
+                addNonTranslatedErrorMessage(e.getLocalizedMessage());
+                return;
+            }
+            
             HttpServletResponse response = (HttpServletResponse) ectx.getResponse();
             RequestDispatcher dispatcher = request.getRequestDispatcher(EditCaUtil.CA_EXPORT_PATH);
             request.setAttribute(REQUEST.AUTHENTICATION_TOKEN, getAdmin());
