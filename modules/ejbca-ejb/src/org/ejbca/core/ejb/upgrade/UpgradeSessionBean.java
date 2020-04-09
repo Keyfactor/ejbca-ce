@@ -44,8 +44,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
@@ -328,7 +327,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.2.0");
+                setLastPostUpgradedToVersion("7.4.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -419,7 +418,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return new AsyncResult<Boolean>(ret);
     }
 
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean upgrade(String dbtype, String oldVersion, boolean isPost) {
         try {
@@ -594,6 +592,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.2.0");
         }
+        if (isLesserThan(oldVersion, "7.4.0")) {
+            if (!migrateDatabase740()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.4.0");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -602,7 +606,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.2.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.4.0");
     }
 
     /**
@@ -1643,7 +1647,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * If upgrading from 6.6.0 or later, grant access to /ca_functionality/view_certificate for roles with access
      * to ra_functionality/view_end_entity
-     * @param accessRules HashMap of access rules to migrate
+     * @param newAccessRules HashMap of access rules to migrate
      * @param isInstalledOn660OrLater if upgrading from 6.6.0 or later
      * @return HashMap with migrated rule states
      */
@@ -1778,6 +1782,66 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw e;
         } catch (InternalKeyBindingNameInUseException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Try to update the database to make it possible to use 'Partitioned CRLs' on existing installations using
+     * default database indexes by modifying the <code>CRLData</code> table.
+     *
+     * <p>crlPartitionIndex values containing 0 or NULL are normalized to -1 and indexes are created over
+     * <code>(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)</code> and
+     * <code>(issuerDN, crlPartitionIndex, cRLNumber)</code>. See ECA-8680 for more details.
+     *
+     * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
+     * value in the database should be incremented.
+     */
+    private boolean migrateDatabase740() {
+        try {
+            final long startDataNormalization = System.currentTimeMillis();
+            final Query normalizeData = entityManager.createQuery(
+                    "UPDATE CRLData a SET a.crlPartitionIndex=-1 WHERE a.crlPartitionIndex=NULL OR a.crlPartitionIndex=0");
+            log.debug("Executing SQL query: " + normalizeData);
+            final int rowCount = normalizeData.executeUpdate();
+            log.info("Successfully normalized " + rowCount + " rows in CRLData. Completed in "
+                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+        } catch (RuntimeException e) {
+            log.error("An error occurred when updating data in database table 'CRLData': " + e);
+            log.error("You can update the data manually using the following SQL query and then run the post-upgrade again.");
+            log.error("    UPDATE CRLData SET crlPartitionIndex=-1 WHERE crlPartitionIndex=NULL OR crlPartitionIndex=0;");
+            return false;
+        }
+        try {
+            final long startReindex = System.currentTimeMillis();
+            final Query dropCrlDataIndex3 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx3 ON CRLData");
+            final Query dropCrlDataIndex4 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx4 ON CRLData");
+            final Query createCrlDataIndex5 = entityManager.createNativeQuery(
+                    "CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
+            final Query createCrlDataIndex6 = entityManager.createNativeQuery(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
+            log.debug("Executing SQL query: " + dropCrlDataIndex3);
+            dropCrlDataIndex3.executeUpdate();
+            log.debug("Executing SQL query: " + dropCrlDataIndex4);
+            dropCrlDataIndex4.executeUpdate();
+            log.debug("Executing SQL query: " + createCrlDataIndex5);
+            createCrlDataIndex5.executeUpdate();
+            log.debug("Executing SQL query: " + createCrlDataIndex6);
+            createCrlDataIndex6.executeUpdate();
+            log.info("Successfully updated indexes for database table 'CRLData'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
+            return true;
+        } catch (RuntimeException e) {
+            log.error("An error occurred when adjusting indexes for database table 'CRLData': " + e);
+            log.error("You can update the indexes manually by running the following SQL queries:");
+            log.error("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
+            log.error("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
+            log.error("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
+            log.error("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
+            log.error("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
+            log.info("If an index could not be created because duplicates were found you could remove them using something like:" + System.lineSeparator() +
+                "    DELETE t1 FROM CRLData t1, CRLData t2 WHERE t1.fingerprint > t2.fingerprint AND t1.issuerDN = t2.issuerDN " + System.lineSeparator() +
+                    "AND t1.deltaCRLIndicator = t2.deltaCRLIndicator AND t1.cRLNumber = t2.cRLNumber AND t1.crlPartitionIndex = t2.crlPartitionIndex;");
+            // Consider the post-upgrade to be complete, even if this fails. The user can manually add indexes later.
+            return true;
         }
     }
 
