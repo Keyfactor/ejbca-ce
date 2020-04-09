@@ -100,14 +100,13 @@ public final class CertificateConstants {
 	public static final int DECIPHERONLY     = 8;
 
     public static final int HIGN_REASON_BOUNDRARY = 11;
-    
-    // CRL Partition index
+
     /**
      * Indicates that this certificate is stored in the CA's main CRL, and not on a partitioned CRL.
      * All certificates from CAs that don't use CRL partitioning will have this setting, as will
      * all pre-existing certificates from CAs where CRL partitioning is enabled after the CA is created.
      */
-    public static final int NO_CRL_PARTITION = 0;
+    public static final int NO_CRL_PARTITION = -1;
     
     /** Certificate is a pre-certificate. Used as tag in CertificateData. Do not change! */
     public static final String CERT_TAG_PRECERT = "P";
