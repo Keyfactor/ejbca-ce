@@ -335,9 +335,25 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isTypeSubCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_SUBCA; }
     public boolean isTypeRootCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_ROOTCA; }
 
-    public void setTypeEndEntity() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY); }
-    public void setTypeSubCa() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_SUBCA); }
-    public void setTypeRootCa() { getCertificateProfile().setType(CertificateConstants.CERTTYPE_ROOTCA); }
+    public void setTypeEndEntity() {
+        getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    }
+    public void setTypeSubCa() {
+        getCertificateProfile().setType(CertificateConstants.CERTTYPE_SUBCA);
+        getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+        getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+        getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+    }
+
+    public void setTypeRootCa() {
+        getCertificateProfile().setType(CertificateConstants.CERTTYPE_ROOTCA);
+        getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+    }
 
     public boolean isUniqueCertificateSerialNumberIndex() {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();
