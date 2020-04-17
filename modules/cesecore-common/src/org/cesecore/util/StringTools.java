@@ -122,6 +122,8 @@ public final class StringTools {
     private static final CharSet stripXSS = new CharSet(new char[]{'<', '>'});
     // Characters that are not allowed in strings that may be used in db queries
     private static final CharSet stripSqlChars = new CharSet(new char[]{ '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
+    // Characters that are not allowed in Subject Directory Attributes
+    private static final CharSet stripSDAttStripChars = new CharSet(new char[]{'\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in strings that may be used in db queries, assuming single quote is escaped
     private static final CharSet stripSqlCharsSingleQuoteEscaped = new CharSet(new char[]{ '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in filenames
@@ -284,6 +286,17 @@ public final class StringTools {
      */
     public static  Set<String> hasSqlStripChars(final String str) {
     	return hasStripChars(str, stripSqlChars);
+    }
+
+    /**
+     * Checks if a string contains characters that would be potentially dangerous to use in an SQL query.
+     *
+     * @param str the string whose contents would be stripped.
+     * @return the offending characters with descriptions, or an empty set otherwise.
+     * @see #strip
+     */
+    public static  Set<String> hasSDAttrStripChars(final String str) {
+    	return hasStripChars(str, stripSDAttStripChars);
     }
 
     /**
