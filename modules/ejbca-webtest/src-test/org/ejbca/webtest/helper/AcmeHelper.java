@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import static org.junit.Assert.fail;
+
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -32,14 +34,14 @@ public class AcmeHelper extends BaseHelper {
         //General
         static final String PAGE_URI = "/ejbca/adminweb/sysconfig/acmeconfiguration.xhtml";
         static final By PAGE_LINK = By.id("sysConfigAcme");
-        static final By VALIDITY_NUMBER_TEXTFIELD = By.xpath("//input[@name='acmeConfigs:j_idt108']");
+        static final By NOUNCE_TEXTFIELD = By.xpath("//input[@title='Integer number']");
         static final By ADD_ALIAS_ERROR = By.xpath("//li[@class='errorMessage']");
         static final By DEFAULT_ACME_CONFIG_LIST = By.id("acmeConfigs:selectOneMenuEEP");
         static final String DELETE_ALIAS_CONFIRM_MESSAGE = "Are you sure you want to delete this?";
 
         //Buttons
         static final By BUTTON_ADD = By.xpath("//a[@title='Add Alias']");
-        static final By BUTTON_SAVE = By.xpath("//input[@name=\"acmeConfigs:j_idt110\"]");
+        static final By BUTTON_SAVE = By.id("acmeConfigs:save");
         static final By BUTTON_RENAME = By.xpath("//a[@title='Rename Alias']");
         static final By BUTTON_DELETE = By.xpath("//a[@title='Delete Alias']");
     }
@@ -67,7 +69,7 @@ public class AcmeHelper extends BaseHelper {
      *
      * @param text The adding text.
      */
-    public void addTextToAlertTextfieldAndAccept(String text) {
+    public void alertTextfieldAndAccept(String text) {
         alertWindow().sendKeys(text);
         alertWindow().accept();
     };
@@ -84,14 +86,13 @@ public class AcmeHelper extends BaseHelper {
      * Clicks the 'Rename' button for the correct Alias. 
      *
      * @param name The name of the Alias.
-     * @throws Exception If name doesn't exist. 
      */
-    public void rename(String name) throws Exception {
-        WebElement web = findElement(By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='Rename Alias']"));
-        if (By.xpath("//*[@id='aliases']/table/tbody/tr/td[1]/a/span[@title='" + name + "']") != null) {
-            web.click();
+    public void rename(String name) {
+        WebElement renameButton = findElement(By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='Rename Alias']"));
+        if (By.xpath("//form[@id='aliases']/table/tbody/tr/td[1]/a/span[@title='" + name + "']") != null) {
+            renameButton.click();
         } else {
-            throw new Exception("No Alias with that name exist");
+            fail("No Alias with that "+name+" exist");
         }
     }
 
@@ -99,14 +100,13 @@ public class AcmeHelper extends BaseHelper {
      * Clicks the 'Delete' button for the correct Alias. 
      *
      * @param name The name of the Alias.
-     * @throws Exception If name doesn't exist.
      */
-    public void deleteWithName(String name) throws Exception {
-        WebElement web = findElement(By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='Delete Alias']"));
-        if (By.xpath("//*[@id='aliases']/table/tbody/tr/td[1]/a/span[@title='" + name + "']") != null) {
-            web.click();
+    public void deleteWithName(String name) {
+        WebElement deleteButton = findElement(By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='Delete Alias']"));
+        if (By.xpath("//form[@id='aliases']/table/tbody/tr/td[1]/a/span[@title='" + name + "']") != null) {
+            deleteButton.click();
         } else {
-            throw new Exception("No Alias with that name exist");
+            fail("No Alias with that "+name+" exist");
         }
     }
 
