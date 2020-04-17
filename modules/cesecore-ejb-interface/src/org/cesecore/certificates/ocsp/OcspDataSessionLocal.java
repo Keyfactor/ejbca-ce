@@ -57,7 +57,7 @@ public interface OcspDataSessionLocal extends OcspDataSession {
      * Returns the OCSP response with the latest 'nextUpdate' given CA and serial number.
      * @param caId of the CA which signed the OCSP response
      * @param serialNumber of the certificate which the OCSP response represents
-     * @return a list of OCSP data for the caId and serialNubmer, empty list if no such data.
+     * @return OCSP data for the caId and serialNubmer, null if no such data.
      */
     OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
     
