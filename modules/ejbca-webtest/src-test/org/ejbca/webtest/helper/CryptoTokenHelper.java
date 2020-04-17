@@ -14,8 +14,11 @@
 package org.ejbca.webtest.helper;
 
 
+import static org.junit.Assert.fail;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -161,5 +164,64 @@ public class CryptoTokenHelper extends BaseHelper {
                 Page.getTokenOptionContainingText(cryptoTokenName),
                 cryptoTokenName + " was not found on 'Crypto Tokens' page."
         );
+    }
+    
+    /**
+     * Clicks the 'Test' button for the correct key name. 
+     *
+     * @param name The name of the key name.
+     * @throws Exception If name doesn't exist.
+     */
+    public void clickTestKryptoToken(String name) {
+        WebElement web = findElement(By.xpath("//form[@id='j_idt153']//td[contains(text(),'"+name+"')]/following-sibling::td/input[@value='Test']"));
+        if(By.xpath("//form[@id='j_idt153']//td[contains(text(),'"+name+"')]") != null) {
+            web.click();
+        }
+        else {
+            fail("No key with name "+name+" exist");
+        }
+    }
+    
+    /**
+     * Clicks the 'Remove' button for the correct key name. 
+     *
+     * @param name The name of the key name.
+     * @throws Exception If name doesn't exist.
+     */
+    public void clickRemoveKey(String name) {
+        WebElement keyTestButton = findElement(By.xpath("//form[@id='j_idt153']//td[contains(text(),'"+name+"')]/following-sibling::td/input[@value='Remove']"));
+        if(By.xpath("//form[@id='j_idt153']//td[contains(text(),'"+name+"')]") != null) {
+        keyTestButton.click();
+        }else {
+            fail("No key with name "+name+" exist");
+        }
+    }
+    
+    /**
+     * Accepts alert popup when removing token key.  
+     *
+     * @param name The name of the key name.
+     */
+    public void confirmRemoveKey(String name) {
+        clickRemoveKey(name);
+        assertAndConfirmAlertPopUp("Are you sure you want to remove this key?", true);
+    }
+  
+    /**
+     * Checks that tested key is successfull.  
+     *
+     * @param name The name of the key name.
+     */
+    public void confirmKeyTestedSuccessfully(String name) {
+        assertInfoMessageAppears(""+name+" tested successfully.", ""+name+" successfully test message was not not found", ""+name+" successfully test message was not displayed");
+    }
+    
+    /**
+     * Views the 'Crypto Token' with the certian name.
+     *
+     * @param name The name of the Token.
+     */
+    public void viewCryptoTokenWithName(String name) {
+       clickLink(By.xpath("//form[@id=\"cryptotokens\"]/table/tbody/tr/td/a/span[contains(text(),'"+name+"')]"));
     }
 }
