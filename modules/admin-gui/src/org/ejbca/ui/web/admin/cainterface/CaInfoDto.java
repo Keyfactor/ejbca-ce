@@ -85,6 +85,7 @@ public class CaInfoDto {
     private String crlCaIssueInterval;
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
+    private String requestPreProcessor;
 
     long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
@@ -592,6 +593,14 @@ public class CaInfoDto {
 
     public void setCrlCaDeltaCrlPeriod(String crlCaDeltaCrlPeriod) {
         this.crlCaDeltaCrlPeriod = crlCaDeltaCrlPeriod;
+    }
+
+    public String getRequestPreProcessor() {
+        return requestPreProcessor;
+    }
+
+    public void setRequestPreProcessor(String requestPreProcessor) {
+        this.requestPreProcessor = requestPreProcessor;
     }
 }
 
