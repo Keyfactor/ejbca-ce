@@ -2346,7 +2346,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     private void checkForIllegalChars(final String str) throws EndEntityProfileValidationException {
-        Set<String> invalidCharacters = StringTools.hasSqlStripChars(str);
+        Set<String> invalidCharacters = StringTools.hasSDAttrStripChars(str);
     	if (!invalidCharacters.isEmpty()) {
     	    StringBuilder sb = new StringBuilder("");
     	    for(String error : invalidCharacters) {
