@@ -23,14 +23,14 @@ import org.openqa.selenium.WebDriver;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa183_AddACMEAlias extends WebTestBase {
-   
+
     //Helpers
     private static AcmeHelper acmeHelper;
     private static WebDriver webDriver;
-    
+
     //Test Data
-    private static final String ACME_ALIAS = "Test"; 
-    
+    private static final String ACME_ALIAS = "EcaQa183TestAlias";
+
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
@@ -45,22 +45,22 @@ public class EcaQa183_AddACMEAlias extends WebTestBase {
 
     @Test
     public void testA_AddAcme() {
-       acmeHelper.openPage(getAdminWebUrl());
-       acmeHelper.clickAdd();
-       acmeHelper.addTextToAlertTextfieldAndAccept(ACME_ALIAS); 
+        acmeHelper.openPage(getAdminWebUrl());
+        acmeHelper.clickAdd();
+        acmeHelper.alertTextfieldAndAccept(ACME_ALIAS);
     }
-   
+
     @Test
     public void testB_AddSameAcmeAgain() {
         acmeHelper.clickAdd();
-        acmeHelper.addTextToAlertTextfieldAndAccept(ACME_ALIAS);
+        acmeHelper.alertTextfieldAndAccept(ACME_ALIAS);
         acmeHelper.confirmAliasAlreadyExist(ACME_ALIAS);
     }
-    
+
     @Test
-    public void testC_AddAcmeAliasWithoutName() throws Exception {
+    public void testC_AddAcmeAliasWithoutName() {
         acmeHelper.clickAdd();
-        acmeHelper.addTextToAlertTextfieldAndAccept("");
+        acmeHelper.alertTextfieldAndAccept("");
         acmeHelper.deleteWithName(ACME_ALIAS);
         acmeHelper.acceptAlert();
     }
