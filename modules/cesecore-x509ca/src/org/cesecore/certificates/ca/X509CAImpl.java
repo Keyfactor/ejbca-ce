@@ -1044,7 +1044,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             } catch (CryptoTokenOfflineException e) {
                 throw e;
             } catch (Exception e) {
-                throw new IllegalStateException("Error withing creating or removing link certificate.", e);
+                throw new IllegalStateException("Error when creating or removing link certificate.", e);
             }
         }
         updateLatestLinkCertificate(ret);
@@ -1335,7 +1335,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                         + "does not make sense. NonOverridableExtensionOIDs will take precedence, is this the desired behavior?");
             }
             ASN1ObjectIdentifier[] oids = extensions.getExtensionOIDs();
-            for(ASN1ObjectIdentifier oid : oids ) {
+            for (ASN1ObjectIdentifier oid : oids) {
                 // Start by excluding non overridable extensions
                 // If there are no nonOverridableExtensionOIDs set, or if the set does not contain our OID, we allow it so move on
                 if (!nonOverridableExtensionOIDs.contains(oid.getId())) { // nonOverridableExtensionOIDs can never by null
