@@ -1450,6 +1450,24 @@
 					<h:outputLabel for="checkboxincludeinhealthcheck"
 						value="#{web.text.ACTIVATE}" />
 				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputLabel for="requestProcessor"
+						value="#{web.text.REQUEST_PROCESSOR}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html')}"
+						escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">				
+					<h:selectOneMenu id="requestProcessor"
+						value="#{editCAsMBean.caInfoDto.requestPreProcessor}"
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:selectItems value="#{editCAsMBean.availableRequestPreProcessors}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				
+
 
 			</h:panelGrid>
 

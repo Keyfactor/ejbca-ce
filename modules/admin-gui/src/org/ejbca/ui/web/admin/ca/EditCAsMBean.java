@@ -61,6 +61,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
+import org.cesecore.certificates.ca.ExtendedUserDataHandlerFactory;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -627,6 +629,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         for(final int id: publishersIds){
             ret.add(new SelectItem(id, publisheridtonamemap.get(id), "", isHasEditRight() ? false : true));
+        }
+        return ret;
+    }
+    
+    public List<SelectItem> getAvailableRequestPreProcessors() {
+        final List<SelectItem> ret = new ArrayList<>();
+        ret.add(new SelectItem(null, "None", "", isHasEditRight() ? false : true));
+        for (ExtendedUserDataHandler implementation : ExtendedUserDataHandlerFactory.INSTANCE.getAllImplementations()) {
+            ret.add(new SelectItem(implementation.getClass().getCanonicalName(), implementation.getReadableName(), implementation.getReadableName(),
+                    isHasEditRight() ? false : true));
         }
         return ret;
     }
@@ -1703,6 +1715,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
         caInfoDto.setCaSerialNumberOctetSize(String.valueOf(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()));
         usedValidators = new ArrayList<>();
+        
+        caInfoDto.setRequestPreProcessor(null);
 
         updateAvailableCryptoTokenList();
     }
@@ -1886,6 +1900,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             } else {
                 caInfoDto.setCaSubjectAltName(x509cainfo.getSubjectAltName());
             }
+            caInfoDto.setRequestPreProcessor(x509cainfo.getRequestPreProcessor());
         }
 
         caInfoDto.setCaSubjectDN(cainfo.getSubjectDN());

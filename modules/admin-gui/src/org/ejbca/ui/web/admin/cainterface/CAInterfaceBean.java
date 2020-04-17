@@ -595,7 +595,8 @@ public class CAInterfaceBean implements Serializable {
                             .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
-                            .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions());
+                            .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
+                            .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                     if (buttonCreateCa) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
                                 .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
@@ -896,7 +897,8 @@ public class CAInterfaceBean implements Serializable {
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                        .setCrlPartitions(caInfoDto.getCrlPartitions())
-                       .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions());
+                       .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
+                       .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                cainfo = x509CAInfoBuilder.buildForUpdate();
             }
            // Info specific for CVC CA

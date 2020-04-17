@@ -108,7 +108,7 @@
         <condition property="include-ejb-jar-xml" value="ejb-jar-prod.xml" else="ejb-jar.xml">
             <equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
         </condition>
-    	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.certificates.ocsp.extension.OCSPExtension"
+    	<buildservicemanifest interface="org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.certificates.ocsp.extension.OCSPExtension;org.cesecore.certificates.ca.ExtendedUserDataHandler"
     		file="${ejbca-ejb.build.dir}" classpath="servicemanifest-ejbca-ejb.classpath"/>
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${ejbca-ejb.build.dir}"/>

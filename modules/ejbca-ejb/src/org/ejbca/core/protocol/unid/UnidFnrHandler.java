@@ -134,5 +134,11 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		unidfnrSession.storeUnidFnrData(unid, fnr);
 		return unid;
 	}
+
+
+    @Override
+    public String getReadableName() {
+        return "Norwegian FNR to Unid Converter";
+    }
 	
 }

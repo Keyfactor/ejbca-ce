@@ -10,33 +10,33 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.certificates.ca;
 
-import java.io.Serializable;
-
-import org.cesecore.certificates.certificate.request.RequestMessage;
-
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
- * To be implemented by classes that is extending the handling of the user data.
- * Could be to store it or to change something in DN.
+ * Factory singleton for delivering all found implementations of the ExtendedUserDataHandler interface
  * 
  * @version $Id$
+ *
  */
-public interface ExtendedUserDataHandler extends Serializable {
-	/**
-	 * Called when the data handling should be done.
-	 * @param req Request to be modified.
-	 * @param otherData some other data
-	 * @return the modified request
-	 */
-	RequestMessage processRequestMessage(RequestMessage req, String otherData);
-	
-	/**
-	 * 
-	 * @return a human readable name for this implementation
-	 */
-	String getReadableName();
+public enum ExtendedUserDataHandlerFactory {
+    INSTANCE;
+
+    private Map<String, ExtendedUserDataHandler> identifierToImplementationMap = new HashMap<>();
+    
+    private ExtendedUserDataHandlerFactory() {
+        ServiceLoader<ExtendedUserDataHandler> svcloader = ServiceLoader.load(ExtendedUserDataHandler.class);
+        for(ExtendedUserDataHandler type : svcloader) {
+            identifierToImplementationMap.put(type.getReadableName(), type);
+        }
+    }
+    
+    public Collection<ExtendedUserDataHandler> getAllImplementations() {
+        return identifierToImplementationMap.values();
+    }
 
 }
