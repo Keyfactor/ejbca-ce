@@ -55,6 +55,8 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By TEXT_TITLE_END_ENTITY_PROFILE = By.xpath("//div/h3");
         static final By INPUT_USERNAME_AUTO_GENERATED = By.id("eeProfiles:autoGenerateUserNameCheckBox");
         static final By INPUT_USE_ISSUANNCE_REVOCATION_REASON = By.id("eeProfiles:useRevocationReasonAfterIssuanceCheckBox");
+        // Use only the domain part of the address, without the '@' character
+        static final By INPUT_USE_END_ENTITY_EMAIL = By.id("eeProfiles:emailCheckBox");
         // Maximum number of failed login attempts / Use
         static final By INPUT_USE_MAX_FAILED_LOGINS = By.id("eeProfiles:nrFailedAttempts");
         // Batch generation / Use
@@ -1018,5 +1020,27 @@ public class EndEntityProfileHelper extends BaseHelper {
             assertNotificationEventsInputIsEnabled(isEnabled, i);
             assertNotificationTextareaInputIsEnabled(isEnabled, i);
         }
+    }
+    
+    /**
+     * Trigger the 'End Entity Email' use checkbox.
+     *
+     */
+    public void triggerEndEntityEmailCheckBox() {
+        clickLink(Page.INPUT_USE_END_ENTITY_EMAIL);
+    }
+    
+    /**
+     * Trigger the 'Required' checkbox for chosen 'Subject DN Attribute'.
+     * 
+     *@param name Name of the choosen attribute.
+     */
+    public void subjectDnAttributeRequiredBoxTrigger(String name) {
+      WebElement requiredCheckBox = findElement(By.xpath("//td/label[contains(text(),'"+name+"')]/../following-sibling::td//input[contains(@id,'RequiredCheckBox')]"));
+      if(requiredCheckBox != null) {
+          requiredCheckBox.click();
+      }else {
+          fail("No "+name+"' SubjectDN attribute has been added");
+      }
     }
 }
