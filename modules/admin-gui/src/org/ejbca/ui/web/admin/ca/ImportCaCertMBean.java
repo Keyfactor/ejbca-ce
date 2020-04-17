@@ -24,6 +24,7 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
@@ -65,7 +66,7 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setImportCaCertName(final String importCaCertName) {
-        this.importCaCertName = importCaCertName;
+        this.importCaCertName = StringUtils.trim(importCaCertName);
     }
     
     public UploadedFile getUploadedFile() {
