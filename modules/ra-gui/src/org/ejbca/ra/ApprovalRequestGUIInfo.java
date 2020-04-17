@@ -457,8 +457,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
                         } else if (principal instanceof UsernamePrincipal) {
                             final String username = principal.toString();
                             retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true) + ": " + username;
+                            break;
                         } else {
-                            retval = principal.toString(); // e.g. NestableAuthenticationToken for example                            
+                            retval = principal.toString(); // e.g. NestableAuthenticationToken for example
+                            break;
                         }
                     }                    
                 } else {
