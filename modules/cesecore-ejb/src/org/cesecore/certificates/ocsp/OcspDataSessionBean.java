@@ -149,7 +149,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         query.setParameter("serialNumber", serialNumber);
         query.setParameter("currentTime", now);
         query.setMaxResults(1);
-        return query.getResultList().get(0);
+        return query.getResultList().isEmpty() ? null : query.getResultList().get(0);
     }
 
 }
