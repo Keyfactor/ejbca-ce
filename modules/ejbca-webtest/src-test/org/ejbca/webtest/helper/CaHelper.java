@@ -98,6 +98,11 @@ public class CaHelper extends BaseHelper {
          *
          */
         static final By SELECT_VALIDATOR = By.name("editcapage:selectValidator");
+        /**
+         * Certificate Policy OID
+         *
+         */
+        static final By INPUT_POLICY_ID = By.id("editcapage:textfieldpolicyid");
 
         static final By INPUT_CANAME = By.id("managecas:textfieldcaname");
         /**
@@ -343,6 +348,15 @@ public class CaHelper extends BaseHelper {
      */
     public void setValidity(final String validityString) {
         fillInput(Page.INPUT_VALIDITY, validityString);
+    }
+    
+    /**
+     * Sets the CA's Policy OID
+     *
+     * @param idString Of the Id. 
+     */
+    public void setPolicyID(final String idString) {
+        fillInput(Page.INPUT_POLICY_ID, idString);
     }
     
     /**
