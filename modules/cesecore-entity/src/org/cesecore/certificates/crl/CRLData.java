@@ -12,28 +12,21 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import java.io.Serializable;
-import java.security.cert.CRLException;
-import java.security.cert.X509CRL;
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Query;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.security.cert.CRLException;
+import java.security.cert.X509CRL;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Representation of a CRL.
@@ -70,7 +63,7 @@ public class CRLData extends ProtectedData implements Serializable {
      *            the (X509)CRL to be stored in the database.
      * @param number
      *            monotonically increasing CRL number
-     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
+     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
      * @param deltaCRLIndicator
      *            -1 for a normal CRL and 1 for a deltaCRL
      */
@@ -83,7 +76,8 @@ public class CRLData extends ProtectedData implements Serializable {
         String issuer = CertTools.stringToBCDNString(issuerDN);
         setIssuerDN(issuer);
         if (log.isDebugEnabled()) {
-            log.debug("Creating crldata, fp=" + fp + ", issuer=" + issuer + ", crlNumber=" + number + ", crlPartitionIndex=" + crlPartitionIndex + ", deltaCRLIndicator=" + deltaCRLIndicator);
+            log.debug("Creating crldata, fp=" + fp + ", issuer=" + issuer + ", crlNumber=" + number + ", crlPartitionIndex="
+                    + crlPartitionIndex + ", deltaCRLIndicator=" + deltaCRLIndicator);
         }
         setCaFingerprint(cafingerprint);
         setCrlNumber(number);
@@ -114,15 +108,24 @@ public class CRLData extends ProtectedData implements Serializable {
         this.deltaCRLIndicator = deltaCRLIndicator;
     }
 
-    /** @since EJBCA 7.1.0 
-     * CRL partition index, or 0 if not using CRL partitioning.
+    /**
+     *  Get the CRL partition index for this row.
+     *
+     *  @since EJBCA 7.1.0
+     *  @return the CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if CRL partitioning is
+     *  not being used.
      */
     // @Column
     public int getCrlPartitionIndex() {
-        return crlPartitionIndex != null ? crlPartitionIndex : 0;
+        return crlPartitionIndex != null ? crlPartitionIndex : CertificateConstants.NO_CRL_PARTITION;
     }
 
-    /** @since EJBCA 7.1.0 */
+    /**
+     * Set the CRL partition index for this row.
+     *
+     * @since EJBCA 7.1.0
+     * @param crlPartitionIndex the CRL partition index to set.
+     */
     public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
         this.crlPartitionIndex = crlPartitionIndex;
     }
@@ -279,13 +282,13 @@ public class CRLData extends ProtectedData implements Serializable {
      *
      * @param entityManager an entity manager for reading from CRLData.
      * @param issuerDN the DN of the CRL issuer.
-     * @param crlPartitionIndex CRL partition index, or -1 if not using CRL partitioning.
+     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants.NO_CRL_PARTITION} if not using CRL partitioning.
      * @param crlNumber the CRL number.
      * @return the found entity instance or null if the entity does not exist.
      */
     public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
         final StringBuilder builder = new StringBuilder(
-                "SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND a.crlPartitionIndex=:crlPartitionIndex");
+                "SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND " + getCrlPartitionIndexCondition(crlPartitionIndex));
         final Query query = entityManager.createQuery(builder.toString());
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
@@ -310,23 +313,53 @@ public class CRLData extends ProtectedData implements Serializable {
      * Get the highest CRL number issued by the given issuer.
      *
      * @param issuerDN the DN of the CRL issuer.
-     * @param crlPartitionIndex CRL partition index, or -1 if not using CRL partitioning.
+     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
      * @param deltaCRL false to fetch the latest base CRL, or true to fetch the latest delta CRL.
      * @return the highest CRL number or null if no CRL for the specified issuer exists.
      */
     public static Integer findHighestCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
         if (deltaCRL) {
             final Query query = entityManager.createQuery(
-                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND a.crlPartitionIndex=:crlPartitionIndex");
+                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
+                            + getCrlPartitionIndexCondition(crlPartitionIndex));
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
             return (Integer) QueryResultWrapper.getSingleResult(query);
         } else {
             final Query query = entityManager.createQuery(
-                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND a.crlPartitionIndex=:crlPartitionIndex");
+                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
+                            + getCrlPartitionIndexCondition(crlPartitionIndex));
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
             return (Integer) QueryResultWrapper.getSingleResult(query);
+        }
+    }
+
+    /**
+     * Get a JPQL query condition for a given CRL partition index.
+     *
+     * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are used (i.e. crlPartitionIndex > 0)
+     * then simply return:
+     * <pre>
+     *     ""a.crlPartitionIndex=:crlPartitionIndex"
+     * </pre>
+     *
+     * <p>If the crlPartitionIndex parameter indicates that CRLs are not used (i.e. crlPartitionIndex = {@link CertificateConstants#NO_CRL_PARTITION}),
+     * a more elaborate query condition is needed to keep compatibility with data created by EJBCA <7.4. The CRL partition index
+     * in the database can either be {@link CertificateConstants#NO_CRL_PARTITION}, 0 or NULL. Thus, for this case return:
+     * <pre>
+     *     "a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex=NULL OR a.crlPartitionIndex=0"
+     * </pre>
+     *
+     * @param crlPartitionIndex the CRL partition index to use in the query condition.
+     * @return a JPQL query condition to use in the <code>WHERE</code> clause when querying for CRLs.
+     * @deprecated Remove this method after all customers have done a post-upgrade to EJBCA 7.4.0.
+     */
+    private static String getCrlPartitionIndexCondition(final int crlPartitionIndex) {
+        if (crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION) {
+            return "(a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex=NULL OR a.crlPartitionIndex=0)";
+        } else {
+            return "a.crlPartitionIndex=:crlPartitionIndex";
         }
     }
 
