@@ -155,7 +155,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
             issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
             subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDN());
-            subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
+            subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
             subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
             publicKey = composePublicKeyValue();
             

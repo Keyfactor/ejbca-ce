@@ -69,7 +69,7 @@
             <h:outputLabel for="subjectan" value="#{msg.component_certdetails_field_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                 rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
-            <h:outputText id="subjectan" value="#{cc.attrs.raCertificateDetails.subjectAn}"
+            <h:outputText id="subjectan" value="#{cc.attrs.raCertificateDetails.subjectAnUnescapedComma}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
                 rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
             <h:outputLabel for="subjectda" value="#{msg.component_certdetails_field_subjectda}"
