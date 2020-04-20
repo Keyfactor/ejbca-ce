@@ -21,7 +21,11 @@ import java.util.Locale;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey;
+import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -156,23 +160,34 @@ public final class CAConstants {
         "LPjKPKEFrG18K7yFkH5xGg==\n" +
         "-----END DSA PRIVATE KEY-----\n";
 
+    public static final String PRESIGN_VALIDATION_KEY_ED25519_PRIV = 
+            "-----BEGIN PRIVATE KEY-----\n" +
+            "MC4CAQAwBQYDK2VwBCIEIErU1sdUkfufFIiIjeyB6XCqEKR4dFtTYejBjH/jeM4O\n" +
+            "-----END PRIVATE KEY-----\n";
+
+    public static final String PRESIGN_VALIDATION_KEY_ED448_PRIV = 
+            "-----BEGIN PRIVATE KEY-----\n" +
+            "MEcCAQAwBQYDK2VxBDsEOaEFdMTDqYgfCBO+L1X1gkY/MtsRCkkqRIRaf/w0sZL8\n" +
+            "MHdS7JohG5RxniPplORiTi/F/bIkJ8GZ7g==\n" +
+            "-----END PRIVATE KEY-----\n";
+
     /** Return a hard coded private key that can be used for signing 
      * @param sigAlg the signature algorithm the key should be used to sign with
      * @return PrivateKey that can be used to sign with the passed in sigAlg, or null if no as hard coded private key suitable for the algorithm exists  
      */
     public static final PrivateKey getPreSignPrivateKey(final String sigAlg) {
-        PrivateKey presignKey = getPreSignKeyPair(sigAlg).getPrivate();
+        final PrivateKey presignKey = getPreSignKeyPair(sigAlg).getPrivate();
         return presignKey;
     }
     public static final PublicKey getPreSignPublicKey(final String sigAlg) {
-        PublicKey presignKey = getPreSignKeyPair(sigAlg).getPublic();
+        final PublicKey presignKey = getPreSignKeyPair(sigAlg).getPublic();
         return presignKey;
     }
 
     private static KeyPair getPreSignKeyPair(final String sigAlg) {
         // A switch to use different keys depending on the sigAlg so we can sign using the CAs signature algorithm
-        String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(sigAlg);
-        StringReader reader;
+        final String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(sigAlg);
+        StringReader reader = null;
         switch (keyAlg) {
         case AlgorithmConstants.KEYALGORITHM_RSA:
             reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_RSA_PRIV);
@@ -184,16 +199,35 @@ public final class CAConstants {
         case AlgorithmConstants.KEYALGORITHM_DSA:
             reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_DSA_PRIV);
             break;
+        case AlgorithmConstants.KEYALGORITHM_ED25519:
+            reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_ED25519_PRIV);
+            break;
+        case AlgorithmConstants.KEYALGORITHM_ED448:            
+            reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_ED448_PRIV);
+            break;
         default:
             // This will lead to an error
             return null;
         }
         try (PEMParser pemParser = new PEMParser(reader)) {
-            PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
-            JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            return keyConverter.getKeyPair(pemKeyPair);
+            Object obj = pemParser.readObject();
+            if (obj instanceof PEMKeyPair) {
+                final PEMKeyPair pemKeyPair = (PEMKeyPair) obj;
+                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                return keyConverter.getKeyPair(pemKeyPair);                
+            } else {
+                final PrivateKeyInfo edPrivInfo = (PrivateKeyInfo)obj;
+                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                try {
+                    final EdDSAPrivateKey edPrivKey = (EdDSAPrivateKey)keyConverter.getPrivateKey(edPrivInfo);
+                    final EdDSAPublicKey edPubKey = edPrivKey.getPublicKey();
+                    return new KeyPair(edPubKey, edPrivKey);
+                } catch (PEMException e) {
+                    throw new IllegalStateException("No hard coded presign key available for " + sigAlg); 
+                }
+            }
         } catch (IOException e) {
-            throw new IllegalStateException("IOException parsing hard coded presign key. This should never happen: ", e);
+            throw new IllegalStateException("IOException parsing hard coded presign key for " + sigAlg + ". This should never happen: ", e);
         }
     }
 

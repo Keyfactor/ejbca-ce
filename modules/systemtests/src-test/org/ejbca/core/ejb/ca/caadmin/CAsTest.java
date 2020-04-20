@@ -41,6 +41,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.dstu.BCDSTU4145PublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -170,7 +171,7 @@ public class CAsTest extends CaTestCase {
         final int cryptoTokenId;
         try {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, this.getClass().getSimpleName() + "." + tokenName, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
+            cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(signKeySpec).build());
             cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -303,7 +304,9 @@ public class CAsTest extends CaTestCase {
         assertTrue("Creating ECDSA CA failed", ret);
     }
 
-    /** Adds a CA Using ECDSA keys, using the new curve curve25519, to the database. It also checks that the CA is stored correctly. */
+    /** Adds a CA Using ECDSA keys, using the new curve curve25519, to the database. It also checks that the CA is stored correctly.
+     * Note that this is a flawed case. Curve25519 should not be used with ECDSA. The test case works, but we don't offer this curve for ECDSA
+     */
     @Test
     public void testAddECDSACAWithCurve25519() throws Exception {
         boolean ret = false;
@@ -355,6 +358,49 @@ public class CAsTest extends CaTestCase {
             assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
         }
         return spec;
+    }
+
+    /** Adds a CA Using EdDSA keys (Ed25519 and Ed448) to the database. It also checks that the CA is stored correctly. */
+    @Test
+    public void test0AddEdDSACA() throws Exception {
+        try {
+            createEdDsaCa(AlgorithmConstants.KEYALGORITHM_ED25519);
+            CAInfo info = caSession.getCAInfo(admin, TEST_EDDSA_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_ED25519, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_EDDSA_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_EDDSA_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be Ed25519", "Ed25519", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating EDDSA CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_EDDSA_CA_NAME);
+        }
+        try {
+            createEdDsaCa(AlgorithmConstants.KEYALGORITHM_ED448);
+            CAInfo info = caSession.getCAInfo(admin, TEST_EDDSA_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_ED448, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_EDDSA_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_EDDSA_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be Ed448", "Ed448", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating EDDSA CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_EDDSA_CA_NAME);
+        }
     }
 
     /** Adds a CA using ECGOST3410 keys to the database. It also checks that the CA is stored correctly. */
@@ -450,12 +496,13 @@ public class CAsTest extends CaTestCase {
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 ECParameterSpec spec = ecpk.getParameters();
-                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in ejbca.properties", spec);
+                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
             } else if (pk instanceof BCECPublicKey) {
                 BCECPublicKey ecpk = (BCECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in ejbca.properties", spec);
+                ECNamedCurveParameterSpec ns = (ECNamedCurveParameterSpec)spec;
+                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", ns);
             } else {
                 assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }
@@ -1239,21 +1286,21 @@ public class CAsTest extends CaTestCase {
        int cryptoTokenId = 0;
        try {
            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, this.getClass().getSimpleName() + "." + "test22.IllegalKeyLengthRSA", SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-           cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "512");
+           cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("512").build());
            fail("It should not be possoble to create a keys with 512 bit RSA keys.");
        } catch (Exception e) {
            cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);
        }
        try {
            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, this.getClass().getSimpleName() + "." + "test22.IllegalKeyLengthDSA", SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-           cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "DSA512");
+           cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("DSA512").build());
            fail("It should not be possoble to create a keys with 512 bit DSA keys.");
        } catch (Exception e) {
            cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);
        }
        try {
            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(admin, this.getClass().getSimpleName() + "." + "test22.IllegalKeyLengthECDSA", SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-           cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "prime192v1");
+           cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("prime192v1").build());
            fail("It should not be possoble to create a CA with 192 bit ECC keys.");
        } catch (Exception e) {
            cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);

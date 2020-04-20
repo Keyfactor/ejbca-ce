@@ -131,7 +131,7 @@ public class CryptoTokenTestUtils {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName,
                     cryptoTokenProperties, null, pin);
             if (genenrateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(signKeySpec).build());
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
             }
         } catch (Exception e) {

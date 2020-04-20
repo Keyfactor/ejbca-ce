@@ -12,14 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -71,6 +63,7 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
@@ -142,6 +135,14 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 /** JUnit test for X.509 CA
  *
  * @version $Id$
@@ -180,6 +181,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
     }
 
+    @Test
+    public void testX509CABasicOperationsEdDSA() throws Exception {
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_ED25519);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_ED448);
+    }
+
     private void doTestX509CABasicOperations(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
@@ -193,7 +200,21 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Store<X509CertificateHolder> certstore = s.getCertificates();
         Collection<X509CertificateHolder> certs = certstore.getMatches(null);
         assertEquals(2, certs.size());
-        assertEquals("PKCS#7 signature algorithm should use SHA256 hash algorithm", CMSSignedGenerator.DIGEST_SHA256, s.getSignerInfos().getSigners().iterator().next().getDigestAlgOID());
+        // ED25519 and ED448 specifies the hash algorithm as part of the signature algo definition
+        // See RFC8419, section 3.1
+        final String expectedDigest;
+        switch (algName) {
+        case AlgorithmConstants.SIGALG_ED25519:
+            expectedDigest = CMSSignedGenerator.DIGEST_SHA512;
+            break;
+        case AlgorithmConstants.SIGALG_ED448:
+            expectedDigest = NISTObjectIdentifiers.id_shake256_len.getId();
+            break;
+        default:
+            expectedDigest = CMSSignedGenerator.DIGEST_SHA256;
+            break;
+        }
+        assertEquals("CMS/PKCS#7 signature algorithm should use hash algorithm defined by signature algo", expectedDigest, s.getSignerInfos().getSigners().iterator().next().getDigestAlgOID());
         p7 = x509ca.createPKCS7(cryptoToken, cacert, false);
         assertNotNull(p7);
         s = new CMSSignedData(p7);

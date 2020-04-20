@@ -121,6 +121,8 @@ public class X509CAUnitTestBase {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
             algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
+            algName.equals(AlgorithmConstants.SIGALG_ED25519) ||
+            algName.equals(AlgorithmConstants.SIGALG_ED448) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA) ||
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1) ||
@@ -140,6 +142,10 @@ public class X509CAUnitTestBase {
             return "brainpoolp224r1";
         } else if (algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)) {
             return "prime256v1";
+        } else if (algName.equals(AlgorithmConstants.SIGALG_ED25519)) {
+            return AlgorithmConstants.KEYALGORITHM_ED25519;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_ED448)) {
+            return AlgorithmConstants.KEYALGORITHM_ED448;
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
             return "2048"; // RSA-PSS required at least 2014 bits
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {

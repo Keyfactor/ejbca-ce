@@ -40,6 +40,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
+import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -308,21 +310,32 @@ public class KeyStoreTools {
         if (log.isTraceEnabled()) {
             log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyAlias);
         }
-        // Generate the RSA Keypair
-        final KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance("DSA", this.providerName);
-        } catch (NoSuchAlgorithmException e) {
-           throw new IllegalStateException("Algorithm " + "DSA" + " was not recognized.", e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-        }
-        kpg.initialize(keySize);
+        // Generate the DSA Keypair
         generateKeyPair(
                 new SizeAlgorithmParameterSpec(keySize), keyAlias,
                 AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmTools.SIG_ALGS_DSA);
         if (log.isTraceEnabled()) {
             log.trace("<generate: keySize " + keySize + ", keyEntryName " + keyAlias);
+        }
+    }
+
+    private void generateEdDSA(final String keySpec, final String keyAlias) throws InvalidAlgorithmParameterException {
+        if (log.isTraceEnabled()) {
+            log.trace(">generate: keySpec " + keySpec+ ", keyEntryName " + keyAlias);
+        }
+        // Generate the EdDSA Keypair
+        switch (keySpec) {
+        case AlgorithmConstants.KEYALGORITHM_ED25519:
+            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmTools.SIG_ALGS_ED25519);            
+            break;
+        case AlgorithmConstants.KEYALGORITHM_ED448:
+            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmTools.SIG_ALGS_ED448);            
+            break;
+        default:
+            throw new InvalidAlgorithmParameterException("Only Ed25519 and Ed448 is allowed for EdDSA key generation");
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<generate: keySpec " + keySpec + ", keyEntryName " + keyAlias);
         }
     }
 
@@ -334,14 +347,15 @@ public class KeyStoreTools {
     public void generateKeyPair(final String keySpec, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
 
-        if (keySpec.toUpperCase().startsWith("DSA")) {
+        if (keySpec.toUpperCase().startsWith("ED")) {
+            generateEdDSA(keySpec, keyEntryName);
+        } else if (keySpec.toUpperCase().startsWith("DSA")) {
             generateDSA(Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
         } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             generateGOST3410(keySpec, keyEntryName);
         } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
         } else {
-
             try {
                 generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
             } catch (NumberFormatException e) {
@@ -380,7 +394,11 @@ public class KeyStoreTools {
         final String keyAlgorithm;
         final List<String> certSignAlgorithms;
         final String specName = keyParams.getClass().getName();
-        if (specName.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+        if (specName.equals(EdDSAParameterSpec.class.getName())) {
+            EdDSAParameterSpec edSpec = (EdDSAParameterSpec) keyParams;
+            keyAlgorithm = edSpec.getCurveName();
+            certSignAlgorithms = Arrays.asList(edSpec.getCurveName());
+        } else if (specName.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DSA;
             certSignAlgorithms = AlgorithmTools.SIG_ALGS_DSA;
         } else if (specName.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
@@ -413,7 +431,8 @@ public class KeyStoreTools {
         try {
             if ( keyParams instanceof SizeAlgorithmParameterSpec ) {
                 kpg.initialize(((SizeAlgorithmParameterSpec)keyParams).keySize);
-            } else {
+            } else if (keyParams != null || keyAlgorithm.startsWith("EC")) {
+                // Null here means "implicitlyCA", which is allowed only for EC keys
                 kpg.initialize(keyParams);
             }
         } catch( InvalidAlgorithmParameterException e ) {

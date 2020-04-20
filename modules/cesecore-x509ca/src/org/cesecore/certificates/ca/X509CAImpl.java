@@ -864,9 +864,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
             try {
-                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
-                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-                JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+                final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
+                final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                final JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 gen.addSignerInfoGenerator(builder.build(contentSigner, cacert));
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
@@ -925,9 +925,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
             try {
-                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
-                JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-                JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+                final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
+                final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                final JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 gen.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) getCACertificate()));
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);

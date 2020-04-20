@@ -48,6 +48,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.anssi.ANSSINamedCurves;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.cryptopro.ECGOST3410NamedCurves;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.gm.GMNamedCurves;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -61,6 +62,7 @@ import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -128,6 +130,15 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA
     ));
 
+    /** Signature algorithms supported by EDDSA keys */
+    public static final List<String> SIG_ALGS_ED25519 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_ED25519
+    ));
+    /** Signature algorithms supported by EDDSA keys */
+    public static final List<String> SIG_ALGS_ED448 = Collections.unmodifiableList(Arrays.asList(
+            AlgorithmConstants.SIGALG_ED448
+    ));
+
     /** Signature algorithms supported by GOST keys */
     public static final List<String> SIG_ALGS_ECGOST3410 = Collections.unmodifiableList(Arrays.asList(
             AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410
@@ -146,6 +157,8 @@ public abstract class AlgorithmTools {
      * @see AlgorithmConstants#KEYALGORITHM_RSA
      * @see AlgorithmConstants#KEYALGORITHM_DSA
      * @see AlgorithmConstants#KEYALGORITHM_ECDSA
+     * @see AlgorithmConstants#KEYALGORITHM_ED25519
+     * @see AlgorithmConstants#KEYALGORITHM_ED448
      */
     public static String getKeyAlgorithm(final PublicKey publickey) {
         String keyAlg = null;
@@ -162,6 +175,9 @@ public abstract class AlgorithmTools {
             } else {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
             }
+        } else if ( publickey instanceof BCEdDSAPublicKey ) {
+            final String algo = publickey.getAlgorithm();
+            keyAlg = algo;
         }
         return keyAlg;
     }
@@ -169,7 +185,7 @@ public abstract class AlgorithmTools {
     /** @return a list of all available key algorithms */
     public static List<String> getAvailableKeyAlgorithms() {
         final List<String> ret = new ArrayList<>(Arrays.asList(AlgorithmConstants.KEYALGORITHM_DSA, AlgorithmConstants.KEYALGORITHM_ECDSA,
-                AlgorithmConstants.KEYALGORITHM_RSA));
+                AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED448));
         for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
             ret.add(CesecoreConfiguration.getExtraAlgTitle(algName));
         }
@@ -301,9 +317,6 @@ public abstract class AlgorithmTools {
         if ( publickey instanceof RSAPublicKey ) {
             return SIG_ALGS_RSA;
         }
-        if ( publickey instanceof DSAPublicKey ) {
-            return SIG_ALGS_DSA;
-        }
         if ( publickey instanceof ECPublicKey ) {
             final String algo = publickey.getAlgorithm();
             if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
@@ -335,6 +348,19 @@ public abstract class AlgorithmTools {
             log.info("Returning ecAlgs: "+ecSigAlgs);
             return ecSigAlgs;
         }
+        if ( publickey instanceof BCEdDSAPublicKey ) {
+            final String algo = publickey.getAlgorithm();
+            switch (algo) {
+            case AlgorithmConstants.KEYALGORITHM_ED25519:            
+                return SIG_ALGS_ED25519;
+            case AlgorithmConstants.KEYALGORITHM_ED448:            
+                return SIG_ALGS_ED448;
+            }
+        }
+        if ( publickey instanceof DSAPublicKey ) {
+            return SIG_ALGS_DSA;
+        }
+
         return Collections.emptyList();
     }
 
@@ -355,6 +381,10 @@ public abstract class AlgorithmTools {
             ret = AlgorithmConstants.KEYALGORITHM_DSTU4145;
         } else if ( signatureAlgorithm.contains("DSA") ) {
             ret = AlgorithmConstants.KEYALGORITHM_DSA;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED25519) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_ED25519;
+        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED448) ) {
+            ret = AlgorithmConstants.KEYALGORITHM_ED448;
         } else {
             ret = AlgorithmConstants.KEYALGORITHM_RSA;
         }
@@ -376,8 +406,6 @@ public abstract class AlgorithmTools {
         String keyspec = null;
         if ( publicKey instanceof RSAPublicKey ) {
             keyspec = Integer.toString( ((RSAPublicKey) publicKey).getModulus().bitLength() );
-        } else if ( publicKey instanceof DSAPublicKey ) {
-            keyspec = Integer.toString( ((DSAPublicKey) publicKey).getParams().getP().bitLength() );
         } else if ( publicKey instanceof ECPublicKey) {
             final ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
             if ( ecPublicKey.getParams() instanceof ECNamedCurveSpec ) {
@@ -430,6 +458,10 @@ public abstract class AlgorithmTools {
                     }
                 }
             }
+        } else if ( publicKey instanceof BCEdDSAPublicKey ) {
+            return publicKey.getAlgorithm();
+        } else if ( publicKey instanceof DSAPublicKey ) {
+            keyspec = Integer.toString( ((DSAPublicKey) publicKey).getParams().getP().bitLength() );
         }
         if (log.isTraceEnabled()) {
             log.trace("<getKeySpecification: "+keyspec);
@@ -548,6 +580,10 @@ public abstract class AlgorithmTools {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED25519)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED448)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         }
         return encSigAlg;
     }
@@ -588,7 +624,15 @@ public abstract class AlgorithmTools {
             if (publicKey instanceof ECPublicKey && isDstu4145) {
                 ret = true;
             }
-         }
+         } else if (StringUtils.equals(signatureAlgorithm, AlgorithmConstants.SIGALG_ED25519)) {
+             if (StringUtils.equals(AlgorithmConstants.KEYALGORITHM_ED25519, publicKey.getAlgorithm())) {
+                 ret = true;
+             }
+         } else if (StringUtils.equals(signatureAlgorithm, AlgorithmConstants.SIGALG_ED448)) {
+             if (StringUtils.equals(AlgorithmConstants.KEYALGORITHM_ED448, publicKey.getAlgorithm())) {
+                 ret = true;
+             }
+          }
         return ret;
     }
 
@@ -642,8 +686,15 @@ public abstract class AlgorithmTools {
                 certSignatureAlgorithm = certSignatureAlgorithmTmp;
             }
         }
+        // EdDSA does not work to be translated (JDK11)
+        if (certSignatureAlgorithm.equalsIgnoreCase(EdECObjectIdentifiers.id_Ed25519.getId())) {
+            return AlgorithmConstants.SIGALG_ED25519;
+        }
+        if (certSignatureAlgorithm.equalsIgnoreCase(EdECObjectIdentifiers.id_Ed448.getId())) {
+            return AlgorithmConstants.SIGALG_ED448;
+        }
         // SHA256WithECDSA does not work to be translated in JDK5.
-        if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.10045.4.3.2")) {
+        if (certSignatureAlgorithm.equalsIgnoreCase(X9ObjectIdentifiers.ecdsa_with_SHA256.getId())) {
             return AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
         }
         // GOST3410
@@ -704,6 +755,9 @@ public abstract class AlgorithmTools {
             }
         } else if (publickey instanceof DSAPublicKey) {
             signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+        } else if ( publickey instanceof BCEdDSAPublicKey ) {
+            // EdDSA algorithms are named the same as the key algo, i.e. Ed25519 or Ed488
+            signatureAlgorithm = publickey.getAlgorithm();
         } else {
             if (certSignatureAlgorithm.contains("SHA3-")) {
                 if (certSignatureAlgorithm.contains("256")) {
@@ -790,6 +844,11 @@ public abstract class AlgorithmTools {
         if(sigAlgOid.equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001.getId()) ) {
             return CMSSignedGenerator.DIGEST_GOST3411;
         }
+
+        if (sigAlgOid.equals(EdECObjectIdentifiers.id_Ed25519.getId()) || sigAlgOid.equals(EdECObjectIdentifiers.id_Ed448.getId())) {
+            return CMSSignedGenerator.DIGEST_SHA256;
+        }
+
         return CMSSignedGenerator.DIGEST_SHA256;
     }
 
@@ -814,6 +873,10 @@ public abstract class AlgorithmTools {
             oid = CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             oid = new ASN1ObjectIdentifier(CesecoreConfiguration.getOidDstu4145());
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+            oid = EdECObjectIdentifiers.id_Ed25519;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
+            oid = EdECObjectIdentifiers.id_Ed448;
         }
         if (digestAlg != null) {
             if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA1) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
@@ -984,6 +1047,12 @@ public abstract class AlgorithmTools {
 
         if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512)) {
             return AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
+        }
+        if (sigAlgOid.equals(EdECObjectIdentifiers.id_Ed25519)) {
+            return AlgorithmConstants.SIGALG_ED25519;
+        }
+        if (sigAlgOid.equals(EdECObjectIdentifiers.id_Ed448)) {
+            return AlgorithmConstants.SIGALG_ED448;
         }
         // GOST3410
         if(isGost3410Enabled() && sigAlgOid.getId().equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {

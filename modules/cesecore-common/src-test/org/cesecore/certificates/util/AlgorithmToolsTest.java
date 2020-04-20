@@ -13,17 +13,11 @@
 
 package org.cesecore.certificates.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.DSAParams;
@@ -34,11 +28,14 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -50,6 +47,15 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests for AlgorithmTools. Mostly tests border cases.
@@ -65,12 +71,22 @@ public class AlgorithmToolsTest {
     }
 
     @Test
-    public void testGetKeyAlgorithm() {
+    public void testGetKeyAlgorithm() throws InvalidAlgorithmParameterException {
         assertNull("null if no match", AlgorithmTools.getKeyAlgorithm(new MockNotSupportedPublicKey()));
+        assertEquals("Should find DSA key", AlgorithmConstants.KEYALGORITHM_DSA, 
+                AlgorithmTools.getKeyAlgorithm(CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)));
+        assertEquals("Should find RSA key", AlgorithmConstants.KEYALGORITHM_RSA, 
+                AlgorithmTools.getKeyAlgorithm(CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)));
+        assertEquals("Should find EC key", AlgorithmConstants.KEYALGORITHM_ECDSA, 
+                AlgorithmTools.getKeyAlgorithm(CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)));
+        assertEquals("Should find Ed25519 key", AlgorithmConstants.KEYALGORITHM_ED25519, 
+                AlgorithmTools.getKeyAlgorithm(CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED25519)));
+        assertEquals("Should find Ed448 key", AlgorithmConstants.KEYALGORITHM_ED448, 
+                AlgorithmTools.getKeyAlgorithm(CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED448)));
     }
 
     @Test
-    public void testGetSignatureAlgorithms() {
+    public void testGetSignatureAlgorithmsNotSupportedKey() {
         final List<String> algs = AlgorithmTools.getSignatureAlgorithms(new MockNotSupportedPublicKey());
         assertNotNull("should not return null", algs);
         assertEquals("no supported algs", 0, algs.size());
@@ -100,6 +116,17 @@ public class AlgorithmToolsTest {
 
         AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA).digest(someBytes);
         AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA).digest(someBytes);
+
+        // There is no digest defined for Ed25519 and Ed448
+        try {
+            AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_ED25519).digest(someBytes);
+            fail("should have thrown for Ed25519");
+        } catch (NoSuchAlgorithmException e) {} // NOPMD
+        try {
+            AlgorithmTools.getDigestFromAlgoName(AlgorithmConstants.SIGALG_ED448).digest(someBytes);
+            fail("should have thrown for Ed448");
+        } catch (NoSuchAlgorithmException e) {} // NOPMD
+
     }
 
     @Test
@@ -120,6 +147,20 @@ public class AlgorithmToolsTest {
             assertEquals(AlgorithmTools.getKeyAlgorithm(new MockECDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(s));
         }
 
+        // EdDSA have specific signature algorithms per key
+        PublicKey pk = CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED25519);
+        List<String> algos = AlgorithmTools.getSignatureAlgorithms(pk);
+        assertEquals("There should be exactly one signatur ealgo for Ed25519", 1, algos.size());
+        assertEquals("Not Ed25519 algo returned", AlgorithmConstants.SIGALG_ED25519, algos.get(0));
+        assertEquals("Should be Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmTools.getKeyAlgorithmFromSigAlg(algos.get(0)));
+        assertEquals("Should be Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmTools.getKeyAlgorithm(pk));
+        pk = CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED448);
+        algos = AlgorithmTools.getSignatureAlgorithms(pk);
+        assertEquals("There should be exactly one signatur ealgo for Ed448", 1, algos.size());
+        assertEquals("Not Ed448 algo returned", AlgorithmConstants.SIGALG_ED448, algos.get(0));
+        assertEquals("Should be Ed448", AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmTools.getKeyAlgorithmFromSigAlg(algos.get(0)));
+        assertEquals("Should be Ed448", AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmTools.getKeyAlgorithm(pk));
+
         // should return a default value
         assertNotNull("should return a default value", AlgorithmTools.getKeyAlgorithmFromSigAlg("_NonExistingAlg"));
 
@@ -138,6 +179,11 @@ public class AlgorithmToolsTest {
         //assertEquals("Unexpected preferred named curve alias.", "secp192r1", ecNamedCurve);
         pair = KeyTools.genKeys("1024", "DSA");
         assertEquals("1024", AlgorithmTools.getKeySpecification(pair.getPublic()));
+        PublicKey pk = CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED25519);
+        assertEquals("Ed25519", AlgorithmTools.getKeySpecification(pk));
+        pk = CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED448);
+        assertEquals("Ed448", AlgorithmTools.getKeySpecification(pk));
+
     }
 
     @Test
@@ -187,6 +233,8 @@ public class AlgorithmToolsTest {
         assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA,
                 AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA));
         assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED25519));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_ED448));
         assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar"));
     }
     
@@ -267,6 +315,43 @@ public class AlgorithmToolsTest {
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSAPublicKey(), AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA));
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSAPublicKey(), AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA));
         assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSAPublicKey(), AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA));
+
+        PublicKey pk = CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED25519);
+        assertTrue(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_ED25519));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA1_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA384_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA));
+
+        pk = CAConstants.getPreSignPublicKey(AlgorithmConstants.SIGALG_ED448);
+        assertTrue(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_ED448));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA1_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA384_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(pk, AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA));
+
     }
 
     @Test
@@ -415,6 +500,15 @@ public class AlgorithmToolsTest {
     	assertEquals("SHA1withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha1ecc));
     	assertEquals("SHA224withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha224ecc));
     	assertEquals("SHA256withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha256ecc));
+
+        // EdDSA
+        keyPair = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_ED25519);
+        Certificate ed25519 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_ED25519, true);
+        assertEquals("Ed25519", AlgorithmTools.getCertSignatureAlgorithmNameAsString(ed25519));
+        keyPair = KeyTools.genKeys(null, AlgorithmConstants.KEYALGORITHM_ED448);
+        Certificate ed448 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_ED448, true);
+        assertEquals("Ed448", AlgorithmTools.getCertSignatureAlgorithmNameAsString(ed448));
+        
     }
 
     @Test
@@ -451,6 +545,22 @@ public class AlgorithmToolsTest {
         }
     }
 
+    /** A simple test that just checks that we have items in EcCurvesMap, and can be used to 
+     * (debug) print out for manual inspection.
+     */
+    @Test
+    public void testGetNamedEcCurves() {
+        final Map<String,List<String>> list = AlgorithmTools.getNamedEcCurvesMap(false);
+        assertNotNull("getNamedEcCurvesMap can not be null", list);
+        assertFalse("getNamedEcCurvesMap can not be empty", list.isEmpty());
+        final Set<String> keySet = list.keySet();
+        assertNotNull("getNamedEcCurvesMap keySet can not be null", keySet);
+        assertFalse("getNamedEcCurvesMap keySet can not be empty", keySet.isEmpty());
+        for (String name : keySet) {
+            log.debug("testGetNamedEcCurves: " + name);
+        }
+    }
+    
     private static class MockPublicKey implements PublicKey {
         private static final long serialVersionUID = 1L;
         @Override
