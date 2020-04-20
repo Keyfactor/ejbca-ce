@@ -626,13 +626,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         caAdminSession.createCA(internalAdmin, cvccainfo);
     }
     
-    protected static void createDefaultDsaCa() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+    protected static void createDefaultDsaCa(final String sigAlg) throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         removeOldCa(TEST_DSA_CA_NAME, "CN="+TEST_DSA_CA_NAME);        
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSA_CA_NAME, "DSA1024");
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTDSA", TEST_DSA_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit DSA CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
