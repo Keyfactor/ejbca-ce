@@ -87,8 +87,11 @@ import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
+import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
@@ -141,16 +144,17 @@ public final class KeyTools {
      * 
      * @param keySpec
      *            string specification of keys to generate, typical value is 2048 for RSA keys,
-     *            1024 for DSA keys, secp256r1 for ECDSA keys, or null if algspec is to be used.
+     *            1024 for DSA keys, secp256r1 for ECDSA keys, Ed25519 or Ed448 for EdDSA or null if algspec is to be used.
      * @param algSpec
-     *            AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used.
+     *            AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used. See {@link KeyTools#getKeyGenSpec(PublicKey)}
      * @param keyAlg
-     *            algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see AlgorithmConstants.KEYALGORITHM_XX
+     *            algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see AlgorithmConstants.KEYALGORITHM_XX, if value is Ed25519 or Ed448, not keySpec or algSpec is needed
      * 
      * @see org.cesecore.certificates.util.AlgorithmConstants
      * @see org.bouncycastle.asn1.x9.X962NamedCurves
      * @see org.bouncycastle.asn1.nist.NISTNamedCurves
      * @see org.bouncycastle.asn1.sec.SECNamedCurves
+     * @see KeyTools#getKeyGenSpec(PublicKey)
      * 
      * @return KeyPair the generated keypair
      * @throws InvalidAlgorithmParameterException  if the given parameters are inappropriate for this key pair generator.
@@ -208,7 +212,7 @@ public final class KeyTools {
             } else {
                 throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
             }
-        } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
             final AlgorithmParameterSpec ecSpec;
             if(keySpec != null) {
                 log.debug("Generating keys from given key specifications : " + keySpec);
@@ -222,7 +226,7 @@ public final class KeyTools {
                 throw new InvalidAlgorithmParameterException("No key or algorithm specifications");
             }
             keygen.initialize(ecSpec, new SecureRandom());
-        } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             final AlgorithmParameterSpec ecSpec;
             if(keySpec != null) {
                 log.debug("Generating keys from given key specifications : " + keySpec);
@@ -236,16 +240,16 @@ public final class KeyTools {
                 throw new InvalidAlgorithmParameterException("No key or algorithm specifications");
             }
             keygen.initialize(ecSpec, new SecureRandom());
-        } else if (keySpec.startsWith("DSA")) {
+        } else if (StringUtils.startsWith(keySpec, "DSA")) {
             // DSA key with "DSA" in keyspec
             final int keysize = Integer.parseInt(keySpec.substring(3));
             keygen.initialize(keysize);
-        } else {
+        } else if (StringUtils.isNumeric(keySpec)) {
             // RSA or DSA key where keyspec is simply the key length
             final int keysize = Integer.parseInt(keySpec);
             keygen.initialize(keysize);
         }
-
+        // If KeyAlg is Ed448 or Ed25519, we don't even need a keySpec
         final KeyPair keys = keygen.generateKeyPair();
 
         if (log.isDebugEnabled()) {
@@ -382,6 +386,15 @@ public final class KeyTools {
             // We support the key, but we don't know the key length
             return 0;
         }
+        if (pk instanceof BCEdDSAPublicKey) {
+            final String algo = pk.getAlgorithm();
+            switch (algo) {
+            case AlgorithmConstants.KEYALGORITHM_ED25519:
+                return 255;
+            case AlgorithmConstants.KEYALGORITHM_ED448:
+                return 448;
+            }
+        }
         if (pk instanceof DSAPublicKey) {
             final DSAPublicKey dsapub = (DSAPublicKey) pk;
             if (dsapub.getParams() != null) {
@@ -449,6 +462,11 @@ public final class KeyTools {
             return params;
             // EllipticCurve ecc = new EllipticCurve(curve.)
             // ECParameterSpec sp = new ECParameterSpec(, bcsp.getG(), bcsp.getN(), bcsp.getH().intValue());
+        }
+        if (pk instanceof BCEdDSAPublicKey) {
+            log.debug("getKeyGenSpec: BCEdDSAPublicKey");
+            final EdDSAParameterSpec edSpec = new EdDSAParameterSpec(pk.getAlgorithm());
+            return edSpec;
         }
         return null;
     }
@@ -1220,6 +1238,14 @@ public final class KeyTools {
             ps.println("  the public value y: " + dsa.getY().toString(16));
             return;
         }
+        if (publK instanceof BCEdDSAPublicKey) {
+            ps.println("EdDSA key:");
+            final String algo = publK.getAlgorithm();
+            final BCEdDSAPublicKey eddsa = (BCEdDSAPublicKey) publK;
+            ps.println("  " + algo);
+            final String key = org.bouncycastle.util.encoders.Base64.toBase64String(eddsa.getEncoded());
+            ps.println("  public key value " + key);
+        }
     }
 
     /**
@@ -1250,6 +1276,11 @@ public final class KeyTools {
             final BigInteger result = dsa.getX();
             return result != null && result.bitLength() > 0;
         }
+        if (privK instanceof BCEdDSAPrivateKey) {
+            final BCEdDSAPrivateKey ed = (BCEdDSAPrivateKey) privK;
+            byte[] result = ed.getEncoded();
+            return result != null && result.length > 0;
+        }
         return false;
     }
 
@@ -1260,6 +1291,10 @@ public final class KeyTools {
             len = Integer.parseInt(keyspec); 
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
             len = Integer.parseInt(keyspec.substring(3));
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+            len = 255;
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
+            len = 448;
         } else {
             // Assume it's elliptic curve
             final KeyPair kp = KeyTools.genKeys(keyspec, keyAlg);
@@ -1310,6 +1345,12 @@ public final class KeyTools {
         }
         if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
             return AlgorithmConstants.KEYALGORITHM_DSA;
+        }
+        if (keyspec.equalsIgnoreCase(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+            return AlgorithmConstants.KEYALGORITHM_ED25519;
+        }
+        if (keyspec.equalsIgnoreCase(AlgorithmConstants.KEYALGORITHM_ED448)) {
+            return AlgorithmConstants.KEYALGORITHM_ED448;
         }
         if (AlgorithmTools.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             return AlgorithmConstants.KEYALGORITHM_ECGOST3410;

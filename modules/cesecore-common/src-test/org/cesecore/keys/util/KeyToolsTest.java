@@ -13,15 +13,6 @@
 
 package org.cesecore.keys.util;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -50,9 +41,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X962Parameters;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -68,6 +62,15 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests the CertTools class .
@@ -325,6 +328,21 @@ public class KeyToolsTest {
         assertNotNull("b64cert cannot be null", b64cert);
         // log.info(b64cert);
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+            assertEquals(ecpk.getAlgorithm(), "EC");
+            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+            assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
+        } else if (pk instanceof BCECPublicKey) {
+            BCECPublicKey ecpk = (BCECPublicKey) pk;
+            assertEquals(ecpk.getAlgorithm(), "EC");
+            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+            //ECNamedCurveParameterSpec ns = (ECNamedCurveParameterSpec)spec;
+            assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
+        } else {
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+        }
     }
 
     @Test
@@ -410,6 +428,20 @@ public class KeyToolsTest {
         KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
     }
 
+    @Test
+    public void testGenKeysEdDSA() throws Exception {
+        // EdDSA keys does not need any parameters to generate, but parameters can be provided
+        EdDSAParameterSpec spec = new EdDSAParameterSpec(EdDSAParameterSpec.Ed25519);
+        KeyPair kp = KeyTools.genKeys(null, spec, AlgorithmConstants.KEYALGORITHM_ED25519);
+        assertNotNull("Shold be able to generate Ed25519 key", kp);
+        assertEquals("Ed25519", kp.getPublic().getAlgorithm());
+        assertEquals("Length of Ed25519 should be 255", 255, KeyTools.getKeyLength(kp.getPublic()));
+        kp = KeyTools.genKeys(null, null, AlgorithmConstants.KEYALGORITHM_ED448);
+        assertNotNull("Shold be able to generate Ed448 key", kp);
+        assertEquals("Ed448", kp.getPublic().getAlgorithm());
+        assertEquals("Length of Ed448 should be 448", 448, KeyTools.getKeyLength(kp.getPublic()));
+    }
+    
     @Test
     public void testGetECDSACvcPubKeyParams() throws Exception {
     	// Test to enrich an EC public key that does not contain domain parameters 
