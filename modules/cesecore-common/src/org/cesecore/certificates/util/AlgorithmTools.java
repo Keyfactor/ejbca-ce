@@ -576,6 +576,8 @@ public abstract class AlgorithmTools {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_DSA)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
@@ -754,7 +756,11 @@ public abstract class AlgorithmTools {
                 }
             }
         } else if (publickey instanceof DSAPublicKey) {
-            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+            if (certSignatureAlgorithm.contains("SHA1")) {
+                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+            } else if (certSignatureAlgorithm.contains("256")) {
+                signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_DSA;
+            }
         } else if ( publickey instanceof BCEdDSAPublicKey ) {
             // EdDSA algorithms are named the same as the key algo, i.e. Ed25519 or Ed488
             signatureAlgorithm = publickey.getAlgorithm();
@@ -1015,6 +1021,14 @@ public abstract class AlgorithmTools {
 
         if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512)) {
             return AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+        }
+
+        if(sigAlgOid.equals(X9ObjectIdentifiers.id_dsa_with_sha1)) {
+            return AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+        }
+        
+        if(sigAlgOid.equals(NISTObjectIdentifiers.dsa_with_sha256)) {
+            return AlgorithmConstants.SIGALG_SHA256_WITH_DSA;
         }
 
         if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA1)) {

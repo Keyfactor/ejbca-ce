@@ -811,7 +811,7 @@ public class CAsTest extends CaTestCase {
     } 
 
     /**
-     * adds a CA using DSA keys to the database.
+     * Adds CAs using DSA keys to the database.
      * 
      * It also checks that the CA is stored correctly.
      * 
@@ -820,39 +820,69 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test12AddDSACA() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
-        boolean ret = false;
 
-        removeTestCA(TEST_DSA_CA_NAME); // We cant be sure this CA was not left
-        createDefaultDsaCa();
-        CAInfo info = caSession.getCAInfo(admin, TEST_DSA_CA_NAME);
+        try {
+            removeTestCA(TEST_DSA_CA_NAME); // We cant be sure this CA was not left
+            createDefaultDsaCa(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+            CAInfo info = caSession.getCAInfo(admin, TEST_DSA_CA_NAME);
 
-        Collection<Certificate> rootcacertchain = info.getCertificateChain();
-        X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
-        String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, sigAlg);
-        assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTDSA"));
-        assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTDSA"));
-        PublicKey pk = cert.getPublicKey();
-        if (pk instanceof DSAPublicKey) {
-            DSAPublicKey rsapk = (DSAPublicKey) pk;
-            assertEquals(rsapk.getAlgorithm(), "DSA");
-        } else {
-            assertTrue("Public key is not DSA", false);
+            Collection<Certificate> rootcacertchain = info.getCertificateChain();
+            X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTDSA"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTDSA"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof DSAPublicKey) {
+                DSAPublicKey rsapk = (DSAPublicKey) pk;
+                assertEquals(rsapk.getAlgorithm(), "DSA");
+            } else {
+                assertTrue("Public key is not DSA", false);
+            }
+            assertTrue(
+                    "CA is not valid for the specified duration.",
+                    cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                    && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            // Test to generate a certificate request from the CA
+            Collection<Certificate> cachain = info.getCertificateChain();
+            byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTDSA", msg.getRequestDN());
+            removeOldCa(TEST_DSA_CA_NAME);
+        } finally {
+            removeTestCA(TEST_DSA_CA_NAME);
         }
-        assertTrue(
-                "CA is not valid for the specified duration.",
-                cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                        && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
-        ret = true;
-
-        // Test to generate a certificate request from the CA
-        Collection<Certificate> cachain = info.getCertificateChain();
-        byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
-        assertEquals("CN=TESTDSA", msg.getRequestDN());
-
-        assertTrue("Creating DSA CA failed", ret);
-        removeOldCa(TEST_DSA_CA_NAME);
+        
+        try {
+            removeTestCA(TEST_DSA_CA_NAME); // We cant be sure this CA was not left
+            createDefaultDsaCa(AlgorithmConstants.SIGALG_SHA256_WITH_DSA);
+            CAInfo info = caSession.getCAInfo(admin, TEST_DSA_CA_NAME);
+            Collection<Certificate> rootcacertchain = info.getCertificateChain();
+            X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_DSA, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTDSA"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTDSA"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof DSAPublicKey) {
+                DSAPublicKey rsapk = (DSAPublicKey) pk;
+                assertEquals(rsapk.getAlgorithm(), "DSA");
+            } else {
+                assertTrue("Public key is not DSA", false);
+            }
+            assertTrue(
+                    "CA is not valid for the specified duration.",
+                    cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                    && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            // Test to generate a certificate request from the CA
+            Collection<Certificate> cachain = info.getCertificateChain();
+            byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTDSA", msg.getRequestDN());
+            removeOldCa(TEST_DSA_CA_NAME);
+        } finally {
+            removeTestCA(TEST_DSA_CA_NAME);
+        }
     } // test12AddDSACA
 
     @Test

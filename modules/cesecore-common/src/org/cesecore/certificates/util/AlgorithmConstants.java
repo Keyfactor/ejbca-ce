@@ -42,6 +42,7 @@ public final class AlgorithmConstants {
     public static final String SIGALG_SHA512_WITH_RSA_AND_MGF1 = "SHA512withRSAandMGF1";
     public static final String SIGALG_SHA1_WITH_RSA_AND_MGF1   = "SHA1withRSAandMGF1"; // Not possible to select in Admin-GUI
     public static final String SIGALG_SHA1_WITH_DSA            = "SHA1WithDSA";
+    public static final String SIGALG_SHA256_WITH_DSA          = "SHA256WithDSA";
     public static final String SIGALG_GOST3411_WITH_ECGOST3410 = "GOST3411withECGOST3410";
     public static final String SIGALG_GOST3411_WITH_DSTU4145   = "GOST3411withDSTU4145";
     public static final String SIGALG_ED25519                  = "Ed25519";
@@ -71,6 +72,7 @@ public final class AlgorithmConstants {
         SIGALG_SHA3_384_WITH_ECDSA,
         SIGALG_SHA3_512_WITH_ECDSA,
         SIGALG_SHA1_WITH_DSA,
+        SIGALG_SHA256_WITH_DSA,
         SIGALG_GOST3411_WITH_ECGOST3410,
         SIGALG_GOST3411_WITH_DSTU4145,
         SIGALG_ED25519,
