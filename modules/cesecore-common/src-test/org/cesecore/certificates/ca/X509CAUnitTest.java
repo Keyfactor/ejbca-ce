@@ -165,6 +165,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     }
 
     @Test
+    public void testX509CABasicOperationsDSA() throws Exception {
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_DSA);
+    }
+
+    @Test
     public void testX509CABasicOperationsGOST() throws Exception {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);

@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -24,7 +20,8 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -51,6 +48,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @version $Id$
  *
@@ -70,7 +71,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
     public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        createDefaultDsaCa();
+        createDefaultDsaCa(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         int caIdDsa = caSession.getCAInfo(internalAdmin, TEST_DSA_CA_NAME).getCAId();
         createEndEntity(DSA_USERNAME, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, caIdDsa);
@@ -127,12 +128,11 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
     /**
      * tests bouncy PKCS10
      * 
-     * @throws Exception
-     *             if en error occurs...
+     * @throws Exception if an error occurs...
      */
     @Test
     public void testBCPKCS10DSAWithDSACA() throws Exception {
-        log.trace(">test26TestBCPKCS10DSAWithDSACA()");
+        log.trace(">testBCPKCS10DSAWithDSACA()");
         endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
@@ -140,7 +140,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foodsa"), dsakeys
                 .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
@@ -170,7 +170,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
         } catch (Exception e) {
             assertTrue("Verify failed: " + e.getMessage(), false);
         }
-        log.trace("<test26TestBCPKCS10DSAWithDSACA()");
+        log.trace("<testBCPKCS10DSAWithDSACA()");
     }
     
     @Override
