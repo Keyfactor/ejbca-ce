@@ -338,6 +338,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 log.debug("Not authorized to CA: " + caid);
             }
         }
+        availableCANames.sort(new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem first, SelectItem second) {
+                return first.getLabel().compareToIgnoreCase(second.getLabel());
+            }
+        });
+
         return availableCANames;
     }
 
@@ -359,8 +366,6 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public List<SelectItem> getAvailableExternalX509CAsWithAnyOption() {
         final List<SelectItem> availableCANames = new ArrayList<>();
-        final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
-        availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         for (final Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caid);
@@ -370,6 +375,15 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 log.debug("Not authorized to CA: " + caid);
             }
         }
+        availableCANames.sort(new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem first, SelectItem second) {
+                return first.getLabel().compareToIgnoreCase(second.getLabel());
+            }
+        });
+        // Add Any CA first in the list
+        final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
+        availableCANames.add(0, new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         return availableCANames;
     }
 
