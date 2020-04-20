@@ -304,7 +304,14 @@ public class RaCertificateDetails {
             return subjectDn;
         }
     }
+    
     public String getSubjectAn() { return subjectAn; }
+    
+    /** @return the Subject Alternative Name string of the current certificate in (comma) unescaped RDN format */
+    public final String getSubjectAnUnescapedComma() {
+        return subjectAn = StringUtils.isNotEmpty(subjectAn) ? subjectAn.replace("\\,", ",") : subjectAn; 
+    }
+    
     public String getSubjectDa() { return subjectDa; }
     public String getCaName() { return caName; }
     /** @return Certificate Profile Name from the provided CP ID or a localized error String */
