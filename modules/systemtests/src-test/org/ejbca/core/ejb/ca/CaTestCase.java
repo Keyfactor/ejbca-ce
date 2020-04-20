@@ -103,6 +103,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     public static final String TEST_RSA_REVERSE_CA_NAME = "TESTRSAREVERSE";
     public static final String TEST_ECDSA_CA_NAME = "TESTECDSA";
+    public static final String TEST_EDDSA_CA_NAME = "TESTEDDSA";
     public static final String TEST_ECGOST3410_CA_NAME = "TESTECGOST3410";
     public static final String TEST_DSTU4145_CA_NAME = "TESTDSTU4145";
     public static final String TEST_ECDSA_IMPLICIT_CA_NAME = "TESTECDSAImplicitlyCA";
@@ -532,27 +533,37 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     protected static void createEllipticCurveDsaCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
     InvalidAlgorithmException, AuthorizationDeniedException {
-        createEllipticCurveDsaCa("secp256r1");
+        createCa("secp256r1", TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
-    protected static void createEllipticCurveDsaCa(final String keySpec) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            InvalidAlgorithmException, AuthorizationDeniedException {
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECDSA_CA_NAME, keySpec);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+    protected static void createEllipticCurveDsaCa(String keySpec) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
+        createCa(keySpec, TEST_ECDSA_CA_NAME, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+    }
+    protected static void createEdDsaCa(final String keyAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
+        // EdDSA is special, the key agorithm and signature algo is named the same, i.e. Ed25519 and Ed448
+        createCa(keyAlg, TEST_EDDSA_CA_NAME, keyAlg);
+    }
+
+    private static void createCa(final String keySpec, final String name, final String sigAlg) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, name, keySpec);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + name, name, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
-        cainfo.setDescription("JUnit ECDSA CA");
+        cainfo.setDescription("JUnit CA " + name);
         cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        removeOldCa(TEST_ECDSA_CA_NAME);
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        removeOldCa(name);
+        final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
     }
-    
+
     protected static void createECGOST3410Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmException, AuthorizationDeniedException {
         final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
