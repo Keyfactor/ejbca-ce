@@ -1276,6 +1276,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 log.debug("Ignoring exception " + e.getMessage());
             }
         }
+        availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
         for (String alg : CesecoreConfiguration.getExtraAlgs()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
