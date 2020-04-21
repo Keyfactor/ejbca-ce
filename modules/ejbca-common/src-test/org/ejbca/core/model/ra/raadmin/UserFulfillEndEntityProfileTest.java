@@ -1204,7 +1204,7 @@ public class UserFulfillEndEntityProfileTest {
         log.trace(">testCabFOrganizationIdentifierSetInEEPButNotInRequest");
 
         expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information.");
+        expectedException.expectMessage("CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information and no predifined value for it set in end entity profile.");
 
         
         final EndEntityProfile profile = new EndEntityProfile();
@@ -1222,6 +1222,29 @@ public class UserFulfillEndEntityProfileTest {
                 certProfileEndUserWithCabFOIdUse);
         
         log.trace("<testCabFOrganizationIdentifierSetInEEPButNotInRequest");
+
+    }
+    
+    
+    @Test
+    public void testCabFOrganizationIdentifierSetInEEPWithPredefinedValueButNotInRequest() throws Exception {
+        log.trace(">testCabFOrganizationIdentifierSetInEEPWithPredefinedValueButNotInRequest");
+        
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setCabfOrganizationIdentifierUsed(true);
+        profile.setCabfOrganizationIdentifierRequired(true);
+        profile.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+
+        final ExtendedInformation ei = new ExtendedInformation();
+        
+        final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                certProfileEndUserWithCabFOIdUse);
+        
+        log.trace("<testCabFOrganizationIdentifierSetInEEPWithPredefinedValueButNotInRequest");
 
     }
 } 

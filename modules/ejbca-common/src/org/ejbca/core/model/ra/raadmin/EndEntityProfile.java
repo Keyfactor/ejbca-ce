@@ -1816,8 +1816,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         
         // Requirement from customer. See ECA-8778.
-        if (isCabfOrganizationIdentifierUsed() && isCabfOrganizationIdentifierRequired() && (ei == null || StringUtils.isBlank(ei.getCabfOrganizationIdentifier()))) {
-            throw new EndEntityProfileValidationException("CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information.");
+        if (isCabfOrganizationIdentifierUsed() && isCabfOrganizationIdentifierRequired() && StringUtils.isBlank(getCabfOrganizationIdentifier()) && (ei == null || StringUtils.isBlank(ei.getCabfOrganizationIdentifier()))) {
+            throw new EndEntityProfileValidationException("CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information and no predifined value for it set in end entity profile.");
         }
     	
         if (log.isTraceEnabled()) {
