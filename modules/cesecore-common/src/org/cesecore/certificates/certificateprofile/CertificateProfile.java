@@ -595,29 +595,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param type one of CertificateProfileConstants.CERTPROFILE_FIXED_XX, for example CertificateConstants.CERTPROFILE_FIXED_ROOTCA
      */
     public void setDefaultExtendedKeyUsage(final int type) {
+        setExtendedKeyUsageCritical(false);
         if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
             setUseExtendedKeyUsage(false);
             setExtendedKeyUsage(new ArrayList<>());
-            setExtendedKeyUsageCritical(false);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
             setUseExtendedKeyUsage(true);
             ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_clientAuth.getId());
             eku.add(KeyPurposeId.id_kp_emailProtection.getId());
             setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
             setUseExtendedKeyUsage(true);
             ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
             setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
             setUseExtendedKeyUsage(true);
             ArrayList<String> eku = new ArrayList<>();
             eku.add(KeyPurposeId.id_kp_serverAuth.getId());
             setExtendedKeyUsage(eku);
-            setExtendedKeyUsageCritical(false);
         }
     }
 
