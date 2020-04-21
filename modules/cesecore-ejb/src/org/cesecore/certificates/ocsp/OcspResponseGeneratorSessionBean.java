@@ -290,7 +290,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // Populate OcspSigningCache
                 // Add all potential CA's as OCSP responders to the staging area
                 for (final Integer caId : caSession.getAllCaIds()) {
-                    final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
+                    final List<X509Certificate> caCertificateChain = new ArrayList<>();
 
                     final CAInfo caInfo = caSession.getCAInfoInternal(caId);
                     if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC) {
@@ -419,9 +419,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     
                     OcspSigningCacheEntry ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspSigningCertificate, ocspKeyBinding);
-                    if (ocspSigningCacheEntry == null) {
-                        continue;
-                    } else {
+                    if (ocspSigningCacheEntry != null) {
                         OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
                     }
                 }
@@ -528,7 +526,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
-        final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
+        final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
         while (!CertTools.getIssuerDN(currentLevelCertificate).equals(CertTools.getSubjectDN(currentLevelCertificate))) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
@@ -892,8 +890,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             String signerSubjectDn = null;
             // We must find a certificate to verify the signature with...
             boolean verifyOK = false;
-            for (int i=0; i<certs.length; i++) {
-                final X509Certificate certificate = certificateConverter.getCertificate(certs[i]);
+            for (X509CertificateHolder cert : certs) {
+                final X509Certificate certificate = certificateConverter.getCertificate(cert);
                 try {
                     if (req.isSignatureValid(CertTools.genContentVerifierProvider(certificate.getPublicKey()))) {
                         signercert = certificate; // if the request signature verifies by this certificate, this is the signer cert 
@@ -1141,7 +1139,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             Map<ASN1ObjectIdentifier, Extension> responseExtensions = new HashMap<>();
             
             // Look over the status requests
-            List<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
+            List<OCSPResponseItem> responseList = new ArrayList<>();
             // If the Extended Revoked Definition should be added for certificates that we can not find in the database, see RFC6960 4.4.8
             boolean addExtendedRevokedExtension = false;
             Date producedAt = null;
@@ -1285,7 +1283,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                 final List<String> extensionOids = ocspSigningCacheEntry.getOcspKeyBinding() != null
                         ? ocspSigningCacheEntry.getOcspKeyBinding().getOcspExtensions()
-                        : new ArrayList<String>();
+                        : new ArrayList<>();
                 
                 // Intended for debugging. Will usually be null
                 String alwaysUseOid = OcspConfiguration.getAlwaysSendCustomOCSPExtension();
@@ -1772,16 +1770,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
         CertificateID certId;
         try {
-            certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, serialNr);
+            certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
             gen.addRequest(certId);
             req = gen.build();
             getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true);
-        }  catch (MalformedRequestException e) {
-            String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
-            log.info(errMsg);
-            if (log.isDebugEnabled()) {
-                log.debug(errMsg, e);
-            }
         } catch (Throwable e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
             log.info(errMsg);
@@ -1811,7 +1803,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } else {
                 throw new OcspFailureException("Response was not validly signed.");
             }
-        } catch (OCSPException | NoSuchProviderException ocspe) {
+        } catch (OCSPException ocspe) {
             throw new OcspFailureException(ocspe);
         } catch (IllegalArgumentException e) {
             log.error("IllegalArgumentException: ", e);
@@ -1821,7 +1813,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     private BasicOCSPResp generateBasicOcspResp(Extensions exts, List<OCSPResponseItem> responses, String sigAlg,
                         X509Certificate signerCert, OcspSigningCacheEntry ocspSigningCacheEntry, Date producedAt)
-                                throws OCSPException, NoSuchProviderException, CryptoTokenOfflineException {
+                                throws OCSPException, CryptoTokenOfflineException {
         final PrivateKey signerKey = ocspSigningCacheEntry.getPrivateKey();
         final String provider = ocspSigningCacheEntry.getSignatureProviderName();
         BasicOCSPResp returnval = null;
@@ -2212,7 +2204,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         // Import certificates used to verify OCSP request signatures and add these to each OcspKeyBinding's trust-list
         //  ocsp.signtrustdir=signtrustdir
         //  ocsp.signtrustvalidtime should be ignored
-        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = new ArrayList<InternalKeyBindingTrustEntry>();
+        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = new ArrayList<>();
         if (OcspConfiguration.getEnforceRequestSigning() && OcspConfiguration.getRestrictSignatures()) {
             // Import certificates and configure Issuer+serialnumber in trustlist for each
             final String dirName = OcspConfiguration.getSignTrustDir();
@@ -2257,7 +2249,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @SuppressWarnings("deprecation")
     private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
         // Use global config as defaults for each new OcspKeyBinding
-        final Map<String, Serializable> dataMap = new HashMap<String, Serializable>();
+        final Map<String, Serializable> dataMap = new HashMap<>();
         dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, OcspConfiguration.getIncludeCertChain());
         if (OcspConfiguration.getResponderIdType()==OcspConfiguration.RESPONDERIDTYPE_NAME) {
             dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.NAME.name());
