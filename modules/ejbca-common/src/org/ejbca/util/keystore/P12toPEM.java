@@ -147,14 +147,12 @@ public class P12toPEM {
                 throw new IllegalStateException("Unexpected IOException was thrown", e);
             }
         }
-        // Fid the key private key entry in the keystore
+        // Find the private key key entry in the keystore
         Enumeration<String> e = ks.aliases();
         Object o = null;
         PrivateKey serverPrivKey = null;
-
         while (e.hasMoreElements()) {
             o = e.nextElement();
-
             if (o instanceof String) {
                 if ((ks.isKeyEntry((String) o)) &&
                         ((serverPrivKey = (PrivateKey) ks.getKey((String) o, password.toCharArray())) != null)) {
