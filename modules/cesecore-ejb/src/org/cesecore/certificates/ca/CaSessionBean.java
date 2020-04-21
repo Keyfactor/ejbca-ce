@@ -16,7 +16,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
@@ -252,7 +251,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
                 final String msg = intres.getLocalizedMessage("caadmin.editedca", ca.getCAId(), ca.getName(), ca.getStatus());
     			// Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
     			for (final Map.Entry<Object,Object> entry : diff.entrySet()) {
     				details.put(entry.getKey().toString(), entry.getValue().toString());
@@ -275,24 +274,24 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     private void checkForPreProductionAndNonceConflict(final CAInfo cainfo, final CACommon ca) throws InternalKeyBindingNonceConflictException {
         if (CAInfo.CATYPE_X509 == ca.getCAInfo().getCAType() && ((X509CAInfo)cainfo).isDoPreProduceOcspResponses()) {
-            List<InternalKeyBindingInfo> keyBindingInfos = keyBindMgmtSession.getAllInternalKeyBindingInfos("OcspKeyBinding");
+            final List<InternalKeyBindingInfo> keyBindingInfos = keyBindMgmtSession.getAllInternalKeyBindingInfos("OcspKeyBinding");
             for (InternalKeyBindingInfo keyBindInfo : keyBindingInfos) {
-                DynamicUiProperty<? extends Serializable> property = keyBindInfo.getProperty("enableNonce");
+                final DynamicUiProperty<? extends Serializable> property = keyBindInfo.getProperty("enableNonce");
                 if (keyBindInfo.getCertificateId() != null && property != null && "true".equals(property.getValue().toString())) {
-                    CertificateDataWrapper certDataWrapper = certificateStoreSession.getCertificateData(keyBindInfo.getCertificateId());
+                    final CertificateDataWrapper certDataWrapper = certificateStoreSession.getCertificateData(keyBindInfo.getCertificateId());
                     if (certDataWrapper == null) {
                         continue;
                     }
-                    BaseCertificateData baseCertData = certDataWrapper.getBaseCertificateData();
+                    final BaseCertificateData baseCertData = certDataWrapper.getBaseCertificateData();
                     if (baseCertData == null) {
                         continue;
                     }
-                    String caFingerPrint = baseCertData.getCaFingerprint();
-                    CertificateDataWrapper caCertDataWrapper = certificateStoreSession.getCertificateData(caFingerPrint);
+                    final String caFingerPrint = baseCertData.getCaFingerprint();
+                    final CertificateDataWrapper caCertDataWrapper = certificateStoreSession.getCertificateData(caFingerPrint);
                     if (caCertDataWrapper == null) {
                         continue;
                     }
-                    Certificate caCert = caCertDataWrapper.getCertificate();
+                    final Certificate caCert = caCertDataWrapper.getCertificate();
                     if (ca.getCACertificate() != null && ca.getCACertificate().equals(caCert)) {
                         throw new InternalKeyBindingNonceConflictException("CA can't have pre-production of OCSP responses enabled while there are OCSPKeybindings "
                                 + "related to that CA with nonce enabled in response.");
@@ -316,7 +315,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 final Map<Object, Object> diff = orgca.diff((UpgradeableDataHashMap) ca);
                 String msg = intres.getLocalizedMessage("caadmin.editedca", ca.getCAId(), ca.getName(), ca.getStatus());
                 // Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 for (Map.Entry<Object,Object> entry : diff.entrySet()) {
                     details.put(entry.getKey().toString(), entry.getValue().toString());
@@ -349,7 +348,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException {
+    public boolean existsKeyValidatorInCAs(int keyValidatorId) {
         for (final Integer caId : getAllCaIds()) {
             final Collection<Integer> ids = getCAInfoInternal(caId).getValidators();
             if (ids != null) {
@@ -657,7 +656,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken) {
-        List<CAInfo> result = new ArrayList<CAInfo>();
+        List<CAInfo> result = new ArrayList<>();
         for (int caId : getAuthorizedCaIds(authenticationToken)) {
             CAInfo caInfo = getCAInfoInternal(caId);
             if ( caInfo != null && caInfo.getStatus() != CAConstants.CA_EXTERNAL
@@ -672,7 +671,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<CAInfo> getAuthorizedAndNonExternalCaInfos(AuthenticationToken authenticationToken) {
-        List<CAInfo> result = new ArrayList<CAInfo>();
+        List<CAInfo> result = new ArrayList<>();
         for (Integer caId : getAuthorizedCaIds(authenticationToken)) {
             CAInfo caInfo = getCAInfoInternal(caId);
             if ( caInfo != null && caInfo.getStatus() != CAConstants.CA_EXTERNAL ) {
@@ -685,7 +684,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<CAInfo> getAuthorizedCaInfos(AuthenticationToken authenticationToken) {
-        List<CAInfo> result = new ArrayList<CAInfo>();
+        List<CAInfo> result = new ArrayList<>();
         for (Integer caId : getAuthorizedCaIds(authenticationToken)) {
             CAInfo caInfo = getCAInfoInternal(caId);
             if (caInfo != null) {
