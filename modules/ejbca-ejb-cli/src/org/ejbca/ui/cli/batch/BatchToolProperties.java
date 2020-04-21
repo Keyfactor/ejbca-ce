@@ -47,16 +47,30 @@ public class BatchToolProperties {
 	 * Default is 2048
 	 */
 	public String getKeySpec(){
-		return batchToolProperties.getProperty(PROPERTY_KEYSPEC,"2048");
+		return batchToolProperties.getProperty(PROPERTY_KEYSPEC, "2048");
 	}
-
+	/** Overrides property value set in batchtools.properties
+	 * 
+	 * @param keySpec 1024, 2048, prime256v1, Ed25519, etc
+	 */
+    public void setKeySpec(final String keySpec){
+        batchToolProperties.setProperty(PROPERTY_KEYSPEC, keySpec);
+    }
+	
 	/**
 	 * Returns the configured key algorithm
 	 * Default is RSA, can be ECDSA
 	 */
 	public String getKeyAlg(){
-		return batchToolProperties.getProperty(PROPERTY_KEYALG,"RSA");
+		return batchToolProperties.getProperty(PROPERTY_KEYALG, "RSA");
 	}
+    /** Overrides property value set in batchtools.properties
+     * 
+     * @param keyAlg RSA, DSA, ECDSA, Ed25519, Ed448, etc
+     */
+    public void setKeyAlg(final String keyAlg){
+        batchToolProperties.setProperty(PROPERTY_KEYALG, keyAlg);
+    }
 
 
 	private boolean tryLoadFile(String filename) throws IOException {

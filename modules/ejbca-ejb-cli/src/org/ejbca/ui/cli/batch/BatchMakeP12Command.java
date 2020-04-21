@@ -28,6 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -69,6 +70,8 @@ import org.ejbca.util.keystore.P12toPEM;
 public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
     private static final String END_ENTITY_USERNAME_KEY = "--username";
+    private static final String END_ENTITY_KEY_ALG = "--keyalg";
+    private static final String END_ENTITY_KEY_SPEC = "--keyspec";
     private static final String DIRECTORY_KEY = "-dir";
 
     private static final Logger log = Logger.getLogger(BatchMakeP12Command.class);
@@ -79,6 +82,12 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                 "The name of the end entity to generate the key for. If omitted, keys will be generated for all users with status NEW or FAILED"));
         registerParameter(new Parameter(DIRECTORY_KEY, "Directory", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The name of the directory to store the keys to. If not specified, the current EJBCA_HOME/p12 directory will be used."));
+        registerParameter(new Parameter(END_ENTITY_KEY_ALG, "Key generation algorithm", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Key algorithm for generated key (RSA, ECDSA, DSA, Ed25519, Ed448), see conf/batchtool.properties for more information. If omitted values from batchtool.properties are used"));
+        registerParameter(new Parameter(END_ENTITY_KEY_SPEC, "Key generation spec", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Key specification for generated key (1024, 2048, Ed25519, Ed448, prime256v1 or other ECDSA curve name), see conf/batchtool.properties for more information. If omitted values from batchtool.properties are used"));
     }
 
     private BatchToolProperties props = null;
@@ -132,6 +141,18 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
             if (username == null) {
                 log.info("Use '" + getMainCommand() + " --help' for additional options.");
+            }
+            final String keyAlg = parameters.get(END_ENTITY_KEY_ALG);
+            final String keySpec = parameters.get(END_ENTITY_KEY_SPEC);
+            if (StringUtils.isEmpty(keyAlg) && !StringUtils.isEmpty(keySpec)) {
+                log.info("If specifying --keyalg or --keyspec, both must be specified, see --help' for additional options.");                
+            }
+            if (!StringUtils.isEmpty(keyAlg) && StringUtils.isEmpty(keySpec)) {
+                log.info("If specifying --keyalg or --keyspec, both must be specified, see --help' for additional options.");                
+            }
+            if (!StringUtils.isEmpty(keyAlg) && !StringUtils.isEmpty(keySpec)) {
+                getProps().setKeyAlg(keyAlg);
+                getProps().setKeySpec(keySpec);
             }
             // Bouncy Castle security provider
             CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -293,9 +314,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             } else if (getProps().getKeyAlg().equals("DSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.SIGALG_ED25519)) {
+            } else if (getProps().getKeyAlg().equalsIgnoreCase(AlgorithmConstants.SIGALG_ED25519)) {
                 sigAlg = AlgorithmConstants.SIGALG_ED25519;
-            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.SIGALG_ED448)) {
+            } else if (getProps().getKeyAlg().equalsIgnoreCase(AlgorithmConstants.SIGALG_ED448)) {
                 sigAlg = AlgorithmConstants.SIGALG_ED448;
             } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;

@@ -14,10 +14,21 @@
 package org.ejbca.ui.cli.batch;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.Key;
+import java.security.KeyStore;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -36,6 +47,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /** Tests the batch making of soft cards.
@@ -52,6 +64,8 @@ public class BatchMakeP12CommandTest extends CaTestCase {
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityAccessSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private final String username1 = BatchMakeP12CommandTest.class.getSimpleName() + "1";
     private final String username2 = BatchMakeP12CommandTest.class.getSimpleName() + "2";
@@ -90,6 +104,8 @@ public class BatchMakeP12CommandTest extends CaTestCase {
         if (endEntityAccessSession.findUser(admin, username2) != null) {
             endEntityManagementSession.deleteUser(admin, username2);
         }
+        internalCertStoreSession.removeCertificatesByUsername(username1);
+        internalCertStoreSession.removeCertificatesByUsername(username2);
     }
 
 
@@ -111,16 +127,68 @@ public class BatchMakeP12CommandTest extends CaTestCase {
     }
 
     @Test
-    public void testMakeP12ForSingleUser() throws Exception {
-        BatchMakeP12Command makep12 = new BatchMakeP12Command();
-        File tmpfile = File.createTempFile("ejbca", "p12");
-        makep12.execute("-dir", tmpfile.getParent(), "--username", username1);
-        assertTrue("No file was created.", tmpfile.exists());
-        EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
-        assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus()); 
+    public void testMakeP12ForSingleUserDefaultRSA() throws Exception {
+        Path tempDir = Files.createTempDirectory("ejbca");
+        try {
+            final BatchMakeP12Command makep12 = new BatchMakeP12Command();
+            makep12.execute("-dir", tempDir.toString(), "--username", username1);
+            assertTrue("No file was created.", tempDir.getNameCount() > 0);
+            final EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
+            assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus());
+            // Check the generated keystore
+            final KeyStore store = KeyStore.getInstance("PKCS12");
+            store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            final Key privKey = store.getKey(username1, "foo123".toCharArray());
+            assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
+            assertEquals("Should have generated RSA keys by default", PKCSObjectIdentifiers.rsaEncryption.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+        } finally {
+            FileUtils.deleteDirectory(tempDir.toFile());
+        }
     }
 
-    
+    @Test
+    public void testMakeP12ForSingleUserECDSA() throws Exception {
+        Path tempDir = Files.createTempDirectory("ejbca");
+        try {
+            final BatchMakeP12Command makep12 = new BatchMakeP12Command();
+            makep12.execute("-dir", tempDir.toString(), "--username", username1, "--keyalg", "ECDSA", "--keyspec", "prime256v1");
+            assertTrue("No file was created.", tempDir.getNameCount() > 0);
+            final EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
+            assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus());
+            // Check the generated keystore
+            final KeyStore store = KeyStore.getInstance("PKCS12");
+            store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            final Key privKey = store.getKey(username1, "foo123".toCharArray());
+            assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
+            assertEquals("Should have generated ECDSA keys by default", X9ObjectIdentifiers.id_ecPublicKey.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+        } finally {
+            FileUtils.deleteDirectory(tempDir.toFile());
+        }
+    }
+
+    @Test
+    public void testMakeP12ForSingleUserEdDSA() throws Exception {
+        Path tempDir = Files.createTempDirectory("ejbca");
+        try {
+            final BatchMakeP12Command makep12 = new BatchMakeP12Command();
+            makep12.execute("-dir", tempDir.toString(), "--username", username1, "--keyalg", "Ed25519", "--keyspec", "ED25519");
+            assertTrue("No file was created.", tempDir.getNameCount() > 0);
+            final EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
+            assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus());
+            // Check the generated keystore
+            final KeyStore store = KeyStore.getInstance("PKCS12");
+            store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            final Key privKey = store.getKey(username1, "foo123".toCharArray());
+            assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
+            assertEquals("Should have generated EdDSA keys by default", EdECObjectIdentifiers.id_Ed25519.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+        } finally {
+            FileUtils.deleteDirectory(tempDir.toFile());
+        }
+    }
+
     /**
      * Gets the clear text password of a user.
      */
