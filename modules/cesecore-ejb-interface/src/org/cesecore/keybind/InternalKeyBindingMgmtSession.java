@@ -98,7 +98,7 @@ public interface InternalKeyBindingMgmtSession {
      * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
      * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
      * @throws InvalidAlgorithmException if the requested signature algorithm is not available
-     * @throws InternalKeyBindingNonceConflictException 
+     * @throws InternalKeyBindingNonceConflictException if there was a conflict between the nonce setting and CA OCSP response pre-production setting
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
             int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
@@ -107,7 +107,11 @@ public interface InternalKeyBindingMgmtSession {
     
     /**
      * A createInternalKeyBinding() with allowMissingKeyPair=false
-     * @throws InternalKeyBindingNonceConflictException 
+     * @throws CryptoTokenOfflineException if the requested key pair was not accessible
+     * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
+     * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
+     * @throws InvalidAlgorithmException if the requested signature algorithm is not available
+     * @throws InternalKeyBindingNonceConflictException if there was a conflict between the nonce setting and CA OCSP response pre-production setting
      * @see createInternalKeyBinding
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
@@ -117,7 +121,11 @@ public interface InternalKeyBindingMgmtSession {
 
     /**
      * A createInternalKeyBinding() that chooses the id of the new object automatically.
-     * @throws InternalKeyBindingNonceConflictException 
+     * @throws CryptoTokenOfflineException if the requested key pair was not accessible
+     * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
+     * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
+     * @throws InvalidAlgorithmException if the requested signature algorithm is not available
+     * @throws InternalKeyBindingNonceConflictException if there was a conflict between the nonce setting and CA OCSP response pre-production setting
      * @see createInternalKeyBinding
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
@@ -196,7 +204,7 @@ public interface InternalKeyBindingMgmtSession {
      * @throws AuthorizationDeniedException if the authentication token was not authorized to this operation
      * @throws CertificateImportException if the provided certificate's public key does not match current or next key. This is also
      * thrown if the implementation cannot validate that the certificate is of the right type.
-     * @throws InternalKeyBindingNonceConflictException 
+     * @throws InternalKeyBindingNonceConflictException if there was a conflict between the nonce setting and CA OCSP response pre-production setting
      */
     void importCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] certificate)
         throws AuthorizationDeniedException, CertificateImportException, InternalKeyBindingNonceConflictException;

@@ -577,7 +577,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     }
     
-    public void setCaSubjectAltName(final String subjectAltName) throws ParameterException {
+    public void setCaSubjectAltName(final String subjectAltName) {
         caInfoDto.setCaSubjectAltName(subjectAltName);
     }
     
@@ -588,6 +588,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setWaitingResponse(final boolean waitingResponse) {
         this.waitingresponse = waitingResponse;
     }
+    
     public String getCrlCaCRLDPExternal() {
         return this.crlCaCRLDPExternal;
     }
@@ -595,26 +596,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setCrlCaCRLDPExternal(final String crlCaCRLDPExternal) {
         this.crlCaCRLDPExternal = crlCaCRLDPExternal;
     }
-
+    
+    private boolean isEditCaAndCaTypeX509() {
+        return isEditCA && caInfoDto.isCaTypeX509();
+    }
+    
     public boolean isCheckboxAuthorityKeyIdentifierCriticalDisabled() {
-        if (isEditCA && caInfoDto.isCaTypeX509()) {
-            return !caInfoDto.isUseAuthorityKeyIdentifier() || isCaexternal;
-        }
-        return false;
-    }   
-
+        return isEditCaAndCaTypeX509() && (!caInfoDto.isUseAuthorityKeyIdentifier() || isCaexternal);
+    }
+    
     public boolean isCheckboxCrlNumberCriticalDisabled() {
-        if (isEditCA && caInfoDto.isCaTypeX509()) {
-            return !caInfoDto.isUseCrlNumber() || isCaexternal;
-        }
-        return false;
+        return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlNumber() || isCaexternal);
     }
 
     public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
-        if (isEditCA && caInfoDto.isCaTypeX509()) {
-            return !caInfoDto.isUseCrlDistributiOnPointOnCrl() || isCaexternal;
-        }
-        return false;
+        return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlDistributiOnPointOnCrl() || isCaexternal);
     }
     
     public boolean isUsePartitionedCrlChecked() {
@@ -627,8 +623,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         final Set<Integer> publishersIds = publisheridtonamemap.keySet(); 
         
-        for(final int id: publishersIds){
-            ret.add(new SelectItem(id, publisheridtonamemap.get(id), "", isHasEditRight() ? false : true));
+        for (final int id: publishersIds) {
+            ret.add(new SelectItem(id, publisheridtonamemap.get(id), "", !isHasEditRight()));
         }
         return ret;
     }
@@ -743,12 +739,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         for (final int validatorId : keyValidatorMap.keySet()) {
                 ret.add(new SelectItem(validatorId, keyValidatorMap.get(validatorId), "", !isHasEditRight()));
         }
-        Collections.sort(ret, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem o1, SelectItem o2) {
-                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
-            }
-        });
+        ret.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
         return ret;
     }
 
@@ -1358,7 +1349,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caAdminSession.initializeCa(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (CryptoTokenOfflineException | InvalidAlgorithmException |
-                NumberFormatException | ParameterException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
+                NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1376,7 +1367,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return "";
             }
             return saveCaInternal(caInfo);
-        } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
+        } catch (NumberFormatException | AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1511,7 +1502,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String makeRequestEditCa() {
         try {
             getCaInfo();
-        } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
+        } catch (NumberFormatException | AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1543,7 +1534,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private CAInfo getCaInfo() throws ParameterException, NumberFormatException, AuthorizationDeniedException {
+    private CAInfo getCaInfo() throws NumberFormatException, AuthorizationDeniedException {
         CAInfo cainfo;
 
         //External CAs do not require a validity to be set

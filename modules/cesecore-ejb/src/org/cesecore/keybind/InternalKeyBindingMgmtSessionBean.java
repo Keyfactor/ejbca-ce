@@ -142,9 +142,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
             clone = (Map<String, Map<String, DynamicUiProperty<? extends Serializable>>>) ois.readObject();
             ois.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
         return clone;
@@ -160,7 +158,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType) {
         final List<Integer> allIds = internalKeyBindingDataSession.getIds(internalKeyBindingType);
-        final List<Integer> authorizedIds = new ArrayList<Integer>();
+        final List<Integer> authorizedIds = new ArrayList<>();
         for (final Integer current : allIds) {
             if (authorizationSession.isAuthorizedNoLogging(authenticationToken,
                     InternalKeyBindingRules.VIEW.resource() + "/" + current.toString())) {
@@ -174,9 +172,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public List<InternalKeyBindingInfo> getInternalKeyBindingInfos(AuthenticationToken authenticationToken, String internalKeyBindingType) {
         final List<Integer> authorizedIds = getInternalKeyBindingIds(authenticationToken, internalKeyBindingType);
-        final List<InternalKeyBindingInfo> authorizedInternalKeyBindingInfos = new ArrayList<InternalKeyBindingInfo>(authorizedIds.size());
+        final List<InternalKeyBindingInfo> authorizedInternalKeyBindingInfos = new ArrayList<>(authorizedIds.size());
         for (final Integer current : authorizedIds) {
-            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(current.intValue());
+            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(current);
             authorizedInternalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
         }
         return authorizedInternalKeyBindingInfos;
@@ -186,9 +184,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType) {
         final List<Integer> ids = internalKeyBindingDataSession.getIds(internalKeyBindingType);
-        final List<InternalKeyBindingInfo> internalKeyBindingInfos = new ArrayList<InternalKeyBindingInfo>(ids.size());
+        final List<InternalKeyBindingInfo> internalKeyBindingInfos = new ArrayList<>(ids.size());
         for (final Integer current : ids) {
-            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(current.intValue());
+            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(current);
             internalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
         }
         return internalKeyBindingInfos;
@@ -200,7 +198,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final Map<Integer, String> idNameMap = new HashMap<>();
         final List<Integer> ids = internalKeyBindingDataSession.getIds(internalKeyBindingType);
         for (final Integer id : ids) {
-            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(id.intValue());
+            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(id);
             idNameMap.put(id, internalKeyBindingInstance.getName());
         }
         return idNameMap;
@@ -285,7 +283,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
     
     @Override
-    public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException {
+    public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
         
         List<TrustEntry> trustedEntries = new ArrayList<>();
@@ -365,30 +363,29 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new InvalidAlgorithmException("Signature algorithm " + signatureAlgorithm + " is not available.");
         }
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
-        final LinkedHashMap<Object, Object> initDataMap = new LinkedHashMap<Object, Object>();
-        if (dataMap != null) {
-            
+        final LinkedHashMap<Object, Object> initDataMap = new LinkedHashMap<>();
+        if (dataMap != null) {            
             for (final Entry<String, Serializable> entry : dataMap.entrySet()) {
-                String key = entry.getKey();
+                final String key = entry.getKey();
                 if ("enableNonce".equals(key) && "true".equals(entry.getValue().toString()) && certificateId != null) {
-                    CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(certificateId);
+                    final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(certificateId);
                     if (certificateDataWrapper == null)  {
                         continue;
                     }
-                    CertificateData certificateData = certificateDataWrapper.getCertificateData();
-                    String caFingerprint = certificateData.getCaFingerprint();
-                    CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
+                    final CertificateData certificateData = certificateDataWrapper.getCertificateData();
+                    final String caFingerprint = certificateData.getCaFingerprint();
+                    final CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
                     if (caCertificateDataWrapper == null)  {
                         continue;
                     }
-                    CertificateData caCertificateData = certificateDataWrapper.getCertificateData();
-                    String base64Cert = caCertificateData.getBase64Cert();
+                    final CertificateData caCertificateData = certificateDataWrapper.getCertificateData();
+                    final String base64Cert = caCertificateData.getBase64Cert();
                     
-                    List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
+                    final List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
                     for (CAInfo caInfo : caInfos) {
                         if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
-                            String caCert = caInfo.getCertificateChain().get(0).toString();
-                            if (caCert.equals(base64Cert) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses() == true) {
+                            final String caCert = caInfo.getCertificateChain().get(0).toString();
+                            if (caCert.equals(base64Cert) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses()) {
                                 throw new InternalKeyBindingNonceConflictException("Can not create OCSP Key Binding with nonce enabled in response when"
                                         + "the associated CA has pre-production of OCSP responses enabled.");
                             }                            
@@ -427,7 +424,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         final int allocatedId = internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
         // Audit log the result after persistence (since the id generated during)
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Created InternalKeyBinding with id " + allocatedId);
         details.put("name", internalKeyBinding.getName());
         if (internalKeyBinding.getCertificateId()!=null) {
@@ -441,7 +438,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
         details.put("status", internalKeyBinding.getStatus().name());
         details.put("trustedCertificateReferences", Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()));
-        putDelta(new HashMap<String, DynamicUiProperty<? extends Serializable>>(), internalKeyBinding.getCopyOfProperties(), details);
+        putDelta(new HashMap<>(), internalKeyBinding.getCopyOfProperties(), details);
         securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_CREATE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(allocatedId), null, null, details);
         return allocatedId;
@@ -475,7 +472,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         // Audit log the result before persistence
         final InternalKeyBinding originalInternalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBinding.getId());
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Edited InternalKeyBinding with id " + internalKeyBinding.getId());
         if (originalInternalKeyBinding.getName().equals(internalKeyBinding.getName())) {
             details.put("name", internalKeyBinding.getName());
@@ -505,7 +502,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Audit log the result before persistence
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         if (internalKeyBinding != null) {
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", "Deleted InternalKeyBinding with id " + internalKeyBinding.getId());
             details.put("name", internalKeyBinding.getName());
             securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_DELETE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
@@ -534,7 +531,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, currentKeyPairAlias, nextKeyPairAlias);
         try {
             // Audit log the result before persistence
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", "Modified next key pair for InternalKeyBinding with id " + internalKeyBinding.getId());
             details.put("name", internalKeyBinding.getName());
             details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
@@ -572,8 +569,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } else {
             keyPairAlias = nextKeyPairAlias;
         }
-        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
-        return publicKey;
+        return cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -741,7 +737,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         if (updated) {
             // Audit log the result before persistence
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", "Updated certificate for InternalKeyBinding with id " + internalKeyBinding.getId());
             details.put("name", internalKeyBinding.getName());
             details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
@@ -796,8 +792,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } catch (CertificateException e) {
             throw new CertificateImportException(e);
         }
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBindingForEdit(internalKeyBindingId);
-        
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBindingForEdit(internalKeyBindingId);        
         final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String originalCertificateId = internalKeyBinding.getCertificateId();
         final String originalKeyPairAlias = internalKeyBinding.getKeyPairAlias();
@@ -811,10 +806,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         boolean updated = false;
         try {
-            String certificateId = CertTools.getFingerprintAsString(certificate);
-            
-            checkForPreProductionAndNonceConflictBeforeImport(authenticationToken, internalKeyBinding, certificateId);
-            
+            String certificateId = CertTools.getFingerprintAsString(certificate);            
+            checkForPreProductionAndNonceConflictBeforeImport(authenticationToken, internalKeyBinding, certificateId);            
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalKeyPairAlias).getPublicKey();
             if (log.isDebugEnabled()) {
                 log.debug("currentPublicKey: "
@@ -862,7 +855,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         if (updated) {
             // Audit log the result before persistence
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", "Edited InternalKeyBinding with id " + internalKeyBinding.getId());
             details.put("name", internalKeyBinding.getName());
             details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
@@ -898,7 +891,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         for (CAInfo caInfo : caInfos) {
                             if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
                                 Certificate caCert = caInfo.getCertificateChain().get(0);
-                                if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses() == true) {
+                                if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses()) {
                                     throw new InternalKeyBindingNonceConflictException("Can not import certificate for OCSP Key Binding with nonce enabled in response when "
                                             + "the associated CA has pre-production of OCSP responses enabled.");
                                 }                            
@@ -931,17 +924,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final long updateTime = System.currentTimeMillis();
         try {
             response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, new CertificateGenerationParams(), updateTime);
-        } catch (CustomCertificateSerialNumberException e) {
-            throw new CertificateImportException(e);
-        } catch (IllegalKeyException e) {
-            throw new CertificateImportException(e);
-        } catch (CADoesntExistsException e) {
-            throw new CertificateImportException(e);
-        } catch (CertificateCreateException e) {
-            throw new CertificateImportException(e);
-        } catch (CesecoreException e) {
-            throw new CertificateImportException(e);
-        } catch (CertificateExtensionException e) {
+        } catch (CesecoreException | CertificateExtensionException e) {
             throw new CertificateImportException(e);
         }
         final String newCertificateId = updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
@@ -1035,17 +1018,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                                             CertTools.getSerialNumber(potentialCaCert) + " (0x"+CertTools.getSerialNumberAsString(potentialCaCert)+"): " + e1.getMessage());
                                 }
                                 potentialCaCerts.remove(potentialCaCert);
-                                continue;
                             }
                         }
                         if (!potentialCaCerts.isEmpty()) {
                             // Sort by notBefore descending and to use the latest issued (newest notBefore)
-                            Collections.sort(potentialCaCerts, new Comparator<Certificate>() {
-                                @Override
-                                public int compare(final Certificate o1, final Certificate o2) {
-                                    return CertTools.getNotBefore(o2).compareTo(CertTools.getNotBefore(o1));
-                                }
-                            });
+                            potentialCaCerts.sort((o1, o2) -> CertTools.getNotBefore(o2).compareTo(CertTools.getNotBefore(o1)));
                             final Certificate choosenCaCert = potentialCaCerts.get(0);
                             log.info("Able to verify IKB certificate to import using CA certificate with serialnumber " +
                                     CertTools.getSerialNumber(choosenCaCert) + " (0x"+CertTools.getSerialNumberAsString(choosenCaCert)+").");
@@ -1088,15 +1065,15 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     /** Helper method for audit logging changes */
-    private void putDelta(final String key, final String oldValue, final String newValue, Map<String, Object> details) {
-        if (oldValue == null && newValue == null) {
-            // NOP
-        } else if (oldValue == null && newValue != null) {
-            details.put("added:"+key, newValue);
-        } else if (oldValue != null && newValue == null) {
-            details.put("removed:"+key, oldValue);
-        } else if (!oldValue.equals(newValue)) {
-            details.put("changed:"+key, newValue);
+    private void putDelta(final String key, final String oldValue, final String newValue, final Map<String, Object> details) {
+        if (oldValue != null || newValue != null) {
+            if (oldValue == null) {
+                details.put("added:" + key, newValue);
+            } else if (newValue == null) {
+                details.put("removed:" + key, oldValue);
+            } else if (!oldValue.equals(newValue)) {
+                details.put("changed:" + key, newValue);
+            }
         }
     }
     

@@ -126,7 +126,7 @@ public interface CaSession {
       * Does not log access control to all CAs it checks, because this does not 
       * give access to the CAs but only returns CAInfo of CAs.
       * 
-      * @param admin AuthenticationToken of admin
+      * @param authenticationToken AuthenticationToken of admin
       * @return a List<CAInfo> of authorized CAs
       */
      List<CAInfo> getAuthorizedCaInfos(AuthenticationToken authenticationToken);
@@ -139,7 +139,7 @@ public interface CaSession {
       * Does not log access control to all CAs it checks, because this does not 
       * give access to the CAs but only returns CAInfo of CAs.
       * 
-      * @param admin AuthenticationToken of admin
+      * @param authenticationToken AuthenticationToken of admin
       * @return a List<CAInfo> of authorized and enabled CAs
       */
      List<CAInfo> getAuthorizedAndEnabledCaInfos(AuthenticationToken authenticationToken);
@@ -151,7 +151,7 @@ public interface CaSession {
       * Does not log access control to all CAs it checks, because this does not 
       * give access to the CAs but only returns CAInfo of CAs.
       * 
-      * @param admin AuthenticationToken of admin
+      * @param authenticationToken AuthenticationToken of admin
       * @return a List<CAInfo> of authorized and non-external CAs
       */
      List<CAInfo> getAuthorizedAndNonExternalCaInfos(AuthenticationToken authenticationToken);

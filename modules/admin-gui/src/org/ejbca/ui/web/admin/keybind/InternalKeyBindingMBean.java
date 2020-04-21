@@ -494,13 +494,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
             flushListCaches();
-        } catch (IOException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
-        } catch (CertificateImportException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
-        } catch (InternalKeyBindingNonceConflictException e) {
+        } catch (IOException | CertificateImportException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Import failed: " + e.getMessage(), null));
         }
     }
@@ -586,12 +580,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), status, updateOperationalStatus(current, cryptoTokenInfo),
                         current.getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
                         certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
-                Collections.sort(internalKeyBindingList, new Comparator<GuiInfo>() {
-                    @Override
-                    public int compare(final GuiInfo guiInfo1, final GuiInfo guiInfo2) {
-                        return guiInfo1.getName().compareToIgnoreCase(guiInfo2.getName());
-                    }
-                });
+                internalKeyBindingList.sort((guiInfo1, guiInfo2) -> guiInfo1.getName().compareToIgnoreCase(guiInfo2.getName()));
+
             }
             internalKeyBindingGuiList = new ListDataModel<>(internalKeyBindingList);
         }
@@ -626,11 +616,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     endEntityInformation);
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage("New certificate with fingerprint " + certificateId + " has been issued."));
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (CertificateImportException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (CryptoTokenOfflineException e) {
+        } catch (AuthorizationDeniedException | CertificateImportException | CryptoTokenOfflineException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
         flushListCaches();
@@ -647,9 +633,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("New certificate found for " + guiInfo.getName() + "."));
             }
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (CertificateImportException e) {
+        } catch (AuthorizationDeniedException | CertificateImportException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
         flushListCaches();
@@ -662,13 +646,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final String nextKeyPairAlias = internalKeyBindingSession.generateNextKeyPair(authenticationToken, internalKeyBindingId);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Generated next key with alias " + nextKeyPairAlias + "."));
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (CryptoTokenOfflineException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (InvalidKeyException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (InvalidAlgorithmParameterException e) {
+        } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | InvalidAlgorithmParameterException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
         flushListCaches();
@@ -689,11 +667,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             outputStream.write(pemEncodedPkcs10);
             outputStream.close();
             FacesContext.getCurrentInstance().responseComplete();
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (CryptoTokenOfflineException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (IOException e) {
+        } catch (AuthorizationDeniedException | CryptoTokenOfflineException | IOException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }
@@ -723,9 +697,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(internalKeyBinding.getName() + " status is now " + internalKeyBindingStatus.name()));
             }
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (InternalKeyBindingNameInUseException e) {
+        } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
         flushListCaches();
@@ -773,7 +745,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             if (useIssuerNotBeforeAsArchiveCutoff == null) {
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
                         Integer.parseInt(currentInternalKeyBindingId));
-                useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding == null ? false : ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff();
+                useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding != null && ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff();
             }
             return useIssuerNotBeforeAsArchiveCutoff;
         } catch (AuthorizationDeniedException e) {
@@ -1131,13 +1103,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (!availableCryptoTokens.isEmpty() && currentCryptoToken == null) {
             currentCryptoToken = (Integer) availableCryptoTokens.get(0).getValue();
         }
-        Collections.sort(availableCryptoTokens, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem o1, SelectItem o2) {
-
-                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
-            }
-        });
+        availableCryptoTokens.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
         return availableCryptoTokens;
     }
 
@@ -1231,13 +1197,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (currentCertificateAuthority == null && !availableCertificateAuthorities.isEmpty()) {
             currentCertificateAuthority = (Integer) availableCertificateAuthorities.get(0).getValue();
         }
-        Collections.sort(availableCertificateAuthorities, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem o1, SelectItem o2) {
-
-                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
-            }
-        });
+        availableCertificateAuthorities.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
         return availableCertificateAuthorities;
     }
 
@@ -1431,15 +1391,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(getCurrentName() + " created with ID " + currentInternalKeyBindingId));
                 inEditMode = false;
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            } catch (InternalKeyBindingNameInUseException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            } catch (CryptoTokenOfflineException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            } catch (InvalidAlgorithmException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            } catch (InternalKeyBindingNonceConflictException e) {
+            } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | CryptoTokenOfflineException | InvalidAlgorithmException 
+                    | InternalKeyBindingNonceConflictException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
         }
@@ -1500,7 +1453,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     for (CAInfo caInfo : caInfos) {
                         if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
                             Certificate caCert = caInfo.getCertificateChain().get(0);
-                            if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses() == true) {
+                            if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses()) {
                                 throw new InternalKeyBindingNonceConflictException("Can not save OCSP Key Binding with nonce enabled in response when"
                                         + "the associated CA has pre-production of OCSP responses enabled.");
                             }                            
@@ -1514,9 +1467,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentInternalKeyBindingId = String
                     .valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " saved"));
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (InternalKeyBindingNameInUseException | InternalKeyBindingNonceConflictException e) {
+        } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | InternalKeyBindingNonceConflictException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }
