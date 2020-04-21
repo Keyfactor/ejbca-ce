@@ -77,6 +77,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -540,7 +541,7 @@ public final class KeyTools {
      * @param alias
      *            the alias used for the key entry
      * @param privKey
-     *            RSA private key
+     *            private key
      * @param cert
      *            user certificate
      * @param cachain
@@ -616,22 +617,19 @@ public final class KeyTools {
             log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
         try {
-        // "Clean" private key, i.e. remove any old attributes
-        final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
-        final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(privKey.getEncoded()));
-        // Set attributes for private key
-            try {
-                final PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
-                // in this case we just set the local key id to that of the public key
-                keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
-                keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
-            } catch (ClassCastException e) {
-                log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
-            }
-            // store the key and the certificate chain
+            // Store the key and the certificate chain
             // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
             final KeyStore store = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-            store.load(null, null);
+            store.load(null, null);            
+            // "Clean" private key, i.e. remove any old attributes, 
+            // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
+            // EdDSA (Ed25519 or Ed448) keys have a v1 format, with only the private key, and a v2 format that includes both the private and public
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
+            final PrivateKeyInfo v1PkInfo = new PrivateKeyInfo(pkInfo.getPrivateKeyAlgorithm(), pkInfo.parsePrivateKey());
+            final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
+            final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(v1PkInfo.getEncoded()));
+            // The PKCS#12 bag attributes PKCSObjectIdentifiers.pkcs_9_at_friendlyName and PKCSObjectIdentifiers.pkcs_9_at_localKeyId 
+            // are set automatically by BC when setting the key entry
             store.setKeyEntry(alias, pk, null, chain);
             if (log.isTraceEnabled()) {
                 log.trace("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
