@@ -1158,29 +1158,36 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public void addEKU() {
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
 
         if (StringUtils.isEmpty(currentEKUOid)) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
             return;
         }
         if (!isOidNumericalOnly(currentEKUOid)) {
-            FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
             return;
         }
         if (StringUtils.isEmpty(currentEKUName)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage Name is set.", null));
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage Name is set.", null));
+            return;
+        }
+        if (ekuConfig.getAllEKUOidsAndNames().containsKey(currentEKUOid)) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " already exist.", null));
             return;
         }
 
-        AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
         ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
         try {
             getEjbcaWebBean().saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
-            availableExtendedKeyUsages = new  ListDataModel<>(getNewAvailableExtendedKeyUsages());
-        } catch(Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to save AvailableExtendedKeyUsagesConfiguration.", e.getLocalizedMessage()));
+            availableExtendedKeyUsages = new ListDataModel<>(getNewAvailableExtendedKeyUsages());
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Failed to save AvailableExtendedKeyUsagesConfiguration.", e.getLocalizedMessage()));
             return;
         }
         flushNewEKUCache();
