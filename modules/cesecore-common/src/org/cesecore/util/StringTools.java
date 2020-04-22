@@ -99,7 +99,7 @@ public final class StringTools {
         private CharSet(char[] array) {
             final Set<Character> set = new HashSet<>();
             for (final char c : array) {
-                set.add(Character.valueOf(c));
+                set.add(c);
             }
             this.charSet = set;
         }
@@ -109,7 +109,7 @@ public final class StringTools {
          * @return true if belonging
          */
         boolean contains(char c) {
-            return this.charSet.contains(Character.valueOf(c));
+            return this.charSet.contains(c);
         }
 
         /** Used to reset the value so we can JUnit test the class */
@@ -289,7 +289,8 @@ public final class StringTools {
     }
 
     /**
-     * Checks if a string contains characters that would be potentially dangerous to use in an SQL query.
+     * Checks if a Subject Directory Attribute contains characters that would be potentially dangerous to use
+     * in an SQL query.
      *
      * @param str the string whose contents would be stripped.
      * @return the offending characters with descriptions, or an empty set otherwise.
