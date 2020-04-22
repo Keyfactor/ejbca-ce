@@ -34,6 +34,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
@@ -42,8 +43,12 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -52,6 +57,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -95,6 +101,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     @EJB
     private CaSessionLocal caSession;
     @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
     private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
@@ -124,56 +132,47 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
+        
+        String password = userdata.getPassword();
+        String username = userdata.getUsername();
+        RequestMessage requestMessage;
+        try {
+            requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
+        } catch (InvalidKeyException | SignRequestSignatureException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
+                | IOException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw e;
+        } catch (ParseException | ConstructionException | NoSuchFieldException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
+        }
+        CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+            String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
+            if (!StringUtils.isEmpty(preProcessorClass)) {
+                try {
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                    requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
+                    userdata.setDN(requestMessage.getRequestX500Name().toString());
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+                }
+
+            }
+        }
+        
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, false, true);
         // Process request
         try {
-            String password = userdata.getPassword();
-            String username = userdata.getUsername();
-            RequestMessage imsg = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
-            if (imsg != null) {
-                retval = getCertResponseFromPublicKey(admin, imsg, responseType, userdata);
+            
+            if (requestMessage != null) {
+                retval = getCertResponseFromPublicKey(admin, requestMessage, responseType, userdata);
             }
-        } catch (NotFoundException e) {
+        } catch (CertificateExtensionException | CertificateException | EjbcaException | CesecoreException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
-        } catch (InvalidKeyException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (NoSuchAlgorithmException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (NoSuchProviderException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (SignatureException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (IOException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (CertificateException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (EjbcaException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (CesecoreException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (ParseException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
-        } catch (ConstructionException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
-        } catch (NoSuchFieldException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
-        } catch (CertificateExtensionException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        }
+        } 
         return retval;
     }
 
@@ -184,6 +183,21 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
+        CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+            String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
+            if (!StringUtils.isEmpty(preProcessorClass)) {
+                try {
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                    req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
+                    userdata.setDN(req.getRequestX500Name().toString());
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+                }
+
+            }
+        }
+        
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, false, true);
         ResponseMessage retval = null;

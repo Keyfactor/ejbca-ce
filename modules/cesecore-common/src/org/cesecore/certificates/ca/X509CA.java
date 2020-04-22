@@ -31,6 +31,8 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  */
 public interface X509CA extends CA {
 
+    static final String CA_TYPE = "X509CA";
+    
     List<CertificatePolicy> getPolicies();
 
     void setPolicies(List<CertificatePolicy> policies);

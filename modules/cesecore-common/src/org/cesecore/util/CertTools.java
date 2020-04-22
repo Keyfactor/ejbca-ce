@@ -1616,6 +1616,24 @@ public abstract class CertTools {
 
         return x509crl;
     } // getCRLfromByteArray
+    
+    /**
+     * Builds a standard CSR from a PKCS#10 request
+     * 
+     * @param pkcs10CertificationRequest a PKCS#10 request
+     * @return a CSR as a string
+     */
+    public static String buildCsr(final PKCS10CertificationRequest pkcs10CertificationRequest) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(CertTools.BEGIN_CERTIFICATE_REQUEST + "\n");
+        try {
+            stringBuilder.append(new String(Base64.encode(pkcs10CertificationRequest.getEncoded())));
+        } catch (IOException e) {
+            throw new IllegalArgumentException("PKCS10 request could not be encoded", e);
+        }
+        stringBuilder.append("\n" + CertTools.END_CERTIFICATE_REQUEST + "\n");
+        return stringBuilder.toString();
+    }
 
     /**
      * Checks if a certificate is self signed by verifying if subject and issuer are the same.

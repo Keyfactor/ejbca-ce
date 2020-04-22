@@ -13,12 +13,8 @@
 
 package org.ejbca.core.protocol.unid;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -29,36 +25,27 @@ import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
 /**
- * Changes the DN in an IRequestMessage
- * @version $Id$
+ * Holder for a modified Pkcs10RequestMessage
+ * @version $Id: RequestMessageSubjectDnAdapter.java 28536 2018-03-21 11:48:07Z aminkh $
  *
  */
-public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
+public class Pkcs10RequestDnAdapter implements RequestMessage {
   
-    private static final long serialVersionUID = -4884813822503768798L;
 
-    private final ICrmfRequestMessage original;
+    private static final long serialVersionUID = 1L;
+    private final PKCS10RequestMessage original;
 	private transient X500Name dn;
 
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		stream.defaultWriteObject();
-		stream.writeObject( this.dn.getEncoded() );
-	}
-	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		stream.defaultReadObject();
-		final byte b[] = (byte[])stream.readObject();
-		this.dn = X500Name.getInstance(b);
-	}
-	RequestMessageSubjectDnAdapter(RequestMessage req, X500Name _dn) {
-		this.original = (ICrmfRequestMessage)req;
+	public Pkcs10RequestDnAdapter(RequestMessage req, X500Name _dn) {
+        this.original = (PKCS10RequestMessage) req;
 		this.dn = _dn;
 	}
+	
 	@Override
 	public String getUsername() {
 		return this.original.getUsername();
@@ -170,47 +157,7 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
     public void setResponseKeyInfo(PrivateKey key, String provider) {
         this.original.setResponseKeyInfo(key, provider);
     }
-
-	@Override
-	public int getPbeIterationCount() {
-		return this.original.getPbeIterationCount();
-	}
-	@Override
-	public String getPbeDigestAlg() {
-		return this.original.getPbeDigestAlg();
-	}
-	@Override
-	public String getPbeMacAlg() {
-		return this.original.getPbeMacAlg();
-	}
-	@Override
-	public String getPbeKeyId() {
-		return this.original.getPbeKeyId();
-	}
-	@Override
-	public String getPbeKey() {
-		return this.original.getPbeKey();
-	}
-    @Override
-    public boolean isImplicitConfirm() {
-        return this.original.isImplicitConfirm();
-    }
-    @Override
-    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
-        return this.original.getRequestSubjectPublicKeyInfo();
-    }
-    @Override
-    public PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        return this.original.getProtocolEncrKey();
-    }
-    @Override
-    public void setServerGenKeyPair(KeyPair serverGenKeyPair) {
-        this.original.setServerGenKeyPair(serverGenKeyPair);
-    }
-    @Override
-    public KeyPair getServerGenKeyPair() {
-        return this.original.getServerGenKeyPair();
-    }
+    
     @Override
     public List<Certificate> getAdditionalCaCertificates() {
         return this.original.getAdditionalCaCertificates();

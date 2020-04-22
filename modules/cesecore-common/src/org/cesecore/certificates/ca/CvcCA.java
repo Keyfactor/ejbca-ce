@@ -22,6 +22,8 @@ import java.util.HashMap;
  */
 public interface CvcCA extends CA {
 
+    static final String CA_TYPE = "CVC_EAC";
+    
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     void init(CVCCAInfo cainfo);
 

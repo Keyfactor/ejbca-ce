@@ -51,6 +51,7 @@ public abstract class QueryResultWrapper {
      * @return single result or defaultValue
      */
     public static <T> T getSingleResult(final Query query, final T defaultValue) {
+        @SuppressWarnings("unchecked")
         final List<T> resultList = query.getResultList();
         switch (resultList.size()) {
         case 0:

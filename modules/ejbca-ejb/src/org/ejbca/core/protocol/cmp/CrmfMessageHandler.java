@@ -225,14 +225,14 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						crmfreq.setPassword(authenticationModule.getAuthenticationString());
 		                // Do we have a public key in the request? If not we may be trying to do server generated keys
 		                enrichWithServerGeneratedKeyOrThrow(crmfreq, endEntityInformation.getCertificateProfileId());
-		                resp = signSession.createCertificate(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, endEntityInformation);
+		                resp = signSession.createCertificate(admin, crmfreq, CmpResponseMessage.class, endEntityInformation);
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
 						LOG.info(errMsg);						
 		                // If we didn't find the entity return error message
 		                final String failText = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
 		                LOG.info(failText);
-                        resp = signSession.createRequestFailedResponse(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class,
+                        resp = signSession.createRequestFailedResponse(admin, crmfreq, CmpResponseMessage.class,
                                 FailInfo.INCORRECT_DATA, failText);
 					}
 				}
@@ -350,12 +350,15 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         }        
         // Create a username and password and register the new user in EJBCA
         final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);      
-        String preProcessorClass = cainfo.getRequestPreProcessor();
-        ExtendedUserDataHandler extendedUserDataHandler;
         final RequestMessage req;
-        if(preProcessorClass != null) {
+        //Retrieve the value from the CA configuration firsthand, then check the legacy CMP value if not available
+        
+        @SuppressWarnings("deprecation")
+        String preProcessorClass = cmpConfiguration.getCertReqHandlerClass(this.confAlias);
+        //Only run if value hasn't been set in CAInfo, which should be done during the 7.4.0 upgrade
+        if (!StringUtils.isEmpty(preProcessorClass) && StringUtils.isEmpty(cainfo.getRequestPreProcessor())) {
             try {
-                extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
                 req = extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName);
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                 throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
@@ -452,12 +455,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     LOG.debug("Creating new request with eeProfileId '" + eeProfileId + "', certProfileId '" + certProfileId + "', caId '" + caId
                             + "'");
                 }
-                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, CmpResponseMessage.class);
             } catch (EndEntityExistsException e) {
                 final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
                 LOG.info(updateMsg);
                 // Try again
-                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, CmpResponseMessage.class);
             }
         } catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request 
