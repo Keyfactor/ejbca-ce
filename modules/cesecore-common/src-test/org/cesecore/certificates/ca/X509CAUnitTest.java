@@ -1384,8 +1384,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         X500Principal princ = ((X509Certificate) cert).getSubjectX500Principal();
         X500Name name = X500Name.getInstance(princ.getEncoded());
         // From BC 1.65 we set our CeSecoreNameStyle as default style for X500Name, which makes EV DN components available
+        // before 1.65 it would be
+        //assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());       
         assertEquals("Wrong DN name of Test CA", "JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
-        //assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
 
         // Test generation by calling generateCertificate directly
         final String subjectDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
