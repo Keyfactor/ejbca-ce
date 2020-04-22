@@ -19,55 +19,60 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.WebDriver;
 
+/**
+ * This test describes a creation of End Entity Profile in CA Web admin.
+ *  <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-263">ECAQA-263</a>
+ * 
+ * @version $Id$ EcaQa263_CreationOfEndEntityProfileInCAWebAdmin.java 2020-04-21 15:00 $tobiasM
+ *
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase {
-    
     //Helpers
     private static EndEntityProfileHelper endEntityProfileHelper;
-    private static WebDriver webDriver;
 
     //TestData
-    private static final String ENTITY_PROFILE_NAME = "ChaEntityProfile";
-    private static final String DEFAULT_CA_NAME = "Example Person CA";
+    public static class TestData {
+        private static final String ENTITY_PROFILE_NAME = "EcaQa263";
+        private static final String DEFAULT_CA_NAME = "Example Person CA";
+        private static final String DN_ATTRIBUTE_ORGANIZATION = "O, Organization";
+        private static final String DN_ATTRIBUTE_COUNTRY = "C, Country (ISO 3166)";
+    }
 
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
-        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
+        endEntityProfileHelper = new EndEntityProfileHelper(getWebDriver());
     }
 
     @AfterClass
     public static void exit() {
         afterClass();
-
     }
 
     @Test
-    public void testA_AddEndEntityProfile() {
+    public void stepA_AddEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
-        endEntityProfileHelper.addEndEntityProfile(ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.openEditEndEntityProfilePage(ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.addEndEntityProfile(TestData.ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_PROFILE_NAME);
         endEntityProfileHelper.triggerEndEntityEmailCheckBox();
-        
-    }
-
-    
-    @Test
-    public void testB_AddAttributes() {
-        endEntityProfileHelper.addSubjectDnAttribute("O, Organization");
-        endEntityProfileHelper.subjectDnAttributeRequiredBoxTrigger("O, Organization");
-        endEntityProfileHelper.addSubjectDnAttribute("C, Country (ISO 3166)");
-        endEntityProfileHelper.subjectDnAttributeRequiredBoxTrigger("C, Country (ISO 3166)");
     }
 
     @Test
-    public void testC_DefaultCaAndSave() {
-        endEntityProfileHelper.selectDefaultCa(DEFAULT_CA_NAME);
+    public void stepB_AddAttributes() {
+        endEntityProfileHelper.addSubjectDnAttribute(TestData.DN_ATTRIBUTE_ORGANIZATION);
+        endEntityProfileHelper.subjectDnAttributeRequiredBoxTrigger(TestData.DN_ATTRIBUTE_ORGANIZATION);
+        endEntityProfileHelper.addSubjectDnAttribute(TestData.DN_ATTRIBUTE_COUNTRY);
+        endEntityProfileHelper.subjectDnAttributeRequiredBoxTrigger(TestData.DN_ATTRIBUTE_COUNTRY);
+    }
+
+    @Test
+    public void stepC_DefaultCaAndSave() {
+        endEntityProfileHelper.selectDefaultCa(TestData.DEFAULT_CA_NAME);
         endEntityProfileHelper.saveEndEntityProfile();
-        endEntityProfileHelper.deleteEndEntityProfile(ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.deleteEndEntityProfile(TestData.ENTITY_PROFILE_NAME);
         endEntityProfileHelper.confirmEndEntityProfileDeletion(true);
     }
 }
