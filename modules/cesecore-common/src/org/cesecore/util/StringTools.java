@@ -119,23 +119,23 @@ public final class StringTools {
     }
 
     // Characters that are not allowed in XSS compatible strings
-    private static final CharSet stripXSS = new CharSet(new char[]{'<', '>'});
+    private static final CharSet STRIP_XSS = new CharSet(new char[]{'<', '>'});
     // Characters that are not allowed in strings that may be used in db queries
-    private static final CharSet stripSqlChars = new CharSet(new char[]{ '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
+    private static final CharSet STRIP_SQL_CHARS = new CharSet(new char[]{ '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in Subject Directory Attributes
-    private static final CharSet stripSDAttStripChars = new CharSet(new char[]{'\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
+    private static final CharSet STRIP_SDATT_STRIP_CHARS = new CharSet(new char[]{'\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in strings that may be used in db queries, assuming single quote is escaped
-    private static final CharSet stripSqlCharsSingleQuoteEscaped = new CharSet(new char[]{ '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
+    private static final CharSet STRIP_SQL_CHARS_SINGLE_QUOTE_ESCAPED = new CharSet(new char[]{ '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in filenames
-    private static final CharSet stripFilenameChars = new CharSet(new char[]{ '\0', '\n', '\r', '/', '\\', '?', '%', '$', '*', ':', ';', '|', '\"', '\'', '`', '<', '>' });
+    private static final CharSet STRIP_FILENAME_CHARS = new CharSet(new char[]{ '\0', '\n', '\r', '/', '\\', '?', '%', '$', '*', ':', ';', '|', '\"', '\'', '`', '<', '>' });
     // Characters that are allowed to escape in strings.
     // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
     // Also allow '=' to be escaped.
-    private static final CharSet allowedEscapeChars = new CharSet(new char[]{ ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' });
+    private static final CharSet ALLOWED_ESCAPE_CHARS = new CharSet(new char[]{ ',', '\"', '\\', '+', '<', '>', ';', '=', '#', ' ' });
 
     private static final Pattern WS = Pattern.compile("\\s+");    
-    private static final Pattern spaceAndColon = Pattern.compile("[: ]");
-    private static final Pattern percentSign= Pattern.compile("[%\"\\\\]");
+    private static final Pattern SPACE_AND_COLON = Pattern.compile("[: ]");
+    private static final Pattern PERCENT_SIGN = Pattern.compile("[%\"\\\\]");
 
     
 
@@ -174,7 +174,7 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String stripUsername(final String str) {
-        String xssStripped = strip(str, stripXSS);
+        String xssStripped = strip(str, STRIP_XSS);
         return strip(xssStripped);
     }
 
@@ -186,7 +186,7 @@ public final class StringTools {
     public static String stripFilename(final String str) {
         // The strip() method does not work here, because it replaces forbidden characters with /
         // Also, there's no need to unescape anything here.
-        return stripWithEscapesDisallowed(str, stripFilenameChars);
+        return stripWithEscapesDisallowed(str, STRIP_FILENAME_CHARS);
     }
 
     /**
@@ -236,7 +236,7 @@ public final class StringTools {
     /**
      * Characters from 'str' will be stripped like this:
      * any character that is in the 'stripThis' set will be replaced with '/'.
-     * any character that is escaped (preceded with '\') and not in the {@value #allowedEscapeChars} set will be replaced with '/'.
+     * any character that is escaped (preceded with '\') and not in the {@value #ALLOWED_ESCAPE_CHARS} set will be replaced with '/'.
      * when a character is replaced with '/' and also escaped then the preceding escape character '\' will be removed.
      *
      * @param str the original string
@@ -280,24 +280,24 @@ public final class StringTools {
     /**
      * Checks if a string contains characters that would be potentially dangerous to use in an SQL query.
      *
-     * @param str the string whose contents would be stripped.
+     * @param str the string whose contents would be verified.
      * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
      */
     public static  Set<String> hasSqlStripChars(final String str) {
-    	return hasStripChars(str, stripSqlChars);
+    	return hasStripChars(str, STRIP_SQL_CHARS);
     }
 
     /**
      * Checks if a Subject Directory Attribute contains characters that would be potentially dangerous to use
      * in an SQL query.
      *
-     * @param str the string whose contents would be stripped.
+     * @param str the string whose contents would be verified.
      * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
      */
     public static  Set<String> hasSDAttrStripChars(final String str) {
-    	return hasStripChars(str, stripSDAttStripChars);
+    	return hasStripChars(str, STRIP_SDATT_STRIP_CHARS);
     }
 
     /**
@@ -309,7 +309,7 @@ public final class StringTools {
      * @see #strip
      */
     public static  Set<String> hasSqlStripCharsAssumingSingleQuoteEscape(final String str) {
-        return hasStripChars(str, stripSqlCharsSingleQuoteEscaped);
+        return hasStripChars(str, STRIP_SQL_CHARS_SINGLE_QUOTE_ESCAPED);
     }
 
     /**
@@ -359,13 +359,13 @@ public final class StringTools {
     }
 
     /**
-     * Checks if a character is an allowed escape character according to allowedEscapeChars
+     * Checks if a character is an allowed escape character according to ALLOWED_ESCAPE_CHARS
      *
      * @param ch the char to check
      * @return true if char is an allowed escape character, false if now
      */
     private static boolean isAllowedEscape(final char ch) {
-        return allowedEscapeChars.contains(ch) && !CharSet.INSTANCE.contains(ch);
+        return ALLOWED_ESCAPE_CHARS.contains(ch) && !CharSet.INSTANCE.contains(ch);
     }
 
     /**
@@ -390,20 +390,20 @@ public final class StringTools {
         if(str == null) {
             return null;
         }        
-        return spaceAndColon.matcher(StringUtils.removeStart(str, "0x")).replaceAll("");
+        return SPACE_AND_COLON.matcher(StringUtils.removeStart(str, "0x")).replaceAll("");
     }
 
     public static String replacePercentSign(String str) {
         if(str == null) {
             return null;
         }
-        return percentSign.matcher(str).replaceAll("");  
+        return PERCENT_SIGN.matcher(str).replaceAll("");
     }
 
     /**
      * Converts ip-adress octets, according to ipStringToOctets to human readable string in form 10.1.1.1 for ipv4 adresses.
      *
-     * @param octets
+     * @param octets ip-adress
      * @return ip address string, null if input is invalid
      * @see #ipStringToOctets(String)
      */
@@ -481,7 +481,7 @@ public final class StringTools {
 
     /**
      * Determines if the given string is a valid URI
-     * @param url to verify
+     * @param uri to verify
      * @return true if input is a valid URI
      */
     public static boolean isValidUri(final String uri) {
@@ -662,7 +662,7 @@ public final class StringTools {
     /**
      * Retrieves the clear text from a string obfuscated with the obfuscate methods
      *
-     * @param s obfuscated string, usually (but not necessarily) starts with OBF:
+     * @param in obfuscated string, usually (but not necessarily) starts with OBF:
      * @return plain text string, or original if it was empty
      */
     public static String deobfuscate(final String in) {
@@ -717,7 +717,7 @@ public final class StringTools {
     }
 
     private static byte[] getSalt() {
-        final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
+        final boolean legacy = DEFAULT_P.equals(ConfigurationHolder.getString("password.encryption.key"));
         if (legacy) {
             log.debug("Using legacy password encryption/decryption");
             return getDefaultSalt();
@@ -734,7 +734,7 @@ public final class StringTools {
         return "1958473059684739584hfurmaqiekcmq".getBytes(StandardCharsets.UTF_8);
     }
 
-    private static final String defaultP = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
+    private static final String DEFAULT_P = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
 
     private static int getDefaultCount() {
         return 100;
@@ -744,7 +744,7 @@ public final class StringTools {
      */
     private static int getCount() {
         final String str = ConfigurationHolder.getString("password.encryption.count");
-        final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
+        final boolean legacy = DEFAULT_P.equals(ConfigurationHolder.getString("password.encryption.key"));
         if (StringUtils.isNumeric(str) && !legacy) {
             return Integer.valueOf(str);
         } else {
@@ -757,10 +757,8 @@ public final class StringTools {
      *
      * Note that this method does provide limited security (e.g. DBA's won't be able to access encrypted passwords in database)
      * as long as the 'password.encryption.key' is set, otherwise, it won't provide any real encryption more than obfuscation.
-     * @throws InvalidKeySpecException
      */
-    public static String pbeEncryptStringWithSha256Aes192(final String in)
-            throws InvalidKeySpecException {
+    public static String pbeEncryptStringWithSha256Aes192(final String in) {
         char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
         return pbeEncryptStringWithSha256Aes192(in, p);
     }
@@ -800,7 +798,7 @@ public final class StringTools {
         }
         // Create a return value which is "encryption_version:salt:count:encrypted_data"
         StringBuilder ret = new StringBuilder(64);
-        final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
+        final boolean legacy = DEFAULT_P.equals(ConfigurationHolder.getString("password.encryption.key"));
         if (legacy) {
             // In the old legacy system we only return the encrypted data without extra info
             ret.append(Hex.toHexString(enc));
@@ -817,10 +815,6 @@ public final class StringTools {
     *
     * @param in hex encoded encrypted string in form "encryption_version:salt:count:encrypted_data", or just "encrypted_data" for older versions
     * @return decrypted clear text string
-     * @throws InvalidKeySpecException 
-     * @throws BadPaddingException 
-     * @throws IllegalBlockSizeException 
-     * @throws InvalidKeyException 
     */
    public static String pbeDecryptStringWithSha256Aes192(final String in) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
        char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
@@ -1028,7 +1022,7 @@ public final class StringTools {
      * <p>
      * See org.ejbca.core.model.ca.certextensions.TestCertificateExtensionManager#test03TestSplitURIs() for more examples.
      *
-     * @param dispPoints The semicolon separated string and which optionally uses double-quotes
+     * @param dPoints The semicolon separated string and which optionally uses double-quotes
      * @return A collection of strings
      */
     public static Collection<String> splitURIs(String dPoints) {
@@ -1081,8 +1075,8 @@ public final class StringTools {
 
         String ret[] = null;
 
-        for (int i = 0; i < formats.length; i++) {
-            final Pattern p = Pattern.compile(formats[i]);
+        for (String format : formats) {
+            final Pattern p = Pattern.compile(format);
             final Matcher m = p.matcher(certdata);
             if (m.find()) {
                 ret = new String[2];
@@ -1160,7 +1154,7 @@ public final class StringTools {
      * @param listSeparator the list separator.
      * @return a list of Integer.
      */
-    public static final List<Integer> idStringToListOfInteger(final String ids, final String listSeparator) {
+    public static List<Integer> idStringToListOfInteger(final String ids, final String listSeparator) {
         final ArrayList<Integer> result = new ArrayList<>();
         if (StringUtils.isNotEmpty(ids)) {
             for (final String id : ids.split(listSeparator)) {
@@ -1220,17 +1214,18 @@ public final class StringTools {
         for (int i = 0; i < Math.max(firstSplit.length, secondSplit.length); i++) {
             String firstString;
             String secondString;
+            String regex = "[^0-9].*";
             if (i >= firstSplit.length) {
                 //We've gotten this far and passed the number of digits in first, so treat next first as a 0
                 firstString = "0";
-                secondString = secondSplit[i].replaceAll("[^0-9].*", "");
+                secondString = secondSplit[i].replaceAll(regex, "");
             } else if (i >= secondSplit.length) {
                 //We've gotten this far and passed the number of digits in second, so treat next second as a 0
-                firstString = firstSplit[i].replaceAll("[^0-9].*", "");    // Remove trailing Beta2, _alpha1 etc
+                firstString = firstSplit[i].replaceAll(regex, "");    // Remove trailing Beta2, _alpha1 etc
                 secondString = "0";
             } else {
-                firstString = firstSplit[i].replaceAll("[^0-9].*", "");    // Remove trailing Beta2, _alpha1 etc
-                secondString = secondSplit[i].replaceAll("[^0-9].*", "");
+                firstString = firstSplit[i].replaceAll(regex, "");    // Remove trailing Beta2, _alpha1 etc
+                secondString = secondSplit[i].replaceAll(regex, "");
             }
             if (firstString.isEmpty()) {
                 firstString = "0";  // Treat ".x" as ".0"
