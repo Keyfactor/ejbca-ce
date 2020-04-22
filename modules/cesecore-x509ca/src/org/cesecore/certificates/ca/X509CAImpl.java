@@ -162,8 +162,6 @@ import org.cesecore.util.ValidityDate;
  * @version $Id$
  */
 public class X509CAImpl extends CABase implements Serializable, X509CA {
-
-    private static final String CA_TYPE = "X509CA";
     
     private static final long serialVersionUID = -2882572653108530258L;
 

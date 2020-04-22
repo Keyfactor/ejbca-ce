@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -199,13 +206,6 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 
 /**
  *
@@ -234,25 +234,13 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     protected final String hostname;
     protected final String httpsPort;
 
-    private static final String SPCAK = "MIICSjCCATIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDbiUJ4Q7a9"
+    protected static final String SPCAK = "MIICSjCCATIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDbiUJ4Q7a9"
             + "oaSaHjv4GxYWFTJ3qv1dUmpnEXvIwdWps9W2HHWNki9VzsbT2dBck3kISU7MBCI/" + "J4xgL5I766r4rdvXjy6w9K3pvXcyi+odTngxw8zU1PaKWONcAm7ulDEAiAzM3boM"
             + "/TGnF+0EzPU6mUv/cWfOICDdhFkGuAscKdewdWvJn6zJpizbgVimewM0p8QDHsoS" + "elap2stD9TPP+KKf3dZGN0NcmndTbtoPxyBgXCQZJfavFP7FLpAgC3EKVWLqtRij"
             + "5PBmYEMzd306/hSEECp4kJZi704p5pCMgzC9/3086AuAo+VEMDalsd0GwUan4YFi" + "G+I/CTHq8AszAgMBAAEWCjExMjU5ODMwMjEwDQYJKoZIhvcNAQEEBQADggEBAK/D"
             + "JcXBf2SESg/gguctpDn/z1uueuzxWwaHeD25WBUeqrdNOsGEqGarKP/Xtw2zPO9f" + "NSJ/AtxaNXRLUL0qpGgbhuclX4qJk4+rYAdlse9S2uJFIZEn41qLO1uoygvdoKZh"
             + "QJN3EABQ5QJP3R3Mhiu2tEtUuZ5zPq3vd/RBoOx5JbzZ1WZdk+dPbqdhyjsCy5ne" + "EkXFB6zflvR1fRrIxhDD0EnylHP1fz2p2kj2nOaQI6vQBH9CgTwkrAGEhy/Iq8aU"
             + "slAJUoE1+eCkUN/RHm/Z5XaZ2Le4BnjaDRTWJIglAUvFhuCEm7qCi1/bMof8V9Md" + "IP7NsueJRV9KvzdA7y0=";
-
-    private static final String CRMF = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"
-            + "poGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCi6+Bmo+0I/ye8k6B6BkhXgv03" + "1jEeD3mEuvjIEZUmmdt2RBvW2qfJzqXV8dsI1HZT4fZqo8SBsrYls4AC7HooWI6g"
-            + "DjSyd3kFcb5HP+qnNlz6De/Ab+qAF1rLJhfb2cXib4C7+bap2lwA56jTjY0qWRYb" + "v3IIfxEEKozVlbg0LQIDAQABqRAwDgYDVR0PAQH/BAQDAgXgoYGTMA0GCSqGSIb3"
-            + "DQEBBQUAA4GBAJEhlvfoWNIAOSvFnLpg59vOj5jG0Urfv4w+hQmtCdK7MD0nyGKU" + "cP5CWCau0vK9/gikPoA49n0PK81SPQt9w2i/A81OJ3eSLIxTqi8MJS1+/VuEmvRf"
-            + "XvedU84iIqnjDq92dTs6v01oRyPCdcjX8fpHuLk1VA96hgYai3l/D8lg";
-
-    private static final String PUBLICKEY_BASE64 = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC/kSfVJ/hyq96xwRRwVdO0ltD\n"
-            + "glRyKhVhA0OyI/4ux4a0NIxD4OVstfQmoyt/X7olMG29mZGpinQC6wuaaL0JJ9To\n"
-            + "ejr41IwvDrkLKQKdY+mAJ8zUUWFWYqbcurTXrYJCYeG/ETAJZLfD4EKMNCd/lC/r\n" + "G4yg9pzLOMjNr2tQ4wIDAQAB";
-
-    private static final String PUBLICKEY_PEM = "-----BEGIN PUBLIC KEY-----\n" + PUBLICKEY_BASE64 + "\n-----END PUBLIC KEY-----";
 
     private static final String BADCANAME = "BadCaName";
 
@@ -280,7 +268,6 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     public CommonEjbcaWs() {
         hostname = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
@@ -763,7 +750,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
      * Perform two WS certificate requests with different response-types: Certificate and PKCS#7. If the first one fails an error code will be
      * returned. I the second fails a Exception will be thrown.
      */
-    private ErrorCode certreqInternal(UserDataVOWS userdata, String requestdata, int requesttype) throws Exception {
+    protected ErrorCode certreqInternal(UserDataVOWS userdata, String requestdata, int requesttype) throws Exception {
         // Request a certificate via the WS API
         final CertificateResponse certificateResponse;
         try {
@@ -799,7 +786,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     /**
      * Fetch a user's data via the WS API and reset some of its values.
      */
-    private UserDataVOWS getUserData(String userName) throws Exception {
+    protected UserDataVOWS getUserData(String userName) throws Exception {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
@@ -832,99 +819,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         Extensions exts = extgen.generate();
         attr.add(new DERSet(exts));
         attributes.add(new DERSequence(attr));
-        return CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+        return CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(attributes), keys.getPrivate(), null);
-    }
-
-    /**
-     * Test method for creating/editing a user a requesting a certificate in a single transaction.
-     */
-    protected void certificateRequest() throws Exception {
-
-        final UserDataVOWS userData1 = getUserData(CA1_WSTESTUSER1);
-        ErrorCode errorCode = certreqInternal(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10);
-        assertNull("PKCS#10 request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
-        errorCode = certreqInternal(userData1, CRMF, CertificateHelper.CERT_REQ_TYPE_CRMF);
-        assertNull("CRMF request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
-        errorCode = certreqInternal(userData1, SPCAK, CertificateHelper.CERT_REQ_TYPE_SPKAC);
-        assertNull("SPKAC request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
-        errorCode = certreqInternal(userData1, PUBLICKEY_PEM, CertificateHelper.CERT_REQ_TYPE_PUBLICKEY);
-        assertNull("PUBLICKEY request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
-        errorCode = certreqInternal(userData1, PUBLICKEY_BASE64, CertificateHelper.CERT_REQ_TYPE_PUBLICKEY);
-        assertNull("PUBLICKEY request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
-
-        // Test with custom extensions
-        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-
-        userData1.setStatus(EndEntityConstants.STATUS_NEW);
-        userData1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        userData1.setEndEntityProfileName(WS_EEPROF_EI);
-        userData1.setCertificateProfileName(WS_CERTPROF_EI);
-        ejbcaraws.editUser(userData1);
-        CertificateResponse certificateResponse = ejbcaraws.certificateRequest(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-        X509Certificate cert = certificateResponse.getCertificate();
-        byte[] ext = cert.getExtensionValue("1.2.3.4");
-        // Certificate profile did not allow extension override
-        assertNull("no extension should exist", ext);
-        // Allow extension override
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
-        profile.setAllowExtensionOverride(true);
-        certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
-        // Now our extension should be possible to get in there
-        try {
-            ejbcaraws.editUser(userData1);
-            certificateResponse = ejbcaraws.certificateRequest(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            cert = certificateResponse.getCertificate();
-            assertNotNull(cert);
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
-            ext = cert.getExtensionValue("1.2.3.4");
-            assertNotNull("there should be an extension", ext);
-            try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
-                final ASN1OctetString oct = ASN1OctetString.getInstance(asn1InputStream.readObject());
-                assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
-            }
-        } finally {
-            // restore
-            profile.setAllowExtensionOverride(false);
-            certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
-        }
-
-        // Make a test with EV TLS DN components
-        try {
-            final UserDataVOWS userData2 = getUserData(CA1_WSTESTUSER1);
-            userData2.setUsername("EVTLSEJBCAWSTEST");
-            userData2.setSubjectDN("CN=EVTLSEJBCAWSTEST,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna");
-            try {
-                certificateResponse = ejbcaraws.certificateRequest(userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-                // Verify that the response is of the right type
-                assertNotNull(certificateResponse);
-                assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
-                // Verify that the certificate in the response has the same Subject DN
-                // as in the request.
-                cert = certificateResponse.getCertificate();
-                assertNotNull(cert);
-                assertEquals("JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=EVTLSEJBCAWSTEST", CertTools.getSubjectDN(cert));
-            } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
-                // If running EJBCA Community this will be the result of this
-                if (!enterpriseEjbBridgeSession.isRunningEnterprise()) {
-                    log.debug("Community Edition, JurisdictionXY DN components are not available");
-                } else {
-                    log.info("Certificate request with EV TLS DN components should not fail on Enterprise Edition", e);
-                    fail("Certificate request with EV TLS DN components should not fail on Enterprise Edition: " + e.getMessage());
-                }
-            } catch (EjbcaException_Exception e) {
-                errorCode = e.getFaultInfo().getErrorCode();
-                log.info(errorCode.getInternalErrorCode(), e);
-                assertNotNull("error code should not be null", errorCode);
-                fail("certificate request with EV TLS DN components failed with error code "+errorCode.getInternalErrorCode());
-            }
-        } finally {
-            // Clean up immediately
-            if (endEntityManagementSession.existsUser("EVTLSEJBCAWSTEST")) {
-                endEntityManagementSession.deleteUser(admin, "EVTLSEJBCAWSTEST");
-            }
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
-        }
     }
 
     protected void enforcementOfUniquePublicKeys() throws Exception {
