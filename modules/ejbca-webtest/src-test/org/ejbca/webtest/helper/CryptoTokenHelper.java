@@ -54,6 +54,12 @@ public class CryptoTokenHelper extends BaseHelper {
         static By getTokenOptionContainingText(final String text) {
             return By.xpath("//td/a/span[text()='" + text + "']");
         }
+        
+        // name - name of the alias
+        // buttonName - Test / Remove
+        static By getTokenAliasButton(String name, String text) {
+           return By.xpath("//form[@id='currentCryptoTokenAliasesForm']//td[contains(text(),'"+name+"')]/following-sibling::td/input[@value='"+text+"']");
+        }
     }
     
     public CryptoTokenHelper(WebDriver webDriver) {

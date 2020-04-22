@@ -19,38 +19,47 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.WebDriver;
 
+/**
+ * This test verifies generated token in CA Web Admin.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-255">ECAQA-255</a>
+ * 
+ * @version $Id$: EcaQa255_CreateCryptoTokensInCAWebAdmin.java 2020-04-21 15:00 tobiasM$
+ *
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
     //Helpers
-    private static WebDriver webDriver;
     private static CryptoTokenHelper cryptoTokenHelper;
 
     //TestData
-    private static final String TOKEN_NAME = "CHARootCrypto";
-    private static final String KEY_NAME_DEFAULTKEY = "defaultKey";
-    private static final String KEY_NAME_SIGNKEY = "signkey";
-    private static final String KEY_NAME_TESTKEY = "testkey";
-
+    public static class TestData {
+        private static final String TOKEN_NAME = "EcaQa255";
+        private static final String KEY_NAME_DEFAULTKEY = "defaultKey";
+        private static final String KEY_NAME_SIGNKEY = "signkey";
+        private static final String KEY_NAME_TESTKEY = "testkey";
+        
+        private static final String KEY_SPECIFICATION = "RSA 1024";
+    }
+    
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
-        cryptoTokenHelper = new CryptoTokenHelper(webDriver);
+        cryptoTokenHelper = new CryptoTokenHelper(getWebDriver());
     }
 
     @AfterClass
     public static void exit() {
-        removeCryptoTokenByCaName(TOKEN_NAME);
+        removeCryptoTokenByCaName(TestData.TOKEN_NAME);
         afterClass();
     }
 
     @Test
-    public void testA_CreateCryptoToken() {
+    public void stepA_CreateCryptoToken() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.openPageNewCryptoToken();
-        cryptoTokenHelper.setNewCryptoTokenName(TOKEN_NAME);
+        cryptoTokenHelper.setNewCryptoTokenName(TestData.TOKEN_NAME);
         cryptoTokenHelper.setCryptoTokenType("SOFT");
         cryptoTokenHelper.setTokenAuthCode("100");
         cryptoTokenHelper.setAutoActivation(true);
@@ -58,26 +67,26 @@ public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
     }
 
     @Test
-    public void testB_GenerateKeys() {
+    public void stepB_GenerateKeys() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
-        cryptoTokenHelper.viewCryptoTokenWithName("CHARootCrypto");
-        cryptoTokenHelper.generateKey(KEY_NAME_DEFAULTKEY, "RSA 1024");
-        cryptoTokenHelper.generateKey(KEY_NAME_SIGNKEY, "RSA 1024");
-        cryptoTokenHelper.generateKey(KEY_NAME_TESTKEY, "RSA 1024");
+        cryptoTokenHelper.viewCryptoTokenWithName(TestData.TOKEN_NAME);
+        cryptoTokenHelper.generateKey(TestData.KEY_NAME_DEFAULTKEY, TestData.KEY_SPECIFICATION);
+        cryptoTokenHelper.generateKey(TestData.KEY_NAME_SIGNKEY, TestData.KEY_SPECIFICATION);
+        cryptoTokenHelper.generateKey(TestData.KEY_NAME_TESTKEY, TestData.KEY_SPECIFICATION);
     }
 
     @Test
-    public void testE_TestGeneratedKeys() {
+    public void stepE_TestGeneratedKeys() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
-        cryptoTokenHelper.viewCryptoTokenWithName("CHARootCrypto");
+        cryptoTokenHelper.viewCryptoTokenWithName(TestData.TOKEN_NAME);
         
-        cryptoTokenHelper.clickTestKryptoToken(KEY_NAME_DEFAULTKEY);
-        cryptoTokenHelper.confirmKeyTestedSuccessfully(KEY_NAME_DEFAULTKEY);
+        cryptoTokenHelper.clickTestKryptoToken(TestData.KEY_NAME_DEFAULTKEY);
+        cryptoTokenHelper.confirmKeyTestedSuccessfully(TestData.KEY_NAME_DEFAULTKEY);
         
-        cryptoTokenHelper.clickTestKryptoToken(KEY_NAME_SIGNKEY);
-        cryptoTokenHelper.confirmKeyTestedSuccessfully(KEY_NAME_SIGNKEY);
+        cryptoTokenHelper.clickTestKryptoToken(TestData.KEY_NAME_SIGNKEY);
+        cryptoTokenHelper.confirmKeyTestedSuccessfully(TestData.KEY_NAME_SIGNKEY);
         
-        cryptoTokenHelper.clickTestKryptoToken(KEY_NAME_TESTKEY);
-        cryptoTokenHelper.confirmKeyTestedSuccessfully(KEY_NAME_TESTKEY);
+        cryptoTokenHelper.clickTestKryptoToken(TestData.KEY_NAME_TESTKEY);
+        cryptoTokenHelper.confirmKeyTestedSuccessfully(TestData.KEY_NAME_TESTKEY);
     }
 }
