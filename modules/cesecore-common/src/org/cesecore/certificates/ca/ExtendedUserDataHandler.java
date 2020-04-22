@@ -28,10 +28,10 @@ public interface ExtendedUserDataHandler extends Serializable {
 	/**
 	 * Called when the data handling should be done.
 	 * @param req Request to be modified.
-	 * @param otherData some other data
+	 * @param certificateProfileName the name of the certificate profile
 	 * @return the modified request
 	 */
-	RequestMessage processRequestMessage(RequestMessage req, String otherData);
+	RequestMessage processRequestMessage(final RequestMessage req, final String certificateProfileName);
 	
 	/**
 	 * 

@@ -10,8 +10,10 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,14 +23,21 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -40,14 +49,22 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
+import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.util.query.ApprovalMatch;
@@ -80,6 +97,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
     private static final String TEST_USERNAME = "CertificateRestSystemTestUser";
     private static final JSONParser jsonParser = new JSONParser();
+    
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateProfileSessionRemote.class);
+    protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST); 
 
     private static X509CA x509TestCa;
 
@@ -184,6 +207,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             assertEquals("KEY_COMPROMISE", databaseReason);
         } finally {
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
     }
 
@@ -217,8 +241,83 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             assertEquals("Returned certificate contained unexpected subject DN", "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", cert.getSubjectDN().getName());
         } finally {
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
+    }
+    
+    @Test
+    public void enrollPkcs10WithUnidFnr() throws Exception {
 
+        final String username = "enrollPkcs10WithUnidFnr";
+        final String password = "foo123";
+        final String fnr = "90123456789";
+        final String lra = "01234";
+        final String serialNumber = fnr + '-' + lra;
+        final String subjectDn = "C=SE, serialnumber=" + serialNumber + ", CN="+username;
+        
+        final String profileNameUnidPrefix = "1234-5678-";
+        final String profileName = profileNameUnidPrefix + "enrollPkcs10WithUnidFnr";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        int certificateProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profileName, certificateProfile);
+        
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);       
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfileSession.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, profileName, endEntityProfile);
+        
+        final String issuerDN = "CN=enrollPkcs10WithUnidFnrCa";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo testX509CaInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
+        testX509Ca.updateCA(null, testX509CaInfo, null);
+        caSession.addCA(INTERNAL_ADMIN_TOKEN, testX509Ca);
+        
+        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                CertTools.stringToBcX500Name(subjectDn), keys.getPublic(), null, keys.getPrivate(), null);   
+        String unidFnrCsr = CertTools.buildCsr(pkcs10CertificationRequest);
+        
+        // Create CSR REST request
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+                certificateAuthorityName(testX509CaInfo.getName()).
+                certificateProfileName(profileName).
+                endEntityProfileName(profileName).
+                username(username).
+                password(password).
+                certificateRequest(unidFnrCsr).build();
+        
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final ClientRequest request = newRequest("/v1/certificate/pkcs10enroll");
+        request.body(MediaType.APPLICATION_JSON, requestBody);
+        // Send request
+        try {
+            final ClientResponse<?> actualResponse = request.post();
+            final String actualJsonString = actualResponse.getEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponse);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            final String base64cert = (String) actualJsonObject.get("certificate");
+            assertNotNull(base64cert);
+            byte [] certBytes = Base64.decode(base64cert.getBytes());
+            X509Certificate certificate = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+            final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
+            final String unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            final String resultingFnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(unid);
+            assertNotNull("Unid value was not stored", fnr);
+            assertEquals("FNR value was not correctly converted", fnr, resultingFnr); 
+        } finally {
+            CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, testX509CaInfo);
+            try {
+                endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, username);
+            } catch (NoSuchEndEntityException e) {
+                //NOPMD ignore
+            }
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, profileName);
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profileName);
+        }
     }
 
     @Test
@@ -283,6 +382,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);
             approvalProfileSession.removeApprovalProfile(INTERNAL_ADMIN_TOKEN, profileId);
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
     }
 
