@@ -124,11 +124,7 @@ public class CustomPublisherContainer extends BasePublisher {
 	            int propertyType = publisher.getPropertyType((String)key);
                 if (propertyType == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) {
                     //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
-                    try {
-                        value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key));
-                    } catch (InvalidKeySpecException e) {
-                        throw new IllegalStateException("Could not encrypt private key password!", e);
-                    }
+                    value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key));
                 } else if ((propertyType == CustomPublisherProperty.UI_TEXTINPUT) && "dataSource".equals((String) key)) {
                     value = properties.getProperty((String) key);
                     validateDataSource(value);

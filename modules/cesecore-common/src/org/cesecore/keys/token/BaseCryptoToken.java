@@ -341,12 +341,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
         if (StringUtils.isNotEmpty(pin)) {
             String authcode = pin;
             if (encrypt) {
-                try {
                     authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin);
-                } catch (InvalidKeySpecException e) {
-                    log.error(intres.getLocalizedMessage("token.nopinencrypt"), e);
-                    authcode = pin;
-                }
             }
             if (properties != null) {
                 properties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, authcode);

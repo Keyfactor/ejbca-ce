@@ -73,15 +73,10 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
         log.info("Encrypting pwd (" + (readKey ? "with custom key" : "with default key") + ")");
         final String enc;
 
-        try {
-            if (readKey) {
-                enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);
-            } else {
-                enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
-            }
-        } catch (InvalidKeySpecException e) {
-            log.error(e.getMessage());
-            return CommandResult.FUNCTIONAL_FAILURE;
+        if (readKey) {
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);
+        } else {
+            enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
         }
 
         log.info(enc);
