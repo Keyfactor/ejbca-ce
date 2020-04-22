@@ -114,7 +114,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         CryptoProviderTools.installBCProvider();
         // We must instantiate this after provider is installed as we set SN handling there 
-        SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-frn");
+        SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-fnr");
     }
 
     public CmpRAUnidTest() throws Exception {
@@ -129,13 +129,6 @@ public class CmpRAUnidTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        //For the purposes of this system test, use UnidFnrHandlerMock instead of UnidFnrHandler. It's essentially the same but isn't
-        //reliant on the existence of a data source. 
-        X509CAInfo testX509CaInfo = (X509CAInfo) testx509ca.getCAInfo();
-        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
-        testx509ca.updateCA(null, testX509CaInfo, null);
-        caSession.addCA(admin, testx509ca);
-
         configurationSession.backupConfiguration();
 
         // Configure CMP for this test
@@ -148,6 +141,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         cmpConfiguration.setRACAName(configAlias, testx509ca.getName());
         cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
+  
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration);
 
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
@@ -224,6 +218,78 @@ public class CmpRAUnidTest extends CmpTestCase {
      */
     @Test
     public void testCmpEnrollment() throws Exception {
+        //For the purposes of this system test, use UnidFnrHandlerMock instead of UnidFnrHandler. It's essentially the same but isn't
+        //reliant on the existence of a data source. 
+        X509CAInfo testX509CaInfo = (X509CAInfo) testx509ca.getCAInfo();
+        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
+        testx509ca.updateCA(null, testX509CaInfo, null);
+        caSession.addCA(admin, testx509ca);
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+        final int reqId;
+        final String unid;
+        // In this test SUBJECT_DN contains special, escaped characters to verify
+        // that that works with CMP RA as well
+        final PKIMessage one = genCertReq(issuerDN, SUBJECT_DN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
+        final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, CPNAME, 567);
+        assertNotNull(req);
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(encodePKIMessage(req), 200, configAlias);
+        ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
+            PKIBody body = respObject.getBody();
+            if (body.getContent() instanceof ErrorMsgContent) {
+                ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                log.error(errMsg);
+                fail("CMP ErrorMsg received: " + errMsg);
+                unid = null;
+            } else {
+                checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
+                        PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, cacert, resp, reqId);
+                final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
+                unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+                log.debug("Unid received in certificate response: " + unid);
+            }
+        } finally {
+            inputStream.close();
+        }
+        
+        String fnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(unid);
+        assertNotNull("Unid value was not stored", fnr);
+        assertEquals("FNR value was not correctly converted", FNR, fnr);
+        // Send a confirm message to the CA
+        final String hash = "foo123";
+        final PKIMessage confirm = genCertConfirm(SUBJECT_DN, cacert, nonce, transid, hash, reqId, null);
+        assertNotNull(confirm);
+        final PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, CPNAME, 567);
+        
+        // Send request and receive response
+        resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
+        checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
+                PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
+
+    }
+    
+    /**
+     * Test enrollment using the legacy configuration in the CMP alias in order to make sure that the upgrade still works
+     * 
+     */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testCmpEnrollmentLegacy() throws Exception {
+        //Set the deprecated value here in order to test that the legacy enrollment method still works
+        cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandlerMock.class.getName());
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration);
+
+        //For the purposes of this system test, use UnidFnrHandlerMock instead of UnidFnrHandler. It's essentially the same but isn't
+        //reliant on the existence of a data source. 
+        caSession.addCA(admin, testx509ca);
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
