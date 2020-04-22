@@ -372,9 +372,9 @@ public class RsaKeyValidatorTest {
 
         // A-2: Test RSA key validation failed RSA parameter bounds with even parameters.
         // Before BC 1.65 we could create a RSA public key like this, but since 1.65 there are built in blocks in BC
+        // publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
         modulus = BigInteger.valueOf(16);
         exponent = BigInteger.valueOf(4);
-        // publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
         publicKey = new RSAPublicKey() {
             private static final long serialVersionUID = 1L;
 
