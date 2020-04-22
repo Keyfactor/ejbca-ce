@@ -1878,7 +1878,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             EndEntityProfileValidationException {
         try {
             // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
-            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userdata);
+            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userdata);   
             int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
             if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
                 if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
