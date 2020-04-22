@@ -19,23 +19,29 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.WebDriver;
 
+/**
+ * This test verfies that adding and deleting Acme alias works.
+ * <br>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-183">ECAQA-183</a>
+ * 
+ * @version $Id$ EcaQa183_AddACMEAlias.java 2020-04-21 15:00 tobiasM$
+ *
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa183_AddACMEAlias extends WebTestBase {
-
     //Helpers
     private static AcmeHelper acmeHelper;
-    private static WebDriver webDriver;
 
     //Test Data
-    private static final String ACME_ALIAS = "EcaQa183TestAlias";
+    public static class TestData {
+        private static final String ACME_ALIAS = "EcaQa183TestAlias";
+    }
 
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
-        acmeHelper = new AcmeHelper(webDriver);
+        acmeHelper = new AcmeHelper(getWebDriver());
     }
 
     @AfterClass
@@ -44,24 +50,27 @@ public class EcaQa183_AddACMEAlias extends WebTestBase {
     }
 
     @Test
-    public void testA_AddAcme() {
+    public void stepA_AddAcme() {
         acmeHelper.openPage(getAdminWebUrl());
         acmeHelper.clickAdd();
-        acmeHelper.alertTextfieldAndAccept(ACME_ALIAS);
+        acmeHelper.alertTextfieldAndAccept(TestData.ACME_ALIAS);
     }
 
     @Test
-    public void testB_AddSameAcmeAgain() {
+    public void stepB_AddSameAcmeAgain() {
         acmeHelper.clickAdd();
-        acmeHelper.alertTextfieldAndAccept(ACME_ALIAS);
-        acmeHelper.confirmAliasAlreadyExist(ACME_ALIAS);
+        acmeHelper.alertTextfieldAndAccept(TestData.ACME_ALIAS);
+        acmeHelper.confirmAliasAlreadyExist(TestData.ACME_ALIAS);
     }
 
     @Test
-    public void testC_AddAcmeAliasWithoutName() {
+    public void stepC_AddAcmeAliasWithoutName() {
         acmeHelper.clickAdd();
         acmeHelper.alertTextfieldAndAccept("");
-        acmeHelper.deleteWithName(ACME_ALIAS);
-        acmeHelper.acceptAlert();
+    }
+
+    @Test
+    public void stepD_DeleteAcme() {
+        acmeHelper.deleteWithName(TestData.ACME_ALIAS);
     }
 }

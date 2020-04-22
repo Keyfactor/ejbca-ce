@@ -12,17 +12,14 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import static org.junit.Assert.fail;
-
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * ACME helper class for EJBCA Web Tests.
- * 
- * @version
+ *
+ *  @version $Id: AcmeHelper.java 2020-04-21 15:00 tobiasM$
  */
 public class AcmeHelper extends BaseHelper {
 
@@ -40,17 +37,20 @@ public class AcmeHelper extends BaseHelper {
         static final String DELETE_ALIAS_CONFIRM_MESSAGE = "Are you sure you want to delete this?";
 
         //Buttons
-        static final By BUTTON_ADD = By.xpath("//a[@title='Add Alias']");
+        static final By BUTTON_ADD_ALIAS = By.xpath("//a[@title='Add Alias']");
         static final By BUTTON_SAVE = By.id("acmeConfigs:save");
-        static final By BUTTON_RENAME = By.xpath("//a[@title='Rename Alias']");
-        static final By BUTTON_DELETE = By.xpath("//a[@title='Delete Alias']");
+        static final By BUTTON_RENAME_ALIAS = By.xpath("//a[@title='Rename Alias']");
+        static final By BUTTON_DELETE_ALIAS = By.xpath("//a[@title='Delete Alias']");
+
+        //Dynamic Reference
+
+        //  name - name of the Alias
+        //  buttonName - Rename / Delete
+        static By getActionsButton(String name, String buttonName) {
+            return By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='" + buttonName + " Alias']");
+        }
     }
 
-    /**
-     * Public constructor.
-     *
-     * @param webDriver web driver.
-     */
     public AcmeHelper(WebDriver webDriver) {
         super(webDriver);
     }
@@ -75,54 +75,6 @@ public class AcmeHelper extends BaseHelper {
     };
 
     /**
-     * Clicks the 'Add' button
-     *
-     */
-    public void clickAdd() {
-        clickLink(Page.BUTTON_ADD);
-    }
-
-    /**
-     * Clicks the 'Rename' button for the correct Alias. 
-     *
-     * @param name The name of the Alias.
-     */
-    public void rename(String name) {
-        WebElement renameButton = findElement(By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='Rename Alias']"));
-        if (By.xpath("//form[@id='aliases']/table/tbody/tr/td[1]/a/span[@title='" + name + "']") != null) {
-            renameButton.click();
-        } else {
-            fail("No Alias with that "+name+" exist");
-        }
-    }
-
-    /**
-     * Clicks the 'Delete' button for the correct Alias. 
-     *
-     * @param name The name of the Alias.
-     */
-    public void deleteWithName(String name) {
-        WebElement deleteButton = findElement(By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='Delete Alias']"));
-        if (By.xpath("//form[@id='aliases']/table/tbody/tr/td[1]/a/span[@title='" + name + "']") != null) {
-            deleteButton.click();
-        } else {
-            fail("No Alias with that "+name+" exist");
-        }
-    }
-
-    /**
-     * Checks that ACME alias name already exist. 
-     *
-     *@param name The Alias name to check.
-     */
-    public void confirmAliasAlreadyExist(String name) {
-        assertErrorMessageAppears(
-                "Cannot add alias. Alias '" + name + "' already exists.", 
-                "Cannot Add Alias error message was not found",
-                "Expected Alias error message was not displayed");
-    }
-
-    /**
      * Switches to the alert window. 
      *
      */
@@ -132,10 +84,41 @@ public class AcmeHelper extends BaseHelper {
     }
 
     /**
-     * Accepts the alert. 
+     * Clicks the 'Add' button
      *
      */
-    public void acceptAlert() {
-        alertWindow().accept();
+    public void clickAdd() {
+        clickLink(Page.BUTTON_ADD_ALIAS);
     }
+
+    /**
+     * Clicks the 'Rename' button for the correct Alias. 
+     *
+     * @param name The name of the Alias.
+     */
+    public void rename(String name) {
+        clickLink(Page.getActionsButton(name, "Rename"));
+    }
+
+    /**
+     * Clicks the 'Delete' button for the correct Alias. 
+     *
+     * @param name The name of the Alias.
+     */
+    public void deleteWithName(String name) {
+        clickLink(Page.getActionsButton(name, "Delete"));
+        assertAndConfirmAlertPopUp("Are you sure you want to delete this?", true);
+    }
+
+    /**
+     * Checks that ACME alias already exist. 
+     *
+     *@param name The Alias name to check.
+     */
+    public void confirmAliasAlreadyExist(String name) {
+        assertErrorMessageAppears("Cannot add alias. Alias '" + name + "' already exists."
+                ,"Cannot Add Alias error message was not found"
+                ,"Expected Alias error message was not displayed");
+    }
+
 }
