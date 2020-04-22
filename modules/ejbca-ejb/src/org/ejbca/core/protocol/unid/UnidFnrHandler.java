@@ -23,10 +23,12 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 /**
@@ -52,7 +54,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	@Override
 	public RequestMessage processRequestMessage(RequestMessage req, final String certificateProfileName) {
 	    final X500Name dn = req.getRequestX500Name();
-		if (LOG.isDebugEnabled()) {
+	    if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
 		}
 		final String unidPrefix = getPrefixFromCertProfileName(certificateProfileName);
@@ -75,9 +77,16 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 			    nameBuilder.addRDN(dn.getRDNs(asn1ObjectIdentifier)[0].getFirst());
 			}
 		}
-		if(changed) {
-		    req = new RequestMessageSubjectDnAdapter( req, nameBuilder.build());
-		}
+        if (changed) {
+            if (req instanceof ICrmfRequestMessage) {
+                req = new CrmfRequestDnAdapter(req, nameBuilder.build());
+            } else if (req instanceof PKCS10RequestMessage) {
+                req = new Pkcs10RequestDnAdapter(req, nameBuilder.build());
+            } else {
+                //SCEP messages won't find their way here
+                throw new IllegalStateException("Unknown message type encountered.");
+            }
+        }
 		return req;
 	}
 	

@@ -27,6 +27,8 @@ import org.ejbca.core.protocol.unid.UnidFnrHandler;
  */
 public class UnidFnrHandlerMock extends UnidFnrHandler implements ExtendedUserDataHandler {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * 
      */
