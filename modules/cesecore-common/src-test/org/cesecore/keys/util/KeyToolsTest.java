@@ -341,7 +341,7 @@ public class KeyToolsTest {
             //ECNamedCurveParameterSpec ns = (ECNamedCurveParameterSpec)spec;
             assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in cesecore.properties", spec);
         } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+            fail("Public key is not EC: "+pk.getClass().getName());
         }
     }
 
