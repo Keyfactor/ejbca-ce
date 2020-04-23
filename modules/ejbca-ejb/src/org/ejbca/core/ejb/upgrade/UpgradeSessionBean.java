@@ -312,6 +312,18 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new IllegalStateException(e);
         }
     }
+    
+    @SuppressWarnings("deprecation")
+    private void removeUnidFnrConfigurationFromCmp() throws AuthorizationDeniedException {
+        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        for(String alias : cmpConfiguration.getAliasList()) {
+            if(!StringUtils.isEmpty(cmpConfiguration.getCertReqHandlerClass(alias))) {
+                cmpConfiguration.setCertReqHandlerClass(alias, null);
+            }
+        }
+        globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
+
+    }
 
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -557,6 +569,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
         }
+        if (isLesserThan(oldVersion, "7.4.0")) {
+            try {
+                upgradeSession.migrateDatabase740();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("7.4.0");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -593,7 +613,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             setLastPostUpgradedToVersion("7.2.0");
         }
         if (isLesserThan(oldVersion, "7.4.0")) {
-            if (!migrateDatabase740()) {
+            if (!postMigrateDatabase740()) {
                 return false;
             }
             setLastPostUpgradedToVersion("7.4.0");
@@ -1587,6 +1607,17 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;  
     }
     
+    private boolean postMigrateDatabase740() {
+        log.info("Starting post upgrade to 7.4.0");
+        try {
+            removeUnidFnrConfigurationFromCmp();
+        } catch (AuthorizationDeniedException e) {
+           return false;
+        }
+        log.info("Post upgrade to 7.4.0 complete.");
+        return true;  
+    }
+    
     private boolean postMigrateDatabase6101() {
         log.info("Starting post upgrade to 6.10.1.");
         final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
@@ -1795,8 +1826,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
      * value in the database should be incremented.
+     * @throws UpgradeFailedException if upgrade fails
      */
-    private boolean migrateDatabase740() {
+    @Override
+    public void migrateDatabase740() throws UpgradeFailedException {
         try {
             final long startDataNormalization = System.currentTimeMillis();
             final Query normalizeData = entityManager.createQuery(
@@ -1809,7 +1842,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error("An error occurred when updating data in database table 'CRLData': " + e);
             log.error("You can update the data manually using the following SQL query and then run the post-upgrade again.");
             log.error("    UPDATE CRLData SET crlPartitionIndex=-1 WHERE crlPartitionIndex=NULL OR crlPartitionIndex=0;");
-            return false;
+            throw new UpgradeFailedException(e);
         }
         try {
             final long startReindex = System.currentTimeMillis();
@@ -1828,7 +1861,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.debug("Executing SQL query: " + createCrlDataIndex6);
             createCrlDataIndex6.executeUpdate();
             log.info("Successfully updated indexes for database table 'CRLData'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
-            return true;
         } catch (RuntimeException e) {
             log.error("An error occurred when adjusting indexes for database table 'CRLData': " + e);
             log.error("You can update the indexes manually by running the following SQL queries:");
@@ -1841,7 +1873,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 "    DELETE t1 FROM CRLData t1, CRLData t2 WHERE t1.fingerprint > t2.fingerprint AND t1.issuerDN = t2.issuerDN " + System.lineSeparator() +
                     "AND t1.deltaCRLIndicator = t2.deltaCRLIndicator AND t1.cRLNumber = t2.cRLNumber AND t1.crlPartitionIndex = t2.crlPartitionIndex;");
             // Consider the post-upgrade to be complete, even if this fails. The user can manually add indexes later.
-            return true;
         }
     }
 
