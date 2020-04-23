@@ -27,7 +27,6 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;

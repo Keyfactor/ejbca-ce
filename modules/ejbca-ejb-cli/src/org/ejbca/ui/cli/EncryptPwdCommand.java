@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import java.security.spec.InvalidKeySpecException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
