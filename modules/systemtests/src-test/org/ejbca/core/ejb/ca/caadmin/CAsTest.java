@@ -362,7 +362,7 @@ public class CAsTest extends CaTestCase {
 
     /** Adds a CA Using EdDSA keys (Ed25519 and Ed448) to the database. It also checks that the CA is stored correctly. */
     @Test
-    public void test0AddEdDSACA() throws Exception {
+    public void testAddEdDSACA() throws Exception {
         try {
             createEdDsaCa(AlgorithmConstants.KEYALGORITHM_ED25519);
             CAInfo info = caSession.getCAInfo(admin, TEST_EDDSA_CA_NAME);
@@ -1009,7 +1009,6 @@ public class CAsTest extends CaTestCase {
     /**
      * Revoking a CA will automatically create a final CRL for that CA's issued certificates. According to CAO Doc-9303-12, this CRL should contain 
      * a self signed certificate as well. 
-
      */
     @Test
     public void testRevokeCaWithCrl() throws AuthorizationDeniedException, CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
