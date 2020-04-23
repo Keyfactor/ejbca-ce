@@ -268,7 +268,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
      * @param id
      *            of CA used to issue the keystore certificates
      * @param keyPair
-     *            a previously generated RSA keypair
+     *            a previously generated keypair
      * @param createJKS
      *            if a jks should be created
      * @param createPEM
