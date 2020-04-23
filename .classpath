@@ -174,7 +174,7 @@
 	<classpathentry kind="lib" path="lib/ext/slf4j-log4j12-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-impl-2.2.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar" sourcepath="/Users/mikek/.m2/repository/org/apache/tomee/javaee-api/7.0-1/javaee-api-7.0-1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
@@ -196,7 +196,7 @@
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-165.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-165.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-165.jar" sourcepath="/Users/mikek/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.65/bcprov-jdk15on-1.65-sources.jar"/>
 	<classpathentry kind="lib" path="lib/bctls-jdk15on-165.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.3.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.0.Final.jar"/>

@@ -634,7 +634,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem(null, "None", "", isHasEditRight() ? false : true));
         for (ExtendedUserDataHandler implementation : ExtendedUserDataHandlerFactory.INSTANCE.getAllImplementations()) {
             ret.add(new SelectItem(implementation.getClass().getCanonicalName(), implementation.getReadableName(), implementation.getReadableName(),
-                    isHasEditRight() ? false : true));
+                    !isHasEditRight()));
         }
         return ret;
     }
@@ -1706,8 +1706,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
         caInfoDto.setCaSerialNumberOctetSize(String.valueOf(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()));
         usedValidators = new ArrayList<>();
-        
-        caInfoDto.setRequestPreProcessor(null);
 
         updateAvailableCryptoTokenList();
     }
