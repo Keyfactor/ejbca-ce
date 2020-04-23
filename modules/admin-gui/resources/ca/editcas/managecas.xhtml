@@ -28,6 +28,10 @@
 	<ui:define name="content">
 		<h1>
 			<h:outputText value="#{web.text.MANAGECAS}" />
+            <h:outputText
+                    value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
+                    escape="false" styleClass="helpReference"/>
+			
 		</h1>
 
 		<h:form id="managecas">
@@ -89,9 +93,6 @@
 							value="#{web.text.CREATEAUTHCSR}"
 							rendered="#{manageCAsMBean.canRenewResource}"
 							action="#{manageCAsMBean.createAuthCertSignRequest()}" /> 
-					<h:outputText
-							value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
-							escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}">
 						<h3>
