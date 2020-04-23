@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -102,6 +103,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -1263,6 +1265,29 @@ public class UpgradeSessionBeanTest {
             deleteEndEntity(TEST_ENDENTITY1);
             deleteEndEntity(TEST_ENDENTITY2);
         }
+    }
+    
+    /**
+     * Tests the removal of unid configuration from CMP aliases during upgrade. Testing that UnidFnr functions before and after upgrade is done in CmpRAUnidTest
+     */
+    @Test
+    public void testUpgradeTo740RemoveUnifFnrConfiguration() throws AuthorizationDeniedException {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.3.0");
+        guc.setPostUpgradedToVersion("7.3.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        //Add unid configuration to CMP
+        final String alias = "testUpgradeTo740RemoveUnifFnrConfiguration";
+        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        cmpConfiguration.addAlias(alias);
+        cmpConfiguration.setCertReqHandlerClass(alias, UnidFnrHandlerMock.class.getName());
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
+        upgradeSession.upgrade(null, "7.4.0", true);
+        //UnidFnr information should be removed from CMP configuration post upgrade
+        CmpConfiguration upgradedCmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        assertNull("CertReqHandler should have been removed from CMP configuration during upgrade", upgradedCmpConfiguration.getCertReqHandlerClass(alias));
+
+        
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
