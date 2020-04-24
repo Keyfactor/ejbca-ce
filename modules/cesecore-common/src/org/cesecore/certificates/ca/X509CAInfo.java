@@ -288,9 +288,8 @@ public class X509CAInfo extends CAInfo {
       if (getUsePartitionedCrl() && cert instanceof X509Certificate) {
           final Collection<String> uris = CertTools.getCrlDistributionPoints((X509Certificate) cert);
           return determineCrlPartitionIndex(uris);
-      } else {
-          return CertificateConstants.NO_CRL_PARTITION;
       }
+      return CertificateConstants.NO_CRL_PARTITION;
   }
 
   /**
@@ -303,9 +302,8 @@ public class X509CAInfo extends CAInfo {
       if (getUsePartitionedCrl()) {
           final Collection<String> uris = CertTools.getCrlDistributionPoints(crl);
           return determineCrlPartitionIndex(uris);
-      } else {
-          return CertificateConstants.NO_CRL_PARTITION;
       }
+      return CertificateConstants.NO_CRL_PARTITION;
   }
 
   private int determineCrlPartitionIndex(final Collection<String> uris) {
