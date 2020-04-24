@@ -298,9 +298,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                     boolean preProduceOcspResponse = false;
+                    boolean storeOcspResponseOnDemand = false;
                     // Should always be true since CVCAs are ignored here. Better safe than sorry though.
                     if (caInfo instanceof X509CAInfo) {
                         preProduceOcspResponse = ((X509CAInfo)caInfo).isDoPreProduceOcspResponses();
+                        storeOcspResponseOnDemand = ((X509CAInfo)caInfo).isDoStoreOcspResponsesOnDemand(); 
                     }
                     
                     if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
@@ -344,7 +346,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain,
                                     null, privateKey, signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
                             // Build OcspPreProductionConfigCache
-                            OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificate, caId, preProduceOcspResponse));
+                            OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificate, caId, preProduceOcspResponse, storeOcspResponseOnDemand));
                             // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
                             // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
@@ -385,7 +387,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                 null, null, null, ocspConfiguration.getOcspResponderIdType()));
-                        OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse));
+                        OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand));
                     }
                 }
                 // Add all potential InternalKeyBindings as OCSP responders to the staging area, overwriting CA entries from before
@@ -1169,7 +1171,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
-                final boolean storeOnDemand = false; // TODO This is a dummy. Add this as a CA setting and into configCache.
+                final boolean storeOnDemand = ocspDataConfig.isStoreResponseOnDemand();
                 // We only store pre-produced single repsponses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
                     if (!isPreSigning) {
@@ -1180,7 +1182,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if (ocspResponseData != null && 
                             ocspResponseData.getNextUpdate() != null && 
                             ocspResponseData.getNextUpdate() > System.currentTimeMillis() &&
-                            !isPreSigning &&
                             !req.hasExtensions()) {
                             boolean malformedResponseObject = false;
                             OCSPResp ocspResp = null;
@@ -1192,11 +1193,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             if (!malformedResponseObject) {
                                 // TODO we may need maxAge from key binding here.
-                                log.info("Valid response found. Returning canned response!");
                                 return new OcspResponseInformation(ocspResp, maxAge, signerCert);
                             }
                         }
-                        log.info("No valid response found"); // TODO Remove
                     }
                     // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
