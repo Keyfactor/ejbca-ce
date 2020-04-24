@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -1175,9 +1174,8 @@ public class CAInterfaceBean implements Serializable {
         final Certificate nextCert = casession.getFutureRolloverCertificate(caid);
         if (nextCert != null) {
             return CertTools.getNotBefore(nextCert);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**

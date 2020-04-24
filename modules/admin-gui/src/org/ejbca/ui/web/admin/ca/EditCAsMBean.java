@@ -375,9 +375,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final String signAlgorithm = cainfo.getCAToken().getSignatureAlgorithm();
             if (signAlgorithm != null) {
                 return signAlgorithm;
-            } else {
-                return getEjbcaWebBean().getText("NOTUSED");
             }
+            return getEjbcaWebBean().getText("NOTUSED");
         }
         return StringUtils.EMPTY;
     }
@@ -536,9 +535,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getCertificateProfileEditCAUninitialized() { 
         if (cainfo.getCertificateProfileId() != 0) {
             return certificateProfileSession.getCertificateProfileName(cainfo.getCertificateProfileId());
-        } else {
-            return getEjbcaWebBean().getText("NOTUSED");
         }
+        return getEjbcaWebBean().getText("NOTUSED");
     }
     
     public List<SelectItem> getCertificateProfiles() {
@@ -841,9 +839,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getNewSubjectDNValue() {
         if (cainfo != null) {
             return cainfo.getSubjectDN();
-        } else {
-            return StringUtils.EMPTY;
         }
+        return StringUtils.EMPTY;
     }
     
     public String getBinaryCaIdLink() {
@@ -1082,9 +1079,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (cmscert != null) {
             return viewCertLink + "?certsernoparameter="
                     + java.net.URLEncoder.encode(cmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(cmscert), "UTF-8");
-        } else {
-            return StringUtils.EMPTY;
         }
+        return StringUtils.EMPTY;
     }
     
     public boolean isRenderRenewCA() {
@@ -1201,9 +1197,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String makeRequest() {
         if (isEditCA) {
             return makeRequestEditCa();
-        } else {
-            return createCaOrMakeRequest(false, true); // We are making a request!
         }
+        return createCaOrMakeRequest(false, true); // We are making a request!
     }
     
     public String cancel() {
