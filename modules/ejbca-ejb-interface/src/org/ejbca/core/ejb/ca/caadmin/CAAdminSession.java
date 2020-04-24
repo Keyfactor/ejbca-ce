@@ -72,7 +72,7 @@ public interface CAAdminSession {
      * @param caid
      *            id of the CA that should create the request
      * @param certChain
-     *            A Collection of CA-certificates, can be either a collection
+     *            A Collection of CA-certificates, the target (chain) of the request, can be either a collection
      *            of Certificate or byte[], or even empty collection or null.
      * @param nextSignKeyAlias
      *            The next key alias to use for this request.
