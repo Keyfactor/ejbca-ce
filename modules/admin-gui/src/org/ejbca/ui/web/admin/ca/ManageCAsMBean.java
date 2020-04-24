@@ -54,7 +54,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CaSessionLocal caSession;
 
-    private TreeMap<String, Integer> canames = caSession.getAuthorizedCaNamesToIds(getAdmin());
+    private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
