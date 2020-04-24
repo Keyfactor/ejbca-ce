@@ -562,9 +562,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public boolean getUsePartitionedCrl() {
         if(data.containsKey(USEPARTITIONEDCRL)) {
             return (Boolean) data.get(USEPARTITIONEDCRL);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -576,9 +575,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public int getCrlPartitions() {
         if (data.containsKey(CRLPARTITIONS)) {
             return (Integer) data.get(CRLPARTITIONS);
-        } else {
-            return 0;
         }
+        return 0;
     }
     
     @Override
@@ -590,9 +588,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public int getSuspendedCrlPartitions() {
         if (data.containsKey(SUSPENDEDCRLPARTITIONS)) {
             return (Integer) data.get(SUSPENDEDCRLPARTITIONS);
-        } else {
-            return 0;
         }
+        return 0;
     }
 
     @Override
