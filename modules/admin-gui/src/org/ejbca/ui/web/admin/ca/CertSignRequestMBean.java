@@ -19,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -51,11 +52,15 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     }
     
     @PostConstruct
-    public void init() throws Exception {
+    public void init() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
         
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        caBean = SessionBeans.getCaBean(request);
+        try {
+            caBean = SessionBeans.getCaBean(request);
+        } catch (ServletException e) {
+            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+        }
         
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         selectedCaName = (String) requestMap.get("selectedCaName");

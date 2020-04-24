@@ -22,6 +22,7 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +30,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -52,7 +54,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CaSessionLocal caSession;
 
-    private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
+    private TreeMap<String, Integer> canames = caSession.getAuthorizedCaNamesToIds(getAdmin());
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
@@ -72,9 +74,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     @PostConstruct
-    public void init() throws Exception {
+    public void init() {
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        caBean = SessionBeans.getCaBean(request);
+        try {
+            caBean = SessionBeans.getCaBean(request);
+        } catch (ServletException e) {
+            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+        }
         cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caSession.getCAIdToNameMap();
     }
@@ -206,8 +212,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         try {
-            cadatahandler.renameCA(selectedCaId, createCaName);
-        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+            caSession.renameCA(getAdmin(), caSession.getCAIdToNameMap().get(selectedCaId), createCaName);
+        } catch (CAExistsException | CADoesntExistsException | AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
         } 
         return EditCaUtil.MANAGE_CA_NAV;
