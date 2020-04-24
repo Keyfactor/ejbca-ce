@@ -27,11 +27,13 @@ public class OcspDataConfigCacheEntry {
     private final List<CertificateID> certificateID;
     private final int caId;
     private final boolean preProducionEnabled;
+    private final boolean storeResponsesOnDemand;
     
-    public OcspDataConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled) {
+    public OcspDataConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled, boolean storeResponseOnDemand) {
         certificateID = OcspDataConfigCache.getCertificateIdFromCertificate(issuerCertificate);
         this.caId = caId;
         this.preProducionEnabled = preProductionEnabled;
+        this.storeResponsesOnDemand = storeResponseOnDemand;
     }
 
     /** @return certificate ID of the CA that we want to respond for */
@@ -47,6 +49,11 @@ public class OcspDataConfigCacheEntry {
     /** @return true if OCSP response pre-production is enabled for this issuing CA related to this CertificateId */
     public boolean isPreProducionEnabled() {
         return preProducionEnabled;
+    }
+    
+    /** @return true if OCSP response should be stored upon request */
+    public boolean isStoreResponseOnDemand() {
+        return preProducionEnabled && storeResponsesOnDemand;
     }
     
 }
