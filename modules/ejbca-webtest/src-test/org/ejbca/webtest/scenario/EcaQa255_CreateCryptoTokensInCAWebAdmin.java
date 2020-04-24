@@ -30,17 +30,19 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
-    //Helpers
+
+    // Helpers
     private static CryptoTokenHelper cryptoTokenHelper;
 
-    //TestData
+    // TestData
     public static class TestData {
-        private static final String TOKEN_NAME = "EcaQa255";
-        private static final String KEY_NAME_DEFAULTKEY = "defaultKey";
-        private static final String KEY_NAME_SIGNKEY = "signkey";
-        private static final String KEY_NAME_TESTKEY = "testkey";
+        static final String TOKEN_NAME = "EcaQa255Token";
+        static final String CRYPTOTOKEN_TYPE_SOFT = "SOFT";
+        static final String KEY_NAME_DEFAULTKEY = "defaultKey";
+        static final String KEY_NAME_SIGNKEY = "signkey";
+        static final String KEY_NAME_TESTKEY = "testkey";
         
-        private static final String KEY_SPECIFICATION = "RSA 1024";
+        static final String KEY_SPECIFICATION = "RSA 1024";
     }
     
     @BeforeClass
@@ -60,7 +62,7 @@ public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.openPageNewCryptoToken();
         cryptoTokenHelper.setNewCryptoTokenName(TestData.TOKEN_NAME);
-        cryptoTokenHelper.setCryptoTokenType("SOFT");
+        cryptoTokenHelper.setCryptoTokenType(TestData.CRYPTOTOKEN_TYPE_SOFT);
         cryptoTokenHelper.setTokenAuthCode("100");
         cryptoTokenHelper.setAutoActivation(true);
         cryptoTokenHelper.saveToken();
@@ -79,14 +81,14 @@ public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
     public void stepE_TestGeneratedKeys() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.viewCryptoTokenWithName(TestData.TOKEN_NAME);
-        
-        cryptoTokenHelper.clickTestKryptoToken(TestData.KEY_NAME_DEFAULTKEY);
+        //
+        cryptoTokenHelper.clickTestCryptoTokenAlias(TestData.KEY_NAME_DEFAULTKEY);
         cryptoTokenHelper.confirmKeyTestedSuccessfully(TestData.KEY_NAME_DEFAULTKEY);
-        
-        cryptoTokenHelper.clickTestKryptoToken(TestData.KEY_NAME_SIGNKEY);
+        //
+        cryptoTokenHelper.clickTestCryptoTokenAlias(TestData.KEY_NAME_SIGNKEY);
         cryptoTokenHelper.confirmKeyTestedSuccessfully(TestData.KEY_NAME_SIGNKEY);
-        
-        cryptoTokenHelper.clickTestKryptoToken(TestData.KEY_NAME_TESTKEY);
+        //
+        cryptoTokenHelper.clickTestCryptoTokenAlias(TestData.KEY_NAME_TESTKEY);
         cryptoTokenHelper.confirmKeyTestedSuccessfully(TestData.KEY_NAME_TESTKEY);
     }
 }
