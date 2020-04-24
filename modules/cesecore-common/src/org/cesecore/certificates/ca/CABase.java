@@ -202,9 +202,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public long getDeltaCRLPeriod() {
         if (data.containsKey(DELTACRLPERIOD)) {
             return (long) data.get(DELTACRLPERIOD);
-        } else {
-            return 0;
         }
+        return 0;
     }
 
     @Override
@@ -237,9 +236,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         Integer defaultCertificateProfileId = (Integer) data.get(DEFAULTCERTIFICATEPROFILEID);
         if (defaultCertificateProfileId != null) {
             return defaultCertificateProfileId;
-        } else {
-            return 0;
         }
+        return 0;
     }
     
     private void createExtendedCAService(ExtendedCAServiceInfo info) {
