@@ -71,7 +71,7 @@ public interface CAAdminSession {
      *            the administrator performing the action
      * @param caid
      *            id of the CA that should create the request
-     * @param cachain
+     * @param certChain
      *            A Collection of CA-certificates, can be either a collection
      *            of Certificate or byte[], or even empty collection or null.
      * @param nextSignKeyAlias
@@ -91,7 +91,7 @@ public interface CAAdminSession {
      * to sign certificates.
      * 
      * @param caid the CA that should sign the request
-     * @param request
+     * @param certSignRequest
      *            binary certificate request, the format should be understood by
      *            the CA
      * @return binary certificate request, which is the same as passed in except
@@ -112,7 +112,7 @@ public interface CAAdminSession {
      *            response
      * @param responsemessage
      *            X509ResponseMessage with the certificate issued to this CA
-     * @param chain
+     * @param cachain
      *            an optional collection with the CA certificate(s), or null. If
      *            given the complete chain (except this CAs own certificate must
      *            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
@@ -133,7 +133,7 @@ public interface CAAdminSession {
      *            response
      * @param responsemessage
      *            X509ResponseMessage with the certificate issued to this CA
-     * @param chain
+     * @param cachain
      *            an optional collection with the CA certificate(s), or null. If
      *            given the complete chain (except this CAs own certificate must
      *            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
@@ -150,9 +150,14 @@ public interface CAAdminSession {
     /**
      * Processes a Certificate Request from an external CA.
      * 
+     * @param admin
+     *            The administrator performing the action
      * @param cainfo
      *            the info for the CA that should be created, or already exists.
      *            Don't forget to set signedBy in the info.
+     * @param requestmessage
+     *            ResponseMessage with the certificate request to process (and possibly use to sign a certificate
+     * @return X509ResponseMessage with the certificate issued by this CA
      */
     ResponseMessage processRequest(AuthenticationToken admin, CAInfo cainfo, RequestMessage requestmessage) throws CAExistsException,
             CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
@@ -160,7 +165,11 @@ public interface CAAdminSession {
     /**
      * Add an external CA's certificate as a CA.
      * 
-     * @param certificates contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param authenticationToken
+     *            The administrator performing the action
+     * @param caName
+     *            the name of the CA to import certificates to.
+     * @param wrappedCerts contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
      */
     void importCACertificate(AuthenticationToken authenticationToken, String caName, Collection<CertificateWrapper> wrappedCerts)
