@@ -482,7 +482,7 @@
 						<f:ajax render="nonExistingCertRevokeSection" immediate="true" event="change"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxusecertificatestorage"
-						value="#{editCAsMBean.checkboxUseCertificateStorageText}" />
+						value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
@@ -493,9 +493,12 @@
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
-					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{web.text.USE}" />
+						disabled="#{not editCAsMBean.hasEditRight}">
+<!-- 						<f:ajax render="doStoreOnDemandSection" immediate="true" event="change"/>  -->
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
+				
 	        </h:panelGrid>
 	        
 	        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
@@ -514,9 +517,26 @@
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponsesext"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
-					<h:outputLabel for="checkboxpreproduceocspresponsesext" value="#{web.text.USE}" />
-				</h:panelGroup>				
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render="doStoreOnDemandSection" immediate="true" event="change"/>
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxpreproduceocspresponsesext" value="#{editCAsMBean.checkboxUseCollapsedText}" />
+				</h:panelGroup>
+			</h:panelGrid>
+			
+			<h:panelGrid id="doStoreOnDemandSection" columns="2" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+				columnClasses="editColumn1,editColumn2" >
+				
+				<h:panelGroup>
+					<h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.PREPRODUCEONDEMAND}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="checkboxocspstoreondemand"
+						value="#{editCAsMBean.caInfoDto.doStoreOcspResponsesOnDemand}" 
+						disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.USE}" />
+				</h:panelGroup>
 			</h:panelGrid>
 
             <h:panelGrid id="nonExistingCertRevokeSection" columns="2" cellspacing="3"

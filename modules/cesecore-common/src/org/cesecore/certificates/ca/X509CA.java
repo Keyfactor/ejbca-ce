@@ -126,6 +126,10 @@ public interface X509CA extends CA {
     boolean isDoPreProduceOcspResponses();
     
     void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses);
+    
+    boolean isDoStoreOcspResponsesOnDemand();
+    
+    void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand);
 
     void createOrRemoveLinkCertificateDuringCANameChange(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
             AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
@@ -173,5 +177,6 @@ public interface X509CA extends CA {
     String getRequestPreProcessor();
 
     void setRequestPreProcessor(final String preProcessorClass);
+
 
 }
