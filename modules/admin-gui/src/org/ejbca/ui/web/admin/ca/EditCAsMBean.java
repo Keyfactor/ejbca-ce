@@ -495,7 +495,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setKeySequence(keySequenceValue);
     }
 
-    public String getCheckboxUseCertificateStorageText() {
+    public String getCheckboxUseCollapsedText() {
         return getEjbcaWebBean().getText("USE") + "...";
     }
 
@@ -1328,6 +1328,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final X509CAInfo x509caInfo = (X509CAInfo)cainfo;
             x509caInfo.setExternalCdp(crlCaCRLDPExternal.trim());
             x509caInfo.setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses());
+            x509caInfo.setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand());
             return saveCaInternal(x509caInfo);
         }
         return "";
@@ -1796,6 +1797,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setDefaultOCSPServiceLocator(x509cainfo.getDefaultOCSPServiceLocator());
             caInfoDto.setCaSerialNumberOctetSize(String.valueOf(x509cainfo.getCaSerialNumberOctetSize()));
             caInfoDto.setDoPreProduceOcspResponses(x509cainfo.isDoPreProduceOcspResponses());
+            caInfoDto.setDoStoreOcspResponsesOnDemand(x509cainfo.isDoStoreOcspResponsesOnDemand());
             
             if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().isEmpty())) {
                 caInfoDto.setPolicyId(getEjbcaWebBean().getText("NONE"));

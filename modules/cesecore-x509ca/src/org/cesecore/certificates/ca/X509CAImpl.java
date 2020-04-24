@@ -241,6 +241,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(cainfo.isDoPreProduceOcspResponses());
+        setDoStoreOcspResponsesOnDemand(cainfo.isDoStoreOcspResponsesOnDemand());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
@@ -286,6 +287,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDescription(getDescription())
                 .setCaSerialNumberOctetSize(getSerialNumberOctetSize())
                 .setDoPreProduceOcspResponses(isDoPreProduceOcspResponses())
+                .setDoStoreOcspResponsesOnDemand(isDoStoreOcspResponsesOnDemand())
                 .setRevocationReason(getRevocationReason())
                 .setRevocationDate(getRevocationDate())
                 .setPolicies(getPolicies())
@@ -748,9 +750,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public boolean isDoPreProduceOcspResponses() {
         if(data.containsKey(DO_PRE_PRODUCE_OCSP_RESPONSES)) {
             return (Boolean) data.get(DO_PRE_PRODUCE_OCSP_RESPONSES);
-        } else {
-            return false;
         }
+        return false;
     }
     
     /* (non-Javadoc)
@@ -759,6 +760,19 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
         data.put(DO_PRE_PRODUCE_OCSP_RESPONSES, doPreProduceOcspResponses);
+    }
+
+    @Override
+    public boolean isDoStoreOcspResponsesOnDemand() {
+        if (data.containsKey(DO_STORE_OCSP_ON_DEMAND)) {
+            return (Boolean) data.get(DO_STORE_OCSP_ON_DEMAND);
+        }
+        return false;
+    }
+    
+    @Override
+    public void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand) {
+        data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
 
     /* (non-Javadoc)
@@ -791,6 +805,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setSubjectAltName(info.getSubjectAltName());
         setCaSerialNumberOctetSize(info.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(info.isDoPreProduceOcspResponses());
+        setDoStoreOcspResponsesOnDemand(info.isDoStoreOcspResponsesOnDemand());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
