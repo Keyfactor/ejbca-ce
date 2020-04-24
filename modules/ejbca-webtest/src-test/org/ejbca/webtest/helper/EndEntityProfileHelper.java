@@ -164,6 +164,10 @@ public class EndEntityProfileHelper extends BaseHelper {
         static By getNotificationMessageByIndex(final int index) {
             return By.xpath("//textarea[contains(@id, ':" + index + ":textAreaNotificationMessage')]");
         }
+
+        static By getSubjectDnAttributesRequiredCheckBox(final String dnAttributeName) {
+            return By.xpath("//td/label[contains(text(),'" + dnAttributeName + "')]/../following-sibling::td//input[contains(@id,'RequiredCheckBox')]");
+        }
     }
 
     public EndEntityProfileHelper(final WebDriver webDriver) {
@@ -1029,18 +1033,13 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void triggerEndEntityEmailCheckBox() {
         clickLink(Page.INPUT_USE_END_ENTITY_EMAIL);
     }
-    
+
     /**
      * Trigger the 'Required' checkbox for chosen 'Subject DN Attribute'.
-     * 
-     *@param name Name of the choosen attribute.
+     *
+     * @param dnAttributeName Name of the 'Subject DN Attribute'.
      */
-    public void subjectDnAttributeRequiredBoxTrigger(String name) {
-      WebElement requiredCheckBox = findElement(By.xpath("//td/label[contains(text(),'"+name+"')]/../following-sibling::td//input[contains(@id,'RequiredCheckBox')]"));
-      if(requiredCheckBox != null) {
-          requiredCheckBox.click();
-      }else {
-          fail("No "+name+"' SubjectDN attribute has been added");
-      }
+    public void subjectDnAttributeRequiredBoxTrigger(final String dnAttributeName) {
+        clickLink(Page.getSubjectDnAttributesRequiredCheckBox(dnAttributeName));
     }
 }
