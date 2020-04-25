@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.faces.context.ExternalContext;
@@ -366,22 +367,53 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
+    
+    public int getAvailableKeyAlgorithmsSize() {
+        return AlgorithmTools.getAvailableKeyAlgorithms().size();
+    }
 
     public List<SelectItem/*<String,String>*/> getAvailableEcCurvesAvailable() {
         final List<SelectItem> ret = new ArrayList<>();
-        final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
-        final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-        Arrays.sort(keys);
-        ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
-        for (final String name : keys) {
-            ret.add(new SelectItem(name, StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
-        }
+        if (certificateProfile.isKeyAlgorithmsECType()) {
+            final Map<String, List<String>> namedEcCurvesMap = new HashMap<>();
+            if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_EC) ||
+                    certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {                
+                ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
+                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap(false));
+            }
+            if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap(false));
+            }     
+            final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+            Arrays.sort(keys);        
+            for (final String name : keys) {
+                ret.add(new SelectItem(name, StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
+            }    
+        } else {
+            ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOECCURVECHOSEN")));
+        }    
         return ret;
     }
 
     public List<SelectItem/*<Integer,String*/> getAvailableBitLengthsAvailable() {
+        Set<Integer> availableBitLengths = new TreeSet<>();
+        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_EC) ||
+                certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {                
+            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_EC);
+        }
+        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSA);
+        }
+        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_RSA);
+        }
+        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSTU);
+        }
+        
+        
         final List<SelectItem> ret = new ArrayList<>();
-        for (final int current : CertificateProfile.DEFAULTBITLENGTHS) {
+        for (final Integer current : availableBitLengths) {
             ret.add(new SelectItem(current, current + " " + getEjbcaWebBean().getText("BITS")));
         }
         return ret;
