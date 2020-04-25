@@ -29,6 +29,7 @@ import org.bouncycastle.math.Primes;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiActionCallback;
@@ -750,7 +751,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
      */
     public List<String> getAvailableBitLengths() {
         final List<String> result = new ArrayList<>();
-        for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
+        for (int length : AlgorithmTools.DEFAULTBITLENGTHS_RSA) {
             result.add(Integer.toString(length));
         }
         return result;
@@ -762,7 +763,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
      */
     public static List<String> getAvailableBitLengths(final int minLength) {
         final List<String> result = new ArrayList<>();
-        for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
+        for (int length : AlgorithmTools.DEFAULTBITLENGTHS_RSA) {
             if (length >= minLength) {
                 result.add(Integer.toString(length));
             }
@@ -776,7 +777,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
      */
     public static Map<String,String> getAvailableBitLengthsAsMap(final int minLength) {
         final Map<String,String> result = new LinkedHashMap<>();
-        for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
+        for (int length : AlgorithmTools.DEFAULTBITLENGTHS_RSA) {
             if (length >= minLength) {
                 result.put(Integer.toString(length), Integer.toString(length));
             }
