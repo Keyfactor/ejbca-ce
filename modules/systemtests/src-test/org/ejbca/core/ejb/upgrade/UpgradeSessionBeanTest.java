@@ -1282,7 +1282,7 @@ public class UpgradeSessionBeanTest {
         cmpConfiguration.addAlias(alias);
         cmpConfiguration.setCertReqHandlerClass(alias, UnidFnrHandlerMock.class.getName());
         globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
-        upgradeSession.upgrade(null, "7.4.0", true);
+        upgradeSession.upgrade(null, "7.3.0", true);
         //UnidFnr information should be removed from CMP configuration post upgrade
         CmpConfiguration upgradedCmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         assertNull("CertReqHandler should have been removed from CMP configuration during upgrade", upgradedCmpConfiguration.getCertReqHandlerClass(alias));
