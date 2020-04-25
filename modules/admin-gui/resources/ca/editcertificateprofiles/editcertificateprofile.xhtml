@@ -79,7 +79,13 @@
                         action="#{certProfileBean.setTypeRootCa}"
                         value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}" />
                 </h:panelGroup>
-
+       		</h:panelGrid>
+        </h:form>
+		<h:form id="algorithms">
+			<h:panelGrid columns="2" styleClass="edit-ctnd"
+                cellspacing="3" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row1"
+                columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel for="selectavailablekeyalgorithms"
                         value="#{web.text.AVAILABLEKEYALGORITHMS}" />
@@ -90,9 +96,9 @@
                 <h:selectManyListbox styleClass="select-list"
                     id="selectavailablekeyalgorithms"
                     value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}"
-                    size="5" disabled="#{certProfileBean.viewOnly}">
-                    <f:selectItems
-                        value="#{certProfileBean.availableKeyAlgorithmsAvailable}" />
+                    size="#{certProfileBean.availableKeyAlgorithmsSize}" disabled="#{certProfileBean.viewOnly}">
+                    <f:selectItems value="#{certProfileBean.availableKeyAlgorithmsAvailable}" />
+                    <f:ajax event="change" execute="@this" render="@form"/>
                 </h:selectManyListbox>
 
                 <h:panelGroup>
@@ -105,9 +111,9 @@
                 <h:selectManyListbox styleClass="select-list"
                     id="selectavailableeccurves"
                     value="#{certProfileBean.certificateProfile.availableEcCurves}"
-                    size="5" disabled="#{certProfileBean.viewOnly}">
-                    <f:selectItems
-                        value="#{certProfileBean.availableEcCurvesAvailable}" />
+                    size="5" disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsECType }">
+                    <f:selectItems value="#{certProfileBean.availableEcCurvesAvailable}" />
+                    <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectManyListbox>
 
                 <h:panelGroup>
@@ -121,8 +127,8 @@
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
                     size="5" styleClass="number select-list"
                     disabled="#{certProfileBean.viewOnly}">
-                    <f:selectItems
-                        value="#{certProfileBean.availableBitLengthsAvailable}" />
+                    <f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}" />
+                    <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectManyListbox>
 
                 <h:outputLabel for="selectsignaturealgorithm"
@@ -134,8 +140,14 @@
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
                 </h:selectOneMenu>
 
+			</h:panelGrid>
+		</h:form>
                 <!-- Validity -->
-
+		<h:form id="content">
+			<h:panelGrid columns="2" styleClass="edit-ctnd"
+                cellspacing="3" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row1"
+                columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel for="textfieldvalidity"
                         value="#{web.text.CERT_VALIDITY} #{web.text.ORENDDATE}" />
