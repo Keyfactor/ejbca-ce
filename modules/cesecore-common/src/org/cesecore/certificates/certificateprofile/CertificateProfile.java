@@ -133,8 +133,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** Constant indicating that any elliptic curve may be used with this profile. */
     public static final String ANY_EC_CURVE = "ANY_EC_CURVE";
 
-    /** Constant holding the default available bit lengths for certificate profiles */
-    public static final int[] DEFAULTBITLENGTHS = { 0, 192, 224, 239, 256, 384, 512, 521, 1024, 1536, 2048, 3072, 4096, 6144, 8192 };
     public static final byte[] DEFAULT_CVC_RIGHTS_AT = { 0, 0, 0, 0, 0 };
 
     /** Constants for validity and private key usage period. */
@@ -459,7 +457,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
-        setAvailableBitLengths(DEFAULTBITLENGTHS);
+        setAvailableBitLengthsAsList(AlgorithmTools.getAllDefaultBitLengths());
         setSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
@@ -1247,6 +1245,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean isTypeEndEntity() {
         return (Integer) data.get(TYPE) == CertificateConstants.CERTTYPE_ENDENTITY;
     }
+    
+    public boolean isKeyAlgorithmsECType() {
+        List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
+        return availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_EC)
+                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)
+                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+    }
 
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
@@ -1284,7 +1289,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
 
-	public int[] getAvailableBitLengths() {
+    public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
         for (int i = 0; i < availablebitlengths.size(); i++) {
@@ -1301,14 +1306,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAvailableBitLengthsAsList(final List<Integer> availableBitLengths) {
         log.debug("setAvailableBitLengthsAsList");
         log.debug("[" + availableBitLengths + "]");
-        setAvailableBitLengths(availableBitLengths);
-    }
-
-    public void setAvailableBitLengths(List<Integer> availablebitlengths) {
         // Strange values here, but it makes the <> below work for sure
         int minimumavailablebitlength = 99999999;
         int maximumavailablebitlength = 0;
-        for (Integer availablebitlength : availablebitlengths) {
+        for (Integer availablebitlength : availableBitLengths) {
             if (availablebitlength > maximumavailablebitlength) {
                 maximumavailablebitlength = availablebitlength;
             }
@@ -1316,17 +1317,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 minimumavailablebitlength = availablebitlength;
             }
         }
-        data.put(AVAILABLEBITLENGTHS, availablebitlengths);
+        data.put(AVAILABLEBITLENGTHS, availableBitLengths);
         data.put(MINIMUMAVAILABLEBITLENGTH, minimumavailablebitlength);
         data.put(MAXIMUMAVAILABLEBITLENGTH, maximumavailablebitlength);
     }
 
     public void setAvailableBitLengths(int[] availablebitlengths) {
-        ArrayList<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
+        List<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
         for (int availablebitlength : availablebitlengths) {
             availbitlengths.add(availablebitlength);
         }
-        setAvailableBitLengths(availbitlengths);
+        setAvailableBitLengthsAsList(availbitlengths);
     }
 
     public int getMinimumAvailableBitLength() {
@@ -1658,9 +1659,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public Set<String> getOverridableExtensionOIDs() {
-    	if (data.get(OVERRIDABLEEXTENSIONOIDS) == null) {
-    		return new LinkedHashSet<>();
-    	}
+        if (data.get(OVERRIDABLEEXTENSIONOIDS) == null) {
+            return new LinkedHashSet<>();
+        }
         return (Set<String>) data.get(OVERRIDABLEEXTENSIONOIDS);
     }
 
@@ -1680,9 +1681,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public Set<String> getNonOverridableExtensionOIDs() {
-    	if (data.get(NONOVERRIDABLEEXTENSIONOIDS) == null) {
-    		return new LinkedHashSet<>();
-    	}
+        if (data.get(NONOVERRIDABLEEXTENSIONOIDS) == null) {
+            return new LinkedHashSet<>();
+        }
         return (Set<String>) data.get(NONOVERRIDABLEEXTENSIONOIDS);
     }
 
@@ -3213,7 +3214,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setDocumentTypeListCritical(false);
             }
             if(data.get(DOCUMENTTYPELIST) == null) { // v 37
-            	setDocumentTypeList(new ArrayList<>());
+                setDocumentTypeList(new ArrayList<>());
             }
             if(data.get(AVAILABLEKEYALGORITHMS) == null) { // v 39
                 // Make some intelligent guesses what key algorithm this profile is used for
