@@ -617,7 +617,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     private CertificateProfile getCertProfileFromByteArray(String profilename, byte[] profileBytes) {
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
-        CertificateProfile cprofile = new CertificateProfile();
+        CertificateProfile cprofile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
         try {
             final SecureXMLDecoder decoder = new SecureXMLDecoder(is);
             // Add certificate profile

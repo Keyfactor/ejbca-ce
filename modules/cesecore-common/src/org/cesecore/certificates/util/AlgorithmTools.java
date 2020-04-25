@@ -34,13 +34,19 @@ import java.security.spec.EllipticCurve;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+
+import javax.xml.registry.infomodel.User;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -77,6 +83,8 @@ import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.OIDField;
+
+import com.google.common.collect.Lists;
 
 /**
  * Various helper methods for handling the mappings between different key and
@@ -129,6 +137,21 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA,
             AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA
     ));
+    
+    /** Constants holding the default available bit lengths for various algorithms */
+    public static final List<Integer> DEFAULTBITLENGTHS_RSA = Arrays.asList( 1024, 1536, 2048, 3072, 4096, 6144, 8192 );
+    public static final List<Integer> DEFAULTBITLENGTHS_DSA = Arrays.asList( 1024 );
+    public static final List<Integer> DEFAULTBITLENGTHS_EC = getAllNamedEcCurveBitLengths();    
+    public static final List<Integer> DEFAULTBITLENGTHS_DSTU = Arrays.asList( 167, 173, 179, 191, 233, 237, 307, 367, 431 );
+    
+    public static List<Integer> getAllDefaultBitLengths() {
+        Set<Integer> allBitLengths = new TreeSet<>();
+        allBitLengths.addAll(DEFAULTBITLENGTHS_RSA);
+        allBitLengths.addAll(DEFAULTBITLENGTHS_DSTU);
+        allBitLengths.addAll(DEFAULTBITLENGTHS_EC);
+        allBitLengths.addAll(DEFAULTBITLENGTHS_DSA);
+        return new ArrayList<>(allBitLengths);
+    }
 
     /** Signature algorithms supported by EDDSA keys */
     public static final List<String> SIG_ALGS_ED25519 = Collections.unmodifiableList(Arrays.asList(
@@ -211,6 +234,32 @@ public abstract class AlgorithmTools {
         // Process additional curves that we specify
         for (String ecNamedCurve : AlgorithmConstants.EXTRA_EC_CURVES) {
             processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);
+        }
+        return processedCurveNames;
+    }
+    
+    public static Map<String,List<String>> getNamedGostCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
+     // Map of curve name and aliases which are the same curve
+        final Map<String,List<String>> processedCurveNames = new HashMap<>();
+        final Enumeration<?> gostAlgorithms =  ECGOST3410NamedCurves.getNames();
+        while (gostAlgorithms.hasMoreElements()) {
+            final String gostNamedCurve = (String) gostAlgorithms.nextElement();
+            processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, gostNamedCurve);
+        }      
+        return processedCurveNames;
+    }
+    
+    /**
+     * 
+     * @param hasToBeKnownByDefaultProvider if the curve name needs to be known by the default provider (e.g. so Sun PKCS#11 can use it)
+     * @return a Map with elliptic curve names as key and the key+any alias as the value, restricted to pure EC curves
+     */
+    public static Map<String,List<String>> getOnlyNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
+        final Map<String,List<String>> processedCurveNames = getNamedEcCurvesMap(hasToBeKnownByDefaultProvider);
+        //Clean out GOST curves
+        final Enumeration<?> gostAlgorithms =  ECGOST3410NamedCurves.getNames();
+        while (gostAlgorithms.hasMoreElements()) {
+            processedCurveNames.remove((String) gostAlgorithms.nextElement());         
         }
         return processedCurveNames;
     }
@@ -304,6 +353,29 @@ public abstract class AlgorithmTools {
             return 0;
         }
         return ecNamedCurveParameterSpec.getN().bitLength();
+    }
+    
+    /**
+     * 
+     * @return a list of all possible EC bit lengths known to the current provider
+     */
+    public static List<Integer> getAllNamedEcCurveBitLengths() {
+        List<Integer> result = new ArrayList<>();
+        Enumeration<?> ecCurveNames = ECNamedCurveTable.getNames();
+        while (ecCurveNames.hasMoreElements()) {
+            final String ecNamedCurve = (String) ecCurveNames.nextElement();
+            result.add(getNamedEcCurveBitLength(ecNamedCurve));
+        }
+        Collections.sort(result);
+        return result;
+    }
+    
+    /**
+     * 
+     * @return a list of all possible DSTU bit lengths known to the current provider
+     */
+    public static List<Integer> getAllNamedDstuCurveBitLengths() {
+        return new ArrayList<>();
     }
 
     /**
