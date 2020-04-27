@@ -82,7 +82,7 @@ public interface ResponseMessage extends Serializable {
     /**
      * Gets the status of the response message.
      *
-     * @return status status of the response.
+     * @return status status of the response, one of ResponseStatus
      */
      ResponseStatus getStatus();
 
