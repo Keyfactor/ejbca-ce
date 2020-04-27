@@ -34,10 +34,8 @@ import java.security.spec.EllipticCurve;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,8 +43,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import javax.xml.registry.infomodel.User;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -83,8 +79,6 @@ import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.OIDField;
-
-import com.google.common.collect.Lists;
 
 /**
  * Various helper methods for handling the mappings between different key and
