@@ -85,6 +85,6 @@ public class EcaQa257_CreateCertificateAuthorityInCAWebAdmin extends WebTestBase
 
     @Test
     public void stepD_DeleteCa() {
-        caHelper.deleteCaAndAssert(TestData.DELETE_MESSAGE, true, false, "EcaQa257", TestData.CA_NAME);
+        caHelper.deleteCaAndAssert(TestData.DELETE_MESSAGE, true, false, TestData.CA_NAME, TestData.CA_NAME);
     }
 }
