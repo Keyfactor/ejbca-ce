@@ -66,7 +66,7 @@ public final class EndEntityValidationHelper {
     public static void checkValidator(final String field, final String className, final Serializable validatorData) throws EndEntityFieldValidatorException {
         final EndEntityFieldValidator validator = getValidator(className);
         if (validator == null) {
-            throw new EndEntityFieldValidatorException("Validator "+className+" could not be loaded");
+            throw new EndEntityFieldValidatorException("Validator " + className + " could not be loaded");
         }
         validator.checkValidatorData(field, validatorData);
     }
@@ -100,13 +100,13 @@ public final class EndEntityValidationHelper {
         try {
             klass = Class.forName(className);
         } catch (ClassNotFoundException e) { 
-            log.warn("Failed to load validator class "+className, e);
+            log.warn("Failed to load validator class " + className, e);
             nonExistentValidatorsCache.add(className);
             return null;
         }
         
         if (!EndEntityFieldValidator.class.isAssignableFrom(klass)) {
-            log.warn("Class "+className+" will not be instantiated since it does not implement "+EndEntityFieldValidator.class.getName());
+            log.warn("Class " + className + " will not be instantiated since it does not implement " + EndEntityFieldValidator.class.getName());
             nonExistentValidatorsCache.add(className);
             return null;
         }
@@ -115,12 +115,8 @@ public final class EndEntityValidationHelper {
             final EndEntityFieldValidator instance = (EndEntityFieldValidator)klass.newInstance();
             validatorCache.put(className, instance);
             return instance;
-        } catch (InstantiationException e) {
-            log.warn("Failed to instantiate end entity validation class "+className, e);
-            nonExistentValidatorsCache.add(className);
-            return null;
-        } catch (IllegalAccessException e) {
-            log.warn("Failed to instantiate end entity validation class "+className, e);
+        } catch (InstantiationException | IllegalAccessException e) {
+            log.warn("Failed to instantiate end entity validation class " + className, e);
             nonExistentValidatorsCache.add(className);
             return null;
         }
