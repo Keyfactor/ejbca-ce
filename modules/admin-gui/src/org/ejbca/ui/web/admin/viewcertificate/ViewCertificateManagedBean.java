@@ -84,6 +84,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private String formattedCertSn;
     private String issuerDnUnescaped;
     private String subjectDnUnescaped;
+    private String subjectDnUnescapedLanguageConsideration;
     private List<String> subjectAltName;
     private String subjectDirAttributes;
     private String publicKey;
@@ -154,7 +155,8 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
             issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
-            subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDN());
+            subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDNUnescaped());
+            subjectDnUnescapedLanguageConsideration = certificateData.getUnescapedRdnValue(certificateData.getSubjectDNUnescapedLanguageConsideration());
             subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
             subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
             publicKey = composePublicKeyValue();
@@ -423,6 +425,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     public String getSubjectDnUnescaped() {
         return subjectDnUnescaped;
+    }
+    
+    public String getSubjectDnUnescapedLanguageConsideration() {
+        return subjectDnUnescapedLanguageConsideration;
     }
     
     public List<String> getSubjectAltName() {
