@@ -1171,7 +1171,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
-                final boolean storeOnDemand = ocspDataConfig.isStoreResponseOnDemand();
                 // We only store pre-produced single repsponses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
                     if (!isPreSigning) {
@@ -1199,7 +1198,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
-                    if ((storeOnDemand || isPreSigning) && !req.hasExtensions()) {
+                    if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && !req.hasExtensions()) {
                         serialNrForResponseStore = certId.getSerialNumber().toString();
                         caIdForResponseStore = ocspDataConfig.getCaId();
                     }
