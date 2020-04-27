@@ -59,7 +59,7 @@ public class EndEntityValidationHelperTest {
     @Test
     public void testCheckValidatorInvalidDNRegexShouldThrowException() throws EndEntityFieldValidatorException {
         expectedException.expect(EndEntityFieldValidatorException.class);
-        expectedException.expectMessage("Invalid regex for field COMMONNAME: Dangling meta character '*' near index 0\r\n*\r\n^");
+        expectedException.expectMessage("Invalid regex for field COMMONNAME: Dangling meta character '*' near index 0\n*\n^");
 
         EndEntityValidationHelper.checkValidator(DnComponents.COMMONNAME, RegexFieldValidator.class.getName(), "*");
     }
