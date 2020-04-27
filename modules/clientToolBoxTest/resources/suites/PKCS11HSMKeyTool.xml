@@ -1,0 +1,141 @@
+<suite name="PKCS11HSMKeyTool" verbose="2">
+	<parameter name="defaultClass" value="org.ejbca.ui.cli.clientToolBoxTest.tests.PKCS11HSMKeyToolTests"/>
+	<parameter name="p11module" value="./p11m.so"/>
+	<parameter name="oldRootEntryAlias" value="TestRootOld" />
+	<parameter name="oldRootCertFileName" value="TestRootOld.der" />
+	<parameter name="newRootEntryAlias" value="TestRootNew" />
+	<parameter name="newRootCertFileName" value="TestRootNew.der" />
+	<parameter name="linkCertFileName" value="linkCert.der" />
+
+	<test name="Test token 1 with ix" >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} i${ix_2} -password ${userPass_2}"/>
+	</test>
+
+	<test name="Generate key on token 1 with cfg file" >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool generate ./slotID.cfg 2048 rsa2 -password ${userPass_1}"/>
+	</test>
+	<test name="Test cfg key (rsa2) on token 1 with id" >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} ${id_1} 10:35 rsa2"/>
+	</test>
+	<test name="Move all keys from token 1 to token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool move ./p11m.so ${label_1} ${label_2}" />
+	</test>
+	<test name="Test that rsa2 now has been moved to token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_2} 10:35 rsa2"/>
+	</test>
+	<test name="Rename key with alias rsa2 to rsa3 on token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool rename ./p11m.so SLOT_LABEL:${label_2} rsa2 rsa3" />
+	</test>
+	<test name="Test that rsa3 is now existing on token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} i${ix_2} 10:35 rsa3"/>
+	</test>
+	<test name="Test that no key with alias rsa2 is existing any more on token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_2} 10:35 rsa2"/>
+		<parameter name="statusCode" value="2"/>
+		<parameter name="hasStdError" value="true"/>
+	</test>
+
+	<test name="Batch generation of keys on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool batchgenerate ${p11m} ${batchGenerateFile} TOKEN_LABEL:${label_1}"/>
+	</test>
+	<test name="Test ecc on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 ecc"/>
+	</test>
+	<test name="Test dsa on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 dsa"/>
+	</test>
+
+	<test name="Linkcert for entry TestRootNew from entry TestRootOld" >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool linkcert ${p11m} TOKEN_LABEL:${label_1} TestRootOld.der TestRootNew.der linkCert.der TestRootOld"/>
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.LinkCertificate" />
+		</classes>
+	</test>
+
+	<test name="Certreq test." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool certreq ${p11m} TOKEN_LABEL:${label_2} rsa3"/>
+	</test>
+	<test name="Install certificate." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool installcert ${p11m} TOKEN_LABEL:${label_2} rsa3cert.pem"/>
+		<parameter name="csrFile" value="rsa3.pem" />
+		<parameter name="keyAlias" value="rsa3" />
+		<parameter name="certFile" value="rsa3cert.pem" />
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.InstallCert" />
+		</classes>
+	</test>
+	<test name="Test token 2 again since a new cert has been installed." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_2} 10:35 rsa3"/>
+	</test>
+
+	<test name="Encrypt file on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool encrypt ./p11m.so TOKEN_LABEL:${label_1} orig.bin encr1.bin rsa1"/>
+	</test>
+	<test name="Decrypt file on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool decrypt ./p11m.so TOKEN_LABEL:${label_1} encr1.bin decr1.bin rsa1"/>
+		<parameter name="originalFile" value="orig.bin"/>
+		<parameter name="resultFile" value="decr1.bin"/>
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
+		</classes>
+	</test>
+	<test name="Sign file on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool sign ./p11m.so TOKEN_LABEL:${label_1} orig.bin signed1.bin ecc"/>
+	</test>
+	<test name="Verify file on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool verify ./p11m.so TOKEN_LABEL:${label_1} signed1.bin verified1.bin ecc"/>
+		<parameter name="originalFile" value="orig.bin"/>
+		<parameter name="resultFile" value="verified1.bin"/>
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
+		</classes>
+	</test>
+
+	<test name="Encrypt file with certificate for token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool encrypt orig.bin encr2.bin rsa3cert.pem"/>
+	</test>
+	<test name="Decrypt file on token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool decrypt ./p11m.so TOKEN_LABEL:${label_2} encr2.bin decr2.bin rsa3"/>
+		<parameter name="originalFile" value="orig.bin"/>
+		<parameter name="resultFile" value="decr2.bin"/>
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
+		</classes>
+	</test>
+	<test name="Sign file on token 2." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool sign ./p11m.so TOKEN_LABEL:${label_2} orig.bin signed2.bin rsa3"/>
+	</test>
+	<test name="Verify file signed on token 2 with certificate." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool verify signed2.bin verified2.bin rsa3cert.pem"/>
+		<parameter name="originalFile" value="orig.bin"/>
+		<parameter name="resultFile" value="verified2.bin"/>
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
+		</classes>
+	</test>
+
+	<test name="Delete key with alias ecc on token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool delete ./p11m.so TOKEN_LABEL:${label_1} dsa"/>
+	</test>
+<!-- expected errors. -->
+	<test name="Test cfg key (rsa3) on token 1 which should fail." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} ${id_1} 10:35 rsa3"/>
+		<parameter name="statusCode" value="2"/>
+		<parameter name="hasStdError" value="true"/>
+	</test>
+	<test name="Test key dsa has been deleted from token 1." >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 dsa"/>
+		<parameter name="statusCode" value="2"/>
+		<parameter name="hasStdError" value="true"/>
+	</test>
+	<test name="Test token with non existing label" >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:nonexist 10:35 rsa1"/>
+		<parameter name="statusCode" value="-1"/>
+		<parameter name="hasStdError" value="true"/>
+	</test>
+	<test name="Test token 2 with label bad p11 module file name" >
+		<parameter name="commandLine" value="PKCS11HSMKeyTool test /opt/PTK/lib/notExisting.so TOKEN_LABEL:${label_2}"/>
+		<parameter name="statusCode" value="-1"/>
+		<parameter name="hasStdError" value="true"/>
+	</test>
+</suite>

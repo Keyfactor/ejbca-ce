@@ -1,0 +1,3 @@
+ecc secp192r1
+dsa DSA1024
+rsa1 2048
