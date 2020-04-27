@@ -1247,4 +1247,41 @@ public class UserFulfillEndEntityProfileTest {
         log.trace("<testCabFOrganizationIdentifierSetInEEPWithPredefinedValueButNotInRequest");
 
     }
+
+    @Test
+    public void testInvalidEndEntityUsernameShouldThrowException() throws EndEntityProfileValidationException {
+        expectedException.expect(EndEntityProfileValidationException.class);
+        expectedException.expectMessage("Did not pass validation of field Username. Technical details: Value \"invalid-username\" does not match regex \\d");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setUseValidationForUsername(true);
+        profile.setUsernameDefaultValidation("\\d");
+
+        final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
+
+        profile.doesUserFulfillEndEntityProfile("invalid-username", "password", "CN=John Smith",
+                                                "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                                                false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                                                new ExtendedInformation(), certProfileEndUserWithCabFOIdUse);
+    }
+
+    @Test
+    public void testValidEndEntityUsername() throws EndEntityProfileValidationException {
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setUseValidationForUsername(true);
+        profile.setUsernameDefaultValidation("[a-z]+");
+        profile.setCabfOrganizationIdentifierUsed(true);
+        profile.setCabfOrganizationIdentifierRequired(true);
+        profile.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
+        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+
+        final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
+
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith",
+                                                "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                                                false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                                                new ExtendedInformation(), certProfileEndUserWithCabFOIdUse);
+    }
 } 
