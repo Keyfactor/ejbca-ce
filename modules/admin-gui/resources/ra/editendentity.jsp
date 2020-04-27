@@ -1020,7 +1020,15 @@ function checkUseInBatch(){
 	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
 	<td>
 		<strong>
-			<input type="text" name="<%= TEXTFIELD_NEWUSERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= username %>"/>'>
+            <input type="text" name="<%= TEXTFIELD_NEWUSERNAME %>" size="40" maxlength="255"
+                   tabindex="<%=tabindex++%>" value='<c:out value="<%= username %>"/>'
+
+                    <% if (profile.getUseValidationForUsername()) {
+                        final String usernameRegex = profile.getUsernameDefaultValidation();
+                    %>
+                        pattern="<c:out value='<%=usernameRegex%>'/>"
+                        title="Must match format specified in profile. / Technical detail - the regex is <c:out value='<%=usernameRegex%>'/>"
+                    <% } %> />
         </strong>
     </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" CHECKED></td>
