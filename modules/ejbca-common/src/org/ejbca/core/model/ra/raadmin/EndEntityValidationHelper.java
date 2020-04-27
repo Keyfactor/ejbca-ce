@@ -17,7 +17,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedHashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -67,6 +69,19 @@ public final class EndEntityValidationHelper {
             throw new EndEntityFieldValidatorException("Validator "+className+" could not be loaded");
         }
         validator.checkValidatorData(field, validatorData);
+    }
+
+    /**
+     * Returns a validation map with given regex.
+     *
+     * @param regex regex string
+     * @param className Validator class name (e.g. RegexFieldValidator)
+     */
+    public static LinkedHashMap<String, Serializable> getValidationMapFromRegex(final String regex, final String className) {
+        final LinkedHashMap<String, Serializable> validationMap = new LinkedHashMap<>();
+        validationMap.put(className, StringUtils.defaultString(regex));
+
+        return validationMap;
     }
     
     private static EndEntityFieldValidator getValidator(final String className) {
