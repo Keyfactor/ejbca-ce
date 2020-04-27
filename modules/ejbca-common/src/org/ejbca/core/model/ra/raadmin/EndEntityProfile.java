@@ -891,9 +891,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public String getUsernameDefaultValidation() {
         if (null != getValidation(USERNAME, 0)) {
             return (String) getValidation(USERNAME, 0).get(RegexFieldValidator.class.getName());
-        } else {
-            return "";
         }
+
+        return "";
     }
 
     public void setUsernameDefaultValidation(final String validation) {
