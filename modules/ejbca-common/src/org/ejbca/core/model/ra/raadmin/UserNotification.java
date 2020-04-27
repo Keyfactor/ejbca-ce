@@ -81,7 +81,7 @@ public class UserNotification implements Serializable, Cloneable {
     	setNotificationEvents(events);
     }
 
-    public String getNotificationSender(){
+    public String getNotificationSender() {
     	return StringUtils.defaultString(data.get(NOTIFICATIONSENDER));
     }
     
@@ -89,7 +89,7 @@ public class UserNotification implements Serializable, Cloneable {
     	data.put(NOTIFICATIONSENDER, sender);    		
     }
     
-    public String getNotificationSubject(){
+    public String getNotificationSubject() {
     	return StringUtils.defaultString(data.get(NOTIFICATIONSUBJECT));
     }
     
@@ -97,7 +97,7 @@ public class UserNotification implements Serializable, Cloneable {
     	data.put(NOTIFICATIONSUBJECT, subject);    		
     }
         
-    public String getNotificationMessage(){
+    public String getNotificationMessage() {
     	return StringUtils.defaultString(data.get(NOTIFICATIONMESSAGE));
     }
     
@@ -105,7 +105,7 @@ public class UserNotification implements Serializable, Cloneable {
     	data.put(NOTIFICATIONMESSAGE, message);
     }
 
-    public String getNotificationRecipient(){
+    public String getNotificationRecipient() {
     	return StringUtils.defaultString(data.get(NOTIFICATIONRECIPIENT));
     }
     
@@ -113,7 +113,7 @@ public class UserNotification implements Serializable, Cloneable {
      * Recipient of the notification
      * @param rcpt can be constants UserNotification.RCPT_XX or an email address. Several recipients can be specified separated by ;
      */
-    public void setNotificationRecipient(String rcpt){
+    public void setNotificationRecipient(String rcpt) {
     	data.put(NOTIFICATIONRECIPIENT, rcpt);
     }
 
@@ -174,7 +174,7 @@ public class UserNotification implements Serializable, Cloneable {
     @Override
     public boolean equals(Object obj) {
         boolean ret = false;
-        if((obj == null) || !(obj instanceof UserNotification)) {
+        if(!(obj instanceof UserNotification)) {
             return ret;
         }
         UserNotification o = (UserNotification)obj;
