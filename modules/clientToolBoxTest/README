@@ -1,0 +1,5 @@
+Build the test with:
+ant clean all
+
+Then you will find everything needed run the test under ./dist.
+Read ./dist/README to get information on how to test.
