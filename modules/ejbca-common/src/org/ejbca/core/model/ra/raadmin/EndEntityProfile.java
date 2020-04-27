@@ -1606,7 +1606,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	// Make sure that there are enough fields to cover all required in profile
     	checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs);
     	// Check username against its regex validator.
-        checkUsernameWithValidators(username);
+        checkUsernameWithValidators(userName);
     	// Check that all fields pass the validators (e.g. regex), if any
     	checkWithValidators(subjectDnFields, subjectAltNames);
     	// Check contents of username
