@@ -54,7 +54,7 @@ import java.util.Map;
  */
 public class HTMLTools {
 //	 see http://hotwired.lycos.com/webmonkey/reference/special_characters/
-    static Object[][] entities = {
+    static Object[][] ENTITIES = {
        // {"#39", Integer.valueOf(39)},       // ' - apostrophe
         {"quot", Integer.valueOf(34)},      // " - double-quote
         {"amp", Integer.valueOf(38)},       // & - ampersand
@@ -139,16 +139,16 @@ public class HTMLTools {
             {"gt", Integer.valueOf(62)},        // > - greater-than
    };
     
-    static Map<String,Integer> e2i = new HashMap<String,Integer>();
-    static Map<Integer,String> i2e = new HashMap<Integer,String>();
-    static Map<Integer,String> I2EL = new HashMap<Integer,String>();
+    static Map<String,Integer> E2I = new HashMap<String,Integer>();
+    static Map<Integer,String> I2E = new HashMap<Integer,String>();
+    static Map<Integer,String> I2ERL = new HashMap<Integer,String>();
     static {
-        for (int i=0; i<entities.length; ++i) {
-            e2i.put((String)entities[i][0], (Integer)entities[i][1]);
-            i2e.put((Integer)entities[i][1], (String)entities[i][0]);
+        for (int i=0; i<ENTITIES.length; ++i) {
+            E2I.put((String)ENTITIES[i][0], (Integer)ENTITIES[i][1]);
+            I2E.put((Integer)ENTITIES[i][1], (String)ENTITIES[i][0]);
         }
         for (int i=0; i<HTML_ENTITIES_REDUCED_LIST.length; ++i) {
-            I2EL.put((Integer)entities[i][1], (String)entities[i][0]);
+            I2ERL.put((Integer)HTML_ENTITIES_REDUCED_LIST[i][1], (String)HTML_ENTITIES_REDUCED_LIST[i][0]);
         }
     }
 
@@ -166,7 +166,7 @@ public class HTMLTools {
         int i;
         for (i=0; i<s1.length(); ++i) {
             char ch = s1.charAt(i);
-            String entity = i2e.get( Integer.valueOf(ch) );
+            String entity = I2E.get( Integer.valueOf(ch) );
             if (entity == null) {
                 if ((ch) > 128) {
                     buf.append("&#" + ((int)ch) + ";");
@@ -189,7 +189,7 @@ public class HTMLTools {
         final StringBuilder buf = new StringBuilder();
         str.chars().mapToObj(charInString -> (char) charInString)
         .forEach(charInString -> {
-            String entity = I2EL.get(Integer.valueOf(charInString));
+            String entity = I2ERL.get(Integer.valueOf(charInString));
             if (entity == null) {
                 buf.append(charInString);
             } else {
@@ -230,7 +230,7 @@ public class HTMLTools {
                     iso = Integer.valueOf(entity.substring(1));
                 }
                 else {
-                    iso = e2i.get(entity);
+                    iso = E2I.get(entity);
                 }
                 if (iso == null) {
                     buf.append("&" + entity + ";");
