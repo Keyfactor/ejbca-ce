@@ -35,6 +35,7 @@ import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
@@ -76,8 +77,7 @@ public interface CAAdminSession {
      *            of Certificate or byte[], or even empty collection or null.
      * @param nextSignKeyAlias
      *            The next key alias to use for this request.
-     *            If null, then a new key pair will be generated named using
-     *            the key sequence.
+     *            If null, then a new key pair will be generated named using the key sequence, using the format of {@link CAToken#generateNextSignKeyAlias}
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
     byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias)
@@ -105,7 +105,7 @@ public interface CAAdminSession {
      * Receives a certificate response from an external CA and sets the newly
      * created CAs status to active.
      * 
-     * @param admin
+     * @param authenticationToken
      *            The administrator performing the action
      * @param caid
      *            The caid (DN.hashCode()) of the CA that is receiving this
@@ -126,11 +126,10 @@ public interface CAAdminSession {
      * Receives a certificate response from an external CA and sets the newly
      * created CAs status to active.
      * 
-     * @param admin
+     * @param authenticationToken
      *            The administrator performing the action
      * @param caid
-     *            The caid (DN.hashCode()) of the CA that is receiving this
-     *            response
+     *            The caid (DN.hashCode()) of the CA that is receiving this response
      * @param responsemessage
      *            X509ResponseMessage with the certificate issued to this CA
      * @param cachain
@@ -180,7 +179,11 @@ public interface CAAdminSession {
      * 
      * We allow the same leaf CA certificate to be re-imported in the case where the chain has changed.
      * 
-     * @param certificates contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param authenticationToken
+     *            The administrator performing the action
+     * @param caid
+     *            The caid (DN.hashCode()) of the CA that should be updated
+     * @param wrappedCerts contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
      * @throws CmsCertificatePathMissingException 
      * @throws InternalKeyBindingNonceConflictException 
@@ -192,6 +195,14 @@ public interface CAAdminSession {
      * Inits an external CA service. this means that a new key and certificate
      * will be generated for this service, if it exists before. If it does not
      * exist before it will be created.
+     * @param authenticationToken
+     *            The administrator performing the action
+     * @param caid
+     *            The caid (DN.hashCode()) of the CA that should be updated
+     * @param info ExtendeDCAServiceInfo of the external CA service that will be inited
+     * @throws CADoesntExistsException if the CA with caid does not exist.
+     * @throws AuthorizationDeniedException if admin is not autheorize to edit the CA with caid 
+     * @throws CAOfflineException if the CA with caid is off-line, so no services can be inited 
      */
     void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
             AuthorizationDeniedException, CAOfflineException;
