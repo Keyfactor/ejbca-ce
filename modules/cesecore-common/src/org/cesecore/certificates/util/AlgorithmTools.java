@@ -356,6 +356,7 @@ public abstract class AlgorithmTools {
     public static List<Integer> getAllNamedEcCurveBitLengths() {
         List<Integer> result = new ArrayList<>();
         Enumeration<?> ecCurveNames = ECNamedCurveTable.getNames();
+        result.add(0);
         while (ecCurveNames.hasMoreElements()) {
             final String ecNamedCurve = (String) ecCurveNames.nextElement();
             result.add(getNamedEcCurveBitLength(ecNamedCurve));
