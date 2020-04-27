@@ -14,7 +14,6 @@ package org.cesecore.certificates.util;
 
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -36,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -138,7 +138,7 @@ public abstract class AlgorithmTools {
     public static final List<Integer> DEFAULTBITLENGTHS_EC = getAllNamedEcCurveBitLengths();    
     public static final List<Integer> DEFAULTBITLENGTHS_DSTU = Arrays.asList( 167, 173, 179, 191, 233, 237, 307, 367, 431 );
     
-    public static List<Integer> getAllDefaultBitLengths() {
+    public static List<Integer> getAllBitLengths() {
         Set<Integer> allBitLengths = new TreeSet<>();
         allBitLengths.addAll(DEFAULTBITLENGTHS_RSA);
         allBitLengths.addAll(DEFAULTBITLENGTHS_DSTU);
@@ -165,6 +165,11 @@ public abstract class AlgorithmTools {
     public static final List<String> SIG_ALGS_DSTU4145 = Collections.unmodifiableList(Arrays.asList(
             AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145
     ));
+    
+    private static Map<String, List<String>> allEcCurveNames = preProcessCurveNames(false);
+    private static Map<String, List<String>> allEcCurveNamesKnownByProvider = preProcessCurveNames(true);
+    private static Map<String, List<String>> allGostCurveNames = preProcessGostCurveNames(false);
+    private static Map<String, List<String>> allGostCurveNamesKnownByProvider = preProcessGostCurveNames(true);
 
     /**
      * Gets the name of matching key algorithm from a public key as defined by
@@ -216,31 +221,19 @@ public abstract class AlgorithmTools {
      * @return a Map with elliptic curve names as key and the key+any alias as the value.
      */
     public static Map<String,List<String>> getNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
-        // Map of curve name and aliases which are the same curve
-        final Map<String,List<String>> processedCurveNames = new HashMap<>();
-        final Enumeration<?> ecNamedCurvesStandard = ECNamedCurveTable.getNames();
-        // Process standard curves, removing blacklisted ones and those not supported by the provider
-        while (ecNamedCurvesStandard.hasMoreElements()) {
-            final String ecNamedCurve = (String) ecNamedCurvesStandard.nextElement();
-            processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);
+        if(hasToBeKnownByDefaultProvider) {
+            return allEcCurveNamesKnownByProvider;
+        } else {
+            return allEcCurveNames;
         }
-
-        // Process additional curves that we specify
-        for (String ecNamedCurve : AlgorithmConstants.EXTRA_EC_CURVES) {
-            processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);
-        }
-        return processedCurveNames;
     }
     
     public static Map<String,List<String>> getNamedGostCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
-     // Map of curve name and aliases which are the same curve
-        final Map<String,List<String>> processedCurveNames = new HashMap<>();
-        final Enumeration<?> gostAlgorithms =  ECGOST3410NamedCurves.getNames();
-        while (gostAlgorithms.hasMoreElements()) {
-            final String gostNamedCurve = (String) gostAlgorithms.nextElement();
-            processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, gostNamedCurve);
-        }      
-        return processedCurveNames;
+        if(hasToBeKnownByDefaultProvider) {
+            return allGostCurveNamesKnownByProvider;
+        } else {
+            return allGostCurveNames;
+        }
     }
     
     /**
@@ -291,8 +284,84 @@ public abstract class AlgorithmTools {
         list.addAll(AlgorithmTools.getEcKeySpecAliases("P-521"));
         return list;
     }
+    
+    private static Map<String, List<String>> preProcessCurveNames(final boolean hasToBeKnownByDefaultProvider) {
+        final Map<String,List<String>> processedCurveNames = new HashMap<>();
+        Set<ECNamedCurveParameterSpec> addedCurves = new HashSet<>();
+        final Enumeration<?> ecNamedCurvesStandard = ECNamedCurveTable.getNames();
+        // Process standard curves, removing blacklisted ones and those not supported by the provider
+        while (ecNamedCurvesStandard.hasMoreElements()) {
+            final String ecNamedCurve = (String) ecNamedCurvesStandard.nextElement();
+            final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
+            if (AlgorithmConstants.BLACKLISTED_EC_CURVES.contains(ecNamedCurve)) {
+                continue;
+            }
+            if(addedCurves.contains(parameterSpec)) {
+                // Check if this param spec exists under another alias
+                continue;
+            }
+            
+            if (hasToBeKnownByDefaultProvider) {
+                if (AlgorithmTools.isNamedECKnownInDefaultProvider(ecNamedCurve)) {
+                    processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+                }
+            } else {
+                processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+            }
+        }
+        
+        // Process additional curves that we specify
+        for (String ecNamedCurve : AlgorithmConstants.EXTRA_EC_CURVES) {
+            final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
+            if (AlgorithmConstants.BLACKLISTED_EC_CURVES.contains(ecNamedCurve)) {
+                continue;
+            }
+            if(addedCurves.contains(parameterSpec)) {
+                // Check if this param spec exists under another alias
+                continue;
+            }
+            
+            if (hasToBeKnownByDefaultProvider) {
+                if (AlgorithmTools.isNamedECKnownInDefaultProvider(ecNamedCurve)) {
+                    processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+                }
+            } else {
+                processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+            }
+        }
+        
+        return processedCurveNames;
+        
+    }
+    
+    private static Map<String, List<String>> preProcessGostCurveNames(final boolean hasToBeKnownByDefaultProvider) {
+        final Map<String,List<String>> processedCurveNames = new HashMap<>();
+        Set<ECNamedCurveParameterSpec> addedCurves = new HashSet<>();
+        final Enumeration<?> gostNamedCurvesStandard = ECGOST3410NamedCurves.getNames();
+        // Process standard curves, removing blacklisted ones and those not supported by the provider
+        while (gostNamedCurvesStandard.hasMoreElements()) {
+            final String gostNamedCurve = (String) gostNamedCurvesStandard.nextElement();
+            final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(gostNamedCurve);
 
-    private static void processCurveName(final boolean hasToBeKnownByDefaultProvider, final Map<String, List<String>> processedCurveNames,
+            if(addedCurves.contains(parameterSpec)) {
+                // Check if this param spec exists under another alias
+                continue;
+            }
+            
+            if (hasToBeKnownByDefaultProvider) {
+                if (AlgorithmTools.isNamedECKnownInDefaultProvider(gostNamedCurve)) {
+                    processedCurveNames.put(gostNamedCurve, getEcKeySpecAliases(gostNamedCurve));
+                }
+            } else {
+                processedCurveNames.put(gostNamedCurve, getEcKeySpecAliases(gostNamedCurve));
+            }
+        }
+        
+        return processedCurveNames;
+        
+    }
+/**
+    private static void processCurveName(final boolean hasToBeKnownByDefaultProvider,
             final String ecNamedCurve) {
         if (AlgorithmConstants.BLACKLISTED_EC_CURVES.contains(ecNamedCurve)) {
             return;
@@ -332,7 +401,7 @@ public abstract class AlgorithmTools {
                 log.debug(e.getMessage());
             }
         }
-    }
+    }*/
 
     /** @return the number of bits a named elliptic curve has or 0 if the curve name is unknown. */
     public static int getNamedEcCurveBitLength(final String ecNamedCurve) {
@@ -354,15 +423,14 @@ public abstract class AlgorithmTools {
      * @return a list of all possible EC bit lengths known to the current provider
      */
     public static List<Integer> getAllNamedEcCurveBitLengths() {
-        List<Integer> result = new ArrayList<>();
+        Set<Integer> result = new TreeSet<>();
         Enumeration<?> ecCurveNames = ECNamedCurveTable.getNames();
         result.add(0);
         while (ecCurveNames.hasMoreElements()) {
             final String ecNamedCurve = (String) ecCurveNames.nextElement();
             result.add(getNamedEcCurveBitLength(ecNamedCurve));
         }
-        Collections.sort(result);
-        return result;
+        return new ArrayList<>(result);
     }
     
     /**
