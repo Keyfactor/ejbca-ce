@@ -1,0 +1,14 @@
+<suite name="CMPTest" verbose="2">
+	<test name="CMP RA: Start with just 3 calls since it may fail if started with a heavy load." >
+		<parameter name="caName" value="CMPCA"/>
+		<parameter name="commandLine" value="CMPTest ca CMPCA.cacert.pem 1:3 1000 testRA"/>
+		<parameter name="statusCode" value="nostatuscheck"/>
+		<classes>
+			<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.CAcert" />
+		</classes>
+	</test>
+	<test name="CMP RA stress" >
+		<parameter name="commandLine" value="CMPTest ca CMPCA.cacert.pem 10:100 1000 testRA"/>
+		<parameter name="statusCode" value="0"/>
+	</test>
+</suite>

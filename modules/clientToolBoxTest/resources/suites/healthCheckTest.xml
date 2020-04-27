@@ -1,0 +1,6 @@
+<suite name="healthCheckTest" verbose="2">
+	<test name="healthCheckTest stress" >
+		<parameter name="commandLine" value="healthCheckTest http://ca:8080/ejbca/publicweb/healthcheck/ejbcahealth 1000:100000 2000"/>
+		<parameter name="statusCode" value="0"/>
+	</test>
+</suite>

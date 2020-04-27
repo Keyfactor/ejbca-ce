@@ -1,0 +1,20 @@
+This file is located in the root directory of the clientToolBoxTest distribution.
+You should NOT be in this directory when you are running tests since some files
+are created in the current directory that will be obsolete after the test.
+There are 2 scripts that could be used to start the test; test.sh, run.sh
+
+test.sh
+=======
+Run one or several test suites.
+An EJBCA with the the domain name 'ca' must exist for most suites. An exception
+is the 'PKCS11HSMKeyTool' suit.
+
+run.sh
+======
+First created a docker container providing an EJBCA with the domain name 'ca'.
+test.sh is started after jboss in the container is up and running. The container
+is removed when test.sh exits.
+
+Documentation
+=============
+Read ./doc/index.html to learn what is tested and how.
