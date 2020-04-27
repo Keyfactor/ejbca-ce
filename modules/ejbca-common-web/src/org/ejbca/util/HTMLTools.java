@@ -131,12 +131,24 @@ public class HTMLTools {
         {"yuml", Integer.valueOf(255)},     // ÿ - lowercase y, umlaut
         {"euro", Integer.valueOf(8364)},    // Euro symbol
     };
+    
+    static Object[][] HTML_ENTITIES_REDUCED_LIST = {
+            {"quot", Integer.valueOf(34)},      // " - double-quote
+            {"amp", Integer.valueOf(38)},       // & - ampersand
+            {"lt", Integer.valueOf(60)},        // < - less-than
+            {"gt", Integer.valueOf(62)},        // > - greater-than
+   };
+    
     static Map<String,Integer> e2i = new HashMap<String,Integer>();
     static Map<Integer,String> i2e = new HashMap<Integer,String>();
+    static Map<Integer,String> I2EL = new HashMap<Integer,String>();
     static {
         for (int i=0; i<entities.length; ++i) {
             e2i.put((String)entities[i][0], (Integer)entities[i][1]);
             i2e.put((Integer)entities[i][1], (String)entities[i][0]);
+        }
+        for (int i=0; i<HTML_ENTITIES_REDUCED_LIST.length; ++i) {
+            I2EL.put((Integer)entities[i][1], (String)entities[i][0]);
         }
     }
 
@@ -170,6 +182,23 @@ public class HTMLTools {
         return buf.toString();
     }
 
+    public static String htmlEscapeWithLanguageConsideration(String str) {
+        if (str == null) {
+            return null;
+        }
+        final StringBuilder buf = new StringBuilder();
+        str.chars().mapToObj(charInString -> (char) charInString)
+        .forEach(charInString -> {
+            String entity = I2EL.get(Integer.valueOf(charInString));
+            if (entity == null) {
+                buf.append(charInString);
+            } else {
+                buf.append("&" + entity + ";");
+            }
+        });
+        return buf.toString();
+    }
+    
     /**
      * Given a string containing entity escapes, returns a string
      * containing the actual Unicode characters corresponding to the

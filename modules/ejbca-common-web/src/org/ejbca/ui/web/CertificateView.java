@@ -166,7 +166,18 @@ public class CertificateView implements Serializable {
         }
         return CertTools.getSubjectDN(certificate);
     }
-
+    
+    /**
+     * HTML escaping String, but allowing characters from foreign languages.
+     * @return subjectDN escaping only the following characters: double-quote, ampersand, less-than, greater-than 
+     */
+    public String getSubjectDNUnescapedLanguageConsideration() {
+        if (certificate == null) {
+            return certificateData.getSubjectDnNeverNull();
+        }
+        return HTMLTools.htmlEscapeWithLanguageConsideration(CertTools.getSubjectDN(certificate));
+    }
+    
     /**
      * @param value String to enescape
      * @return value in unescaped RDN format
