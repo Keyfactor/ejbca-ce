@@ -457,7 +457,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
-        setAvailableBitLengthsAsList(AlgorithmTools.getAllDefaultBitLengths());
+        setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
