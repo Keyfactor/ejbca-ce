@@ -1029,10 +1029,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // Logging details object
             final Map<String, Object> details = new LinkedHashMap<>();
             // Make a diff of what was changed to we can log it
-            // We need to set times so that diffing is made properly
-            endEntityInformation.setTimeModified(new Date(userData.getTimeModified()));
-            endEntityInformation.setTimeCreated(new Date(userData.getTimeCreated()));
-            Map<String, String[]> diff = originalCopy.getDiff(endEntityInformation);
+            // We need to set times so that diffing is made properly, also use the latest notificationEndEntity so that we include potential DN merging, 
+            // i.e. diff the original to what we actually stored in the database
+            notificationEndEntityInformation.setTimeModified(new Date(userData.getTimeModified()));
+            notificationEndEntityInformation.setTimeCreated(new Date(userData.getTimeCreated()));
+            Map<String, String[]> diff = originalCopy.getDiff(notificationEndEntityInformation);
             // Add the diff later on, in order to have it after the "msg"
             if (newstatus != oldstatus) {
                 // Only print stuff on a printer on the same conditions as for
