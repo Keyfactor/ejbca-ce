@@ -1170,6 +1170,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequestwxff", certId.getSerialNumber().toString(16), hash, remoteAddress, xForwardedFor));
                 }
                 
+                // Locate the CA which gave out the certificate
+                ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
+                if(ocspSigningCacheEntry == null) {
+                    //Could it be that we haven't updated the OCSP Signing Cache?
+                    ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
+                }         
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
                 // We only store pre-produced single repsponses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
@@ -1191,7 +1197,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 log.warn("Pre-produced OCSP response for certificate with serialNr '" + certId.getSerialNumber() + "' was malformed. Producing new response.");
                             }
                             if (!malformedResponseObject) {
-                                // TODO we may need maxAge from key binding here.
+                                if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                                    maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
+                                }
                                 return new OcspResponseInformation(ocspResp, maxAge, signerCert);
                             }
                         }
@@ -1204,12 +1212,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
                 
-                // Locate the CA which gave out the certificate
-                ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
-                if(ocspSigningCacheEntry == null) {
-                  //Could it be that we haven't updated the OCSP Signing Cache?
-                    ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
-                }         
                 if (ocspSigningCacheEntry != null) {
                     if (transactionLogger.isEnabled()) {
                         // This will be the issuer DN of the signing certificate, whether an OCSP responder or an internal CA  
