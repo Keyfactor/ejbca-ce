@@ -60,5 +60,7 @@ public class PublisherConst {
     
     /**A CRL published*/
     public static final int PUBLISH_TYPE_CRL  = 2; // Is it a CRL we publish
+    
+    public static final int PUBLISH_TYPE_OCSP = 3; // Is a OCSP response we publish
 
 }

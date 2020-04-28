@@ -144,6 +144,14 @@
 						<h:selectBooleanCheckbox id="usequeueforcertificates" value="#{editPublisher.useQueueForCertificates}" disabled="#{editPublisher.readOnly}"/>
 						<h:outputLabel for="usequeueforcertificates" value="#{web.text.USE}"/>
 					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editPublisher.publisherSupportingOcspResponses}">					
+						<h:outputText value="#{web.text.USEQUEUEFOROCSPRESPONSES}"/>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editPublisher.publisherSupportingOcspResponses}">
+						<h:selectBooleanCheckbox id="usequeueforocspresponses" value="#{editPublisher.useQueueForOcspResponses}" disabled="#{editPublisher.readOnly}"/>
+						<h:outputLabel for="usequeueforocspresponses" value="#{web.text.USE}"/>
+					</h:panelGroup>
 				</h:panelGrid>
 
 				<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	

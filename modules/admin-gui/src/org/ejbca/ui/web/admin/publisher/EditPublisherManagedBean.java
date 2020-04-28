@@ -128,6 +128,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private String publisherDescription;
     private boolean useQueueForCertificates;
     private boolean useQueueForCRLs;
+    private boolean useQueueForOcspResponses;
     private boolean keepPublishedInQueue;
     private boolean onlyUseQueue;
 
@@ -418,6 +419,15 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public void setUseQueueForCRLs(boolean useQueueForCRLs) {
         this.useQueueForCRLs = useQueueForCRLs;
     }
+    
+    public boolean isUseQueueForOcspResponses() {
+        return useQueueForOcspResponses;
+    }
+
+    public void setUseQueueForOcspResponses(boolean useQueueForOcspResponses) {
+        this.useQueueForOcspResponses = useQueueForOcspResponses;
+    }
+    
 
     public boolean isKeepPublishedInQueue() {
         return keepPublishedInQueue;
@@ -482,6 +492,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
     }
     
+    // This is ugly but could not find a better way for it
+    public boolean isPublisherSupportingOcspResponses() {
+        return StringUtils.contains(selectedPublisherType, "PeerPublisher")
+                || StringUtils.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
+    }
+    
     private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException {
         //Set General Settings
         setPublisherQueueAndGeneralSettings();
@@ -512,6 +528,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         publisher.setKeepPublishedInQueue(keepPublishedInQueue);
         publisher.setUseQueueForCRLs(useQueueForCRLs);
         publisher.setUseQueueForCertificates(useQueueForCertificates);
+        publisher.setUseQueueForOcspResponses(useQueueForOcspResponses);
         publisher.setDescription(publisherDescription);        
     }
 
@@ -583,6 +600,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         keepPublishedInQueue = publisher.getKeepPublishedInQueue();
         useQueueForCRLs = publisher.getUseQueueForCRLs();
         useQueueForCertificates = publisher.getUseQueueForCertificates();
+        useQueueForOcspResponses = publisher.getUseQueueForOcspResponses();
     }
 
     private void fillPublisherInitMapAndInitPublisherData() {
