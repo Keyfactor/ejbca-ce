@@ -172,7 +172,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
         browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
 
         //Load Database Constants
-        databaseConnection = new HashMap<String, String>();
+        databaseConnection = new HashMap<>();
         databaseConnection.put("host", config.getProperty(ConfigurationConstants.DATABASE_HOST));
         databaseConnection.put("port", config.getProperty(ConfigurationConstants.DATABASE_PORT));
         databaseConnection.put("user", config.getProperty(ConfigurationConstants.DATABASE_USERNAME));
@@ -267,7 +267,6 @@ public abstract class WebTestBase extends ExtentReportCreator {
      * Removes the CA and CryptoToken using EJB instances.
      *
      * @param caName CA name.
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
     protected static void removeCaAndCryptoToken(final String caName) {
         removeCaByName(caName);
@@ -278,7 +277,6 @@ public abstract class WebTestBase extends ExtentReportCreator {
      * Removes the CA using EJB instance.
      *
      * @param caName CA name.
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
     protected static void removeCaByName(final String caName) {
         final CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -408,7 +406,6 @@ public abstract class WebTestBase extends ExtentReportCreator {
      * Removes the 'Approval Profile' by name using EJB instance.
      *
      * @param approvalProfileName approval profile name for deletion.
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
     protected static void removeApprovalProfileByName(final String approvalProfileName) {
         final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
