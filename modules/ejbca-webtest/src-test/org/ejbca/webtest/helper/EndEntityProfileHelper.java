@@ -14,8 +14,10 @@ package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -97,6 +99,9 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By SELECT_DEFAULT_CP = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_DEFAULT_CA = By.id("eeProfiles:defaultCAMenu");
         static final By SELECT_AVAILABLE_CAS = By.id("eeProfiles:availableCA");
+        static final By SELECT_DEFAULT_TOKEN = By.id("eeProfiles:defaultTokenMenu");
+        static final By SELECT_AVAILABLE_TOKENS = By.id("eeProfiles:availableToken");
+
         static final By SELECT_SUBJECT_ALTERNATIVE_NAME = By.id("eeProfiles:subjectAltNameAttributeType");
         static final By NOTIFICATION = By.xpath("//tr[td/strong[text()='Send Notification']]/following-sibling::tr[1]/td[2][contains(text(), 'Notification')]");
         // Other Data / Send Notification  / Add
@@ -165,8 +170,9 @@ public class EndEntityProfileHelper extends BaseHelper {
             return By.xpath("//textarea[contains(@id, ':" + index + ":textAreaNotificationMessage')]");
         }
 
-        static By getSubjectDnAttributesRequiredCheckBox(final String dnAttributeName) {
-            return By.xpath("//td/label[contains(text(),'" + dnAttributeName + "')]/../following-sibling::td//input[contains(@id,'RequiredCheckBox')]");
+        // Subject DN Attributes checkboxes
+        static By getSubjectDnAttributesCheckBox(final String dnAttributeName, final String checkboxName) {
+            return By.xpath("//td/label[contains(text(),'" + dnAttributeName + "')]/../following-sibling::td//input[contains(@id,'" + checkboxName + "CheckBox')]");
         }
     }
 
@@ -235,15 +241,29 @@ public class EndEntityProfileHelper extends BaseHelper {
     /**
      * Selects the default certification profile
      *
-     * @param defaultCPName
+     * @param defaultCPName default Certificate Profile name.
      */
 
     public void selectDefaultCp(String defaultCPName) {
         selectOptionByName(Page.SELECT_DEFAULT_CP, defaultCPName);
     }
 
+    /**
+     * Selects Available Certificate Profiles by single name.
+     *
+     * @param cPName Certificate Profile name.
+     */
     public void selectAvailableCp(String cPName) {
         selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
+    }
+
+    /**
+     * Selects Available Certificate Profiles.
+     *
+     * @param cPNames Certificate Profile names.
+     */
+    public void selectAvailableCps(String... cPNames) {
+        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Arrays.asList(cPNames));
     }
 
     /**
@@ -254,6 +274,17 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void selectDefaultCa(String defaultCAName) {
         selectOptionByName(Page.SELECT_DEFAULT_CA, defaultCAName);
     }
+
+
+    /**
+     * Selects Available CA.
+     *
+     * @param caName CA name.
+     */
+    public void selectAvailableCa(String caName) {
+        selectOptionsByName(Page.SELECT_AVAILABLE_CAS, Collections.singletonList(caName));
+    }
+
 
     /**
      * Saves the End Entity Profile with success assertion.
@@ -1035,11 +1066,123 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     /**
-     * Trigger the 'Required' checkbox for chosen 'Subject DN Attribute'.
+     * Trigger the checkbox for 'Subject DN Attribute' - Required.
      *
      * @param dnAttributeName Name of the 'Subject DN Attribute'.
      */
-    public void subjectDnAttributeRequiredBoxTrigger(final String dnAttributeName) {
-        clickLink(Page.getSubjectDnAttributesRequiredCheckBox(dnAttributeName));
+    public void subjectDnAttributeRequiredCheckboxTrigger(final String dnAttributeName) {
+        clickLink(Page.getSubjectDnAttributesCheckBox(dnAttributeName, "Required"));
+    }
+
+    /**
+     * Trigger the checkbox for 'Subject DN Attribute' - Modifiable.
+     *
+     * @param dnAttributeName Name of the 'Subject DN Attribute'.
+     */
+    public void subjectDnAttributeModifiableCheckboxTrigger(final String dnAttributeName) {
+        clickLink(Page.getSubjectDnAttributesCheckBox(dnAttributeName, "Modifiable"));
+    }
+
+    /**
+     * Trigger the checkbox for 'Subject DN Attribute' - Validation.
+     *
+     * @param dnAttributeName Name of the 'Subject DN Attribute'.
+     */
+    public void subjectDnAttributeValidationCheckboxTrigger(final String dnAttributeName) {
+        clickLink(Page.getSubjectDnAttributesCheckBox(dnAttributeName, "Validation"));
+    }
+
+    private void assertSubjectDnAttributesCheckboxIsChecked(final String dnAttributeName, final String checkboxName, final boolean expectedState) {
+        assertEquals("'" + checkboxName + "' checkbox for '" + dnAttributeName + "' should be " + expectedState + ".",
+                expectedState,
+                isSelectedElement(Page.getSubjectDnAttributesCheckBox(dnAttributeName, checkboxName))
+        );
+    }
+
+    /**
+     * Checks the state of checkbox for 'Subject DN Attribute' - Required.
+     *
+     * @param expectedState boolean representing the state.
+     */
+    public void assertSubjectDnAttributesRequiredCheckboxIsChecked(final String dnAttributeName, final boolean expectedState) {
+        assertSubjectDnAttributesCheckboxIsChecked(dnAttributeName, "Required", expectedState);
+    }
+
+    /**
+     * Checks the state of checkbox for 'Subject DN Attribute' - Modifiable.
+     *
+     * @param expectedState boolean representing the state.
+     */
+    public void assertSubjectDnAttributesModifiableCheckboxIsChecked(final String dnAttributeName, final boolean expectedState) {
+        assertSubjectDnAttributesCheckboxIsChecked(dnAttributeName, "Modifiable", expectedState);
+    }
+
+    /**
+     * Checks the state of checkbox for 'Subject DN Attribute' - Validation.
+     *
+     * @param expectedState boolean representing the state.
+     */
+    public void assertSubjectDnAttributesValidationCheckboxIsChecked(final String dnAttributeName, final boolean expectedState) {
+        assertSubjectDnAttributesCheckboxIsChecked(dnAttributeName, "Validation", expectedState);
+    }
+
+    /**
+     * Asserts the Default Certificate Profile has selected name.
+     *
+     * @param name selected name.
+     */
+    public void assertDefaultCertificateProfileNameSelected(final String name) {
+        assertTrue("Default Certificate Profile value mismatch.", getSelectSelectedNames(Page.SELECT_DEFAULT_CP).contains(name));
+    }
+
+    /**
+     * Asserts the Available Certificate Profiles has selected names.
+     *
+     * @param names selected names.
+     */
+    public void assertAvailableCertificateProfilesNamesSelected(final String... names) {
+        for(String name : names) {
+            assertTrue("Available Certificate Profiles value mismatch [" + name + "].", getSelectSelectedNames(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES).contains(name));
+        }
+    }
+
+    /**
+     * Asserts the Default CA has selected name.
+     *
+     * @param name selected name.
+     */
+    public void assertDefaultCaNameSelected(final String name) {
+        assertTrue("Default CA value mismatch.", getSelectSelectedNames(Page.SELECT_DEFAULT_CA).contains(name));
+    }
+
+    /**
+     * Asserts the Available CAs has selected names.
+     *
+     * @param names selected names.
+     */
+    public void assertAvailableCasNamesSelected(final String... names) {
+        for(String name : names) {
+            assertTrue("Available Certificate Profiles value mismatch [" + name + "].", getSelectSelectedNames(Page.SELECT_AVAILABLE_CAS).contains(name));
+        }
+    }
+
+    /**
+     * Asserts the Default Token has selected name.
+     *
+     * @param name selected name.
+     */
+    public void assertDefaultTokenNameSelected(final String name) {
+        assertTrue("Default CA value mismatch.", getSelectSelectedNames(Page.SELECT_DEFAULT_TOKEN).contains(name));
+    }
+
+    /**
+     * Asserts the Available Tokens has selected names.
+     *
+     * @param names selected names.
+     */
+    public void assertAvailableTokensNamesSelected(final String... names) {
+        for(String name : names) {
+            assertTrue("Available Tokens value mismatch [" + name + "].", getSelectSelectedNames(Page.SELECT_AVAILABLE_TOKENS).contains(name));
+        }
     }
 }

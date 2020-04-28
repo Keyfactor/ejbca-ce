@@ -40,8 +40,13 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     public static class TestData {
         static final String CA_NAME = "EcaQa263_CA";
         static final String CA_VALIDITY = "2y";
-        static final String ENTITY_PROFILE_NAME = "EcaQa263_EE";
+        static final String END_ENTITY_PROFILE_NAME = "EcaQa263_EE";
         static final String DEFAULT_CA_NAME = CA_NAME;
+        static final String DEFAULT_CP_NAME = "ENDUSER";
+        static final String[] CP_NAMES = new String[] {DEFAULT_CP_NAME, "SUBCA"};
+        static final String DEFAULT_TOKEN_NAME = "User Generated";
+        static final String[] TOKEN_NAMES = new String[]{"User Generated", "P12 file", "JKS file", "PEM file"};
+        static final String DN_ATTRIBUTE_COMMON_NAME = "CN, Common name";
         static final String DN_ATTRIBUTE_ORGANIZATION = "O, Organization";
         static final String DN_ATTRIBUTE_COUNTRY = "C, Country (ISO 3166)";
     }
@@ -56,6 +61,7 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
 
     @AfterClass
     public static void exit() {
+        removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         removeCaAndCryptoToken(TestData.CA_NAME);
         // super
         afterClass();
@@ -65,6 +71,7 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     public void stepA_AddCA() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
+        // Set validity (required)
         caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
@@ -73,24 +80,57 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     @Test
     public void stepB_AddEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
-        endEntityProfileHelper.addEndEntityProfile(TestData.ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.triggerEndEntityEmailCheckBox();
+        endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
     }
 
     @Test
     public void stepC_AddAttributes() {
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.triggerEndEntityEmailCheckBox();
+        // CN, Common name present by default
+        endEntityProfileHelper.assertSubjectDnAttributesRequiredCheckboxIsChecked(TestData.DN_ATTRIBUTE_COMMON_NAME, true);
+        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_COMMON_NAME, true);
+        endEntityProfileHelper.assertSubjectDnAttributesValidationCheckboxIsChecked(TestData.DN_ATTRIBUTE_COMMON_NAME, false);
+        // O, Organization
         endEntityProfileHelper.addSubjectDnAttribute(TestData.DN_ATTRIBUTE_ORGANIZATION);
-        endEntityProfileHelper.subjectDnAttributeRequiredBoxTrigger(TestData.DN_ATTRIBUTE_ORGANIZATION);
+        endEntityProfileHelper.subjectDnAttributeRequiredCheckboxTrigger(TestData.DN_ATTRIBUTE_ORGANIZATION);
+        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, true);
+        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, true);
+        endEntityProfileHelper.assertSubjectDnAttributesValidationCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, false);
+        // C, Country (ISO 3166)
         endEntityProfileHelper.addSubjectDnAttribute(TestData.DN_ATTRIBUTE_COUNTRY);
-        endEntityProfileHelper.subjectDnAttributeRequiredBoxTrigger(TestData.DN_ATTRIBUTE_COUNTRY);
+        endEntityProfileHelper.subjectDnAttributeRequiredCheckboxTrigger(TestData.DN_ATTRIBUTE_COUNTRY);
+        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, true);
+        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, true);
+        endEntityProfileHelper.assertSubjectDnAttributesValidationCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, false);
     }
 
     @Test
-    public void stepD_DefaultCaAndSave() {
+    public void stepD_ManageCertificateProfiles() {
+        endEntityProfileHelper.selectDefaultCp(TestData.DEFAULT_CP_NAME);
+        endEntityProfileHelper.selectAvailableCps(TestData.CP_NAMES);
+        //
+        endEntityProfileHelper.assertDefaultCertificateProfileNameSelected(TestData.DEFAULT_CP_NAME);
+        endEntityProfileHelper.assertAvailableCertificateProfilesNamesSelected(TestData.CP_NAMES);
+    }
+
+    @Test
+    public void stepE_ManageCAs() {
         endEntityProfileHelper.selectDefaultCa(TestData.DEFAULT_CA_NAME);
+        endEntityProfileHelper.selectAvailableCa(TestData.CA_NAME);
+        //
+        endEntityProfileHelper.assertDefaultCaNameSelected(TestData.DEFAULT_CA_NAME);
+        endEntityProfileHelper.assertAvailableCasNamesSelected(TestData.CA_NAME);
+    }
+
+    @Test
+    public void stepF_ManageTokens() {
+        endEntityProfileHelper.assertDefaultTokenNameSelected(TestData.DEFAULT_TOKEN_NAME);
+        endEntityProfileHelper.assertAvailableTokensNamesSelected(TestData.TOKEN_NAMES);
+    }
+
+    @Test
+    public void stepG_Save() {
         endEntityProfileHelper.saveEndEntityProfile();
-        endEntityProfileHelper.deleteEndEntityProfile(TestData.ENTITY_PROFILE_NAME);
-        endEntityProfileHelper.confirmEndEntityProfileDeletion(true);
     }
 }

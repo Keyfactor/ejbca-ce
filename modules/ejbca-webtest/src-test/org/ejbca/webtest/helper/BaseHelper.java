@@ -719,7 +719,7 @@ public class BaseHelper {
      */
     protected List<String> getSelectSelectedNames(final WebElement webElement) {
         if(webElement != null) {
-            final List<String> selectedNames = new ArrayList<String>();
+            final List<String> selectedNames = new ArrayList<>();
             final Select select = new Select(webElement);
             for (final WebElement selected : select.getAllSelectedOptions()) {
                 selectedNames.add(selected.getText());
