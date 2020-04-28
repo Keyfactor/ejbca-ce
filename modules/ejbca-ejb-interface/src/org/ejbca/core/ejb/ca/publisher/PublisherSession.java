@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -199,4 +200,17 @@ public interface PublisherSession {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntRange crlPartitionIndeces) throws AuthorizationDeniedException;
+    
+
+    /**
+     * Publishes the OCSP responses to the given collection of publishes.
+     * 
+     * @param admin administrator performing the operation (if any)
+     * @param publisherids a Collection (Integer) of publisher ids
+     * @param ocspResponseData Data to be published
+     * @return true on successful publishing result on all given publishers
+     * @throws AuthorizationDeniedException if access was denied to the CA 
+     */
+    boolean storeOcspResponses(final AuthenticationToken admin, final Collection<Integer> publisherids, final OcspResponseData ocspResponseData) throws AuthorizationDeniedException;
+    
 }
