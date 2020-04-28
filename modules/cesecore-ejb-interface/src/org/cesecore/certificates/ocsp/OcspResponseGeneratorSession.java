@@ -38,7 +38,6 @@ public interface OcspResponseGeneratorSession {
      * @param auditLogger The AuditLogger to use for this transaction
      * @param transactionLogger The TransactionLogger to use for this transaction
      * @param isPreSigning true if we're using the method to presign responses.
-     * @param authenticationToken An authentication token for the user performing the operation.
      * 
      * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
