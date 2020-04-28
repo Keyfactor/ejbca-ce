@@ -21,7 +21,9 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherOcspResponse;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
@@ -142,6 +144,18 @@ public interface PublisherQueueSessionLocal {
 	 */
 	boolean publishCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
 
+	
+	/**
+	 * 
+	 * @param publisher the publisher to store the OCSP response to
+	 * @param admin the administrator publishing the response, it's up to the publisher to decide if authorization is needed or not
+	 * @param ocspResponseData data to be published
+	 * @return true if storage (to publisher or queue) is successful
+	 * @throws PublisherException if a communication or other error occurs (storing in the queue due to publisher downtime is not an error).
+	 */
+	boolean publishOcspResponsesNonTransactional(final CustomPublisherOcspResponse publisher, final AuthenticationToken admin, final OcspResponseData ocspResponseData) throws PublisherException;
+	
+	
     /**
      * Publishers do not run as part of regular transactions and expect to run in auto-commit mode.
      * This method is invoked locally to publish to multiple publishers in parallel.

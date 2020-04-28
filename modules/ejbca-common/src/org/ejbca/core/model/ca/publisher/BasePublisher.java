@@ -48,6 +48,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     protected static final String KEEPPUBLISHEDINQUEUE           = "keepPublishedInQueue";
     protected static final String USEQUEUEFORCRLS                = "useQueueForCrls";
     protected static final String USEQUEUEFORCERTIFICATES        = "useQueueForCertificates";
+    protected static final String USEQUEUEFOROCSPRESPONSES       = "useQueueForOcspResponses";
 
     // Default values
     public static final boolean DEFAULT_ONLYUSEQUEUE 			 = false;
@@ -144,12 +145,12 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @return true if Certificates should be kept in in the queue if publishing fails 
      */
     public boolean getUseQueueForCertificates() {
-    	boolean ret = true;
-    	Object o = data.get(USEQUEUEFORCERTIFICATES);
-    	if (o != null) {
-        	ret = Boolean.TRUE.equals(o);    		
-    	}
-    	return ret;
+        boolean ret = true;
+        Object o = data.get(USEQUEUEFORCERTIFICATES);
+        if (o != null) {
+            ret = Boolean.TRUE.equals(o);           
+        }
+        return ret;
     }
 
     /**
@@ -157,7 +158,29 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param useQueueForCertificates
      */
     public void setUseQueueForCertificates(boolean useQueueForCertificates) { data.put(USEQUEUEFORCERTIFICATES, Boolean.valueOf(useQueueForCertificates));}
+    
+    /**
+     * This is only valid for publisher of type VA and Peer. And defaults to false.
+     * 
+     * @return true if OCSP response should be kept in in the queue if publishing fails 
+     */
+    public boolean getUseQueueForOcspResponses() {
+        boolean ret = false;
+        Object o = data.get(USEQUEUEFOROCSPRESPONSES);
+        if (o != null) {
+            ret = Boolean.TRUE.equals(o);           
+        }
+        return ret;
+    }
 
+    /**
+     * This is only valid for publisher of type VA and Peer.
+     * 
+     * Sets whether an OCSP response should be put in the publish queue if publish failed
+     * @param useQueueForOcspResponses
+     */
+    public void setUseQueueForOcspResponses(boolean useQueueForOcspResponses) { data.put(USEQUEUEFOROCSPRESPONSES, Boolean.valueOf(useQueueForOcspResponses)); }
+    
     /** Asks the publisher if the certificate with these parameters will be published. Used by the publisher queue to avoid
      * storing things that will never be published in the publisher queue.
      * 
