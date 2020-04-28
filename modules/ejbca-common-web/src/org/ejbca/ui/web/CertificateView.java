@@ -171,7 +171,7 @@ public class CertificateView implements Serializable {
      * HTML escaping String, but allowing characters from foreign languages.
      * @return subjectDN escaping only the following characters: double-quote, ampersand, less-than, greater-than 
      */
-    public String getSubjectDNUnescapedLanguageConsideration() {
+    public String getSubjectDnEscapedWithLanguageConsideration() {
         if (certificate == null) {
             return certificateData.getSubjectDnNeverNull();
         }
