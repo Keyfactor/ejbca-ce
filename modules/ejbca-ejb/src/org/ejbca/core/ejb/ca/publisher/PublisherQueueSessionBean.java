@@ -49,9 +49,11 @@ import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLo
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherOcspResponse;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
@@ -458,6 +460,13 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             throws PublisherException {
         return publisher.storeCRL(admin, incrl, cafp, number, userDN);
     }
+    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public boolean publishOcspResponsesNonTransactional(CustomPublisherOcspResponse publisher, AuthenticationToken admin, OcspResponseData ocspResponseData)
+            throws PublisherException {
+        return publisher.storeOcspResponseData(ocspResponseData);
+    }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
@@ -543,4 +552,5 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         }
         return new PublisherException(e.getMessage());
     }
+
 }

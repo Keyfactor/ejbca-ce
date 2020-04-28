@@ -37,6 +37,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -57,6 +58,7 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -124,6 +126,28 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isDebugEnabled()) {
             log.debug("Flushed Publisher cache.");
         }
+    }
+    
+    @Override
+    public boolean storeOcspResponses(AuthenticationToken admin, Collection<Integer> publisherids, OcspResponseData ocspResponseData)
+            throws AuthorizationDeniedException {
+        final int caid = ocspResponseData.getCaId();
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
+       
+        if (CollectionUtils.isEmpty(publisherids)) {
+            return true; //Nothing to publish just return success
+        }
+        
+        
+        for (final int id : publisherids) {
+            BasePublisher publ = getPublisherInternal(id, null, true);
+            if (publ != null) { }
+        }
+        
+        return false;
     }
 
     @Override
@@ -973,4 +997,5 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             throw new IllegalArgumentException("Invalid Publisher Type ID");
         }
     }
+
 }
