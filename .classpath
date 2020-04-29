@@ -193,7 +193,7 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.9.10.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.9.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.9.10.jar"/>
-	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-165.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-165.jar"/>
