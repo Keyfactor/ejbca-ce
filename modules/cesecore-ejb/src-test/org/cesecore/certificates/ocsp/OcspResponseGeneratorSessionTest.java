@@ -14,11 +14,9 @@ package org.cesecore.certificates.ocsp;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 
 import org.bouncycastle.cert.ocsp.OCSPException;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -41,7 +39,7 @@ public class OcspResponseGeneratorSessionTest {
     }
 
     @Test
-    public void testWithRandomBytes() throws AuthorizationDeniedException, OCSPException, IOException {
+    public void testWithRandomBytes() throws OCSPException {
         final int MAX_REQUEST_SIZE = 100000;
         TestOcspResponseGeneratorSessionBean ocspResponseGeneratorSession = new TestOcspResponseGeneratorSessionBean();
         SecureRandom random = new SecureRandom();
