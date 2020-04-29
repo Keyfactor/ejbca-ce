@@ -13,6 +13,7 @@
 package org.ejbca.core.model.ra;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class EndEntityInformationFiller {
     	if (StringUtils.isEmpty(userData.getUsername())) {
         	userData.setUsername(profile.getUsernameDefault());
         }
-    	if (userData.getSendNotification()==false) {
+    	if (userData.getSendNotification() == false) {
     		if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.SENDNOTIFICATION, 0))) {
     			final Boolean isSendNotification = Boolean.valueOf(profile.getValue(EndEntityProfile.SENDNOTIFICATION, 0));
     			userData.setSendNotification(isSendNotification.booleanValue());
@@ -82,8 +83,8 @@ public class EndEntityInformationFiller {
         // Processing Subject Altname values
         subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
         userData.setSubjectAltName(subjectAltName);
-        if (userData.getType().getHexValue()==EndEntityTypes.INVALID.hexValue()) {
-        	if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))){
+        if (userData.getType().getHexValue() == EndEntityTypes.INVALID.hexValue()) {
+        	if (StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))) {
         	    final int type = Integer.parseInt(profile.getValue(EndEntityProfile.FIELDTYPE, 0));
         		userData.setType(new EndEntityType(type));
         	}
@@ -115,28 +116,37 @@ public class EndEntityInformationFiller {
                                                           String entityEmail) {
         DistinguishedName profiledn;
         DistinguishedName userdn;
-        try {
-        	userdn = new DistinguishedName(subjectDN);
-		} catch (InvalidNameException ine) {
-			log.debug(subjectDN,ine);
-			throw new RuntimeException(ine);
-		}
-        int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
-        List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectdnfields);
+        if (StringUtils.isNotEmpty(subjectDN)) {
+            try {
+                userdn = new DistinguishedName(subjectDN);
+            } catch (InvalidNameException ine) {
+                log.debug(subjectDN, ine);
+                throw new RuntimeException(ine);
+            }
+        } else {
+            userdn = new DistinguishedName(Collections.emptyList());
+        }
+        final int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
+        final List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectdnfields);
         int[] fielddata = null;
         String value;
         //Build profile's DN
         for (int i = 0; i < numberofsubjectdnfields; i++) {
             fielddata = profile.getSubjectDNFieldsInOrder(i);
-            value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], 0);
-            if (value != null) {
+            value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+            if (!StringUtils.isEmpty(value) && !StringUtils.isWhitespace(value)) {
                 value = value.trim();
-                if (!value.equals("")) {
-                    addFieldValueToRdnList(rdnList, fielddata, value, DNFieldExtractor.TYPE_SUBJECTDN);
-                }
+                addFieldValueToRdnList(rdnList, fielddata, value, DNFieldExtractor.TYPE_SUBJECTDN);
             }
         }
+        // As the constructor taking a list of RDNs numbers them from behind, which is typically not what we want when mergin DNs from a profile
+        // that has specified CN=User,OU=Org1,OU=Org2, we'll reverse them. This is of little importance when you only have one item of each component,
+        // but when you have multiple, such as sevral OUs it becomes important. See DistingushedNameTest for more detailed tests of this behavios
+        Collections.reverse(rdnList);
         profiledn = new DistinguishedName(rdnList);
+        if (log.isDebugEnabled()) {
+            log.debug("Profile DN to merge with subject DN: " + profiledn.toString());
+        }
 
         Map<String, String> dnMap = new HashMap<String, String>();
         if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
@@ -196,7 +206,7 @@ public class EndEntityInformationFiller {
      * @param rdnList rdnList to be updated
      * @param fielddata a field data, what will be added to rdnList
      * @param value field value to be added to rdnList
-     * @param dnFieldExtractorType subject alt name or subject dn
+     * @param dnFieldExtractorType subject DNFieldExtractor.TYPE_SUBJECTALTNAME or subject DNFieldExtractor.TYPE_SUBJECTDN
      */
     private static void addFieldValueToRdnList(List<Rdn> rdnList, final int[] fielddata, final String value, final int dnFieldExtractorType) {
         String parameter = DNFieldExtractor.getFieldComponent(
@@ -204,7 +214,7 @@ public class EndEntityInformationFiller {
                 dnFieldExtractorType);
         try {
             parameter = StringUtils.replace(parameter, "=", "");
-            rdnList.add(fielddata[EndEntityProfile.NUMBER], new Rdn(parameter, value));
+            rdnList.add(new Rdn(parameter, value));
         } catch (InvalidNameException ine) {
             log.debug("InvalidNameException while creating new Rdn with parameter " + parameter + " and value " + value, ine);
             throw new RuntimeException(ine);

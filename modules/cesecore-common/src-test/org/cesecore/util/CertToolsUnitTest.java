@@ -908,6 +908,9 @@ public class CertToolsUnitTest {
         // Same string as tested in EjbcaWSTest.test51CertificateRequestWithNoForbiddenChars
         String dn35 = "CN=Foo,O=|\n|\r|;|A|!|`|?|$|~|, C=SE";
         assertEquals("CN=Foo,O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE", CertTools.stringToBCDNString(dn35));
+
+        String dn36 = "CN=Name2,EMAIL=foo@bar.com,OU=MyOrgU,OU=Unit2,C=SE,O=Org1";
+        assertEquals("E=foo@bar.com,CN=Name2,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", CertTools.stringToBCDNString(dn36));
     }
 
     @Test
