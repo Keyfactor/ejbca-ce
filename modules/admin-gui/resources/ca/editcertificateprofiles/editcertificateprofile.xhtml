@@ -196,7 +196,7 @@
                             value="#{certProfileBean.certificateProfile.useCertificateValidityOffset}"
                             disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
-                                render=":cpf:certificatevalidityoffsetgrid" />
+                                render=":content:certificatevalidityoffsetgrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel
                             for="checkusecertificatevalidityoffset"
@@ -245,7 +245,7 @@
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
-                                render=":cpf:expirationtrestrictionforweekdaysgrid" />
+                                render=":content:expirationtrestrictionforweekdaysgrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel
                             for="checkuseexpirationtrestrictionforweekdays"
@@ -385,7 +385,7 @@
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
-                                render=":cpf:allowextensionoverridegrid" />
+                                render=":content:allowextensionoverridegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkallowextensionoverride"
                             value="#{web.text.ALLOW}…"
@@ -581,7 +581,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:cbbasicconstraintsgroup checkusepathlengthconstraintgroup" />
+                            render=":content:cbbasicconstraintsgroup checkusepathlengthconstraintgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbbasicconstraints"
                         value="#{web.text.USE}…"
@@ -611,7 +611,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{!certProfileBean.certificateProfile.useBasicConstraints or certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:checkusepathlengthconstraintgroup" />
+                            render=":content:checkusepathlengthconstraintgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusepathlengthconstraint"
                         value="#{web.text.ADD}…"
@@ -686,7 +686,7 @@
                             value="#{certProfileBean.certificateProfile.useKeyUsage}"
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
-                            <f:ajax render=":cpf:cbkeyusagegrid" />
+                            <f:ajax render=":content:cbkeyusagegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="cbkeyusage"
                             value="#{web.text.USE}…"
@@ -778,7 +778,7 @@
                             value="#{certProfileBean.certificateProfile.useExtendedKeyUsage}"
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
-                            <f:ajax render=":cpf:extendedkeyusagegrid" />
+                            <f:ajax render=":content:extendedkeyusagegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkuseextendedkeyusage"
                             value="#{web.text.USE}…"
@@ -820,7 +820,7 @@
                             value="#{certProfileBean.certificateProfile.useCertificatePolicies}"
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
-                            <f:ajax render=":cpf:certificatePolicies" />
+                            <f:ajax render=":content:certificatePolicies" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkusecertificatepolicies"
                             value="#{web.text.USE}…"
@@ -961,7 +961,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:cbsubjectalternativenamegroup" />
+                            render=":content:cbsubjectalternativenamegroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbsubjectalternativename"
                         value="#{web.text.USE}…"
@@ -1003,7 +1003,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:cbissueralternativenamegroup" />
+                            render=":content:cbissueralternativenamegroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbissueralternativename"
                         value="#{web.text.USE}…"
@@ -1044,7 +1044,7 @@
                         value="#{certProfileBean.certificateProfile.useNameConstraints}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:checknameconstraintsgroup" />
+                        <f:ajax render=":content:checknameconstraintsgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checknameconstraints"
                         value="#{web.text.USE}…"
@@ -1090,7 +1090,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:extensionsValidationDataGrid" />
+                            render=":content:extensionsValidationDataGrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbcrldistributionpoint"
                         value="#{web.text.USE}…"
@@ -1117,7 +1117,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:textfieldcrldisturi textfieldcrlissuer" />
+                            render=":content:textfieldcrldisturi textfieldcrlissuer" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="cbusedefaultcrldistributionpoint"
@@ -1167,7 +1167,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:extensionsValidationDataGrid" />
+                            render=":content:extensionsValidationDataGrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbusefreshestcrl"
                         value="#{web.text.USE}…"
@@ -1186,7 +1186,7 @@
                         value="#{certProfileBean.certificateProfile.useCADefinedFreshestCRL}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:textfieldfreshestcrluri" />
+                        <f:ajax render=":content:textfieldfreshestcrluri" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="cbusecadefinedfreshestcrl"
                         value="#{web.text.USE}…"
@@ -1219,7 +1219,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:extensionsValidationDataGrid" />
+                            render=":content:extensionsValidationDataGrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="checkuseauthorityinformationaccess"
@@ -1244,7 +1244,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:textfieldocspservicelocatoruri" />
+                            render=":content:textfieldocspservicelocatoruri" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="checkusedefaultocspservicelocator"
@@ -1282,7 +1282,7 @@
                         value="#{certProfileBean.certificateProfile.useDefaultCAIssuer}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:caIssuers" />
+                        <f:ajax render=":content:caIssuers" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusedefaultcaissuer"
                         value="#{web.text.USE}…"
@@ -1344,7 +1344,7 @@
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
-                                render=":cpf:textfieldprivkeyusageperiodstartoffset" />
+                                render=":content:textfieldprivkeyusageperiodstartoffset" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel
                             for="cbuseprivkeyusageperiodnotbefore"
@@ -1372,7 +1372,7 @@
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
-                                render=":cpf:textfieldprivkeyusageperiodlength" />
+                                render=":content:textfieldprivkeyusageperiodlength" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel
                             for="cbuseprivkeyusageperiodnotafter"
@@ -1419,7 +1419,7 @@
                         value="#{certProfileBean.certificateProfile.useQCStatement}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:qcStatementsGrid" />
+                        <f:ajax render=":content:qcStatementsGrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkuseqcstatement"
                         value="#{web.text.USE}…"
@@ -1505,7 +1505,7 @@
                         value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:qcetsivaluelimitgroup" />
+                        <f:ajax render=":content:qcetsivaluelimitgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsivaluelimit"
                         value="#{web.text.ADD}…"
@@ -1557,7 +1557,7 @@
                         value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:qcetsiretentionperiodgroup" />
+                        <f:ajax render=":content:qcetsiretentionperiodgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsiretentionperiod"
                         value="#{web.text.ADD}…"
@@ -1714,7 +1714,7 @@
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:ajax
-                            render=":cpf:checkqccustomstringgroup textfieldqccustomstringtext" />
+                            render=":content:checkqccustomstringgroup textfieldqccustomstringtext" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqccustomstring"
                         value="#{web.text.ADD}…"
@@ -1769,7 +1769,7 @@
                         value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:ctgrid" />
+                        <f:ajax render=":content:ctgrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="cbusecertificatetransparencyincerts"
@@ -1782,7 +1782,7 @@
                         value="#{certProfileBean.certificateProfile.useCertificateTransparencyInOCSP}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:ctgrid" />
+                        <f:ajax render=":content:ctgrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="cbusecertificatetransparencyinocsp"
@@ -1795,7 +1795,7 @@
                         value="#{certProfileBean.certificateProfile.useCertificateTransparencyInPublishers}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:ctgrid" />
+                        <f:ajax render=":content:ctgrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel
                         for="cbusecertificatetransparencyinpublishers"
@@ -1841,7 +1841,7 @@
                         <f:selectItem
                             itemLabel="#{web.text.EXT_CT_NUMOFSCTS_BY_CUSTOM}"
                             itemValue="ctnumberofsctsbycustom" />
-                        <f:ajax render=":cpf:ctgrid" />
+                        <f:ajax render=":content:ctgrid" />
                     </h:selectOneRadio>
                 </h:panelGroup>
 
@@ -1883,7 +1883,7 @@
                         <f:selectItem
                             itemLabel="#{web.text.EXT_CT_NUMOFSCTS_BY_CUSTOM}"
                             itemValue="ctnumberofsctsbycustom" />
-                        <f:ajax render=":cpf:ctgrid" />
+                        <f:ajax render=":content:ctgrid" />
                     </h:selectOneRadio>
                 </h:panelGroup>
 
@@ -1969,7 +1969,7 @@
                         value="#{certProfileBean.certificateProfile.useMicrosoftTemplate}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:selectmstemplate" />
+                        <f:ajax render=":content:selectmstemplate" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusemstemplate"
                         value="#{web.text.ADD}…"
@@ -2064,7 +2064,7 @@
                             value="#{certProfileBean.certificateProfile.useDocumentTypeList}"
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
-                            <f:ajax render=":cpf:cbdocumenttypegrid" />
+                            <f:ajax render=":content:cbdocumenttypegrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="cbusedocumenttype"
                             value="#{web.text.USE}…"
@@ -2265,7 +2265,7 @@
                         value="#{certProfileBean.certificateProfile.useCustomDnOrder}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:customdnordergroup" />
+                        <f:ajax render=":content:customdnordergroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusecustomdnorder"
                         value="#{web.text.USE}…"
@@ -2276,7 +2276,7 @@
                         value="#{certProfileBean.certificateProfile.useCustomDnOrderWithLdap}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:customdnordergroup" />
+                        <f:ajax render=":content:customdnordergroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusecustomdnorderldap"
                         value="#{web.text.CERT_SUBJECTDN_CUSTOMORDER_LDAP}"
@@ -2300,7 +2300,7 @@
                         value="#{certProfileBean.certificateProfile.useCNPostfix}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax render=":cpf:cnpostfixgroup" />
+                        <f:ajax render=":content:cnpostfixgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkusecnpostfix"
                         value="#{web.text.ADD}…"
@@ -2330,7 +2330,7 @@
                             value="#{certProfileBean.certificateProfile.useSubjectDNSubSet}"
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
-                            <f:ajax render=":cpf:usesubjectdnsubsetgrid" />
+                            <f:ajax render=":content:usesubjectdnsubsetgrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="checkusesubjectdnsubset"
                             value="#{web.text.RESTRICT}…"
@@ -2360,7 +2360,7 @@
                             rendered="#{!web.legacyInternetExplorer}"
                             disabled="#{certProfileBean.viewOnly}">
                             <f:ajax
-                                render=":cpf:usesubjectaltnamesubsetgrid" />
+                                render=":content:usesubjectaltnamesubsetgrid" />
                         </h:selectBooleanCheckbox>
                         <h:outputLabel
                             for="checkusesubjectaltnamesubset"
