@@ -27,7 +27,7 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-263">ECAQA-263</a>
  *
- * @version $Id$ EcaQa263_CreationOfEndEntityProfileInCAWebAdmin.java 2020-04-21 15:00 $tobiasM
+ * @version $Id: EcaQa263_CreationOfEndEntityProfileInCAWebAdmin.java 34938 2020-04-28 14:58:22Z andrey_s_helmes
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase {
@@ -94,13 +94,13 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
         // O, Organization
         endEntityProfileHelper.addSubjectDnAttribute(TestData.DN_ATTRIBUTE_ORGANIZATION);
         endEntityProfileHelper.subjectDnAttributeRequiredCheckboxTrigger(TestData.DN_ATTRIBUTE_ORGANIZATION);
-        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, true);
+        endEntityProfileHelper.assertSubjectDnAttributesRequiredCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, true);
         endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, true);
         endEntityProfileHelper.assertSubjectDnAttributesValidationCheckboxIsChecked(TestData.DN_ATTRIBUTE_ORGANIZATION, false);
         // C, Country (ISO 3166)
         endEntityProfileHelper.addSubjectDnAttribute(TestData.DN_ATTRIBUTE_COUNTRY);
         endEntityProfileHelper.subjectDnAttributeRequiredCheckboxTrigger(TestData.DN_ATTRIBUTE_COUNTRY);
-        endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, true);
+        endEntityProfileHelper.assertSubjectDnAttributesRequiredCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, true);
         endEntityProfileHelper.assertSubjectDnAttributesModifiableCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, true);
         endEntityProfileHelper.assertSubjectDnAttributesValidationCheckboxIsChecked(TestData.DN_ATTRIBUTE_COUNTRY, false);
     }
