@@ -659,9 +659,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.addField(DnComponents.ORGANIZATIONALUNIT);
             profile.setUse(DnComponents.ORGANIZATIONALUNIT, 0, true);
             profile.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "FooOrgUnit");
-            // The merge only handles 1 default value for each DN component, i.e. one OU one O etc. You can not have two default OUs to merge.
-            // You can not even define two OUs to be used in the profile, it will be merged with the value of the first duplicated, i.e. FooOrgUnit twice
-            //profile.addField(DnComponents.ORGANIZATIONALUNIT);
+            // The merge handles several default values for each DN component, i.e. OU=OrgU1,OU=OrgU2,O=Org etc.
             profile.addField(DnComponents.ORGANIZATION);
             profile.addField(DnComponents.COUNTRY);
             profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
@@ -681,14 +679,59 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
             addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
-            // Changing the user feeding in EMAIL=foo@bar.com,OU=hohoit will actually be merged with the existing end entity user DN into
+            // Changing the user feeding in EMAIL=foo@bar.com,OU=hoho it will actually be merged with the existing end entity user DN into
             // EMAIL:foo@bar.com,CN=username,OU=hoho,O=AnaTom,C=SE
             // Since there is an order EMAIL and OU gets in their proper order. Since we pass in OU=hoho, it override the profile default OU=FooOrgUnit
+            // It is merged with the existing userDN "CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", resulting in
+            // E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE
             endEntityManagementSession.changeUser(admin, addUser, false, true);
             data = endEntityAccessSession.findUser(admin, username);
             // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
             assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
 
+            // Since ECA-8942 (EJBCA 7.4.0) we support multiple fields in the profile
+            // Add additional tests with multiple fields, typically organizations want to use multiple OU fields, but other fields should behave the same
+            profile.addField(DnComponents.ORGANIZATIONALUNIT);
+            profile.setUse(DnComponents.ORGANIZATIONALUNIT, 1, true);
+            profile.setValue(DnComponents.ORGANIZATIONALUNIT, 1, "OrgUnit2");
+            endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+            String usernameMulti = genRandomUserName();
+            usernames.add(usernameMulti);
+            EndEntityInformation addUserMulti = new EndEntityInformation(usernameMulti, "CN=" + usernameMulti+",O=AnaTom, C=SE", caid, null, null,
+                    EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
+                    SecConst.TOKEN_SOFT_P12, null);
+            addUserMulti.setPassword("foo123");
+            endEntityManagementSession.addUserFromWS(admin, addUserMulti, false);
+            EndEntityInformation dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",OU=FooOrgUnit,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
+            // OU overrides from the back in priority order, i.e. when there are two OUs with values, the hoho below overrides the first one
+            addUserMulti.setDN("CN=" + usernameMulti + ",OU=hoho");
+            // Changing the user feed in CN=usernameMulti,OU=hoho it will actually be merged with the existing end entity user DN into
+            // CN=usernameMulti,OU=hoho,OU=OrgUnit2,O=AnaTom,C=SE
+            // It is merged with the existing userDN "CN=" + username + ",OU=FooOrgUnit,OU=OrgUnit2,O=AnaTom,C=SE", resulting in
+            // CN=" + usernameMulti + ",OU=hoho,OU=OrgUnit2,O=AnaTom,C=SE
+            // Since we pass in OU=hoho, it override the profile default OU=FooOrgUnit, but not the second one OU=OrgUnit2
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",OU=hoho,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
+            // Do the same again, nothing should change now
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",OU=hoho,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
+            // Remove the default value for OU=OrgUnit2, now it should override the first still
+            profile.setValue(DnComponents.ORGANIZATIONALUNIT, 1, null);
+            // Add a DN serial number
+            profile.addField(DnComponents.DNSERIALNUMBER);
+            endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+            addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho1");
+            // Now merging:
+            // CN=" + username + ",OU=hoho,OU=OrgUnit2,O=AnaTom,C=SE
+            // with: SERIALNUMBER=12345,OU=hoho1 will result in the first OU value being overridden
+            // CN=" + username + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
+            
             //Skip this test on Community
             if (DnComponents.enterpriseMappingsExist()) {
                 endEntityManagementSession.deleteUser(admin, username);
@@ -724,7 +767,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
+                assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
                 // Try with some altName value to merge
                 endEntityManagementSession.deleteUser(admin, username);
                 profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
@@ -738,7 +781,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
+                assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
             } else {
                 log.debug("Skipped test related to Enterprise DN properties.");
             }
