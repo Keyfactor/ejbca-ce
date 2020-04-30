@@ -42,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -74,6 +75,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.CustomPublisherOcspResponse;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
@@ -126,28 +128,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isDebugEnabled()) {
             log.debug("Flushed Publisher cache.");
         }
-    }
-    
-    @Override
-    public boolean storeOcspResponses(AuthenticationToken admin, Collection<Integer> publisherids, OcspResponseData ocspResponseData)
-            throws AuthorizationDeniedException {
-        final int caid = ocspResponseData.getCaId();
-        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
-            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
-            throw new AuthorizationDeniedException(msg);
-        }
-       
-        if (CollectionUtils.isEmpty(publisherids)) {
-            return true; //Nothing to publish just return success
-        }
-        
-        
-        for (final int id : publisherids) {
-            BasePublisher publ = getPublisherInternal(id, null, true);
-            if (publ != null) { }
-        }
-        
-        return false;
     }
 
     @Override
@@ -363,6 +343,99 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
+    @Override
+    public boolean storeOcspResponses(AuthenticationToken admin, Collection<Integer> publisherids, OcspResponseData ocspResponseData)
+            throws AuthorizationDeniedException {
+
+        final int caid = ocspResponseData.getCaId();
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
+
+        if (CollectionUtils.isEmpty(publisherids)) {
+            return true; //Nothing to publish just return success
+        }
+
+        for (final int id : publisherids) {
+            int publishStatus = PublisherConst.STATUS_PENDING;
+            BasePublisher publ = getPublisherInternal(id, null, true);
+            if (publ != null) {
+                final String name = getPublisherName(id);
+                // If it should be published directly
+                if (!publ.getOnlyUseQueue()) {
+                    try {
+                        if (isOcspResponsePublisher(publ) && publisherQueueSession
+                                .publishOcspResponsesNonTransactional((CustomPublisherOcspResponse) publ, admin, ocspResponseData)) {
+                            publishStatus = PublisherConst.STATUS_SUCCESS;
+                            logSuccessPublish(admin, name, publishStatus);
+                        }
+                    } catch (PublisherException e) {
+                        logFailPublish(admin, name, e);
+                    } catch (AuditRecordStorageException e) {
+                        log.error("Error when loging audit data ", e);
+                    }
+                }
+
+                if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
+                    addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
+                    if (log.isTraceEnabled()) {
+                        log.trace("<storeOCSPResponse");
+                    }
+                    return false;
+                }
+            } else {
+                String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
+                log.info(msg);
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private void addOcspResponseQueueData(int id, String name, int publishStatus, String responseId) {
+        // Write to the publisher queue either for audit reasons or
+        // to be able try again
+        final PublisherQueueVolatileInformation pqvd = new PublisherQueueVolatileInformation();
+        try {
+            // publishStatus can only be either STATUS_PENDING or STATUS_SUCCESS, for OCSP response we want to store with the actual status, that may be
+            // STATUS_SUCCESS if it was published directly above (status is success, but useQueueForOcspResponse and keepPublishedInQueue is active)
+            publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_OCSP_RESPONSE, responseId, pqvd, publishStatus);
+            String msg = intres.getLocalizedMessage("publisher.storequeue", name, responseId, "OCSP Response");
+            log.info(msg);
+        } catch (CreateException e) {
+            String msg = intres.getLocalizedMessage("publisher.errorstorequeue", name, responseId, "OCSP Response");
+            log.info(msg, e);
+        }
+    }
+    
+    
+    private void logSuccessPublish(AuthenticationToken admin, String name, int publishStatus) {
+        final String msg = intres.getLocalizedMessage("publisher.store", "OCSP Response", name, publishStatus);
+        final Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_OCSP_RESPONSE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
+                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);        
+    }
+
+    private void logFailPublish(AuthenticationToken admin, String name, Exception e) {
+        final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "OCSP Response");
+        final Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        details.put("error", e.getMessage());
+        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_OCSP_RESPONSE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
+                EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+
+    }
+    
+    
+    private boolean isOcspResponsePublisher(final BasePublisher publisher) {
+        return (publisher instanceof CustomPublisherContainer) && 
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
+    }
+    
+    
     @Override
     public boolean republishCrl(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final IntRange crlPartitionIndeces) throws AuthorizationDeniedException {
         boolean result = true;
