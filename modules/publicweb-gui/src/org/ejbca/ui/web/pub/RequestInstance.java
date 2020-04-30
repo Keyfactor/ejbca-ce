@@ -260,8 +260,10 @@ public class RequestInstance {
                 final String tokenKeySpec = getParameter("tokenKeySpec");
                 if (tokenKeySpec!=null) {
                     final String[] tokenKeySpecSplit = tokenKeySpec.split("_");
-                    if (tokenKeySpecSplit.length==2) {
+                    if (tokenKeySpecSplit.length > 0) {
                         keyalgstring = tokenKeySpecSplit[0];
+                    }
+                    if (tokenKeySpecSplit.length > 1) {
                         keylengthstring = tokenKeySpecSplit[1];
                     }
                 }
