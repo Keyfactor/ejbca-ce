@@ -31,6 +31,9 @@ import org.cesecore.certificates.util.DnComponents;
 /** This class aims to be DN representation.
  * It offers facilities to merge two DN.
  * 
+ * This class is ripe for rewriting. It is overly complex, as well as limited. 
+ * See https://jira.primekey.se/browse/ECA-9108
+ * 
  * @version $Id$
  */
 public class DistinguishedName extends LdapName {
