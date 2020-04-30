@@ -26,6 +26,7 @@ import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 
@@ -210,7 +211,8 @@ public interface PublisherSession {
      * @param ocspResponseData Data to be published
      * @return true on successful publishing result on all given publishers
      * @throws AuthorizationDeniedException if access was denied to the CA 
+     * @throws PublisherException if something goes wrong with publishing OCSP response
      */
-    boolean storeOcspResponses(final AuthenticationToken admin, final Collection<Integer> publisherids, final OcspResponseData ocspResponseData) throws AuthorizationDeniedException;
+    boolean storeOcspResponses(final AuthenticationToken admin, final Collection<Integer> publisherids, final OcspResponseData ocspResponseData) throws AuthorizationDeniedException, PublisherException;
     
 }

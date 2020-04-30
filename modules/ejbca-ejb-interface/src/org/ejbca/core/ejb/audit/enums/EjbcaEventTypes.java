@@ -101,6 +101,8 @@ public enum EjbcaEventTypes implements EventType {
     PUBLISHER_STORE_CERTIFICATE,
     /** Publishing of a Certificate Revocation List and related meta data. */
     PUBLISHER_STORE_CRL,
+    /** Publishing of a OCSP response. */
+    PUBLISHER_STORE_OCSP_RESPONSE,
     /** Creation of new settings for an administrator. */
     RA_ADDADMINPREF,
     /** Creation of a new end entity profile. */
