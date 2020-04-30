@@ -440,6 +440,12 @@ public class ApplyBean implements Serializable {
                 }
             }
         }
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+            ret.add(AlgorithmConstants.KEYALGORITHM_ED25519 + ";" + AlgorithmConstants.KEYALGORITHM_ED25519);
+        }
+        if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
+            ret.add(AlgorithmConstants.KEYALGORITHM_ED448 + ";" + AlgorithmConstants.KEYALGORITHM_ED448);
+        }
         if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
             final Set<String> ecChoices = new HashSet<>();
             if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {

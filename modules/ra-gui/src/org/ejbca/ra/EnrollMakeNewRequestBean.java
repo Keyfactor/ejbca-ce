@@ -914,7 +914,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
             final String[] tokenKeySpecSplit = getSelectedAlgorithm().split("_");
             endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(tokenKeySpecSplit[0]);
-            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(tokenKeySpecSplit[1]);
+            if (tokenKeySpecSplit.length > 1) {
+                endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(tokenKeySpecSplit[1]);
+            }
         } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
             try {
                 endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
@@ -1660,6 +1662,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                     AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
                         }
                     }
+                }
+                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519,
+                            AlgorithmConstants.KEYALGORITHM_ED25519));
+                }
+                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
+                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448,
+                            AlgorithmConstants.KEYALGORITHM_ED448));
                 }
                 if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                     final Set<String> ecChoices = new HashSet<>();
