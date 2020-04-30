@@ -245,8 +245,9 @@ public final class KeyTools {
             // DSA key with "DSA" in keyspec
             final int keysize = Integer.parseInt(keySpec.substring(3));
             keygen.initialize(keysize);
-        } else if (StringUtils.isNumeric(keySpec)) {
+        } else if (StringUtils.isNumeric(keySpec) && !StringUtils.startsWith(keyAlg, "Ed")) {
             // RSA or DSA key where keyspec is simply the key length
+            // If it is Ed, be nice and ignore the keysize
             final int keysize = Integer.parseInt(keySpec);
             keygen.initialize(keysize);
         }
