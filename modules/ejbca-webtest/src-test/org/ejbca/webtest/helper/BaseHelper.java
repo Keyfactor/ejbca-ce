@@ -388,7 +388,15 @@ public class BaseHelper {
      * @see #deselectOptionsWithAjax(By)
      */
     void deselectOptions(final By selectId) {
-        final WebElement selectWebElement = findElement(selectId);
+        deselectOptions(findElement(selectId));
+    }
+
+    /**
+     * Deselects all options in multi-select dropdown.
+     *
+     * @param selectWebElement select web element.
+     */
+    void deselectOptions(final WebElement selectWebElement) {
         assertNotNull("Page select was not found", selectWebElement);
         deselectOptions(new Select(selectWebElement));
     }
