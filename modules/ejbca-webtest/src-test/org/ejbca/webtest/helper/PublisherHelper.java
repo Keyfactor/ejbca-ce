@@ -177,7 +177,7 @@ public class PublisherHelper extends BaseHelper {
      * @param publisherGroup
      */
     public void setPublisherGroup(final String publisherGroup) {
-        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, publisherGroup, true);
+        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, publisherGroup);
     }
 
     public void save() {

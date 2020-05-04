@@ -233,7 +233,8 @@ public class ValidatorsHelper extends BaseHelper {
     }
 
     public void setBlacklistPerformOption(final String performType) {
-        selectOptionByName(Page.SELECT_BLACKLIST_PERFORM, performType, true);
+        deselectOptions(Page.SELECT_BLACKLIST_PERFORM);
+        selectOptionByName(Page.SELECT_BLACKLIST_PERFORM, performType);
     }
     
     /**
@@ -269,7 +270,7 @@ public class ValidatorsHelper extends BaseHelper {
      * @param description free text
      */
     public void setDescription(final String description) {
-        fillTextarea(Page.INPUT_DESCRIPTION, description, true);
+        fillTextarea(Page.INPUT_DESCRIPTION, description);
     }
 
     /**
@@ -293,6 +294,7 @@ public class ValidatorsHelper extends BaseHelper {
      * @param profileNames list of trings containing all profiles to select
      */
     public void setApplyForCertificateProfile(final List<String> profileNames) {
+        deselectOptions(Page.SELECT_APPLY_FOR_PROFILES);
         selectOptionsByName(Page.SELECT_APPLY_FOR_PROFILES, profileNames);
     }
     
