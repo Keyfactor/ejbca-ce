@@ -49,7 +49,7 @@ public class CaHelper extends BaseHelper {
         //Edit CAs
         static final By BUTTON_CREATE = By.id("editcapage:buttoncreate");
         static final By BUTTON_SAVE = By.id("editcapage:buttonsave");
-        static final By BUTTON_SAVE_INITIALIZE = By.id("editcapage:buttoninitialize");;
+        static final By BUTTON_SAVE_INITIALIZE = By.id("editcapage:buttoninitialize");
 
         //CRL Points
         /**
@@ -211,7 +211,7 @@ public class CaHelper extends BaseHelper {
 
         private final By typeLocator;
 
-        private CaType(By name) {
+        CaType(By name) {
             this.typeLocator = name;
         }
 
@@ -298,7 +298,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Select the validator from other data.
      *
-     * @param validatorName
+     * @param validatorName validator name.
      */
 
     public void setOtherData(final String validatorName) {
@@ -362,7 +362,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Sets the CA's SAN
      * 
-     * @param subjectAlternativeName
+     * @param subjectAlternativeName CA's SAN.
      */
     public void setSubjectAlternativeName(final String subjectAlternativeName) {
         fillInput(Page.INPUT_SAN, subjectAlternativeName);
@@ -398,7 +398,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Sets approval profile for CA service activation
      * 
-     * @param approvelProfile is the approval profile name
+     * @param approvalProfile is the approval profile name
      */
     public void setCaServiceActivationApprovalProfile(final String approvalProfile) {
         selectOptionByName(Page.SELECT_CA_SERVICE_ACTIVATION_APPROVAL_PROFILE, approvalProfile);
@@ -604,7 +604,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Check or uncheck Enforce Unique Public Keys
      *
-     * @param check
+     * @param check boolean flag.
      */
     public void checkEnforceUniquePublicKeys(Boolean check) {
         toggleCheckbox(Page.INPUT_CHECKBOXENFORCEUNIQUEPUBLICKEYS, check);
@@ -617,7 +617,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Check the Issuing Distribution Point on Crls
      *
-     * @param check
+     * @param check boolean flag.
      */
     public void checkIssuingDistPointOnCrls(Boolean check) {
         toggleCheckbox(Page.INPUT_CRLDISTRIBUTIONPOINT, check);
@@ -626,7 +626,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Check the Use Crl Partitions checkbox
      *
-     * @param check
+     * @param check boolean flag.
      */
     public void checkUseCrlPartitions(Boolean check) {
         toggleCheckbox(Page.INPUT_USECRLPARTITIONS, check);
@@ -635,7 +635,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Sets the number of crl partitions
      *
-     * @param iPartitions
+     * @param iPartitions the number of crl partitions.
      */
     public void setNumberOfPartitions(String iPartitions) {
             fillInput(Page.INPUT_NUMBEROFPARTITIONS, iPartitions);
@@ -644,29 +644,29 @@ public class CaHelper extends BaseHelper {
     /**
      * Sets default crl Distribution Point
      *
-     * @param crlDistributionPoint
+     * @param crlDistributionPoint default crl Distribution Point.
      */
     public void setDefaultCrlDistributionPoint(String crlDistributionPoint) {
             fillInput(Page.TEXT_DEFAULTCRLDISTRIBUTIONPOINT, crlDistributionPoint);
     }
     
     /** Sets the Default CRL Issuer */
-    public void setDefaultCrlIssuer(final String crlIssuer) {
+    private void setDefaultCrlIssuer(final String crlIssuer) {
         fillInput(Page.TEXT_DEFAULTCRLISSUER, crlIssuer);
     }
 
     /** Sets the Default Freshest CRL Distribution Point */
-    public void setDefaultFreshestCrlDistributionPoint(final String freshestCrlDp) {
+    private void setDefaultFreshestCrlDistributionPoint(final String freshestCrlDp) {
         fillInput(Page.TEXT_DEFAULTFRESHESTCRLDISTRIBUTIONPOINT, freshestCrlDp);
     }
 
     /** Sets the OCSP Service Default URI */
-    public void setOcspServiceDefaultUri(final String ocspUri) {
+    private void setOcspServiceDefaultUri(final String ocspUri) {
         fillInput(Page.TEXT_OCSPSERVICEDEFAULTURI, ocspUri);
     }
     
     /** Sets the CA Issuer Default URI */
-    public void setCaIssuerDefaultUri(final String caIssuerUri) {
+    private void setCaIssuerDefaultUri(final String caIssuerUri) {
         fillInput(Page.TEXT_CAISSUERDEFAULTURI, caIssuerUri);
     }
     
@@ -682,7 +682,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Sets the number of suspended crl partitions
      *
-     * @param iSuspended
+     * @param iSuspended number of suspended crl partitions.
      */
     public void setNumberOfSuspendedPartitions(String iSuspended) {
         fillInput(Page.INPUT_NUMBEROFSUPSENDEDPARTITIONS, iSuspended);
@@ -746,5 +746,9 @@ public class CaHelper extends BaseHelper {
 
     public void assertHasErrorMessage(final String errorMessageText) {
         assertErrorMessageAppears(errorMessageText, "CA save error message was not found", "Expected CA error message was not displayed");
+    }
+
+    public void assertHasErrorMessages(final List<String> errorMessages) {
+        assertAllErrorMessagesAppear(errorMessages.toArray(new String[0]),"CA save error messages were not found", "Expected CA error messages were not displayed");
     }
 }
