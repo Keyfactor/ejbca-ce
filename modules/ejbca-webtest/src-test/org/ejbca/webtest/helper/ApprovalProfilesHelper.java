@@ -586,8 +586,7 @@ public class ApprovalProfilesHelper extends BaseHelper {
     private void setApprovalStepPartitionRole(final int approvalStepIndex, final int approvalStepPartitionIndex, final int selectPartitionRoleIndex, final String roleName) {
         selectOptionByName(
                 getApprovalStepPartitionRole(approvalStepIndex, approvalStepPartitionIndex, selectPartitionRoleIndex),
-                roleName,
-                true
+                roleName
         );
     }
 

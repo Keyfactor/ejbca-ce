@@ -55,7 +55,7 @@ public class BaseHelper {
     /**
      * Built-in timeout for WebElement find.
      */
-    public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 10;
+    static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 10;
 
     /**
      * Selector's switch to select an option by name or value.
@@ -64,7 +64,7 @@ public class BaseHelper {
         // Text of the option
         TEXT,
         // Value of the option
-        VALUE;
+        VALUE
     }
 
     /**
@@ -109,7 +109,7 @@ public class BaseHelper {
      *
      * @return a web element or null.
      */
-    protected WebElement findElementWithoutWait(final By elementId) {
+    WebElement findElementWithoutWait(final By elementId) {
         try {
             return webDriver.findElement(elementId);
         }
@@ -179,7 +179,7 @@ public class BaseHelper {
      * @param linkId check box locator
      * @param shouldBeEnabled true if the box should be checked. I.e. enabled.
      */
-    protected void toggleCheckbox(final By linkId, final boolean shouldBeEnabled) {
+    void toggleCheckbox(final By linkId, final boolean shouldBeEnabled) {
         if ((!isSelectedElement(linkId) && shouldBeEnabled) ||
             (isSelectedElement(linkId) && !shouldBeEnabled)) {
             clickLink(linkId);
@@ -191,7 +191,7 @@ public class BaseHelper {
      *
      * @param linkId locator.
      */
-    protected void clickLinkIfExists(final By linkId) {
+    void clickLinkIfExists(final By linkId) {
         final WebElement linkWebElement = findElementWithoutWait(linkId);
         if (linkWebElement != null) {
             linkWebElement.click();
@@ -221,32 +221,28 @@ public class BaseHelper {
     }
 
     /**
-     * Asserts a given textarea exists and fills a text into it.
+     * Asserts a given textarea exists and replaces it's text.
      *
      * @param textareaId locator.
      * @param inputString input text.
      */
-    protected void fillTextarea(final By textareaId, final String inputString, boolean doClear) {
+    void fillTextarea(final By textareaId, final String inputString) {
         final WebElement textareaWebElement = findElement(textareaId);
         assertNotNull("Page textarea was not found", textareaWebElement);
-        if(doClear) {
-            textareaWebElement.clear();
-        }
+        textareaWebElement.clear();
         textareaWebElement.sendKeys(inputString);
     }
 
     /**
-     * Asserts a given textarea exists, in Swagger, and fills a text into it.
+     * Asserts a given Swagger's textarea exists and replaces it's text.
      *
      * @param textareaId locator.
      * @param inputString input text.
      */
-    protected void fillSwaggerTextarea(final By textareaId, final String inputString, boolean doClear) {
+    void fillSwaggerTextarea(final By textareaId, final String inputString) {
         final WebElement textareaWebElement = findElement(textareaId);
         assertNotNull("Page textarea was not found", textareaWebElement);
-        if(doClear) {
-            textareaWebElement.clear();
-        }
+        textareaWebElement.clear();
         textareaWebElement.sendKeys(Keys.ARROW_LEFT + inputString);
     }
 
@@ -256,7 +252,7 @@ public class BaseHelper {
      * @param webUrl      URL to open.
      * @param expectedUri URI to expect.
      */
-    protected void openPageByUrlAndAssert(final String webUrl, final String expectedUri) {
+    void openPageByUrlAndAssert(final String webUrl, final String expectedUri) {
         webDriver.get(webUrl);
         waitForJavaScriptLoad(webDriver);
         assertPageUri(expectedUri);
@@ -280,7 +276,7 @@ public class BaseHelper {
      *
      * @param expectedUri an URI to expect.
      */
-    protected void assertPageUri(final String expectedUri) {
+    void assertPageUri(final String expectedUri) {
         assertEquals(
                 "Wrong page URI expectation.",
                 expectedUri,
@@ -295,18 +291,7 @@ public class BaseHelper {
      * @param selectionOption option's names.
      */
     protected void selectOptionByName(final By selectId, final String selectionOption) {
-        selectOptionByName(selectId, selectionOption, false, null);
-    }
-
-    /**
-     * Selects a single option in the 'select' HTML element by name and asserts that the option is selected.
-     *
-     * @param selectId locator.
-     * @param selectionOption option's names.
-     * @param useDeselectAll deselection flag for the already selected options.
-     */
-    protected void selectOptionByName(final By selectId, final String selectionOption, final boolean useDeselectAll) {
-        selectOptionByName(selectId, selectionOption, useDeselectAll, null);
+        selectOptionByName(selectId, selectionOption, null);
     }
 
     /**
@@ -317,29 +302,7 @@ public class BaseHelper {
      * @param dependentElementId a dependent element, which appears/reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
     protected void selectOptionByName(final By selectId, final String selectionOption, final By dependentElementId) {
-        selectOptionByName(selectId, selectionOption, false, dependentElementId);
-    }
-
-    /**
-     * Selects a single option in the 'select' HTML element by name and asserts that the option is selected.
-     *
-     * @param selectId locator.
-     * @param selectionOption option's names.
-     * @param useDeselectAll deselection flag for the already selected options.
-     * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
-     */
-    protected void selectOptionByName(final By selectId, final String selectionOption, final boolean useDeselectAll, final By dependentElementId) {
-        selectOptionsByName(selectId, Collections.singletonList(selectionOption), useDeselectAll, dependentElementId);
-    }
-
-    /**
-     * Selects a single option in the 'select' HTML element by name without assertion of selection and without deselection of other options.
-     *
-     * @param selectWebElement select web element.
-     * @param selectionOption option's names.
-     */
-    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption) {
-        selectOptionByName(selectWebElement, selectionOption, false);
+        selectOptionsByName(selectId, Collections.singletonList(selectionOption), dependentElementId);
     }
 
     /**
@@ -347,10 +310,10 @@ public class BaseHelper {
      *
      * @param selectWebElement select web element.
      * @param selectionOption option's names.
-     * @param useDeselectAll deselection flag for the already selected options.
      */
-    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption, final boolean useDeselectAll) {
-        selectOptionsByName(selectWebElement, Collections.singletonList(selectionOption), useDeselectAll);
+    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption) {
+        assertNotNull("Page select was not found", selectWebElement);
+        selectOptions(new Select(selectWebElement), Collections.singletonList(selectionOption), SELECT_BY.TEXT);
     }
 
     /**
@@ -359,8 +322,8 @@ public class BaseHelper {
      * @param selectId locator.
      * @param selectionOption option's value.
      */
-    protected void selectOptionByValue(final By selectId, final String selectionOption) {
-        selectOptionsByValue(selectId, Collections.singletonList(selectionOption), false);
+    void selectOptionByValue(final By selectId, final String selectionOption) {
+        selectOptionsByValue(selectId, Collections.singletonList(selectionOption));
     }
 
     /**
@@ -369,8 +332,8 @@ public class BaseHelper {
      * @param selectId locator.
      * @param selectionOptions  a list of option names to select.
      */
-    protected void selectOptionsByName(final By selectId, final List<String> selectionOptions) {
-        selectOptionsByName(selectId, selectionOptions, true, null);
+    void selectOptionsByName(final By selectId, final List<String> selectionOptions) {
+        selectOptionsByName(selectId, selectionOptions, null);
     }
 
     /**
@@ -378,14 +341,13 @@ public class BaseHelper {
      *
      * @param selectId locator.
      * @param selectionOptions  a list of option names to select.
-     * @param useDeselectAll    deselection flag for the already selected options.
      * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
-    protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll, final By dependentElementId) {
+    void selectOptionsByName(final By selectId, final List<String> selectionOptions, final By dependentElementId) {
         waitForElementBecomeVisibleByLocator(selectId);
         final WebElement selectWebElement = findElement(selectId);
         assertNotNull("Page select was not found", selectWebElement);
-        selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.TEXT);
+        selectOptions(new Select(selectWebElement), selectionOptions, SELECT_BY.TEXT);
         // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
         // which causes the org.openqa.selenium.StaleElementReferenceException
         if (dependentElementId != null) {
@@ -396,17 +358,57 @@ public class BaseHelper {
     }
 
     /**
-     * Selects options by name in the 'select' HTML element without assertion of selection.
+     * Selects options by name in the 'select' HTML element one by one to support possible Ajax update.
+     * Asserts that all options are selected.
      *
-     * @param selectWebElement select web element.
+     * @param selectId locator.
      * @param selectionOptions  a list of option names to select.
-     * @param useDeselectAll    deselection flag for the already selected options.
+     * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
-    protected void selectOptionsByName(final WebElement selectWebElement, final List<String> selectionOptions, final boolean useDeselectAll) {
+    void selectOptionsByNameWithAjax(final By selectId, final List<String> selectionOptions, final By dependentElementId) {
+        for(String selectionOption : selectionOptions) {
+            waitForElementBecomeVisibleByLocator(selectId);
+            final WebElement selectWebElement = findElement(selectId);
+            assertNotNull("Page select was not found", selectWebElement);
+            selectOptions(new Select(selectWebElement), Collections.singletonList(selectionOption), SELECT_BY.TEXT);
+            // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
+            // which causes the org.openqa.selenium.StaleElementReferenceException
+            if (dependentElementId != null) {
+                findElement(dependentElementId);
+            }
+        }
+        final WebElement selectedWebElement = findElement(selectId);
+        assertSelectionOfAllOptions(new Select(selectedWebElement), selectionOptions, SELECT_BY.TEXT);
+    }
+
+    /**
+     * Deselects all options in multi-select dropdown.
+     *
+     * @param selectId locator.
+     * @see #deselectOptionsWithAjax(By)
+     */
+    void deselectOptions(final By selectId) {
+        final WebElement selectWebElement = findElement(selectId);
         assertNotNull("Page select was not found", selectWebElement);
-        selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.TEXT);
-        // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
-        // which causes the org.openqa.selenium.StaleElementReferenceException
+        deselectOptions(new Select(selectWebElement));
+    }
+
+    /**
+     * Deselects all options in multi-select dropdown one by one to support possible Ajax update.
+     *
+     * @param selectId locator.
+     */
+    void deselectOptionsWithAjax(final By selectId) {
+        WebElement selectWebElement = findElement(selectId);
+        assertNotNull("Page select was not found", selectWebElement);
+        Select select = new Select(selectWebElement);
+        final int selectOptionsSize = (select.getOptions() != null ? select.getOptions().size() : 0);
+        for(int index = 0; index < selectOptionsSize; index++) {
+            // Re-init
+            selectWebElement = findElement(selectId);
+            select = new Select(selectWebElement);
+            select.deselectByIndex(index);
+        }
     }
 
     /**
@@ -414,12 +416,11 @@ public class BaseHelper {
      *
      * @param selectId locator.
      * @param selectionOptions  A list of option values to select.
-     * @param useDeselectAll deselection flag for the already selected options.
      */
-    protected void selectOptionsByValue(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll) {
+    private void selectOptionsByValue(final By selectId, final List<String> selectionOptions) {
         final WebElement selectWebElement = findElement(selectId);
         assertNotNull("Page select was not found", selectWebElement);
-        selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.VALUE);
+        selectOptions(new Select(selectWebElement), selectionOptions, SELECT_BY.VALUE);
         // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
         // which causes the org.openqa.selenium.StaleElementReferenceException
         final WebElement selectedWebElement = findElement(selectId);
@@ -433,7 +434,7 @@ public class BaseHelper {
      *
      * @return true if an element by a given locator is 'input', false otherwise.
      */
-    protected boolean isInputElement(final By elementId) {
+    boolean isInputElement(final By elementId) {
         return isInputElement(findElement(elementId));
     }
 
@@ -444,7 +445,7 @@ public class BaseHelper {
      *
      * @return true if an element is 'input', false otherwise.
      */
-    protected boolean isInputElement(final WebElement webElement) {
+    private boolean isInputElement(final WebElement webElement) {
         return webElement != null && webElement.getTagName().equalsIgnoreCase("input");
     }
 
@@ -455,7 +456,7 @@ public class BaseHelper {
      *
      * @return true if an element by a given locator is 'select', false otherwise.
      */
-    protected boolean isSelectElement(final By elementId) {
+    boolean isSelectElement(final By elementId) {
         return isSelectElement(findElement(elementId));
     }
 
@@ -466,19 +467,8 @@ public class BaseHelper {
      *
      * @return true if an element is 'select', false otherwise.
      */
-    protected boolean isSelectElement(final WebElement webElement) {
+    private boolean isSelectElement(final WebElement webElement) {
         return webElement != null && webElement.getTagName().equalsIgnoreCase("select");
-    }
-
-    /**
-     * Returns true if an element by a given locator is 'td', false otherwise.
-     *
-     * @param elementId locator.
-     *
-     * @return true if an element by a given locator is 'td', false otherwise.
-     */
-    protected boolean isTdElement(final By elementId) {
-        return isTdElement(findElement(elementId));
     }
 
     /**
@@ -488,7 +478,7 @@ public class BaseHelper {
      *
      * @return true if an element is 'td', false otherwise.
      */
-    protected boolean isTdElement(final WebElement webElement) {
+    boolean isTdElement(final WebElement webElement) {
         return webElement != null && webElement.getTagName().equalsIgnoreCase("td");
     }
 
@@ -510,7 +500,7 @@ public class BaseHelper {
      * @param elementId      locator.
      * @param failureMessage failure message.
      */
-    protected void assertElementDoesNotExist(final By elementId, final String failureMessage) {
+    void assertElementDoesNotExist(final By elementId, final String failureMessage) {
         if(findElementWithoutWait(elementId) != null) {
             fail(failureMessage);
         }
@@ -523,7 +513,7 @@ public class BaseHelper {
      *
      * @return element's value or null.
      */
-    protected String getElementValue(final By elementId) {
+    String getElementValue(final By elementId) {
         return getElementValue(findElement(elementId));
     }
 
@@ -534,7 +524,7 @@ public class BaseHelper {
      *
      * @return element's value or null.
      */
-    protected String getElementValue(final WebElement webElement) {
+    String getElementValue(final WebElement webElement) {
         if(webElement != null) {
             return webElement.getAttribute("value");
         }
@@ -548,7 +538,7 @@ public class BaseHelper {
      *
      * @return element's value or null.
      */
-    protected String getElementHref(final By elementId) {
+    String getElementHref(final By elementId) {
         return getElementHref(findElement(elementId));
     }
 
@@ -559,7 +549,7 @@ public class BaseHelper {
      *
      * @return element's value or null.
      */
-    protected String getElementHref(final WebElement webElement) {
+    private String getElementHref(final WebElement webElement) {
         if(webElement != null) {
             return webElement.getAttribute("href");
         }
@@ -573,7 +563,7 @@ public class BaseHelper {
      *
      * @return element's text or null.
      */
-    protected String getElementText(final By elementId) {
+    String getElementText(final By elementId) {
         return getElementText(findElement(elementId));
     }
 
@@ -598,7 +588,7 @@ public class BaseHelper {
      *
      * @return true if element is selected, false otherwise.
      */
-    protected boolean isSelectedElement(final By elementId) {
+    boolean isSelectedElement(final By elementId) {
         return isSelectedElement(findElement(elementId));
     }
 
@@ -609,11 +599,8 @@ public class BaseHelper {
      *
      * @return true if element is selected, false otherwise.
      */
-    protected boolean isSelectedElement(final WebElement webElement) {
-        if(webElement != null) {
-            return webElement.isSelected();
-        }
-        return false;
+    private boolean isSelectedElement(final WebElement webElement) {
+        return webElement != null && webElement.isSelected();
     }
 
     /**
@@ -623,7 +610,7 @@ public class BaseHelper {
      *
      * @return true if element is enabled, false otherwise.
      */
-    protected boolean isEnabledElement(final By elementId) {
+    boolean isEnabledElement(final By elementId) {
         return isEnabledElement(findElement(elementId));
     }
 
@@ -634,11 +621,8 @@ public class BaseHelper {
      *
      * @return true if element is enabled, false otherwise.
      */
-    protected boolean isEnabledElement(final WebElement webElement) {
-        if(webElement != null) {
-            return webElement.isEnabled();
-        }
-        return false;
+    boolean isEnabledElement(final WebElement webElement) {
+        return webElement != null && webElement.isEnabled();
     }
 
     /**
@@ -648,7 +632,7 @@ public class BaseHelper {
      *
      * @return the list of values or null.
      */
-    protected List<String> getSelectValues(final By selectId) {
+    List<String> getSelectValues(final By selectId) {
         return getSelectValues(findElement(selectId));
     }
 
@@ -659,9 +643,9 @@ public class BaseHelper {
      *
      * @return the list of values or null.
      */
-    protected List<String> getSelectValues(final WebElement webElement) {
+    private List<String> getSelectValues(final WebElement webElement) {
         if(webElement != null) {
-            final List<String> selectNames = new ArrayList<String>();
+            final List<String> selectNames = new ArrayList<>();
             final Select select = new Select(webElement);
             for(final WebElement selectOptionWebElement : select.getOptions()) {
                 selectNames.add(getElementValue(selectOptionWebElement));
@@ -677,7 +661,7 @@ public class BaseHelper {
      * @param selectId locator.
      * @return the list of names or null.
      */
-    protected List<String> getSelectNames(final By selectId) {
+    List<String> getSelectNames(final By selectId) {
         return getSelectNames(findElement(selectId));
     }
 
@@ -687,7 +671,7 @@ public class BaseHelper {
      * @param webElement non-null web element.
      * @return the list of names or null.
      */
-    protected List<String> getSelectNames(final WebElement webElement) {
+    List<String> getSelectNames(final WebElement webElement) {
         if (webElement != null) {
             final List<String> selectNames = new ArrayList<>();
             final Select select = new Select(webElement);
@@ -706,7 +690,7 @@ public class BaseHelper {
      *
      * @return the list of selected names of a select or null.
      */
-    protected List<String> getSelectSelectedNames(final By selectId) {
+    List<String> getSelectSelectedNames(final By selectId) {
         return getSelectSelectedNames(findElement(selectId));
     }
 
@@ -717,7 +701,7 @@ public class BaseHelper {
      *
      * @return the list of selected names of a select or null.
      */
-    protected List<String> getSelectSelectedNames(final WebElement webElement) {
+    List<String> getSelectSelectedNames(final WebElement webElement) {
         if(webElement != null) {
             final List<String> selectedNames = new ArrayList<>();
             final Select select = new Select(webElement);
@@ -735,7 +719,7 @@ public class BaseHelper {
      *
      * @return the first selected element of a select or null.
      */
-    protected String getFirstSelectedOption(final By selectId) {
+    String getFirstSelectedOption(final By selectId) {
         return getFirstSelectedOption(findElement(selectId));
     }
 
@@ -745,7 +729,7 @@ public class BaseHelper {
      * @param webElement non-null web element.
      * @return the first selected element of a select or null.
      */
-    protected String getFirstSelectedOption(final WebElement webElement) {
+    String getFirstSelectedOption(final WebElement webElement) {
         if (webElement != null) {
             final Select select = new Select(webElement);
             return getElementText(select.getFirstSelectedOption());
@@ -758,7 +742,7 @@ public class BaseHelper {
      * Use return value to return to main window.
      * @return The main window (switched from). 
      */
-    protected String switchToNextWindow() {
+    String switchToNextWindow() {
         final String mainWindow = webDriver.getWindowHandle();
         for (String window : webDriver.getWindowHandles()) {
             if (!window.equals(mainWindow)) {
@@ -772,7 +756,7 @@ public class BaseHelper {
      * Switch to the specified window
      * @param windowId of the window to switch to.
      */
-    protected void switchToWindow(final String windowId) {
+    void switchToWindow(final String windowId) {
         webDriver.switchTo().window(windowId);
     }
     
@@ -782,7 +766,7 @@ public class BaseHelper {
      * @param expectedAlertMessageText the expected alert's message.
      * @param isConfirmed a flag to accept or discard the alert.
      */
-    protected void assertAndConfirmAlertPopUp(final String expectedAlertMessageText, boolean isConfirmed) {
+    void assertAndConfirmAlertPopUp(final String expectedAlertMessageText, boolean isConfirmed) {
         try {
             final Alert alert = waitForAlertIsPresent();
             // Assert that the correct alert message is displayed (if not null)
@@ -806,21 +790,17 @@ public class BaseHelper {
      * @param driver Selenium Web Driver.
      */
     private void waitForJavaScriptLoad(WebDriver driver) {
-        ExpectedCondition<Boolean> pageLoadCondition = new
-                ExpectedCondition<Boolean>() {
-                    public Boolean apply(WebDriver driver) {
-                        return ((org.openqa.selenium.JavascriptExecutor)driver).executeScript("return document.readyState").equals("complete");
-                    }
-                };
+        ExpectedCondition<Boolean> pageLoadCondition = driver1 -> ((org.openqa.selenium.JavascriptExecutor) driver1).executeScript("return document.readyState").equals("complete");
         WebDriverWait wait = new WebDriverWait(driver, 5);
         wait.until(pageLoadCondition);
     }
-    
+
+    private void deselectOptions(final Select selectObject) {
+        selectObject.deselectAll();
+    }
+
     // Selects options of a select
-    private void selectOptions(final Select selectObject, final List<String> options, final boolean useDeselectAll, final SELECT_BY selectBy) {
-        if(useDeselectAll) {
-            selectObject.deselectAll();
-        }
+    private void selectOptions(final Select selectObject, final List<String> options, final SELECT_BY selectBy) {
         for (final String option : options) {
             switch (selectBy) {
                 case TEXT:
@@ -884,13 +864,13 @@ public class BaseHelper {
     }
 
     /**
-     * Asserts that the element {@link Page.TEXT_MESSAGE} appears on the screen and matches the given regular expression.
+     * Asserts that the message (element Page.TEXT_MESSAGE) appears on the screen and matches the given regular expression.
      *
      * @param regex a regular expression which must match the actual message shown on the screen.
      * @param noSuchElementAssertionMessage the assertion error message to display if the message was not shown on the screen.
      * @param notMatchingRegexAssertionMessage the assertion error message to display if the message was shown on the screen but did not match the given regular expression.
      */
-    protected void assertInfoMessageAppears(final String regex, final String noSuchElementAssertionMessage,
+    void assertInfoMessageAppears(final String regex, final String noSuchElementAssertionMessage,
             final String notMatchingRegexAssertionMessage) {
         final WebElement message = findElement(Page.TEXT_MESSAGE);
         if (message == null) {
@@ -902,36 +882,27 @@ public class BaseHelper {
     /**
      * Asserts error Message appears with correct message text
      *
-     * @param expectedErrorMessage
-     * @param noElementMessage
-     * @param assertMessage
+     * @param expectedErrorMessage expected error messages.
+     * @param noElementMessage message if element doesn't exist.
+     * @param assertMessage message text.
      */
-    protected void assertErrorMessageAppears(String expectedErrorMessage, String noElementMessage, String assertMessage) {
-        final WebElement errorMessage = findElement(Page.TEXT_ERROR_MESSAGE);
-        if (errorMessage == null) {
-            fail(noElementMessage);
-        }
-        assertEquals(
-                assertMessage,
-                expectedErrorMessage,
-                errorMessage.getText()
-        );
+    void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
+        assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
     }
 
     /**
      * Asserts all error Messages appears with correct message text
      *
-     * @param expectedErrorMessages
-     * @param noElementMessage
-     * @param assertMessage
+     * @param expectedErrorMessages expected error messages.
+     * @param noElementMessage message if element doesn't exist.
+     * @param assertMessage message text.
      */
-    protected void assertErrorAllErrorMessageAppear(String[] expectedErrorMessages, String noElementMessage, String assertMessage) {
+    void assertAllErrorMessagesAppear(final String[] expectedErrorMessages, final String noElementMessage, final String assertMessage) {
         List<WebElement> errorMessages = findElements(Page.TEXT_ERROR_MESSAGE);
         if (errorMessages == null) {
             fail(noElementMessage);
         }
         assertEquals("Expected number of error messages is not equal to actual one", expectedErrorMessages.length, errorMessages.size());
-
         for (int i = 0; i < errorMessages.size(); i++) {
             assertEquals(
                     assertMessage,

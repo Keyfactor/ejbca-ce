@@ -412,7 +412,7 @@ public class RaWebHelper extends BaseHelper {
     }
 
     public void fillClearCsrText(final String csr) {
-        fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr, true);
+        fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr);
     }
     
     /**

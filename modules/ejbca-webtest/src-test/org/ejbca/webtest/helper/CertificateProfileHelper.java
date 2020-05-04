@@ -86,90 +86,91 @@ public class CertificateProfileHelper extends BaseHelper {
         static final By TEXT_TITLE_RENAME_CERTIFICATE_PROFILE = By.id("editcertificateprofilesForm:renameProfileOld");
         static final By TEXT_TITLE_CLONE_CERTIFICATE_PROFILE = By.id("editcertificateprofilesForm:addFromTemplateProfileOld");
         static final By TEXT_TITLE_DELETE_CERTIFICATE_PROFILE = By.id("editcertificateprofilesForm:deleteProfileName");
+        static final By FORM_ALGORITHMS = By.id("algorithms");
         /**
          * 'Available Key Algorithms'
          */
-        static final By SELECT_KEY_ALGORITHMS = By.id("cpf:selectavailablekeyalgorithms");
+        static final By SELECT_KEY_ALGORITHMS = By.id("algorithms:selectavailablekeyalgorithms");
         /**
          * 'Available ECDSA curves'
          */
-        static final By SELECT_ECDSA_CURVES = By.id("cpf:selectavailableeccurves");
+        static final By SELECT_ECDSA_CURVES = By.id("algorithms:selectavailableeccurves");
         /**
          * 'Available Bit Lengths'
          */
-        static final By SELECT_BIT_LENGTHS = By.id("cpf:selectavailablebitlengths");
+        static final By SELECT_BIT_LENGTHS = By.id("algorithms:selectavailablebitlengths");
         /**
          * 'Signature Algorithm'
          */
-        static final By SELECT_SIGNATURE_ALGORITHM = By.id("cpf:selectsignaturealgorithm");
+        static final By SELECT_SIGNATURE_ALGORITHM = By.id("algorithms:selectsignaturealgorithm");
         /**
          * 'Validity or end date of the certificate'
          */
-        static final By INPUT_VALIDITY = By.id("cpf:textfieldvalidity");
+        static final By INPUT_VALIDITY = By.id("content:textfieldvalidity");
         /**
          * Permissions / 'Allow Validity Override'
          */
-        static final By INPUT_PERMISSIONS_VALIDITY_OVERRIDE = By.id("cpf:checkallowvalidityoverride");
+        static final By INPUT_PERMISSIONS_VALIDITY_OVERRIDE = By.id("content:checkallowvalidityoverride");
         /**
          * Permissions / 'Allow Extension Override'
          */
-        static final By INPUT_PERMISSIONS_EXTENSION_OVERRIDE = By.id("cpf:checkallowextensionoverride");
+        static final By INPUT_PERMISSIONS_EXTENSION_OVERRIDE = By.id("content:checkallowextensionoverride");
         /**
          * Permissions / 'Allow Subject DN Override by CSR'
          */
-        static final By INPUT_PERMISSIONS_DN_OVERRIDE_BY_CSR = By.id("cpf:checkallowdnoverride");
+        static final By INPUT_PERMISSIONS_DN_OVERRIDE_BY_CSR = By.id("content:checkallowdnoverride");
         /**
          * Permissions / 'Allow Subject DN Override by End Entity Information'
          */
-        static final By INPUT_PERMISSIONS_DN_OVERRIDE_BY_END_ENTITY_INFORMATION = By.id("cpf:checkallowdnoverrideeei");
+        static final By INPUT_PERMISSIONS_DN_OVERRIDE_BY_END_ENTITY_INFORMATION = By.id("content:checkallowdnoverrideeei");
         /**
          * Permissions / 'Allow Key Usage Override'
          */
-        static final By INPUT_PERMISSIONS_KEY_USAGE_OVERRIDE = By.id("cpf:checkallowkeyusageoverride");
+        static final By INPUT_PERMISSIONS_KEY_USAGE_OVERRIDE = By.id("content:checkallowkeyusageoverride");
         /**
          * Permissions / 'Allow Backdated Revocation'
          */
-        static final By INPUT_PERMISSIONS_BACKDATED_REVOCATION = By.id("cpf:checkallowbackdatedrevokation");
+        static final By INPUT_PERMISSIONS_BACKDATED_REVOCATION = By.id("content:checkallowbackdatedrevokation");
         /**
          * Permissions / 'Use Certificate Storage'
          */
-        static final By INPUT_PERMISSIONS_USE_CERTIFICATE_STORAGE = By.id("cpf:checkUseCertificateStorage");
+        static final By INPUT_PERMISSIONS_USE_CERTIFICATE_STORAGE = By.id("content:checkUseCertificateStorage");
         /**
          * Permissions / 'Store Certificate Data'
          */
-        static final By INPUT_PERMISSIONS_STORE_CERTIFICATE_DATA = By.id("cpf:checkStoreCertificateData");
+        static final By INPUT_PERMISSIONS_STORE_CERTIFICATE_DATA = By.id("content:checkStoreCertificateData");
         /**
          * X.509v3 extensions / 'Basic Constraints' Critical
          */
-        static final By INPUT_X509V3_EXTENSIONS_BASIC_CONSTRAINTS_CRITICAL = By.id("cpf:cbbasicconstraintscritical");
+        static final By INPUT_X509V3_EXTENSIONS_BASIC_CONSTRAINTS_CRITICAL = By.id("content:cbbasicconstraintscritical");
         /**
          * X.509v3 extensions / 'Authority Key ID'
          */
-        static final By INPUT_X509V3_EXTENSIONS_AUTHORITY_KEY_ID  = By.id("cpf:cbauthoritykeyidentifier");
+        static final By INPUT_X509V3_EXTENSIONS_AUTHORITY_KEY_ID  = By.id("content:cbauthoritykeyidentifier");
         /**
          * X.509v3 extensions / 'Subject Key ID'
          */
-        static final By INPUT_X509V3_EXTENSIONS_SUBJECT_KEY_ID = By.id("cpf:cbsubjectkeyidentifier");
+        static final By INPUT_X509V3_EXTENSIONS_SUBJECT_KEY_ID = By.id("content:cbsubjectkeyidentifier");
         /**
          * X.509v3 extensions / Usages / 'Key Usage' Critical
          */
-        static final By INPUT_X509V3_EXTENSIONS_USAGES_KEY_USAGE_CRITICAL = By.id("cpf:cbkeyusagecritical");
+        static final By INPUT_X509V3_EXTENSIONS_USAGES_KEY_USAGE_CRITICAL = By.id("content:cbkeyusagecritical");
         /**
          * X.509v3 extensions / Usages / Key Usage / 'Non-repudiation'
          */
-        static final By INPUT_X509V3_EXTENSIONS_USAGES_KEY_USAGE_NON_REPUDIATION = By.id("cpf:keyUsageNonRepudiation");
+        static final By INPUT_X509V3_EXTENSIONS_USAGES_KEY_USAGE_NON_REPUDIATION = By.id("content:keyUsageNonRepudiation");
         /**
          * X.509v3 extensions / Usages / Key Usage / 'Data encipherment'
          */
-        static final By INPUT_X509V3_EXTENSIONS_USAGES_KEY_USAGE_DATA_ENCIPHERMENT = By.id("cpf:keyUsageDataEncipherment");
+        static final By INPUT_X509V3_EXTENSIONS_USAGES_KEY_USAGE_DATA_ENCIPHERMENT = By.id("content:keyUsageDataEncipherment");
         /**
          * X.509v3 extensions / Usages / 'Extended Key Usage' Critical
          */
-        static final By INPUT_X509V3_EXTENSIONS_USAGES_EXTENDED_KEY_USAGE_CRITICAL = By.id("cpf:cbextendedkeyusagecritical");
+        static final By INPUT_X509V3_EXTENSIONS_USAGES_EXTENDED_KEY_USAGE_CRITICAL = By.id("content:cbextendedkeyusagecritical");
         /**
          * X.509v3 extensions / Usages / 'Certificate Policies' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_USAGES_CERTIFICATE_POLICIES_USE = By.id("cpf:checkusecertificatepolicies");
+        static final By INPUT_X509V3_EXTENSIONS_USAGES_CERTIFICATE_POLICIES_USE = By.id("content:checkusecertificatepolicies");
         /**
          * X.509v3 extensions / Usages / Certificate Policies / 'Certificate Policy OID'
          */
@@ -194,179 +195,179 @@ public class CertificateProfileHelper extends BaseHelper {
         /**
          * X.509v3 extensions / Names / 'Subject Alternative Name' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_USE = By.id("cpf:cbsubjectalternativename");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_USE = By.id("content:cbsubjectalternativename");
         /**
          * X.509v3 extensions / Names / 'Subject Alternative Name' Critical
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_CRITICAL = By.id("cpf:cbsubjectalternativenamecritical");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_ALTERNATIVE_NAME_CRITICAL = By.id("content:cbsubjectalternativenamecritical");
 
         /**
          * X.509v3 extensions / Names / 'Issuer Alternative Name' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_ISSUER_ALTERNATIVE_NAME_USE = By.id("cpf:cbissueralternativename");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_ISSUER_ALTERNATIVE_NAME_USE = By.id("content:cbissueralternativename");
         /**
          * X.509v3 extensions / Names / 'Issuer Alternative Name' Critical
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_ISSUER_ALTERNATIVE_NAME_CRITICAL = By.id("cpf:cbissueralternativenamecritical");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_ISSUER_ALTERNATIVE_NAME_CRITICAL = By.id("content:cbissueralternativenamecritical");
         /**
          * X.509v3 extensions / Names / 'Subject Directory Attributes' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_DIRECTORY_ATTRIBUTES = By.id("cpf:checksubjectdirattributes");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_SUBJECT_DIRECTORY_ATTRIBUTES = By.id("content:checksubjectdirattributes");
         /**
          * X.509v3 extensions / Names / 'Name Constraints' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_NAME_CONSTRAINTS = By.id("cpf:checknameconstraints");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_NAME_CONSTRAINTS = By.id("content:checknameconstraints");
         /**
          * X.509v3 extensions / Validation data / 'CRL Distribution Points' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CRL_DISTRIBUTION_POINTS_USE = By.id("cpf:cbcrldistributionpoint");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CRL_DISTRIBUTION_POINTS_USE = By.id("content:cbcrldistributionpoint");
         /**
          * X.509v3 extensions / Validation data / 'Use CA defined CRL Distribution Point' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CA_DEFINED_CRL_DISTRIBUTION_POINT_USE = By.id("cpf:cbusedefaultcrldistributionpoint");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CA_DEFINED_CRL_DISTRIBUTION_POINT_USE = By.id("content:cbusedefaultcrldistributionpoint");
         /**
          * X.509v3 extensions / Validation data / 'CRL Distribution Point URI'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CRL_DISTRIBUTION_POINT_URI = By.id("cpf:textfieldcrldisturi");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CRL_DISTRIBUTION_POINT_URI = By.id("content:textfieldcrldisturi");
         /**
          * X.509v3 extensions / Validation data / 'CRL Issuer'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CRL_ISSUER = By.id("cpf:textfieldcrlissuer");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CRL_ISSUER = By.id("content:textfieldcrlissuer");
         /**
          * X.509v3 extensions / Validation data / 'Freshest CRL (a.k.a. Delta CRL DP)'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_FRESH_CRL_USE = By.id("cpf:cbusefreshestcrl");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_FRESH_CRL_USE = By.id("content:cbusefreshestcrl");
         /**
          * X.509v3 extensions / Validation data / 'Use CA Defined Freshest CRL' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_USE_CA_DEFINED_FRESHEST_CRL_USE = By.id("cpf:cbusecadefinedfreshestcrl");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_USE_CA_DEFINED_FRESHEST_CRL_USE = By.id("content:cbusecadefinedfreshestcrl");
         /**
          * X.509v3 extensions / Validation data / 'Freshest CRL URI'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_FRESHEST_CRL_URI = By.id("cpf:textfieldfreshestcrluri");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_FRESHEST_CRL_URI = By.id("content:textfieldfreshestcrluri");
         /**
          * X.509v3 extensions / Validation data / 'Authority Information Access' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_AUTHORITY_INFORMATION_ACCESS_USE = By.id("cpf:checkuseauthorityinformationaccess");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_AUTHORITY_INFORMATION_ACCESS_USE = By.id("content:checkuseauthorityinformationaccess");
         /**
          * X.509v3 extensions / Validation data / 'Use CA defined OCSP locator' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_USE_CA_DEFINED_OCSP_LOCATOR = By.id("cpf:checkusedefaultocspservicelocator");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_USE_CA_DEFINED_OCSP_LOCATOR = By.id("content:checkusedefaultocspservicelocator");
         /**
          * X.509v3 extensions / Validation data / 'OCSP Service Locator URI'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_OCSP_SERVICE_LOCATOR_URI = By.id("cpf:textfieldocspservicelocatoruri");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_OCSP_SERVICE_LOCATOR_URI = By.id("content:textfieldocspservicelocatoruri");
         /**
          * X.509v3 extensions / Validation data / 'CA issuer URI'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CA_ISSUER_URI = By.id("cpf:caIssuers:textfieldcaissueruri");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CA_ISSUER_URI = By.id("content:caIssuers:textfieldcaissueruri");
         /**
          * X.509v3 extensions / Validation data / 'CA issuer URI' 'Add'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CA_ISSUER_URI_ADD = By.id("cpf:caIssuers:buttonaddcaissueruri");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_CA_ISSUER_URI_ADD = By.id("content:caIssuers:buttonaddcaissueruri");
         /**
          * X.509v3 extensions / Validation data / 'Private Key Usage Period' / 'Start offset…' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_START_OFFSET_USE = By.id("cpf:cbuseprivkeyusageperiodnotbefore");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_START_OFFSET_USE = By.id("content:cbuseprivkeyusageperiodnotbefore");
         /**
          * X.509v3 extensions / Validation data / 'Private Key Usage Period' / 'Start offset…'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_START_OFFSET = By.id("cpf:textfieldprivkeyusageperiodstartoffset");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_START_OFFSET = By.id("content:textfieldprivkeyusageperiodstartoffset");
         /**
          * X.509v3 extensions / Validation data / 'Private Key Usage Period' / 'Period length…' Use
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_PERIOD_LENGTH_USE = By.id("cpf:cbuseprivkeyusageperiodnotafter");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_PERIOD_LENGTH_USE = By.id("content:cbuseprivkeyusageperiodnotafter");
         /**
          * X.509v3 extensions / Validation data / 'Private Key Usage Period' / 'Period length…'
          */
-        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_PERIOD_LENGTH = By.id("cpf:textfieldprivkeyusageperiodlength");
+        static final By INPUT_X509V3_EXTENSIONS_NAMES_VALIDATION_DATA_PRIVATE_KEY_USAGE_PERIOD_PERIOD_LENGTH = By.id("content:textfieldprivkeyusageperiodlength");
         /**
          * QC Statements extension / 'Qualified Certificates Statements' Use
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_QUALIFIED_CERTIFICATES_STATEMENTS_USE = By.id("cpf:checkuseqcstatement");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_QUALIFIED_CERTIFICATES_STATEMENTS_USE = By.id("content:checkuseqcstatement");
         /**
          * QC Statements extension / 'PKIX QCSyntax-v2' Use
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_PKIX_QCSYNTAXV2_USE = By.id("cpf:checkpkixqcsyntaxv2");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_PKIX_QCSYNTAXV2_USE = By.id("content:checkpkixqcsyntaxv2");
         /**
          * QC Statements extension / 'Semantics Identifier (OID)'
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_SEMANTICS_IDENTIFIER_OID = By.id("cpf:textfieldqcsemanticsid");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_SEMANTICS_IDENTIFIER_OID = By.id("content:textfieldqcsemanticsid");
         /**
          * QC Statements extension / 'Name Registration Authorities'
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_NAME_REGISTRATION_AUTHORITIES = By.id("cpf:textfieldqcstatementraname");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_NAME_REGISTRATION_AUTHORITIES = By.id("content:textfieldqcstatementraname");
         /**
          * QC Statements extension / 'ETSI Qualified Certificate compliance' Use
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_QUALIFIED_CERTIFICATE_COMPLIANCE_USE = By.id("cpf:checkqcetsiqcompliance");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_QUALIFIED_CERTIFICATE_COMPLIANCE_USE = By.id("content:checkqcetsiqcompliance");
         /**
          * QC Statements extension / 'ETSI Qualified Signature/Seal Creation Device' Use
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_QUALIFIED_SIGNATURE_SEAL_CREATION_DEVICE_USE = By.id("cpf:checkqcetsisignaturedevice");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_QUALIFIED_SIGNATURE_SEAL_CREATION_DEVICE_USE = By.id("content:checkqcetsisignaturedevice");
         /**
          * QC Statements extension / 'ETSI transaction value limit' Add
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_ADD = By.id("cpf:checkqcetsivaluelimit");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_ADD = By.id("content:checkqcetsivaluelimit");
         /**
          * QC Statements extension / 'ETSI transaction value limit' Currency
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_CURRENCY = By.id("cpf:textfieldqcetsivaluelimitcur");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_CURRENCY = By.id("content:textfieldqcetsivaluelimitcur");
         /**
          * QC Statements extension / 'ETSI transaction value limit' Amount
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_AMOUNT = By.id("cpf:textfieldqcetsivaluelimit");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_AMOUNT = By.id("content:textfieldqcetsivaluelimit");
         /**
          * QC Statements extension / 'ETSI transaction value limit' Exponent
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_EXPONENT = By.id("cpf:textfieldqcetsivaluelimitexp");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_TRANSACTION_VALUE_LIMIT_EXPONENT = By.id("content:textfieldqcetsivaluelimitexp");
         /**
          * QC Statements extension / 'ETSI retention period' Add
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_RETENTION_PERIOD_ADD = By.id("cpf:checkqcetsiretentionperiod");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_RETENTION_PERIOD_ADD = By.id("content:checkqcetsiretentionperiod");
         /**
          * QC Statements extension / 'ETSI retention period' Value
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_RETENTION_PERIOD_VALUE = By.id("cpf:textfieldqcetsiretentionperiod");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_RETENTION_PERIOD_VALUE = By.id("content:textfieldqcetsiretentionperiod");
         /**
          * QC Statements extension / 'ETSI type'
          */
-        static final By SELECT_QC_STATEMENTS_EXTENSION_ETSI_TYPE = By.id("cpf:qcetsitype");
+        static final By SELECT_QC_STATEMENTS_EXTENSION_ETSI_TYPE = By.id("content:qcetsitype");
         /**
          * QC Statements extension / 'ETSI PDS URL / Language'
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE = By.id("cpf:qcetsipdsgroup:0:textfieldqcetsipdsurl");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE = By.id("content:qcetsipdsgroup:0:textfieldqcetsipdsurl");
         /**
          * QC Statements extension / 'ETSI PDS URL / Language'
          */
-        static final By SELECT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE = By.id("cpf:qcetsipdsgroup:0:qcetsipdslang");
+        static final By SELECT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE = By.id("content:qcetsipdsgroup:0:qcetsipdslang");
         /**
          * QC Statements extension / 'ETSI PDS URL / Language' Delete
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE_DELETE = By.id("cpf:qcetsipdsgroup:0:buttondeleteqcetsipds");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE_DELETE = By.id("content:qcetsipdsgroup:0:buttondeleteqcetsipds");
         /**
          * QC Statements extension / 'ETSI PDS URL / Language' Add Another
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE_ADD_ANOTHER = By.id("cpf:qcetsipdsgroup:buttonaddqcetsipds");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_ETSI_PDS_URL_LANGUAGE_ADD_ANOTHER = By.id("content:qcetsipdsgroup:buttonaddqcetsipds");
         /**
          * QC Statements extension / 'Custom QC-statements String' Add
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_STRING_ADD = By.id("cpf:checkqccustomstring");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_STRING_ADD = By.id("content:checkqccustomstring");
         /**
          * QC Statements extension / 'Custom QC-statements String' Object Identifier (OID)
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_STRING_OBJECT_IDENTIFIER_OID = By.id("cpf:textfieldqccustomstringoid");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_STRING_OBJECT_IDENTIFIER_OID = By.id("content:textfieldqccustomstringoid");
         /**
          * QC Statements extension / 'Custom QC-statements Text'
          */
-        static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_TEXT = By.id("cpf:textfieldqccustomstringtext");
+        static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_TEXT = By.id("content:textfieldqccustomstringtext");
         /**
          * Approval Settings / '*'
          */
         static final By SELECT_APPROVAL_SETTINGS_ALL = By.cssSelector("[id$=approvalProfile]");
         // Buttons
-        static final By BUTTON_CANCEL_PROFILE = By.id("cpf:cancelEditButton");
-        static final By BUTTON_SAVE_PROFILE = By.id("cpf:saveProfileButton");
+        static final By BUTTON_CANCEL_PROFILE = By.id("content:cancelEditButton");
+        static final By BUTTON_SAVE_PROFILE = By.id("content:saveProfileButton");
         // Dynamic references' parts
         static final String TABLE_CERTIFICATE_PROFILES = "//*[@id='editcertificateprofilesForm:editcertificateprofilesTable']";
 
@@ -487,16 +488,19 @@ public class CertificateProfileHelper extends BaseHelper {
             final String selectedSignatureAlgorithm,
             final String validityInput) {
         if(selectedAlgorithms != null) {
-            selectOptionsByName(Page.SELECT_KEY_ALGORITHMS, selectedAlgorithms);
+            deselectOptionsWithAjax(Page.SELECT_KEY_ALGORITHMS);
+            selectOptionsByNameWithAjax(Page.SELECT_KEY_ALGORITHMS, selectedAlgorithms, Page.FORM_ALGORITHMS);
         }
         if(selectedECDSACcurves != null) {
-            selectOptionsByName(Page.SELECT_ECDSA_CURVES, selectedECDSACcurves);
+            deselectOptionsWithAjax(Page.SELECT_ECDSA_CURVES);
+            selectOptionsByNameWithAjax(Page.SELECT_ECDSA_CURVES, selectedECDSACcurves, Page.FORM_ALGORITHMS);
         }
         if(selectedBitLengths != null) {
-            selectOptionsByName(Page.SELECT_BIT_LENGTHS, selectedBitLengths);
+            deselectOptionsWithAjax(Page.SELECT_BIT_LENGTHS);
+            selectOptionsByNameWithAjax(Page.SELECT_BIT_LENGTHS, selectedBitLengths, Page.FORM_ALGORITHMS);
         }
         if(selectedSignatureAlgorithm != null) {
-            selectOptionByName(Page.SELECT_SIGNATURE_ALGORITHM, selectedSignatureAlgorithm);
+            selectOptionByName(Page.SELECT_SIGNATURE_ALGORITHM, selectedSignatureAlgorithm, Page.FORM_ALGORITHMS);
         }
         if (validityInput != null) {
             fillInput(Page.INPUT_VALIDITY, validityInput);

@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.utils;
 
-
-/**
- * Helper class used for writing reports using ExtentReport plugin.
- *
- * @version $Id: ExtentReportCreator.java 32091 2019-05-02 12:59:46Z margaret_d_thomas $
- *
- */
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -26,6 +19,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.convert.TestModelReportBuilder;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import com.aventstack.extentreports.reporter.JsonFormatter;
+import com.aventstack.extentreports.reporter.configuration.Theme;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,21 +37,18 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
-import com.aventstack.extentreports.reporter.configuration.ChartLocation;
-import com.aventstack.extentreports.reporter.configuration.Theme;
-
+/**
+ * Helper class used for writing reports using ExtentReport plugin.
+ *
+ * @version $Id$
+ */
 public class ExtentReportCreator {
     private static ExtentReports extent;
-    private static ExtentHtmlReporter htmlReporter;
     private static ExtentTest testCase;
     private static String currTest;
     private static WebDriver browser;
     private static String reportDir
-            = ( System.getProperty("user.dir").contains("ejbca-webtest") )
+            = (System.getProperty("user.dir").contains("ejbca-webtest"))
             ? System.getProperty("user.dir") + "/../.." : System.getProperty("user.dir");
 
     //Setter method for WebDriver
@@ -62,26 +59,24 @@ public class ExtentReportCreator {
     /**
      * Initially builds a new test report at the beginning of the testrun.
      * Afterwards, it appends new tests to the report.
-     *
-     * @throws IOException
      */
     @BeforeClass
     public static void setUp() throws IOException {
         extent = new ExtentReports();
-        htmlReporter = new ExtentHtmlReporter(
-                reportDir + "/reports/QaEjbcaTestReport.html");
-        htmlReporter.setAppendExisting(true);
-        extent.attachReporter(htmlReporter);
-
-        htmlReporter.config().setDocumentTitle("EJBCA QA Test Report");
-        htmlReporter.config().setReportName("EJBCA Test Results!");
-        htmlReporter.config().setTestViewChartLocation(ChartLocation.BOTTOM);
-        htmlReporter.config().setTheme(Theme.DARK);
+        TestModelReportBuilder modelBuilder = new TestModelReportBuilder();
+        modelBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test-report.json"));
+        ExtentSparkReporter spark = new ExtentSparkReporter(reportDir + "/reports/QaEjbcaTestReport.html");
+        spark.config().setDocumentTitle("EJBCA QA Test Report");
+        spark.config().setReportName("EJBCA Test Results!");
+//        spark.config().setTestViewChartLocation(ChartLocation.BOTTOM);
+        spark.config().setTheme(Theme.DARK);
+        JsonFormatter json = new JsonFormatter(reportDir + "/reports/test-report.json");
+        extent.attachReporter(spark,json);
     }
 
     //Flushes all events to test report.
     @AfterClass
-    public static void tearDown() throws IOException {
+    public static void tearDown() {
         // writing everything to document
         extent.flush();
     }
@@ -97,7 +92,7 @@ public class ExtentReportCreator {
             // step log
             createTest(description);
             ExtentTest failed = testCase.createNode(description.getDisplayName());
-            failed.log(Status.FAIL, "Failure trace Selenium:  " +  e.toString());
+            failed.log(Status.FAIL, "Failure trace Selenium:  " + e.toString());
             try {
                 if (!description.getDisplayName().contains("CmdLine")) {
                     failed.addScreenCaptureFromPath(snap(description));
@@ -128,9 +123,9 @@ public class ExtentReportCreator {
         }
 
         //Adds a new test node for each Junit test.
-        public void createTest(Description description) {
+        void createTest(Description description) {
             String test = description.getTestClass().getSimpleName();
-            if ( (currTest == null) || !(currTest.equalsIgnoreCase(test)) ) {
+            if ((currTest == null) || !(currTest.equalsIgnoreCase(test))) {
                 testCase = extent.createTest(description.getTestClass().getSimpleName());
                 currTest = test;
             }
@@ -169,7 +164,6 @@ public class ExtentReportCreator {
 
         // Display a date in day, month, year format
         DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH_mm_ss");
-        String today = formatter.format(date);
-        return today;
+        return formatter.format(date);
     }
 }
