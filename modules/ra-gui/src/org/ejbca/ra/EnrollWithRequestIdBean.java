@@ -335,7 +335,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 return;
             }
             final String[] parts = StringUtils.split(selectedAlgorithm, '_');
-            if (parts == null || parts.length < 2) {
+            if (parts == null || parts.length < 1) {
                 raLocaleBean.addMessageError("enroll_no_key_algorithm");
                 log.info("No full key algorithm was provided: "+selectedAlgorithm);
                 return;
@@ -346,11 +346,16 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info("No key algorithm was provided: "+selectedAlgorithm);
                 return;
             }
-            final String keySpec = parts[1];
-            if (StringUtils.isEmpty(keySpec)) {
-                raLocaleBean.addMessageError("enroll_no_key_specification");
-                log.info("No key specification was provided: "+selectedAlgorithm);
-                return;
+            final String keySpec;
+            if (parts.length > 1) { // It's ok for some algs (EdDSA) to have no keySpec
+                keySpec = parts[1];
+                if (StringUtils.isEmpty(keySpec)) {
+                    raLocaleBean.addMessageError("enroll_no_key_specification");
+                    log.info("No key specification was provided: "+selectedAlgorithm);
+                    return;
+                }
+            } else {
+                keySpec = null;
             }
             if (getEndEntityInformation().getExtendedInformation() == null) {
                 getEndEntityInformation().setExtendedInformation(new ExtendedInformation());
@@ -617,6 +622,14 @@ public class EnrollWithRequestIdBean implements Serializable {
                     }
                 }
             }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519,
+                        AlgorithmConstants.KEYALGORITHM_ED25519));
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
+                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448,
+                        AlgorithmConstants.KEYALGORITHM_ED448));
+            }
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final Set<String> ecChoices = new HashSet<>();
                 if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
@@ -635,6 +648,10 @@ public class EnrollWithRequestIdBean implements Serializable {
                 final List<String> ecChoicesList = new ArrayList<>(ecChoices);
                 Collections.sort(ecChoicesList);
                 for (final String ecNamedCurve : ecChoicesList) {
+                    if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
+                        log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
+                        continue;
+                    }
                     availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
                                     + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                 }
