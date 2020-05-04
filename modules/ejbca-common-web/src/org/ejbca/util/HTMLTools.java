@@ -139,16 +139,16 @@ public class HTMLTools {
             {"gt", Integer.valueOf(62)},        // > - greater-than
    };
     
-    static Map<String,Integer> E2I = new HashMap<String,Integer>();
-    static Map<Integer,String> I2E = new HashMap<Integer,String>();
-    static Map<Integer,String> I2ERL = new HashMap<Integer,String>();
+    static Map<String,Integer> E2I = new HashMap<>();
+    static Map<Integer,String> I2E = new HashMap<>();
+    static Map<Integer,String> I2ERL = new HashMap<>();
     static {
-        for (int i=0; i<ENTITIES.length; ++i) {
-            E2I.put((String)ENTITIES[i][0], (Integer)ENTITIES[i][1]);
-            I2E.put((Integer)ENTITIES[i][1], (String)ENTITIES[i][0]);
+        for (Object[] element : ENTITIES) {
+            E2I.put((String)element[0] , (Integer)element[1]);
+            I2E.put((Integer)element[1], (String)element[0]);
         }
-        for (int i=0; i<HTML_ENTITIES_REDUCED_LIST.length; ++i) {
-            I2ERL.put((Integer)HTML_ENTITIES_REDUCED_LIST[i][1], (String)HTML_ENTITIES_REDUCED_LIST[i][0]);
+        for (Object[] element : HTML_ENTITIES_REDUCED_LIST) {
+            I2ERL.put((Integer)element[1], (String)element[0]);
         }
     }
 
