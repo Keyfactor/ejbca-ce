@@ -138,6 +138,7 @@
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
+                    <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectOneMenu>
 
 			</h:panelGrid>
