@@ -14,9 +14,8 @@ package org.ejbca.webtest.scenario;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-import org.apache.log4j.Logger;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
@@ -38,32 +37,29 @@ import org.openqa.selenium.WebDriver;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
     
-    private static final Logger log = Logger.getLogger(EcaQa214_EditCaGenerateButtons.class);
-
-    private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
-    private static CryptoTokenHelper cryptoTokenHelper;
-
 
     // Test Data
     private static class TestData {
-        private static final String CA_NAME = "GenButtonsCA";
-        private static final String SUBJECT_DN_1 = "CN=ABC";
-        private static final String SUBJECT_DN_2 = "CN=DEF";
-        private static final String SUBJECT_DN_3 = "CN=GHI";
-        private static final String EXPECTED_FIRST_ERROR = "Ca Validity: Validation Error: Value is required.";
-        public static final String SUBJECT_DN_EXISTING_CA = "CN=JKL";
+        static final String CA_NAME = "GenButtonsCA";
+        static final String SUBJECT_DN_1 = "CN=ABC";
+        static final String SUBJECT_DN_2 = "CN=DEF";
+        static final String SUBJECT_DN_3 = "CN=GHI";
+        static final String EXPECTED_1ST_ERROR = "Ca Validity: Validation Error: Value is required.";
+        static final String EXPECTED_2ND_ERROR = "Partitioned CRLs are not allowed without 'Issuing Distribution Point on CRL'.";
+        static final String EXPECTED_3RD_ERROR = "Partitioned CRLs are not allowed without a 'Default CRL Distribution Point' filled in, which must contain an asterisk (*) as a placeholder for the partition number.";
+        static final String SUBJECT_DN_EXISTING_CA = "CN=JKL";
     }
 
     @BeforeClass
     public static void init() {
         // super
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        WebDriver webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
-        cryptoTokenHelper = new CryptoTokenHelper(webDriver);
+        CryptoTokenHelper cryptoTokenHelper = new CryptoTokenHelper(webDriver);
         // Verify a cryptotoken exists
         cryptoTokenHelper.openPage(getAdminWebUrl());
         cryptoTokenHelper.assertTokenExists(getManagementCACryptoTokenName());
@@ -134,7 +130,11 @@ public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
         // Given
         caHelper.clearDefaultCaDefinedValidationData();
         caHelper.createCa(); // will trigger validation errors
-        caHelper.assertHasErrorMessage(TestData.EXPECTED_FIRST_ERROR);
+        caHelper.assertHasErrorMessages(Arrays.asList(
+                TestData.EXPECTED_1ST_ERROR,
+                TestData.EXPECTED_2ND_ERROR,
+                TestData.EXPECTED_3RD_ERROR
+        ));
         caHelper.setSubjectDn(TestData.SUBJECT_DN_3);
         // When
         caHelper.clickGenerateDefaultCrlDistributionPoint();

@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AdminRolesHelper;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
@@ -56,7 +55,7 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
     }
     
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove Administrator Role
         removeAdministratorRoleByName(TestData.ROLE_NAME);
         // Remove Approval Profile
