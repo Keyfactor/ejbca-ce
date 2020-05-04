@@ -233,8 +233,10 @@ public class EndEntityProfileHelper extends BaseHelper {
             final List<String> selectedCAs
     ) {
         selectOptionByName(Page.SELECT_DEFAULT_CERTIFICATE_PROFILE, defaultCertificateProfileName);
+        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
         selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, selectedCertificateProfiles);
         selectDefaultCa(defaultCAName);
+        deselectOptions(Page.SELECT_AVAILABLE_CAS);
         selectOptionsByName(Page.SELECT_AVAILABLE_CAS, selectedCAs);
     }
 
@@ -254,6 +256,7 @@ public class EndEntityProfileHelper extends BaseHelper {
      * @param cPName Certificate Profile name.
      */
     public void selectAvailableCp(String cPName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
         selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
     }
 
@@ -263,6 +266,7 @@ public class EndEntityProfileHelper extends BaseHelper {
      * @param cPNames Certificate Profile names.
      */
     public void selectAvailableCps(String... cPNames) {
+        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
         selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Arrays.asList(cPNames));
     }
 
@@ -282,6 +286,7 @@ public class EndEntityProfileHelper extends BaseHelper {
      * @param caName CA name.
      */
     public void selectAvailableCa(String caName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CAS);
         selectOptionsByName(Page.SELECT_AVAILABLE_CAS, Collections.singletonList(caName));
     }
 
@@ -898,7 +903,7 @@ public class EndEntityProfileHelper extends BaseHelper {
         String[] expectedErrorMessages = {"You must fill in a notification sender if notification is to be used.",
                 "You must fill in a notification subject if notification is to be used.",
                 "You must fill in a notification message if notification is to be used."};
-        assertErrorAllErrorMessageAppear(expectedErrorMessages,
+        assertAllErrorMessagesAppear(expectedErrorMessages,
                 "Notification not filled error message element not found!",
                 "Unexpected save enpty notification message!");
     }
