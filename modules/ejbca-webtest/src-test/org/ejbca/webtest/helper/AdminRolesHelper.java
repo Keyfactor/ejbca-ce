@@ -118,10 +118,10 @@ public class AdminRolesHelper extends BaseHelper {
             return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']/../td/a[text()='Access Rules']");
         }
         static By getRenameButtonFromRolesTableRowContainingText(final String text) {
-            return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']/../td/div/input[@value='Rename']");
+            return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']/../td/span/input[@value='Rename']");
         }
         static By getDeleteButtonFromRolesTableRowContainingText(final String text) {
-            return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']/../td/div/input[@value='Delete']");
+            return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']/../td/span/input[@value='Delete']");
         }
 
         static By getMatchWithFromMembersTableRowContainingText(final String text) {
