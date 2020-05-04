@@ -161,7 +161,7 @@ public class SwaggerUIHelper extends BaseHelper {
         sb.append("\n\"username\": \"" + uname + "\",");
         sb.append("\n\"password\": \"" + pword + "\"\n");
 
-        fillSwaggerTextarea(Page.BODY_PKCS10ENROLL, sb.toString(), true);
+        fillSwaggerTextarea(Page.BODY_PKCS10ENROLL, sb.toString());
     }
 
     /**
@@ -227,7 +227,7 @@ public class SwaggerUIHelper extends BaseHelper {
         sb.append("\n\"key_alg\": \"" + keySig + "\",");
         sb.append("\n\"key_spec\": \"" + keySpec + "\"\n");
 
-        fillSwaggerTextarea(Page.BODY_ENROLLKEYSTORE, sb.toString(), true);
+        fillSwaggerTextarea(Page.BODY_ENROLLKEYSTORE, sb.toString());
     }
 
     /**
