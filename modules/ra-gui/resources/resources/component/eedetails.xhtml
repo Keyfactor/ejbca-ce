@@ -332,7 +332,7 @@
             <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-                                 rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                                 rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible and raEndEntityBean.endEntity != null}" />
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
