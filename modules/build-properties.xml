@@ -230,6 +230,12 @@
 			<include name="httpmime-*.jar"/>
 		</fileset>
 	</path>
+
+	<path id="lib.system-rules.classpath">
+		<fileset dir="${ejbca.home}/lib/ext">
+			<include name="system-rules-*.jar"/>
+		</fileset>
+	</path>
 	
 	<path id="lib.easymock.classpath">
         <!-- this is for cglib and objenesis, so we don't have to duplicate those jars -->
