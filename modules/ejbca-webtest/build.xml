@@ -110,7 +110,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${webtest.build-test.dir}" includes="**/EcaQa7?_*.class" excludes="**/*EcaQa*$*"/>
+                <fileset dir="${webtest.build-test.dir}" includes="**/EcaQa*.class" excludes="**/*EcaQa*$*"/>
             </batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
@@ -142,14 +142,11 @@
 	<target name="clean" description="Clean up this module">
 		<delete dir="${webtest.build.dir}" />
 		<delete dir="${webtest.build-test.dir}"/>
-		<delete dir="${reports.dir}/images"/>
 		<delete file="${reports.dir}/QaEjbcaTestReport.html" />
 
 	</target>
 
 	<target name="cleanReports" description="Clean up this module">
-		<delete dir="${reports.dir}/images"/>
 		<delete file="${reports.dir}/QaEjbcaTestReport.html" />
-
 	</target>
 </project>
