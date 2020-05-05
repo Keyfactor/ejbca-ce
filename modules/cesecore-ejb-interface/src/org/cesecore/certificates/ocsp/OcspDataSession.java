@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
+import java.util.List;
+
+import org.cesecore.oscp.OcspResponseData;
+
 /**
  * 
  * @version $Id$
@@ -19,4 +23,38 @@ package org.cesecore.certificates.ocsp;
  */
 public interface OcspDataSession {
 
+    
+    /**
+     * Returns the list of OCSP data corresponding to the caId
+     * @param caId
+     * @return a list of OCSP data for the caId, empty list if no such data.
+     */
+    List<OcspResponseData> findOcspDataByCaId(final Integer caId);
+
+    /**
+     * Returns the list of OCSP data corresponding to the serialNumber
+     * @param serialNumber
+     * @return a list of OCSP data for the serialNubmer, empty list if no such data.
+     */
+    List<OcspResponseData> findOcspDataBySerialNumber(final String serialNumber);
+    
+    /**
+     * Returns the OCSP response with the latest 'nextUpdate' given CA and serial number.
+     * @param caId of the CA which signed the OCSP response
+     * @param serialNumber of the certificate which the OCSP response represents
+     * @return OCSP data for the caId and serialNubmer, null if no such data.
+     */
+    OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
+    
+    /**
+     * Returns a list of distinct serial numbers of the responses expired at or before the given
+     * expirationDate. Expiry date is determined by the 'nextUpdate' field of the stored OCSP response.
+     * 
+     * @param caId of the CA which signed the OCSP response
+     * @param expirationDate date before OCSP response expires.
+     * @param maxNumberOfResults Maximum number of results for this query.
+     * @param offset Start offset for this query.
+     * @return Serial numbers of the expired responses.
+     */
+    List<String> findExpiringOcpsData(Integer caId, long expirationDate, int maxNumberOfResults, int offset);
 }
