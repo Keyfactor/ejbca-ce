@@ -360,48 +360,6 @@ public abstract class AlgorithmTools {
         return processedCurveNames;
         
     }
-/**
-    private static void processCurveName(final boolean hasToBeKnownByDefaultProvider,
-            final String ecNamedCurve) {
-        if (AlgorithmConstants.BLACKLISTED_EC_CURVES.contains(ecNamedCurve)) {
-            return;
-        }
-        // Only add it if the key-length is sufficient
-        try {
-            final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
-            final int bitLength = parameterSpec.getN().bitLength();
-            KeyTools.checkValidKeyLength(AlgorithmConstants.KEYALGORITHM_ECDSA, bitLength);
-            // Check if this exists under another alias
-            boolean added = false;
-            for (final String name : processedCurveNames.keySet()) {
-                final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(name);
-                if (parameterSpec.equals(parameterSpec2)) {
-                    // We have already listed this curve under another name
-                    added = true;
-                    break;
-                }
-            }
-            if (!added) {
-                if (hasToBeKnownByDefaultProvider) {
-                    if (AlgorithmTools.isNamedECKnownInDefaultProvider(ecNamedCurve)) {
-                        processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
-                    }
-                } else {
-                    processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
-                }
-            }
-        } catch (InvalidKeyException e) {
-            // Ignore very silently
-            if (log.isTraceEnabled()) {
-                log.trace("Not adding keys that are not allowed to key list: "+e.getMessage());
-            }
-        } catch (RuntimeException e) {
-            // Ignore
-            if (log.isDebugEnabled()) {
-                log.debug(e.getMessage());
-            }
-        }
-    }*/
 
     /** @return the number of bits a named elliptic curve has or 0 if the curve name is unknown. */
     public static int getNamedEcCurveBitLength(final String ecNamedCurve) {
