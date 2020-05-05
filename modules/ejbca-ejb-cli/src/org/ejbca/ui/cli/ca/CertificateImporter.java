@@ -42,6 +42,8 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.util.passgen.IPasswordGenerator;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * Class implementing logic for importing a certificate from file.
@@ -205,9 +207,10 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
                     EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null,
                     null, SecConst.TOKEN_SOFT_BROWSERGEN, null);
-            userdata.setPassword("foo123");
+            final IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+            userdata.setPassword(pwdgen.getNewPassword(14, 16));
             endEntityManagementSession.addUser(authenticationToken, userdata, false);
-            log.info("User '" + username + "' has been added.");
+            log.info("End entity '" + username + "' has been added.");
             return userdata;
         }
     }
