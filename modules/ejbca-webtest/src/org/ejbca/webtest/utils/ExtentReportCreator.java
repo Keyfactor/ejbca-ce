@@ -14,19 +14,17 @@ package org.ejbca.webtest.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Base64;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.convert.TestModelReportBuilder;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.JsonFormatter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import org.apache.commons.io.FileUtils;
+import org.ejbca.webtest.utils.extentreports.EjbcaTestModelReportBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -43,6 +41,7 @@ import org.openqa.selenium.WebDriver;
  * @version $Id$
  */
 public class ExtentReportCreator {
+
     private static ExtentReports extent;
     private static ExtentTest testCase;
     private static String currTest;
@@ -51,8 +50,8 @@ public class ExtentReportCreator {
             = (System.getProperty("user.dir").contains("ejbca-webtest"))
             ? System.getProperty("user.dir") + "/../.." : System.getProperty("user.dir");
 
-    //Setter method for WebDriver
-    public static void setBrowser(WebDriver browser) {
+    // Setter method for WebDriver
+    public static void setBrowser(final WebDriver browser) {
         ExtentReportCreator.browser = browser;
     }
 
@@ -63,39 +62,41 @@ public class ExtentReportCreator {
     @BeforeClass
     public static void setUp() throws IOException {
         extent = new ExtentReports();
-        TestModelReportBuilder modelBuilder = new TestModelReportBuilder();
-        modelBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test-report.json"));
-        ExtentSparkReporter spark = new ExtentSparkReporter(reportDir + "/reports/QaEjbcaTestReport.html");
+        final EjbcaTestModelReportBuilder ejbcaTestModelReportBuilder = new EjbcaTestModelReportBuilder();
+        // Load results of previous tests if any through JSON
+        ejbcaTestModelReportBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test-report.json"));
+        final ExtentSparkReporter spark = new ExtentSparkReporter(reportDir + "/reports/QaEjbcaTestReport.html");
         spark.config().setDocumentTitle("EJBCA QA Test Report");
         spark.config().setReportName("EJBCA Test Results!");
-//        spark.config().setTestViewChartLocation(ChartLocation.BOTTOM);
         spark.config().setTheme(Theme.DARK);
-        JsonFormatter json = new JsonFormatter(reportDir + "/reports/test-report.json");
-        extent.attachReporter(spark,json);
+        // Add a JSON formatter to record current's test result
+        final JsonFormatter json = new JsonFormatter(reportDir + "/reports/test-report.json");
+        extent.attachReporter(spark, json);
     }
 
-    //Flushes all events to test report.
+    // Flushes all events to test report.
     @AfterClass
     public static void tearDown() {
         // writing everything to document
         extent.flush();
     }
 
-    //Using JUnit TestWatcher as a rule
-
+    // Using JUnit TestWatcher as a rule
     @Rule
     public TestRule watchman = new TestWatcher() {
 
-        //Override the Junit failed method to report results and take screenshot
+        // Override the Junit failed method to report results and take screenshot
         @Override
-        protected void failed(Throwable e, Description description) {
+        protected void failed(final Throwable throwable, final Description description) {
             // step log
             createTest(description);
-            ExtentTest failed = testCase.createNode(description.getDisplayName());
-            failed.log(Status.FAIL, "Failure trace Selenium:  " + e.toString());
+            final ExtentTest failed = testCase.createNode(description.getDisplayName());
+            failed.log(Status.FAIL, "Message: " + throwable.getMessage());
             try {
                 if (!description.getDisplayName().contains("CmdLine")) {
-                    failed.addScreenCaptureFromPath(snap(description));
+                    // Add log events
+                    failed.fail(throwable);
+                    failed.fail("Screenshot: ", MediaEntityBuilder.createScreenCaptureFromBase64String(screenshotAsBase64String()).build());
                 }
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -103,26 +104,25 @@ public class ExtentReportCreator {
             extent.flush();
         }
 
-
-        //When passed only write to the log with screenshot.
+        // When passed only write to the log with screenshot.
         @Override
-        protected void succeeded(Description description) {
+        protected void succeeded(final Description description) {
             // step log
             createTest(description);
-            ExtentTest passed = testCase.createNode(description.getDisplayName());
+            final ExtentTest passed = testCase.createNode(description.getDisplayName());
             passed.log(Status.PASS, "-");
             try {
                 if (!description.getDisplayName().contains("CmdLine")) {
-                    passed.addScreenCaptureFromPath(snap(description));
+                    // Add log events
+                    passed.pass("Screenshot: ", MediaEntityBuilder.createScreenCaptureFromBase64String(screenshotAsBase64String()).build());
                 }
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-
             extent.flush();
         }
 
-        //Adds a new test node for each Junit test.
+        // Adds a new test node for each Junit test.
         void createTest(Description description) {
             String test = description.getTestClass().getSimpleName();
             if ((currTest == null) || !(currTest.equalsIgnoreCase(test))) {
@@ -131,39 +131,16 @@ public class ExtentReportCreator {
             }
         }
 
-        //Takes a screenshot
-        private String snap(Description description) {
-            TakesScreenshot takesScreenshot = (TakesScreenshot) browser;
-
-            File scrFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
-            File destFile = getDestinationFile(description);
+        // Takes a screenshot as base64 string
+        private String screenshotAsBase64String() {
+            final TakesScreenshot takesScreenshot = (TakesScreenshot) browser;
+            final File scrFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
             try {
-                FileUtils.copyFile(scrFile, destFile);
+                final byte[] scrFileContent = FileUtils.readFileToByteArray(scrFile);
+                return Base64.getEncoder().encodeToString(scrFileContent);
             } catch (IOException ioe) {
                 throw new RuntimeException(ioe);
             }
-            return (destFile.getAbsolutePath());
         }
-
-        //Creates a folder for the screenshot.
-        private File getDestinationFile(Description description) {
-            String userDirectory = reportDir + "/reports/images/";
-            String date = getDateTime();
-            String fileName = description.getDisplayName() + "_" + date + ".png";
-            //add date of today
-            String dateForDir = getDateTime();
-            String absoluteFileName = userDirectory + "/" + dateForDir + "/" + fileName;
-
-            return new File(absoluteFileName);
-        }
-
     };
-
-    private String getDateTime() {
-        Date date = Calendar.getInstance().getTime();
-
-        // Display a date in day, month, year format
-        DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH_mm_ss");
-        return formatter.format(date);
-    }
 }
