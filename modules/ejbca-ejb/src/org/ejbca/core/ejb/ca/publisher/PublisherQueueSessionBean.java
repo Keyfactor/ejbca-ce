@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.ocsp.OcspDataSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.config.EjbcaConfiguration;
@@ -82,6 +83,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     
     @EJB
     private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
+    
+    @EJB
+    private OcspDataSessionLocal ocspDataSession;
 
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
@@ -384,6 +388,20 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                             throw e;
                         }
                     }
+                    
+                } else if (publishType == PublisherConst.PUBLISH_TYPE_OCSP_RESPONSE) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Publishing OCSP Response");
+                    }
+                    
+                    OcspResponseData ocspResponseData = ocspDataSession.findOcspDataById(fingerprint);
+                               
+                    if (ocspResponseData == null) {
+                        throw new FinderException();
+                    }
+                    
+                    published = publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherOcspResponse) publisher, admin, ocspResponseData);
+                    
                 } else {
                     String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);
                     log.error(msg);
