@@ -88,6 +88,18 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     }
 
     @Override
+    public OcspResponseData findOcspDataById(final String id) {
+        log.trace(">findOcspDataById");
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataById", OcspResponseData.class);
+
+        query.setParameter("id", id);
+        query.setMaxResults(1);
+
+        log.trace("<findOcspDataById");
+        return query.getResultList().isEmpty() ? null : query.getResultList().get(0);
+    }
+    
+    @Override
     public List<String> findExpiringOcpsData(final Integer caId, final long expirationDate, final int maxNumberOfResults, final int offset) {
         log.trace(">findExpiringOcpsData");
         final TypedQuery<Object[]> query = entityManager
