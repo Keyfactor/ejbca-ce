@@ -38,24 +38,24 @@
 	<path id="compile-test.classpath">
 		<path location="${clientToolBox.build.dir}" />
 		<path refid="lib.system-rules.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path location="${mod.systemtest-common.lib}"/>
+		<path location="${mod.systemtest-interface.lib}"/>
+		<path location="${mod.cesecore-common.lib}"/>
+		<pathelement location="${mod.ejbca-common.lib}"/>
 	</path>
 
 
 	<path id="test.classpath">
+		<path refid="compile-test.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
-		<path refid="lib.junit.classpath"/>
 		<path refid="lib.commons-config.classpath" />
-		<path refid="compile-test.classpath"/>
 		<path location="${clientToolBox.build-test.dir}" />
-		<path location="${mod.cesecore-common.lib}"/>
-		<path location="${mod.systemtest-interface.lib}"/>
-		<path location="${mod.systemtest-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path refid="lib.commons-lang.classpath" />
 		<path refid="lib.bouncycastle.classpath" />
 		<path refid="lib.cert-cvc.classpath" />
-		<pathelement location="${mod.ejbca-common.lib}"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
 
