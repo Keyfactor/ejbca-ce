@@ -34,11 +34,14 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  */
 @Local
 public interface PublisherQueueSessionLocal {
+
     /**
-     * Adds an entry to the publisher queue.
-     *
+     * 
      * @param publisherId the publisher that this should be published to
      * @param publishType the type of entry it is, {@link PublisherQueueData#PUBLISH_TYPE_CERT} or CRL
+     * @param fingerprint unique id for the data to be added to the queue
+     * @param queueData actual queue data to be added
+     * @param publishStatus status of the publisher 
      * @throws CreateException if the entry can not be created
      */
     void addQueueData(int publisherId, int publishType, String fingerprint,

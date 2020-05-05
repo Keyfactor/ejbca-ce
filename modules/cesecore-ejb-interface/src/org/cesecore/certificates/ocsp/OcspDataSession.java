@@ -46,6 +46,15 @@ public interface OcspDataSession {
      */
     OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
     
+    
+    /**
+     * Returns the OCSP response corresponding to the given id 
+     * 
+     * @param id the unique id for the OCSP response data 
+     * @return OCSP response data or null if id could not be found.
+     */
+    OcspResponseData findOcspDataById(final String id);
+    
     /**
      * Returns a list of distinct serial numbers of the responses expired at or before the given
      * expirationDate. Expiry date is determined by the 'nextUpdate' field of the stored OCSP response.
