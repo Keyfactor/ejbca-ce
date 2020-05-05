@@ -286,7 +286,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Imports a directory with PEM encoded certficate file(s) to the database.";
+        return "Imports a directory with PEM encoded certficate file(s) to the database, creating an End Entity (with random pwd and status 'generated') to map the each certificate to.";
 
     }
 
