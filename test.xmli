@@ -136,6 +136,7 @@
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
+					<include name="modules/clientToolBox/src-test/**/${test.runone}.java" />
 					<include name="modules/configdump/src-test/**/${test.runone}.java" />
 					<include name="modules/ct/src-test/**/${test.runone}.java" />
 					<include name="modules/peerconnector/src-test/**/${test.runone}.java" />
@@ -175,6 +176,9 @@
     	</condition>
     	<condition property="module" value="modules/statedump">
     		<matches string="${test-fullname}" pattern="^modules/statedump/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/clientToolBox">
+    		<matches string="${test-fullname}" pattern="^modules/clientToolBox/.*$"/>
     	</condition>
     	<condition property="module" value="modules/configdump">
     		<matches string="${test-fullname}" pattern="^modules/configdump/.*$"/>
@@ -321,6 +325,13 @@
             <target name="test:system" />
         </ant>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:clientToolBox" description="run JUnit ClientToolBox tests." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/clientToolBox" inheritall="true" inheritrefs="true">
+            <target name="test:stress" />
+        </ant>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:ct" description="run JUnit Certificate Transparency test." depends="deleteDirectories">

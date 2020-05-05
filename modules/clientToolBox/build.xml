@@ -12,6 +12,8 @@
 	<property name="clientToolBox.build.dir" location="${clientToolBox.dir}/build"/>
 	<property name="clientToolBox.src.dir" location="${clientToolBox.dir}/src"/>
 	<property name="clientToolBox.intresources.dir" location="${clientToolBox.dir}/intresources"/>
+	<property name="clientToolBox.src-test.dir" location="${clientToolBox.dir}/src-test"/>
+	<property name="clientToolBox.build-test.dir" location="${clientToolBox.dir}/build-test"/>
 
 	<path id="clientToolBox.lib.classpath">
 		<path refid="lib.bouncycastle.classpath"/>
@@ -31,6 +33,30 @@
 		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-ws-client.lib}"/>
 		<path location="${mod.caa.lib}.lib}"/>
+	</path>
+
+	<path id="compile-test.classpath">
+		<path location="${clientToolBox.build.dir}" />
+		<path refid="lib.system-rules.classpath"/>
+	</path>
+
+
+	<path id="test.classpath">
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.jee-client.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path refid="lib.commons-config.classpath" />
+		<path refid="compile-test.classpath"/>
+		<path location="${clientToolBox.build-test.dir}" />
+		<path location="${mod.cesecore-common.lib}"/>
+		<path location="${mod.systemtest-interface.lib}"/>
+		<path location="${mod.systemtest-common.lib}"/>
+		<path location="${mod.cesecore-ejb-interface.lib}"/>
+		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.bouncycastle.classpath" />
+		<path refid="lib.cert-cvc.classpath" />
+		<pathelement location="${mod.ejbca-common.lib}"/>
+		<pathelement path="${clover.jar}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">
@@ -54,6 +80,7 @@
 
 	<target name="clean" description="Clean up this module">
 		<delete dir="${clientToolBox.build.dir}" />
+		<delete dir="${clientToolBox.build-test.dir}" />
 		<delete dir="${mod.clientToolBox.dist}" />
 	</target>
 
@@ -101,5 +128,57 @@
 		</copy>	
 		<chmod file="${mod.clientToolBox.dist}/*.sh" perm="a+rx"/>
 	</target>
+
+	<!-- Tests -->
+	<target name="compile-tests" depends="build, with.clover">
+		<mkdir dir="${clientToolBox.build-test.dir}" />
+		<copy file="${log4j.test.file}" tofile="${clientToolBox.build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy file="${jndi.properties.file}" tofile="${clientToolBox.build-test.dir}/jndi.properties" failonerror="true"/>
+		<copy file="${jboss-ejb-client.properties}" todir="${clientToolBox.build-test.dir}" failonerror="true"/>
+		<javac srcdir="${clientToolBox.src-test.dir}" destdir="${clientToolBox.build-test.dir}" debug="on" includeantruntime="no"
+			   encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath">
+			<sourcepath location="${mod.systemtests.path}/src-test/"/>
+		</javac>
+	</target>
+
+	<target name="test:stress" depends="compile-tests" description="Run stress tests for this module">
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${clientToolBox.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${clientToolBox.build-test.dir}" includes="**/*Test.class">
+				</fileset>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=HealthCheckTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<condition property="remoteDebugJvmArgs"
+				   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				   else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+			<classpath>
+				<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${clientToolBox.build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
+		</junit>
+	</target>
+
+
 
 </project>
