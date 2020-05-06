@@ -36,7 +36,7 @@ public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
 
     // TestData
     public static class TestData {
-        static final String TOKEN_NAME = "EcaQa255Token";
+        static final String TOKEN_NAME = "CHARootCrypto";
         static final String CRYPTOTOKEN_TYPE_SOFT = "SOFT";
         static final String KEY_NAME_DEFAULTKEY = "defaultKey";
         static final String KEY_NAME_SIGNKEY = "signkey";
