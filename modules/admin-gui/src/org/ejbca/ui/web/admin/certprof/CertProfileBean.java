@@ -172,6 +172,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return "done";  // Outcome defined in faces-config.xml
     }
 
+
+    
     public String save() {
         boolean success = true;
         try {
@@ -181,7 +183,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("ONEAVAILABLEKEYALGORITHM");
                 success = false;
             }
-            if (prof.getAvailableBitLengthsAsList().isEmpty()) {
+            if(prof.isKeyAlgorithmsECType() && prof.getAvailableEcCurvesAsList().isEmpty()) {
+                addErrorMessage("NOECCURVESELECTED");
+                success = false;                
+            }
+            
+            if (prof.getAvailableBitLengthsAsList().isEmpty() && prof.isKeyAlgorithmsRequireKeySizes()) {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
                 success = false;
             }
@@ -410,12 +417,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSTU);
         }
-        
-        
         final List<SelectItem> ret = new ArrayList<>();
-        for (final Integer current : availableBitLengths) {
-            ret.add(new SelectItem(current, current + " " + getEjbcaWebBean().getText("BITS")));
-        }
+        if (availableBitLengths.size() > 0 && certificateProfile.isKeyAlgorithmsRequireKeySizes()) {            
+            for (final Integer current : availableBitLengths) {
+                ret.add(new SelectItem(current, current + " " + getEjbcaWebBean().getText("BITS")));
+            }
+        } else {
+            ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOALGORITHMWITHSELECTABLEKEYSIZE")));
+        }    
         return ret;
     }
 
