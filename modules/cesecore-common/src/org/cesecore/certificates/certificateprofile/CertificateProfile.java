@@ -2934,12 +2934,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegalkeyalgorithm", keyAlgorithm));
         }
+        if (AlgorithmConstants.KEYALGORITHM_ED25519.equals(keyAlgorithm) || AlgorithmConstants.KEYALGORITHM_ED448.equals(keyAlgorithm)) {
+            // The "complete" algorithm is allowed, so we don't check key length
+            if (log.isDebugEnabled()) {
+                log.debug("Not verifying key length, which is implicitly allowed already, for " + keyAlgorithm);
+            }
+            return;
+        }
         if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlgorithm)) {
             final List<String> availableEcCurves = getAvailableEcCurvesAsList();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             for (final String ecNamedCurveAlias : AlgorithmTools.getEcKeySpecAliases(keySpecification)) {
                 if (availableEcCurves.contains(ecNamedCurveAlias)) {
-                    // Curve is allowed, so we don't check key strength
+                    // Curve is allowed, so we don't check key length
                     return;
                 }
             }
