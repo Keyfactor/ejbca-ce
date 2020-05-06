@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
@@ -102,19 +102,19 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     @Override
     public List<String> findExpiringOcpsData(final Integer caId, final long expirationDate, final int maxNumberOfResults, final int offset) {
         log.trace(">findExpiringOcpsData");
-        final TypedQuery<Object[]> query = entityManager
-                .createQuery("SELECT a.serialNumber, MAX(a.nextUpdate) FROM OcspResponseData a WHERE a.caId=:caId GROUP BY a.serialNumber", Object[].class);
+
+        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery(OcspResponseData.FIND_EXPIRING_OCPS_DATA_BY_CAID, OcspResponseData.class);
         query.setParameter("caId", caId);
+        query.setParameter("expirationDate", expirationDate);
         query.setMaxResults(maxNumberOfResults);
         query.setFirstResult(offset);
-        final List<String> distinctSerialNumbers = new ArrayList<>();
-        for (Object[] result : query.getResultList()) {
-            if ((long)result[1] <= expirationDate) {
-                distinctSerialNumbers.add((String) result[0]);
-            }
-        }
+
         log.trace("<findExpiringOcpsData");
-        return distinctSerialNumbers;
+
+        return query.getResultList()
+                           .stream()
+                           .map(response -> response.getSerialNumber())
+                           .collect(Collectors.toList());
     }
     
     @Override
