@@ -17,8 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * An implementation of HashMap that base64 encodes all String's that you 'put', it encodes them to form "B64:<base64 encoded string>". It only
- * encodes objects of type String.
+ * An implementation of HashMap that base64 encodes all String's that you 'put', if it's not asciiPrintable, where Base64 encoding is not needed. 
+ * It encodes (non asciiPrintable) to form "B64:<base64 encoded string>". It only encodes objects of type String.
  * 
  * @version $Id$
  */
