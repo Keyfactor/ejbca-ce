@@ -30,6 +30,8 @@ import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link GoogleSafeBrowsingValidator}.
+ *
+ * @version $Id$
  */
 public class GoogleSafeBrowsingValidatorTest {
 
