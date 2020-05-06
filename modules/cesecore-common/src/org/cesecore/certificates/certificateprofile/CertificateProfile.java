@@ -1304,8 +1304,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setAvailableBitLengthsAsList(final List<Integer> availableBitLengths) {
-        log.trace("setAvailableBitLengthsAsList");
-        log.trace("[" + availableBitLengths + "]");
+        if (log.isTraceEnabled()) {
+            log.trace("setAvailableBitLengthsAsList");
+            log.trace("[" + availableBitLengths + "]");
+        }
         // Strange values here, but it makes the <> below work for sure
         int minimumavailablebitlength = 99999999;
         int maximumavailablebitlength = 0;
