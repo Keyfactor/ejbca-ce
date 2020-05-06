@@ -45,6 +45,8 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * Validates domain names against the <a href="https://developers.google.com/safe-browsing">Google Safe Browsing API</a>.
+ *
+ * @version $Id$
  */
 public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNameValidator {
     private static final long serialVersionUID = -1L;
