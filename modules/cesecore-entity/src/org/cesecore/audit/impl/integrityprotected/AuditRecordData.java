@@ -287,9 +287,10 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
     /** @param additionalDetails additional details. */
     @Transient
     public void setMapAdditionalDetails(final Map<String, Object> additionalDetails) {
-    	// TODO: Decide on which implementation to use for serialization of the additional details
-    	setAdditionalDetails(XmlSerializer.encode(additionalDetails));
-    	//setAdditionalDetails(JsonSerializer.toJSON(additionalDetails));
+        // ECA-6284: if this is a HashMap, and additionalDetails in AuditRecordData is a simple structure, we can encode it quickly
+        setAdditionalDetails(XmlSerializer.encodeSimpleMapFastWithBase64(additionalDetails));
+        // The above replaces this, and takes a fraction of the time
+        //setAdditionalDetails(XmlSerializer.encode(additionalDetails));
     }
 
 	//

@@ -13,7 +13,6 @@
 package org.cesecore.certificates.endentity;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +29,7 @@ import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.XmlSerializer;
 
 
 /**
@@ -339,13 +339,14 @@ public class EndEntityInformation implements Serializable {
     	String ret = null;
     	if (extendedinformation != null){
             // We must base64 encode string for UTF safety
-            final HashMap<Object, Object> b64DataMap = new Base64PutHashMap();
+            final LinkedHashMap<Object, Object> b64DataMap = new Base64PutHashMap();
             b64DataMap.putAll(extendedinformation.getRawData());
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
-    		try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);) {
-    		    encoder.writeObject(b64DataMap);
-    		}
-    		ret = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+            // ECA-6284: Make fast XML serialization, under the assumption that extendedInformation is a simple map with string keys and primitive values 
+            return XmlSerializer.encodeSimpleMapFast(b64DataMap);
+            // The above replaces this, and takes a fraction of the time
+            // try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);) {
+            //   encoder.writeObject(b64DataMap);
+            // }
     	}
     	return ret;
     }

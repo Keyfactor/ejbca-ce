@@ -713,7 +713,7 @@ public class UserData extends ProtectedData implements Serializable {
         // This is a speed optimization to avoid encoding the extendedInformation into XML data too often
         // We instead use the cached object in this class, and serialize it out to XML data only when we persist the object
         // (create or update). This means you can call getExtendedInformation as much as you want, without causing an expensive
-        // XMLEncoder/Decoder
+        // XMLEncoder/Decoder (or now the less expensive XmlSerializer, ECA-6284)
         setExtendedInformationPrePersist(getExtendedInformation());
         // After setting the data we want, continue on to the normal database integrity protection
         super.protectData();
