@@ -17,12 +17,17 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Index;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.ConstructorResult;
+import javax.persistence.ColumnResult;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -47,7 +52,32 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
         @NamedQuery(name = "deleteOcspDataByCaId", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId"),
         @NamedQuery(name = "deleteOcspDataBySerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.serialNumber = :serialNumber"),
         @NamedQuery(name = "deleteOcspDataByCaIdSerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber"), })
+@NamedNativeQueries({
+        @NamedNativeQuery(name = OcspResponseData.FIND_EXPIRING_OCPS_DATA_BY_CAID,
+                          query = "SELECT * FROM OcspResponseData ocsp INNER JOIN (" +
+                                  "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
+                                  ") maxProducedAtTable " +
+                                  "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
+                                  "WHERE caId = :caId AND ocsp.nextUpdate <= :expirationDate",
+                          resultSetMapping = "OcspResponseData"),
+})
+@SqlResultSetMapping(
+        name = "OcspResponseData",
+        classes = @ConstructorResult(
+                targetClass = OcspResponseData.class,
+                columns = {
+                        @ColumnResult(name = "id", type = String.class),
+                        @ColumnResult(name = "caId", type = Integer.class),
+                        @ColumnResult(name = "serialNumber", type = String.class),
+                        @ColumnResult(name = "producedAt", type = long.class),
+                        @ColumnResult(name = "nextUpdate", type = Long.class),
+                        @ColumnResult(name = "ocspResponse", type = byte[].class),
+                }
+        )
+)
 public class OcspResponseData extends ProtectedData implements Serializable {
+
+    public static final String FIND_EXPIRING_OCPS_DATA_BY_CAID = "OcspResponseData.findExpiringOcpsDataByCaId";
 
     private static final long serialVersionUID = 1L;
 
