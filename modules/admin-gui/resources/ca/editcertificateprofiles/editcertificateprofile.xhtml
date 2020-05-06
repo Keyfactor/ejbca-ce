@@ -113,7 +113,7 @@
                     value="#{certProfileBean.certificateProfile.availableEcCurves}"
                     size="5" disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsECType }">
                     <f:selectItems value="#{certProfileBean.availableEcCurvesAvailable}" />
-                    <f:ajax event="change" execute="@this" render="@none"/>
+                    <f:ajax event="change" execute="@this" render="@form"/>
                 </h:selectManyListbox>
 
                 <h:panelGroup>
@@ -126,7 +126,7 @@
                 <h:selectManyListbox id="selectavailablebitlengths"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
                     size="5" styleClass="number select-list"
-                    disabled="#{certProfileBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsRequireKeySizes}">
                     <f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectManyListbox>
