@@ -494,7 +494,7 @@
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-<!-- 						<f:ajax render="doStoreOnDemandSection" immediate="true" event="change"/>  -->
+ 						<f:ajax render="doStoreOnDemandSection" immediate="true"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
@@ -518,7 +518,7 @@
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponsesext"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render="doStoreOnDemandSection" immediate="true" event="change"/>
+						<f:ajax render="doStoreOnDemandSection" immediate="true"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxpreproduceocspresponsesext" value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
@@ -526,12 +526,12 @@
 			
 			<h:panelGrid id="doStoreOnDemandSection" columns="2" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
-				columnClasses="editColumn1,editColumn2" >
+				columnClasses="editColumn1,editColumn2">
 				
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}">
 					<h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.PREPRODUCEONDEMAND}" />
 				</h:panelGroup>
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}">
 					<h:selectBooleanCheckbox id="checkboxocspstoreondemand"
 						value="#{editCAsMBean.caInfoDto.doStoreOcspResponsesOnDemand}" 
 						disabled="#{not editCAsMBean.hasEditRight}"/>
