@@ -354,22 +354,11 @@ public class XmlSerializer {
 
     /** Encodes simple List<String> as XMLEncoder
      * example output:
-     * <object class="java.util.Properties">
-     *  <void method="put">
-     *   <string>nextCertSignKey</string>
-     *   <string>encryptKey</string>
-     *  </void>
-     *  <void method="put">
-     *   <string>certSignKey</string>
-     *   <string>signKey</string>
-     *  </void>
-     *  <void method="put">
-     *   <string>crlSignKey</string>
-     *   <string>signKey</string>
-     *  </void>
-     *  <void method="put">
-     *   <string>defaultKey</string>
-     *   <string>encryptKey</string>
+     * <object class="java.util.ArrayList">
+     *  <void method="add">
+     *   <string>mystring</string>
+     *  <void method="add">
+     *   <int>4712</int>
      *  </void>
      * </object>
      *
@@ -385,8 +374,7 @@ public class XmlSerializer {
             for (Object item : l) {
                 ps.print(getIndent(indent + 1));
                 ps.println("<void method=\"add\">");
-                ps.print(getIndent(indent + 2));
-                ps.println("<string>" + item + "</string>");
+                encodePrimitive(item, indent + 2, ps);
                 ps.print(getIndent(indent + 1));
                 ps.println("</void>");
             }
