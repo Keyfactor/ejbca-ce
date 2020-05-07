@@ -1159,7 +1159,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void addEKU() {
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
-
+        List<String> extKeyUsageNames = ekuConfig.getAllExtKeyUsageName();
+        List<String> translatedNames = new ArrayList<String>();
+        for (String name : extKeyUsageNames) {
+            translatedNames.add(getEjbcaWebBean().getText(name));
+        }
+        
         if (StringUtils.isEmpty(currentEKUOid)) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
@@ -1177,7 +1182,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (ekuConfig.getAllEKUOidsAndNames().containsKey(currentEKUOid)) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " already exist.", null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID '" + currentEKUOid + "' already exist.", null));
+            return;
+        }
+        if(translatedNames.contains(currentEKUName)) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Label '" + currentEKUName + "' already exist.", null));
             return;
         }
 
