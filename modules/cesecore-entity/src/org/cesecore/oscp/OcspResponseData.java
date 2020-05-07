@@ -67,7 +67,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
                 targetClass = OcspResponseData.class,
                 columns = {
                         @ColumnResult(name = "id", type = String.class),
-                        @ColumnResult(name = "caId", type = Integer.class),
+                        @ColumnResult(name = "cAId", type = Integer.class),
                         @ColumnResult(name = "serialNumber", type = String.class),
                         @ColumnResult(name = "producedAt", type = long.class),
                         @ColumnResult(name = "nextUpdate", type = Long.class),
