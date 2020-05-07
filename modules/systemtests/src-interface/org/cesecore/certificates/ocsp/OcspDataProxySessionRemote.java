@@ -34,6 +34,21 @@ public interface OcspDataProxySessionRemote {
      *
      * @param caId
      */
-    int deleteOcspDataByCaId(final Integer caId);
+    void deleteOcspDataByCaId(final Integer caId);
+
+    /**
+     * Delete all the OCSP data from table corresponding to serialNumber.
+     *
+     * @param serialNumber of the certificate which the OCSP response represents
+     */
+    void deleteOcspDataBySerialNumber(final String serialNumber);
+
+    /**
+     * Delete all the OCSP data from table corresponding to caId and serialNumber.
+     *
+     * @param caId
+     * @param serialNumber of the certificate which the OCSP response represents
+     */
+    void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
 
 }

@@ -22,6 +22,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
@@ -120,7 +121,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     @Override
     public void deleteOcspDataByCaId(final Integer caId) {
         log.trace(">deleteOcspDataByCaId");
-        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("deleteOcspDataByCaId", OcspResponseData.class);
+        final Query query = this.entityManager.createNamedQuery("deleteOcspDataByCaId");
         query.setParameter("caId", caId);
         final int rowsDeleted = query.executeUpdate();
         if (log.isTraceEnabled()) {
@@ -132,7 +133,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     @Override
     public void deleteOcspDataBySerialNumber(final String serialNumber) {
         log.trace(">deleteOcspDataBySerialNumber");
-        final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("deleteOcspDataBySerialNumber", OcspResponseData.class);
+        final Query query = this.entityManager.createNamedQuery("deleteOcspDataBySerialNumber");
         query.setParameter("serialNumber", serialNumber);
         final int rowsDeleted = query.executeUpdate();
         if (log.isTraceEnabled()) {
@@ -144,7 +145,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     @Override
     public void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         log.trace(">deleteOcspDataByCaIdSerialNumber");
-        final TypedQuery<OcspResponseData> query = this.entityManager.createQuery("deleteOcspDataByCaIdSerialNumber", OcspResponseData.class);
+        final Query query = this.entityManager.createNamedQuery("deleteOcspDataByCaIdSerialNumber");
         query.setParameter("caId", caId);
         query.setParameter("serialNumber", serialNumber);
         final int rowsDeleted = query.executeUpdate();

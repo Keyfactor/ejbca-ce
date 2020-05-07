@@ -16,9 +16,9 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.ejb.Asynchronous;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
@@ -42,16 +42,23 @@ public class OcspDataProxySessionBean implements OcspDataProxySessionRemote {
     private OcspDataSessionLocal ocspDataSessionLocal;
 
     @Override
+    @Asynchronous
     public void storeOcspData(OcspResponseData responseData) {
         ocspDataSessionLocal.storeOcspData(responseData);
     }
 
     @Override
-    public int deleteOcspDataByCaId(final Integer caId) {
-        Query query = entityManager.createQuery("DELETE FROM OcspResponseData a WHERE a.caId = :caId");
-        query.setParameter("caId", caId);
-        int rows = query.executeUpdate();
+    public void deleteOcspDataByCaId(final Integer caId) {
+        ocspDataSessionLocal.deleteOcspDataByCaId(caId);
+    }
 
-        return rows;
+    @Override
+    public void deleteOcspDataBySerialNumber(final String serialNumber) {
+        ocspDataSessionLocal.deleteOcspDataBySerialNumber(serialNumber);
+    }
+
+    @Override
+    public void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
+        ocspDataSessionLocal.deleteOcspDataByCaIdSerialNumber(caId, serialNumber);
     }
 }
