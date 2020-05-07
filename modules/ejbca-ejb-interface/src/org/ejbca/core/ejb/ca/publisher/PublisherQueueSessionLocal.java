@@ -23,7 +23,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherOcspResponse;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
@@ -156,7 +156,7 @@ public interface PublisherQueueSessionLocal {
 	 * @return true if storage (to publisher or queue) is successful
 	 * @throws PublisherException if a communication or other error occurs (storing in the queue due to publisher downtime is not an error).
 	 */
-	boolean publishOcspResponsesNonTransactional(final CustomPublisherOcspResponse publisher, final AuthenticationToken admin, final OcspResponseData ocspResponseData) throws PublisherException;
+	boolean publishOcspResponsesNonTransactional(final CustomPublisherContainer publisher, final AuthenticationToken admin, final OcspResponseData ocspResponseData) throws PublisherException;
 	
 	
     /**

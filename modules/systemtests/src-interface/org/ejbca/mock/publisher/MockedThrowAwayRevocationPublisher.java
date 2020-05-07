@@ -20,6 +20,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.model.ca.publisher.FullEntityPublisher;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -102,6 +103,12 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
 
     @Override
     public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+        // Method not applicable for this publisher type!
         return false;
     }
 
