@@ -145,6 +145,16 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         return name;
     }
 
+    public List<String> getAllExtKeyUsageName() {
+        List<String> allIds = getAllOIDs();
+        List<String> namesFromId = new ArrayList<String>();
+        for (String id : allIds) {
+            String name = getExtKeyUsageName(id);
+            namesFromId.add(name);
+        }
+        return namesFromId;
+    }
+    
     public List<String> getAllOIDs() {
         Set<Object> keyset = data.keySet();
         ArrayList<String> keys = new ArrayList<>();
@@ -155,7 +165,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         }
         return keys;
     }
-
+    
     public Map<String, String> getAllEKUOidsAndNames() {
         @SuppressWarnings("unchecked")
         Map<String, String> ret = (Map<String, String>) saveData();
