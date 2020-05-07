@@ -955,7 +955,7 @@ public class UpgradeSessionBeanTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
             upgradeSession.upgrade(null, "6.11.0", false);
             
-            // we cant use OcspCtSctListExtension.OCSP_SCTLIST_OID, 
+            // we can not use OcspCtSctListExtension.OCSP_SCTLIST_OID, 
             // because org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension is not included in Community edition
             final String OCSP_SCTLIST_OID = "1.3.6.1.4.1.11129.2.4.5";
             
