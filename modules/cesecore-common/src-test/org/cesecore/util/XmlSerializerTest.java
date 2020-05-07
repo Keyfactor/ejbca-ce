@@ -103,7 +103,7 @@ public class XmlSerializerTest {
             }           
         }
         extendedinformation.cacheApprovalType(TestApprovalRequest.class); 
-
+        extendedinformation.addEditEndEntityApprovalRequestId(Integer.valueOf(4712));
         final HashMap<Object, Object> b64DataMap = new Base64PutHashMap();
         b64DataMap.putAll(extendedinformation.getRawData());
         b64DataMap.put("longvalue", Long.valueOf(123456789L));
@@ -122,17 +122,17 @@ public class XmlSerializerTest {
         map.put("bkey", "bvalue");
         map.put("nullkey", null);
         b64DataMap.put("linkedhashmap", map);
-        final ArrayList<String> list = new ArrayList<String>();
+        final ArrayList<Object> list = new ArrayList<Object>();
         list.add("listitem1");
-        list.add("listitem2");
-        b64DataMap.put("araylist", list);
+        list.add(Integer.valueOf(4711));
+        b64DataMap.put("arraylist", list);
         final String xmlFast = XmlSerializer.encodeSimpleMapFast(b64DataMap);
         log.debug("XmlSerializer.encodeSimpleMapFast produced XML:\n" + xmlFast);
         // The actual length depends on version of java as the second line contains java version
         // <java version="1.8.0_252" class="java.beans.XMLDecoder">
         final String javaVersion = System.getProperty("java.version");
-        final int length = 2642 + javaVersion.length(); 
-        assertEquals("The Fast output XML should be " + length + " bytes", length, xmlFast.length());
+        final int length = 2823 + javaVersion.length(); 
+        assertEquals("The Fast output XML is not the expected length", length, xmlFast.length());
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(os);) {
             encoder.writeObject(b64DataMap);
@@ -152,6 +152,7 @@ public class XmlSerializerTest {
         assertEquals("decoded max login attempts was not the one we encoded", 4, ei.getMaxLoginAttempts());
         assertEquals("decoded subject directory attributes was not the one we encoded", "myattr=I am from sweeeeden", ei.getSubjectDirectoryAttributes());
         assertEquals("decoded approval type was not the one we encoded", TestApprovalRequest.class, ei.getCachedApprovalType());
+        assertEquals("decoded approval request ID was not the one we encoded", Integer.valueOf(4712), ei.getEditEndEntityApprovalRequestIds().get(0));
         
 	    // Test adding something that fails with IllegalArgumentException
         final HashMap<Object, Object> failingMap = new Base64PutHashMap();
