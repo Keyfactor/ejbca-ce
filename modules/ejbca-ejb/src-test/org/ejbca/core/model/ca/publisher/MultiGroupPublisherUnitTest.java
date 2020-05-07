@@ -44,6 +44,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.CertTools;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
@@ -111,6 +112,11 @@ public class MultiGroupPublisherUnitTest {
         public void validateDataSource(String dataSource) throws PublisherException {
             // Method not applicable for the publisher type.
             
+        }
+        @Override
+        public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+            // Method not applicable for the publisher type.
+            return false;
         }
     }
 

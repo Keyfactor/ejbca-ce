@@ -212,4 +212,5 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
     public void validateDataSource(String dataSource) throws PublisherException {
         // Method not applicable for this publisher type!        
     }
+
 }

@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -265,6 +266,12 @@ public class MultiGroupPublisher extends BasePublisher {
     @Override
     public void validateDataSource(String dataSource) throws PublisherException {
         // Method not applicable for this publisher type!
+    }
+
+    @Override
+    public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+        // Method not applicable for this publisher type!
+        return false;
     }
 
 }

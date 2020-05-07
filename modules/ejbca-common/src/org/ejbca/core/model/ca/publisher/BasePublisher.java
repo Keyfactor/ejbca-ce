@@ -22,6 +22,7 @@ import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.oscp.OcspResponseData;
 
 
 /**
@@ -251,6 +252,13 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @throws PublisherException if a communication or other error occurs.
      */    
     public abstract boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
+    
+    
+    /**
+     * This method has to be overridden by those classes implementing a Custom Publisher and supporting
+     * the OCSP response publishing.
+     */
+    public abstract boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.

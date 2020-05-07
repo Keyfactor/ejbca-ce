@@ -75,7 +75,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.CustomPublisherOcspResponse;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
@@ -365,8 +364,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!publ.getOnlyUseQueue()) {
                     try {
+                        
                         if (isOcspResponsePublisher(publ) && publisherQueueSession
-                                .publishOcspResponsesNonTransactional((CustomPublisherOcspResponse) publ, admin, ocspResponseData)) {
+                                .publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
+                            
                             publishStatus = PublisherConst.STATUS_SUCCESS;
                             logSuccessPublish(admin, name, publishStatus);
                         }
@@ -376,7 +377,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         log.error("Error when loging audit data ", e);
                     }
                 }
-
+                
                 if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
                     addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
                     if (log.isTraceEnabled()) {
@@ -384,6 +385,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     }
                     return false;
                 }
+                
+                if (publishStatus != PublisherConst.STATUS_SUCCESS) {
+                    return false;
+                }
+                
             } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
                 log.info(msg);
