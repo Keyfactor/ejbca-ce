@@ -22,7 +22,6 @@ import org.cesecore.oscp.OcspResponseData;
  *
  */
 public interface OcspDataSession {
-
     
     /**
      * Returns the list of OCSP data corresponding to the caId
@@ -46,6 +45,11 @@ public interface OcspDataSession {
      */
     OcspResponseData findOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
     
+    /**
+     * Deletes all the OCSP data from table corresponding to caId.
+     * @param caId
+     */
+    void deleteOcspDataByCaId(final Integer caId);
     
     /**
      * Returns the OCSP response corresponding to the given id 

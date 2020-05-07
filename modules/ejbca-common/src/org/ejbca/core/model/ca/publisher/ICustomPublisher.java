@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 
 /**
  * Interface containing methods that need to be implemented in order 
@@ -47,6 +48,15 @@ public interface ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
      */
     boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
+    
+    /**
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeOcspResponseData
+     * 
+     * @param ocspResponseData
+     * @return
+     * @throws PublisherException
+     */
+    boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException;
 
     /**
      * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
