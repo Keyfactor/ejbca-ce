@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -348,6 +349,12 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     
     @Override
     public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+        // Method not applicable for this publisher type!
         return false;
     }
 }
