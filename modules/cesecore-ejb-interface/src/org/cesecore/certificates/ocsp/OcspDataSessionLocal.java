@@ -38,12 +38,6 @@ public interface OcspDataSessionLocal extends OcspDataSession {
     void storeOcspData(final OcspResponseData ocspResponseData);
     
     /**
-     * Deletes all the OCSP data from table corresponding to caId.
-     * @param caId
-     */
-    void deleteOcspDataByCaId(final Integer caId);
-    
-    /**
      * Deletes all the OCSP data from table corresponding to serialNumber.
      * @param serialNumber of the certificate which the OCSP response represents
      */
