@@ -1480,7 +1480,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
             List<String> currentExtensions = ikbToEdit.getOcspExtensions();
             for (String extension : ocspExtensionOids) {
-                if (!currentExtensions.contains(extension)) {
+                if (!currentExtensions.contains(extension.replaceAll("\\*", ""))) {
                     currentExtensions.add(extension.replaceAll("\\*", ""));
                 }
             }
@@ -1800,9 +1800,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             for (final int ocspKeyBindingId : ocspKeyBindingIds) {
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBinding(ocspKeyBindingId);
                 final List<String> ocspExtensions = ocspKeyBinding.getOcspExtensions();
-                ocspExtensions.add(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId());
+                if (ocspExtensions.contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId())) {
+                    // The archive cutoff extension already exists
+                    log.info("We already have an Archive Cutoff extension, not adding a new one.");
+                } else {
+                    ocspExtensions.add(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId());
+                    ocspKeyBinding.setOcspExtensions(ocspExtensions);
+                }
                 ocspKeyBinding.setRetentionPeriod(SimpleTime.getInstance(retentionPeriodInSeconds * 1000L));
-                ocspKeyBinding.setOcspExtensions(ocspExtensions);
                 internalKeyBindingDataSession.mergeInternalKeyBinding(ocspKeyBinding);
                 log.info("Added id-pkix-ocsp-archive-cutoff with a retention period of " + retentionPeriodInSeconds + " seconds to OCSP key binding "
                         + ocspKeyBinding.getName() + " (" + ocspKeyBindingId + ").");
