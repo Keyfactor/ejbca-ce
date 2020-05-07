@@ -54,7 +54,7 @@ import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherOcspResponse;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
@@ -400,7 +400,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         throw new FinderException();
                     }
                     
-                    published = publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherOcspResponse) publisher, admin, ocspResponseData);
+                    published = publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherContainer) publisher, admin, ocspResponseData);
                     
                 } else {
                     String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);
@@ -481,7 +481,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean publishOcspResponsesNonTransactional(CustomPublisherOcspResponse publisher, AuthenticationToken admin, OcspResponseData ocspResponseData)
+    public boolean publishOcspResponsesNonTransactional(CustomPublisherContainer publisher, AuthenticationToken admin, OcspResponseData ocspResponseData)
             throws PublisherException {
         return publisher.storeOcspResponseData(ocspResponseData);
     }

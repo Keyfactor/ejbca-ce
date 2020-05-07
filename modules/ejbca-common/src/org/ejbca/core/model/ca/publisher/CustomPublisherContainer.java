@@ -31,8 +31,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.StringTools;
-
 
 
 /**
@@ -240,7 +240,7 @@ public class CustomPublisherContainer extends BasePublisher {
     public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		return this.getCustomPublisher().storeCRL(admin,incrl,cafp,number,userDN);		
 	}
-    
+	
 	/**
 	 * @throws PublisherConnectionException if the destination couldn't be connected to
 	 * @throws FatalPublisherConnectionException if this CA is unable to publish to internal errors.
@@ -336,6 +336,11 @@ public class CustomPublisherContainer extends BasePublisher {
             }
         }
         throw new PublisherException("Invalid data source!");
+    }
+
+    @Override
+    public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+        return this.getCustomPublisher().storeOcspResponseData(ocspResponseData);
     }
 
 }

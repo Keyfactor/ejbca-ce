@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
@@ -918,6 +919,12 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
     
     @Override
     public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+        // Method not applicable for this publisher type!
         return false;
     }
 }
