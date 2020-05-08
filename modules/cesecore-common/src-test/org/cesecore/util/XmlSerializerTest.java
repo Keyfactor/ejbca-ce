@@ -117,12 +117,12 @@ public class XmlSerializerTest {
         prop.put("property1", "value1");
         prop.put("tokensequence", "00000");
         b64DataMap.put("tokenproperties", prop);
-        final LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        final LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("akey", "avalue");
         map.put("bkey", "bvalue");
         map.put("nullkey", null);
         b64DataMap.put("linkedhashmap", map);
-        final ArrayList<Object> list = new ArrayList<Object>();
+        final ArrayList<Object> list = new ArrayList<>();
         list.add("listitem1");
         list.add(Integer.valueOf(4711));
         b64DataMap.put("arraylist", list);
