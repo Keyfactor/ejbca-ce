@@ -58,7 +58,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
                                   "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
                                   ") maxProducedAtTable " +
                                   "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
-                                  "WHERE caId = :caId AND ocsp.nextUpdate <= :expirationDate",
+                                  "WHERE cAId = :caId AND ocsp.nextUpdate <= :expirationDate",
                           resultSetMapping = "OcspResponseData"),
 })
 @SqlResultSetMapping(
