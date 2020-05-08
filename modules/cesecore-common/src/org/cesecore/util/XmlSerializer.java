@@ -95,7 +95,7 @@ public class XmlSerializer {
         return encodeInternal(input, false);
     }
 	
-	/** A method that mimics java.bean.XMLEncoder for simple Maps, but does it very fast, and falls back to using java.bean.XMLEncoder for more complex objects.
+	/** A method that mimics java.bean.XMLEncoder for simple Maps, but does it very fast.
 	 * A simple object is a Map that only have keys that are Strings and values that are primitive values or Properties, List or Map in it, where these objects 
 	 * are also only simple String keyed ones. 
 	 * Handles primitive types:
@@ -213,8 +213,8 @@ public class XmlSerializer {
 	/** This will be called recursively, but the encode methods, which is why we include the "indent"
 	 * specification handling how many spaces are used for indentation
 	 * @param o the object to encode into XML
-	 * @param type the type 
-	 * @param ps
+	 * @param indent the level of indentation that this object is on, XMLEncoder indents with one space per XML item 
+	 * @param ps PrintStream where the XML output will be written
 	 */
     private static void printObject(final Object o, int indent, final PrintStream ps) {
         if (StringUtils.startsWith(getType(o), "object")) {
@@ -234,6 +234,19 @@ public class XmlSerializer {
         return INDENT[i];
     }
     
+    /** Encodes a selection of primitive values as XMLEncoder
+     * example output:
+     *  <string>nextCertSignKey</string>
+     *  <int>11</int>
+     *  <long>1234567899</long>
+     *  </null>
+     *  <class>org.cesecore.util.XmlSerializerTest$1TestApprovalRequest</class>
+     *  <boolean>true</boolean>
+     *
+     * @param o the primitive Object to XML Encode, i.e. Integer, Long, Boolean, etc
+     * @param indent the level of indentation that this object is on, XMLEncoder indents with one space per XML item 
+     * @param ps PrintStream where XML will be printed
+     */
     private static void encodePrimitive(final Object o, int indent, PrintStream ps) {
         // primitive objects are a single line
         final String type = getType(o);
@@ -253,6 +266,12 @@ public class XmlSerializer {
         }
     }
 
+    /** Prints the XML encoding of an object or primitive value by calling the corresponding method 
+     * for this specific type
+     * @param o the Object or primitive type to XML Encode, i.e. Map, List, Integer, Long, Boolean, etc
+     * @param indent the level of indentation that this object is on, XMLEncoder indents with one space per XML item 
+     * @param ps PrintStream where XML will be printed
+     */
     private static void printValue(Object o, int indent, PrintStream ps) {
         if (o instanceof Properties) {
             encodeProperties(o, indent, ps);
@@ -326,22 +345,24 @@ public class XmlSerializer {
      *  </void>
      * </object>
      *
-     * @param prop the properties to XML Encode
+     * @param o the properties to XML Encode
+     * @param indent the level of indentation that this object is on, XMLEncoder indents with one space per XML item 
      * @param ps PrintStream where XML will be printed
+     * @throws IllegalArgumentException if the Object is not a Properties or includes types not handled by the simple encoding
      */
-    private static void encodeProperties(final Object prop, int indent, PrintStream ps) {
-        if (prop instanceof Properties) {
-            final Properties p = (Properties) prop;
+    private static void encodeProperties(final Object o, int indent, PrintStream ps) {
+        if (o instanceof Properties) {
+            final Properties p = (Properties) o;
             final Set<Object> s = p.keySet();
             ps.print(getIndent(indent));
-            ps.println("<object class=\"" + prop.getClass().getName() + "\">");
+            ps.println("<object class=\"" + o.getClass().getName() + "\">");
             for (Object key : s) {
                 ps.print(getIndent(indent + 1));
                 ps.println("<void method=\"put\">");
                 ps.print(getIndent(indent + 2));
                 ps.println("<string>" + key + "</string>");
-                final Object o = p.get(key);
-                encodePrimitive(o, indent + 2, ps);
+                final Object value = p.get(key);
+                encodePrimitive(value, indent + 2, ps);
                 ps.print(getIndent(indent + 1));
                 ps.println("</void>");
             }
@@ -349,7 +370,7 @@ public class XmlSerializer {
             ps.println("</object>");                        
             return;
         }
-        throw new IllegalArgumentException("Input to encodeProperties must be a simple <String,Object> properties: " + prop.getClass().getName());
+        throw new IllegalArgumentException("Input to encodeProperties must be a simple <String,Object> properties: " + o.getClass().getName());
     }
 
     /** Encodes simple List<String> as XMLEncoder
@@ -362,8 +383,10 @@ public class XmlSerializer {
      *  </void>
      * </object>
      *
-     * @param prop the List to XML Encode
+     * @param o the List to XML Encode
+     * @param indent the level of indentation that this object is on, XMLEncoder indents with one space per XML item 
      * @param ps PrintStream where XML will be printed
+     * @throws IllegalArgumentException if the Object is not a List or includes types not handled by the simple encoding
      */
     private static void encodeList(final Object o, int indent, PrintStream ps) {
         if (o instanceof List) {
@@ -403,8 +426,10 @@ public class XmlSerializer {
      *  </void>
      * </object>
      *
-     * @param map the Map to XML Encode
+     * @param o the Map to XML Encode
+     * @param indent the level of indentation that this object is on, XMLEncoder indents with one space per XML item 
      * @param ps PrintStream where XML will be printed
+     * @throws IllegalArgumentException if the Object is not a Map or includes types not handled by the simple encoding
      */
     private static void encodeMap(final Object o, int indent, final PrintStream ps) {
         if (o instanceof Map) {
