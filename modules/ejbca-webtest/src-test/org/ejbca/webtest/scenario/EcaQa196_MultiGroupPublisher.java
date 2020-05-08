@@ -15,8 +15,7 @@ package org.ejbca.webtest.scenario;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.cesecore.authorization.AuthorizationDeniedException;
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.webtest.WebTestBase;
@@ -26,7 +25,6 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.WebDriver;
 
 /**
  * For some unclear reason this test does not run stable enough in the Firefox graphical mode 
@@ -41,8 +39,6 @@ import org.openqa.selenium.WebDriver;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa196_MultiGroupPublisher extends WebTestBase {
-
-    private static WebDriver webDriver;
 
     // Helpers
     private static PublisherHelper publisherHelper; 
@@ -76,12 +72,11 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
-        publisherHelper = new PublisherHelper(webDriver);
+        publisherHelper = new PublisherHelper(getWebDriver());
     }
     
     @AfterClass
-    public static void exit() throws ReferencesToItemExistException, AuthorizationDeniedException {
+    public static void exit() throws ReferencesToItemExistException {
         for (final String publisherName : TestData.PUBLISHERS_SIMPLE_NAME.values()) {
             removePublisherByName(publisherName);
         }
