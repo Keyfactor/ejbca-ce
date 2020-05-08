@@ -114,9 +114,14 @@ import org.ejbca.util.cert.OID;
 @ViewScoped
 public class EnrollMakeNewRequestBean implements Serializable {
 
+    private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EnrollMakeNewRequestBean.class);
 
+    private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
+    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
+    private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
+    private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
     public static int MAX_CSR_LENGTH = 10240;
 
@@ -513,20 +518,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (renderNonModifiableFields) {
             return true;
         }
-        if (getSubjectDn() != null) {
-            if (!isAllFieldInstancesRendered(getSubjectDn().getFieldInstances())) {
-                return true;
-            }
+        if (getSubjectDn() != null && !isAllFieldInstancesRendered(getSubjectDn().getFieldInstances())) {
+            return true;
         }
-        if (getSubjectAlternativeName() != null) {
-            if (!isAllFieldInstancesRendered(getSubjectAlternativeName().getFieldInstances())) {
-                return true;
-            }
+        if (getSubjectAlternativeName() != null && !isAllFieldInstancesRendered(getSubjectAlternativeName().getFieldInstances())) {
+            return true;
         }
-        if (getSubjectDirectoryAttributes() != null) {
-            if (!isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getFieldInstances())) {
-                return true;
-            }
+        if (getSubjectDirectoryAttributes() != null && !isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getFieldInstances())) {
+            return true;
         }
         return false;
     }
@@ -758,7 +757,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 addEndEntityAndGenerateCertificateDer();
             }
         } else {
-            raLocaleBean.addMessageError("enroll_username_already_exists", username);
+            raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, username);
         }
     }
 
@@ -777,37 +776,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void addEndEntityAndGenerateCertificateDer() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, TokenDownloadType.DER);
-        downloadToken(token, "application/octet-stream", ".der");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".der");
     }
 
     public void addEndEntityAndGenerateCertificatePkcs7() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, TokenDownloadType.PKCS7);
-        downloadToken(token, "application/octet-stream", ".p7b");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".p7b");
     }
 
     public void addEndEntityAndGenerateCertificatePemFullChain() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, TokenDownloadType.PEM_FULL_CHAIN);
-        downloadToken(token, "application/octet-stream", ".pem");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".pem");
     }
 
     public void addEndEntityAndGenerateCertificatePem() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, TokenDownloadType.PEM);
-        downloadToken(token, "application/octet-stream", ".pem");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".pem");
     }
 
     public void addEndEntityAndGenerateP12() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_P12, null);
-        downloadToken(token, "application/x-pkcs12", ".p12");
+        downloadToken(token, APPLICATION_X_PKCS12, ".p12");
     }
 
     public void addEndEntityAndGenerateJks() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_JKS, null);
-        downloadToken(token, "application/octet-stream", ".jks");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".jks");
     }
 
     public void addEndEntityAndGeneratePem() {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_PEM, null);
-        downloadToken(token, "application/octet-stream", ".pem");
+        downloadToken(token, APPLICATION_OCTET_STREAM, ".pem");
     }
 
     private ExtendedInformation getProcessedExtendedInformation() {
@@ -921,7 +920,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             try {
                 endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
             } catch (IOException e) {
-                raLocaleBean.addMessageError("enroll_invalid_certificate_request");
+                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
                 return null;
             }
         }
@@ -980,7 +979,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
                 if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
-                    raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                    raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, endEntityInformation.getUsername());
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                     raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
@@ -1163,7 +1162,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final String username = getEndEntityInformation().getUsername();
         if (username != null && !username.isEmpty() && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) != null) {
             FacesContext.getCurrentInstance().addMessage(userCredentialsMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
-                    raLocaleBean.getMessage("enroll_username_already_exists", username), null));
+                    raLocaleBean.getMessage(ENROLL_USERNAME_ALREADY_EXISTS, username), null));
         }
     }
 
@@ -1223,8 +1222,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         try {
             fileContents = new String(uploadFile.getBytes());
         } catch (IOException e) {
-            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+            raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
 
         validateCsr(fileContents);
@@ -1240,13 +1239,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         algorithmFromCsr = null;
         if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
             log.info("CSR uploaded was too large: " + csrValue.length());
-            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+            raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csrValue);
         if (pkcs10CertificateRequest == null) {
-            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+            raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
 
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
@@ -1589,7 +1588,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (selectedTokenType == 0) {
             setSelectedTokenType(getDefaultTokenType());
         }
-        ret.add(new SelectItem(0, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+        ret.add(new SelectItem(0, raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), true));
         ret.addAll(
                 getAvilableTokenTypes()
                         .stream()
@@ -1714,7 +1713,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
                 if (availableAlgorithmSelectItems.size() > 1 && StringUtils.isEmpty(getSelectedAlgorithm(availableAlgorithmSelectItems))) {
-                    availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+                    availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), true));
                 }
             }
             EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
