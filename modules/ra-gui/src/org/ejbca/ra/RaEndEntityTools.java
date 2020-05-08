@@ -80,12 +80,7 @@ public class RaEndEntityTools {
             certificates.add(new RaCertificateDetails(cdw, callbacks, null, null, null));
         }
         // Sort by date created (descending)
-        Collections.sort(certificates, new Comparator<RaCertificateDetails>() {
-            @Override
-            public int compare(RaCertificateDetails cert1, RaCertificateDetails cert2) {
-                return cert1.getCreated().compareTo(cert2.getCreated()) * -1;
-            }
-        });
+        certificates.sort((cert1, cert2) -> cert1.getCreated().compareTo(cert2.getCreated()) * -1);
         return certificates;
     }
 }
