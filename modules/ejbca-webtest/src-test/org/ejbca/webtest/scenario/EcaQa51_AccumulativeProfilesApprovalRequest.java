@@ -12,20 +12,20 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-
 import java.util.List;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaActivationHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -37,6 +37,7 @@ import org.openqa.selenium.WebElement;
  * 
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
 
@@ -51,7 +52,6 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // Test Data
     public static class TestData {
-        static final String ROLE_TEMPLATE = "Super Administrators";
         static final String APPROVAL_PROFILE_NAME = "ECAQA51_Require_1_Approval";
         static final String APPROVAL_PROFILE_TYPE_ACCUMULATIVE_APPROVAL = "Accumulative Approval";
         static final String CA_NAME = "ECAQA51_ApprovalCA";
@@ -76,7 +76,7 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     }
     
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove CA
         removeCaByName(TestData.CA_NAME);
         // Remove CryptoToken
@@ -102,10 +102,10 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // Create CA
     @Test
-    public void stepB_prerequisiteCreateCa() throws InterruptedException {
+    public void stepB_prerequisiteCreateCa() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
-        caHelper.setValidity("1y");
+        caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
     }

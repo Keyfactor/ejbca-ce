@@ -3,18 +3,22 @@ package org.ejbca.webtest.scenario;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 /**
- * 
+ * Check that CA could be created with different Validity formats.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-116">ECAQA-116</a>
  * 
  * @version $Id$
- *
  */
+@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa116_CACreationValidityCheck extends WebTestBase {
     
     // Helpers

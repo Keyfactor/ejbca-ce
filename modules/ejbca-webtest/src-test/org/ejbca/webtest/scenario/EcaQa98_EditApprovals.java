@@ -17,18 +17,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.*;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
 
 /**
  * This test verifies that RA administrator is able to review and modify requests, and the privileges are upheld doing this.
@@ -43,6 +43,7 @@ import org.openqa.selenium.WebElement;
  *
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
 
@@ -106,7 +107,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove CA
         removeCaByName(TestData.CA_NAME);
         // Remove Approval Request

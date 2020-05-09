@@ -20,10 +20,12 @@ import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.PublisherHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -33,10 +35,12 @@ import org.junit.runners.MethodSorters;
  * Due to this issue and in order to get the stable results you should run this in Firefox headless mode 
  * which could be set in the browser.properties file that is located under /modules/ejbca-webtest/conf/
  * Just set the browser.headless attribute to true (default is false).
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-196">ECAQA-196</a>
  *  
  * @version $Id$
- *
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa196_MultiGroupPublisher extends WebTestBase {
 

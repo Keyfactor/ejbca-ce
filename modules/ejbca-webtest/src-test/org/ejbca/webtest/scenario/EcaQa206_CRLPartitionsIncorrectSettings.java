@@ -14,18 +14,24 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
  * Selenium test that tests incorrect configurations related to crl partitioons in CA
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-206">ECAQA-206</a>
+ *
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa206_CRLPartitionsIncorrectSettings extends WebTestBase {
 
@@ -100,7 +106,6 @@ public class EcaQa206_CRLPartitionsIncorrectSettings extends WebTestBase {
         caHelper.createCa();
         caHelper.assertHasErrorMessage(TestData.ASTERISK_MISSING_ERROR_MESSAGE);
     }
-
 
     @Test
     public void stepD_addCaWithIncorrectNumberOfPartitions() {
