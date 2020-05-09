@@ -16,10 +16,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.log4j.Logger;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.ejbca.webtest.utils.CommandLineHelper;
 import org.ejbca.webtest.utils.RemoveDir;
 import org.junit.AfterClass;
@@ -27,28 +27,27 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
 
 /**
  * The CA can be both edited and restored.  When a CA is restored,
  * the key alias values should restore correctly.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-198">ECAQA-198</a>
  *
  * @version $Id$
  */
-
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     
-    private static final Logger log = Logger.getLogger(EcaQa198_EditCAVerifyKeyAliases.class);
-
     private static final int TIMEOUT = 60000;
-    private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
     private static CryptoTokenHelper cryptoTokenHelper;
-    private static CommandLineHelper commandLineHelper = new CommandLineHelper();
+    private static final CommandLineHelper commandLineHelper = new CommandLineHelper();
     private static final String deleteAlert = "Are you sure you want to delete the CA " + TestData.CA_NAME + "? You should revoke the CA instead if you already have used it to issue certificates.";
 
 
@@ -63,7 +62,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     public static void init() {
         // super
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
         cryptoTokenHelper = new CryptoTokenHelper(webDriver);

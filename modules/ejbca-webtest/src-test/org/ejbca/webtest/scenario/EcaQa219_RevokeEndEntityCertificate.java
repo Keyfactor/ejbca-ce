@@ -19,28 +19,41 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-
-
+/**
+ * This test is testing if revoked end entity certificates:
+ * <ul>
+ *     <li>will have their status set to 'Revoked' on 'Search End Entities' page</li>
+ *     <li></li>will be shown in next issued CRL</li>
+ * </ul>
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-219">ECAQA-219</a>
+ *
+ * @version $Id: EcaQa219_RevokeEndEntityCertificate.java 31450 2019-02-08 15:46:45Z samuellb $
+ */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
-    //Classes used.
+
+    // Classes used.
     private static WebDriver webDriver;
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
     private static CaHelper caHelper;
     private static RaWebHelper raWebHelper;
     
-    //String variables.
+    // String variables.
     private static final String END_ENTITY_NAME = "ECAQA71EE";
     private static final String END_ENTITY_PASSWORD = "foo123";
     private static final String END_ENTITY_COMMON_NAME = "ECAQA71EE";
@@ -73,8 +86,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         cleanup();
         afterClass();
     }
-    
-    
+
     @Test
     public void testA_addCa() {
         caHelper.openPage(getAdminWebUrl());
@@ -104,7 +116,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     @Test
     public void testC_RaWebSaveP12() {
         raWebHelper.openPage(getRaWebUrl());
-        //Use sleep to find element.
+        // Use sleep to find element.
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
