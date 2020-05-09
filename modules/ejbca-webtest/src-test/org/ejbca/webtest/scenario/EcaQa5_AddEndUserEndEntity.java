@@ -10,10 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest.scenario;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import org.ejbca.webtest.WebTestBase;
@@ -21,17 +21,26 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
+/**
+ * In this test case all possible fields of ENDUSER End Entity with End Entity Profile 'EMPTY' are filled in to verify
+ * that they work.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-5>ECAQA-5</a>
+ *
+ * @version $Id$
+ */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
-
-    private static WebDriver webDriver;
 
     // Helpers
     private static AddEndEntityHelper addEndEntityHelper;
@@ -52,7 +61,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
@@ -112,7 +121,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         endEntityProfileHelper.triggerCustomCertificateSerialNumber();
         endEntityProfileHelper.editEndEntityProfile(
                 "ENDUSER", Arrays.asList("ENDUSER", TestData.CERTIFICATE_PROFILE_NAME),
-                getCaName(), Arrays.asList(getCaName()));
+                getCaName(), Collections.singletonList(getCaName()));
         endEntityProfileHelper.saveEndEntityProfile();
     }
 
