@@ -14,22 +14,26 @@ package org.ejbca.webtest.scenario;
 
 import java.io.IOException;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CTLogHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 /**
- * 
- * @version $Id$
+ * CT Log timeout editable again, as well as the other fields.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-155">ECAQA-155</a>
  *
+ * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa155_EditCreateCTLog extends WebTestBase {
     
     private static final String INIT_LABEL = "Test";
@@ -57,14 +61,14 @@ public class EcaQa155_EditCreateCTLog extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         removeCertificateTransparencyLogs(INIT_LOG_URL,EDIT_LOG_URL);
         // super
         afterClass();
     }
     
     @Test
-    public void stepTwo_CtLogEditFirstLog() throws IOException, AuthorizationDeniedException {
+    public void stepTwo_CtLogEditFirstLog() throws IOException {
         goToSystemConfigurationPage();
         ctLogHelper.fillLogUrlField(INIT_LOG_URL);
         ctLogHelper.fillPublicKeyField(ctLogHelper.createPublicKeyFile(folder));

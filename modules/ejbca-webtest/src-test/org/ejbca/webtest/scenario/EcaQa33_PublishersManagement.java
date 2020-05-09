@@ -15,27 +15,29 @@ package org.ejbca.webtest.scenario;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.PublisherHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
- * 
- * @version $Id$
+ * Test management operations on publishers.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-33">ECAQA-33</a>
  *
+ * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa33_PublishersManagement extends WebTestBase {
 
-    private static WebDriver webDriver;
-    
     // Helpers
     private static PublisherHelper publisherHelper; 
     
@@ -57,14 +59,14 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
     }
     
     @BeforeClass
-    public static void init() throws ReferencesToItemExistException, AuthorizationDeniedException {
+    public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         publisherHelper = new PublisherHelper(webDriver);
     }
 
     @AfterClass
-    public static void exit() throws ReferencesToItemExistException, AuthorizationDeniedException {
+    public static void exit() throws ReferencesToItemExistException {
         for (final String publisherName : TestData.PUBLISHERS.values()) {
             removePublisherByName(publisherName);
         }

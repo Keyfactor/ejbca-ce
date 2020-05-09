@@ -15,17 +15,16 @@ package org.ejbca.webtest.scenario;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
-import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -36,6 +35,7 @@ import org.openqa.selenium.WebDriver;
  *
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa60_EEPOnHold extends WebTestBase {
 
@@ -68,7 +68,6 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
             ASSERTION_FIELDMAP.put("E-mail address", null);
             ASSERTION_FIELDMAP.put("CN, Common name", null);
         }
-        
     }
     
     // Helpers
@@ -86,7 +85,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public static void exit() {
         removeEndEntityByUsername(TestData.EE_NAME);
         removeEndEntityProfileByName(TestData.EEP_NAME);
         afterClass();

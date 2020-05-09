@@ -15,10 +15,12 @@ package org.ejbca.webtest.scenario;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.ServicesHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -29,8 +31,8 @@ import org.openqa.selenium.WebDriver;
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-28">ECAQA-28</a>
  *
  * @version $Id$
- *
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa28_ServiceManagement extends WebTestBase {
 

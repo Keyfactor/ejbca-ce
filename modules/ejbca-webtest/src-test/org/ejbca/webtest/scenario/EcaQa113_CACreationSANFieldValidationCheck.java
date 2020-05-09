@@ -2,18 +2,23 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
- * 
- * @version $Id$
+ * CA creation SAN field validation check.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-113">ECAQA-113</a>
  *
+ * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa113_CACreationSANFieldValidationCheck extends WebTestBase {
 

@@ -1,10 +1,21 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.webtest.scenario;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaHelper;
@@ -12,19 +23,25 @@ import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.ValidatorsHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.ejbca.webtest.utils.GetResourceDir;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
  * Asserts whether the blacklist validator permits a site based on the
  * blacklist.txt file using domain components.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-201">ECAQA-201</a>
+ *
+ * @version $Id$
  */
-
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
 
@@ -49,9 +66,23 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
         private static final String CERTIFICATE_PROFILE_NAME = "EcaQa201B-CertificateProfile";
         private static final String ROLE_NAME = "Super Administrator Role";
         private static final String ENTITY_NAME = "EcaQa201B_EntityProfile";
-        static final String[] CERTIFICATE_REQUEST_PEM = new String[]{"-----BEGIN CERTIFICATE REQUEST-----", "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w", "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG", "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM", "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7", "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB", "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+", "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr", "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs", "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9", "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM", "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq", "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt", "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==", "-----END CERTIFICATE REQUEST-----"};
-
-
+        static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
+                "-----BEGIN CERTIFICATE REQUEST-----",
+                "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
+                "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG",
+                "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM",
+                "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7",
+                "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB",
+                "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+",
+                "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr",
+                "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs",
+                "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9",
+                "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM",
+                "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq",
+                "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt",
+                "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==",
+                "-----END CERTIFICATE REQUEST-----"
+        };
     }
 
     @BeforeClass
@@ -74,7 +105,7 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // super
         afterClass();
 
@@ -85,7 +116,6 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
         removeCaAndCryptoToken(TestData.CA_NAME);
         removeValidatorByName(TestData.VALIDATOR_NAME);
     }
-
 
     @Test
     public void stepA_AddAValidator() {
@@ -122,7 +152,6 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
         validatorsHelper.saveValidator();
     }
 
-
     @Test
     public void stepF_AddCA() {
         caHelper.openPage(getAdminWebUrl());
@@ -158,7 +187,6 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
         approvalProfilesHelperDefault.saveApprovalProfile();
     }
 
-
     @Test
     public void stepK_AddCertificateProfile() {
         // Add Certificate Profile
@@ -188,7 +216,7 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
 
     @Test
     public void stepN_AddEndEntityProfile() {
-        eeProfileHelper.openPage(this.getAdminWebUrl());
+        eeProfileHelper.openPage(getAdminWebUrl());
         eeProfileHelper.addEndEntityProfile(TestData.ENTITY_NAME);
     }
 

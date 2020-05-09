@@ -12,27 +12,27 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.*;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
+import org.ejbca.webtest.utils.CommandLineHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
+import org.openqa.selenium.WebDriver;
+
 /**
  * WebTest class for testing RA/Make New Request.
  *
  * @version $Id$
  *
  */
-
-import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.helper.*;
-import org.ejbca.webtest.utils.CommandLineHelper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.openqa.selenium.WebDriver;
-
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
-
-    private static WebDriver webDriver;
 
     //helpers
     private static RaWebHelper raWebHelper;
@@ -55,7 +55,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         raWebHelper = new RaWebHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
@@ -128,15 +128,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         makeRequest(TestData.END_ENTITY_NAME_PKCS12, raWebHelper::clickDownloadPkcs12, ".p12");
     }
     
-    /**
-     * Makes Request based on Key Generation on Server on RA Web
-     * 
-     * @param endEntityName
-     * @param clickDownloadButton
-     * @param fileExtension
-     * @throws InterruptedException
-     */
-    
+    // Makes Request based on Key Generation on Server on RA Web
     private void makeRequest(final String endEntityName, final Runnable clickDownloadButton, final String fileExtension) throws InterruptedException {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();

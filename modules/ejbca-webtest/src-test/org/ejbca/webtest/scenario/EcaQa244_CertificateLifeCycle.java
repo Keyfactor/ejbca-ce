@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,22 +21,31 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-
-
+/**
+ * This test checks the Certificate Details page in RA Web.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-244">ECAQA-244</a>
+ *
+ * @version $Id: EcaQa244_CertificateLifeCycle.java 31450 2019-02-08 15:46:45Z samuellb $
+ */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa244_CertificateLifeCycle extends WebTestBase{
-  //Classes used.
+public class EcaQa244_CertificateLifeCycle extends WebTestBase {
+
+    // Classes used.
     private static WebDriver webDriver;
     private static AddEndEntityHelper addEndEntityHelper;
     private static RaWebHelper raWebHelper;
@@ -53,7 +62,6 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase{
     private static final By AUDITLOG_DETAILS_REVOKED_XPATH = By.xpath("//td[contains(text(),'Revoked end entity "+END_ENTITY_NAME+".')]");
     private static final By AUDITLOG_DETAILS_CERTIFICATEHOLD_XPATH = By.xpath("//span[contains(@title,\"Activated certificate on hold for username '"+END_ENTITY_NAME+"'\")]");
 
-    
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
@@ -90,12 +98,13 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase{
     @Test
     public void testB_RaWeb() {
         raWebHelper.openPage(getRaWebUrl());
-        //Use sleep to find next element.
+        // Use sleep to find next element.
         try {
-          Thread.sleep(200);
-      } catch (InterruptedException e) {
-          e.printStackTrace();
-      }
+            Thread.sleep(200);
+
+        } catch (InterruptedException e) {
+              // NOPMD
+        }
         raWebHelper.clickToEnrollUseUsername(webDriver);
         raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
         raWebHelper.clickCheck();
@@ -144,30 +153,29 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase{
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.reloadView();
         WebElement addedElement = webDriver.findElement(AUDITLOG_DETAILS_ADDED_XPATH);
-        auditLogHelper.assertLogEntryByEventText("End Entity Add", "Success", null
-                ,Arrays.asList(addedElement.getText()));
+        auditLogHelper.assertLogEntryByEventText("End Entity Add", "Success", null,
+                Collections.singletonList(addedElement.getText()));
     }
     
     @Test
     public void testH_AuditLogEndEntityRevokeInDetails() {
         WebElement revokedElement = webDriver.findElement(AUDITLOG_DETAILS_REVOKED_XPATH);
-        auditLogHelper.assertLogEntryByEventText("End Entity Revoke", "Success", null
-                ,Arrays.asList(revokedElement.getText()));
+        auditLogHelper.assertLogEntryByEventText("End Entity Revoke", "Success", null,
+                Collections.singletonList(revokedElement.getText()));
     }
     
     @Test
     public void testI_AuditLogEndEntityCertHoldInDetails() {
         WebElement certificateHoldElement = webDriver.findElement(AUDITLOG_DETAILS_CERTIFICATEHOLD_XPATH);
-        auditLogHelper.assertLogEntryByEventText("Certificate Revoke", "Success", null
-                ,Arrays.asList(certificateHoldElement.getText()));
+        auditLogHelper.assertLogEntryByEventText("Certificate Revoke", "Success", null,
+                Collections.singletonList(certificateHoldElement.getText()));
     }
     
     @Test
     public void testJ_AuditLogEndEntityRevokeCertInDetails() {
-        //Only checking 'Event' log by username. 
+        // Only checking 'Event' log by username.
         auditLogHelper.setViewFilteringCondition("Username", "Equals", END_ENTITY_NAME);
-        auditLogHelper.assertLogEntryByEventText("Certificate Revoke", "Success", null
-                ,null);
+        auditLogHelper.assertLogEntryByEventText("Certificate Revoke", "Success", null,null);
     }
     
     private static void cleanup() {

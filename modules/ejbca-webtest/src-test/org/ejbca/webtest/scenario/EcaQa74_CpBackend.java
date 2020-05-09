@@ -15,14 +15,15 @@ package org.ejbca.webtest.scenario;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -34,6 +35,7 @@ import org.openqa.selenium.WebDriver;
  * 
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa74_CpBackend extends WebTestBase {
 
@@ -45,7 +47,6 @@ public class EcaQa74_CpBackend extends WebTestBase {
         static final String CERTIFICATE_PROFILE_NAME = "ECAQA-74-CertificateProfile";
     }
 
-
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
@@ -56,7 +57,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit()  {
         // Remove generated artifacts
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         // super

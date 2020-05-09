@@ -12,36 +12,30 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
 /**
  * This test checks the behavior of EEP Notifications in the edit view.
  * 
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa62_EepNotifications extends WebTestBase {
     // Helpers
     private static EndEntityProfileHelper endEntityProfileHelper;
-
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserDataTest"));
-
-    private static WebDriver webDriver;
 
     // Test Data
     private static class TestData {
@@ -54,15 +48,15 @@ public class EcaQa62_EepNotifications extends WebTestBase {
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         // Init helpers
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         removeEndEntityProfileByName(TestData.EEP_NAME);
-        webDriver.quit();
+        afterClass();
     }
 
     @Test
@@ -112,7 +106,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //    }
 
     @Test
-    public void e_addAnotherNotification() throws InterruptedException {
+    public void e_addAnotherNotification() {
         endEntityProfileHelper.addNotification();
         endEntityProfileHelper.assertNotificationSenderExists(0);
         endEntityProfileHelper.assertNotificationSenderExists(1);

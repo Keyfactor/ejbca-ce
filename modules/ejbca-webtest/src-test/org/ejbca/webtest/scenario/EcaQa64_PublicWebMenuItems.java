@@ -14,19 +14,25 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.PublicWebHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 import java.util.Arrays;
 
 /**
- * 
- * @version $Id$
+ * In this test case basic structure of EJBCA Public Web pages is checked, such as - availability of all of the sections
+ * and subsections.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-64">ECAQA-64</a>
  *
+ * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa64_PublicWebMenuItems extends WebTestBase {
 
     // Helpers

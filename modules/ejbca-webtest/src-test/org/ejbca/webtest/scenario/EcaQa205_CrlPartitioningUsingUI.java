@@ -12,6 +12,20 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.util.CertTools;
+import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.*;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigProtokols;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
+import org.openqa.selenium.WebDriver;
+import java.util.*;
+
 // The ignored testcase, stepM_GenerateAndRevokeCertificates, works when executing locally but not within a build machine
 // environment.  The steps relying on the SwaggerUIHelper should be replaced with methods to call REST programmatically.
 /**
@@ -21,23 +35,9 @@ package org.ejbca.webtest.scenario;
  *
  * @version $Id$
  */
-
-import org.apache.commons.lang.RandomStringUtils;
-import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.util.CertTools;
-import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.helper.*;
-import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigProtokols;
-import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
-import org.junit.*;
-import org.junit.runners.MethodSorters;
-import org.openqa.selenium.WebDriver;
-import java.util.*;
-
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
-
-    private static WebDriver webDriver;
 
     // Helpers
     private static CaHelper caHelper;
@@ -51,23 +51,22 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
 
     // Test Data
     private static class TestData {
-        private static final String CA_NAME = "CrlPartitionCATest";
-        private static final String CA_VALIDITY = "1y";
-        private static final String CERTIFICATE_PROFILE_NAME = "CrlPartitionTestCertProfile";
-        private static final String ENTITY_NAME = "EndEntityProfile";
-        private static final String CRL_SERVICE = "ServiceCrlPartition";
-        private static final String ISSUER_DN = "CN=" + CA_NAME;
-        private static final String USERNAME = "Crl" + RandomStringUtils.randomAlphanumeric(8);
-        private static final String PASSWORD = "123" + RandomStringUtils.randomAlphanumeric(5);
-        private static final String END_ENTITY_NAME = "EcaQa205EE" + new Random().nextInt();
-
+        static final String CA_NAME = "CrlPartitionCATest";
+        static final String CA_VALIDITY = "1y";
+        static final String CERTIFICATE_PROFILE_NAME = "CrlPartitionTestCertProfile";
+        static final String ENTITY_NAME = "EndEntityProfile";
+        static final String CRL_SERVICE = "ServiceCrlPartition";
+        static final String ISSUER_DN = "CN=" + CA_NAME;
+        static final String USERNAME = "Crl" + RandomStringUtils.randomAlphanumeric(8);
+        static final String PASSWORD = "123" + RandomStringUtils.randomAlphanumeric(5);
+        static final String END_ENTITY_NAME = "EcaQa205EE" + new Random().nextInt();
     }
 
     @BeforeClass
     public static void init() {
         // super
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
@@ -82,13 +81,11 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     @AfterClass
     public static void exit() {
         // Remove generated artifacts
-
         removeCrlByIssuerDn(TestData.ISSUER_DN);
         removeCaAndCryptoToken(TestData.CA_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         removeEndEntityProfileByName(TestData.ENTITY_NAME);
         removeServiceByName(TestData.CRL_SERVICE);
-
         // super
         afterClass();
     }
@@ -104,12 +101,10 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         caHelper.addCa(TestData.CA_NAME);
     }
 
-
     @Test
     public void stepC_setValidity() {
         caHelper.setValidity(TestData.CA_VALIDITY);
     }
-
 
     @Test
     public void stepD_configureCRLPartitioning() {
@@ -149,7 +144,6 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         certificateProfileHelper.fillValidity("360d");
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCrlDistributionPoints();
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCaDefinedCrlDistributionPoint();
-
     }
 
     @Test
@@ -185,11 +179,9 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         eeProfileHelper.saveEndEntityProfile(true);
     }
 
-
     @Test
     public void stepM1_CreateEndEntity(){
         //First add an end entity for the end user
-
         Map<String, String> INPUT_END_ENTITY_FIELDMAP = new HashMap<>();
         {
             INPUT_END_ENTITY_FIELDMAP.put("Username", TestData.USERNAME);
@@ -197,9 +189,7 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
             INPUT_END_ENTITY_FIELDMAP.put("Confirm Password", TestData.PASSWORD);
             INPUT_END_ENTITY_FIELDMAP.put("CN, Common name", TestData.END_ENTITY_NAME);
         }
-
         System.out.println("User:  " + TestData.USERNAME);
-
 
         addEndEntityHelperDefault.openPage(getAdminWebUrl());
         addEndEntityHelperDefault.setEndEntityProfile(TestData.ENTITY_NAME);
@@ -220,25 +210,20 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     //@Ignore
     @Test()
     public void stepO_GenerateAndRevokeCertificates() throws InterruptedException {
-
         //Open Swagger
-         swaggerUIHelper.openPage(getSwaggerWebUrl());
-
+        swaggerUIHelper.openPage(getSwaggerWebUrl());
         //First Generate a certificate for the user
         swaggerUIHelper.postEnrollKeystore();
         swaggerUIHelper.tryEnrollKeystore();
         swaggerUIHelper.setEnrollKeystoreAsJson(TestData.USERNAME, TestData.PASSWORD, "RSA", "2048");
         swaggerUIHelper.executeEnrollKeystoreRequest();
-
         //Now verify the response
         swaggerUIHelper.assertEnrollKeystoreSuccess();
         //**Wait a minute for the certificate to propagate in the system**
         Thread.sleep(30000);
-
         //Get the certificate serial number from database
         Collection<CertificateWrapper> certificateDataList = findSerialNumber(TestData.USERNAME);
         String certificateSerialNumber = CertTools.getSerialNumberAsString(certificateDataList.iterator().next().getCertificate());
-
         //Revoke certificate
         swaggerUIHelper.putCertificateRevoke();
         swaggerUIHelper.tryCertificateRevoke();
@@ -246,7 +231,6 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         swaggerUIHelper.setCertificateSerialNumber(certificateSerialNumber);
         swaggerUIHelper.setReasonToRevoke("UNSPECIFIED");
         swaggerUIHelper.setDateToRevoke();
-
         swaggerUIHelper.executeCertificateRevoke();
         swaggerUIHelper.assertCertificateRevokeSuccess();
     }
@@ -270,8 +254,6 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     public void stepQ_AssertCrlPartitionLinksInCertProfile() {
         certificateProfileHelper.openPage(getAdminWebUrl());
     }
-
-
 
     @Test
     public void stepR_OpenServicePage() {
