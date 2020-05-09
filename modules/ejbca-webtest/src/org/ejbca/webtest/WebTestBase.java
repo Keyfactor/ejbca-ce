@@ -53,7 +53,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.ProfilesIni;
+import org.openqa.selenium.firefox.ProfilesIni;
 
 import java.io.File;
 import java.util.*;
@@ -67,52 +67,48 @@ import java.util.concurrent.TimeUnit;
 public abstract class WebTestBase extends ExtentReportCreator {
 
     private static final Logger log = Logger.getLogger(WebTestBase.class);
+    // Authentication token to use.
+    private static final AuthenticationToken ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
     private static ConfigurationHolder config;
-
+    // EJBCA
     private static String ejbcaDomain;
-    private static String ejbcaSslPort;
-    private static String ejbcaPort;
+    private static String ejbcaPublicPort;
+    private static String ejbcaSecurePort;
+    // Firefox
     private static String downloadDir;
     private static String browserBinary; // null = don't override default
     private static String browserHeadless;
-    private static List<WebDriver> webDrivers = new ArrayList<>();
-    private static Map<String, String> databaseConnection;
+    private static final List<WebDriver> webDrivers = new ArrayList<>();
 
     /**
-     * Authentication token to use.
-     */
-    protected static final AuthenticationToken ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-
-    /**
-     * Sets up firefox driver and firefox profile if certificate is required.
+     * Sets up Firefox driver and Firefox profile if certificate is required.
      * <br/>
      * Corresponds to @BeforeClass annotation in a Test scenario.
      *
      * @param requireCert           if certificate is required
      * @param profileConfigProperty browser profile to use. Defined in ConfigurationConstants, null will use default profile.
      */
-    public static void beforeClass(final boolean requireCert, final String profileConfigProperty) {
+    protected static void beforeClass(final boolean requireCert, final String profileConfigProperty) {
         // Init properties
         setGlobalConstants();
         // Init gecko driver
         config.setGeckoDriver();
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
+        final FirefoxOptions firefoxOptions = new FirefoxOptions();
         if (requireCert) {
-            final ProfilesIni allProfiles = new ProfilesIni();
-            final FirefoxProfile firefoxProfile;
-
+            // Load configuration
             final String configProperty = profileConfigProperty != null ? profileConfigProperty : ConfigurationConstants.PROFILE_FIREFOX_DEFAULT;
             final String profileName = config.getProperty(configProperty);
             if (StringUtils.isEmpty(profileName)) {
                 throw new IllegalStateException("Property '" + configProperty + "' must be defined in modules/ejbca-webtest/conf/profiles.properties");
             }
-            firefoxProfile = allProfiles.getProfile(profileName);
-
+            // Load Firefox profiles
+            final ProfilesIni allProfiles = new ProfilesIni();
+            final FirefoxProfile firefoxProfile = allProfiles.getProfile(profileName);
             if (firefoxProfile == null) {
                 throw new IllegalStateException("Profile '" + profileName + "' was not found (defined by property '" + configProperty + "').");
             }
-
+            // Update Firefox profile's preferences
             firefoxProfile.setAcceptUntrustedCertificates(true);
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             firefoxProfile.setPreference("browser.download.folderList", 2);
@@ -120,15 +116,12 @@ public abstract class WebTestBase extends ExtentReportCreator {
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
             firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/pkcs7-mime;application/pkcs12;application/x-pkcs12;application/octet-stream;application/json");
             firefoxProfile.setPreference("browser.download.panel.shown", false);
-
             firefoxProfile.setPreference("browser.helperApps.alwaysAsk.force", false);
             firefoxProfile.setPreference("browser.download.manager.showWhenStarting",false);
-
             firefoxProfile.setPreference("browser.download.manager.useWindow", false);
             firefoxProfile.setPreference("browser.download.manager.closeWhenDone", false);
-
             firefoxProfile.setPreference("intl.accept_languages", "en_US, en");
-
+            // Update Firefox options
             firefoxOptions.setProfile(firefoxProfile);
             firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
             firefoxOptions.setAcceptInsecureCerts(true);
@@ -139,7 +132,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
         if (Boolean.parseBoolean(browserHeadless)) {
             firefoxOptions.setHeadless(true);
         }
-
+        //
         final WebDriver webDriver = new FirefoxDriver(firefoxOptions);
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         // Add to array
@@ -148,11 +141,11 @@ public abstract class WebTestBase extends ExtentReportCreator {
     }
 
     /**
-     * Closes the firefox drivers.
+     * Closes the Firefox drivers.
      * <br/>
      * Corresponds to @AfterClass annotation in a Test scenario.
      */
-    public static void afterClass() {
+    protected static void afterClass() {
         // Destroy web drivers & close all windows
         if (!webDrivers.isEmpty()) {
             for (WebDriver webDriver : webDrivers) {
@@ -165,77 +158,38 @@ public abstract class WebTestBase extends ExtentReportCreator {
         config = new ConfigurationHolder();
         config.loadAllProperties();
         ejbcaDomain = config.getProperty(ConfigurationConstants.APPSERVER_DOMAIN);
-        ejbcaPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT);
-        ejbcaSslPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT_SSL);
+        ejbcaPublicPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT);
+        ejbcaSecurePort = config.getProperty(ConfigurationConstants.APPSERVER_PORT_SSL);
         downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
         browserBinary = config.getProperty(ConfigurationConstants.BROWSER_BINARY);
         browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
-
-        //Load Database Constants
-        databaseConnection = new HashMap<>();
-        databaseConnection.put("host", config.getProperty(ConfigurationConstants.DATABASE_HOST));
-        databaseConnection.put("port", config.getProperty(ConfigurationConstants.DATABASE_PORT));
-        databaseConnection.put("user", config.getProperty(ConfigurationConstants.DATABASE_USERNAME));
-        databaseConnection.put("password", config.getProperty(ConfigurationConstants.DATABASE_PASSWORD));
     }
 
-    public String getCaName() {
+    protected String getCaName() {
         return config.getProperty(ConfigurationConstants.EJBCA_CANAME);
     }
 
-    public String getCaDn() {
-        return config.getProperty(ConfigurationConstants.EJBCA_CADN);
+    protected String getCrlUri() {
+        return ("http://" + ejbcaDomain + ":" + ejbcaPublicPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3D");
     }
 
-    public String getCrlUri() {
-        return ("http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN%3D");
+    protected static String getPublicWebUrl() {
+        return "http://" + ejbcaDomain + ":" + ejbcaPublicPort + "/ejbca/";
     }
 
-    public Map<String, String> getDatabaseConnection() {
-        return databaseConnection;
+    protected static String getAdminWebUrl() {
+        return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/adminweb";
     }
 
-    /**
-     * @param constantKey profile key from ConfigurationConstants
-     * @return the profile name
-     */
-    public String getProfileName(String constantKey) {
-        return config.getProperty(constantKey);
+    protected static String getRaWebUrl() {
+        return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/ra/";
     }
 
-    /**
-     * <p>Get the namespace in which the administrative roles for clicktests reside, or null if no
-     * namespace has been specified by the user.
-     * <p>The namespace setting is fetched from the <code>ejbca.properties</code> configuration file.
-     *
-     * @return the role namespace or null if no particular namespace has been configured by the user
-     */
-    public String getNamespace() {
-        final String namespace = config.getProperty(ConfigurationConstants.EJBCA_NAMESPACE);
-        return StringUtils.isBlank(namespace) ? null : namespace;
+    protected static String getSwaggerWebUrl() {
+        return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/swagger-ui#/";
     }
 
-    public static String getPublicWebUrl() {
-        return "http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/";
-    }
-
-    public static String getAdminWebUrl() {
-        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/adminweb";
-    }
-
-    public static String getRaWebUrl() {
-        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
-    }
-
-    public static String getRestUrl() {
-        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ejbca-rest-api";
-    }
-
-    public static String getSwaggerWebUrl() {
-        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/swagger-ui#/";
-    }
-
-    public static String getDownloadDir() {
+    protected static String getDownloadDir() {
         return downloadDir;
     }
 
@@ -244,7 +198,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
      *
      * @return the first WebDriver or null.
      */
-    public static WebDriver getWebDriver() {
+    protected static WebDriver getWebDriver() {
         if (webDrivers.isEmpty()) {
             return null;
         }
@@ -448,10 +402,10 @@ public abstract class WebTestBase extends ExtentReportCreator {
         }
     }
 
-    protected static void removeServiceByName(final String ServiceName) {
+    protected static void removeServiceByName(final String serviceName) {
         final ServiceSessionRemote serviceSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
         try {
-            serviceSessionRemote.removeService(ADMIN_TOKEN, ServiceName);
+            serviceSessionRemote.removeService(ADMIN_TOKEN, serviceName);
         } catch (Exception e) {
             throw new IllegalStateException(e); //Should never happen with always allow token
         }
@@ -515,7 +469,11 @@ public abstract class WebTestBase extends ExtentReportCreator {
         return "ManagementCA";
     }
 
-    protected static void removeCertificateTransparencyLogs(String... ctLogParameters) throws AuthorizationDeniedException {
+    /**
+     * Removes CT Log parameters
+     * @param ctLogParameters an array of CT Log parameters.
+     */
+    protected static void removeCertificateTransparencyLogs(String... ctLogParameters) {
         final GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSessionRemote
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -523,10 +481,14 @@ public abstract class WebTestBase extends ExtentReportCreator {
         ctLogs.forEach((key, ctLogInfo) -> {
             if (Arrays.asList(ctLogParameters).contains(ctLogInfo.getUrl())) {
                 globalConfiguration.removeCTLog(ctLogInfo.getLogId());
-
             }
         });
-        globalConfigurationSessionRemote.saveConfiguration(ADMIN_TOKEN, globalConfiguration);
+        try {
+            globalConfigurationSessionRemote.saveConfiguration(ADMIN_TOKEN, globalConfiguration);
+        }
+        catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
     }
 
 }

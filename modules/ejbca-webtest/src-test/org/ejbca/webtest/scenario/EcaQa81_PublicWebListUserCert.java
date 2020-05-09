@@ -13,9 +13,11 @@
 package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -25,9 +27,18 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * 
+ * In this test case following was tested under subsection 'List User's Certificates' in Public Web:
+ * <ul>
+ *     <li>error when no Subject DN was entered</li>
+ *     <li>error when non-existent SubjectDN was entered</li>
+ *     <li>listing certificates of the subject that has a certificate in the database</li>
+ *     <li>testing link 'Download certificate', including testing of 'Cancel' button</li>
+ *     <li>testing link 'Check if certificate is revoked'</li>
+ * </ul>
+ *
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 
     private static WebDriver webDriver;
@@ -49,11 +60,10 @@ public class EcaQa81_PublicWebListUserCert extends WebTestBase {
     @Test
     public void testCertListing() {
         webDriver.get(getPublicWebUrl() + LISTCERT_URL);
-        WebElement title = webDriver.findElement(By.xpath("//h1[@class='title']"));
         WebElement okButton = webDriver.findElement(By.id("ok"));
         okButton.click();
 
-        title = webDriver.findElement(By.xpath("//h1[@class='title']"));
+        WebElement title = webDriver.findElement(By.xpath("//h1[@class='title']"));
         assertEquals("No subject", title.getText());
         WebElement backLink = webDriver.findElement(By.xpath("//a[@href='list_certs.jsp']"));
         backLink.click();
@@ -92,12 +102,10 @@ public class EcaQa81_PublicWebListUserCert extends WebTestBase {
         // Checking the download popups requires some firefox profile settings (through webdriver)
         resultLinks.get(1).click();
 
-        title = webDriver.findElement(By.xpath("//h1[@class='title']"));
         String revocationResultText = webDriver.findElement(By.xpath("//div[@class='content']")).getText();
         assertTrue("Missing attribute from certificate status", revocationResultText.contains("Issuer:"));
         assertTrue("Missing attribute from certificate status", revocationResultText.contains("Serial number:"));
         assertTrue("Unexpected revocation status", revocationResultText.contains("The certificate has NOT been revoked."));
-
     }
 
 }

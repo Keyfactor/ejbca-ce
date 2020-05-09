@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest.scenario;
 
 import java.util.Collections;
@@ -23,13 +22,24 @@ import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
+/**
+ * The purpose of this test is to verify that the 'End Entity Search' page is working. Both the 'Basic Mode' and the
+ * 'Advanced Mode' are tested, and multiple types of queries are tested (username, serial number, expiry, etc)
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-77">ECAQA-77</a>
+ *
+ * @version $Id$
+ */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa77_EndEntitySearch extends WebTestBase {
 
@@ -39,7 +49,6 @@ public class EcaQa77_EndEntitySearch extends WebTestBase {
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
     private static RaWebHelper raWebHelper;
-    
 
     public static class TestData {
         private static final String CERTIFICATE_PROFILE_NAME = "EcaQa77_ShortValidity";

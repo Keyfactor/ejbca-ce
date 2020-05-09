@@ -14,10 +14,12 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -25,16 +27,16 @@ import org.junit.runners.MethodSorters;
  * <br>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-257">ECAQA-257</a>
  * 
- * @version $Id$ EcaQa257_CreateCertificateAuthorityInCAWebAdmin.java 2020-04-21 15:00 tobiasM$
- *
+ * @version $Id: EcaQa257_CreateCertificateAuthorityInCAWebAdmin.java 2020-04-21 15:00 tobiasM$
  */
-
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa257_CreateCertificateAuthorityInCAWebAdmin extends WebTestBase {
-    //Helpers
+
+    // Helpers
     private static CaHelper caHelper;
 
-    //TestData
+    // TestData
     public static class TestData {
         private static final String CA_NAME = "EcaQa257";
         private static final String SUBJECT_DN = "CN="+CA_NAME+",O=Primekey,C=SE";

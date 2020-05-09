@@ -19,21 +19,24 @@ import java.util.Arrays;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
 
 /**
  * Tests the 'Generate' buttons on the Edit CA page, both when adding a new CA and when
  * editing an existing CA.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-214">ECAQA-214</a>
  *
  * @version $Id$
  */
-
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
     
@@ -90,7 +93,6 @@ public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
     }
-    
 
     /** Tests the 'Generate' buttons when creating a new CA after having modified the Subject DN */
     @Test
