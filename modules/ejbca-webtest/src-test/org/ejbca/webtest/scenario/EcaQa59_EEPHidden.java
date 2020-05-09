@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,10 +23,12 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -37,6 +38,7 @@ import org.openqa.selenium.WebDriver;
  *
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa59_EEPHidden extends WebTestBase {
     
@@ -70,8 +72,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     
     private static String currentDateString;
     private static String oneMonthsFromNowString;
-    private static WebDriver webDriver;
-    
+
     // Helpers
     private static SystemConfigurationHelper sysConfigHelper;
     private static EndEntityProfileHelper eeProfileHelper;
@@ -86,7 +87,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         currentDateString = new SimpleDateFormat("yyyy-MM-dd").format(currentDate);
         oneMonthsFromNowString = new SimpleDateFormat("yyyy-MM-dd").format(oneMonthsFromNow.getTime());
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         sysConfigHelper = new SystemConfigurationHelper(webDriver);
         eeProfileHelper = new EndEntityProfileHelper(webDriver);
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
@@ -110,7 +111,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     }
 
     @Test
-    public void testB_addEndEntityProfile() throws InterruptedException {
+    public void testB_addEndEntityProfile() {
         eeProfileHelper.openPage(getAdminWebUrl());
         eeProfileHelper.addEndEntityProfile(TestData.EEP_NAME);
         eeProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);

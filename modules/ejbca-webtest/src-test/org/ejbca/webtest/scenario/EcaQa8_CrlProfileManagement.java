@@ -14,14 +14,15 @@ package org.ejbca.webtest.scenario;
 
 import java.util.Arrays;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -35,10 +36,10 @@ import org.openqa.selenium.WebDriver;
  * 
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa8_CrlProfileManagement extends WebTestBase {
 
-    private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
     private static AuditLogHelper auditLogHelper;
@@ -56,14 +57,14 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
     public static void init() {
         // super
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
         auditLogHelper = new AuditLogHelper(webDriver);
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() {
         // Remove generated artifacts
         removeCaAndCryptoToken(TestData.CA_NAME);
         // super
