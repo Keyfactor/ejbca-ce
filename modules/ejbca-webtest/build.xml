@@ -110,7 +110,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${webtest.build-test.dir}" includes="**/EcaQa*.class" excludes="**/*EcaQa*$*"/>
+                <fileset dir="${webtest.build-test.dir}" includes="**/EcaQa7?_*.class" excludes="**/*EcaQa*$*"/>
             </batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
