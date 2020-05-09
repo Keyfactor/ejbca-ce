@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +35,12 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -51,6 +52,7 @@ import org.openqa.selenium.WebElement;
  * 
  * @version $Id$
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa76_AuditLogSearch extends WebTestBase {
     
@@ -232,7 +234,9 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         try {
             webDriver.findElement(By.xpath("//td[text()='Access Control']"));
             fail("The rule 'Access Control' was still present after removal");
-        } catch (NoSuchElementException e) {}
+        } catch (NoSuchElementException e) {
+            // NOPMD
+        }
 
         // Check that the Audit Log still looks the same
         AuditLogHelper.assertEntries(webDriver, "End Entity Edit", "End Entity Add");
@@ -265,14 +269,11 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
 
         // Get all XML files in folder matching the file name pattern and sort by last modified (newest first)
         List<File> xmlFiles = Arrays.asList((new File(getDownloadDir())).listFiles((FileFilter) new WildcardFileFilter("export-*.xml")));
-        Collections.sort(xmlFiles, new Comparator<File>() {
-            @Override
-            public int compare(File first, File second) {
-                if (first.lastModified() == second.lastModified()) {
-                    return 0;
-                } else {
-                    return first.lastModified() > second.lastModified() ? -1 : 1;
-                }
+        xmlFiles.sort((first, second) -> {
+            if (first.lastModified() == second.lastModified()) {
+                return 0;
+            } else {
+                return first.lastModified() > second.lastModified() ? -1 : 1;
             }
         });
         String results = new String(Files.readAllBytes(Paths.get(xmlFiles.get(0).getAbsolutePath())));

@@ -14,10 +14,12 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
+import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -25,9 +27,9 @@ import org.junit.runners.MethodSorters;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-255">ECAQA-255</a>
  * 
- * @version $Id$: EcaQa255_CreateCryptoTokensInCAWebAdmin.java 2020-04-21 15:00 tobiasM$
- *
+ * @version $Id: EcaQa255_CreateCryptoTokensInCAWebAdmin.java 34991 2020-05-06 20:20:43Z andrey_s_helmes
  */
+@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
 
@@ -41,7 +43,6 @@ public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
         static final String KEY_NAME_DEFAULTKEY = "defaultKey";
         static final String KEY_NAME_SIGNKEY = "signkey";
         static final String KEY_NAME_TESTKEY = "testkey";
-        
         static final String KEY_SPECIFICATION = "RSA 1024";
     }
     
