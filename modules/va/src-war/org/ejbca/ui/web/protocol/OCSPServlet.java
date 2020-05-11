@@ -150,10 +150,12 @@ public class OCSPServlet extends HttpServlet {
                 }
                 try {
                     ocspKeyRenewalSession.renewKeyStores(keyrenewalSignerDn);
-                } catch (KeyStoreException e) {
-                    log.info( intres.getLocalizedMessage("ocsp.rekey.keystore.notactivated", remote) );
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
+                    // TODO Check
+//                }
+//                catch (KeyStoreException e) {
+//                    log.info( intres.getLocalizedMessage("ocsp.rekey.keystore.notactivated", remote) );
+//                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+//                    return;
                 } catch (CryptoTokenOfflineException e) {
                     log.info( intres.getLocalizedMessage("ocsp.rekey.cryptotoken.notactivated", remote) );
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);

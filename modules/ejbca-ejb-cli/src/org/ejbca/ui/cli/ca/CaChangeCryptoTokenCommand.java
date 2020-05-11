@@ -91,23 +91,21 @@ nextCertSignKey fooalias03
         Properties caTokenProperties = new Properties();
         String caTokenPropertiesFile = parameters.get(CA_TOKEN_PROPERTIES_KEY);
         if (caTokenPropertiesFile != null) {
-            if ((caTokenPropertiesFile != null) && (!caTokenPropertiesFile.equalsIgnoreCase("null"))) {
-                File file = new File(caTokenPropertiesFile);
-                if (!file.exists()) {
-                    getLogger().error("CA Token properties file " + caTokenPropertiesFile + " does not exist.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                } else if (file.isDirectory()) {
-                    getLogger().error("CA Token properties file " + caTokenPropertiesFile + " is a directory.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                } else {
-                    try (final FileInputStream fis = new FileInputStream(caTokenPropertiesFile)) {
-                        caTokenProperties.load(fis);
-                    } catch (FileNotFoundException e) {
-                        //Can't happen
-                        throw new IllegalStateException("Newly referenced file " + caTokenPropertiesFile + " was not found.", e);
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Unknown exception was caught when reading input stream", e);
-                    }
+            File file = new File(caTokenPropertiesFile);
+            if (!file.exists()) {
+                getLogger().error("CA Token properties file " + caTokenPropertiesFile + " does not exist.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            } else if (file.isDirectory()) {
+                getLogger().error("CA Token properties file " + caTokenPropertiesFile + " is a directory.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            } else {
+                try (final FileInputStream fis = new FileInputStream(caTokenPropertiesFile)) {
+                    caTokenProperties.load(fis);
+                } catch (FileNotFoundException e) {
+                    //Can't happen
+                    throw new IllegalStateException("Newly referenced file " + caTokenPropertiesFile + " was not found.", e);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unknown exception was caught when reading input stream", e);
                 }
             }
         }

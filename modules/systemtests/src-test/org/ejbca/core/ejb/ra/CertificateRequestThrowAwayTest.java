@@ -13,40 +13,24 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Random;
 
-import javax.ejb.CreateException;
-import javax.ejb.ObjectNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -65,17 +49,13 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -111,28 +91,26 @@ public class CertificateRequestThrowAwayTest {
 
     private static final String TESTCA_NAME = "ThrowAwayTestCA";
 
-    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
-    private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE
+    private final CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateRequestSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private final CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
     @BeforeClass
-    public static void setupBeforeClass() throws Exception {
+    public static void setupBeforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
@@ -206,16 +184,9 @@ public class CertificateRequestThrowAwayTest {
         CaTestCase.removeTestCA(TESTCA_NAME);
     }
 
-    /**
-     * Reconfigure CA, process a certificate request and assert that the right things were stored in the database.
-     * @throws EndEntityProfileNotFoundException 
-     */
+    // Reconfigure CA, process a certificate request and assert that the right things were stored in the database.
     private void generateCertificatePkcs10(int certificateProfileId, CertificateProfile certificateProfile, boolean useCertReqHistory, boolean useUserStorage,
-            boolean useCertificateStorage, boolean raw) throws AuthorizationDeniedException, CouldNotRemoveEndEntityException, CertificateParsingException,
-            InvalidKeyException, InvalidAlgorithmParameterException, OperatorCreationException, NoSuchAlgorithmException, InvalidKeySpecException,
-            NoSuchProviderException, SignatureException, ObjectNotFoundException, CertificateException, ApprovalException, IOException,
-            CreateException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException,
-            EndEntityProfileNotFoundException {
+            boolean useCertificateStorage, boolean raw) throws Exception {
         LOG.trace(">generateCertificatePkcs10");
         LOG.info("useCertReqHistory=" + useCertReqHistory + " useUserStorage=" + useUserStorage + " useCertificateStorage=" + useCertificateStorage);
         reconfigureCA(useCertReqHistory, useUserStorage, useCertificateStorage);
@@ -235,34 +206,21 @@ public class CertificateRequestThrowAwayTest {
         if (useCertReqHistory) {
             certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(certificate));
         }
-        if (certificate != null) {
-            internalCertificateStoreSession.removeCertificate(certificate);
-        }
+        internalCertificateStoreSession.removeCertificate(certificate);
         LOG.trace("<generateCertificatePkcs10");
     }
 
-    /**
-     * Assert that the CA is configured to store things as expected.
-     * 
-     * @throws AuthorizationDeniedException
-     * @throws CADoesntExistsException
-     */
-    private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws CADoesntExistsException,
-            AuthorizationDeniedException {
+    // Assert that the CA is configured to store things as expected.
+    private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException {
         CAInfo caInfo = caSession.getCAInfo(admin, TESTCA_NAME);
         assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
         assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
         assertEquals("CA has wrong useCertificateStorage setting: ", useCertificateStorage, caInfo.isUseCertificateStorage());
     }
 
-    /**
-     * Change CA configuration for what to store and assert that the changes were made.
-     * 
-     * @throws CADoesntExistsException
-     * @throws InternalKeyBindingNonceConflictException 
-     */
+    // Change CA configuration for what to store and assert that the changes were made.
     private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException,
-            CADoesntExistsException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
+            CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
         CAInfo caInfo = caSession.getCAInfo(admin, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);
@@ -290,11 +248,7 @@ public class CertificateRequestThrowAwayTest {
      * 
      * @param raw true if an encoded request should be sent, false if an EJBCA PKCS10RequestMessage should be used.
      */
-    private X509Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws InvalidAlgorithmParameterException,
-            OperatorCreationException, IOException, CertificateParsingException, InvalidKeyException, CADoesntExistsException, NotFoundException,
-            NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, ObjectNotFoundException,
-            CertificateException, ApprovalException, AuthorizationDeniedException, CreateException, EndEntityProfileValidationException,
-            EjbcaException, CesecoreException, CertificateExtensionException {
+    private X509Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws Exception {
         X509Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
         byte[] rawPkcs10req = CertTools
@@ -311,7 +265,6 @@ public class CertificateRequestThrowAwayTest {
                     .getCertificate();
         }
         return ret;
-
     }
 
     private boolean userDataExists(EndEntityInformation userData) {

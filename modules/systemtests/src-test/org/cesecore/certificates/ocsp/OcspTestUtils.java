@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -55,7 +53,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -93,23 +90,15 @@ public class OcspTestUtils {
 
     /**
      * Creates an internal key binding. Removes it if it already exists, for example from previous aborted or failed test runs.
-     * @param authenticationToken
-     * @param cryptoTokenId
+     * @param authenticationToken authentication token
+     * @param cryptoTokenId crypto token id
      * @param type internal key binding typ, i.e. OcspKeyBinding.IMPLEMENTATION_ALIAS
-     * @param testName 
+     * @param testName test names
      * @param keyspec keyspec for new key binding crypto token, i. "RSA2048", "secp256r1"
      * @param signAlg  is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable), i.e. AlgorithmConstants.SIGALG_SHA1_WITH_RSA
      * @return internalKeyBindingId
-     * @throws InvalidKeyException
-     * @throws CryptoTokenOfflineException
-     * @throws InvalidAlgorithmParameterException
-     * @throws AuthorizationDeniedException
-     * @throws InternalKeyBindingNameInUseException
-     * @throws InvalidAlgorithmException
-     * @throws InternalKeyBindingNonceConflictException 
      */
-    public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName, String keyspec, String sigAlg) throws InvalidKeyException,
-            CryptoTokenOfflineException, InvalidAlgorithmParameterException, AuthorizationDeniedException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
+    public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName, String keyspec, String signAlg) throws Exception {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
@@ -120,16 +109,15 @@ public class OcspTestUtils {
             cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, KeyGenParams.builder(keyspec).build());
         }
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
-        final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
+        final Map<String, Serializable> dataMap = new LinkedHashMap<>();
         dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
-        int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type,
-                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, sigAlg, dataMap, null);
-        return internalKeyBindingId;
+        return internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type,
+                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, signAlg, dataMap, null);
     }
     
     /** @return the certificate fingerprint if an update was made */
     public static String updateInternalKeyBindingCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId)
-            throws AuthorizationDeniedException, CertificateImportException, CryptoTokenOfflineException {
+            throws AuthorizationDeniedException, CertificateImportException {
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         return internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
     }
@@ -221,14 +209,12 @@ public class OcspTestUtils {
                 EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword(), expirationTime);
-        X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
-                authenticationToken, user, req, X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
-        return ocspSigningCertificate;
+        return (X509Certificate) (certificateCreateSession.createCertificate(
+                authenticationToken, user, req, X509ResponseMessage.class, signSession.fetchCertGenParams()).getCertificate());
     }
 
     public static X509Certificate createClientSSLCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId, int caId)
-            throws AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException,
-            CertificateCreateException, CesecoreException, CertificateExtensionException {
+            throws AuthorizationDeniedException, CesecoreException, CertificateExtensionException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         // Get the public key for the key pair currently used in the binding
@@ -240,9 +226,8 @@ public class OcspTestUtils {
                 EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
-        X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
-                authenticationToken, user, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
-        return ocspSigningCertificate;
+        return (X509Certificate) (certificateCreateSession.createCertificate(
+                authenticationToken, user, req, X509ResponseMessage.class, new CertificateGenerationParams()).getCertificate());
     }
 
     public static void removeInternalKeyBinding(AuthenticationToken alwaysAllowtoken, String keyBindingName) throws AuthorizationDeniedException {

@@ -19,7 +19,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.KeyManagementException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
@@ -178,7 +177,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             }
             final StringBuffer matched = new StringBuffer();
             final StringBuffer unMatched = new StringBuffer();
-            final Set<Integer> processedOcspKeyBindingIds = new HashSet<Integer>();
+            final Set<Integer> processedOcspKeyBindingIds = new HashSet<>();
             for (final OcspSigningCacheEntry ocspSigningCacheEntry : OcspSigningCache.INSTANCE.getEntries()) {
                 // Only perform renewal for non CA signing key OCSP signers
                 if (!ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
@@ -187,7 +186,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
                 // Only perform renewal once for each OcspKeyBinding.
                 // (the cache can map each OcspKeyBinding multiple times by SHA-1, SHA-256 and as default responder)
                 final int ocspKeyBindingId = ocspSigningCacheEntry.getOcspKeyBinding().getId();
-                if (!processedOcspKeyBindingIds.add(Integer.valueOf(ocspKeyBindingId))) {
+                if (!processedOcspKeyBindingIds.add(ocspKeyBindingId)) {
                     if (log.isDebugEnabled()) {
                         log.debug("Skipping renewal processing of OcspKeyBinding with id " + ocspKeyBindingId + " that was already processed.");
                     }
@@ -207,7 +206,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
                     } catch (KeyRenewalFailedException e) {
                         String msg = intres.getLocalizedMessage("ocsp.rekey.failed.unknown.reason", target, e.getLocalizedMessage());
                         log.error(msg, e);
-                        continue;
                     }
                 }
             }
@@ -223,7 +221,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     }
 
     @Override
-    public synchronized void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException,
+    public synchronized void renewKeyStores(String signerSubjectDN) throws CryptoTokenOfflineException,
             InvalidKeyException {
         renewKeyStores(signerSubjectDN, NO_SAFETY_MARGIN);
     }
@@ -243,22 +241,14 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final int internalKeyBindingId = ocspSigningCacheEntry.getOcspKeyBinding().getId();
         try {
             internalKeyBindingMgmtSession.generateNextKeyPair(authenticationToken, internalKeyBindingId);
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new KeyRenewalFailedException(e);
-        } catch (AuthorizationDeniedException e) {
+        } catch (InvalidAlgorithmParameterException | AuthorizationDeniedException e) {
             throw new KeyRenewalFailedException(e);
         }
         //Sign the new keypair
         final X509Certificate signedCertificate = signCertificateByCa(ejbcaWS, ocspSigningCacheEntry);
         try {
             internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, signedCertificate.getEncoded());
-        } catch (CertificateEncodingException e) {
-            throw new KeyRenewalFailedException(e);
-        } catch (CertificateImportException e) {
-            throw new KeyRenewalFailedException(e);
-        } catch (AuthorizationDeniedException e) {
-            throw new KeyRenewalFailedException(e);
-        } catch (InternalKeyBindingNonceConflictException e) {
+        } catch (CertificateEncodingException | CertificateImportException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
             throw new KeyRenewalFailedException(e);
         }
         /*
@@ -314,7 +304,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     /**
      * setting status of EJBCA user to new and setting password of user.
      * @param ejbcaWS from {@link #getEjbcaWS()}
-     * @param userData from {@link #getUserDataVOWS(EjbcaWS, String)}
+     * @param userData from {@link #getUserDataVOWS(EjbcaWS, X509Certificate, int)}
      * @return true if success
      */
     private boolean editUser(EjbcaWS ejbcaWS, UserDataVOWS userData) {
@@ -337,17 +327,17 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
      * @return the name
      */
     private String getCAName(EjbcaWS ejbcaWS, int caId) {
-        final Map<Integer, String> mCA = new HashMap<Integer, String>();
+        final Map<Integer, String> mCA = new HashMap<>();
         try {
             for (NameAndId nameAndId : ejbcaWS.getAvailableCAs()) {
-                mCA.put(Integer.valueOf(nameAndId.getId()), nameAndId.getName());
+                mCA.put(nameAndId.getId(), nameAndId.getName());
                 log.debug("CA. id: " + nameAndId.getId() + " name: " + nameAndId.getName());
             }
         } catch (Exception e) {
             log.error("WS not working", e);
             return null;
         }
-        return mCA.get(Integer.valueOf(caId));
+        return mCA.get(caId);
     }
 
     /**
@@ -355,7 +345,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
      * 
      * @return a certificate that has been signed by the CA. 
      * @throws KeyRenewalFailedException if any error occurs during signing
-     * @throws CryptoTokenOfflineException 
+     * @throws CryptoTokenOfflineException An exception thrown when someone tries to use a CA Token that isn't available
      */
     @SuppressWarnings("unchecked")
     private X509Certificate signCertificateByCa(EjbcaWS ejbcaWS, OcspSigningCacheEntry ocspSigningCacheEntry) throws KeyRenewalFailedException,
@@ -493,7 +483,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         }
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(authenticationKeyBinding.getCryptoTokenId());
         final X509Certificate sslCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(authenticationKeyBinding.getCertificateId());
-        final List<X509Certificate> chain = new ArrayList<X509Certificate>();
+        final List<X509Certificate> chain = new ArrayList<>();
         chain.add(sslCertificate);
         chain.addAll(getCaCertificateChain(sslCertificate));
         final List<X509Certificate> trustedCertificates = getListOfTrustedCertificates(authenticationKeyBinding.getTrustedCertificateReferences());
@@ -512,12 +502,8 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             context.init(keyManagers, trustManagers, null);
             // Finally, we get a SocketFactory, and pass it on.
             return context.getSocketFactory();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CryptoTokenOfflineException e) {
-            e.printStackTrace();
+        } catch (KeyManagementException | NoSuchAlgorithmException | CryptoTokenOfflineException e) {
+            log.error("Cannot create SSLSocketFactory.", e);
         }
         return null;
     }
@@ -533,7 +519,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
 
     // TODO: This method also exists in OcspResponseGenSSB.. merge! to method call in certificateStoreSession
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
-        final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
+        final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
         while (!CertTools.getIssuerDN(currentLevelCertificate).equals(CertTools.getSubjectDN(currentLevelCertificate))) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
