@@ -39,23 +39,29 @@
 		<path location="${clientToolBox.build.dir}" />
 		<path refid="lib.system-rules.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.bouncycastle.classpath" />
+		<path refid="lib.cert-cvc.classpath" />
 		<path location="${mod.systemtest-common.lib}"/>
 		<path location="${mod.systemtest-interface.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
+		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-common.lib}"/>
+		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>
 
 
 	<path id="test.classpath">
 		<path refid="compile-test.classpath"/>
-		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
 		<path refid="lib.commons-config.classpath" />
+		<path refid="lib.cert-cvc.classpath" />
+		<path refid="lib.ldap.classpath" />
 		<path location="${clientToolBox.build-test.dir}" />
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
-		<path refid="lib.commons-lang.classpath" />
-		<path refid="lib.bouncycastle.classpath" />
-		<path refid="lib.cert-cvc.classpath" />
+        <path location="${ejbca.home}/modules/cesecore-x509ca/build/classes"/>
+		<path location="${mod.cesecore-entity.lib}"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
 
