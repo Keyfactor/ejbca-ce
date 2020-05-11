@@ -303,13 +303,8 @@ public class OCSPServlet extends HttpServlet {
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");
             response.setContentLength(ocspResponseBytes.length);
-            if (HttpMethod.GET.equals(httpMethod)) {
-                addRfc5019CacheHeaders(request, response, ocspResponseInformation);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Will not add RFC 5019 cache headers: \"clients MUST use the GET method (to enable OCSP response caching)\"");
-                }
-            }
+            addRfc5019CacheHeaders(request, response, ocspResponseInformation);
+      
             
             if (HttpMethod.POST.equals(httpMethod)) {
                 addOscpPostHeaders(response, ocspResponseInformation);
