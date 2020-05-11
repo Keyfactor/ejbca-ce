@@ -64,7 +64,7 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         FieldEditor fieldEditor = new FieldEditor(log);
-        CryptoProviderTools.installBCProviderIfNotAvailable();;
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         final String name = parameters.get(CA_NAME_KEY);
         final String field = parameters.get(FIELD_KEY);
         final String value = parameters.get(VALUE_KEY);
