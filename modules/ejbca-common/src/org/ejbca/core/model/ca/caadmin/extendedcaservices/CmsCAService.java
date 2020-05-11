@@ -143,45 +143,51 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		super(data);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		loadData(data);
-		if (this.data.get(KEYSTORE) != null) {    
-			// lookup keystore passwords      
-			final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
-			int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
-			try {
-		        if (log.isDebugEnabled()) {
-	                log.debug("Loading CMS keystore");
+		if (getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+		    if (this.data.get(KEYSTORE) != null) {
+		        // lookup keystore passwords      
+		        final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
+		        int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
+		        try {
+		            if (log.isDebugEnabled()) {
+		                log.debug("Loading CMS keystore");
+		            }
+		            final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+		            keystore.load(new ByteArrayInputStream(Base64.decode(((String) this.data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
+		            if (log.isDebugEnabled()) {
+		                log.debug("Finished loading CMS keystore");
+		            }
+		            String alias = PRIVATESIGNKEYALIAS;
+		            privKey = (PrivateKey) keystore.getKey(alias, null);
+		            if (privKey == null) {
+		                if (log.isDebugEnabled()) {
+		                    log.debug("privKey was null for alias "+alias+", trying with "+OLDPRIVATESIGNKEYALIAS);
+		                }
+		                alias = OLDPRIVATESIGNKEYALIAS;
+		                privKey = (PrivateKey) keystore.getKey(alias, null);
+		            }
+		            // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
+		            // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
+		            // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
+		            Collection<Certificate> coll = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(alias), null);
+		            this.certificatechain = new ArrayList<Certificate>(coll);  
+		            status = getStatus();
+		        } catch (Exception e) {
+		            log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage(), e);
+		        } finally {
+		            info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)this.data.get(KEYSPEC), 
+		                    (String) this.data.get(KEYALGORITHM), this.certificatechain);
 		        }
-				final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-				keystore.load(new ByteArrayInputStream(Base64.decode(((String) this.data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
-                if (log.isDebugEnabled()) {
-                    log.debug("Finished loading CMS keystore");
-                }
-                String alias = PRIVATESIGNKEYALIAS;
-				privKey = (PrivateKey) keystore.getKey(alias, null);
-				if (privKey == null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("privKey was null for alias "+alias+", trying with "+OLDPRIVATESIGNKEYALIAS);
-                    }
-	                alias = OLDPRIVATESIGNKEYALIAS;
-	                privKey = (PrivateKey) keystore.getKey(alias, null);
-				}
-				// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
-				// Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
-				// As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
-				Collection<Certificate> coll = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(alias), null);
-				this.certificatechain = new ArrayList<Certificate>(coll);  
-				status = getStatus();
-			} catch (Exception e) {
-				log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage(), e);
-			} finally {
-				info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)this.data.get(KEYSPEC), 
-						(String) this.data.get(KEYALGORITHM), this.certificatechain);
-			}
-			data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE));        
+		        data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE));        
+		    } else {
+		        if (log.isDebugEnabled()) {
+		            log.debug("KEYSTORE is null when creating CmsCAService, subjectDN:'" + getSubjectDN() + "'.");
+		        }
+		    }
 		} else {
-            if (log.isDebugEnabled()) {
-                log.debug("KEYSTORE is null when creating CmsCAService");
-            }
+		    if (log.isDebugEnabled()) {
+		        log.debug("Not trying to load KEYSTORE for inactive CmsCAService, subjectDN:'" + getSubjectDN() + "'.");
+		    }
 		}
 	}
 
