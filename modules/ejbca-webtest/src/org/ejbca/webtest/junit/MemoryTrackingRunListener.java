@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.webtest.junit;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.ejbca.webtest.util.ram.RamMemorySnapshot;
 import org.ejbca.webtest.util.RuntimeUtil;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -25,21 +29,20 @@ import org.junit.runner.notification.RunListener;
  *     <li>testStarted - Called when an atomic test is about to be started.</li>
  *     <li>testFinished - Called when an atomic test has finished, whether the test succeeds or fails.</li>
  * </ul>
- * Per each event this listener call RuntimeUtil to output the RAM memory state.
- *
- * @see RuntimeUtil#outputRuntimeRAMDetails()
+ * Per each event this listener makes a RAM memory snapshot. For the last event 'testRunFinished' the collected result is printed to System.out.
  *
  * @version $Id: MemoryTrackingTestRunner.java 34938 2020-04-28 14:58:22Z andrey_s_helmes $
  */
 public class MemoryTrackingRunListener extends RunListener {
+
+    private final List<RamMemorySnapshot> ramMemorySnapshots = new ArrayList<>();
 
     /**
      * Called before any tests have been run.
      * @param description describes the tests to be run
      */
     public void testRunStarted(final Description description) {
-        System.out.println("" + description.getClassName() + " number of tests: " + description.testCount());
-        RuntimeUtil.outputRuntimeRAMDetails();
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(description.getClassName() + "[" + description.testCount() + "]"));
     }
 
     /**
@@ -47,8 +50,8 @@ public class MemoryTrackingRunListener extends RunListener {
      * @param result the summary of the test run, including all the tests that failed
      */
     public void testRunFinished(final Result result) {
-        System.out.println("Number of executed tests: " + result.getRunCount());
-        RuntimeUtil.outputRuntimeRAMDetails();
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot("The End"));
+        RuntimeUtil.outputRuntimeRamSnapshots(ramMemorySnapshots);
     }
 
     /**
@@ -57,8 +60,7 @@ public class MemoryTrackingRunListener extends RunListener {
      * (generally a class and method name).
      */
     public void testStarted(final Description description) {
-        System.out.println("Executing " + description.getClassName() + "." + description.getMethodName() + "...");
-        RuntimeUtil.outputRuntimeRAMDetails();
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(description.getClassName() + "[" + description.getMethodName() + "] START"));
     }
 
     /**
@@ -66,7 +68,6 @@ public class MemoryTrackingRunListener extends RunListener {
      * @param description the description of the test that just ran
      */
     public void testFinished(final Description description) {
-        System.out.println("Executed " + description.getDisplayName() + description.getClassName() + "." + description.getMethodName() + ".");
-        RuntimeUtil.outputRuntimeRAMDetails();
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(description.getClassName() + "[" + description.getMethodName() + "] END"));
     }
 }

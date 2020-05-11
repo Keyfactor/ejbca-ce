@@ -13,6 +13,9 @@
 package org.ejbca.webtest.util;
 
 import java.text.DecimalFormat;
+import java.util.List;
+
+import org.ejbca.webtest.util.ram.RamMemorySnapshot;
 
 /**
  * This utility class provides Java Runtime information details.
@@ -21,28 +24,55 @@ import java.text.DecimalFormat;
  */
 public class RuntimeUtil {
 
-    private static final DecimalFormat megabytesDecimalFormat = new DecimalFormat("000.00 'mb'");
+    private static final DecimalFormat megabytesDecimalFormat = new DecimalFormat("0000.00");
 
     /**
-     * Outputs runtime's RAM memory state to System.out (Used Memory / Free Memory / Total Memory / Maximum Memory).
+     * Returns the current RAM memory snapshot containing for the specific location:
      * <ul>
      *     <li>Used Memory: calculated as Total Memory - Free Memory;</li>
      *     <li>Free Memory: value of Runtime.getRuntime().freeMemory();</li>
      *     <li>Total Memory: value of Runtime.getRuntime().totalMemory();</li>
      *     <li>Maximum Memory: value of Runtime.getRuntime().maxMemory().</li>
      * </ul>
+     * @return RamMemorySnapshot
      */
-    public static void outputRuntimeRAMDetails() {
+    public static RamMemorySnapshot getRuntimeRamSnapshot(final String location) {
         final Runtime runtime = Runtime.getRuntime();
         final long freeMemory = runtime.freeMemory();
         final long totalMemory = runtime.totalMemory();
         final long usedMemory = totalMemory - freeMemory;
-        System.out.println(
-                "Used [" + getMegabytes(usedMemory) + "] | " +
-                "Free [" + getMegabytes(freeMemory) + "] | " +
-                "Total [" + getMegabytes(totalMemory) + "] | " +
-                "Max [" + getMegabytes(runtime.maxMemory()) + "]"
-        );
+        return RamMemorySnapshot.builder()
+                .withUsedMemory(usedMemory)
+                .withFreeMemory(freeMemory)
+                .withTotalMemory(totalMemory)
+                .withMaxMemory(runtime.maxMemory())
+                .build();
+    }
+
+    /**
+     * Outputs runtime's RAM memory snapshots in MB to System.out. An example:
+     * <pre>
+     *     |  Used   |  Free   |  Total  |  Max    |
+     *     MyTest.myTestMethod1
+     *     | 0223.76 | 0790.24 | 1014.00 | 1024.00 |
+     *     MyTest.myTestMethod2
+     *     | 0487.27 | 0526.73 | 1014.00 | 1024.00 |
+     *     The End
+     *     | 0460.65 | 0553.35 | 1014.00 | 1024.00 |
+     * </pre>
+     */
+    public static void outputRuntimeRamSnapshots(final List<RamMemorySnapshot> ramMemorySnapshots) {
+        System.out.println("|  Used   |  Free   |  Total  |  Max    |");
+        for(RamMemorySnapshot ramMemorySnapshot : ramMemorySnapshots) {
+            System.out.println(ramMemorySnapshot.getLocation());
+            System.out.println(
+                    "| " + getMegabytes(ramMemorySnapshot.getUsedMemory()) +
+                    " | " + getMegabytes(ramMemorySnapshot.getFreeMemory()) +
+                    " | " + getMegabytes(ramMemorySnapshot.getTotalMemory()) +
+                    " | " + getMegabytes(ramMemorySnapshot.getMaxMemory()) +
+                    " |"
+            );
+        }
     }
 
     // Converts the number of bytes into String representing number of megabytes, where 1048576 bytes = 1 Mb

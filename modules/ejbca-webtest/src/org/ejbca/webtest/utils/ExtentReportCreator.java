@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest.utils;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -23,7 +21,6 @@ import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.JsonFormatter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-import org.apache.commons.io.FileUtils;
 import org.ejbca.webtest.utils.extentreports.EjbcaTestModelReportBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,7 +43,7 @@ public class ExtentReportCreator {
     private static ExtentTest testCase;
     private static String currTest;
     private static WebDriver browser;
-    private static String reportDir
+    private static final String reportDir
             = (System.getProperty("user.dir").contains("ejbca-webtest"))
             ? System.getProperty("user.dir") + "/../.." : System.getProperty("user.dir");
 
@@ -64,7 +61,7 @@ public class ExtentReportCreator {
         extent = new ExtentReports();
         final EjbcaTestModelReportBuilder ejbcaTestModelReportBuilder = new EjbcaTestModelReportBuilder();
         // Load results of previous tests if any through JSON
-        ejbcaTestModelReportBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test-report.json"));
+//        ejbcaTestModelReportBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test-report.json"));
         final ExtentSparkReporter spark = new ExtentSparkReporter(reportDir + "/reports/QaEjbcaTestReport.html");
         spark.config().setDocumentTitle("EJBCA QA Test Report");
         spark.config().setReportName("EJBCA Test Results!");
@@ -72,6 +69,7 @@ public class ExtentReportCreator {
         // Add a JSON formatter to record current's test result
         final JsonFormatter json = new JsonFormatter(reportDir + "/reports/test-report.json");
         extent.attachReporter(spark, json);
+//        extent.attachReporter(json);
     }
 
     // Flushes all events to test report.
@@ -133,14 +131,7 @@ public class ExtentReportCreator {
 
         // Takes a screenshot as base64 string
         private String screenshotAsBase64String() {
-            final TakesScreenshot takesScreenshot = (TakesScreenshot) browser;
-            final File scrFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
-            try {
-                final byte[] scrFileContent = FileUtils.readFileToByteArray(scrFile);
-                return Base64.getEncoder().encodeToString(scrFileContent);
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
+            return ((TakesScreenshot) browser).getScreenshotAs(OutputType.BASE64);
         }
     };
 }
