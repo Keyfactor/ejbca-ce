@@ -88,5 +88,5 @@ CREATE INDEX sctdata_idx1 ON SctData (fingerprint);
 -- indexes for searching for OCSP responses by cAId, serialNumber or nextUpdate.
 CREATE INDEX ocspresponsedata_idx1 ON OcspResponseData (cAId);
 CREATE INDEX ocspresponsedata_idx2 ON OcspResponseData (serialNumber);
-CREATE INDEX ocspresponsedata_idx3 ON OcspResponseData (nextUpdate);
+CREATE INDEX ocspresponsedata_idx3 ON OcspResponseData (producedAt);
 
