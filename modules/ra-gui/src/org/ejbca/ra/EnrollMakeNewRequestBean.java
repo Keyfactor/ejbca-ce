@@ -114,12 +114,12 @@ import org.ejbca.util.cert.OID;
 @ViewScoped
 public class EnrollMakeNewRequestBean implements Serializable {
 
-    private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EnrollMakeNewRequestBean.class);
 
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
+    private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
     private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
