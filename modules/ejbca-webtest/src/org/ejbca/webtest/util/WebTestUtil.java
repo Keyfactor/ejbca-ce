@@ -19,11 +19,6 @@ package org.ejbca.webtest.util;
  */
 public abstract class WebTestUtil {
 
-
-    public static String getUrlIgnoreDomain(String url) {
-        return url.substring(url.indexOf("/ejbca"));
-    }
-
     /**
      * Returns the request URI path (URI = scheme:[//authority]path[?query][#fragment]) without:
      * <ul>
