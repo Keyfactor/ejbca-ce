@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -376,8 +377,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     throw new IOException(errorMessage("Not allowed to use singleton \"" + valueName + "\" from enum type \"" + enumType + "\""));
                 }
                 try {
-                    Enum<?> enumValue = Enum.valueOf(Class.forName(enumType).asSubclass(Enum.class), valueName);
-                    value = enumValue;
+                    value = Enum.valueOf(Class.forName(enumType).asSubclass(Enum.class), valueName);
                 } catch (ClassNotFoundException e) {
                     throw new IOException(errorMessage("Enum class \"" + enumType + "\" was not found"), e);
                 } catch (IllegalArgumentException e) {
@@ -606,34 +606,37 @@ public class SecureXMLDecoder implements AutoCloseable {
         // We do not allow unmodifiable collections to be deserialized (since that could be cause a Denial of Service if used in the wrong place),
         // instead we deserialize them as their modifiable counterpart.
         switch (method) {
-        case "emptySet": return new HashSet<>();
-        case "emptyList": return new ArrayList<>();
-        case "emptyMap": return new HashMap<>();
-        case "unmodifiableList":
-            final Object list = readValue();
-            if (!(list instanceof List)) {
-                throw new IOException(errorMessage("Expected List argument to unmodifiableList"));
-            }
-            return list;
-        case "unmodifiableSet":
-            final Object set = readValue();
-            if (!(set instanceof Set)) {
-                throw new IOException(errorMessage("Expected Set argument to unmodifiableSet"));
-            }
-            return set;
-        case "unmodifiableMap":
-            final Object map = readValue();
-            if (!(map instanceof Map)) {
-                throw new IOException(errorMessage("Expected Map argument to unmodifiableMap"));
-            }
-            return map;
-        case "unmodifiableCollection":
-            final Object col = readValue();
-            if (!(col instanceof Collection)) {
-                throw new IOException(errorMessage("Expected Collection argument to unmodifiableCollection"));
-            }
-            return col;
-        default: throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
+            case "emptySet": return new HashSet<>();
+            case "emptyList": return new ArrayList<>();
+            case "emptyMap": return new HashMap<>();
+            case "unmodifiableList":
+                final Object list = readValue();
+                if (!(list instanceof List)) {
+                    throw new IOException(errorMessage("Expected List argument to unmodifiableList"));
+                }
+                return list;
+            case "singletonList":
+                return Collections.singletonList(readValue());
+            case "unmodifiableSet":
+                final Object set = readValue();
+                if (!(set instanceof Set)) {
+                    throw new IOException(errorMessage("Expected Set argument to unmodifiableSet"));
+                }
+                return set;
+            case "unmodifiableMap":
+                final Object map = readValue();
+                if (!(map instanceof Map)) {
+                    throw new IOException(errorMessage("Expected Map argument to unmodifiableMap"));
+                }
+                return map;
+            case "unmodifiableCollection":
+                final Object col = readValue();
+                if (!(col instanceof Collection)) {
+                    throw new IOException(errorMessage("Expected Collection argument to unmodifiableCollection"));
+                }
+                return col;
+
+            default: throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
         }
     }
     

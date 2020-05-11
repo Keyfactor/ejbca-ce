@@ -15,6 +15,7 @@ package org.cesecore.keys.validation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -24,12 +25,12 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +109,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal("KeyValidatorSessionTest-Admin"));
-    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
 
     private static final String TEST_CA_NAME = "KeyValidatorSessionTest-TestCA";
 
@@ -120,38 +120,34 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     private static final String TEST_EE_PASSWORD = "start#123";
 
-//    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
-//            .getRemoteSession(GlobalConfigurationSessionRemote.class);
-//    
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
 
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
 
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
-    private EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private final EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     
-    private EndEntityManagementSessionRemote endEntityManagementSessionRemote = EjbRemoteHelper.INSTANCE
+    private final EndEntityManagementSessionRemote endEntityManagementSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
 
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         
-    private KeyValidatorProxySessionRemote keyValidatorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class,
+    private final KeyValidatorProxySessionRemote keyValidatorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
 
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     // Helper objects.
-    protected X509CA testCA;
-
-    protected CertificateProfile testCertificateProfile;
-
-    protected EndEntityProfile testEndEntityProfile;
-
-    protected EndEntityInformation testUser;
+    private X509CA testCA;
+    private CertificateProfile testCertificateProfile;
+    private EndEntityProfile testEndEntityProfile;
+    private EndEntityInformation testUser;
 
     @Before
     public void setUp() throws Exception {
@@ -179,7 +175,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         removeUserIfExists(TEST_EE_NAME);
         testUser = createTestEndEntity(TEST_EE_NAME);
 
-        super.setUpAuthTokenAndRole(null, "KeyValidatorSessionTest", Arrays.asList(
+        setUpAuthTokenAndRole(null, "KeyValidatorSessionTest", Arrays.asList(
                 StandardRules.VALIDATORVIEW.resource(),
                 StandardRules.VALIDATORACCESSBASE.resource()
                 ), null);
@@ -196,7 +192,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
         } finally {
             // Be sure to to this, even if the above fails
-            super.tearDownRemoveRole();
+            tearDownRemoveRole();
         }
         log.trace("<tearDown()");
     }
@@ -597,7 +593,9 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
             try {
                 endEntityManagementSessionRemote.deleteUser(internalAdmin, username);
-            } catch(NoSuchEndEntityException e) {}
+            } catch(NoSuchEndEntityException e) {
+                // NOPMD: Ignore.
+            }
             internalCertificateStoreSession.removeCertificatesByUsername(username);
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
@@ -668,7 +666,9 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
             try {
                 endEntityManagementSessionRemote.deleteUser(internalAdmin, username);
-            } catch(NoSuchEndEntityException e) {}
+            } catch(NoSuchEndEntityException e) {
+                // NOPMD: Ignore.
+            }
             internalCertificateStoreSession.removeCertificatesByUsername(username);
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
@@ -791,7 +791,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.changeKeyValidator(roleMgmgToken, val);
             keyValidatorProxySession.removeKeyValidator(roleMgmgToken, id);
             id1 = keyValidatorProxySession.addKeyValidator(roleMgmgToken, rsaKeyValidator);
-            assertFalse("id of new validator should not be same as last one", id == id1);
+            assertNotEquals("id of new validator should not be same as last one", id, id1);
         } finally {
             keyValidatorProxySession.removeKeyValidator(internalAdmin, id);
             keyValidatorProxySession.removeKeyValidator(internalAdmin, id1);
@@ -821,10 +821,10 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         assertEquals("Latest version expected.", ValidatorBase.LATEST_VERSION, keyValidator.getLatestVersion(), 1f);
         assertEquals("Default description expected.", StringUtils.EMPTY, keyValidator.getDescription());
         assertEquals("Default certificate profile ids excepted.", new ArrayList<Integer>(), keyValidator.getCertificateProfileIds());
-        assertEquals("Default all certificate profile ids excepted.", true, keyValidator.isAllCertificateProfileIds());
-        assertEquals("Default notBefore expected.", null, keyValidator.getNotBefore());
+        assertTrue("Default all certificate profile ids excepted.", keyValidator.isAllCertificateProfileIds());
+        assertNull("Default notBefore expected.", keyValidator.getNotBefore());
         assertEquals("Default notBefore condition expected.", KeyValidatorDateConditions.LESS_THAN.getIndex(), keyValidator.getNotBeforeCondition());
-        assertEquals("Default notAfter expected.", null, keyValidator.getNotAfter());
+        assertNull("Default notAfter expected.", keyValidator.getNotAfter());
         assertEquals("Default notAfter condition expected.", KeyValidatorDateConditions.LESS_THAN.getIndex(), keyValidator.getNotAfterCondition());
         assertEquals("Default failedAction expected.", KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), keyValidator.getFailedAction());
     }
@@ -856,15 +856,14 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
                 keyValidator.isPublicKeyModulusOnlyAllowOdd(), RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_ONLY_ALLOW_ODD);
         assertEquals("RsaKeyValidator with CAB forum settings must have public key modulus do not allow power of prime value.",
                 keyValidator.isPublicKeyModulusDontAllowPowerOfPrime(), RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_DONT_ALLOW_POWER_OF_PRIME);
-        assertEquals("RsaKeyValidator with CAB forum settings must have min factor value.", new Integer(keyValidator.getPublicKeyModulusMinFactor()),
+        assertEquals("RsaKeyValidator with CAB forum settings must have min factor value.", keyValidator.getPublicKeyModulusMinFactor(),
                 new Integer(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
-        assertEquals("RsaKeyValidator with CAB forum settings must have public key modulus min value.", keyValidator.getPublicKeyModulusMin(), null);
-        assertEquals("RsaKeyValidator with CAB forum settings must have public key modulus max value.", keyValidator.getPublicKeyModulusMax(), null);
+        assertNull("RsaKeyValidator with CAB forum settings must have public key modulus min value.", keyValidator.getPublicKeyModulusMin());
+        assertNull("RsaKeyValidator with CAB forum settings must have public key modulus max value.", keyValidator.getPublicKeyModulusMax());
     }
 
     private void assertEccKeyValidatorCABForumBaseLineRequirements142Values(final EccKeyValidator keyValidator) {
-        assertEquals("EccKeyValidator with CAB forum settings must have default full validation value.",
-                keyValidator.isUseFullPublicKeyValidationRoutine(), true);
+        assertTrue("EccKeyValidator with CAB forum settings must have default full validation value.", keyValidator.isUseFullPublicKeyValidationRoutine());
     }
 
     private CertificateProfile createTestCertificateProfile(final String name) throws Exception {
@@ -993,7 +992,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         internalCertificateStoreSession.removeCertificatesByUsername(name);
     }
 
-    private static final KeyPair generateRsaKeyPair(final int size) throws NoSuchProviderException, NoSuchAlgorithmException {
+    private static KeyPair generateRsaKeyPair(final int size) throws NoSuchAlgorithmException {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA"); // Use default provider
         // Using BC provider, i.e. creating a BC public key object causes test failure
         // in JDK7+JBOSS 7.1.1 combo
@@ -1003,7 +1002,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     }
 
     // Code duplication: see org.cesecore.keys.validation.KeyValidatorTestUtil
-    public static final KeyValidator createKeyValidator(final Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
+    public static KeyValidator createKeyValidator(final Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
             final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
         KeyValidator result = type.newInstance();
@@ -1026,10 +1025,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         if (-1 < failedAction) {
             result.setFailedAction(failedAction);
         }
-        final List<Integer> ids = new ArrayList<Integer>();
-        for (Integer id : certificateProfileIds) {
-            ids.add(id);
-        }
+        final List<Integer> ids = new ArrayList<>();
+        Collections.addAll(ids, certificateProfileIds);
         result.setCertificateProfileIds(ids);
         return result;
     }
@@ -1037,7 +1034,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     /**
      * Factory method to create certificate validators.
      * 
-     * @param type the key validator type (see {@link ValidatorBase#KEY_VALIDATOR_TYPE}
+     * @param type the key validator type (see {@link ValidatorBase#TYPE}
      * @param name the logical name
      * @param description the description text
      * @param notBefore the certificates validity not before
@@ -1047,11 +1044,11 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
      * @param failedAction the failed action to be performed.
      * @param certificateProfileIds list of IDs of certificate profile to be applied to. 
      * @return the concrete key validator instance.
-     * @throws IllegalAccessException 
-     * @throws InstantiationException 
+     * @throws IllegalAccessException Illegal access exception
+     * @throws InstantiationException Instantiation exception
      */
     // Code duplication: Re-factor.
-    private static final CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
+    private static CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
             final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
         CertificateValidator result = type.newInstance();
@@ -1074,10 +1071,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         if (-1 < failedAction) {
             result.setFailedAction(failedAction);
         }
-        final List<Integer> ids = new ArrayList<Integer>();
-        for (Integer id : certificateProfileIds) {
-            ids.add(id);
-        }
+        final List<Integer> ids = new ArrayList<>();
+        Collections.addAll(ids, certificateProfileIds);
         result.setCertificateProfileIds(ids);
         return result;
     }
@@ -1088,7 +1083,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
      * @param classpath the class path (or filename -> put inside resources directory).
      * @return the full path.
      */
-    private final String getFilePathFromClasspath(final String classpath) {
+    private String getFilePathFromClasspath(final String classpath) {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
         final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
         final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
