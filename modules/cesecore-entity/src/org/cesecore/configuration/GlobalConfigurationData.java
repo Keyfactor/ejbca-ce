@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.certextensions.BasicCertificateExte
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -78,6 +79,18 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             Properties.class, 
             RaCssInfo.class, 
             RaStyleInfo.class));
+	
+	static {
+	    for(String customClassName : CesecoreConfiguration.getCustomClassWhitelist().split(",")) {
+	        Class<? extends Serializable> customClass;
+            try {
+                customClass = (Class<? extends Serializable>) Class.forName(customClassName);
+                ACCEPTED_SERIALIZATION_CLASSES_SET.add(customClass);
+            } catch (ClassNotFoundException e) {
+                log.info("Class " + customClassName + " was not found on classpath.");
+            }
+	    }
+	}
 	
 	/** Unique ID defined by respective configuration object, such as 
 	 * @link GlobalCesecoreConfiguration#CESECORE_CONFIGURATION_ID 
@@ -122,7 +135,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	    try (final LookAheadObjectInputStream laois = new LookAheadObjectInputStream(new ByteArrayInputStream(getDataUnsafe()));) {
             laois.setEnabledMaxObjects(false);
             laois.setAcceptedClasses(ACCEPTED_SERIALIZATION_CLASSES_SET);
-            laois.setEnabledSubclassing(true, "org.cesecore");
+            laois.setEnabledSubclassing(true, "org.cesecore", "org.ejbca");
             return (Serializable) laois.readObject();
         } catch (IOException e) {
             log.error("Failed to load Global Configuration as byte[].", e);
