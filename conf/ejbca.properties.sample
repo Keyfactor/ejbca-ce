@@ -36,11 +36,21 @@
 #ejbca.productionmode=true
 #ejbca.productionmode=false
 
-# Set to true to allow dynamic re-configuration using properties files in the file 
-# system. Using this you can place a file /etc/ejbca/conf/ocsp.properties in the file system and
-# override default values compiled into ejbca.ear.
-# Currently this works for most values in ejbca.properties, web.properties, cmp.properties, externalra-caservice.properties, ocsp.properties, extendedkeyusage.properties, jaxws.properties
+# In order to allow upgrades of EJBCA with a minimum of fuss, EJBCA supports keeping configurations, key stores and custom modifications in an external 
+# directory which will be shared between versions. This technique can also be used easily when performing several identical installations across 
+# several instances to share settings. 
 #
+# The base directory is ejbca_custom, which should be place in the same directory as EJBCA, in other words in $ejbca_home/../ejbca-custom. When 
+# deploying, ant will replace existing files in the the EJBCA directory (with some exceptions, see below). If another directory is desired, it can 
+# be configured in the custom.properties file. 
+#
+# Configuration files can be placed under ejbca_custom/conf, from which they'll be automatically copied into $ejbca_home/conf prior to deployment. 
+# The two exceptions are:
+# * cesecore.properties
+# * ejbca.properties
+# which for security reasons need to be explicitly allowed to be copied by setting the value allow.external-dynamic.configuration=true in each 
+# respective file.
+# 
 # Default: false
 #allow.external-dynamic.configuration=false
 
