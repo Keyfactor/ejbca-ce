@@ -43,7 +43,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @Table(name = "OcspResponseData", indexes = { 
         @Index(columnList = "caId", name = "ocspresponsedata_idx1"),
         @Index(columnList = "serialNumber", name = "ocspresponsedata_idx2"),
-        @Index(columnList = "nextUpdate", name = "ocspresponsedata_idx3")})
+        @Index(columnList = "producedAt", name = "ocspresponsedata_idx3")})
 @NamedQueries({ 
         @NamedQuery(name = "findOcspDataByCaId", query = "SELECT a FROM OcspResponseData a WHERE a.caId = :caId"),
         @NamedQuery(name = "findOcspDataById", query = "SELECT a FROM OcspResponseData a WHERE a.id = :id"),
