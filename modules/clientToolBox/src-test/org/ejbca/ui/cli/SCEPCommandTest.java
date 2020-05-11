@@ -1,0 +1,151 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.cli;
+
+import org.cesecore.CaTestUtils;
+import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.ScepConfiguration;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.runners.MethodSorters;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+/**
+ * Run stress tests with ClientToolBax command SCEPTest
+ * @version $Id$
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class SCEPCommandTest {
+
+    private SCEPTest command  = new SCEPTest();
+    private static String httpReqPath;
+    private static String SCEP_ALIAS = "SCEPCommandTestScepAlias";
+    private static String SCEP_CA = "SCEPCommandTestCA";
+    private static final String CERTIFICATE_PROFILE_NAME = "SCEPCommandTestCP";
+    private static final String END_ENTITY_PROFILE_NAME = "SCEPCommandTestEEP";
+    private static final String DEFAULT_CA_DN = "CN=SCEPCommandTestCA";
+    private static ScepConfiguration scepConfiguration;
+    private static int certificateProfileId;
+    private static X509CA x509ca;
+    private static final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+
+    private static final AuthenticationToken authToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SCEPCommandTestTmp"));
+
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+
+        ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
+        final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
+
+        x509ca = CaTestUtils.createTestX509CA(DEFAULT_CA_DN, "foo123".toCharArray(), false);
+        x509ca.isDoEnforceKeyRenewal();
+        caSession.addCA(authToken, x509ca);
+        CAInfo cainfo = caSession.getCAInfo(authToken, x509ca.getCAId());
+        cainfo.setDoEnforceUniquePublicKeys(false);
+        caSession.editCA(authToken, cainfo);
+
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAllowKeyUsageOverride(true);
+        certificateProfile.setAvailableCAs(Collections.singletonList(x509ca.getCAId()));
+        certificateProfileId = certificateProfileSession.addCertificateProfile(authToken, CERTIFICATE_PROFILE_NAME, certificateProfile);
+
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.addField(DnComponents.ORGANIZATION);
+        endEntityProfile.addField(DnComponents.COUNTRY);
+        endEntityProfile.addField(DnComponents.COMMONNAME);
+        endEntityProfile.addField(DnComponents.DNSNAME);
+        endEntityProfile.addField(DnComponents.IPADDRESS);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setDefaultCA(x509ca.getCAId());
+        endEntityProfileSession.addEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME, endEntityProfile);
+
+        scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        scepConfiguration.addAlias(SCEP_ALIAS);
+
+        scepConfiguration.setRAMode(SCEP_ALIAS, true);
+        scepConfiguration.setIncludeCA(SCEP_ALIAS, false);
+        scepConfiguration.setRACertProfile(SCEP_ALIAS, CERTIFICATE_PROFILE_NAME);
+        scepConfiguration.setRAEndEntityProfile(SCEP_ALIAS, END_ENTITY_PROFILE_NAME);
+        scepConfiguration.setRADefaultCA(SCEP_ALIAS, x509ca.getName());
+
+        globalConfigSession.saveConfiguration(authToken, scepConfiguration);
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
+
+        CaTestUtils.removeCa(authToken, x509ca.getCAInfo());
+        scepConfiguration.removeAlias(SCEP_ALIAS);
+        globalConfigSession.saveConfiguration(authToken, scepConfiguration);
+        endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
+        certificateProfileSession.removeCertificateProfile(authToken, CERTIFICATE_PROFILE_NAME);
+        caSession.removeCA(authToken, x509ca.getCAId());
+    }
+
+
+    // SCEP test: Start with just 3 calls since it may fail if started with a heavy load.
+    @Test
+    public void testCommand1SmallLoad() {
+        exit.expectSystemExitWithStatus(0);
+        int numberOfThreads = 1;
+        int numberOfTests = 3;
+        String[] args = new String[]{"SCEPTest", httpReqPath + "/publicweb/apply/scep/" + SCEP_ALIAS + "/pkiclient.exe",
+                SCEP_CA,
+                numberOfThreads + ":" + numberOfTests};
+        command.execute(args);
+    }
+
+    @Test
+    public void testCommand2HeavyLoad() {
+        exit.expectSystemExitWithStatus(0);
+        int numberOfThreads = 10;
+        int numberOfTests = 25;
+        String waitTime ="1000";
+
+        String[] args = new String[]{"SCEPTest", httpReqPath + "/publicweb/apply/scep/" + SCEP_ALIAS + "/pkiclient.exe",
+                SCEP_CA,
+                numberOfThreads + ":" + numberOfTests, waitTime};
+        command.execute(args);
+    }
+}
