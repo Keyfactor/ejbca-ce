@@ -13,31 +13,31 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERT61String;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -56,10 +56,8 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -67,7 +65,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -117,7 +114,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     }
 
     @AfterClass
-    public static void afterClass() throws Exception {
+    public static void afterClass() {
         try {
             removeTestCA(TESTCA_NAME);
         } catch (Exception e) {
@@ -147,8 +144,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         endEntityProfile.addField(DnComponents.COUNTRY);
         endEntityProfile.addField(DnComponents.RFC822NAME);
         endEntityProfile.addField(DnComponents.UPN);
-        endEntityProfile.setAvailableCAs(Arrays.asList(caInfo.getCAId()));
-        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileSession.getCertificateProfileId(CERTPROFILE_NAME)));
+        endEntityProfile.setAvailableCAs(Collections.singletonList(caInfo.getCAId()));
+        endEntityProfile.setAvailableCertificateProfileIds(Collections.singletonList(certificateProfileSession.getCertificateProfileId(CERTPROFILE_NAME)));
         endEntityProfileSession.addEndEntityProfile(ADMIN, EEPROFILE_NAME, endEntityProfile);
         assertNotNull("Failed to create end entity profile.", endEntityProfileSession.getEndEntityProfile(EEPROFILE_NAME));
         final int eepId = endEntityProfileSession.getEndEntityProfileId(EEPROFILE_NAME);
@@ -235,19 +232,13 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        new DEROutputStream(bao).writeObject(req);
+        ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, this.caCertificate, resp, reqId);
-        assertTrue(
-                "Certificate history data was or wasn't stored: ",
-                useCertReqHistory ==
-                (this.csrHistorySession.retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null)
-                );
-        assertTrue("User data was or wasn't stored: ", useUserStorage == this.endEntityManagementSession.existsUser(username));
-        assertTrue(
-                "Certificate data was or wasn't stored: ",
-                useCertificateStorage == (this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null));
+        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, (this.csrHistorySession.retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null));
+        assertEquals("User data was or wasn't stored: ", useUserStorage, this.endEntityManagementSession.existsUser(username));
+        assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, (this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -255,7 +246,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         assertNotNull("Could not create confirmation message.", confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBE_SECRET, "unusedKeyId", 567);
         bao = new ByteArrayOutputStream();
-        new DEROutputStream(bao).writeObject(req1);
+        ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
         resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(subjectDN, this.caCertificate, resp);
@@ -268,7 +259,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             PKIMessage revReq = protectPKIMessage(rev, false, PBE_SECRET, "unusedKeyId", 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();
-            new DEROutputStream(bao).writeObject(revReq);
+            ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(this.caCertificate), subjectDN, cert.getSerialNumber(), this.caCertificate, resp, true);
@@ -330,30 +321,25 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         final byte[] cmpResponse = sendCmpHttp(reqBytes, 200, configAlias);
         final X509Certificate cert = checkCmpCertRepMessage(subjectX500Name, this.caCertificate, cmpResponse, requestId);
         LOG.debug("Request:\n" + new String(CertTools.getPEMFromCertificateRequest(certRequest.getEncoded())));
-        LOG.debug("Result:\n" + new String(CertTools.getPemFromCertificateChain(new ArrayList<Certificate>(Arrays.asList(cert)))));
+        LOG.debug("Result:\n" + new String(CertTools.getPemFromCertificateChain(new ArrayList<>(Collections.singletonList(cert)))));
         final byte[] requestSubjectyX500Principal = cert.getSubjectX500Principal().getEncoded();
         final byte[] responeSubjectyX500Principal = subjectX500Name.getEncoded();
-        assertTrue("Requested X500Name was not returned the same way as requested.", Arrays.equals(requestSubjectyX500Principal, responeSubjectyX500Principal));
+        assertArrayEquals("Requested X500Name was not returned the same way as requested.", requestSubjectyX500Principal, responeSubjectyX500Principal);
         // We cannot assume that the unique serial number index is enabled, and hence we cant be sure that our serial number override was allowed, but at least we can print it
         LOG.info("Requested serial number: "+ serialNumber);
         LOG.info("Response serial number:  "+ CertTools.getSerialNumberAsString(cert));
     }
     
-    /** Assert that the CA is configured to store things as expected. 
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException */
-    private static void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws CADoesntExistsException, AuthorizationDeniedException {
+    // Assert that the CA is configured to store things as expected.
+    private static void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException {
         CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
-        assertTrue("CA has wrong useCertReqHistory setting: ", useCertReqHistory == caInfo.isUseCertReqHistory());
-        assertTrue("CA has wrong useUserStorage setting: ", useUserStorage == caInfo.isUseUserStorage());
-        assertTrue("CA has wrong useCertificateStorage setting: ", useCertificateStorage == caInfo.isUseCertificateStorage());
+        assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
+        assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
+        assertEquals("CA has wrong useCertificateStorage setting: ", useCertificateStorage, caInfo.isUseCertificateStorage());
     }
 
-    /** Change CA configuration for what to store and assert that the changes were made. 
-     * @throws CADoesntExistsException 
-     * @throws InternalKeyBindingNonceConflictException */
-    private static void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException, 
-            CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
+    // Change CA configuration for what to store and assert that the changes were made.
+    private static void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws Exception {
         CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);
@@ -362,9 +348,9 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         caInfo.setDoEnforceUniqueDistinguishedName(false);
         // We can not enforce unique subject public keys for issued certificates when we do not store certificates        
         caInfo.setDoEnforceUniquePublicKeys(false);
-        assertTrue("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory == caInfo.isUseCertReqHistory());
-        assertTrue("CAInfo did not store useUserStorage setting correctly: ", useUserStorage == caInfo.isUseUserStorage());
-        assertTrue("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage == caInfo.isUseCertificateStorage());
+        assertEquals("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory, caInfo.isUseCertReqHistory());
+        assertEquals("CAInfo did not store useUserStorage setting correctly: ", useUserStorage, caInfo.isUseUserStorage());
+        assertEquals("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage, caInfo.isUseCertificateStorage());
         EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(ADMIN, caInfo);
         assertCAConfig(useCertReqHistory, useUserStorage, useCertificateStorage);
     }
@@ -377,7 +363,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     }
 
     /** Legacy teletex encoding for testing purpose. */
-    private class TeletexNamingStyle extends BCStyle {
+    private static class TeletexNamingStyle extends BCStyle {
 
         static final String DER_PRINTABLE_STRING_WHITELIST = " \\()+-.:=?";
 
@@ -404,7 +390,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             return new DERT61String(value);
         }
         
-        protected boolean canBePrintable(final String value) {
+        boolean canBePrintable(final String value) {
             for (final char current : value.toCharArray()) {
                 if (current > 0x007f) {
                     return false;
