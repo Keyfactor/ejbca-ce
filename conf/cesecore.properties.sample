@@ -325,3 +325,10 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Once all nodes are running > 6.0, set to false to increase efficiency and portability.
 # Default: false
 #ca.keepocspextendedservice=true
+
+# Custom Serializable Classes
+#
+# CESeCore uses safe deserialization, only allowing known classes to be deserialized from the database. In order to use custom classes, they need to be 
+# declared here, separated by commas
+#custom.class.whitelist=org.widget.Bar,org.widget.Foo 
+

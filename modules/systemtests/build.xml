@@ -165,6 +165,8 @@
             <include name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
             <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
 			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
+			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
+			<include name="com/widget/WidgetCustomExtension.java"/>
 		</javac>
 	</target>
 
@@ -178,11 +180,14 @@
             <exclude name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
             <exclude name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
 			<exclude name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
+			<exclude name="com/widget/WidgetCustomExtension.java"/>	
 		</javac>
 	</target>
 
 	<target name="build-libs" depends="check-inproduction" unless="in-production-mode">
 		<antcall target="systemtest-compile-common" inheritall="true" inheritrefs="true"/>
+		<buildservicemanifest interface="org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+									    		file="${systemtests.build.common.dir}" classpath="manifest.classpath"/>
 		<jar destfile="${mod.systemtest-common.lib}" basedir="${systemtests.build.common.dir}"/>
 		<antcall target="systemtest-compile-interfaces" inheritall="true" inheritrefs="true"/>
 		<jar destfile="${mod.systemtest-interface.lib}" basedir="${systemtests.build.interface.dir}"/>
