@@ -1,9 +1,9 @@
 #!/bin/sh
 
 # Options for test JVM. The browser runs in a separate process, so it shouldn't need much memory
-export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1024m"
+export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx768m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
-export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx2048m"
+export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
 
 cp /opt/ejbca_conf/* /app/ejbca/conf/
 cp /opt/ejbca_webtest_conf/* /app/ejbca/modules/ejbca-webtest/conf/
