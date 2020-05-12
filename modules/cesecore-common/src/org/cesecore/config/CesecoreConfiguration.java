@@ -514,6 +514,7 @@ public final class CesecoreConfiguration {
      * @return a list of custom classes allowed to be deserialized by cesecore.properties
      */
     public static String getCustomClassWhitelist() {
-        return ConfigurationHolder.getExpandedString(CUSTOM_CLASS_WHITELIST_KEY);
+        final String customClassWhitelist = ConfigurationHolder.getExpandedString(CUSTOM_CLASS_WHITELIST_KEY);
+        return (customClassWhitelist != null ? customClassWhitelist : "");
     }
 }
