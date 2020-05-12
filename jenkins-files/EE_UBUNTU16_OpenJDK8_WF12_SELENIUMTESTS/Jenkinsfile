@@ -29,14 +29,15 @@ pipeline {
                 sh "chmod 777 " + "$env.WORKSPACE"
                 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/ejbca_image') {
-                    sh "docker build -t mypeer -m 2GB ."
+                    sh "docker build -t mypeer -m 3GB ."
                     
                     sh "mkdir -p " + "$env.WORKSPACE/ejbca/p12"
                     sh "chmod 777 " + "$env.WORKSPACE/ejbca/p12"
                     
                     // set it running on background (-d parameter). needs to stay up, until selniumtests use it. will be killed later at cleanup phase.
                     sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
-                    
+
+                    // 10 minutes
                     timeout(10) {
                         waitUntil {
                             script {
@@ -49,6 +50,19 @@ pipeline {
                                     echo exc;
                                 }
                             }
+                        }
+                    }
+
+                    // TODO Temporary output
+                    script {
+                        try {
+                            // the command needs to be its own variable, otherwise sh call doesn't handle the | pipe correctly
+                            def command = 'docker logs mypeer 2>&1'
+                            def r = sh script: command, returnStatus: true
+                            echo e
+                            return true
+                        } catch (exc) {
+                            echo exc;
                         }
                     }
 
@@ -81,7 +95,7 @@ pipeline {
                 sh "docker cp mypeer:/opt/jboss/wildfly/bin/client/jboss-client.jar $env.WORKSPACE/ejbca/lib/jee-client/jboss-client.jar"
 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/selenium_image') {
-                    sh "docker build -t seleniumtests -m 6GB ."
+                    sh "docker build -t seleniumtests -m 5GB ."
                     sh "docker run --name seleniumtests --net=selenium-network --shm-size=5g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
                 }
             }
