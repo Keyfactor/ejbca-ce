@@ -53,19 +53,6 @@ pipeline {
                         }
                     }
 
-                    // TODO Temporary output
-                    script {
-                        try {
-                            // the command needs to be its own variable, otherwise sh call doesn't handle the | pipe correctly
-                            def command = 'docker logs mypeer 2>&1'
-                            def r = sh script: command, returnStatus: true
-                            echo e
-                            return true
-                        } catch (exc) {
-                            echo exc;
-                        }
-                    }
-
                     // Since the container is running in the background, Jenkins will not see its output.
                     // Print the container output here to make it available to Jenkins.
                     sh "docker logs mypeer"
