@@ -14,6 +14,7 @@ package org.ejbca.core.ejb;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.cert.CertPathValidatorException;
 import java.util.List;
 
 import javax.ejb.Local;
@@ -91,13 +92,14 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
      *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
      *        GOST3411withECGOST3410, GOST3411withDSTU4145
-     * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). CAs created using the WS cannot be signed by external CAs.
+     * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). Externally signed CA's should be created with 
+     *          the createExternallySignedCa call. 
      * @param cryptoTokenName The name of the cryptotoken associated with the CA
      * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
      * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
      * 
      * @throws UnsupportedMethodException When trying to access this method in the community version
-     * @throws SignedByExternalCANotSupportedException
+     * @throws SignedByExternalCANotSupportedException if the given CA was set to be signed by external
      * @throws CAExistsException if a CA with the given name already exists
      * @throws AuthorizationDeniedException if admin is not authorized to create CAs
      * @throws CertificateProfileDoesNotExistException if the certificate profile specified by certprofile doesn't exist
@@ -109,6 +111,36 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
             String signAlg, int signedByCAId, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, List<KeyValuePair> caProperties) 
             throws UnsupportedMethodException, SignedByExternalCANotSupportedException, CAExistsException, AuthorizationDeniedException, 
             CertificateProfileDoesNotExistException, CertificateProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException;
+    
+    /**
+     * Create an externally signed CA. Will return a CSR as a byte array.
+     * 
+     * @param authenticationToken An authentication token
+     * @param caname The CA name
+     * @param cadn The CA subjectDN
+     * @param catype The CA type. It could be either 'x509' or 'cvc'
+     * @param encodedValidity Validity of the CA  encoded for example as "3650d".
+     * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
+     * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
+     *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
+     *        GOST3411withECGOST3410, GOST3411withDSTU4145
+     * @param cryptoTokenName The name of the cryptotoken associated with the CA
+     * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
+     * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
+     * 
+     * @return a CSR for this CA
+     * 
+     * @throws UnsupportedMethodException  When trying to access this method in the community version
+     * @throws CAExistsException if a CA with the given name already exists
+     * @throws AuthorizationDeniedException if admin is not authorized to create CAs
+     * @throws CertificateProfileDoesNotExistException if the certificate profile specified by certprofile doesn't exist
+     * @throws CertificateProfileTypeNotAcceptedException if the certificate profile was not of type ROOTCA or SUBCA
+     * @throws CryptoTokenOfflineException if the crypto token was unavailable
+     * @throws InvalidAlgorithmException if the CA signature algorithm was invalid
+     * @throws CertPathValidatorException An exception indicating one of a variety of problems encountered when validating a certification path.
+     */
+    byte[] createExternallySignedCa(AuthenticationToken authenticationToken, String caname, String cadn, String catype, String encodedValidity, String certprofile, 
+            String signAlg, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, List<KeyValuePair> caProperties) throws UnsupportedMethodException, CAExistsException, CertificateProfileDoesNotExistException, CertificateProfileTypeNotAcceptedException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, CertPathValidatorException;
     
     /**
      * Adds an administrator to the specified role
