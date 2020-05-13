@@ -204,6 +204,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String issuerDn = "unknown";
     private Date rolloverNotBefore = null;
     private Date rolloverNotAfter = null;
+    private Date caCertNotAfter = null;
     
 
     public UploadedFile getFileRecieveFileImportRenewal() {
@@ -859,12 +860,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return rolloverNotBefore != null;
     }
     
-    public String getCaRollOverNotAfter() {
-        return rolloverNotAfter != null ? getEjbcaWebBean().formatAsISO8601(rolloverNotAfter) : StringUtils.EMPTY;
+    public String getCaNotAfter() {
+        return caCertNotAfter != null ? getEjbcaWebBean().formatAsISO8601(caCertNotAfter) : StringUtils.EMPTY;
     }
     
     public String getCaRollOverNotBefore() {
         return rolloverNotBefore != null ? getEjbcaWebBean().formatAsISO8601(rolloverNotBefore) : StringUtils.EMPTY;
+    }
+    public String getCaRollOverNotAfter() {
+        return rolloverNotAfter != null ? getEjbcaWebBean().formatAsISO8601(rolloverNotAfter) : StringUtils.EMPTY;
     }
     
     public String getConfirmRolloverDate() {
@@ -1409,6 +1413,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
         try {
             cadatahandler.receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
+            try {
+                rolloverNotBefore = caBean.getRolloverNotBefore(caid);
+                rolloverNotAfter = caBean.getRolloverNotAfter(caid);
+                caCertNotAfter = caBean.getCANotAfter(caid);
+            } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+                log.warn("Failed to get CA notAfter and/or rollover date", e);
+            }
             if (rolloverNotBefore != null) {
                 addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(rolloverNotBefore));
             } else {
@@ -1423,7 +1434,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     /**
-     * Imports ca certificate and navigates back to the manage ca page with results.
+     * Imports CA certificate and navigates back to the manage CA page with results.
      * @return Navigation
      */
     public String importCACertUpdate() {
@@ -1882,6 +1893,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 try {
                     rolloverNotBefore = caBean.getRolloverNotBefore(caid);
                     rolloverNotAfter = caBean.getRolloverNotAfter(caid);
+                    caCertNotAfter = caBean.getCANotAfter(caid);
                 } catch (CADoesntExistsException | AuthorizationDeniedException e) {
                     log.warn("Failed to get CA notAfter and/or rollover date", e);
                 }
