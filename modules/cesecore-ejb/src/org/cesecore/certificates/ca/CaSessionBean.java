@@ -1047,13 +1047,18 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Certificate getFutureRolloverCertificate(int caid) throws CADoesntExistsException {
-        final CACommon ca = getCa(caid);
+    public Certificate getFutureRolloverCertificate(int cAId) throws CADoesntExistsException {
+        final CACommon ca = getCa(cAId);
         if (ca == null) {
-            throw new CADoesntExistsException("Method called on non-existent CA");
+            throw new CADoesntExistsException("CA ID: " + cAId);
         }
         final List<Certificate> chain = ca.getRolloverCertificateChain();
-        if (chain == null) { return null; }
+        if (log.isDebugEnabled()) {
+            log.debug("Found a RolloverCertificateChain of length " + (chain != null ? chain.size() : null) + ", for CA ID: " + cAId);
+        }
+        if (chain == null) {
+            return null; 
+        }
         return chain.get(0);
     }
 
