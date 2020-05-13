@@ -90,7 +90,7 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'ejbca/**/QaEjbcaTestReport.html', fingerprint: true
+            // archiveArtifacts artifacts: 'ejbca/**/QaEjbcaTestReport.html', fingerprint: true
             junit "ejbca/**/reports/**/TEST-*.xml"
             
             sh "docker stop --time=1 seleniumtests || true"
