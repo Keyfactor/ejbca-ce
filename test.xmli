@@ -353,9 +353,12 @@
         <ant antfile="build.xml" dir="modules/unidfnr" target="test" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-    
-    <target name="test:webtest" description="run all JUnit web tests." depends="deleteDirectories">
+
+    <target name="test:webtest:jenkins" description="run all JUnit web tests without JUnit reporting." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ejbca-webtest" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:webtest" description="run all JUnit web tests with report." depends="deleteDirectories, test:webtest:jenkins">
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
