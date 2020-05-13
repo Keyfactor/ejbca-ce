@@ -14,20 +14,23 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
 /**
- * Class containing a web service representation
- * of a PIN data such as type, PIN and PUK
- * 
+ * Deprecated class, kept for web service compatibility.
+ * @deprecated
  * @version $Id$
  */
+@Deprecated
 public class PinDataWS {
+	
 	
 	private int type = 0;
 	private String initialPIN = null;
 	private String PUK = null;
 	
 	/**
-	 * WS Constructor
+	 * Deprecated class, do not use.
+	 * @deprecated
 	 */
+	@Deprecated
 	public PinDataWS(){}
 	
 	/**
