@@ -171,6 +171,9 @@ public class AvailableCustomCertExtensionsConfigTest {
      * 
      * We won't test adding a known class, because doing so basically permanently wrecks EJBCA. 
      */
+    /* ECA-9129: This method is difficult to test, because introducing this state normally breaks the rest of EJBCA, because 
+     * WidgetCustomExtension is hard to root out. To enable, uncomment the below, include WidgetCustomExtension in build.xml for 
+     * the systemtest module (see comment there) and add WidgetCustomExtension as a known custom class in cesecore.properties
     @Test
     public void testAddingKnownExternalExtension() throws CertificateExtentionConfigurationException, AuthorizationDeniedException {
         ConfigurationBase originalGlobalConfig = globalConfigSession
@@ -193,7 +196,7 @@ public class AvailableCustomCertExtensionsConfigTest {
             //Do not restore the whitelist but leave it be
             globalConfigSession.saveConfiguration(alwaysAllowToken, originalGlobalConfig);
         }
-    }
+    }*/
   
     
 }
