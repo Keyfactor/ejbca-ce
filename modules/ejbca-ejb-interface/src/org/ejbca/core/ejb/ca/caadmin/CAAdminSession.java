@@ -74,8 +74,7 @@ public interface CAAdminSession {
      *                            the key sequence.
      * @return request message in binary format, can be a PKCS10 or CVC request
      * @throws AuthorizationDeniedException if the administrators isn't authorized
-     * @throws CertPathValidatorException   An exception indicating one of a variety of problems encountered when
-     *                                      validating a certification path.
+     * @throws CertPathValidatorException   An exception indicating one of a variety of problems encountered when validating a certification path.
      * @throws CryptoTokenOfflineException  if crypto token is unavailable.
      */
     byte[] makeRequest(AuthenticationToken authenticationToken, int caId, Collection<?> certChain, String nextSignKeyAlias)

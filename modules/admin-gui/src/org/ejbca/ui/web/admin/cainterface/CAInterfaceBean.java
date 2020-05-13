@@ -1212,7 +1212,7 @@ public class CAInterfaceBean implements Serializable {
     public boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
         for (final int caId : CAIds) {
             final CAInfo caInfo = casession.getCAInfoInternal(caId);
-            if (currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias))
+            if (cainfo != null && currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias))
                 return true;
         }
         return false;

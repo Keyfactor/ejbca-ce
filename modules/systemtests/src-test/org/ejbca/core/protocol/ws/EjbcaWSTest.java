@@ -29,6 +29,7 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -83,20 +84,34 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -112,14 +127,18 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.junit.util.PKCS12TestRunner;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
@@ -163,19 +182,26 @@ import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -183,6 +209,7 @@ import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.Pkcs10RequestResponse;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.core.protocol.ws.client.gen.UnknownProfileTypeException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -2289,6 +2316,88 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
         log.trace("<test72CreateCA()");
     }
+    
+    /**
+     * Create an externally signed CA through WS
+     * 
+     */
+    @Test
+    public void testCreateExternallySignedCa() throws CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException_Exception,
+            EjbcaException_Exception, CAExistsException, AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException,
+            IllegalNameException, CustomFieldException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException,
+            WaitingForApprovalException, NoSuchEndEntityException, CustomCertificateSerialNumberException, IllegalKeyException, SignRequestException,
+            SignRequestSignatureException, AuthStatusException, AuthLoginException, CertificateCreateException, CertificateRevokeException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, ApprovalException_Exception,
+            CesecoreException_Exception, WaitingForApprovalException_Exception, CouldNotRemoveEndEntityException, InvalidKeyException,
+            CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, CertificateException,
+            IllegalStateException, NoSuchSlotException, EndEntityProfileExistsException {
+        //Create an external CA
+        final String caName = "testCreateExternallySignedCa";
+        final String profileName = "testCreateExternallySignedCa";
+        final String caDn = "CN=" + caName;
+        final String cryptoTokenName = "testCreateExternallySignedCa";
+        int cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(intAdmin, cryptoTokenName);
+        final String rootCaName = "ExternalCaRoot";
+        X509CA rootCa = CaTestUtils.createActiveX509Ca(intAdmin, rootCaName, rootCaName, "CN="+rootCaName);
+        try {
+            // Generate CA key pairs
+            final String decKeyAlias = CAToken.SOFTPRIVATEDECKEYALIAS;
+            ejbcaraws.generateCryptoTokenKeys(cryptoTokenName, decKeyAlias, "RSA1024");
+            final String signKeyAlias = CAToken.SOFTPRIVATESIGNKEYALIAS;
+            ejbcaraws.generateCryptoTokenKeys(cryptoTokenName, signKeyAlias, "RSA1024");
+            final String testKeyAlias = "testCreateExternallySignedCa";
+            ejbcaraws.generateCryptoTokenKeys(cryptoTokenName, testKeyAlias, "RSA1024");
+            final List<KeyValuePair> purposeKeyMapping = new ArrayList<>();
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, decKeyAlias));
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signKeyAlias));
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signKeyAlias));
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));
+            byte[] csr = ejbcaraws.createExternallySignedCa(caName, caDn, "x509", 3L, null, "SHA256WithRSA", cryptoTokenName, purposeKeyMapping,
+                    null);
+            //Verify that CA has been created
+            CAInfo caInfo = caSession.getCAInfo(intAdmin, caName);
+            assertNotNull("CA was not created.", caInfo);
+            assertEquals("CA was not created as signed by external", CAInfo.SIGNEDBYEXTERNALCA, caInfo.getSignedBy());
+            assertEquals("CA is not in state of awaiting certificate response", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, caInfo.getStatus());
+            //Generate the certificate
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(csr);  
+            EndEntityProfile endEntityProfile = new EndEntityProfile();
+            endEntityProfile.setDefaultCertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+            endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
+            endEntityProfile.setDefaultCA(rootCa.getCAId());
+            endEntityProfile.setAvailableCAs(Arrays.asList(rootCa.getCAId()));
+            int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, endEntityProfile);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(caName, caDn, rootCa.getCAId(), null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityConstants.TOKEN_USERGEN, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(intAdmin, endEntityInformation, false);
+            X509ResponseMessage response = (X509ResponseMessage) certificateCreateSession.createCertificate(intAdmin, endEntityInformation, msg,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            X509Certificate certificate =  (X509Certificate) response.getCertificate();
+            //Since we're working with an "external" CA, remove the end entity and certificate from the database
+            endEntityManagementSession.deleteUser(intAdmin, caName);
+            internalCertificateStoreSession.removeCertificatesByUsername(caName);
+            //Process the response
+            List<byte[]> chain = new ArrayList<>();
+            chain.add(rootCa.getCACertificate().getEncoded());
+            ejbcaraws.caCertResponse(caName, certificate.getEncoded(), chain, "foo123");
+            //Verify that the CA is now active
+            caInfo = caSession.getCAInfo(intAdmin, caName);
+            assertEquals("CA is not active as expected.", CAConstants.CA_ACTIVE, caInfo.getStatus());
+        } finally {
+            CaTestUtils.removeCa(intAdmin, cryptoTokenName, caName);
+            CaTestUtils.removeCa(intAdmin, cryptoTokenName, rootCaName);
+            CryptoTokenTestUtils.removeCryptoToken(intAdmin, cryptoTokenId);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profileName);
+            try {
+            endEntityManagementSession.deleteUser(intAdmin, caName);
+            } catch(NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
+                //NOPMD Ignore
+            }
+            internalCertificateStoreSession.removeCertificatesByUsername(caName);
+        }
+    }
 
     private KeyValuePair getKeyValuePair(final String key, final String value) {
         final KeyValuePair keyValuePair = new KeyValuePair();
@@ -2770,6 +2879,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             CaTestUtils.removeCa(intAdmin, root.getCAInfo());
         }
     }
+    
+ 
 
     private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo)
             throws CertificateParsingException, CertificateEncodingException {

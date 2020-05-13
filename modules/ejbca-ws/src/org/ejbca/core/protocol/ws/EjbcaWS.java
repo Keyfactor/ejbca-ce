@@ -476,6 +476,30 @@ public class EjbcaWS implements IEjbcaWS {
 	        logger.flush();
 	    }
 	}
+	
+	@Override
+	public byte[] createExternallySignedCa(String caname, String cadn, String catype, long validityInDays, String certprofile,
+            String signAlg, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping,
+            List<KeyValuePair> caProperties) throws EjbcaException {
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        try {
+            logAdminName(getAdmin(),logger);
+            String encodedValidity = String.valueOf(validityInDays)+"d";
+            return enterpriseWSBridgeSession.createExternallySignedCa(getAdmin(), caname, cadn, catype, encodedValidity, certprofile, signAlg,
+                    cryptoTokenName, purposeKeyMapping, caProperties);
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+        } catch (CesecoreException e) {
+            throw getEjbcaException(e, logger, e.getErrorCode(), Level.ERROR);
+        }  catch (RuntimeException e) {  // ClassCastException, EJBException ...
+            throw getInternalException(e, logger);
+        } catch (CertPathValidatorException e) {
+            throw getEjbcaException(e, logger, ErrorCode.CERT_PATH_INVALID, Level.ERROR);
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+	}
 
 	@Override
 	public void addSubjectToRole(String roleName, String caName, String matchWith, String matchType,

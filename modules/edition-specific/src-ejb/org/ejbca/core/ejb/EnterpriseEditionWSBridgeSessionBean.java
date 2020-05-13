@@ -60,4 +60,11 @@ public class EnterpriseEditionWSBridgeSessionBean implements EnterpriseEditionWS
             String matchType, String matchValue) throws UnsupportedMethodException {
         throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");   
     }
+
+    @Override
+    public byte[] createExternallySignedCa(AuthenticationToken authenticationToken, String caname, String cadn, String catype, String encodedValidity,
+            String certprofile, String signAlg, String cryptoTokenName, List<KeyValuePair> purposeKeyMapping, List<KeyValuePair> caProperties)
+            throws UnsupportedMethodException {
+        throw new UnsupportedMethodException("This method can only be used in Enterprise edition.");
+    }
 }
