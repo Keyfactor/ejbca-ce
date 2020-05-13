@@ -1,8 +1,10 @@
+
 package org.ejbca.core.protocol.ws.client.gen;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 
 /**
  * <p>Java class for keyRecoverEnroll complex type.
@@ -25,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;/complexType>
  * </pre>
  * 
- * @version $Id$
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "keyRecoverEnroll", propOrder = {
@@ -104,7 +106,7 @@ public class KeyRecoverEnroll {
     }
 
     /**
-     * Sets the value of the arg3 property.
+     * Sets the value of the arg2 property.
      * 
      * @param value
      *     allowed object is
@@ -114,7 +116,7 @@ public class KeyRecoverEnroll {
     public void setArg2(String value) {
         this.arg2 = value;
     }
-    
+
     /**
      * Gets the value of the arg3 property.
      * 
@@ -138,7 +140,7 @@ public class KeyRecoverEnroll {
     public void setArg3(String value) {
         this.arg3 = value;
     }
-    
+
     /**
      * Gets the value of the arg4 property.
      * 
@@ -152,7 +154,7 @@ public class KeyRecoverEnroll {
     }
 
     /**
-     * Sets the value of the arg3 property.
+     * Sets the value of the arg4 property.
      * 
      * @param value
      *     allowed object is
@@ -162,4 +164,5 @@ public class KeyRecoverEnroll {
     public void setArg4(String value) {
         this.arg4 = value;
     }
+
 }

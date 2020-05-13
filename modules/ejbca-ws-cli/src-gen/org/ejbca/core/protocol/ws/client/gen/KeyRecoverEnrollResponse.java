@@ -1,3 +1,4 @@
+
 package org.ejbca.core.protocol.ws.client.gen;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -5,8 +6,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+
 /**
- * <p>Java class for keyRecoverEnroll complex type.
+ * <p>Java class for keyRecoverEnrollResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
@@ -22,14 +24,14 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;/complexType>
  * </pre>
  * 
- * @version $Id$
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "keyRecoverEnrollResponse", propOrder = {
     "_return"
 })
 public class KeyRecoverEnrollResponse {
-    
+
     @XmlElement(name = "return")
     protected KeyStore _return;
 
@@ -56,4 +58,5 @@ public class KeyRecoverEnrollResponse {
     public void setReturn(KeyStore value) {
         this._return = value;
     }
+
 }

@@ -22,14 +22,11 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * Value object containing WS representation
- * of a hard token data it contains information
- * about PIN/PUK codes, hardtoken serial number
- * certificate stored on the card.
- * 
- * 
- * $Id$
+ * Deprecated class, kept for web service compatibility. It was used for Hard Tokens, which is a removed feature.
+ * @deprecated
+ * @version $Id$
  */
+@Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "hardTokenDataWS", propOrder = {
     "certificates",
@@ -50,9 +47,9 @@ public class HardTokenDataWS {
 	private String label = null;
 	private String hardTokenSN = null;
 	private String copyOfSN = null;
-	private List<String> copies = new ArrayList<String>();
-	private List<PinDataWS> pinDatas = new ArrayList<PinDataWS>();
-	private List<Certificate> certificates = new ArrayList<Certificate>();
+	private List<String> copies = new ArrayList<>();
+	private List<PinDataWS> pinDatas = new ArrayList<>();
+	private List<Certificate> certificates = new ArrayList<>();
     @XmlSchemaType(name = "dateTime")
 	private XMLGregorianCalendar createTime = null;
     @XmlSchemaType(name = "dateTime")
@@ -61,13 +58,14 @@ public class HardTokenDataWS {
 	private boolean encKeyKeyRecoverable = false;
 	
 	/**
-	 * WS Constructor
-	 */
+     * Deprecated class. Do not use.
+     * @deprecated
+     */
+    @Deprecated
 	public HardTokenDataWS(){}
 	
 	/**
-	 * Constuctor of a HardTokenDataWS with all it fields. This
-	 * constructor should be used on the server side of EJBCA
+	 * Deprecated class. Do not use.
 	 * 
 	 * @param tokenType one of the TOKENTYPE_ constants
 	 * @param label indicating the use of the token, one of the LABEL_ constants
@@ -77,7 +75,9 @@ public class HardTokenDataWS {
 	 * @param pinDatas a List of pin datas with PIN and PUK
 	 * @param certificates the certificate stored on the token
 	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
+	 * @deprecated
 	 */
+    @Deprecated
 	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<String> copies, List<PinDataWS> pinDatas, List<Certificate> certificates, boolean encKeyKeyRecoverable) {
 		super();
 		this.tokenType = tokenType;
@@ -91,7 +91,7 @@ public class HardTokenDataWS {
 	}
 
 	/**
-	 * Constuctor that should be used with the genTokenCertificates request
+	 * Deprecated class. Do not use.
 	 * 
 	 * @param tokenType one of the TOKENTYPE_ constants
 	 * @param label indicating the use of the token, one of the LABEL_ constants
@@ -100,6 +100,7 @@ public class HardTokenDataWS {
 	 * @param pinDatas a List of pin datas with PIN and PUK
 	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
 	 */
+    @Deprecated
 	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<PinDataWS> pinDatas, boolean encKeyKeyRecoverable) {
 		super();
 		this.tokenType = tokenType;
@@ -130,7 +131,7 @@ public class HardTokenDataWS {
 
 	/**
 	 * 
-	 * @return a list of hard token SN of copies that have been made of this token.
+	 * @return >a list of hard token SN of copies that have been made of this token.
 	 */
 	public List<String> getCopies() {
 		return copies;

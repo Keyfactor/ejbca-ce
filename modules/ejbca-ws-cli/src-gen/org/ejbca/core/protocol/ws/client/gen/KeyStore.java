@@ -36,14 +36,22 @@ public class KeyStore extends TokenCertificateResponseWS {
 		
 	}
 
-	public KeyStore(java.security.KeyStore keystore, String password) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException{
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		keystore.store(baos,password.toCharArray());
-		keystoreData = Base64.encode(baos.toByteArray());
+	/**
+	 * Creates a keystore by raw byte data with password. 
+	 * 
+	 * @param rawKeystoreData the raw keystore data.
+	 * @param password the password.
+	 */
+	public KeyStore(byte[] rawKeystoreData, String password) {       
+	    keystoreData = Base64.encode(rawKeystoreData);
+    }
+	
+	public KeyStore(java.security.KeyStore keystore, String password) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
+	    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+	        keystore.store(baos,password.toCharArray());
+	        keystoreData = Base64.encode(baos.toByteArray());
+	    }
 	}
-
-
 
 	/**
 	 * Returns the keystoreData in Base64 format
@@ -68,6 +76,4 @@ public class KeyStore extends TokenCertificateResponseWS {
 	public void setKeystoreData(byte[] keystoreData) {
 		this.keystoreData = keystoreData;
 	}
-
-
 }

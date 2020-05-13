@@ -22,8 +22,6 @@ import org.ejbca.core.model.token.TokenConstants;
  * @version $Id$
  */
 public class TokenCertificateResponseWS {
-	
-
 
 	private int type = 0;
 	private Certificate certificate;
