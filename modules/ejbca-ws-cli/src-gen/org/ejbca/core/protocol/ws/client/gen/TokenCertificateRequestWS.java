@@ -19,15 +19,12 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.ejbca.core.model.token.TokenConstants;
 
 /**
- * Base class this is a ITokenCertificateRequest, either
- * a PKCS10 or KeyStore defined by the type field.
- * 
- *
+ * Deprecated class, kept for web service compatibility. It was used for Hard Tokens, which is a removed feature.
+ * @deprecated Since EJBCA 7.1.0
  * @version $Id$
  */
+@Deprecated
 public class TokenCertificateRequestWS {
-	
-
     	
 	private String cAName = null;
 	private String certificateProfileName = null;
@@ -38,6 +35,11 @@ public class TokenCertificateRequestWS {
 	private String keyspec = "1024";
 	private String keyalg = "RSA";
 	
+	/**
+	 * Deprecated class, do not use.
+	 * @deprecated Since EJBCA 7.1.0
+	 */
+	@Deprecated
 	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays, PKCS10CertificationRequest pkcs10) throws IOException {
 		super();
 		type = TokenConstants.REQUESTTYPE_PKCS10_REQUEST;
@@ -46,6 +48,11 @@ public class TokenCertificateRequestWS {
 		this.certificateProfileName = certificateProfileName;
 		this.pkcs10Data = pkcs10.getEncoded();
 	}
+	/**
+     * Deprecated class, do not use.
+     * @deprecated Since EJBCA 7.1.0
+     */
+    @Deprecated
 	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays,String tokenType, String keyspec, String keyalg) {
 		super();
 		type = TokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;
@@ -57,9 +64,11 @@ public class TokenCertificateRequestWS {
 		this.keyalg = keyalg;
 	}
 
-	/**
-	 * WS Constructor
-	 */
+    /**
+     * Deprecated class, do not use.
+     * @deprecated Since EJBCA 7.1.0
+     */
+    @Deprecated
 	public TokenCertificateRequestWS() {
 		super();
 	}
