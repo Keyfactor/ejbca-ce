@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.SelectItemComparator;
 
 /**
  * JavaServer Faces Managed Bean for managing SCEP configuration.
@@ -427,6 +428,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         for (String caname : cas) {
             ret.add(new SelectItem(caname, caname));
         }
+        ret.sort(new SelectItemComparator());
         return ret;
     }
 
@@ -439,6 +441,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             String name = nameMap.get(id);
             ret.add(new SelectItem(name, name));
         }
+        ret.sort(new SelectItemComparator());
         return ret;
     }
 
@@ -448,13 +451,16 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if ((eep == null) || (eep.length() <= 0)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
-        EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
+        final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
         final List<SelectItem> ret = new ArrayList<>();
-        final Collection<Integer> cpids = p.getAvailableCertificateProfileIds();
-        for(final int cpid : cpids) {
-            String cpname = certProfileSession.getCertificateProfileName(cpid);
-            ret.add(new SelectItem(cpname, cpname));
+        if (p != null) {
+            final Collection<Integer> cpids = p.getAvailableCertificateProfileIds();
+            for(final int cpid : cpids) {
+                String cpname = certProfileSession.getCertificateProfileName(cpid);
+                ret.add(new SelectItem(cpname, cpname));
+            }            
         }
+        ret.sort(new SelectItemComparator());
         return ret;
     }
 
@@ -464,17 +470,19 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if ((eep == null) || (eep.length() <= 0)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
-        EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
-
+        final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
         final List<SelectItem> ret = new ArrayList<>();
-        Map<Integer, String> caidname = getEjbcaWebBean().getCAIdToNameMap();
-        for (int caid : p.getAvailableCAs()) {
-            if (caid == CAConstants.ALLCAS) {
-                return getAvailableCAs();
-            }
-            String caname = caidname.get(caid);
-            ret.add(new SelectItem(caname, caname));
+        if (p != null) {
+            Map<Integer, String> caidname = getEjbcaWebBean().getCAIdToNameMap();
+            for (int caid : p.getAvailableCAs()) {
+                if (caid == CAConstants.ALLCAS) {
+                    return getAvailableCAs();
+                }
+                String caname = caidname.get(caid);
+                ret.add(new SelectItem(caname, caname));
+            }            
         }
+        ret.sort(new SelectItemComparator());
         return ret;
     }
 
