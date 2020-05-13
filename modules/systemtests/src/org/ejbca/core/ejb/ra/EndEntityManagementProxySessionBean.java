@@ -16,8 +16,12 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -31,14 +35,21 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote{
 
     @EJB
-    private EndEntityAccessSessionLocal endEntityAccessSession;
-    @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
+
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
     
     @Override
     public int decRequestCounter(String username) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException,
             WaitingForApprovalException {
         return endEntityManagementSession.decRequestCounter(username);
     }
-    
+
+    @Override
+    public void deleteUsersByCertificateProfileId(int certificateProfileId) {
+        Query query = entityManager.createQuery("DELETE FROM UserData u WHERE u.certificateProfileId=:certificateProfileId ");
+        query.setParameter("certificateProfileId", certificateProfileId);
+        query.executeUpdate();
+    }
 }

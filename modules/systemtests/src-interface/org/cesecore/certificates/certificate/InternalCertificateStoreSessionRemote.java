@@ -165,4 +165,7 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** Removes all limited certificates (without certificates and certificate details) that matches the given issuer. */
     void removeLimitedCertificatesByIssuer(String issuerDN);
+
+    /** Removes all that matches the given issuer. */
+    void removeCertificatesByIssuer(String issuerDN);
 }
