@@ -114,7 +114,7 @@ public class PerformanceTest {
                 this.isSuccess = this.command.doIt();
                 this.time = (int) (new Date().getTime() - startTime);
                 this.bIsFinished = true;
-            } catch (Throwable t) { // NOPMD: keep on testing 
+            } catch (Throwable t) { // NOPMD: keep on testing
                 PerformanceTest.this.log.error("Command failure. " + this.command, t);
             } finally {
                 synchronized (this) {
@@ -478,7 +478,7 @@ public class PerformanceTest {
                 final Data data;
                 synchronized (this) {
 
-                    while (this.active && !this.lData.isEmpty()) {
+                    while (this.active && this.lData.isEmpty()) {
                         try {
                             this.wait();
                         } catch (InterruptedException e) {
