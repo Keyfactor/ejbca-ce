@@ -34,9 +34,13 @@ public interface EndEntityManagementProxySessionRemote {
      * once the request counter reaches zero.
      * 
      * @param username the unique username.
-     * @param status the new status, from 'UserData'.
      * @throws NoSuchEndEntityException if user does not exist
      */
     public int decRequestCounter(String username) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
-    
+
+    /**
+     * Deletes from userdata, whith provided certificate profile
+     * @param certificateProfileId certificate profile id
+     */
+    public void deleteUsersByCertificateProfileId(int certificateProfileId);
 }

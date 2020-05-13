@@ -19,6 +19,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -29,6 +30,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementProxySessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.AfterClass;
@@ -118,6 +120,12 @@ public class SCEPCommandTest {
         CaTestUtils.removeCa(authToken, x509ca.getCAInfo());
         scepConfiguration.removeAlias(SCEP_ALIAS);
         globalConfigSession.saveConfiguration(authToken, scepConfiguration);
+
+        final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        internalCertificateStoreSession.removeCertificatesByIssuer("CN=" + SCEP_CA);
+        EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        endEntityManagementProxySession.deleteUsersByCertificateProfileId(certificateProfileId);
         endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
         certificateProfileSession.removeCertificateProfile(authToken, CERTIFICATE_PROFILE_NAME);
         caSession.removeCA(authToken, x509ca.getCAId());
