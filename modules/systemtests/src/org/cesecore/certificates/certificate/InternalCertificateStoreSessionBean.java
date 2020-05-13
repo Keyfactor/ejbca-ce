@@ -146,7 +146,17 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         query.setParameter("subjectDN", "CN=limited");
         query.executeUpdate();
     }
-    
+
+    @Override
+    public void removeCertificatesByIssuer(String issuerDN) {
+        Query query = entityManager.createQuery("DELETE FROM CertificateData a WHERE a.issuerDN=:issuerDN ");
+        query.setParameter("issuerDN", issuerDN);
+        query.executeUpdate();
+        query = entityManager.createQuery("DELETE FROM NoConflictCertificateData a WHERE a.issuerDN=:issuerDN ");
+        query.setParameter("issuerDN", issuerDN);
+        query.executeUpdate();
+    }
+
     @Override
     public List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax,
             long activeExpireDateMin) {
