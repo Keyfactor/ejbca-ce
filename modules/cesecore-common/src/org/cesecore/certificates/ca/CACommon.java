@@ -158,6 +158,7 @@ public interface CACommon extends IUpgradeableData {
 
     void setRolloverCertificateChain(Collection<Certificate> certificatechain);
 
+    /** @return the CAs rollover certificate chain (renewed certificates imported for later activation), or null if no such certificates exist. */
     List<Certificate> getRolloverCertificateChain();
 
     void clearRolloverCertificateChain();
