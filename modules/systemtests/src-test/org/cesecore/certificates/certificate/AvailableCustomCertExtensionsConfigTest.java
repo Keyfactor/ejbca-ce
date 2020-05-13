@@ -173,7 +173,6 @@ public class AvailableCustomCertExtensionsConfigTest {
      */
     @Test
     public void testAddingKnownExternalExtension() throws CertificateExtentionConfigurationException, AuthorizationDeniedException {
-        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(CesecoreConfiguration.CUSTOM_CLASS_WHITELIST_KEY);
         ConfigurationBase originalGlobalConfig = globalConfigSession
                 .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         try {
@@ -184,14 +183,14 @@ public class AvailableCustomCertExtensionsConfigTest {
             cceConfig.addCustomCertExtension(1337, "1.2.3.4", "Widget Extension", WidgetCustomExtension.class.getName(), false, true, props);
             globalConfigSession.saveConfiguration(alwaysAllowToken, cceConfig);
             globalConfigSession.flushConfigurationCache(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-            //Here is where we should get a SecurityException if theres an error
+            //Here is where we should get a SecurityException if there's an error
             try {
                 globalConfigSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
             } catch (SecurityException e) {
                 fail("Custom extension class could not be deserialized.");
             }
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(CesecoreConfiguration.CUSTOM_CLASS_WHITELIST_KEY, originalValue);
+            //Do not restore the whitelist but leave it be
             globalConfigSession.saveConfiguration(alwaysAllowToken, originalGlobalConfig);
         }
     }
