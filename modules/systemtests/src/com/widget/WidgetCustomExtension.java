@@ -21,7 +21,6 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -34,13 +33,11 @@ public class WidgetCustomExtension extends CertificateExtension implements Custo
 
     private static final long serialVersionUID = 1L;
 
-
     /**
      * 
      */
     public WidgetCustomExtension() {
     }
-
 
     @Override
     public int getId() {
@@ -54,7 +51,7 @@ public class WidgetCustomExtension extends CertificateExtension implements Custo
 
     @Override
     public Map<String, String[]> getAvailableProperties() {
-        return new HashMap<String, String[]>();
+        return new HashMap<>();
     }
 
     @Override
@@ -66,7 +63,6 @@ public class WidgetCustomExtension extends CertificateExtension implements Custo
     public boolean isCriticalFlag() {
         return false;
     }
-
 
     @Override
     public boolean isRequiredFlag() {
@@ -80,20 +76,19 @@ public class WidgetCustomExtension extends CertificateExtension implements Custo
 
     @Override
     public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
-            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
+            PublicKey caPublicKey, CertificateValidity val) {
         return null;
     }
 
     @Override
     public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
-            PublicKey caPublicKey, CertificateValidity val, String oid) throws CertificateExtensionException {
+            PublicKey caPublicKey, CertificateValidity val, String oid) {
         return null;
     }
 
-
     @Override
     public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
-            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
+            PublicKey caPublicKey, CertificateValidity val) {
         return null;
     }
 

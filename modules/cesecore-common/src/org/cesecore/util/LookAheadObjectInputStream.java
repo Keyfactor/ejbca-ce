@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,8 +31,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-/** Can be used instead of ObjectInputStream to safely deserialize(readObject) unverified serialized java object. 
- * 
+/**
+ * Can be used instead of ObjectInputStream to safely deserialize(readObject) unverified serialized java object.
+ * <br/><br/>
  * Simple usage:
  * LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(someByteArray);
  * HashSet<Class<? extends Serializable>> acceptedClasses = new HashSet<Class<? extends Serializable>>(3);
@@ -40,7 +42,7 @@ import org.apache.log4j.Logger;
  * lookAheadObjectInputStream.setMaxObjects(1);
  * X509Certificate certificate = (X509Certificate) lookAheadObjectInputStream.readObject(); //If serialized object is not of the type X509Certificate SecurityException will be thrown
  * 
- * @see LookAheadObjectInputStreamTest for more examples
+ * @see LookAheadObjectInputStreamTest LookAheadObjectInputStreamTest for more examples
  * 
  * @version $Id$
  */
@@ -55,8 +57,8 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     private int maxObjects = 1;
     private boolean enabledMaxObjects = true;
     private int objCount = 0;
-    private List<String> allowedSubclassingPackagePrefixes = Arrays.asList();
-    private List<String> allowedInterfaceImplementationsPackagePrefixes = Arrays.asList();
+    private List<String> allowedSubclassingPackagePrefixes = new ArrayList<>();
+    private List<String> allowedInterfaceImplementationsPackagePrefixes = new ArrayList<>();
 
     public LookAheadObjectInputStream(InputStream inputStream) throws IOException {
         super(inputStream);
@@ -124,7 +126,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     }
 
     /**
-     * NOTE: If you want to re-use the same Set of accepted classes, you should use {@link #setAcceptedClasses(HashSet)}
+     * NOTE: If you want to re-use the same Set of accepted classes, you should use {@link #setAcceptedClasses(Set)}
      * 
      * Set accepted classes that can be deserialized using this LookAheadObjectInputStream.
      * Primitive types (boolean, char, int,...), their wrappers (Boolean, Character, Integer,...) and String class
@@ -165,8 +167,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
         if (enabledMaxObjects && ++objCount > maxObjects) {
             throw new SecurityException("Attempt to deserialize too many objects from stream. Limit is " + maxObjects);
         }
-        Object object = super.resolveObject(obj);
-        return object;
+        return super.resolveObject(obj);
     }
 
     /**
@@ -187,7 +188,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
             if (acceptedClasses.contains(resolvedClassType)) {
                 return resolvedClass;
             }
-            if (acceptedClassesDynamically!=null && acceptedClassesDynamically.contains(resolvedClassType)) {
+            if (acceptedClassesDynamically !=null && acceptedClassesDynamically.contains(resolvedClassType)) {
                 whitelistImplementation(resolvedClassType);
                 return resolvedClass;
             }
@@ -218,7 +219,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
                     Class<?> superclass = resolvedClassType;
                     while (superclass != null) {
                         if (log.isTraceEnabled()) {
-                            log.trace(superclass.getName() + " implements " +Arrays.toString(superclass.getInterfaces()));
+                            log.trace(superclass.getName() + " implements " + Arrays.toString(superclass.getInterfaces()));
                         }
                         if (Arrays.stream(superclass.getInterfaces()).anyMatch(implementedInterface -> acceptedClasses.contains(implementedInterface))) {
                             whitelistImplementation(resolvedClassType);

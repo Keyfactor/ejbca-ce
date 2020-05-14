@@ -97,7 +97,7 @@ public class LookAheadObjectInputStreamTest {
         private static final long serialVersionUID = 6L;
     }
     
-    private static interface AnimalInterface extends Serializable {
+    private interface AnimalInterface extends Serializable {
         String getValue();
     }
 

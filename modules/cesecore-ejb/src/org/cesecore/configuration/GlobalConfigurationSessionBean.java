@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.configuration;
 
 import java.util.HashMap;
@@ -21,7 +20,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -48,7 +46,7 @@ import org.cesecore.jndi.JndiConstants;
 
 /**
  * This bean handled global configurations.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "GlobalConfigurationSessionRemote")
@@ -56,10 +54,12 @@ import org.cesecore.jndi.JndiConstants;
 public class GlobalConfigurationSessionBean implements GlobalConfigurationSessionLocal, GlobalConfigurationSessionRemote {
 
     private static final Logger log = Logger.getLogger(GlobalConfigurationSessionBean.class);
-    
-    /** Internal localization of logs and errors */
+
+    /**
+     * Internal localization of logs and errors
+     */
     private static final InternalResources intres = InternalResources.getInstance();
-        
+
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -87,14 +87,14 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         ConfigurationBase result;
         try {
             if (log.isTraceEnabled()) {
-                log.trace(">getCachedConfiguration("+configID+")");
+                log.trace(">getCachedConfiguration(" + configID + ")");
             }
             // Only do the actual SQL query if we might update the configuration due to cache time anyhow
             if (!GlobalConfigurationCacheHolder.INSTANCE.needsUpdate(configID)) {
                 result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(configID);
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Reading Configuration: "+configID);
+                    log.debug("Reading Configuration: " + configID);
                 }
                 final GlobalConfigurationData globalConfigurationData = findByConfigurationId(configID);
                 if (globalConfigurationData == null) {
@@ -112,11 +112,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             return result;
         } finally {
             if (log.isTraceEnabled()) {
-                log.trace("<getCachedConfiguration("+configID+")");
+                log.trace("<getCachedConfiguration(" + configID + ")");
             }
         }
     }
-    
+
     @Override
     public void saveConfiguration(final AuthenticationToken admin, final ConfigurationBase conf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -124,7 +124,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
         String configID = conf.getConfigurationId();
         assertAuthorization(admin, configID, "Could not save configuration");
-        
+
         final GlobalConfigurationData gcdata = findByConfigurationId(configID);
         if (gcdata != null) {
             // Save object and create a diff over what has changed
@@ -138,7 +138,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
             // Make security audit log record
             final String msg = intres.getLocalizedMessage("globalconfig.savedconf", gcdata.getConfigurationId());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 details.put(entry.getKey().toString(), entry.getValue().toString());
@@ -157,7 +157,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             } catch (Exception e) {
                 final String msg = intres.getLocalizedMessage("globalconfig.errorcreateconf");
                 log.info(msg, e);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
                 auditSession.log(EventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
@@ -168,7 +168,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             log.trace("<saveGlobalConfiguration()");
         }
     }
-    
+
     private void assertAuthorization(final AuthenticationToken authenticationToken, final String configID, final String errorMsg) throws AuthorizationDeniedException {
         final String accessRule = getAccessRuleFromConfigId(configID);
         if (!authorizationSession.isAuthorized(authenticationToken, accessRule)) {
@@ -177,44 +177,49 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
     }
 
-    /** @return the access rule required to read the specified configuration type */
+    /**
+     * @return the access rule required to read the specified configuration type
+     */
     private String getAccessRuleFromConfigId(final String configID) {
         switch (configID) {
-        case AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID:
-            return StandardRules.EKUCONFIGURATION_EDIT.resource();
-        case AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID:
-            return StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource();
-        default:
+            case AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID:
+                return StandardRules.EKUCONFIGURATION_EDIT.resource();
+            case AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID:
+                return StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource();
+            default:
+                // NOPMD
         }
         return StandardRules.SYSTEMCONFIGURATION_EDIT.resource();
     }
-    
+
     @Override
-    public void flushConfigurationCache(final String configID)  {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">flushConfigurationCache("+configID+")");
-    	}
-    	GlobalConfigurationCacheHolder.INSTANCE.clearCache(configID);
-    	// Force cache to be loaded from the database unless another thread has already started to do it
-    	getCachedConfiguration(configID);
-    	if (log.isTraceEnabled()) {
-    		log.trace("<flushConfigurationCache("+configID+")");
-    	}
+    public void flushConfigurationCache(final String configID) {
+        if (log.isTraceEnabled()) {
+            log.trace(">flushConfigurationCache(" + configID + ")");
+        }
+        GlobalConfigurationCacheHolder.INSTANCE.clearCache(configID);
+        // Force cache to be loaded from the database unless another thread has already started to do it
+        getCachedConfiguration(configID);
+        if (log.isTraceEnabled()) {
+            log.trace("<flushConfigurationCache(" + configID + ")");
+        }
     }
-    
-    /** @return the found entity instance or null if the entity does not exist */
+
+    /**
+     * @return the found entity instance or null if the entity does not exist
+     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public GlobalConfigurationData findByConfigurationId(String configurationId) {
         return entityManager.find(GlobalConfigurationData.class, configurationId);
     }
-    
-    private static enum GlobalConfigurationCacheHolder {
+
+    private enum GlobalConfigurationCacheHolder {
         INSTANCE;
-        
-        private final Map<String, ConfigurationCache> caches = new ConcurrentHashMap<String, ConfigurationCache>();
-        
-        private GlobalConfigurationCacheHolder() {
+
+        private final Map<String, ConfigurationCache> caches = new ConcurrentHashMap<>();
+
+        GlobalConfigurationCacheHolder() {
             ServiceLoader<? extends ConfigurationCache> serviceLoader = ServiceLoader.load(ConfigurationCache.class);
             // Extract all the caches from the plugin list
             for (ConfigurationCache cache : serviceLoader) {
@@ -226,64 +231,62 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 }
             }
         }
-        
-        /** @return all registered configuration IDs. */
+
+        /**
+         * @return all registered configuration IDs.
+         */
         public Set<String> getIds() {
-            return new HashSet<String>(caches.keySet());
+            return new HashSet<>(caches.keySet());
         }
 
         public void updateConfiguration(final ConfigurationBase conf, final String configId) {
             caches.get(configId).updateConfiguration(conf);
         }
-        
+
         public void clearCache(final String configId) {
             caches.get(configId).clearCache();
         }
-        
+
         public boolean needsUpdate(final String configId) {
-            if (caches.get(configId)==null) {
+            if (caches.get(configId) == null) {
                 return true;
             }
             return caches.get(configId).needsUpdate();
         }
-        
+
         public ConfigurationBase getConfiguration(final String configId) {
-            ConfigurationCache cache = caches.get(configId);
-            if (cache == null) {
-                return null;
-            } else {
+            final ConfigurationCache cache = caches.get(configId);
+            if (cache != null) {
                 return cache.getConfiguration();
             }
+            return null;
         }
 
         @SuppressWarnings("rawtypes")
         public ConfigurationBase getConfiguration(final HashMap data, final String configId) {
-            ConfigurationCache cache = caches.get(configId);
-            if (cache == null) {
-                return null;
-            } else {
+            final ConfigurationCache cache = caches.get(configId);
+            if (cache != null) {
                 return cache.getConfiguration(data);
             }
+            return null;
         }
-        
+
         public ConfigurationBase getNewConfiguration(final String configId) {
-            ConfigurationCache cache = caches.get(configId);
-            if (cache == null) {
-                return null;
-            } else {
+            final ConfigurationCache cache = caches.get(configId);
+            if (cache != null) {
                 return cache.getNewConfiguration();
             }
+            return null;
         }
-        
+
         public Properties getAllProperties(final String configId) {
-            ConfigurationCache cache = caches.get(configId);
-            if (cache == null) {
-                return null;
-            } else {
+            final ConfigurationCache cache = caches.get(configId);
+            if (cache != null) {
                 return caches.get(configId).getAllProperties();
             }
+            return null;
         }
-        
+
     }
 }
 

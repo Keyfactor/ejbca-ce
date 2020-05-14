@@ -188,6 +188,5 @@ public class AvailableCustomCertExtensionsConfigTest {
             globalConfigSession.saveConfiguration(alwaysAllowToken, originalGlobalConfig);
         }
     }*/
-  
     
 }

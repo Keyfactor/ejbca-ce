@@ -21,7 +21,6 @@ import org.cesecore.internal.InternalResources;
  * Handles global CESeCore configuration values. 
  * 
  * @version $Id$
- *
  */
 public class GlobalCesecoreConfiguration extends ConfigurationBase implements Serializable {
     
@@ -39,7 +38,6 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     
     @Override
     public void upgrade() {
-
     }
 
     @Override
@@ -49,12 +47,8 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     
     /** @return the maximum size of the result from SQL select queries */
     public int getMaximumQueryCount() {
-        Object num = data.get(MAXIMUM_QUERY_COUNT_KEY);
-        if(num == null){
-            return 500;
-        } else {
-            return (int) num;
-        }
+        final Object num = data.get(MAXIMUM_QUERY_COUNT_KEY);
+        return num == null ? 500 : (int) num;
     }
     
     /**
@@ -76,11 +70,11 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     /** @return database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public long getMaximumQueryTimeout() {
         final Object num = data.get(MAXIMUM_QUERY_TIMEOUT_KEY);
-        return num==null ? 10000L : (long) num;
+        return num == null ? 10000L : (long) num;
     }
 
     /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) { 
-        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, maximumQueryTimeoutMs < 0L ? 0L : maximumQueryTimeoutMs);
+        data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
 }
