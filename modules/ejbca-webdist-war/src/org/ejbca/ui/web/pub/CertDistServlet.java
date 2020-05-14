@@ -76,9 +76,10 @@ import org.ejbca.util.HTMLTools;
  *   <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
  *   <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
  *   <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
- *   <li>cacert - returns ca certificate in PEM-format, takes argument 'issuer=<issuerDN>&level=<ca-level, 0=root>'
- *   <li>nscacert - returns ca certificate for Firefox, same args as above
- *   <li>iecacert - returns ca certificate for Internet Explorer, same args as above
+ *   <li>cacert - returns CA certificate in PEM-format, takes argument 'issuer=<issuerDN>&level=<ca-level, 0=root>'
+ *   <li>cachain - returns CA certificate chain in format defined by the 'format' parameter, takes argument 'caid=' with the numeric ID of the CA, or 'issuerdn'
+ *   <li>nscacert - returns CA certificate for Firefox, same args as above
+ *   <li>iecacert - returns CA certificate for Internet Explorer, same args as above
  * </ul>
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
@@ -645,10 +646,10 @@ public class CertDistServlet extends HttpServlet {
 			        	alias = StringUtils.replaceChars(alias, ' ', '_');
 			        	alias = StringUtils.substring(alias, 0, 15);
 			            store.setCertificateEntry(alias, chain[i]);
-			            ByteArrayOutputStream out = new ByteArrayOutputStream();
-			            store.store(out, "changeit".toCharArray());
-			            out.close();
-			            outbytes = out.toByteArray();
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        store.store(out, "changeit".toCharArray());
+                        out.close();
+                        outbytes = out.toByteArray();
 			        }
 				}
 				// We must remove cache headers for IE
