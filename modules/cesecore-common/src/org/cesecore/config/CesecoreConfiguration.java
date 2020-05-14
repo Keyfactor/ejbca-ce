@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.config;
 
 import java.net.InetAddress;
@@ -27,7 +26,6 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public final class CesecoreConfiguration {
-
 
     private static final Logger log = Logger.getLogger(CesecoreConfiguration.class);
 
@@ -110,8 +108,8 @@ public final class CesecoreConfiguration {
      * The relative time offset for the notBefore value of CA and end entity certificates. Changing this value,
      * also changes the notAfter attribute of the certificates, if a relative time is used for its validity. While
      * certificate issuance this value can be overwritten by the corresponding value in the certificate profile used.
-     * @See {@link org.cesecore.certificates.certificateprofile.CertificateProfile#getCertificateValidityOffset()}
-     * @See {@link org.cesecore.util.SimpleTime}
+     * @see org.cesecore.certificates.certificateprofile.CertificateProfile#getCertificateValidityOffset()
+     * @see org.cesecore.util.SimpleTime
      */
     public static String getCertificateValidityOffset() {
         return ConfigurationHolder.getExpandedString("certificate.validityoffset");
@@ -241,8 +239,8 @@ public final class CesecoreConfiguration {
         final String value = ConfigurationHolder.getString(propertyName);
         long time = defaultValue;
         try {
-            if (value!=null) {
-                time = Long.valueOf(value);
+            if (value != null) {
+                time = Long.parseLong(value);
             }
         } catch (NumberFormatException e) {
             log.error("Invalid value for " + propertyName + ". Using default " + defaultValue + ". Value must be decimal number (" + unit + "): " + e.getMessage());
@@ -354,8 +352,7 @@ public final class CesecoreConfiguration {
         final String oidEnd = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".oid");
 
         if (oidEnd != null && oidTree != null) { return oidTree + "." + oidEnd; }
-        if (oidEnd != null) { return oidEnd; }
-        else { return null; }
+        return oidEnd;
     }
 
     /**
@@ -389,7 +386,7 @@ public final class CesecoreConfiguration {
     }
 
     public static boolean getCaKeepOcspExtendedService() {
-        return Boolean.valueOf(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
+        return Boolean.parseBoolean(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
     }
 
     /** @return the number of rows that should be fetched at the time when creating CRLs. */

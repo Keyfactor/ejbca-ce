@@ -23,7 +23,6 @@ import org.cesecore.configuration.ConfigurationCache;
  * fields in session beans.
  * 
  * @version $Id$
- *
  */
 public class GlobalCesecoreConfigurationCache implements ConfigurationCache {
 
@@ -47,7 +46,6 @@ public class GlobalCesecoreConfigurationCache implements ConfigurationCache {
     @Override
     public void clearCache() {
         globalconfigurationCache = null;
-
     }
 
     @Override
@@ -57,16 +55,12 @@ public class GlobalCesecoreConfigurationCache implements ConfigurationCache {
 
     @Override
     public boolean needsUpdate() {
-        if (globalconfigurationCache != null && lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() > System.currentTimeMillis()) {
-            return false;
-        }
-        return true;
+        return globalconfigurationCache == null || lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() <= System.currentTimeMillis();
     }
 
     @Override
     public ConfigurationBase getConfiguration() {
         return globalconfigurationCache;
-
     }
 
     @Override
@@ -78,8 +72,7 @@ public class GlobalCesecoreConfigurationCache implements ConfigurationCache {
 
     @Override
     public ConfigurationBase getNewConfiguration() {
-        return new GlobalCesecoreConfiguration();      
-
+        return new GlobalCesecoreConfiguration();
     }
 
     @Override
