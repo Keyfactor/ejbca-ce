@@ -2069,7 +2069,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     ca.setSubjectDN(newSubjectDN);
                     ca.setName(newCAName); // use CN value for new CA name
                     ca.setCAId(0); //set it to 0, because we want to new id to be generated based on newSubjectDn
-                    (ca).setNameChanged(true);
+                    ca.setNameChanged(true);
                 }
                 // create selfsigned certificate
                 EndEntityInformation cainfodata = makeEndEntityInformation(ca.getCAInfo());
