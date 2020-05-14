@@ -1089,23 +1089,20 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isCvcTerminalTypeAt() { return getCertificateProfile().isCvcTerminalTypeAt(); }
     public boolean isCvcTerminalTypeSt() { return getCertificateProfile().isCvcTerminalTypeSt(); }
 
-    public void setCvcTerminalTypeIs() throws IOException {
+    public void setCvcTerminalTypeIs() {
         getCertificateProfile().setCVCTerminalType(CertificateProfile.CVC_TERMTYPE_IS);
         getCertificateProfile().setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE);
         getCertificateProfile().setCVCLongAccessRights(null);
-        redirectToComponent("cvc_epassport");
     }
-    public void setCvcTerminalTypeAt() throws IOException {
+    public void setCvcTerminalTypeAt() {
         getCertificateProfile().setCVCTerminalType(CertificateProfile.CVC_TERMTYPE_AT);
         getCertificateProfile().setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE);
         getCertificateProfile().setCVCLongAccessRights(null);
-        redirectToComponent("cvc_epassport");
     }
-    public void setCvcTerminalTypeSt() throws IOException {
+    public void setCvcTerminalTypeSt() {
         getCertificateProfile().setCVCTerminalType(CertificateProfile.CVC_TERMTYPE_ST);
         getCertificateProfile().setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE);
         getCertificateProfile().setCVCLongAccessRights(null);
-        redirectToComponent("cvc_epassport");
     }
 
     public List<SelectItem/*<Integer,String*/> getCvcSignTermDVTypeAvailable() {
@@ -1371,7 +1368,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     /** Redirect the client browser to the relevant section of certificate profile page */
     private void redirectToComponent(final String componentId) throws IOException {
         final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        ec.redirect(getEjbcaWebBean().getBaseUrl()+getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()+"ca/editcertificateprofiles/editcertificateprofile.jsf#cpf:"+componentId);
+        ec.redirect(getEjbcaWebBean().getBaseUrl()+getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()+"ca/editcertificateprofiles/editcertificateprofile.jsf#cpf:" 
+                + componentId);
     }
 
     public String getQcEtsiTypeEsign() {
