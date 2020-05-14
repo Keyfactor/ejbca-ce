@@ -92,7 +92,7 @@ public class CertificateProfileTest {
         assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
         final int[] availablebitlen = prof.getAvailableBitLengths();
         assertEquals(0, availablebitlen[0]);
-        assertEquals(8192, availablebitlen[14]);
+        assertEquals(8192, availablebitlen[availablebitlen.length-1]);
         assertEquals(0, prof.getMinimumAvailableBitLength());
         assertEquals(8192, prof.getMaximumAvailableBitLength());
         assertTrue("Default profile should have all enabled key algorithms available.", prof.getAvailableKeyAlgorithmsAsList().containsAll(AlgorithmTools.getAvailableKeyAlgorithms()));
