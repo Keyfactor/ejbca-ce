@@ -60,6 +60,17 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
                                   "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
                                   "WHERE cAId = :caId AND ocsp.nextUpdate <= :expirationDate",
                           resultSetMapping = "OcspResponseData"),
+        @NamedNativeQuery(name = OcspResponseData.DELETE_OLD_OCSP_DATA_BY_CAID,
+                query = "DELETE ocsp FROM OcspResponseData ocsp INNER JOIN (" +
+                        "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
+                        ") maxProducedAtTable " +
+                        "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt != maxProducedAtTable.maximumProducedAt " +
+                        "WHERE cAId = :caId"),
+        @NamedNativeQuery(name = OcspResponseData.DELETE_OLD_OCSP_DATA,
+                query = "DELETE ocsp FROM OcspResponseData ocsp INNER JOIN (" +
+                        "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
+                        ") maxProducedAtTable " +
+                        "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt != maxProducedAtTable.maximumProducedAt"),
 })
 @SqlResultSetMapping(
         name = "OcspResponseData",
@@ -78,6 +89,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 public class OcspResponseData extends ProtectedData implements Serializable {
 
     public static final String FIND_EXPIRING_OCPS_DATA_BY_CAID = "OcspResponseData.findExpiringOcpsDataByCaId";
+    public static final String DELETE_OLD_OCSP_DATA_BY_CAID = "OcspResponseData.deleteOldOcspDataByCaId";
+    public static final String DELETE_OLD_OCSP_DATA = "OcspResponseData.deleteOldOcspData";
 
     private static final long serialVersionUID = 1L;
 

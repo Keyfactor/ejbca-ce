@@ -202,6 +202,59 @@ public class OcspDataSessionBeanTest {
         assertNull(ocspDataSessionRemote.findOcspDataById(response.getId()));
     }
 
+    @Test
+    public void testDeleteOldOcspDataByCaId() throws InterruptedException {
+        log.trace(">testDeleteOldOcspDataByCaId");
+
+        persistMixofExpiredResponses();
+        Thread.sleep(2000);
+
+        // Confirm all test data is there.
+        assertEquals(5, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthOne).size());
+        assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo).size());
+
+        ocspDataProxySessionRemote.deleteOldOcspDataByCaId(certificateAuthOne);
+
+        // Confirm only latest test data is left for certificateAuthOne
+        List<OcspResponseData> remainingResponses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuthOne);
+        assertEquals(2, remainingResponses.size());
+        assertEquals("test-id-3", remainingResponses.get(0).getId());
+        assertEquals("test-id-5", remainingResponses.get(1).getId());
+
+        // Check certificateAuthTwo responses are not deleted.
+        assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo).size());
+
+        log.trace("<testDeleteOldOcspDataByCaId");
+    }
+
+    @Test
+    public void testDeleteOldOcspData() throws InterruptedException {
+        log.trace(">testDeleteOldOcspData");
+
+        persistMixofExpiredResponses();
+        Thread.sleep(2000);
+
+        // Confirm all test data is there.
+        assertEquals(5, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthOne).size());
+        assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo).size());
+
+        ocspDataProxySessionRemote.deleteOldOcspData();
+        List<OcspResponseData> remainingResponses;
+
+        // Confirm only latest test data is left for certificateAuthOne
+        remainingResponses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuthOne);
+        assertEquals(2, remainingResponses.size());
+        assertEquals("test-id-3", remainingResponses.get(0).getId());
+        assertEquals("test-id-5", remainingResponses.get(1).getId());
+
+        // Check certificateAuthTwo responses are not deleted.
+        remainingResponses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo);
+        assertEquals(1, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo).size());
+        assertEquals("test-id-7", remainingResponses.get(0).getId());
+
+        log.trace("<testDeleteOldOcspData");
+    }
+
     /**
      * Add a mix of expired and active Ocsp Responses.
      */
@@ -209,22 +262,27 @@ public class OcspDataSessionBeanTest {
         log.trace(">persistMixofExpiredResponses");
 
         Long now = System.currentTimeMillis();
-        Long past = now - 3600000; // 1h
+        Long hourAgo = now - 3600000L;
+        Long twoHoursAgo = hourAgo - 3600000L;
         Long future = now + 3600000;
 
-        OcspResponseData certificateAResponseOld = new OcspResponseData("test-id-1", certificateAuthOne, "test-sn-1", past, past, new byte[0]);
-        OcspResponseData certificateAResponseNew = new OcspResponseData("test-id-2", certificateAuthOne, "test-sn-1", now, future, new byte[0]);
+        OcspResponseData certificateAResponseOld1 = new OcspResponseData("test-id-1", certificateAuthOne, "test-sn-1", hourAgo, hourAgo, new byte[0]);
+        OcspResponseData certificateAResponseOld2 = new OcspResponseData("test-id-2", certificateAuthOne, "test-sn-1", twoHoursAgo, hourAgo, new byte[0]);
+        OcspResponseData certificateAResponseLatest = new OcspResponseData("test-id-3", certificateAuthOne, "test-sn-1", now, future, new byte[0]);
 
-        OcspResponseData certificateBResponseOld = new OcspResponseData("test-id-3", certificateAuthOne, "test-sn-2", past, future, new byte[0]);
-        OcspResponseData certificateBResponseNew = new OcspResponseData("test-id-4", certificateAuthOne, "test-sn-2", now, past, new byte[0]);
+        OcspResponseData certificateBResponseOld = new OcspResponseData("test-id-4", certificateAuthOne, "test-sn-2", hourAgo, future, new byte[0]);
+        OcspResponseData certificateBResponseLatest = new OcspResponseData("test-id-5", certificateAuthOne, "test-sn-2", now, hourAgo, new byte[0]);
 
-        OcspResponseData certificateCResponse = new OcspResponseData("test-id-5", certificateAuthTwo, "test-sn-3", now, past, new byte[0]);
+        OcspResponseData certificateCResponseOld = new OcspResponseData("test-id-6", certificateAuthTwo, "test-sn-3", twoHoursAgo, hourAgo, new byte[0]);
+        OcspResponseData certificateCResponseLatest = new OcspResponseData("test-id-7", certificateAuthTwo, "test-sn-3", now, hourAgo, new byte[0]);
 
-        ocspDataProxySessionRemote.storeOcspData(certificateAResponseOld);
-        ocspDataProxySessionRemote.storeOcspData(certificateAResponseNew);
+        ocspDataProxySessionRemote.storeOcspData(certificateAResponseOld1);
+        ocspDataProxySessionRemote.storeOcspData(certificateAResponseOld2);
+        ocspDataProxySessionRemote.storeOcspData(certificateAResponseLatest);
         ocspDataProxySessionRemote.storeOcspData(certificateBResponseOld);
-        ocspDataProxySessionRemote.storeOcspData(certificateBResponseNew);
-        ocspDataProxySessionRemote.storeOcspData(certificateCResponse);
+        ocspDataProxySessionRemote.storeOcspData(certificateBResponseLatest);
+        ocspDataProxySessionRemote.storeOcspData(certificateCResponseOld);
+        ocspDataProxySessionRemote.storeOcspData(certificateCResponseLatest);
 
         log.trace("<persistMixofExpiredResponses");
     }

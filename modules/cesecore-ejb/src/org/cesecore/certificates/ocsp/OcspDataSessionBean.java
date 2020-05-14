@@ -155,6 +155,35 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         log.trace("<deleteOcspDataByCaIdSerialNumber");
     }
 
+    @Override
+    public void deleteOldOcspDataByCaId(final Integer caId) {
+        log.trace(">deleteOldOcspDataByCaId");
+
+        final Query query = this.entityManager.createNamedQuery(OcspResponseData.DELETE_OLD_OCSP_DATA_BY_CAID);
+        query.setParameter("caId", caId);
+
+        final int rowsDeleted = query.executeUpdate();
+        if (log.isTraceEnabled()) {
+            log.trace("deleteOldOcspDataByCaId(" + caId + ") yielded the " + rowsDeleted + " rows deleted! ");
+        }
+
+        log.trace("<deleteOldOcspDataByCaId");
+    }
+
+    @Override
+    public void deleteOldOcspData() {
+        log.trace(">deleteOldOcspData");
+
+        final Query query = this.entityManager.createNamedQuery(OcspResponseData.DELETE_OLD_OCSP_DATA);
+
+        final int rowsDeleted = query.executeUpdate();
+        if (log.isTraceEnabled()) {
+            log.trace("deleteOldOcspData() yielded the " + rowsDeleted + " rows deleted! ");
+        }
+
+        log.trace("<deleteOldOcspData");
+    }
+
     private OcspResponseData getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataByCaIdSerialNumber", OcspResponseData.class);
         long now = System.currentTimeMillis();

@@ -49,5 +49,18 @@ public interface OcspDataSessionLocal extends OcspDataSession {
      * @param serialNumber of the certificate which the OCSP response represents
      */
     void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber);
-    
+
+    /**
+     * Deletes the old OCSP data from the table, and leaves only responses with the latest producedAt
+     * for each serial number and given certificate authority.
+     *
+     * @param caId of the certificate authority.
+     */
+    void deleteOldOcspDataByCaId(final Integer caId);
+
+    /**
+     * Deletes all the old OCSP data from the table, and leaves only responses with the latest producedAt
+     * for each serial number.
+     */
+    void deleteOldOcspData();
 }

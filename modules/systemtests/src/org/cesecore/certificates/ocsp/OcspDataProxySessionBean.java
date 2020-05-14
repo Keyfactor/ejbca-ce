@@ -61,4 +61,14 @@ public class OcspDataProxySessionBean implements OcspDataProxySessionRemote {
     public void deleteOcspDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         ocspDataSessionLocal.deleteOcspDataByCaIdSerialNumber(caId, serialNumber);
     }
+
+    @Override
+    public void deleteOldOcspDataByCaId(final Integer caId) {
+        ocspDataSessionLocal.deleteOldOcspDataByCaId(caId);
+    }
+
+    @Override
+    public void deleteOldOcspData() {
+        ocspDataSessionLocal.deleteOldOcspData();
+    }
 }
