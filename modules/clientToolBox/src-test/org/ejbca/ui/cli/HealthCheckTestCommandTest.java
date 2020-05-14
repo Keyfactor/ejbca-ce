@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 
 /**
+ * Run stress tests with ClientToolBax command healthCheckTest
+ *
  * @version $Id$
  */
 public class HealthCheckTestCommandTest {
@@ -37,7 +39,7 @@ public class HealthCheckTestCommandTest {
         ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
-        httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
+        httpReqPath = "http://" + httpHost + ":" + httpPort + "/ejbca";
     }
 
     @Test
@@ -45,7 +47,7 @@ public class HealthCheckTestCommandTest {
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 1000;
         int numberOfTests = 100_000;
-        String waitTime ="2000";
+        String waitTime = "2000";
         String[] args = new String[]{"healthCheckTest", httpReqPath + "/publicweb/healthcheck/ejbcahealth",
                 numberOfThreads + ":" + numberOfTests, waitTime};
         command.execute(args);

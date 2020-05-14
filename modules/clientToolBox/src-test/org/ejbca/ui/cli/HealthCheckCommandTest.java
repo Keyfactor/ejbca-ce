@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 
 /**
+ * Unit tests for ClientToolBax command healthCheck
+ *
  * @version $Id$
  */
 public class HealthCheckCommandTest {
@@ -37,7 +39,7 @@ public class HealthCheckCommandTest {
         ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
-        httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
+        httpReqPath = "http://" + httpHost + ":" + httpPort + "/ejbca";
     }
 
     @Test
@@ -47,8 +49,7 @@ public class HealthCheckCommandTest {
     }
 
     @Test
-
-    public void testCommandWronUri() {
+    public void testCommandWrongUri() {
         exit.expectSystemExitWithStatus(-1);
 
         String[] args = new String[]{"healthCheck", "bad.url"};
