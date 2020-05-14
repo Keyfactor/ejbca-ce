@@ -168,6 +168,16 @@ public final class KeyTools {
 
         final KeyPairGenerator keygen;
         try {
+            // A small note on RSA keys. 
+            // RSA keys are encoded as a SubjectPublicKeyInfo in X.509 certificates (public key) and PKCS#8 private key blobs (private key)
+            // In a SubjectPublicKeyInfo encoded is as an AlgorithmIdentifier, which has an OID and parameters.
+            // See section 1.2 in https://tools.ietf.org/html/rfc4055
+            // and section 2.1 in https://tools.ietf.org/html/rfc4056
+            // The "normal" OID used is rsaEncryption, but it can also be id-RSASSA-PSS "When the RSA private key owner wishes to limit the use of the public
+            // key exclusively to RSASSA-PSS" (quote from RFC4055).
+            // How it's encoded can be controlled during key generation. We use "RSA" for RSA keys, which means rsaEncryption.
+            // Albeit we don't see any need right now (May 2020), it is possible to use id-RSASSA-PSS if on uses RSASSA-PSS instead of RSA when creating the
+            // KeyPairGeneratos, i.e. KeyPairGenerator.getInstance("RSASSA-PSS", BouncyCastleProvider.PROVIDER_NAME)
             keygen = KeyPairGenerator.getInstance(keyAlg, BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm " + keyAlg + " was not recognized.", e);
