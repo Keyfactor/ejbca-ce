@@ -12,35 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -63,6 +34,17 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.util.*;
 
 /**
  * @see CryptoTokenManagementSession
@@ -587,6 +569,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Activated CryptoToken '" + cryptoToken.getTokenName()
                         + "' with id " + cryptoTokenId);
+        if (cryptoToken.isAutoActivationPinPresent() &&
+                authorizationSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource() + "/" + cryptoTokenId)) {
+            updatePin(authenticationToken, cryptoTokenId, BaseCryptoToken.getAutoActivatePin(cryptoToken.getProperties()).toCharArray(), authenticationCode, true);
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
