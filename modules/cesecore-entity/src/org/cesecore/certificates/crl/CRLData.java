@@ -117,17 +117,25 @@ public class CRLData extends ProtectedData implements Serializable {
      */
     // @Column
     public int getCrlPartitionIndex() {
-        return crlPartitionIndex != null ? crlPartitionIndex : CertificateConstants.NO_CRL_PARTITION;
+        return crlPartitionIndex == null || crlPartitionIndex == -1
+                ? CertificateConstants.NO_CRL_PARTITION
+                : crlPartitionIndex;
     }
 
     /**
      * Set the CRL partition index for this row.
      *
+     * <p>
+     * <b>Implementation note</b>
+     * <p>
+     *     {@link CertificateConstants#NO_CRL_PARTITION} will be normalised to -1 to
+     *     avoid NULLs being stored in some databases.
+     *
      * @since EJBCA 7.1.0
      * @param crlPartitionIndex the CRL partition index to set.
      */
     public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
-        this.crlPartitionIndex = crlPartitionIndex;
+        this.crlPartitionIndex = crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION ? -1 : crlPartitionIndex;
     }
 
     // @Column
@@ -282,7 +290,7 @@ public class CRLData extends ProtectedData implements Serializable {
      *
      * @param entityManager an entity manager for reading from CRLData.
      * @param issuerDN the DN of the CRL issuer.
-     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants.NO_CRL_PARTITION} if not using CRL partitioning.
+     * @param crlPartitionIndex CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if not using CRL partitioning.
      * @param crlNumber the CRL number.
      * @return the found entity instance or null if the entity does not exist.
      */
@@ -344,20 +352,20 @@ public class CRLData extends ProtectedData implements Serializable {
      *     ""a.crlPartitionIndex=:crlPartitionIndex"
      * </pre>
      *
-     * <p>If the crlPartitionIndex parameter indicates that CRLs are not used (i.e. crlPartitionIndex = {@link CertificateConstants#NO_CRL_PARTITION}),
+     * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are <i>not</i> used (i.e. crlPartitionIndex =
+     * {@link CertificateConstants#NO_CRL_PARTITION}),
      * a more elaborate query condition is needed to keep compatibility with data created by EJBCA <7.4. The CRL partition index
      * in the database can either be {@link CertificateConstants#NO_CRL_PARTITION}, 0 or NULL. Thus, for this case return:
      * <pre>
-     *     "a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex=NULL OR a.crlPartitionIndex=0"
+     *     "a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=-1"
      * </pre>
      *
      * @param crlPartitionIndex the CRL partition index to use in the query condition.
      * @return a JPQL query condition to use in the <code>WHERE</code> clause when querying for CRLs.
-     * @deprecated Remove this method after all customers have done a post-upgrade to EJBCA 7.4.0.
      */
     private static String getCrlPartitionIndexCondition(final int crlPartitionIndex) {
         if (crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION) {
-            return "(a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex=NULL OR a.crlPartitionIndex=0)";
+            return "(a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=-1)";
         } else {
             return "a.crlPartitionIndex=:crlPartitionIndex";
         }
