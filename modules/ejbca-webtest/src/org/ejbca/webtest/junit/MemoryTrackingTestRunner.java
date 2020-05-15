@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest.junit;
 
+import org.junit.runner.Result;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
@@ -60,5 +61,8 @@ public class MemoryTrackingTestRunner extends BlockJUnit4ClassRunner {
         runNotifier.addListener(new MemoryTrackingRunListener());
         runNotifier.fireTestRunStarted(getDescription());
         super.run(runNotifier);
+        // Workaround to trigger testRunFinished in attached listener for ant
+        // https://bz.apache.org/bugzilla/show_bug.cgi?id=54970
+        runNotifier.fireTestRunFinished(new Result());
     }
 }

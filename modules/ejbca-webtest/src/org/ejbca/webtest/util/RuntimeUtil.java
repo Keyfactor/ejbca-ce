@@ -15,6 +15,7 @@ package org.ejbca.webtest.util;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.ejbca.webtest.util.ram.RamMemorySnapshot;
 
 /**
@@ -23,6 +24,8 @@ import org.ejbca.webtest.util.ram.RamMemorySnapshot;
  * @version $Id: RuntimeUtil.java 34938 2020-04-28 14:58:22Z andrey_s_helmes $
  */
 public class RuntimeUtil {
+
+    private static final Logger log = Logger.getLogger(RuntimeUtil.class);
 
     private static final DecimalFormat megabytesDecimalFormat = new DecimalFormat("0000.00");
 
@@ -46,31 +49,28 @@ public class RuntimeUtil {
                 .withFreeMemory(freeMemory)
                 .withTotalMemory(totalMemory)
                 .withMaxMemory(runtime.maxMemory())
+                .withLocation(location)
                 .build();
     }
 
     /**
-     * Outputs runtime's RAM memory snapshots in MB to System.out. An example:
+     * Outputs runtime's RAM memory snapshots in MB to log4j. An example:
      * <pre>
-     *     |  Used   |  Free   |  Total  |  Max    |
-     *     MyTest.myTestMethod1
-     *     | 0223.76 | 0790.24 | 1014.00 | 1024.00 |
-     *     MyTest.myTestMethod2
-     *     | 0487.27 | 0526.73 | 1014.00 | 1024.00 |
-     *     The End
-     *     | 0460.65 | 0553.35 | 1014.00 | 1024.00 |
+     *     |  Used   |  Free   |  Total  |  Max    |     Location
+     *     | 0223.76 | 0790.24 | 1014.00 | 1024.00 |     MyTest.myTestMethod1
+     *     | 0487.27 | 0526.73 | 1014.00 | 1024.00 |     MyTest.myTestMethod2
+     *     | 0460.65 | 0553.35 | 1014.00 | 1024.00 |     The End
      * </pre>
      */
     public static void outputRuntimeRamSnapshots(final List<RamMemorySnapshot> ramMemorySnapshots) {
-        System.out.println("|  Used   |  Free   |  Total  |  Max    |");
+        log.debug("|  Used   |  Free   |  Total  |  Max    | \tLocation");
         for(RamMemorySnapshot ramMemorySnapshot : ramMemorySnapshots) {
-            System.out.println(ramMemorySnapshot.getLocation());
-            System.out.println(
+            log.debug(
                     "| " + getMegabytes(ramMemorySnapshot.getUsedMemory()) +
                     " | " + getMegabytes(ramMemorySnapshot.getFreeMemory()) +
                     " | " + getMegabytes(ramMemorySnapshot.getTotalMemory()) +
                     " | " + getMegabytes(ramMemorySnapshot.getMaxMemory()) +
-                    " |"
+                    " | \t" + ramMemorySnapshot.getLocation()
             );
         }
     }

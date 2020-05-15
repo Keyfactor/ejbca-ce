@@ -415,7 +415,7 @@ public class CaHelper extends BaseHelper {
      * Asserts the element 'Use CA Name Change' is not shown on page.
      */
     public void assertCheckboxCaNameChangeNotPresent() {
-        assertNull(findElementWithoutWait(Page.INPUT_CHECKBOXCANAMECHANGE));
+        assertNull(findElementWithoutWait(Page.INPUT_CHECKBOXCANAMECHANGE, false));
     }
 
     /**
@@ -598,7 +598,7 @@ public class CaHelper extends BaseHelper {
      * Asserts the element 'New Subject DN' is not shown on page
      */
     public void assertNewSubjectDnNotPresent() {
-        assertNull(findElementWithoutWait(Page.INPUT_NEWSUBJECTDN));
+        assertNull(findElementWithoutWait(Page.INPUT_NEWSUBJECTDN, false));
     }
 
     /**

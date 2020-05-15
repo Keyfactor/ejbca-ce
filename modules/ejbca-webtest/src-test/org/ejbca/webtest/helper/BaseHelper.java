@@ -110,11 +110,27 @@ public class BaseHelper {
      * @return a web element or null.
      */
     WebElement findElementWithoutWait(final By elementId) {
+        return findElementWithoutWait(elementId, true);
+    }
+
+    /**
+     * Finds an element by locator.
+     * <br/>
+     * In case of missing element (as expected), use shouldLogError = false flag.
+     *
+     * @param elementId locator.
+     * @param shouldLogError boolean flag, whether an error about non-existing element should be reported.
+     *
+     * @return a web element or null.
+     */
+    WebElement findElementWithoutWait(final By elementId, boolean shouldLogError) {
         try {
             return webDriver.findElement(elementId);
         }
         catch (NoSuchElementException ex) {
-            log.debug("Cannot find WebElement [" + elementId.toString() + "]", ex);
+            if(shouldLogError) {
+                log.debug("Cannot find WebElement [" + elementId.toString() + "]", ex);
+            }
         }
         return null;
     }

@@ -80,16 +80,19 @@
 	</target>
 
 	<target name="copyWindows" if="isWindows">
+		<echo message="Using geckodriver for Windows" />
 		<copy file="${webtest.resources.dir}/geckodriver-${webtest.lib.webtest-geckodriver-version}-win64.exe" tofile="${webtest.build.dir}/resources/geckodriver" failonerror="true"/>
 	</target>
 
 	<target name="copyMac" if="isMac">
+		<echo message="Using geckodriver for Mac" />
 		<exec executable="cp" failonerror="true">
 			<arg line="-R ${webtest.resources.dir}/geckodriver-${webtest.lib.webtest-geckodriver-version}-macos ${webtest.build.dir}/resources/geckodriver"/>
 		</exec>
 	</target>
 
 	<target name="copyLinux" if="isLinux">
+		<echo message="Using geckodriver for Linux" />
 		<exec executable="cp" failonerror="true">
 			<arg line="-R ${webtest.resources.dir}/geckodriver-${webtest.lib.webtest-geckodriver-version}-linux64 ${webtest.build.dir}/resources/geckodriver"/>
 		</exec>
@@ -99,11 +102,13 @@
     	<mkdir dir="${webtest.build-test.dir}"/>
 		<javac srcdir="${webtest.src-test.dir}" destdir="${webtest.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="test.classpath"/>
- <!--   	<copy file="${log4j.test.file}" tofile="${webtest.build-test.dir}/log4j.xml" failonerror="true"/> -->
+		<copy todir="${webtest.build-test.dir}" failonerror="true">
+			<file basedir="${webtest.resources.dir}" name="log4j.properties" />
+		</copy>
     </target>
 
 	<target name="test" depends="compile-tests" description="Run all tests for this module">
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" enableTestListenerEvents="true">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -113,6 +118,7 @@
                 <fileset dir="${webtest.build-test.dir}" includes="**/EcaQa7?_*.class" excludes="**/*EcaQa*$*"/>
             </batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="-Dlog4j.configuration=log4j.properties"/>
 		</junit>
     </target>
 	
@@ -123,7 +129,7 @@
 				   else="-ea">
 			<istrue value="${remoteDebug}"/>
 		</condition>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" enableTestListenerEvents="true">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -136,17 +142,17 @@
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
+			<jvmarg value="-Dlog4j.configuration=log4j.properties"/>
 		</junit>
 	</target>
 	
 	<target name="clean" description="Clean up this module">
 		<delete dir="${webtest.build.dir}" />
 		<delete dir="${webtest.build-test.dir}"/>
-		<delete file="${reports.dir}/QaEjbcaTestReport.html" />
-
+		<delete file="${reports.dir}/test/html/QaEjbcaTestReport.html" />
 	</target>
 
-	<target name="cleanReports" description="Clean up this module">
-		<delete file="${reports.dir}/QaEjbcaTestReport.html" />
+	<target name="cleanReports" description="Clean up this module's reports">
+		<delete file="${reports.dir}/test/html/QaEjbcaTestReport.html" />
 	</target>
 </project>

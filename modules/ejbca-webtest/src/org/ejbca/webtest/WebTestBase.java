@@ -50,14 +50,17 @@ import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.ejbca.webtest.utils.ExtentReportCreator;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.ProfilesIni;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.remote.CapabilityType;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
@@ -121,10 +124,8 @@ public abstract class WebTestBase extends ExtentReportCreator {
             firefoxProfile.setPreference("browser.download.manager.useWindow", false);
             firefoxProfile.setPreference("browser.download.manager.closeWhenDone", false);
             firefoxProfile.setPreference("intl.accept_languages", "en_US, en");
-            // Update Firefox options
+            // Set profile
             firefoxOptions.setProfile(firefoxProfile);
-            firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
-            firefoxOptions.setAcceptInsecureCerts(true);
         }
         if (browserBinary != null) {
             firefoxOptions.setBinary(browserBinary);
@@ -132,6 +133,17 @@ public abstract class WebTestBase extends ExtentReportCreator {
         if (Boolean.parseBoolean(browserHeadless)) {
             firefoxOptions.setHeadless(true);
         }
+        // Update Firefox options
+        firefoxOptions.setAcceptInsecureCerts(true);
+        // Logging options, use levels with care, as a change may dramatically affect the size of junit output file.
+        final LoggingPreferences loggingPreferences = new LoggingPreferences();
+        loggingPreferences.enable(LogType.BROWSER, Level.OFF);
+        loggingPreferences.enable(LogType.CLIENT, Level.ALL);
+        loggingPreferences.enable(LogType.DRIVER, Level.OFF);
+        loggingPreferences.enable(LogType.PERFORMANCE, Level.OFF);
+        loggingPreferences.enable(LogType.PROFILER, Level.OFF);
+        loggingPreferences.enable(LogType.SERVER, Level.OFF);
+        firefoxOptions.setCapability(CapabilityType.LOGGING_PREFS, loggingPreferences);
         //
         final WebDriver webDriver = new FirefoxDriver(firefoxOptions);
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
