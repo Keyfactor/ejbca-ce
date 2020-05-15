@@ -247,7 +247,7 @@ public class OcspDataSessionBeanTest {
         assertEquals("test-id-3", remainingResponses.get(0).getId());
         assertEquals("test-id-5", remainingResponses.get(1).getId());
 
-        // Check certificateAuthTwo responses are not deleted.
+        // Confirm only latest test data is left for certificateAuthOne
         remainingResponses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo);
         assertEquals(1, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo).size());
         assertEquals("test-id-7", remainingResponses.get(0).getId());
