@@ -53,6 +53,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
         @NamedQuery(name = "deleteOcspDataBySerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.serialNumber = :serialNumber"),
         @NamedQuery(name = "deleteOcspDataByCaIdSerialNumber", query = "DELETE FROM OcspResponseData a WHERE a.caId = :caId AND a.serialNumber = :serialNumber"), })
 @NamedNativeQueries({
+        // See comments below for the limitations due to different supported database engines and JPQL.
+        // JPQL doesn't support inner joins that uses subqueries.
         @NamedNativeQuery(name = OcspResponseData.FIND_EXPIRING_OCPS_DATA_BY_CAID,
                           query = "SELECT * FROM OcspResponseData ocsp INNER JOIN (" +
                                   "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
@@ -60,17 +62,23 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
                                   "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
                                   "WHERE cAId = :caId AND ocsp.nextUpdate <= :expirationDate",
                           resultSetMapping = "OcspResponseData"),
+
+        // ORACLE   : It doesn't support deleting directly using joins and subqueries.
+        // MARIADB  : Current version requires another subquery "SELECT latestResponses.id FROM" when querying and deleting from the same table.
         @NamedNativeQuery(name = OcspResponseData.DELETE_OLD_OCSP_DATA_BY_CAID,
-                query = "DELETE ocsp FROM OcspResponseData ocsp INNER JOIN (" +
-                        "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
-                        ") maxProducedAtTable " +
-                        "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt != maxProducedAtTable.maximumProducedAt " +
-                        "WHERE cAId = :caId"),
+                          query = "DELETE o FROM OcspResponseData o " +
+                                  "   WHERE cAId = :caId AND id NOT IN " +
+                                  "   (SELECT latestResponses.id FROM (SELECT ocsp.* FROM OcspResponseData ocsp " +
+                                  "       INNER JOIN (SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber) maxProducedAtTable " +
+                                  "       ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
+                                  "       WHERE cAId = :caId) latestResponses)"),
+
         @NamedNativeQuery(name = OcspResponseData.DELETE_OLD_OCSP_DATA,
-                query = "DELETE ocsp FROM OcspResponseData ocsp INNER JOIN (" +
-                        "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
-                        ") maxProducedAtTable " +
-                        "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt != maxProducedAtTable.maximumProducedAt"),
+                          query = "DELETE o FROM OcspResponseData o " +
+                                  "   WHERE id NOT IN " +
+                                  "   (SELECT latestResponses.id FROM (SELECT ocsp.* FROM OcspResponseData ocsp " +
+                                  "       INNER JOIN (SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber) maxProducedAtTable " +
+                                  "       ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt) latestResponses)"),
 })
 @SqlResultSetMapping(
         name = "OcspResponseData",
