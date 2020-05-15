@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest.utils;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.aventstack.extentreports.ExtentReports;
@@ -61,15 +62,14 @@ public class ExtentReportCreator {
         extent = new ExtentReports();
         final EjbcaTestModelReportBuilder ejbcaTestModelReportBuilder = new EjbcaTestModelReportBuilder();
         // Load results of previous tests if any through JSON
-//        ejbcaTestModelReportBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test-report.json"));
-        final ExtentSparkReporter spark = new ExtentSparkReporter(reportDir + "/reports/QaEjbcaTestReport.html");
+        ejbcaTestModelReportBuilder.createDomainFromJsonArchive(extent, new File(reportDir + "/reports/test/extentreports-tests.json"));
+        final ExtentSparkReporter spark = new ExtentSparkReporter(reportDir + "/reports/test/html/QaEjbcaTestReport.html");
         spark.config().setDocumentTitle("EJBCA QA Test Report");
         spark.config().setReportName("EJBCA Test Results!");
         spark.config().setTheme(Theme.DARK);
         // Add a JSON formatter to record current's test result
-        final JsonFormatter json = new JsonFormatter(reportDir + "/reports/test-report.json");
+        final JsonFormatter json = new JsonFormatter(reportDir + "/reports/test/extentreports-tests.json");
         extent.attachReporter(spark, json);
-//        extent.attachReporter(json);
     }
 
     // Flushes all events to test report.
