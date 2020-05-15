@@ -42,7 +42,7 @@ public class MemoryTrackingRunListener extends RunListener {
      * @param description describes the tests to be run
      */
     public void testRunStarted(final Description description) {
-        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(description.getClassName() + "[" + description.testCount() + "]"));
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(getClassName(description.getClassName()) + "[" + description.testCount() + "]"));
     }
 
     /**
@@ -60,7 +60,7 @@ public class MemoryTrackingRunListener extends RunListener {
      * (generally a class and method name).
      */
     public void testStarted(final Description description) {
-        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(description.getClassName() + "[" + description.getMethodName() + "] START"));
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(getClassName(description.getClassName()) + "(" + description.getMethodName() + ") START"));
     }
 
     /**
@@ -68,6 +68,11 @@ public class MemoryTrackingRunListener extends RunListener {
      * @param description the description of the test that just ran
      */
     public void testFinished(final Description description) {
-        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(description.getClassName() + "[" + description.getMethodName() + "] END"));
+        ramMemorySnapshots.add(RuntimeUtil.getRuntimeRamSnapshot(getClassName(description.getClassName()) + "(" + description.getMethodName() + ") END"));
+    }
+
+    private String getClassName(final String classNameWithPackage) {
+        final int classNameIndex = classNameWithPackage.lastIndexOf('.') + 1;
+        return classNameWithPackage.substring(classNameIndex);
     }
 }
