@@ -13,32 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.math.BigInteger;
-import java.net.URLEncoder;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509CRL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -63,6 +37,27 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509CRL;
+import java.util.*;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>
@@ -199,7 +194,8 @@ public class CertDistServlet extends HttpServlet {
                 // Do we have a CRL number parameters?
                 final String crlNumber = req.getParameter(CRLNUMBER_PROPERTY);
                 final String partitionString = req.getParameter(PARTITION_PROPERTY);
-                final int crlPartitionIndex = StringUtils.isNotBlank(partitionString) ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
+                final int crlPartitionIndex = StringUtils.isNotBlank(partitionString)
+                        ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
                 byte[] crl = null;
                 if (StringUtils.isNotEmpty(crlNumber)) {
                     // Using CRLNumber then we don't care if it's delta or full, it's what it is specified by the number
