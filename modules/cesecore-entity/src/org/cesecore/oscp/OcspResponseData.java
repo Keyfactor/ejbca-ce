@@ -66,7 +66,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
         // ORACLE   : It doesn't support deleting directly using joins and subqueries.
         // MARIADB  : Current version requires another subquery "SELECT latestResponses.id FROM" when querying and deleting from the same table.
         @NamedNativeQuery(name = OcspResponseData.DELETE_OLD_OCSP_DATA_BY_CAID,
-                          query = "DELETE o FROM OcspResponseData o " +
+                          query = "DELETE FROM OcspResponseData " +
                                   "   WHERE cAId = :caId AND id NOT IN " +
                                   "   (SELECT latestResponses.id FROM (SELECT ocsp.* FROM OcspResponseData ocsp " +
                                   "       INNER JOIN (SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber) maxProducedAtTable " +
@@ -74,7 +74,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
                                   "       WHERE cAId = :caId) latestResponses)"),
 
         @NamedNativeQuery(name = OcspResponseData.DELETE_OLD_OCSP_DATA,
-                          query = "DELETE o FROM OcspResponseData o " +
+                          query = "DELETE FROM OcspResponseData " +
                                   "   WHERE id NOT IN " +
                                   "   (SELECT latestResponses.id FROM (SELECT ocsp.* FROM OcspResponseData ocsp " +
                                   "       INNER JOIN (SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber) maxProducedAtTable " +
