@@ -26,8 +26,11 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.junit.After;
 import org.junit.Test;
 
+
 /**
- * @version $Id
+ * 
+ * @version $Id$
+ *
  */
 public class OcspDataSessionBeanTest {
     private static final Logger log = Logger.getLogger(OcspDataSessionBeanTest.class);
