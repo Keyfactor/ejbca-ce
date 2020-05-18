@@ -197,7 +197,7 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 /**
  * This SSB generates OCSP responses. 
  * 
- * @version $Id: OcspResponseGeneratorSessionBean.java 34935 2020-04-28 10:03:52Z henriks $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

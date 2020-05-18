@@ -29,7 +29,7 @@ import org.junit.Test;
 /**
  * Tests for the OcspResponseGenerator that don't involve creating a CA.
  * 
- * @version $Id: OcspResponseGeneratorSessionTest.java 34945 2020-04-29 13:24:31Z henriks $
+ * @version $Id$
  * 
  */
 public class OcspResponseGeneratorSessionUnitTest {

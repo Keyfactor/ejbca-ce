@@ -32,7 +32,7 @@ import org.cesecore.util.CertTools;
 /**
  * This internal class exists for the sole purpose of catching deadlocks in the HSM hardware.
  * 
- * @version $Id: HsmResponseThread.java 26780 2017-10-10 09:37:56Z mikekushner $
+ * @version $Id$
  */
 public class HsmResponseThread implements Callable<BasicOCSPResp> {
 

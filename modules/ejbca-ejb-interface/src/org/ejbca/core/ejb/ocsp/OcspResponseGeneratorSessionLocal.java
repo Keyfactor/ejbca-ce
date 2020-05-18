@@ -21,7 +21,7 @@ import javax.ejb.Local;
 /**
  * Local interface for OcspResponseGeneratorSession
  * 
- * @version $Id: OcspResponseGeneratorSessionLocal.java 34802 2020-04-03 07:45:14Z henriks $
+ * @version $Id$
  */
 @Local
 public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {

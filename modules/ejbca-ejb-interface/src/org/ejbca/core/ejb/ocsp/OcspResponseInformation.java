@@ -33,7 +33,7 @@ import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 /**
  * Data carrier that wraps the contents of an OCSPResp, since OCSPResp and many of its members aren't serializable. 
  * 
- * @version $Id: OcspResponseInformation.java 25974 2017-06-09 15:51:49Z anatom $
+ * @version $Id$
  *
  */
 public class OcspResponseInformation implements Serializable {
