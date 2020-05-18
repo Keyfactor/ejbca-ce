@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -227,7 +228,7 @@ public class XmlSerializer {
 
     /** Static final Strings in order to make String handling static and fast */
     private static final String[] INDENT = {"", " ", "  ", "   ", "    ", "     ", "      "};
-    private static final String getIndent(final int i) {
+    private static String getIndent(final int i) {
         if (i > 6) {
             throw new IllegalArgumentException("Input to encodeSimpleMapFast can not have a recursive depth larger than 5 (six steps of indetation");            
         }
@@ -250,17 +251,17 @@ public class XmlSerializer {
     private static void encodePrimitive(final Object o, int indent, PrintStream ps) {
         // primitive objects are a single line
         final String type = getType(o);
+        ps.print(getIndent(indent));
         if (type == null) {
-            ps.print(getIndent(indent));
             ps.println("<null/>");
         } else {
-            ps.print(getIndent(indent));
             ps.print("<" + type + ">");
             if (o instanceof Class) {
                 // We need special handling of Class, or org.pkg.ClassName will be printed as "class org.pkg.ClassName"
                 ps.print(((Class<?>) o).getName());
             } else {
-                ps.print(o.toString());                
+                // Escape XML special characters
+                ps.print(StringEscapeUtils.escapeXml(o.toString()));
             }
             ps.println("</" + type + ">");
         }
@@ -318,7 +319,8 @@ public class XmlSerializer {
         if (o instanceof Double) {
             return "double";
         }
-        if ((o instanceof Properties) || (o instanceof Date) || (o instanceof Map) || (o instanceof List)) {
+        // instanceof Properties covered by o instanceof Map
+        if ((o instanceof Date) || (o instanceof Map) || (o instanceof List)) {
             return "object";
         }
         throw new IllegalArgumentException("encodeSimpleMapFast does not handle type: " + o.getClass().getName());
