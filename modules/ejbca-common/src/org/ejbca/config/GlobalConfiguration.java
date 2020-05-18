@@ -66,7 +66,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATHDN  = "CN=TestCA,O=AnaTom,C=SE";
 
-
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
