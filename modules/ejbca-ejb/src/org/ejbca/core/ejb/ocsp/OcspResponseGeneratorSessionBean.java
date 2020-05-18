@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.ejb.ocsp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -129,6 +130,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
@@ -185,11 +187,17 @@ import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
+import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
  * This SSB generates OCSP responses. 
  * 
- * @version $Id$
+ * @version $Id: OcspResponseGeneratorSessionBean.java 34935 2020-04-28 10:03:52Z henriks $
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -229,6 +237,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private OcspDataSessionLocal ocspDataSession;
+    
+    @EJB
+    private PublisherSessionLocal publisherSession;
 
     private JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
 
@@ -1082,6 +1093,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
             String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger, boolean isPreSigning)
             throws MalformedRequestException, OCSPException {
+        
         //Check parameters
         if (auditLogger == null) {
             throw new InvalidParameterException("Illegal to pass a null audit logger to OcspResponseSession.getOcspResponse");
@@ -1206,6 +1218,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
+
                     if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && !req.hasExtensions()) {
                         serialNrForResponseStore = certId.getSerialNumber().toString();
                         caIdForResponseStore = ocspDataConfig.getCaId();
@@ -1639,12 +1652,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } catch (OCSPException | IOException e) {
                 // Log the error and reply anyway
                 log.warn("Error storing OCSP response for certificate with serialNr '" + serialNrForResponseStore);
+            } catch (PublisherException | AuthorizationDeniedException e) {
+                // Log the error and reply anyway
+                log.warn("Error publishing OCSP response data for certificate with serialNr '" + serialNrForResponseStore, e);
             }
         }
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
     
-    private void storeOcspResponse(final int caId, final String serialNr, final OCSPResp ocspResponse) throws OCSPException, IOException {
+    private void storeOcspResponse(final int caId, final String serialNr, final OCSPResp ocspResponse) throws OCSPException, IOException, PublisherException, AuthorizationDeniedException {
         // Redundantly storing producedAt and nextUpdate, next to the canned response itself for faster querying. 
         // Assuming this is a single response (we don't store it otherwise), we can safely pick nextUpdate from first index.
         long producedAt = ((BasicOCSPResp)ocspResponse.getResponseObject()).getProducedAt().getTime();
@@ -1653,8 +1669,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         nextUpdate = nextUpdateDate != null ? nextUpdateDate.getTime() : null;
         final OcspResponseData responseData = new OcspResponseData(UUID.randomUUID().toString(), caId, serialNr, producedAt, nextUpdate, ocspResponse.getEncoded());
         ocspDataSession.storeOcspData(responseData);
+        publishOcspResponse(caId, responseData);
     }
     
+    private void publishOcspResponse(final int caId, final OcspResponseData responseData) throws PublisherException, AuthorizationDeniedException {
+        AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(
+                new UsernamePrincipal("Token used to authenticate admin when publishing OCSP response data!"));
+        CAInfo caInfo = caSession.getCAInfoInternal(caId);
+        Collection<Integer> cAPublishers = caInfo.getCRLPublishers();
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                publisherSession.storeOcspResponses(authenticationToken, cAPublishers, responseData);
+            } catch (PublisherException | AuthorizationDeniedException e) {
+                log.warn("Error publishing OCSP response data for certificate with caId '" + caId, e);
+            } 
+        });
+    }
+
     private void addArchiveCutoff(final OCSPResponseItem respItem, final X509Certificate issuer, final OcspKeyBinding ocspKeyBinding) {
         try {
             final long archiveCutoffDate = ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff() ?

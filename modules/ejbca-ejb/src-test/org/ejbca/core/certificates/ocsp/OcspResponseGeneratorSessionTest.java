@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.certificates.ocsp;
 
 import static org.junit.Assert.assertTrue;
 
@@ -22,13 +22,14 @@ import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionBean;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests for the OcspResponseGenerator that don't involve creating a CA.
  * 
- * @version $Id$
+ * @version $Id: OcspResponseGeneratorSessionTest.java 34945 2020-04-29 13:24:31Z henriks $
  * 
  */
 public class OcspResponseGeneratorSessionTest {

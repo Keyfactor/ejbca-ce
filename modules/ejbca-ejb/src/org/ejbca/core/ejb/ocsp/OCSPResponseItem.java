@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.ejb.ocsp;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -28,7 +28,7 @@ import org.bouncycastle.cert.ocsp.CertificateStatus;
 /**
  * Class used to encapsulate the data that goes into a OCSP response
  * 
- * @version $Id$
+ * @version $Id: OCSPResponseItem.java 28881 2018-05-08 18:18:11Z anatom $
  */
 public class OCSPResponseItem implements Serializable {
 

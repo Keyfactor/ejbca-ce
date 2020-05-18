@@ -12,18 +12,19 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.util.List;
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.EjbRemoteHelper;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * @version $Id
