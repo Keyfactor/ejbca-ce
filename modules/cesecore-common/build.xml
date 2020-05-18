@@ -9,7 +9,6 @@
 	<property name="cesecore-common.build-test.dir" location="${cesecore-common.dir}/build-test"/>
 	<property name="cesecore-common.src-test.dir" location="${cesecore-common.dir}/src-test"/>
 
-
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath" />
