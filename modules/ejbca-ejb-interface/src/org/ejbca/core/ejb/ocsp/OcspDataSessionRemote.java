@@ -16,7 +16,7 @@ import javax.ejb.Remote;
 
 /**
  * 
- * @version $Id: OcspDataSessionRemote.java 34521 2020-02-25 08:48:51Z aminkh $
+ * @version $Id$
  *
  */
 @Remote
