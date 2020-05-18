@@ -31,7 +31,7 @@ import org.cesecore.oscp.OcspResponseData;
 
 /**
  * 
- * @version $Id: OcspDataSessionBean.java 35063 2020-05-14 13:47:45Z serkano $
+ * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataSessionRemote") // Do we need remote interface?

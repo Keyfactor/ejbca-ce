@@ -25,7 +25,7 @@ import org.cesecore.oscp.OcspResponseData;
  * dealing with the results returned from methods of this class which use getResultList!
  * (Check {@link #OcspDataSessionBean} for more details). 
  * 
- * @version $Id: OcspDataSessionLocal.java 35063 2020-05-14 13:47:45Z serkano $
+ * @version $Id$
  *
  */
 @Local
