@@ -32,7 +32,7 @@ import org.junit.Test;
  * @version $Id: OcspResponseGeneratorSessionTest.java 34945 2020-04-29 13:24:31Z henriks $
  * 
  */
-public class OcspResponseGeneratorSessionTest {
+public class OcspResponseGeneratorSessionUnitTest {
 
     @Before
     public void setUp() throws Exception {
