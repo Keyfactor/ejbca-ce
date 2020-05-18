@@ -18,7 +18,7 @@ import org.cesecore.oscp.OcspResponseData;
 
 /**
  * 
- * @version $Id: OcspDataSession.java 35000 2020-05-07 14:32:13Z aminkh $
+ * @version $Id$
  *
  */
 public interface OcspDataSession {
