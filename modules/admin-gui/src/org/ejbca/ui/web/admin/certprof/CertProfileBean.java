@@ -171,8 +171,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         reset();
         return "done";  // Outcome defined in faces-config.xml
     }
-
-
     
     public String save() {
         boolean success = true;
@@ -438,12 +436,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
 
         // Sort list by name
-        Collections.sort(ret, new Comparator<SelectItem>() {
-            @Override
-            public int compare(final SelectItem a, final SelectItem b) {
-                return a.getLabel().compareToIgnoreCase(b.getLabel());
-            }
-        });
+        ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
         ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
         return ret;
     }
@@ -648,13 +641,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-        Collections.sort(ret, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareTo(second.getLabel());
-            }
-
-        });
+        ret.sort((first, second) -> first.getLabel().compareTo(second.getLabel()));
         return ret;
     }
 
@@ -1014,12 +1001,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 distinctLables.put(current.getLabel(), current.getLabel());
             }
         }
-        Collections.sort(ret, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem label1, SelectItem label2) {
-                return label1.getLabel().compareToIgnoreCase(label2.getLabel());
-            }
-        });
+        ret.sort((first, second) -> first.getLabel().compareToIgnoreCase(second.getLabel()));
         return ret;
     }
     
@@ -1255,13 +1237,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-        ret.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareToIgnoreCase(second.getLabel());
-            }
-        });
-
+        ret.sort((first, second) -> first.getLabel().compareToIgnoreCase(second.getLabel()));
         return ret;
     }
 
@@ -1333,12 +1309,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "", (!authorizedCAs.contains(caId))));
             }
         }
-        ret.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareToIgnoreCase(second.getLabel());
-            }
-        });
+        ret.sort((first, second) -> first.getLabel().compareToIgnoreCase(second.getLabel()));
         ret. add(0, new SelectItem(String.valueOf(CertificateProfile.ANYCA), getEjbcaWebBean().getText("ANYCA")));
 
         return ret;
@@ -1355,12 +1326,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 ret.add(new SelectItem(publisherId, publisherIdToNameMap.get(publisherId)));
             }
         }
-        ret.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareToIgnoreCase(second.getLabel());
-            }
-        });
+        ret.sort((first, second) -> first.getLabel().compareToIgnoreCase(second.getLabel()));
         return ret;
     }
     public int getPublisherListAvailableSize() { return Math.max(1, Math.min(5, getPublisherListAvailable().size())); };
