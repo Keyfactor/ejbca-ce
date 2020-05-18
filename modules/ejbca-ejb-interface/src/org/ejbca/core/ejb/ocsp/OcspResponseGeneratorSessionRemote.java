@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.ejb.ocsp;
 
 import javax.ejb.Remote;
 
@@ -18,7 +18,7 @@ import javax.ejb.Remote;
 /**
  * Remote interface for OcspResponseGeneratorSession
  * 
- * @version $Id$
+ * @version $Id: OcspResponseGeneratorSessionRemote.java 17625 2013-09-20 07:12:06Z netmackan $
  *
  */
 @Remote

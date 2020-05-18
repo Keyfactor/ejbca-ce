@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.ejb.ocsp;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import org.cesecore.oscp.OcspResponseData;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: OcspDataSession.java 35000 2020-05-07 14:32:13Z aminkh $
  *
  */
 public interface OcspDataSession {
