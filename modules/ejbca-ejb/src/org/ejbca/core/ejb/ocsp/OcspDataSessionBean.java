@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.ejb.ocsp;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +31,7 @@ import org.cesecore.oscp.OcspResponseData;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: OcspDataSessionBean.java 35063 2020-05-14 13:47:45Z serkano $
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataSessionRemote") // Do we need remote interface?
