@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.ejbca.core.ejb.ocsp;
 
 import java.security.cert.X509Certificate;
 
@@ -19,12 +19,12 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 
-/**
+/** 
  * This interface is used to generate OCSP responses.
  * 
  * See {@link https://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_(ADV_FSP)#OCSP_Response_Generation}
  * 
- * @version $Id$
+ * @version $Id: OcspResponseGeneratorSession.java 34935 2020-04-28 10:03:52Z henriks $
  * 
  */
 public interface OcspResponseGeneratorSession {
@@ -38,6 +38,7 @@ public interface OcspResponseGeneratorSession {
      * @param auditLogger The AuditLogger to use for this transaction
      * @param transactionLogger The TransactionLogger to use for this transaction
      * @param isPreSigning true if we're using the method to presign responses.
+     * @param ocspResponseGenerationParams Object used to pass OCSP response generation related parameters.
      * 
      * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
