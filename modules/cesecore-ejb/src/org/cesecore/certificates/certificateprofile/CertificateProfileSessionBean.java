@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +32,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
@@ -48,6 +47,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
+import org.cesecore.audit.log.dto.SecurityEventProperties;
 
 /**
  * Bean managing certificate profiles, see CertificateProfileSession for Javadoc.
@@ -61,6 +61,7 @@ import org.cesecore.util.ProfileID;
 public class CertificateProfileSessionBean implements CertificateProfileSessionLocal, CertificateProfileSessionRemote {
 
     private static final Logger LOG = Logger.getLogger(CertificateProfileSessionBean.class);
+
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
 
@@ -76,93 +77,96 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public int addCertificateProfile(final AuthenticationToken admin, final String name, final CertificateProfile profile)
-            throws CertificateProfileExistsException, AuthorizationDeniedException {
-        return addCertificateProfile(admin, findFreeCertificateProfileId(), name, profile);
+    public int addCertificateProfile(
+            final AuthenticationToken authenticationToken,
+            final String certificateProfileName,
+            final CertificateProfile certificateProfile
+    ) throws CertificateProfileExistsException, AuthorizationDeniedException {
+        return addCertificateProfile(authenticationToken, findFreeCertificateProfileId(), certificateProfileName, certificateProfile);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public int addCertificateProfile(final AuthenticationToken admin, final int id, final String name, final CertificateProfile profile)
-            throws CertificateProfileExistsException, AuthorizationDeniedException {
-        if (isCertificateProfileNameFixed(name)) {
-            final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", name);
+    public int addCertificateProfile(
+            final AuthenticationToken authenticationToken,
+            final int certificateProfileId,
+            final String certificateProfileName,
+            final CertificateProfile certificateProfile
+    ) throws CertificateProfileExistsException, AuthorizationDeniedException {
+        if (isCertificateProfileNameFixed(certificateProfileName)) {
+            final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", certificateProfileName);
             LOG.info(msg);
-            // Things logged:
-            // adminInfo: certserno, remote ip etc
-            // module (integer), CA, RA etc
-            // eventTime
-            // username, if the event affects a user data (not here)
-            // certificate info, if the event affects a certificate (not here)
-            // event id
-            // log message (free text string)
-            // logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
-            // msg);
+            // TODO ECA-9150 Should we log an event or just remove these lines?
+            // logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            // logSessionEvent(
+            //         EventTypes.CERTPROFILE_CREATION, EventStatus.FAILURE,
+            //         authenticationToken,
+            //         SecurityEventProperties.builder().withMsg(msg).build()
+            // );
             throw new CertificateProfileExistsException(msg);
         }
-
         // We need to check that admin also have rights to edit certificate profiles
-        authorizedToEditProfile(admin, profile, id);
-
-        if (isFreeCertificateProfileId(id)) {
-            if (CertificateProfileData.findByProfileName(entityManager, name) == null) {
-                entityManager.persist(new CertificateProfileData(Integer.valueOf(id), name, profile));
+        authorizedToEditProfile(authenticationToken, certificateProfile, certificateProfileId);
+        if (isFreeCertificateProfileId(certificateProfileId)) {
+            if (CertificateProfileData.findByProfileName(entityManager, certificateProfileName) == null) {
+                entityManager.persist(new CertificateProfileData(certificateProfileId, certificateProfileName, certificateProfile));
                 flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("store.addedcertprofile", name);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                logSession.log(EventTypes.CERTPROFILE_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, details);
-                return id;
+                logSessionEvent(
+                        EventTypes.CERTPROFILE_CREATION, EventStatus.SUCCESS,
+                        authenticationToken,
+                        SecurityEventProperties.builder()
+                                .withMsg(INTRES.getLocalizedMessage("store.addedcertprofile", certificateProfileName))
+                                .build());
+                return certificateProfileId;
             } else {
-                final String msg = INTRES.getLocalizedMessage("store.errorcertprofileexists", name);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
+                final String msg = INTRES.getLocalizedMessage("store.errorcertprofileexists", certificateProfileName);
                 throw new CertificateProfileExistsException(msg);
             }
         } else {
-            final String msg = INTRES.getLocalizedMessage("store.errorcertprofileexists", id);
+            final String msg = INTRES.getLocalizedMessage("store.errorcertprofileexists", certificateProfileId);
             throw new CertificateProfileExistsException(msg);
         }
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void changeCertificateProfile(final AuthenticationToken admin, final String name, final CertificateProfile profile)
-            throws AuthorizationDeniedException {
-        internalChangeCertificateProfileNoFlushCache(admin, name, profile);
+    public void changeCertificateProfile(
+            final AuthenticationToken authenticationToken, final String certificateProfileName, final CertificateProfile certificateProfile
+    ) throws AuthorizationDeniedException {
+        internalChangeCertificateProfileNoFlushCache(authenticationToken, certificateProfileName, certificateProfile);
         flushProfileCache();
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void internalChangeCertificateProfileNoFlushCache(final AuthenticationToken admin, final String name, final CertificateProfile profile)
-            throws AuthorizationDeniedException {
-
-        final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, name);
-        if (pdl == null) {
-            final String msg = INTRES.getLocalizedMessage("store.erroreditprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            logSession.log(EventTypes.CERTPROFILE_EDITING, EventStatus.FAILURE, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                    admin.toString(), null, null, null, details);
+    public void internalChangeCertificateProfileNoFlushCache(
+            final AuthenticationToken authenticationToken, final String certificateProfileName, final CertificateProfile certificateProfile
+    ) throws AuthorizationDeniedException {
+        final CertificateProfileData certificateProfileData = CertificateProfileData.findByProfileName(entityManager, certificateProfileName);
+        if (certificateProfileData == null) {
+            logSessionEvent(
+                    EventTypes.CERTPROFILE_EDITING, EventStatus.FAILURE,
+                    authenticationToken,
+                    SecurityEventProperties.builder()
+                            .withMsg(INTRES.getLocalizedMessage("store.erroreditprofile", certificateProfileName))
+                            .build()
+            );
         } else {
             // We need to check that admin also have rights to edit certificate profiles
-            authorizedToEditProfile(admin, profile, pdl.getId());
-
+            authorizedToEditProfile(authenticationToken, certificateProfile, certificateProfileData.getId());
             // Get the diff of what changed
-            Map<Object, Object> diff = pdl.getCertificateProfile().diff(profile);
-            final String msg = INTRES.getLocalizedMessage("store.editedprofile", name);
-            // Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                details.put(entry.getKey().toString(), entry.getValue().toString());
-            }
+            final Map<Object, Object> diff = certificateProfileData.getCertificateProfile().diff(certificateProfile);
             // Do the actual change
-            pdl.setCertificateProfile(profile);
-            logSession.log(EventTypes.CERTPROFILE_EDITING, EventStatus.SUCCESS, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                    admin.toString(), null, null, null, details);
+            certificateProfileData.setCertificateProfile(certificateProfile);
+            // Log
+            logSessionEvent(
+                    EventTypes.CERTPROFILE_EDITING, EventStatus.SUCCESS,
+                    authenticationToken,
+                    SecurityEventProperties.builder()
+                            .withMsg(INTRES.getLocalizedMessage("store.editedprofile", certificateProfileName))
+                            .withCustomMap(diff)
+                            .build()
+            );
         }
     }
 
@@ -175,49 +179,47 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
         }
-    } // flushProfileCache
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void cloneCertificateProfile(final AuthenticationToken admin, final String orgname, final String newname,
-            final List<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException,
-            AuthorizationDeniedException {
-        CertificateProfile profile = null;
-
-        if (isCertificateProfileNameFixed(newname)) {
-            final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", newname);
+    public void cloneCertificateProfile(
+            final AuthenticationToken authenticationToken,
+            final String oldCertificateProfileName,
+            final String newCertificateProfileName,
+            final List<Integer> authorizedCaIds
+    ) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException, AuthorizationDeniedException {
+        if (isCertificateProfileNameFixed(newCertificateProfileName)) {
+            final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", newCertificateProfileName);
             LOG.info(msg);
             throw new CertificateProfileExistsException(msg);
         }
-
         try {
-            final int origProfileId = getCertificateProfileId(orgname);
+            final int origProfileId = getCertificateProfileId(oldCertificateProfileName);
             if (origProfileId == 0) {
-                final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", orgname);
+                final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", oldCertificateProfileName);
                 LOG.info(msg);
                 throw new CertificateProfileDoesNotExistException(msg);
             }
-            final CertificateProfile p = getCertificateProfile(origProfileId);
-
-
-            profile = p.clone();
+            final CertificateProfile originalCertificateProfile = getCertificateProfile(origProfileId);
+            final CertificateProfile clonedCertificateProfile = originalCertificateProfile.clone();
             if (authorizedCaIds != null) {
-                profile.setAvailableCAs(authorizedCaIds);
+                clonedCertificateProfile.setAvailableCAs(authorizedCaIds);
             }
-
             // We need to check that admin also have rights to edit certificate profiles
-            authorizedToEditProfile(admin, profile, origProfileId);
-
-            if (CertificateProfileData.findByProfileName(entityManager, newname) == null) {
-                entityManager.persist(new CertificateProfileData(findFreeCertificateProfileId(), newname, profile));
+            authorizedToEditProfile(authenticationToken, clonedCertificateProfile, origProfileId);
+            if (CertificateProfileData.findByProfileName(entityManager, newCertificateProfileName) == null) {
+                entityManager.persist(new CertificateProfileData(findFreeCertificateProfileId(), newCertificateProfileName, clonedCertificateProfile));
                 flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("store.addedprofilewithtempl", newname, orgname);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                logSession.log(EventTypes.CERTPROFILE_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, details);
+                logSessionEvent(
+                        EventTypes.CERTPROFILE_CREATION, EventStatus.SUCCESS,
+                        authenticationToken,
+                        SecurityEventProperties.builder()
+                                .withMsg(INTRES.getLocalizedMessage("store.addedprofilewithtempl", newCertificateProfileName, oldCertificateProfileName))
+                                .build()
+                );
             } else {
-                final String msg = INTRES.getLocalizedMessage("store.erroraddprofilewithtempl", newname, orgname);
+                final String msg = INTRES.getLocalizedMessage("store.erroraddprofilewithtempl", newCertificateProfileName, oldCertificateProfileName);
                 throw new CertificateProfileExistsException(msg);
             }
         } catch (CloneNotSupportedException f) {
@@ -227,87 +229,84 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
     
     @Override
-    public List<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken admin, final int certprofiletype) {
-        final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCaIds(admin));
-        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
-
+    public List<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken authenticationToken, final int certificateProfileType) {
+        final ArrayList<Integer> returnValues = new ArrayList<>();
+        final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(authenticationToken));
+        final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
         // Add fixed certificate profiles.
-        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_ENDENTITY) {
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
+        if (certificateProfileType == CertificateConstants.CERTTYPE_UNKNOWN || certificateProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
+            returnValues.add(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            returnValues.add(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
+            returnValues.add(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
         }
-        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_SUBCA) {
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
+        if (certificateProfileType == CertificateConstants.CERTTYPE_UNKNOWN || certificateProfileType == CertificateConstants.CERTTYPE_SUBCA) {
+            returnValues.add(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
         }
-        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_ROOTCA) {
-            returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
+        if (certificateProfileType == CertificateConstants.CERTTYPE_UNKNOWN || certificateProfileType == CertificateConstants.CERTTYPE_ROOTCA) {
+            returnValues.add(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
         }
-        final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
-        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
-                final CertificateProfile profile = cpEntry.getValue();
-                // Check if all profiles available CAs exists in authorizedcaids.          
-                if (certprofiletype == 0 || certprofiletype == profile.getType()) {
-                    boolean allexists = true;
-                    for (final Integer nextcaid : profile.getAvailableCAs()) {
-                        if (nextcaid.intValue() == CertificateProfile.ANYCA) {
-                            allexists = true;
-                            break;
-                        }
-                        // superadmin should be able to access profiles with missing CA Ids
-                        if (!authorizedcaids.contains(nextcaid) && (!rootAccess || allcaids.contains(nextcaid))) {
-                            allexists = false;
-                            break;
-                        }
+        final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource());
+        for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
+            final CertificateProfile profile = certificateProfileEntry.getValue();
+            // Check if all profiles available CAs exists in authorizedcaids.
+            if (certificateProfileType == 0 || certificateProfileType == profile.getType()) {
+                boolean allExists = true;
+                for (final Integer nextCaId : profile.getAvailableCAs()) {
+                    if (nextCaId == CertificateProfile.ANYCA) {
+                        break;
                     }
-                    if (allexists) {
-                        returnval.add(cpEntry.getKey());
+                    // superadmin should be able to access profiles with missing CA Ids
+                    if (!authorizedCaIds.contains(nextCaId) && (!rootAccess || allCaIds.contains(nextCaId))) {
+                        allExists = false;
+                        break;
                     }
                 }
+                if (allExists) {
+                    returnValues.add(certificateProfileEntry.getKey());
+                }
+            }
         }
-        return returnval;
+        return returnValues;
     } 
     
     @Override
-    public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken admin) {
-        final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
-            return returnval;
+    public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken authenticationToken) {
+        final ArrayList<Integer> returnValues = new ArrayList<>();
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+            return returnValues;
         }
-        
-        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
-        allcaids.add(CertificateProfile.ANYCA);
+        final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
+        allCaIds.add(CertificateProfile.ANYCA);
         for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile profile = cpEntry.getValue();
             boolean nonExistingCA = false;
-            for (final Integer caid : profile.getAvailableCAs()) {
-                if (!allcaids.contains(caid)) {
+            for (final Integer caId : profile.getAvailableCAs()) {
+                if (!allCaIds.contains(caId)) {
                     nonExistingCA = true;
                     break;
                 }
             }
             if (nonExistingCA) {
-                returnval.add(cpEntry.getKey());
+                returnValues.add(cpEntry.getKey());
             }
         }
-        return returnval;
-    } // getAuthorizedCertificateProfileWithMissingCAs
+        return returnValues;
+    }
 
     @Override
-    public CertificateProfile getCertificateProfile(final int id) {
+    public CertificateProfile getCertificateProfile(final int certificateProfileId) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(">getCertificateProfile(" + id + ")");
+            LOG.trace(">getCertificateProfile(" + certificateProfileId + ")");
         }
-        CertificateProfile returnval = null;
-        if (id < CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
-            returnval = new CertificateProfile(id);
+        CertificateProfile returnValue = null;
+        if (certificateProfileId < CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
+            returnValue = new CertificateProfile(certificateProfileId);
         } else {
             // We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-            final CertificateProfile cprofile = CertificateProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
+            final CertificateProfile cprofile = CertificateProfileCache.INSTANCE.getProfileCache(entityManager).get(certificateProfileId);
             try {
                 if (cprofile != null) {
-                    returnval = cprofile.clone();
+                    returnValue = cprofile.clone();
                 }
             } catch (CloneNotSupportedException e) {
                 LOG.error("Should never happen: ", e);
@@ -315,9 +314,9 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             }
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace("<getCertificateProfile(" + id + "): " + (returnval == null ? "null" : "not null"));
+            LOG.trace("<getCertificateProfile(" + certificateProfileId + "): " + (returnValue == null ? "null" : "not null"));
         }
-        return returnval;
+        return returnValue;
     }
     
     @Override
@@ -326,41 +325,40 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
 
     @Override
-    public CertificateProfile getCertificateProfile(final String name) {
-        final Integer id = CertificateProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(name);
-        if (id == null) {
-            return null;
-        } else {
+    public CertificateProfile getCertificateProfile(final String certificateProfileName) {
+        final Integer id = CertificateProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(certificateProfileName);
+        if (id != null) {
             return getCertificateProfile(id);
         }
+        return null;
     }
 
     @Override
-    public int getCertificateProfileId(final String certificateprofilename) {
+    public int getCertificateProfileId(final String certificateProfileName) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(">getCertificateProfileId: " + certificateprofilename);
+            LOG.trace(">getCertificateProfileId: " + certificateProfileName);
         }
-        int returnval = 0;
-        final Integer id = CertificateProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(certificateprofilename);
+        int returnValue = 0;
+        final Integer id = CertificateProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(certificateProfileName);
         if (id != null) {
-            returnval = id.intValue();
+            returnValue = id;
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace("<getCertificateProfileId: " + certificateprofilename + "): " + returnval);
+            LOG.trace("<getCertificateProfileId: " + certificateProfileName + "): " + returnValue);
         }
-        return returnval;
+        return returnValue;
     }
 
     @Override
-    public String getCertificateProfileName(final int id) {
+    public String getCertificateProfileName(final int certificateProfileId) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(">getCertificateProfileName: " + id);
+            LOG.trace(">getCertificateProfileName: " + certificateProfileId);
         }
-        final String returnval = CertificateProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
+        final String returnValue = CertificateProfileCache.INSTANCE.getIdNameMapCache(entityManager).get(certificateProfileId);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("<getCertificateProfileName: " + id + "): " + returnval);
+            LOG.trace("<getCertificateProfileName: " + certificateProfileId + "): " + returnValue);
         }
-        return returnval;
+        return returnValue;
     }
 
     @Override
@@ -379,14 +377,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeProfiles() {
         final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        final Iterator<CertificateProfileData> iter = result.iterator();
-        while (iter.hasNext()) {
-            final CertificateProfileData pdata = iter.next();
-            final String name = pdata.getCertificateProfileName();
-            pdata.upgradeProfile();
-            final float version = pdata.getCertificateProfile().getVersion();
+        for (CertificateProfileData certificateProfileData : result) {
+            final String certificateProfileName = certificateProfileData.getCertificateProfileName();
+            certificateProfileData.upgradeProfile();
+            final float certificateProfileVersion = certificateProfileData.getCertificateProfile().getVersion();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Loaded certificate profile: " + name + " with version " + version);
+                LOG.debug("Loaded certificate profile: " + certificateProfileName + " with version " + certificateProfileVersion);
             }
         }
         flushProfileCache();
@@ -394,73 +390,76 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void renameCertificateProfile(final AuthenticationToken admin, final String oldname, final String newname)
-            throws CertificateProfileExistsException, AuthorizationDeniedException {
-        if (isCertificateProfileNameFixed(newname)) {
-            final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", newname);
-            throw new CertificateProfileExistsException(msg);
+    public void renameCertificateProfile(
+            final AuthenticationToken authenticationToken,
+            final String oldCertificateProfileName,
+            final String newCertificateProfileName
+    ) throws CertificateProfileExistsException, AuthorizationDeniedException {
+        if (isCertificateProfileNameFixed(newCertificateProfileName)) {
+            throw new CertificateProfileExistsException(INTRES.getLocalizedMessage("store.errorcertprofilefixed", newCertificateProfileName));
         }
-        if (isCertificateProfileNameFixed(oldname)) {
-            final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", oldname);
-            throw new CertificateProfileExistsException(msg);
+        if (isCertificateProfileNameFixed(oldCertificateProfileName)) {
+            throw new CertificateProfileExistsException(INTRES.getLocalizedMessage("store.errorcertprofilefixed", oldCertificateProfileName));
         }
-        if (CertificateProfileData.findByProfileName(entityManager, newname) == null) {
-            final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, oldname);
-            if (pdl == null) {
-                final String msg = INTRES.getLocalizedMessage("store.errorrenameprofile", oldname, newname);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                logSession.log(EventTypes.CERTPROFILE_RENAMING, EventStatus.FAILURE, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, details);
+        if (CertificateProfileData.findByProfileName(entityManager, newCertificateProfileName) == null) {
+            final CertificateProfileData certificateProfileData = CertificateProfileData.findByProfileName(entityManager, oldCertificateProfileName);
+            if (certificateProfileData == null) {
+                logSessionEvent(
+                        EventTypes.CERTPROFILE_RENAMING, EventStatus.FAILURE,
+                        authenticationToken,
+                        SecurityEventProperties.builder().withMsg(
+                                INTRES.getLocalizedMessage("store.errorrenameprofile", oldCertificateProfileName, newCertificateProfileName)
+                        ).build()
+                );
             } else {
                 // We need to check that admin also have rights to edit certificate profiles
-                authorizedToEditProfile(admin, pdl.getCertificateProfile(), pdl.getId());
-
-                pdl.setCertificateProfileName(newname);
+                authorizedToEditProfile(authenticationToken, certificateProfileData.getCertificateProfile(), certificateProfileData.getId());
+                certificateProfileData.setCertificateProfileName(newCertificateProfileName);
                 flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldname, newname);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                logSession.log(EventTypes.CERTPROFILE_RENAMING, EventStatus.SUCCESS, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, details);
+                logSessionEvent(
+                        EventTypes.CERTPROFILE_RENAMING, EventStatus.SUCCESS,
+                        authenticationToken,
+                        SecurityEventProperties.builder()
+                                .withMsg(INTRES.getLocalizedMessage("store.renamedprofile", oldCertificateProfileName, newCertificateProfileName))
+                                .build()
+                );
             }
-        } else {
-            final String msg = INTRES.getLocalizedMessage("store.errorcertprofileexists", newname);
-            throw new CertificateProfileExistsException(msg);
         }
+        throw new CertificateProfileExistsException(INTRES.getLocalizedMessage("store.errorcertprofileexists", newCertificateProfileName));
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void removeCertificateProfile(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
-        final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, name);
-        if (pdl == null) {
+    public void removeCertificateProfile(final AuthenticationToken authenticationToken, final String certificateProfileName) throws AuthorizationDeniedException {
+        final CertificateProfileData certificateProfileData = CertificateProfileData.findByProfileName(entityManager, certificateProfileName);
+        if (certificateProfileData == null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Trying to remove a certificate profile that does not exist: " + name);
+                LOG.debug("Trying to remove a certificate profile that does not exist: " + certificateProfileName);
             }
         } else {
             // We need to check that admin also have rights to edit certificate profiles
-            authorizedToEditProfile(admin, pdl.getCertificateProfile(), pdl.getId());
-
-            entityManager.remove(pdl);
+            authorizedToEditProfile(authenticationToken, certificateProfileData.getCertificateProfile(), certificateProfileData.getId());
+            entityManager.remove(certificateProfileData);
             flushProfileCache();
-            final String msg = INTRES.getLocalizedMessage("store.removedprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            logSession.log(EventTypes.CERTPROFILE_DELETION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
-                    admin.toString(), null, null, null, details);
+            logSessionEvent(
+                    EventTypes.CERTPROFILE_DELETION, EventStatus.SUCCESS,
+                    authenticationToken,
+                    SecurityEventProperties.builder()
+                            .withMsg(INTRES.getLocalizedMessage("store.removedprofile", certificateProfileName))
+                            .build()
+            );
         }
     }
 
     @Override
-    public boolean existsCAIdInCertificateProfiles(final int caid) {
-        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
-            final CertificateProfile certProfile = cpEntry.getValue();
-            if (certProfile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
-                for (Integer availableCaId : certProfile.getAvailableCAs()) {
-                    if (availableCaId.intValue() == caid) {                      
+    public boolean existsCAIdInCertificateProfiles(final int caId) {
+        for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
+            final CertificateProfile certificateProfile = certificateProfileEntry.getValue();
+            if (certificateProfile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
+                for (Integer availableCaId : certificateProfile.getAvailableCAs()) {
+                    if (availableCaId == caId) {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("CA exists in certificate profile " + cpEntry.getKey().toString());
+                            LOG.debug("CA exists in certificate profile " + certificateProfileEntry.getKey().toString());
                         }
                         return true;
                     }
@@ -471,12 +470,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
     
     @Override
-    public boolean existsPublisherIdInCertificateProfiles(final int publisherid) {
-        for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
-            for (Integer availablePublisherId : cpEntry.getValue().getPublisherList()) {
-                if (availablePublisherId.intValue() == publisherid) {
+    public boolean existsPublisherIdInCertificateProfiles(final int publisherId) {
+        for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
+            for (Integer availablePublisherId : certificateProfileEntry.getValue().getPublisherList()) {
+                if (availablePublisherId == publisherId) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Publisher exists in certificate profile " + cpEntry.getKey().toString());
+                        LOG.debug("Publisher exists in certificate profile " + certificateProfileEntry.getKey().toString());
                     }
                     return true;
                 }
@@ -486,40 +485,46 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
 
     private boolean isCertificateProfileNameFixed(final String profilename) {
-        if (CertificateProfile.FIXED_PROFILENAMES.contains(profilename)) {
-            return true;
-        }
-        return false;
+        return CertificateProfile.FIXED_PROFILENAMES.contains(profilename);
     }
 
     private int findFreeCertificateProfileId() {
-        final ProfileID.DB db = new ProfileID.DB() {
-            @Override
-            public boolean isFree(int i) {
-                return CertificateProfileData.findById(entityManager, Integer.valueOf(i))==null;
-            }
-        };
-        return ProfileID.getNotUsedID(db);
+        final ProfileID.DB profileIdDb = i -> CertificateProfileData.findById(entityManager, i) == null;
+        return ProfileID.getNotUsedID(profileIdDb);
     }
 
     private boolean isFreeCertificateProfileId(final int id) {
         boolean foundfree = false;
         if ((id > CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY)
-                && (CertificateProfileData.findById(entityManager, Integer.valueOf(id)) == null)) {
+                && (CertificateProfileData.findById(entityManager, id) == null)) {
             foundfree = true;
         }
         return foundfree;
     }
 
-    private void authorizedToEditProfile(AuthenticationToken admin, CertificateProfile profile, int id) throws AuthorizationDeniedException {
+    private void authorizedToEditProfile(
+            final AuthenticationToken authenticationToken,
+            final CertificateProfile certificateProfile,
+            final int id
+    ) throws AuthorizationDeniedException {
         // We need to check that admin also have rights to edit certificate profiles
-        if (!authorizedToProfileWithResource(admin, profile, true, StandardRules.CERTIFICATEPROFILEEDIT.resource())) {
-            final String msg = INTRES.getLocalizedMessage("store.editcertprofilenotauthorized", admin.toString(), id);
-            throw new AuthorizationDeniedException(msg);            
+        if (!authorizedToProfileWithResource(
+                authenticationToken,
+                certificateProfile,
+                true,
+                StandardRules.CERTIFICATEPROFILEEDIT.resource())
+        ) {
+            throw new AuthorizationDeniedException(INTRES.getLocalizedMessage("store.editcertprofilenotauthorized", authenticationToken.toString(), id));
         }
     }
+
     @Override
-    public boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources) {
+    public boolean authorizedToProfileWithResource(
+            final AuthenticationToken authenticationToken,
+            final CertificateProfile profile,
+            final boolean logging,
+            final String... resources
+    ) {
         // We need to check that admin also have rights to the passed in resources
         final List<String> rules = new ArrayList<>(Arrays.asList(resources));
         if (profile.isApplicableToAnyCA()) {
@@ -529,24 +534,23 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             }
         } else {
             // Check that admin is authorized to all CAids
-            for (final Integer caid : profile.getAvailableCAs()) {
-                rules.add(StandardRules.CAACCESS.resource() + caid);
+            for (final Integer caId : profile.getAvailableCAs()) {
+                rules.add(StandardRules.CAACCESS.resource() + caId);
             }
         }
         // Perform authorization check
-        boolean ret = false;
         if (logging) {
-            ret = authorizationSession.isAuthorized(admin, rules.toArray(new String[rules.size()]));
-        } else {
-            ret = authorizationSession.isAuthorizedNoLogging(admin, rules.toArray(new String[rules.size()]));
+            return authorizationSession.isAuthorized(authenticationToken, rules.toArray(new String[0]));
         }
-        return ret;
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, rules.toArray(new String[0]));
     }
     
     @Override
-    public byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId) throws CertificateProfileDoesNotExistException, AuthorizationDeniedException {
-        CertificateProfile profile = null;
-        profile = getCertificateProfile(profileId);
+    public byte[] getProfileAsXml(
+            final AuthenticationToken authenticationToken,
+            final int profileId
+    ) throws CertificateProfileDoesNotExistException, AuthorizationDeniedException {
+        final CertificateProfile profile = getCertificateProfile(profileId);
         if (profile == null) {
             throw new CertificateProfileDoesNotExistException("Could not find certificate profile with ID '" + profileId + "' in the database.");
         }
@@ -562,5 +566,22 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             LOG.debug(msg, e);
             throw new IllegalStateException(msg, e);
         }
+    }
+
+    // Logs a session event preserving constants:
+    // ModuleTypes.CERTIFICATEPROFILE - The module where the operation took place.
+    // ServiceTypes.CORE - The service(application) that performed the operation.
+    private void logSessionEvent(
+            final EventType eventType,
+            final EventStatus eventStatus,
+            final AuthenticationToken authenticationToken,
+            final SecurityEventProperties securityEventProperties) {
+        logSession.log(
+                eventType, eventStatus,
+                ModuleTypes.CERTIFICATEPROFILE, ServiceTypes.CORE,
+                authenticationToken.toString(),
+                null,null, null,
+                securityEventProperties.toMap()
+        );
     }
 }
