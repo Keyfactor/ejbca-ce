@@ -2038,7 +2038,7 @@
             </h:panelGrid>
 
 
-            <h:panelGrid columns="2" styleClass="edit-top"
+            <h:panelGrid id="epassportgrid" columns="2" styleClass="edit-top"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
@@ -2114,21 +2114,21 @@
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeIs?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeIs or certProfileBean.viewOnly}"
                         action="#{certProfileBean.setCvcTerminalTypeIs}" >
-                        <f:ajax render=":content:selectcvctermtype :content:selectcvcsigntermdvtype :content:selectcvcaccessrights" />
+                        <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>                        
                     <h:commandButton
                         value="#{certProfileBean.cvcTerminalTypeAt?'✓':' '}#{web.text.CVCAUTHENTICATIONTERMINAL}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeAt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeAt or certProfileBean.viewOnly}"
                         action="#{certProfileBean.setCvcTerminalTypeAt}" >
-                        <f:ajax render=":content:selectcvctermtype :content:selectcvcsigntermdvtype :content:selectcvcaccessrights" />
+                        <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>
                     <h:commandButton
                         value="#{certProfileBean.cvcTerminalTypeSt?'✓':' '}#{web.text.CVCSIGNATURETERMINAL}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeSt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeSt or certProfileBean.viewOnly}"
                         action="#{certProfileBean.setCvcTerminalTypeSt}" >
-                        <f:ajax render=":content:selectcvctermtype :content:selectcvcsigntermdvtype :content:selectcvcaccessrights" />
+                        <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>
                 </h:panelGroup>
 
