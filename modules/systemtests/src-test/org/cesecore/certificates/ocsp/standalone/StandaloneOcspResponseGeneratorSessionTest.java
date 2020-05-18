@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.standalone;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -82,8 +89,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
-import org.cesecore.certificates.ocsp.OcspResponseInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
@@ -116,6 +121,8 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
+import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -124,13 +131,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean

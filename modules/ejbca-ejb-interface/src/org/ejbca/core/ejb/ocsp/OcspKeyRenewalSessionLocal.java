@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.ocsp;
 
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
 
 import javax.ejb.Local;
 
