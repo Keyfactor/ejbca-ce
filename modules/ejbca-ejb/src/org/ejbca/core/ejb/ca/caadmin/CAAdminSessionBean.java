@@ -75,6 +75,7 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.dto.SecurityEventProperties;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -206,7 +207,6 @@ import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CAIdTools;
-import org.ejbca.core.dto.AuditEventProperties;
 
 /**
  * Manages CAs in EJBCA.
@@ -665,7 +665,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.CA_CREATION, EventStatus.FAILURE,
                     admin, caid,
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.caexistsid", caid)).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.caexistsid", caid)).build()
             );
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
@@ -744,7 +744,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logAuditEvent(
                         EventTypes.CA_CREATION, EventStatus.FAILURE,
                         admin, caid,
-                        AuditEventProperties.builder()
+                        SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName()))
                                 .withError(e.getMessage())
                                 .build()
@@ -812,7 +812,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logAuditEvent(
                         EventTypes.CA_CREATION, EventStatus.FAILURE,
                         authenticationToken, caid,
-                        AuditEventProperties.builder()
+                        SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName()))
                                 .withError(fe.getMessage())
                                 .build()
@@ -851,7 +851,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logAuditEvent(
                         EventTypes.CA_CREATION, EventStatus.FAILURE,
                         authenticationToken, caid,
-                        AuditEventProperties.builder()
+                        SecurityEventProperties.builder()
                                 .withMsg(intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName()))
                                 .withError(fe.getMessage())
                                 .build()
@@ -943,7 +943,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.CA_EDITING, EventStatus.FAILURE,
                     admin, caid,
-                    AuditEventProperties.builder().withMsg(msg).build()
+                    SecurityEventProperties.builder().withMsg(msg).build()
             );
             throw e;
         } catch (CADoesntExistsException e) {
@@ -1028,7 +1028,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     logAuditEvent(
                             EventTypes.CA_KEYGEN, EventStatus.SUCCESS,
                             authenticationToken, caid,
-                            AuditEventProperties.builder()
+                            SecurityEventProperties.builder()
                                     .withMsg(intres.getLocalizedMessage("catoken.generatedkeys", caid, true, false))
                                     .withOldproperties(oldprop)
                                     .withOldsequence(oldsequence)
@@ -1412,7 +1412,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS,
                     authenticationToken, caid,
-                    AuditEventProperties.builder()
+                    SecurityEventProperties.builder()
                             .withMsg(intres.getLocalizedMessage("catoken.activatednextkey", caid))
                             .withCertSignKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN))
                             .withCrlSignKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN))
@@ -1475,7 +1475,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
                     admin, caid,
-                    AuditEventProperties.builder().withMsg(msg).build()
+                    SecurityEventProperties.builder().withMsg(msg).build()
             );
             throw new AuthorizationDeniedException(msg);
         }
@@ -1638,13 +1638,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.CA_EDITING, EventStatus.SUCCESS,
                     admin, caid,
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.processedca", cainfo.getName())).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.processedca", cainfo.getName())).build()
             );
         } else {
             logAuditEvent(
                     EventTypes.CA_EDITING, EventStatus.FAILURE,
                     admin, caid,
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName())).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName())).build()
             );
         }
         return returnval;
@@ -1857,7 +1857,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
                     admin, caid,
-                    AuditEventProperties.builder().withMsg(msg).build()
+                    SecurityEventProperties.builder().withMsg(msg).build()
             );
             throw new AuthorizationDeniedException(msg);
         }
@@ -1906,7 +1906,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     logAuditEvent(
                             EventTypes.CA_KEYGEN, EventStatus.SUCCESS,
                             authenticationToken, caid,
-                            AuditEventProperties.builder()
+                            SecurityEventProperties.builder()
                                     .withMsg(intres.getLocalizedMessage("catoken.generatedkeys", caid, true, false))
                                     .withOldproperties(oldProperties)
                                     .withOldsequence(oldSequence)
@@ -2044,7 +2044,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS,
                     authenticationToken, caid,
-                    AuditEventProperties.builder()
+                    SecurityEventProperties.builder()
                             .withMsg(intres.getLocalizedMessage("catoken.activatednextkey", caid))
                             .withCertSignKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN))
                             .withCrlSignKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN))
@@ -2329,7 +2329,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logAuditEvent(
                         EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
                         admin, null,
-                        AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", caname)).build()
+                        SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", caname)).build()
                 );
             }
             // load keystore
@@ -2392,7 +2392,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logAuditEvent(
                         EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
                         admin, null,
-                        AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.notauthorizedtoremovecatoken", caname)).build()
+                        SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.notauthorizedtoremovecatoken", caname)).build()
                 );
             }
             CACommon ca = caSession.getCAForEdit(admin, caname);
@@ -2565,7 +2565,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         logAuditEvent(
                 EjbcaEventTypes.CA_IMPORT, EventStatus.SUCCESS,
                 authenticationToken, ca.getCAId(),
-                AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.importedca", caname, "PKCS12", ca.getStatus())).build()
+                SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.importedca", caname, "PKCS12", ca.getStatus())).build()
         );
     }
 
@@ -2901,7 +2901,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logAuditEvent(
                         EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
                         admin, thisCa.getCAId(),
-                        AuditEventProperties.builder().withMsg(msg).build()
+                        SecurityEventProperties.builder().withMsg(msg).build()
                 );
                 throw new AuthorizationDeniedException(msg);
             }
@@ -2962,7 +2962,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EjbcaEventTypes.CA_EXPORTTOKEN, EventStatus.SUCCESS,
                     admin, thisCa.getCAId(),
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.exportedca", caname, format)).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.exportedca", caname, format)).build()
             );
             log.trace("<exportCAKeyStore");
             return ret;
@@ -2970,7 +2970,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EjbcaEventTypes.CA_EXPORTTOKEN, EventStatus.FAILURE,
                     admin, null,
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.errorexportca", caname, "PKCS12", e.getMessage())).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.errorexportca", caname, "PKCS12", e.getMessage())).build()
             );
             throw new EJBException(e);
         }
@@ -3431,7 +3431,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         logAuditEvent(
                 EjbcaEventTypes.CA_EXTENDEDSERVICE, EventStatus.SUCCESS,
                 admin, caid,
-                AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.extendedserviceexecuted", request.getClass().getName(), ca.getName())).build()
+                SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("caadmin.extendedserviceexecuted", request.getClass().getName(), ca.getName())).build()
         );
         return resp;
     }
@@ -3494,14 +3494,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logAuditEvent(
                     EjbcaEventTypes.CA_VALIDITY, EventStatus.FAILURE,
                     admin, signca.getCAId(),
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("signsession.caexpired", signca.getSubjectDN())).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("signsession.caexpired", signca.getSubjectDN())).build()
             );
             throw new EJBException(ce);
         } catch (CertificateNotYetValidException cve) {
             logAuditEvent(
                     EjbcaEventTypes.CA_VALIDITY, EventStatus.FAILURE,
                     admin, signca.getCAId(),
-                    AuditEventProperties.builder().withMsg(intres.getLocalizedMessage("signsession.canotyetvalid", signca.getSubjectDN())).build()
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("signsession.canotyetvalid", signca.getSubjectDN())).build()
             );
             throw new EJBException(cve);
         }
@@ -3580,7 +3580,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 event, EventStatus.SUCCESS,
                 EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA,
                 authenticationToken.toString(), String.valueOf(caId), certificateSn, username,
-                AuditEventProperties.builder().withMsg(type + " : " + msg).build().toMap()
+                SecurityEventProperties.builder().withMsg(type + " : " + msg).build().toMap()
         );
         if (log.isDebugEnabled()) {
             log.debug("Custom message '" + msg + "'was written to audit log by " + authenticationToken.getUniqueId());
@@ -3640,7 +3640,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final EventStatus eventStatus,
             final AuthenticationToken authenticationToken,
             final Integer caId,
-            final AuditEventProperties auditEventProperties) {
+            final SecurityEventProperties securityEventProperties) {
         auditSession.log(
                 eventType, eventStatus,
                 ModuleTypes.CA, ServiceTypes.CORE,
@@ -3648,7 +3648,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 String.valueOf(caId),
                 null,
                 null,
-                auditEventProperties.toMap()
+                securityEventProperties.toMap()
         );
     }
 }

@@ -35,13 +35,16 @@ public interface CertificateProfileSessionLocal extends CertificateProfileSessio
      * authorized to will be OK. Also checks the passed in extra resources. 
      * Does this in a single call to authorizationSession to keep it efficient
      * 
-     * @param admin Administrator performing the operation
+     * @param authenticationToken Administrator performing the operation
      * @param profile Certificate Profile that we want to check authorization for
      * @param logging if we should log access or not
      * @param resources, additional resources to check, for example StandardRules.CERTIFICATEPROFILEEDIT.resource()
      * @return true if authorized to the profile and the resources
      */
-    boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources);
-
+    boolean authorizedToProfileWithResource(
+            final AuthenticationToken authenticationToken,
+            final CertificateProfile profile,
+            final boolean logging,
+            final String... resources);
 
 }
