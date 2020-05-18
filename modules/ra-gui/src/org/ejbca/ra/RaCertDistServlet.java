@@ -12,30 +12,6 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
@@ -50,6 +26,25 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Servlet for download of CA certificates and chains.
@@ -128,20 +123,10 @@ public class RaCertDistServlet extends HttpServlet {
                             // Create a JKS truststore with the CA certificates in
                             final KeyStore keyStore = KeyStore.getInstance("JKS");
                             keyStore.load(null, null);
-                            for (int i=0; i<chain.size(); i++) {
-                                final String subjectDn = CertTools.getSubjectDN(chain.get(i));
-                                String alias = CertTools.getPartFromDN(subjectDn, "CN");
-                                if (alias == null) {
-                                    alias = CertTools.getPartFromDN(subjectDn, "O");
-                                }
-                                if (alias == null) {
-                                    alias = "cacert" + i;
-                                }
-                                // max 15 characters length, with no spaces
-                                alias = alias.replaceAll(" ", "_").substring(0, Math.min(15, alias.length()));
-                                keyStore.setCertificateEntry(alias, chain.get(i));
+                            for (int i = 0; i < chain.size(); i++) {
+                                keyStore.setCertificateEntry("cacert" + i, chain.get(i));
                             }
-                            try (ByteArrayOutputStream out = new ByteArrayOutputStream();) {
+                            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                                 keyStore.store(out, "changeit".toCharArray());
                                 response = out.toByteArray();
                             }
