@@ -18,7 +18,7 @@ import javax.ejb.Remote;
 /**
  * Remote interface for OcspResponseGeneratorSession
  * 
- * @version $Id: OcspResponseGeneratorSessionRemote.java 17625 2013-09-20 07:12:06Z netmackan $
+ * @version $Id$
  *
  */
 @Remote
