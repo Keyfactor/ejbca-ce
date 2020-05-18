@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.keys.validation;
 
 import java.util.List;
@@ -31,9 +30,8 @@ public enum ValidatorCache implements CommonCache<Validator> {
     private final CommonCache<Validator> cache = new CommonCacheBase<Validator>() {
         @Override
         protected long getCacheTime() {
-            long time = Math.max( CesecoreConfiguration.getCacheKeyValidatorTime(), -1);
-            return time;
-        };
+            return Math.max( CesecoreConfiguration.getCacheKeyValidatorTime(), -1);
+        }
 
         @Override
         protected long getMaxCacheLifeTime() {

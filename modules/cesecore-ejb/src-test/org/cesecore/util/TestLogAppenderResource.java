@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli;
+package org.cesecore.util;
 
 import java.io.ByteArrayOutputStream;
 

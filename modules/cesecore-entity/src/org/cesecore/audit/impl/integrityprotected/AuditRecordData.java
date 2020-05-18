@@ -128,20 +128,26 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
     	this.timeStamp = timeStamp;
     }
 
-    /** @return event type string. @see EventTypes */
+    /** @return event type string.
+     * @see EventType
+     */
     public String getEventType() {
     	return eventType;
     }
 
     /**
-     * Sets event type. @see EventTypes
+     * Sets event type.
      * @param eventType should match the enumeration names.
+     * @see EventType
      */
     public void setEventType(final String eventType) {
         this.eventType = eventType;
     }
 
-    /** @return event status. @see EventStatusEnum */
+    /**
+     * @return event status.
+     * @see EventStatus
+     */
     public String getEventStatus() {
         return eventStatus;
     }
@@ -152,8 +158,10 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
         return EventStatus.valueOf(getEventStatus());
     }
 
-    /** Sets event type. @see EventStatusEnum
-     * @param eventType should match the enumeration names.
+    /**
+     * Sets event type.
+     * @param eventStatus should match the enumeration names.
+     * @see EventStatus
      */
     public void setEventStatus(final String eventStatus) {
     	this.eventStatus = eventStatus;
@@ -166,44 +174,43 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
 
     /**
      * Sets the user that triggered the creation of a log
-     *
-     * @param userId user id. Normally obtained by the following example: authenticationToken.toString()
+     * @param authToken Authentication token, normally obtained as authenticationToken.toString()
      */
     public void setAuthToken(final String authToken) {
         this.authToken = authToken;
     }
 
     /**
-     * Gets service type. @see ServiceTypes
-     * 
-     * @return
+     * Gets service type.
+     * @return service type.
+     * @see ServiceType
      */
     public String getService() {
         return service;
     }
 
     /**
-     * Sets service type. @see ServiceTypes
-     * 
-     * @param service
+     * Sets service type.
+     * @param service service type.
+     * @see ServiceType
      */
     public void setService(final String service) {
         this.service = service;
     }
 
     /**
-     * Gets module type. @see ModuleTypes
-     *
+     * Gets module type.
      * @return module type.
+     * @see ModuleType
      */
     public String getModule() {
         return module;
     }
 
     /**
-     * Sets module type. @see ModuleTypes
-     *
+     * Sets module type.
      * @param module Module type.
+     * @see ModuleType
      */
     public void setModule(final String module) {
         this.module = module;

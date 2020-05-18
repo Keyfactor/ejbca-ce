@@ -39,7 +39,7 @@
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
         <antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" inheritall="true" inheritrefs="true"/>
-       	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" inheritall="true" inheritrefs="true"/>
@@ -404,6 +404,11 @@
 
     <target name="test:unit:ejbca-ejb-cli" description="run all JUnit tests for ejbca-ejb-cli." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:cesecore-ejb" description="run all JUnit tests for cesecore-ejb." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

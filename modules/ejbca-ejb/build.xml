@@ -22,7 +22,7 @@
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.quickserver.classpath"/>
 		<path location="${mod.caa.lib}"/>
-		<path location="${mod.cesecore-ejb.lib}}"/>
+		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
@@ -120,8 +120,6 @@
 			<zipfileset prefix="META-INF" dir="${ejbca-ejb.resources.dir}" includes="${include-ejb-jar-xml} jboss.xml jboss-ejb3.xml"/>
 		</jar>
 	</target>
-
-
 
 	<target name="compile-ejbca-ejb" depends="with.clover">
 		<mkdir dir="${ejbca-ejb.build.dir}"/>

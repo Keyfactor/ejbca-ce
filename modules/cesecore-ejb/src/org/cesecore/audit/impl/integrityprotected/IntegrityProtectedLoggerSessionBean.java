@@ -74,7 +74,7 @@ public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLo
             // Get the latest sequenceNumber from last run from the database..
             final Query query = entityManager.createQuery("SELECT MAX(a.sequenceNumber) FROM AuditRecordData a WHERE a.nodeId=:nodeId");
             query.setParameter("nodeId", nodeId);
-            return QueryResultWrapper.getSingleResult(query, Long.valueOf(-1)).longValue();
+            return QueryResultWrapper.getSingleResult(query, (long) -1);
         }
     };
 
@@ -91,7 +91,7 @@ public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLo
             final Long sequenceNumber = NodeSequenceHolder.INSTANCE.getNext(sequenceHolderInitialization);
             // Make sure to use the Node Identifier that this log sequence was initialized with (for example hostnames reported by the system could change)
             final String nodeId = NodeSequenceHolder.INSTANCE.getNodeId();
-            final Long timeStamp = Long.valueOf(trustedTime.getTime().getTime());
+            final Long timeStamp = trustedTime.getTime().getTime();
             final AuditRecordData auditRecordData = new AuditRecordData(nodeId, sequenceNumber, timeStamp, eventType, eventStatus, authToken,
                     service, module, customId, searchDetail1, searchDetail2, additionalDetails);
             entityManager.persist(auditRecordData);
