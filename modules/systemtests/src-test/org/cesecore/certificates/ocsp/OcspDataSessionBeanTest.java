@@ -217,7 +217,8 @@ public class OcspDataSessionBeanTest {
         assertEquals(5, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthOne).size());
         assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuthTwo).size());
 
-        ocspDataProxySessionRemote.deleteOldOcspDataByCaId(certificateAuthOne);
+        int rowsDeleted = ocspDataProxySessionRemote.deleteOldOcspDataByCaId(certificateAuthOne);
+        assertEquals(3, rowsDeleted);
 
         // Confirm only latest test data is left for certificateAuthOne
         List<OcspResponseData> remainingResponses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuthOne);
