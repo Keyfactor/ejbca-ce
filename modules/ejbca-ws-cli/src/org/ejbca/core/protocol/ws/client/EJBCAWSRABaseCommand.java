@@ -156,11 +156,11 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
          * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
          */
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            for ( int i=0; i<callbacks.length; i++) {
+            for (Callback callback : callbacks) {
                 try {
-                    ((PasswordCallback)callbacks[i]).setPassword(this.password);
-                } catch( Throwable t ) {
-                    System.out.println("callback class: "+callbacks[i].getClass().getCanonicalName());
+                    ((PasswordCallback) callback).setPassword(this.password);
+                } catch (Throwable t) {
+                    System.out.println("callback class: " + callback.getClass().getCanonicalName());
                 }
             }
         }
