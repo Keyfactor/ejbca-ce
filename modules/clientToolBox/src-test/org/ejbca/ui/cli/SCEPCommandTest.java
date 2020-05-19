@@ -57,7 +57,7 @@ public class SCEPCommandTest {
     private static String SCEP_CA = "SCEPCommandTestCA";
     private static final String CERTIFICATE_PROFILE_NAME = "SCEPCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "SCEPCommandTestEEP";
-    private static final String DEFAULT_CA_DN = "CN=SCEPCommandTestCA";
+    private static final String DEFAULT_CA_DN = "CN=" + SCEP_CA;
     private static ScepConfiguration scepConfiguration;
     private static int certificateProfileId;
     private static X509CA x509ca;
@@ -117,7 +117,6 @@ public class SCEPCommandTest {
     @AfterClass
     public static void tearDown() throws Exception {
 
-        CaTestUtils.removeCa(authToken, x509ca.getCAInfo());
         scepConfiguration.removeAlias(SCEP_ALIAS);
         globalConfigSession.saveConfiguration(authToken, scepConfiguration);
 
@@ -128,7 +127,7 @@ public class SCEPCommandTest {
         endEntityManagementProxySession.deleteUsersByCertificateProfileId(certificateProfileId);
         endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
         certificateProfileSession.removeCertificateProfile(authToken, CERTIFICATE_PROFILE_NAME);
-        caSession.removeCA(authToken, x509ca.getCAId());
+        CaTestUtils.removeCa(authToken, x509ca.getCAInfo());
     }
 
 

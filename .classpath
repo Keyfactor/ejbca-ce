@@ -30,6 +30,8 @@
 	<classpathentry kind="src" path="modules/cli-util/src"/>
 	<classpathentry kind="src" path="modules/cli-util/src-test"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
+	<classpathentry kind="src" path="modules/clientToolBox/src-test"/>
+	<classpathentry kind="src" path="modules/clientToolBoxTest/src"/>
 	<classpathentry kind="src" path="modules/cmpclient/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src-test"/>
@@ -145,6 +147,7 @@
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-support-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.29.jar"/>
+	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.4.11.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-8.2.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar"/>
