@@ -2084,7 +2084,7 @@
                         <h:column>
                             <h:outputText value="#{current}" />
                             <f:facet name="footer">
-                                <h:inputText
+                                <h:inputText id="textfielddoctypelistnew"
                                     value="#{certProfileBean.documentTypeListNew}"
                                     size="20" maxlength="4096"
                                     disabled="#{certProfileBean.viewOnly}" />
@@ -2093,11 +2093,15 @@
                         <h:column>
                             <h:commandButton value="#{web.text.REMOVE}"
                                 action="#{certProfileBean.documentTypeListRemove}"
-                                disabled="#{certProfileBean.viewOnly}" />
+                                disabled="#{certProfileBean.viewOnly}" >
+                                <f:ajax render=":content:cbdocumenttypegrid" />
+                            </h:commandButton>
                             <f:facet name="footer">
                                 <h:commandButton value="#{web.text.ADD}"
                                     action="#{certProfileBean.documentTypeListAdd}"
-                                    disabled="#{certProfileBean.viewOnly}" />
+                                    disabled="#{certProfileBean.viewOnly}" >
+                                    <f:ajax execute="textfielddoctypelistnew" render=":content:cbdocumenttypegrid" />
+                                </h:commandButton>
                             </f:facet>
                         </h:column>
                     </h:dataTable>
