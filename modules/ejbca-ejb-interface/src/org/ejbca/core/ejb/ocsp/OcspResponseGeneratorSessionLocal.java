@@ -43,6 +43,7 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
      * be signed according to current OCSP Key Binding settings and OCSP config if applicable.
      * @param cacert of the CA which signs the OCSP response
      * @param serialNr of the certificate to produce a response for.
+     * @param issueFinalResponse TODO
      */
-    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr);    
+    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr, boolean issueFinalResponse);    
 }
