@@ -156,7 +156,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
     }
 
     @Override
-    public void deleteOldOcspDataByCaId(final Integer caId) {
+    public int deleteOldOcspDataByCaId(final Integer caId) {
         log.trace(">deleteOldOcspDataByCaId");
 
         final Query query = this.entityManager.createNamedQuery(OcspResponseData.DELETE_OLD_OCSP_DATA_BY_CAID);
@@ -168,10 +168,11 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         }
 
         log.trace("<deleteOldOcspDataByCaId");
+        return rowsDeleted;
     }
 
     @Override
-    public void deleteOldOcspData() {
+    public int deleteOldOcspData() {
         log.trace(">deleteOldOcspData");
 
         final Query query = this.entityManager.createNamedQuery(OcspResponseData.DELETE_OLD_OCSP_DATA);
@@ -182,6 +183,7 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
         }
 
         log.trace("<deleteOldOcspData");
+        return rowsDeleted;
     }
 
     private OcspResponseData getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
