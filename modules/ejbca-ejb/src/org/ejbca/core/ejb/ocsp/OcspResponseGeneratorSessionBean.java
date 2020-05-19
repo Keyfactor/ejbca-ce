@@ -399,6 +399,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                 null, null, null, ocspConfiguration.getOcspResponderIdType()));
                         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand));
+                    } else if (caInfo.getStatus() == CAConstants.CA_EXPIRED && preProduceOcspResponse) {
+                        // We need this entry to respond with stored "Final OCSP Response" for expired CA (eIDAS specific: EN 319 411-2)
+                        for (final Certificate certificate : caInfo.getCertificateChain()) {
+                            caCertificateChain.add((X509Certificate) certificate);
+                        }
+                        if (caCertificateChain.size() > 0) {
+                            OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand));
+                        } else {
+                            log.warn("Expired CA with ID " + caId
+                                    + " appears to lack a certificate in the database. This will prevent serving of Final OCSP Responses");
+                        }
                     }
                 }
                 // Add all potential InternalKeyBindings as OCSP responders to the staging area, overwriting CA entries from before
@@ -1091,9 +1102,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
-            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger, boolean isPreSigning)
+            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger, boolean isPreSigning, 
+            boolean issueFinalResponse)
             throws MalformedRequestException, OCSPException {
-        
         //Check parameters
         if (auditLogger == null) {
             throw new InvalidParameterException("Illegal to pass a null audit logger to OcspResponseSession.getOcspResponse");
@@ -1209,7 +1220,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 log.warn("Pre-produced OCSP response for certificate with serialNr '" + certId.getSerialNumber() + "' was malformed. Producing new response.");
                             }
                             if (!malformedResponseObject) {
-                                if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                                if (ocspSigningCacheEntry != null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                                     maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
                                 }
                                 return new OcspResponseInformation(ocspResp, maxAge, signerCert);
@@ -1218,7 +1229,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
-
                     if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && !req.hasExtensions()) {
                         serialNrForResponseStore = certId.getSerialNumber().toString();
                         caIdForResponseStore = ocspDataConfig.getCaId();
@@ -1461,6 +1471,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     if (!isPreSigning) {
                         log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
+                    }
+                    // Issue a final OCSP Response (EN 319 411-2)
+                    if (issueFinalResponse && isPreSigning) {
+                        TimeZone tz = TimeZone.getTimeZone("GMT");
+                        Calendar cal = Calendar.getInstance(tz);
+                        cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
+                        nextUpdate = cal.getTimeInMillis();
                     }
                     respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
@@ -1793,7 +1810,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
-    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr) {
+    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr, boolean issueFinalResponse) {
         final OCSPReq req;
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -1805,7 +1822,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
             gen.addRequest(certId);
             req = gen.build();
-            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true);
+            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse);
         } catch (Throwable e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
             log.info(errMsg);
