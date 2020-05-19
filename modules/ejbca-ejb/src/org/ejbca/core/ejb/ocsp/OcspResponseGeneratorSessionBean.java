@@ -1674,7 +1674,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     private void publishOcspResponse(final int caId, final OcspResponseData responseData) throws PublisherException, AuthorizationDeniedException {
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(
-                new UsernamePrincipal("Token used to authenticate admin when publishing OCSP response data!"));
+                new UsernamePrincipal(OcspResponseGeneratorSessionBean.class.getSimpleName()));
         CAInfo caInfo = caSession.getCAInfoInternal(caId);
         Collection<Integer> cAPublishers = caInfo.getCRLPublishers();
 
