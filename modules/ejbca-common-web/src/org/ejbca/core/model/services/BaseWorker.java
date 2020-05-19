@@ -119,13 +119,26 @@ public abstract class BaseWorker implements IWorker {
 		return admin;
 	}
 	
-    /**
-     * Returns the amount of time, in milliseconds that the expire time of
-     * configured for
-     */
-    protected long getTimeBeforeExpire() throws ServiceExecutionFailedException {
+	/**
+	 * @return Returns the amount of time, in milliseconds that the property is configured for.
+	 * @see IWorker#PROP_TIMEUNIT
+	 * @see IWorker#PROP_TIMEBEFOREEXPIRING
+	 * @throws ServiceExecutionFailedException
+	 */
+	protected long getTimeBeforeExpire() throws ServiceExecutionFailedException {
+	    // Use default property keys
+	    return getTimeBeforeExpire(PROP_TIMEUNIT, PROP_TIMEBEFOREEXPIRING);
+	}
+	
+	/**
+	 * @param propertyTimeUnit property key for time unit. E.g. IWorker.PROP_TIMEUNIT
+	 * @param propertyTimeValue property key for time value. E.g. IWorker.PROP_TIMEBEFOREEXPIRING
+	 * @return Returns the amount of time, in milliseconds that the property is configured for.
+	 * @throws ServiceExecutionFailedException if time isn't configured properly.
+	 */
+    protected long getTimeBeforeExpire(String propertyTimeUnit, String propertyTimeValue) throws ServiceExecutionFailedException {
         if (timeBeforeExpire == -1) {
-            String unit = properties.getProperty(PROP_TIMEUNIT);
+            String unit = properties.getProperty(propertyTimeUnit);
             if (unit == null) {
                 String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
                 throw new ServiceExecutionFailedException(msg);
@@ -145,7 +158,7 @@ public abstract class BaseWorker implements IWorker {
 
             int intvalue = 0;
             try {
-                intvalue = Integer.parseInt(properties.getProperty(PROP_TIMEBEFOREEXPIRING));
+                intvalue = Integer.parseInt(properties.getProperty(propertyTimeValue));
             } catch (NumberFormatException e) {
                 String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
                 throw new ServiceExecutionFailedException(msg);
