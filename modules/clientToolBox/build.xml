@@ -62,6 +62,7 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
         <path location="${ejbca.home}/modules/cesecore-x509ca/build/classes"/>
 		<path location="${mod.cesecore-entity.lib}"/>
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
 

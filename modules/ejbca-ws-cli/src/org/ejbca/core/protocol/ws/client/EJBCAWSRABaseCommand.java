@@ -1,9 +1,8 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.security.AuthProvider;
@@ -36,7 +35,7 @@ import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
  */
 
 public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
-    
+    private static final String PROPERTY_FILE = "/ejbcawsracli.properties";
     final protected String[] args;
     private org.ejbca.core.protocol.ws.client.gen.EjbcaWS ejbcaraws = null;
     final private URL webServiceURL;
@@ -74,11 +73,12 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
         URL tmpURL = null;
         Exception tmpException = null;
         try {
-            try {
-                props.load(new FileInputStream("ejbcawsracli.properties"));
-            } catch (FileNotFoundException e) {
-                // Try in parent directory
-                props.load(new FileInputStream("../ejbcawsracli.properties"));
+            final InputStream is = EJBCAWSRABaseCommand.class.getResourceAsStream(PROPERTY_FILE);
+            if (is != null) {
+                props.load(is);
+            } else {
+                System.out.println("Error : "+ PROPERTY_FILE + " not found in classpath");
+                System.exit(-1); // NOPMD, this is not a JEE app
             }
             CryptoProviderTools.installBCProvider();
             final String sharedLibraryPath = props.getProperty("ejbcawsracli.p11.sharedlibrary");
