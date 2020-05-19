@@ -1093,25 +1093,23 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public void setDocumentTypeListNew(String documentTypeListNew) { this.documentTypeListNew = documentTypeListNew.trim(); }
 
-    public void documentTypeListRemove() throws IOException {
+    public void documentTypeListRemove() {
         final String current = getDocumentTypeList().getRowData();
         ArrayList<String> documentTypeListValue = getCertificateProfile().getDocumentTypeList();
         documentTypeListValue.remove(current);
         getCertificateProfile().setDocumentTypeList(documentTypeListValue);
         documentTypeListNew = current;
         documentTypeList = null;    // Trigger reload of model
-        redirectToComponent("cvc_epassport");
     }
 
-    public void documentTypeListAdd() throws IOException {
-        if (documentTypeListNew.length()>0) {
+    public void documentTypeListAdd() {
+        if (documentTypeListNew.length() > 0) {
             ArrayList<String> documentTypeListValue = getCertificateProfile().getDocumentTypeList();
             documentTypeListValue.add(documentTypeListNew);
             getCertificateProfile().setDocumentTypeList(documentTypeListValue);
             documentTypeListNew = "";
             documentTypeList = null;    // Trigger reload of model
         }
-        redirectToComponent("cvc_epassport");
     }
 
     public ListDataModel<String> getDocumentTypeList() {
