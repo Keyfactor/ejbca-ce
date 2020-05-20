@@ -70,6 +70,7 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -1727,12 +1728,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         publishOcspResponse(caId, responseData);
     }
     
-    private void publishOcspResponse(final int caId, final OcspResponseData responseData) throws PublisherException, AuthorizationDeniedException {
+    private void publishOcspResponse(final int caId, final OcspResponseData responseData) {
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(
                 new UsernamePrincipal(OcspResponseGeneratorSessionBean.class.getSimpleName()));
         CAInfo caInfo = caSession.getCAInfoInternal(caId);
         Collection<Integer> cAPublishers = caInfo.getCRLPublishers();
 
+        if (CollectionUtils.isEmpty(cAPublishers)) {
+            return; // Just return if no publishers set for the CA.
+        }
+        
         CompletableFuture.runAsync(() -> {
             try {
                 publisherSession.storeOcspResponses(authenticationToken, cAPublishers, responseData);
