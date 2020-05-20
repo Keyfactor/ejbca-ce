@@ -1100,6 +1100,33 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return ret;
     }
 
+    /** 
+     * 
+     * @param req OCSP request to check
+     * @return true if the request does not have any extensions preventing a pre-signed response to be served, false if a pre-signed response should not be served
+     */
+    private boolean reqHasExtensionsOkToStoreResponse(final OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry) {
+        if (!req.hasExtensions()) {
+            // return fast if there are no request extensions at all, then we can serve a pre-signed response
+            return true;
+        }
+        // Nonce is also ok to include in the request, because the server can ignore the nonce and send pre-signed response without nonce
+        // it's configured in the OCSP key binding (or globally) if the response should contain nonce
+        if (req.getExtensionOIDs().size() == 1 && req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) {
+            final boolean nonceEnable = (ocspSigningCacheEntry.getOcspKeyBinding() != null ? ocspSigningCacheEntry.getOcspKeyBinding().isNonceEnabled() :
+                ((GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).getNonceEnabled());
+            if (nonceEnable == false) {
+                // Only say it's ok if the response will not contain nonce
+                return true;
+            }
+        }
+        // Not ok to cache the response, it may contains extensions preventing it to be served to other clients
+        if (log.isDebugEnabled()) {
+            log.debug("Not able to store pre-produced OCSP response because there are extensions (other than Nonce): " + req.getExtensionOIDs().size());
+        }
+        return false;
+    }
+    
     @Override
     public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
             String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger, boolean isPreSigning, 
@@ -1200,7 +1227,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
                 }         
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
-                // We only store pre-produced single repsponses
+                // We only store pre-produced single responses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
                     if (!isPreSigning) {
                         final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
@@ -1223,15 +1250,26 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 if (ocspSigningCacheEntry != null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                                     maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
                                 }
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Returning pre-produced OCSP response for CA " + caIdForResponseStore + " and cert serial " + certId.getSerialNumber().toString(16));
+                                }
                                 return new OcspResponseInformation(ocspResp, maxAge, signerCert);
                             }
                         }
                     }
                     // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
-                    if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && !req.hasExtensions()) {
+                    if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && reqHasExtensionsOkToStoreResponse(req, ocspSigningCacheEntry)) {
                         serialNrForResponseStore = certId.getSerialNumber().toString();
                         caIdForResponseStore = ocspDataConfig.getCaId();
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        if (ocspDataConfig != null) {
+                            log.debug("Pre-production of OCSP responses is not enabled (" + ocspDataConfig.isPreProducionEnabled() + ") for CA " + ocspDataConfig.getCaId());
+                        } else {
+                            log.debug("Pre-production of OCSP responses is not enabled because ocspDataConfig is null");
+                        }
                     }
                 }
                 
