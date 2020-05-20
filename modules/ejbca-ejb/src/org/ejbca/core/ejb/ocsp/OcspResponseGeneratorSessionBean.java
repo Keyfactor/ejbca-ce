@@ -1251,7 +1251,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
                                 }
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Returning pre-produced OCSP response for CA " + caIdForResponseStore + " and cert serial " + certId.getSerialNumber().toString(16));
+                                    log.debug("Returning pre-produced OCSP response for CA " + ocspResponseData.getCaId() + " and cert serial " + ocspResponseData.getSerialNumber());
                                 }
                                 return new OcspResponseInformation(ocspResp, maxAge, signerCert);
                             }
