@@ -1,5 +1,6 @@
 package org.ejbca.webtest.scenario;
 
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CmpConfigurationHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -8,10 +9,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
-import static org.ejbca.webtest.WebTestBase.*;
-
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa43_ClonedCmpTestAlias {
+public class EcaQa43_ClonedCmpTestAlias extends WebTestBase {
        
     //Helpers
     private static CmpConfigurationHelper cmpConfigHelper;
