@@ -347,7 +347,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             throws AuthorizationDeniedException {
 
         final int caid = ocspResponseData.getCaId();
-        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }
