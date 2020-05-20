@@ -1708,15 +1708,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } catch (OCSPException | IOException e) {
                 // Log the error and reply anyway
                 log.warn("Error storing OCSP response for certificate with serialNr '" + serialNrForResponseStore);
-            } catch (PublisherException | AuthorizationDeniedException e) {
-                // Log the error and reply anyway
-                log.warn("Error publishing OCSP response data for certificate with serialNr '" + serialNrForResponseStore, e);
             }
         }
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
     
-    private void storeOcspResponse(final int caId, final String serialNr, final OCSPResp ocspResponse) throws OCSPException, IOException, PublisherException, AuthorizationDeniedException {
+    private void storeOcspResponse(final int caId, final String serialNr, final OCSPResp ocspResponse) throws OCSPException, IOException {
         // Redundantly storing producedAt and nextUpdate, next to the canned response itself for faster querying. 
         // Assuming this is a single response (we don't store it otherwise), we can safely pick nextUpdate from first index.
         long producedAt = ((BasicOCSPResp)ocspResponse.getResponseObject()).getProducedAt().getTime();
