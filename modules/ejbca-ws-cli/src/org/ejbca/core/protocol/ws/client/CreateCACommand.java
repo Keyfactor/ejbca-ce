@@ -15,17 +15,23 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 
 
 /**
@@ -80,9 +86,9 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
 
             Properties mapping = new Properties();
             mapping.load(new FileInputStream(new File(args[ARG_PURPOSE_KEY_MAPPING_PATH])));
-            ArrayList<KeyValuePair> purposeKeyMapping = getKeyValuePairListFromProperties(mapping);
+            List<KeyValuePair> purposeKeyMapping = getKeyValuePairListFromProperties(mapping);
             
-            ArrayList<KeyValuePair> caproperties = new ArrayList<KeyValuePair>();
+            List<KeyValuePair> caproperties = new ArrayList<KeyValuePair>();
             if(args.length > 10) {
                 Properties props = new Properties();
                 props.load(new FileInputStream(new File(args[ARG_CA_PROPERTIES_PATH])));
@@ -90,8 +96,23 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
             }
                         
             final long validityInDays = Long.valueOf(validityString);
-            getEjbcaRAWS().createCA(caname, cadn, catype, validityInDays, certprofile, signalg, signedByCAId, cryptotokenName, 
-                    purposeKeyMapping, caproperties);
+            if (signedByCAId == CAInfo.SIGNEDBYEXTERNALCA) {
+                final String outfile = caname + "_csr.pem";
+                byte[] csrBytes = getEjbcaRAWS().createExternallySignedCa(caname, cadn, catype, validityInDays, certprofile, signalg, cryptotokenName, purposeKeyMapping,
+                        caproperties);
+                if (csrBytes != null) {
+                    String csr = CertTools.buildCsr(new PKCS10CertificationRequest(csrBytes));
+                    PrintWriter printWriter = new PrintWriter(outfile);
+                    printWriter.print(csr);
+                    printWriter.close();
+                    getPrintStream().println("Wrote certificate request to file: " + outfile);
+                } else {
+                    getPrintStream().println("Received null reply, please check logs to find if the CA was created.");
+                }
+            } else {
+                getEjbcaRAWS().createCA(caname, cadn, catype, validityInDays, certprofile, signalg, signedByCAId, cryptotokenName, purposeKeyMapping,
+                        caproperties);
+            }
             getPrintStream().println("Create new CA: " + caname);
         } catch (Exception e) {
             if (e instanceof EjbcaException_Exception) {
@@ -120,7 +141,7 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
             availableSignAlgs.append((availableSignAlgs.length() == 0 ? "" : ", ") + algorithm);
         }
         getPrintStream().println("'signalg' can be any of: " + availableSignAlgs);
-        getPrintStream().println("'signedByCAID' is the ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). CAs created using the WS cannot be signed by external CAs");
+        getPrintStream().println("'signedByCAID' is the ID of a CA that will sign this CA. Use '" + CAInfo.SELFSIGNED + "' for self signed CA (i.e. a root CA). Use '" + CAInfo.SIGNEDBYEXTERNALCA + "' for an externally signed CA.");
         getPrintStream().println("'cryptotokenName' is the name of the cryptotoken associated with the CA");
         getPrintStream().println("'pathToKeyPurposeMappingFile' is the path to a .properties file containing the mapping of the cryptotoken keys and their purpose");
         getPrintStream().println("'pathToCAPropertiesFile' is the path to a .properties file containing additional CA properties. Optional");
