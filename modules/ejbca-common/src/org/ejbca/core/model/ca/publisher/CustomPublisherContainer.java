@@ -247,7 +247,10 @@ public class CustomPublisherContainer extends BasePublisher {
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
 	@Override
-	public void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException{
+	public void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException {
+	    if (this.getCustomPublisher() == null) {
+	        throw new FatalPublisherConnectionException("Custom Publisher is null. Initialization may have failed due to faulty configuration.");
+	    }
         this.getCustomPublisher().testConnection();
 	} 
 
@@ -274,6 +277,9 @@ public class CustomPublisherContainer extends BasePublisher {
                 // Probably means that we have not built in our custom publisher here in EJBCA, or it's an Enterprise only 
                 // publisher configured (Peer publisher for example)
                 log.info("Publisher class "+classPath+" is not available in this version/build of EJBCA.");
+                return null;
+            } catch (NumberFormatException e) {
+                log.error("Publisher configured incorrectly, a number in configuration contains illegal characters.");
                 return null;
             } catch (ReflectiveOperationException iae) {
                 throw new IllegalStateException(iae);

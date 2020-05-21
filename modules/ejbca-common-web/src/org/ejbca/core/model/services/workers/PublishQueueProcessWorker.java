@@ -65,7 +65,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     log.error("Could not connect to publisher destination.", e);
                 } catch (FatalPublisherConnectionException e) {
                   //Publishers cannot be contacted, delay this job. 
-                  throw new ServiceExecutionFailedException("Publisher test connection failed, see logs for more informetion.", e);
+                  throw new ServiceExecutionFailedException("Publisher test connection failed, see logs for more information.", e);
                 }
             }
         }
