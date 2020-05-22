@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -261,7 +261,7 @@ public class XmlSerializer {
                 ps.print(((Class<?>) o).getName());
             } else {
                 // Escape XML special characters
-                ps.print(StringEscapeUtils.escapeXml(o.toString()));
+                ps.print(StringEscapeUtils.escapeXml11(o.toString()));
             }
             ps.println("</" + type + ">");
         }
