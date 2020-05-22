@@ -188,11 +188,9 @@ public class OcspResponseData extends ProtectedData implements Serializable {
     protected String getProtectString(final int rowversion) {
         final ProtectionStringBuilder protectedStringBuilder = new ProtectionStringBuilder(8000);
         protectedStringBuilder.append(getCaId()).append(getSerialNumber()).append(getProducedAt()).append(getNextUpdate()).append(getOcspResponse());
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled() && protectedStringBuilder.length() > 8000) {
             // Some profiling
-            if (protectedStringBuilder.length() > 8000) {
-                log.debug("OcspResponseData.getProtectString gives size: " + protectedStringBuilder.length());
-            }
+            log.debug("OcspResponseData.getProtectString gives size: " + protectedStringBuilder.length());
         }
         return protectedStringBuilder.toString();
     }
