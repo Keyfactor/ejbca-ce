@@ -224,7 +224,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.6.jar"/>
-	<classpathentry kind="lib" path="lib/ext/apache-commons/commons-lang3-3.10.jar"/>
-	<classpathentry kind="lib" path="lib/ext/apache-commons/commons-text-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
+	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
