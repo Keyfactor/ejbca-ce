@@ -133,7 +133,6 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
        addEndEntityHelper.setCa(getCaName());
        addEndEntityHelper.setToken("User Generated");
        addEndEntityHelper.addEndEntity();
-       
     }
 
     @Test
@@ -289,6 +288,5 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         searchEndEntitiesHelper.fillSearchCriteria(TestData.EE_NAME, null, null, null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.assertNumberOfSearchResults(1);
-
     }
 }
