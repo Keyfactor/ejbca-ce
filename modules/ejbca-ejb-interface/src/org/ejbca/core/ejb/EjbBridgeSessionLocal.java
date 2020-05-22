@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
@@ -130,4 +131,5 @@ public interface EjbBridgeSessionLocal {
     UserDataSourceSessionLocal getUserDataSourceSession();
     WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
 	SctDataSessionLocal getSctDataSession();
+	OcspDataSessionLocal getOcspDataSession();
 }
