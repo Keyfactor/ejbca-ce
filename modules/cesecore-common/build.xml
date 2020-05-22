@@ -8,9 +8,11 @@
 	<property name="cesecore-common.build.dir" location="${cesecore-common.dir}/build"/>
 	<property name="cesecore-common.build-test.dir" location="${cesecore-common.dir}/build-test"/>
 	<property name="cesecore-common.src-test.dir" location="${cesecore-common.dir}/src-test"/>
+	<property name="cesecore-common.resources-test.dir" location="${cesecore-common.dir}/resources-test"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-text.classpath"/>
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
@@ -86,7 +88,6 @@
 		<delete dir="${cesecore-common.dir}/dist"/>
 		<delete dir="${cesecore-common.build.dir}"/>
 		<delete dir="${cesecore-common.build-test.dir}"/>
-
 	</target>
 
 	<target name="compile-tests" depends="jar, with.clover">
@@ -100,6 +101,10 @@
 		</copy>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
 		<copy file="${systemtests.properties.file}" todir="${cesecore-common.build-test.dir}" failonerror="false"/>
+		<!-- Copy input data for tests to access via classpath -->
+		<copy todir="${cesecore-common.build-test.dir}" failonerror="true">
+			<fileset dir="${cesecore-common.resources-test.dir}" includes="*" excludes="readme.txt"/>
+		</copy>
 	</target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">

@@ -68,7 +68,7 @@
 		<copy file="${systemtests.properties.file}" todir="${cesecore-ejb-interface.build-test.dir}" failonerror="false"/>
 	</target>
 
-	<target name="test" depends="compile-tests" description="Run tests for this module">
+	<target name="test:unit" depends="compile-tests" description="Run tests for this module">
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-ejb-interface.dir}">
 			<classpath>
@@ -77,7 +77,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${cesecore-ejb-interface.build-test.dir}" includes="**/*Test.class">
+				<fileset dir="${cesecore-ejb-interface.build-test.dir}" includes="**/*UnitTest.class">
 				</fileset>
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
