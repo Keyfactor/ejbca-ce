@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.Date;
@@ -40,12 +41,13 @@ import static org.junit.Assert.assertNull;
  *
  * @version $Id$
  */
-public class CertificateDataSerializationTest {
+public class CertificateDataSerializationUnitTest {
 
-    private static final Logger log = Logger.getLogger(CertificateDataSerializationTest.class);
+    private static final Logger log = Logger.getLogger(CertificateDataSerializationUnitTest.class);
 
     /** CertificateData object that's intentionally missing the endEntityProfileId column */
-    private static final String OLD_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
+    private static final String OLD_DATA =
+            "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
             "RGF0YYoibbY+5VZeAgASSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
             "blJlYXNvbkkACnJvd1ZlcnNpb25JAAZzdGF0dXNJAAR0eXBlSgAKdXBkYXRlVGltZUwACmJhc2U2" +
             "NENlcnR0ABJMamF2YS9sYW5nL1N0cmluZztMAA1jQUZpbmdlcnByaW50cQB+AAFMABRjZXJ0aWZp" +
@@ -59,7 +61,8 @@ public class CertificateDataSerializationTest {
             "PWNlcnR1c2VydAAcY1U1UXF2NDR1T0JzVGpnQXh5WmNVYnZGNnNrPXB0AAhjZXJ0dXNlcg==";
 
     /** CertificateData object that intentionally has a non-existing column called "testFutureColumn" */
-    private static final String FUTURE_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
+    private static final String FUTURE_DATA =
+            "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
             "RGF0YYoibbY+5VZeAgAUSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
             "blJlYXNvbkkACnJvd1ZlcnNpb25JAAZzdGF0dXNJAAR0eXBlSgAKdXBkYXRlVGltZUwACmJhc2U2" +
             "NENlcnR0ABJMamF2YS9sYW5nL1N0cmluZztMAA1jQUZpbmdlcnByaW50cQB+AAFMABRjZXJ0aWZp" +
@@ -74,7 +77,8 @@ public class CertificateDataSerializationTest {
             "c2VydAAcUFg0eUc4cEs0b3JPZFBTU0hLMDMvOWtUcjBNPXBwdAAIY2VydHVzZXI=";
 
     /** CertificateData object that has a non-existent field "testNonExistentClass" with of a non-existent type "org.cesecore.certificates.certificate.NonExistent" */
-    private static final String FUTURE_NEW_CLASS_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
+    private static final String FUTURE_NEW_CLASS_DATA =
+            "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
             "RGF0YYoibbY+5VZeAgAUSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
             "blJlYXNvbkkACnJvd1ZlcnNpb25JAAZzdGF0dXNJAAR0eXBlSgAKdXBkYXRlVGltZUwACmJhc2U2" +
             "NENlcnR0ABJMamF2YS9sYW5nL1N0cmluZztMAA1jQUZpbmdlcnByaW50cQB+AAFMABRjZXJ0aWZp" +
@@ -116,7 +120,7 @@ public class CertificateDataSerializationTest {
     @Test
     public void testDeserializeOld() throws Exception {
         log.trace(">testDeserializeOld");
-        final ByteArrayInputStream bais = new ByteArrayInputStream(OLD_DATA.getBytes("US-ASCII"));
+        final ByteArrayInputStream bais = new ByteArrayInputStream(OLD_DATA.getBytes(StandardCharsets.US_ASCII));
         final Base64InputStream b64is = new Base64InputStream(bais);
         final ObjectInputStream ois = new ObjectInputStream(b64is);
         final CertificateData certData = (CertificateData) ois.readObject();
@@ -130,7 +134,7 @@ public class CertificateDataSerializationTest {
     @Test
     public void testDeserializeFuture() throws Exception {
         log.trace(">testDeserializeFuture");
-        final ByteArrayInputStream bais = new ByteArrayInputStream(FUTURE_DATA.getBytes("US-ASCII"));
+        final ByteArrayInputStream bais = new ByteArrayInputStream(FUTURE_DATA.getBytes(StandardCharsets.US_ASCII));
         final Base64InputStream b64is = new Base64InputStream(bais);
         final ObjectInputStream ois = new ObjectInputStream(b64is);
         final CertificateData certData = (CertificateData) ois.readObject();
@@ -142,7 +146,7 @@ public class CertificateDataSerializationTest {
     @Test
     public void testDeserializeFutureFieldNewClass() throws Exception {
         log.trace(">testDeserializeFutureFieldNewClass");
-        final ByteArrayInputStream bais = new ByteArrayInputStream(FUTURE_NEW_CLASS_DATA.getBytes("US-ASCII"));
+        final ByteArrayInputStream bais = new ByteArrayInputStream(FUTURE_NEW_CLASS_DATA.getBytes(StandardCharsets.US_ASCII));
         final Base64InputStream b64is = new Base64InputStream(bais);
         final ObjectInputStream ois = new ObjectInputStream(b64is);
         final CertificateData certData = (CertificateData) ois.readObject();
