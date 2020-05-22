@@ -446,7 +446,7 @@ public class RaWebHelper extends BaseHelper {
      * @param dnAttributeIndex attribute's index
      * @param attributeValue value
      */
-    public void fillDnAttribute0(final int dnAttributeIndex, final String attributeValue) {
+    public void fillDnAttribute(final int dnAttributeIndex, final String attributeValue) {
         fillInput(Page.getRequestInfoFormSubjectDnSubjectDnField(dnAttributeIndex), attributeValue);
     }
 
