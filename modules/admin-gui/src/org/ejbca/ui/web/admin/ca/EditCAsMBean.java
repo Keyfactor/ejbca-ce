@@ -148,7 +148,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> availableCryptoTokenKeyAliases;
     private List<String> availableCryptoTokenMixedAliases;
     private List<String> availableCryptoTokenEncryptionAliases;
-    private boolean createLinkCertificate = true;
+    private boolean createLinkCertificate;
 
     private CAInfo cainfo = null;
     private CAToken catoken = null;
@@ -1172,7 +1172,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isCreateLinkCertificate() {
-        return createLinkCertificate;
+        return 1 == cainfo.getSignedBy() ? true : false;
     }
 
     public void setCreateLinkCertificate(final boolean createLinkCertificate) {
