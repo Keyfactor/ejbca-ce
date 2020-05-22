@@ -141,7 +141,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         //Wait for screen update
         Thread.sleep(5000);
         //Enter common name
-        raWebHelper.fillDnAttribute0(endEntityName);
+        raWebHelper.fillDnAttribute(0, endEntityName);
         raWebHelper.fillCredentials(endEntityName, "foo123");
         //Wait for screen update
 
