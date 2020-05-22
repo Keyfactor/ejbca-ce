@@ -72,6 +72,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -129,6 +130,8 @@ public class StartupSingletonBean {
     private UpgradeSessionLocal upgradeSession;
     @EJB
     private ServiceSessionLocal serviceSession;
+    @EJB
+    private OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
 
     @PreDestroy
     private void shutdown() {
@@ -369,6 +372,11 @@ public class StartupSingletonBean {
         } catch (AuthorizationDeniedException e) {
             log.warn("Unable to check if the EJBCA CLI user '" + cliUsername + "' could be used for certificate enrollment. Please check and correct the status manually. Failed with: " + e.getMessage());
         }
+
+        // Start the clean up job to remove old OCSP responses
+        log.debug(">startup start OCSP clean up job");
+        ocspResponseCleanupSession.start(StartupSingletonBean.class.getName());
+
         log.debug(">startup completed");
     }
     
