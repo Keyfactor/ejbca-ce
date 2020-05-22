@@ -305,6 +305,12 @@
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-log4j*.jar"/></path>
 	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
 	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
+	<path id="lib.commons-lang3.classpath"><fileset dir="${ejbca.home}/lib/ext/apache-commons" includes="commons-lang3-*.jar"/></path>
+	<path id="lib.commons-text.classpath">
+		<!-- Needed for commons-text -->
+		<path refid="lib.commons-lang3.classpath" />
+		<fileset dir="${ejbca.home}/lib/ext/apache-commons" includes="commons-text-*.jar"/>
+	</path>
 	<path id="lib.commons-beanutils.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-beanutils-*.jar"/></path>
 	<path id="lib.commons-codec.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/></path>
 	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration-*.jar"/></path>

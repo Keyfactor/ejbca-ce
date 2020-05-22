@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.8.0_242" class="java.beans.XMLDecoder">
+ <object class="org.cesecore.util.Base64PutHashMap">
+  <void method="put">
+   <string>version</string>
+   <float>4.0</float>
+  </void>
+  <void method="put">
+   <string>type</string>
+   <int>0</int>
+  </void>
+  <void method="put">
+   <string>subjectdirattributes</string>
+   <string>myattr=I am from sweeeeden</string>
+  </void>
+  <void method="put">
+   <string>maxfailedloginattempts</string>
+   <int>4</int>
+  </void>
+  <void method="put">
+   <string>remainingloginattempts</string>
+   <int>-1</int>
+  </void>
+  <void method="put">
+   <string>CERTIFICATESERIALNUMBER</string>
+   <string>ew==</string>
+  </void>
+  <void method="put">
+   <string>extensiondata_foo</string>
+   <string>baråäö</string>
+  </void>
+  <void method="put">
+   <string>extensiondata_bar</string>
+   <string>sdfasdfasdfahsdkjfHWELKRHQWEKLJFHWLKFUWGEFILU  3YR8O723RIUHLI23UGLKQWEFG   OWEUDIGQWkjlrg  qweudiQWHELFJKgfkjasgfsaljfgALJGEuyfgASLFGElfgewfui glfkJA</string>
+  </void>
+  <void method="put">
+   <string>SCEP_CACHED_APROVAL_TYPE</string>
+   <class>org.cesecore.util.XmlSerializerUnitTest$TestApprovalRequest</class>
+  </void>
+  <void method="put">
+   <string>EDIT_EE_APPROVAL_REQUEST_IDS</string>
+   <object class="java.util.ArrayList">
+    <void method="add">
+     <int>4712</int>
+    </void>
+   </object>
+  </void>
+  <void method="put">
+   <string>longvalue</string>
+   <long>123456789</long>
+  </void>
+  <void method="put">
+   <string>boolvalue</string>
+   <boolean>true</boolean>
+  </void>
+  <void method="put">
+   <string>doublevalue</string>
+   <double>1.25</double>
+  </void>
+  <void method="put">
+   <string>nullvalue</string>
+   <null/>
+  </void>
+  <void method="put">
+   <string>datevalue</string>
+   <object class="java.util.Date">
+    <long>1590063194000</long>
+   </object>
+  </void>
+  <void method="put">
+   <string>tokenproperties</string>
+   <object class="java.util.Properties">
+    <void method="put">
+     <string>tokensequence</string>
+     <string>00000</string>
+    </void>
+    <void method="put">
+     <string>property1</string>
+     <string>value1</string>
+    </void>
+   </object>
+  </void>
+  <void method="put">
+   <string>linkedhashmap</string>
+   <object class="java.util.LinkedHashMap">
+    <void method="put">
+     <string>akey</string>
+     <string>avalue</string>
+    </void>
+    <void method="put">
+     <string>bkey</string>
+     <string>bvalue</string>
+    </void>
+    <void method="put">
+     <string>nullkey</string>
+     <null/>
+    </void>
+   </object>
+  </void>
+  <void method="put">
+   <string>arraylist</string>
+   <object class="java.util.ArrayList">
+    <void method="add">
+     <string>listitem1</string>
+    </void>
+    <void method="add">
+     <int>4711</int>
+    </void>
+   </object>
+  </void>
+ </object>
+</java>

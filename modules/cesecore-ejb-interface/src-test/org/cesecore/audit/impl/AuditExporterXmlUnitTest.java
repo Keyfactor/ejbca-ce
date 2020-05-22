@@ -29,24 +29,29 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class AuditExporterXmlTest {
+public class AuditExporterXmlUnitTest {
 
-    private static final Logger log = Logger.getLogger(AuditExporterXmlTest.class);
+    private static final Logger log = Logger.getLogger(AuditExporterXmlUnitTest.class);
 
     @Test
     public void testExportAndParse() throws IOException {
         final String KEY1 = "key1";
         final String KEY2 = "key2";
-        final Long VALUE1 = Long.MIN_VALUE;
-        final String VALUE2 = "ĞİŞğışÅÄÖåäözxcvbnm;<>&!;&lt;&amp;";
+        final long VALUE1 = Long.MIN_VALUE;
+        // String containing XML escape characters
+        final String VALUE2 = "ĞİŞğışÅÄÖåäözxcvbnm;<>&!;<&";
         final AuditExporter auditExporter = new AuditExporterXml();
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         auditExporter.setOutputStream(baos);
         auditExporter.writeStartObject();
         auditExporter.writeField(KEY1, VALUE1);
+        // Escaped at the XML creation time
         auditExporter.writeField(KEY2, VALUE2);
         auditExporter.writeEndObject();
         auditExporter.close();
+        // Resulting string contains escaped strings eg.
+        // from:    <string>ĞİŞğışÅÄÖåäözxcvbnm;<>&!;<&</string>
+        // to:      <string>ĞİŞğışÅÄÖåäözxcvbnm;&lt;&gt;&amp;!;&lt;&amp;</string>
         final String result = baos.toString("UTF8");
         log.info(result);
         // Verify that we can parse the "export"
@@ -56,6 +61,9 @@ public class AuditExporterXmlTest {
         }
         log.info(KEY1 + "=" + parsed.get(KEY1));
         Assert.assertEquals(VALUE1, parsed.get(KEY1));
+        // Resulting string unescaped
+        // from:    <string>ĞİŞğışÅÄÖåäözxcvbnm;&lt;&gt;&amp;!;&lt;&amp;</string>
+        // to:      <string>ĞİŞğışÅÄÖåäözxcvbnm;<>&!;<&</string>
         log.info(KEY2 + "=" + parsed.get(KEY2));
         Assert.assertEquals(VALUE2, parsed.get(KEY2));
     }

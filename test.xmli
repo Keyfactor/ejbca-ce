@@ -40,7 +40,7 @@
         <antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
-       	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test-common-web" inheritall="true" inheritrefs="true"/>

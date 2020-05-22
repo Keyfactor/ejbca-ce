@@ -21,7 +21,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class LogServiceStateTest {
+public class LogServiceStateUnitTest {
 
 	private static final String MSG_NOT_DISABLED = "LogServiceState was not disabled as expected.";
 	private static final String MSG_NOT_ENABLED = "LogServiceState was not enabled as expected.";
