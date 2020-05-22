@@ -33,6 +33,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
@@ -48,6 +49,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.LookAheadObjectInputStream;
+import org.cesecore.util.StringTools;
 
 /**
  * Entity Bean for database persisted configurations
@@ -76,16 +78,18 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             OcspKeyBinding.ResponderIdType.class,
             Properties.class,
             RaCssInfo.class,
-            RaStyleInfo.class));
+            RaStyleInfo.class));	
 
     static {
         for (String customClassName : CesecoreConfiguration.getCustomClassWhitelist().split(",")) {
-            Class<? extends Serializable> customClass;
-            try {
-                customClass = (Class<? extends Serializable>) Class.forName(customClassName);
-                ACCEPTED_SERIALIZATION_CLASSES_SET.add(customClass);
-            } catch (ClassNotFoundException e) {
-                log.info("Class " + customClassName + " was not found on classpath.");
+            if (!StringUtils.isEmpty(StringTools.stripWhitespace(customClassName))) {
+                Class<? extends Serializable> customClass;
+                try {
+                    customClass = (Class<? extends Serializable>) Class.forName(customClassName);
+                    ACCEPTED_SERIALIZATION_CLASSES_SET.add(customClass);
+                } catch (ClassNotFoundException e) {
+                    log.info("Class '" + customClassName + "' was not found on classpath.");
+                }
             }
         }
     }
