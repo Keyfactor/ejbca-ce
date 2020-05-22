@@ -59,6 +59,7 @@ import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
@@ -234,5 +235,10 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
         } catch (NamingException e) {
             return null; // this is the common case, since unidfnr is an special module and is not included with EJBCA
         }
+    }
+
+    @Override
+    public OcspDataSessionLocal getOcspDataSession() {
+        return getEjbLocal().getOcspDataSession();
     }
 }
