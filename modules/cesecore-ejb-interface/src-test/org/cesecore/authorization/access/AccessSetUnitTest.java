@@ -30,9 +30,9 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public final class AccessSetTest {
+public final class AccessSetUnitTest {
 
-    private static final Logger log = Logger.getLogger(AccessSetTest.class);
+    private static final Logger log = Logger.getLogger(AccessSetUnitTest.class);
 
     @SuppressWarnings("deprecation")
     private final AccessSet as = makeLegacyAccessSet("/test", "/one/two", "/three", "/three/four", "/three/four/five",
