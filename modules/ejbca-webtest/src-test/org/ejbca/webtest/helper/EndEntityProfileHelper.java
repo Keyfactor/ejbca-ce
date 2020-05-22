@@ -279,18 +279,6 @@ public class EndEntityProfileHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_DEFAULT_CA, defaultCAName);
     }
 
-
-    /**
-     * Selects Available CA.
-     *
-     * @param caName CA name.
-     */
-    public void selectAvailableCa(String caName) {
-        deselectOptions(Page.SELECT_AVAILABLE_CAS);
-        selectOptionsByName(Page.SELECT_AVAILABLE_CAS, Collections.singletonList(caName));
-    }
-
-
     /**
      * Saves the End Entity Profile with success assertion.
      */
@@ -393,13 +381,13 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     /**
-     * Asserts the End Entity Profile name exists in the list of End Entity Profiles.
+     * Asserts the End Entity Profile name does not exist in the list of End Entity Profiles.
      *
      * @param endEntityProfileName End Entity Profile name.
      */
     public void assertEndEntityProfileNameDoesNotExist(final String endEntityProfileName) {
         final WebElement selectWebElement = findElement(Page.SELECT_EE_PROFILES);
-        if (findElement(selectWebElement, Page.getEEPOptionContainingText(endEntityProfileName)) != null) {
+        if (findElement(selectWebElement, Page.getEEPOptionContainingText(endEntityProfileName), false) != null) {
             fail(endEntityProfileName + " was found in the List of End Entity Profiles.");
         }
     }
@@ -591,7 +579,7 @@ public class EndEntityProfileHelper extends BaseHelper {
     /**
      * Fills Notification Subject
      * @param inputIndex the index of notification to check
-     * @param subject
+     * @param subject notification subject
      */
     public void setNotificationSubject(final int inputIndex, final String subject) {
         fillInput(Page.getNotificationSubjectByIndex(inputIndex), subject);
@@ -601,7 +589,7 @@ public class EndEntityProfileHelper extends BaseHelper {
      * Fills Notification Message
      *
      * @param inputIndex the index of notification to check
-     * @param message
+     * @param message notification message
      */
     public void setNotificationMessage(final int inputIndex, String message) {
         fillInput(Page.getNotificationMessageByIndex(inputIndex), message);
@@ -889,10 +877,9 @@ public class EndEntityProfileHelper extends BaseHelper {
      * Asserts the appearance of error message with expected content
      *
      * @param expectedErrorMessage expected error message.
-     * @param isConfirmed  true to confirm, false otherwise.
      */
-    public void assertSubjectAttributesAttributeModifiableErrorMessage(final String expectedErrorMessage, final boolean isConfirmed) {
-        //String expectedErrorMessage, String noElementMessage, String assertMessage
+    public void assertSubjectAttributesAttributeModifiableErrorMessage(final String expectedErrorMessage) {
+        // String expectedErrorMessage, String noElementMessage, String assertMessage
         assertErrorMessageAppears(expectedErrorMessage, "Expected error message, but none was present", "Error message not as expected");
     }
 
@@ -979,7 +966,10 @@ public class EndEntityProfileHelper extends BaseHelper {
      * @param senderIndex the index of notification to check
      */
     public void assertNotificationSenderDoesNotExist(int senderIndex) {
-        assertElementDoesNotExist(Page.getNotificationSenderByIndex(senderIndex), "Notification sender with index " + senderIndex + " is displayed on edit EEP page");
+        assertElementDoesNotExist(
+                Page.getNotificationSenderByIndex(senderIndex),
+                "Notification sender with index " + senderIndex + " is displayed on edit EEP page"
+        );
     }
 
     /**
@@ -1035,9 +1025,8 @@ public class EndEntityProfileHelper extends BaseHelper {
 
     /**
      * Asserts an existence of 'Notification Events' select.
-     * @param inputIndex the index of notification to check
      */
-    public void assertNotificationEventsExists(final int inputIndex) {
+    public void assertNotificationEventsExists() {
         assertElementExists(Page.getNotificationEventsByIndex(0), "Notification events is not present on edit EEP page after adding notification");
     }
 
@@ -1077,24 +1066,6 @@ public class EndEntityProfileHelper extends BaseHelper {
      */
     public void subjectDnAttributeRequiredCheckboxTrigger(final String dnAttributeName) {
         clickLink(Page.getSubjectDnAttributesCheckBox(dnAttributeName, "Required"));
-    }
-
-    /**
-     * Trigger the checkbox for 'Subject DN Attribute' - Modifiable.
-     *
-     * @param dnAttributeName Name of the 'Subject DN Attribute'.
-     */
-    public void subjectDnAttributeModifiableCheckboxTrigger(final String dnAttributeName) {
-        clickLink(Page.getSubjectDnAttributesCheckBox(dnAttributeName, "Modifiable"));
-    }
-
-    /**
-     * Trigger the checkbox for 'Subject DN Attribute' - Validation.
-     *
-     * @param dnAttributeName Name of the 'Subject DN Attribute'.
-     */
-    public void subjectDnAttributeValidationCheckboxTrigger(final String dnAttributeName) {
-        clickLink(Page.getSubjectDnAttributesCheckBox(dnAttributeName, "Validation"));
     }
 
     private void assertSubjectDnAttributesCheckboxIsChecked(final String dnAttributeName, final String checkboxName, final boolean expectedState) {
@@ -1158,17 +1129,6 @@ public class EndEntityProfileHelper extends BaseHelper {
      */
     public void assertDefaultCaNameSelected(final String name) {
         assertTrue("Default CA value mismatch.", getSelectSelectedNames(Page.SELECT_DEFAULT_CA).contains(name));
-    }
-
-    /**
-     * Asserts the Available CAs has selected names.
-     *
-     * @param names selected names.
-     */
-    public void assertAvailableCasNamesSelected(final String... names) {
-        for(String name : names) {
-            assertTrue("Available Certificate Profiles value mismatch [" + name + "].", getSelectSelectedNames(Page.SELECT_AVAILABLE_CAS).contains(name));
-        }
     }
 
     /**

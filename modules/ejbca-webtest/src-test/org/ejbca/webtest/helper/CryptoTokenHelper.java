@@ -184,16 +184,6 @@ public class CryptoTokenHelper extends BaseHelper {
     }
 
     /**
-     * Accepts alert popup when removing token key.
-     *
-     * @param aliasName The name of the key name.
-     */
-    public void confirmRemoveCryptoTokenAlias(final String aliasName) {
-        clickRemoveCryptoTokenAlias(aliasName);
-        assertAndConfirmAlertPopUp("Are you sure you want to remove this key?", true);
-    }
-
-    /**
      * Checks that 'Test' for key alias is successful.
      *
      * @param aliasName The name of alias.

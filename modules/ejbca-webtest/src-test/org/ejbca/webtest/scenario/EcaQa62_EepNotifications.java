@@ -91,7 +91,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         endEntityProfileHelper.addNotification();
         endEntityProfileHelper.assertNotificationSenderExists(0);
         endEntityProfileHelper.assertNotificationRecipientExists(0);
-        endEntityProfileHelper.assertNotificationEventsExists(0);
+        endEntityProfileHelper.assertNotificationEventsExists();
         endEntityProfileHelper.assertNotificationSubjectExists(0);
         endEntityProfileHelper.assertNotificationMessageExists(0);
         endEntityProfileHelper.assertDeleteAllNotificationButtonIsEnabled(true);

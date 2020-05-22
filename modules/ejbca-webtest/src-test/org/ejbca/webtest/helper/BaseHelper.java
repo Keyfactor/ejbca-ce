@@ -144,6 +144,21 @@ public class BaseHelper {
      * @return a web element or null.
      */
     protected WebElement findElement(final WebElement rootElement, final By childElementId) {
+        return findElement(rootElement, childElementId, true);
+    }
+
+    /**
+     * Finds an element by locator within given element.
+     * <br/>
+     * In case of missing element (as expected), use shouldLogError = false flag.
+     *
+     * @param rootElement    an input element.
+     * @param childElementId child locator.
+     * @param shouldLogError boolean flag, whether an error about non-existing element should be reported.
+     *
+     * @return a web element or null.
+     */
+    protected WebElement findElement(final WebElement rootElement, final By childElementId, final boolean shouldLogError) {
         assertNotNull("Root element cannot be null.", rootElement);
         // Wait
         waitForElementBecomeVisible(rootElement);
@@ -151,7 +166,9 @@ public class BaseHelper {
             return rootElement.findElement(childElementId);
         }
         catch (NoSuchElementException ex) {
-            log.debug("Cannot find WebElement [" + childElementId.toString() + "] inside WebElement [" + rootElement.getTagName() + "]", ex);
+            if(shouldLogError) {
+                log.debug("Cannot find WebElement [" + childElementId.toString() + "] inside WebElement [" + rootElement.getTagName() + "]", ex);
+            }
         }
         return null;
     }
@@ -525,7 +542,7 @@ public class BaseHelper {
      * @param failureMessage failure message.
      */
     void assertElementDoesNotExist(final By elementId, final String failureMessage) {
-        if(findElementWithoutWait(elementId) != null) {
+        if(findElementWithoutWait(elementId, false) != null) {
             fail(failureMessage);
         }
     }

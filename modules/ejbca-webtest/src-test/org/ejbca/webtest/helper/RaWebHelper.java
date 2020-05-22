@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -71,7 +69,6 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_CHECKBOX = By.id("enrollWithUsernameForm:checkButton");
         
         // Manage Requests
-        static final By BUTTON_TAB_CONFIRM_REQUESTS = By.id("requestInfoForm:confirmRequestButton");
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
         static final By BUTTON_TAB_APPROVE_REQUESTS = By.id("manageRequestsForm:tabApproveRequests");
         static final By BUTTON_TAB_PENDING_REQUESTS = By.id("manageRequestsForm:tabPendingRequests");
@@ -87,8 +84,6 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_APPROVE = By.id("manageRequestForm:commandApprove");
         static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
         static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
-        static final By INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0 = By.id("requestInfoForm:subjectDn:0:subjectDnField");
-        static final By INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE1 = By.id("requestInfoForm:subjectDn:1:subjectDnField");
         static final By INPUT_MANAGE_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
         static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeName:0:subjectAltNameField");
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
@@ -97,6 +92,10 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
+
+        static By getRequestInfoFormSubjectDnSubjectDnField(final int index) {
+            return By.id("requestInfoForm:subjectDn:" + index + ":subjectDnField");
+        }
     }
     
     /**
@@ -118,10 +117,6 @@ public class RaWebHelper extends BaseHelper {
      */
     public void clickMenuManageRequests() {
         clickLink(Page.BUTTON_MENU_MANAGE_REQUESTS);
-    }
-
-    public void clickConfirmRequest() {
-        clickLink(Page.BUTTON_TAB_CONFIRM_REQUESTS);
     }
 
     /**
@@ -266,12 +261,6 @@ public class RaWebHelper extends BaseHelper {
     }
 
 
-    public void assertErrorMessageExists(final String noErrorMessage, final String errorMessage) {
-        final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
-        assertNotNull(noErrorMessage, errorMessageWebElement);
-        assertEquals("Error message does not match.", errorMessage, errorMessageWebElement.getText());
-    }
-    
     public void assertErrorMessageContains(final String noErrorMessage, final String errorMessage) {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
         assertNotNull(noErrorMessage, errorMessageWebElement);
@@ -425,7 +414,7 @@ public class RaWebHelper extends BaseHelper {
      * @param cnText Common Name.
      */
     public void fillMakeRequestEditCommonName(final String cnText) {
-        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0, cnText);
+        fillInput(Page.getRequestInfoFormSubjectDnSubjectDnField(0), cnText);
     }
     
     /**
@@ -440,7 +429,7 @@ public class RaWebHelper extends BaseHelper {
     /**
      * Fills the 'DNS Name' with text in the request edit form.
      *
-     * @param cnDnsName
+     * @param cnDnsName DNS name
      */
     public void fillDnsName(final String cnDnsName) {
         fillInput(Page.INPUT_DNS_NAME, cnDnsName);
@@ -454,22 +443,19 @@ public class RaWebHelper extends BaseHelper {
      * 
      * This method fills the 0th element with the value provided by 'attributeValue' input param.
      *
-     * @param attributeValue
+     * @param dnAttributeIndex attribute's index
+     * @param attributeValue value
      */
-    public void fillDnAttribute0(final String attributeValue) {
-        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE0, attributeValue);
+    public void fillDnAttribute0(final int dnAttributeIndex, final String attributeValue) {
+        fillInput(Page.getRequestInfoFormSubjectDnSubjectDnField(dnAttributeIndex), attributeValue);
     }
 
-    public void fillDnAttribute1(final String attributeValue) {
-        fillInput(Page.INPUT_MAKE_REQUEST_EDIT_FORM_DNATTRIBUTE1, attributeValue);
-    }
-    
     /**
      * Fills the "User Credentials" section with username and enrollment code. 
      * Also fills the enrollment code confirmation box with the same enrollment code value
      * 
-     * @param username
-     * @param enrollmentCode
+     * @param username username
+     * @param enrollmentCode enrollment code
      */
     public void fillCredentials(final String username, final String enrollmentCode) {
         fillInput(Page.INPUT_USERNAME, username);
@@ -480,7 +466,7 @@ public class RaWebHelper extends BaseHelper {
     /**
      * Fills the username 
      * 
-     * @param username
+     * @param username username
      */
     public void fillUsername(final String username) {
         fillInput(Page.INPUT_USERNAME, username);
@@ -524,15 +510,15 @@ public class RaWebHelper extends BaseHelper {
      * Asserts the 'Approve Message' does not appear.
      */
     public void assertApproveMessageDoesNotExist() {
-                assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
+        assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
     }
     
     /**
      * Helps you hover over 'Enroll' and takes you to 'Use Username'.
      * 
-     * @param webDriver
+     * @param webDriver web driver
      */
-    public void clickToEnrollUseUsername(WebDriver webDriver) {
+    public void clickToEnrollUseUsername(final WebDriver webDriver) {
         Actions action = new Actions(webDriver);
         action.moveToElement(webDriver.findElement(Page.BUTTON_ENROLL))
               .moveToElement(webDriver.findElement(Page.BUTTON_ENROLL_WITH_USERNAME))
@@ -542,8 +528,8 @@ public class RaWebHelper extends BaseHelper {
     /**
     * Fills the 'Username' and 'Enrollment code' textfields with text.
     *
-    * @param username
-    * @param enrollmentCode
+    * @param username username
+    * @param enrollmentCode enrollment code
     */
     public void fillEnrollUsernameAndCode(String username,String enrollmentCode) {
         fillInput(Page.ENROLL_USERNAME_INPUT, username );

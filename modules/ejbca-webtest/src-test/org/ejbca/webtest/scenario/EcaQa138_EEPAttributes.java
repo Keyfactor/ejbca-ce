@@ -96,7 +96,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
         endEntityProfileHelper.assertSubjectAttributeExists(TestData.SUBJECT_DN_ATTRIBUTE_NAME);
         endEntityProfileHelper.triggerSubjectAttributesAttributeModifiable(TestData.SUBJECT_DN_ATTRIBUTE, TestData.SUBJECT_DN_ATTRIBUTE_INDEX);
         endEntityProfileHelper.saveEndEntityProfile(false);
-        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableErrorMessage(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DN_ATTRIBUTE, true);
+        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableErrorMessage(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DN_ATTRIBUTE);
         // Add the test string to the attribute and save (should succeed)
         endEntityProfileHelper.fillSubjectAttributesAttributeValue(
                 TestData.SUBJECT_DN_ATTRIBUTE,
@@ -117,7 +117,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
         endEntityProfileHelper.assertSubjectAttributeExists(TestData.SUBJECT_ALT_NAME_ATTRIBUTE_NAME);
         endEntityProfileHelper.triggerSubjectAttributesAttributeModifiable(TestData.SUBJECT_ALT_NAME_ATTRIBUTE, TestData.SUBJECT_ALT_NAME_ATTRIBUTE_INDEX);
         endEntityProfileHelper.saveEndEntityProfile(false);
-        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableErrorMessage(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ALTNAME_ATTRIBUTE, true);
+        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableErrorMessage(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ALTNAME_ATTRIBUTE);
         // Add the test string to the attribute and save (should succeed)
         endEntityProfileHelper.fillSubjectAttributesAttributeValue(
                 TestData.SUBJECT_ALT_NAME_ATTRIBUTE,
@@ -138,7 +138,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
         endEntityProfileHelper.assertSubjectAttributeExists(TestData.SUBJECT_DIR_ATTRIBUTE_NAME);
         endEntityProfileHelper.triggerSubjectAttributesAttributeModifiable(TestData.SUBJECT_DIR_ATTRIBUTE, TestData.SUBJECT_DIR_ATTRIBUTE_INDEX);
         endEntityProfileHelper.saveEndEntityProfile(false);
-        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableErrorMessage(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DIRECTORY_ATTRIBUTE, true);
+        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableErrorMessage(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DIRECTORY_ATTRIBUTE);
         // Add the test string to the attribute and save (should succeed)
         endEntityProfileHelper.fillSubjectAttributesAttributeValue(
                 TestData.SUBJECT_DIR_ATTRIBUTE,

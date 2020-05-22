@@ -108,7 +108,6 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
     public static void exit() {
         // super
         afterClass();
-
         // Remove generated artifacts
         removeEndEntityProfileByName(TestData.ENTITY_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
