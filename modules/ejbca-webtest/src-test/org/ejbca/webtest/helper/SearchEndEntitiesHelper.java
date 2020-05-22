@@ -206,7 +206,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      * Asserts the search resulting table DOES NOT CONTAIN the 'No end entities found' row.
      */
     public void assertSearchResultIsNOTNoEntriesFound() {
-        final WebElement noResultsWebElement = findElementWithoutWait(Page.TEXT_NO_RESULTS);
+        final WebElement noResultsWebElement = findElementWithoutWait(Page.TEXT_NO_RESULTS, false);
         assertNull("'No end entities found' message was found, but it must not be present.", noResultsWebElement);
     }
 

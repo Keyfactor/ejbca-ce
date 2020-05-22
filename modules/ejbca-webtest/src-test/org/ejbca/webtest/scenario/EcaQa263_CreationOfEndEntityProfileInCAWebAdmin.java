@@ -13,6 +13,7 @@
 package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
@@ -21,6 +22,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.openqa.selenium.WebDriver;
 
 /**
  * This test describes a creation of End Entity Profile in CA Web admin.
@@ -34,12 +36,15 @@ import org.junit.runners.MethodSorters;
 public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase {
 
     // Helpers
+    private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
 
     // TestData
     public static class TestData {
         static final String END_ENTITY_PROFILE_NAME = "ChaEntityProfile";
-        static final String DEFAULT_CA_NAME = "Example Person CA";
+        static final String CA_NAME = "Example Person CA";
+        static final String CA_VALIDITY = "1y";
+        static final String DEFAULT_CA_NAME = CA_NAME;
         static final String DEFAULT_CP_NAME = "ENDUSER";
         static final String[] CP_NAMES = new String[] {DEFAULT_CP_NAME, "SUBCA"};
         static final String DEFAULT_TOKEN_NAME = "User Generated";
@@ -52,7 +57,9 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        endEntityProfileHelper = new EndEntityProfileHelper(getWebDriver());
+        final WebDriver webDriver = getWebDriver();
+        caHelper = new CaHelper(webDriver);
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
     }
 
     @AfterClass
@@ -63,13 +70,23 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     }
 
     @Test
-    public void stepA_AddEndEntityProfile() {
+    public void stepA_AddCA() {
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.addCa(TestData.CA_NAME);
+        // Set validity (required)
+        caHelper.setValidity(TestData.CA_VALIDITY);
+        caHelper.createCa();
+        caHelper.assertExists(TestData.CA_NAME);
+    }
+
+    @Test
+    public void stepB_AddEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
     }
 
     @Test
-    public void stepB_AddAttributes() {
+    public void stepC_AddAttributes() {
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
         endEntityProfileHelper.triggerEndEntityEmailCheckBox();
         // CN, Common name present by default
@@ -91,7 +108,7 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     }
 
     @Test
-    public void stepC_ManageCertificateProfiles() {
+    public void stepD_ManageCertificateProfiles() {
         endEntityProfileHelper.selectDefaultCp(TestData.DEFAULT_CP_NAME);
         endEntityProfileHelper.selectAvailableCps(TestData.CP_NAMES);
         //
@@ -100,14 +117,14 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     }
 
     @Test
-    public void stepD_ManageCAs() {
+    public void stepE_ManageCAs() {
         endEntityProfileHelper.selectDefaultCa(TestData.DEFAULT_CA_NAME);
         //
         endEntityProfileHelper.assertDefaultCaNameSelected(TestData.DEFAULT_CA_NAME);
     }
 
     @Test
-    public void stepE_ManageTokens() {
+    public void stepF_ManageTokens() {
         endEntityProfileHelper.assertDefaultTokenNameSelected(TestData.DEFAULT_TOKEN_NAME);
         endEntityProfileHelper.assertAvailableTokensNamesSelected(TestData.TOKEN_NAMES);
     }
