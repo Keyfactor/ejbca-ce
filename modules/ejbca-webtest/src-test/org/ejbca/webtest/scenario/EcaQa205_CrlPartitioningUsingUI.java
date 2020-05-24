@@ -20,10 +20,14 @@ import org.ejbca.webtest.helper.*;
 import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigProtokols;
 import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
 import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 // The ignored testcase, stepM_GenerateAndRevokeCertificates, works when executing locally but not within a build machine
@@ -230,7 +234,9 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         swaggerUIHelper.setCaSubjectDnForCertificateRevoke(TestData.ISSUER_DN);
         swaggerUIHelper.setCertificateSerialNumber(certificateSerialNumber);
         swaggerUIHelper.setReasonToRevoke("UNSPECIFIED");
-        swaggerUIHelper.setDateToRevoke();
+        // Get date -2 days from now
+        final LocalDateTime localDateTime = WebTestUtil.getUtcLocalDateTime(0, 0 , -2);
+        swaggerUIHelper.setDateToRevoke(DateTimeFormatter.ISO_INSTANT.format(localDateTime));
         swaggerUIHelper.executeCertificateRevoke();
         swaggerUIHelper.assertCertificateRevokeSuccess();
     }
