@@ -24,7 +24,7 @@ import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.ValidatorsHelper;
 import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
-import org.ejbca.webtest.utils.GetResourceDir;
+import org.ejbca.webtest.util.TestFileResource;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -55,17 +55,17 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
 
     // Test Data
     private static class TestData {
-        private static final String VALIDATOR_NAME = "EcaQa201B_Blacklist";
-        private static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/Blacklist.txt";
-        private static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
-        private static final String VALIDATOR_PERFORM_TYPE = "Domain components";
-        private static final String CA_NAME = "EcaQa201B_CA";
-        private static final String CA_VALIDITY = "1y";
-        private static final String APPROVAL_PROFILE_NAME = "EcaQa201B_ApprovalProfile";
-        private static final String APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL = "Partitioned Approval";
-        private static final String CERTIFICATE_PROFILE_NAME = "EcaQa201B-CertificateProfile";
-        private static final String ROLE_NAME = "Super Administrator Role";
-        private static final String ENTITY_NAME = "EcaQa201B_EntityProfile";
+        static final String VALIDATOR_NAME = "EcaQa201B_Blacklist";
+        static final String VALIDATOR_BLACKLIST_FILENAME = new TestFileResource("Blacklist.txt").getFileAbsolutePath();
+        static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
+        static final String VALIDATOR_PERFORM_TYPE = "Domain components";
+        static final String CA_NAME = "EcaQa201B_CA";
+        static final String CA_VALIDITY = "1y";
+        static final String APPROVAL_PROFILE_NAME = "EcaQa201B_ApprovalProfile";
+        static final String APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL = "Partitioned Approval";
+        static final String CERTIFICATE_PROFILE_NAME = "EcaQa201B-CertificateProfile";
+        static final String ROLE_NAME = "Super Administrator Role";
+        static final String ENTITY_NAME = "EcaQa201B_EntityProfile";
         static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
                 "-----BEGIN CERTIFICATE REQUEST-----",
                 "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
@@ -140,8 +140,7 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
     public void stepD_EditValidatorSecondTime() {
         validatorsHelper.openEditValidatorPage(TestData.VALIDATOR_NAME);
         validatorsHelper.setBlackListSite(TestData.VALIDATOR_BLACKLIST_SITE);
-
-        //Test to verify it returns a positive test result
+        // Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
         validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator '" + TestData.VALIDATOR_NAME + "' permitted issuance of certificate.");
     }
