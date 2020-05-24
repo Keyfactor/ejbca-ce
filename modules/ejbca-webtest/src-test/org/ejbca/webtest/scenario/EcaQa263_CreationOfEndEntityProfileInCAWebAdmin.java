@@ -65,6 +65,7 @@ public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase
     @AfterClass
     public static void exit() {
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
+        removeCaAndCryptoToken(TestData.CA_NAME);
         // super
         afterClass();
     }
