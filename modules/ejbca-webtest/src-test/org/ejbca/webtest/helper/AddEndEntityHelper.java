@@ -37,7 +37,10 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By PAGE_LINK = By.id("raAddendentity");
         static final By MESSAGE_INFO = By.xpath("//div[@class='message info']");
         static final By MESSAGE_ALERT = By.xpath("//div[@class='message alert']");
-        
+
+        // Containers
+        static final By TABLE_ADD_END_ENTITY = By.id("addendentity");
+
         // Input fields
         static final By INPUT_NAME_CONSTRAINTS_PERMITTED = By.xpath("//textarea[@name='textarencpermitted']");
         static final By INPUT_CERT_EXTENSION_DATA = By.xpath("//textarea[@name='textareaextensiondata']");
@@ -46,7 +49,6 @@ public class AddEndEntityHelper extends BaseHelper {
         static final By INPUT_MSUPN_EMAIL_NAME = By.xpath("//input[starts-with(@name, 'textfieldupnname')]");
         static final By INPUT_MSUPN_EMAIL_DOMAIN = By.xpath("//input[starts-with(@name, 'textfieldupnname')]/following-sibling::input");
         static final By CERTIFICATE_SERIAL_NUMBER_IN_HEX = By.name("textfieldcertsn");
-
 
         // Select drop downs
         static final By SELECT_EEP = By.xpath("//select[@name='selectendentityprofile']");
@@ -95,6 +97,8 @@ public class AddEndEntityHelper extends BaseHelper {
      */
     public void setEndEntityProfile(final String eepName) {
         selectOptionByName(Page.SELECT_EEP, eepName);
+        // Add a timeout to reload form table after selection
+        findElement(Page.TABLE_ADD_END_ENTITY);
     }
 
     /**
