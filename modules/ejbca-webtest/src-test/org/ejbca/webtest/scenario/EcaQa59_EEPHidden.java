@@ -127,6 +127,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         eeProfileHelper.triggerNumberOfAllowedRequests();
         eeProfileHelper.triggerKeyRecoverable();
         eeProfileHelper.triggerIssuanceRevocationReason();
+        // Notification
         eeProfileHelper.triggerSendNotification();
         eeProfileHelper.addNotification();
         eeProfileHelper.setNotificationSender(TestData.NOTIFICATION_INDEX, "sender@example.com");
@@ -134,7 +135,6 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         eeProfileHelper.setNotificationMessage(TestData.NOTIFICATION_INDEX, "test message");
         // Save configuration
         eeProfileHelper.saveEndEntityProfile(true);
-
         // Assert that the EEP exists
         eeProfileHelper.assertEndEntityProfileNameExists(TestData.EEP_NAME);
     }
@@ -142,7 +142,6 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     @Test
     public void testC_checkEep() {
         addEndEntityHelper.openPage(getAdminWebUrl());
-        
         addEndEntityHelper.setEndEntityProfile(TestData.EEP_NAME);
         addEndEntityHelper.assertEndEntityProfileSelected(TestData.EEP_NAME);
         addEndEntityHelper.assertCertificateProfileSelected("ENDUSER");

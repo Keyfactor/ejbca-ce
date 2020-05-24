@@ -48,7 +48,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         static final By TEXT_NO_RESULTS = By.xpath("//table[@class='results']/tbody//td[text()='No end entities found.']");
         static final By BUTTON_REVOKE_VIEW_CERTIFICATE = By.xpath("//input[@name='buttonrevokeusers']");
         
-        static final By getColumnContainingCommonName(final String cn) {
+        static By getColumnContainingCommonName(final String cn) {
             return By.xpath("//table[@class='results']/tbody/tr/td[4][contains(text(),'" + cn + "')]");
         }
     }
@@ -143,7 +143,13 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     private void clickForRowEntry(final String cn, final By elementToClick) {
         final WebElement row = findElement(Page.getColumnContainingCommonName(cn));
-        row.findElement(elementToClick).click();
+        final WebElement button = findElement(row, elementToClick, true);
+        if(button != null) {
+            button.click();
+        }
+        else {
+            fail("Cannot locate button in the row with CN=[" + cn + "]");
+        }
     }
 
     /**
