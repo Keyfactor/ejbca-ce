@@ -40,7 +40,7 @@ import org.openqa.selenium.WebElement;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-219">ECAQA-219</a>
  *
- * @version $Id: EcaQa219_RevokeEndEntityCertificate.java 31450 2019-02-08 15:46:45Z samuellb $
+ * @version $Id$
  */
 @RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -61,7 +61,6 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     private static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
     private static final String CA_VALIDITY = "15y";
     private static final By REVOKE_SELECTED_BUTTON_XPATH = By.xpath("//input[@name='buttonrevokeusers']");
-    private static final By CERTIFICATE_SERIAL_NUMBER_XPATH = By.xpath("//*[@id='contentBlock']//label[contains(text(),'Certificate Serial Number')]/../following-sibling::td/label");
 
     private static void cleanup() {
         // Remove generated artifacts
@@ -136,22 +135,19 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         webDriver.switchTo().window(mainWindow);
     }
     
-    private String getStringFromSearchEndEntities() {
+    private void getStringFromSearchEndEntities() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
         searchEndEntitiesHelper.fillSearchCriteria(END_ENTITY_NAME, null, "All", null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.triggerSearchResultUsernameRowSelect(END_ENTITY_COMMON_NAME);
         WebElement revokeButton = webDriver.findElement(REVOKE_SELECTED_BUTTON_XPATH);
         revokeButton.click();
-
         // Handles the CertificateView Popup-window.
         acceptAlert();
         searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
         for (String windowHandle : webDriver.getWindowHandles()) {
             webDriver.switchTo().window(windowHandle);
         }
-        WebElement certificateSerialNumberElement = webDriver.findElement(CERTIFICATE_SERIAL_NUMBER_XPATH);
-        return certificateSerialNumberElement.getText();
     }
     
     private static void acceptAlert() {

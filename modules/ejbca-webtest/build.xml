@@ -14,6 +14,7 @@
 	<property name="webtest.src.dir" location="${webtest.dir}/src"/>
 	<property name="webtest.src-test.dir" location="${webtest.dir}/src-test"/>
 	<property name="webtest.resources.dir" location="${webtest.dir}/resources"/>
+	<property name="webtest.resources-test.dir" location="${webtest.dir}/resources-test"/>
 	<property name="webtest.conf.dir" location="${webtest.dir}/conf"/>
 	<property name="webtest.lib.webtest-selenium" value="${webtest.dir}/../../lib/ext/webtest/selenium"/>
     <!-- Shared library for selenium from lib/ -->
@@ -104,6 +105,8 @@
         	encoding="UTF-8" classpathref="test.classpath"/>
 		<copy todir="${webtest.build-test.dir}" failonerror="true">
 			<file basedir="${webtest.resources.dir}" name="log4j.properties" />
+			<!-- Copy test resources -->
+			<fileset dir="${webtest.resources-test.dir}" includes="*" excludes="readme.txt"/>
 		</copy>
     </target>
 

@@ -93,6 +93,9 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
 
+        // Containers
+        static final By CONTAINER_ENROLL_BUTTONS = By.id("requestInfoForm:enrollButtons");
+
         static By getRequestInfoFormSubjectDnSubjectDnField(final int index) {
             return By.id("requestInfoForm:subjectDn:" + index + ":subjectDnField");
         }
@@ -215,23 +218,24 @@ public class RaWebHelper extends BaseHelper {
     /**
      * Click to download pem
      */
-
     public void clickDownloadPem() {
+        // Add a timeout to load enroll buttons pane before click
+        findElement(Page.CONTAINER_ENROLL_BUTTONS);
         clickLink(Page.BUTTON_DOWNLOAD_PEM);
     }
 
     /**
      * Click to "Download PEM" button in requestInfoForm form.
      */
-    public void clickDownloadKeystorePem() {
-        clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
+    public void clickDownloadKeystorePem() { clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
     }
 
     /**
      * Click to download jks
      */
-
     public void clickDownloadJks() {
+        // Add a timeout to load enroll buttons pane before click
+        findElement(Page.CONTAINER_ENROLL_BUTTONS);
         clickLink(Page.BUTTON_DOWNLOAD_JKS);
     }
 
@@ -241,6 +245,8 @@ public class RaWebHelper extends BaseHelper {
      * This method works in the 'Enroll - Make New Request' workflow.
      */
     public void clickDownloadPkcs12(){
+        // Add a timeout to load enroll buttons pane before click
+        findElement(Page.CONTAINER_ENROLL_BUTTONS);
         clickLink(Page.BUTTON_DOWNLOAD_P12);
     }
 

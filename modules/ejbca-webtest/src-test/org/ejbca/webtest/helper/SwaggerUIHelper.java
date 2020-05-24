@@ -12,20 +12,10 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-/**
- * Helper class used to make REST calls using the Swagger UI
- *
- * @version $Id$
- *
- */
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.ejbca.webtest.utils.GetADate;
-import org.hamcrest.CoreMatchers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.openqa.selenium.By;
@@ -34,9 +24,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Collection;
 
+/**
+ * Helper class used to make REST calls using the Swagger UI
+ *
+ * @version $Id$
+ */
 public class SwaggerUIHelper extends BaseHelper {
 
-    private final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
+    private final String CSR = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
             + "ZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDe\n"
@@ -152,7 +147,7 @@ public class SwaggerUIHelper extends BaseHelper {
     public void setPkcs10RequestAsJson(String certProfile, String endEntity,
                                        String caName, String uname, String pword) {
 
-        StringBuilder sb = new StringBuilder("\n\"certificate_request\": \"" + csr + "\",");
+        StringBuilder sb = new StringBuilder("\n\"certificate_request\": \"" + CSR + "\",");
 
         //append the remaining JSON lines
         sb.append("\n\"certificate_profile_name\": \"" + certProfile + "\",");
@@ -321,11 +316,10 @@ public class SwaggerUIHelper extends BaseHelper {
 
     /**
      * Set the date to revoke certificate in the field.
-     *
+     * @param iso8601Date date in ISO8601 format.
      */
-    public void setDateToRevoke() {
-        String date = new GetADate().getIso8601Date();
-        fillInput(Page.TEXT_DATE_CERTREVOKE, date);
+    public void setDateToRevoke(final String iso8601Date) {
+        fillInput(Page.TEXT_DATE_CERTREVOKE, iso8601Date);
     }
 
     /**
@@ -365,7 +359,6 @@ public class SwaggerUIHelper extends BaseHelper {
                 downloadDir = "/tmp/";
             }
 
-
             File directory = new File(downloadDir);
             Collection<File> f = FileUtils.listFiles(directory, new WildcardFileFilter("response*.json"), null);
             System.out.println("how many:  " + f.size());
@@ -379,9 +372,7 @@ public class SwaggerUIHelper extends BaseHelper {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return jsonObject;
     }
-
 
 }
