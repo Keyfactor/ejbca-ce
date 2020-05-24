@@ -24,7 +24,7 @@ import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.ValidatorsHelper;
 import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
-import org.ejbca.webtest.utils.GetResourceDir;
+import org.ejbca.webtest.util.TestFileResource;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -55,7 +55,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
 
     // Test Data
     private static class TestData {
-        static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/Blacklist.txt";
+        static final String VALIDATOR_BLACKLIST_FILENAME = new TestFileResource("Blacklist.txt").getFileAbsolutePath();
         static final String VALIDATOR_NAME = "EcaQa201-2A_Blacklist";
         static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
         static final String VALIDATOR_PERFORM_TYPE = "Base domains";

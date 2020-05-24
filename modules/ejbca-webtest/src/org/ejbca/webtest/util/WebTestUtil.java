@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.util;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 /**
  * This class contains utility methods for web tests.
  *
@@ -61,4 +64,60 @@ public abstract class WebTestUtil {
         return uri;
     }
 
+    /**
+     * Returns a UTC LocalDateTime instance with possible offsets, eg:
+     * <ul>
+     *     <li>offsetYear = -1, minus 1 year from current date;</li>
+     *     <li>offsetYear = 0, current year unchanged;</li>
+     *     <li>offsetYear = 1, plus 1 year from current date;</li>
+     *     <li>offsetMonth = -1, minus 1 month from current date;</li>
+     *     <li>offsetMonth = 0, current month unchanged;</li>
+     *     <li>offsetMonth = 1, plus 1 month from current date;</li>
+     *     <li>offsetDay = -1, minus 1 day from current date;</li>
+     *     <li>offsetDay = 0, current day unchanged;</li>
+     *     <li>offsetDay = 1, plus 1 day from current date;</li>
+     * </ul>
+     * <br/>
+     * <b>An example 1</b>:
+     * <br/>
+     * <pre>
+     *     Current date is 2020-12-31T01:02:03.456Z:
+     *     getLocalDate(0, 0, 0);
+     *     will return 2020-12-31T01:02:03.456Z
+     * </pre>
+     * <b>An example 2</b>:
+     * <br/>
+     * <pre>
+     *     Current date is 2020-12-31T01:02:03.456Z:
+     *     getLocalDate(-1, 0, 0);
+     *     will return 2019-12-31T01:02:03.456Z
+     * </pre>
+     * <b>An example 3</b>:
+     * <br/>
+     * <pre>
+     *     Current date is 2020-12-31T01:02:03.456Z:
+     *     getLocalDate(0, -13, 0);
+     *     will return 2019-11-30T01:02:03.456Z
+     * </pre>
+     *
+     * @param offsetYear year offset.
+     * @param offsetMonth month offset.
+     * @param offsetDay day offset.
+     *
+     * @return UTC LocalDateTime instance.
+     */
+    public static LocalDateTime getUtcLocalDateTime(int offsetYear, int offsetMonth, int offsetDay) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("UTC"));
+        if(offsetYear != 0) {
+            localDateTime = localDateTime.plusYears(offsetYear);
+        }
+        if(offsetMonth != 0) {
+            localDateTime = localDateTime.plusMonths(offsetMonth);
+        }
+        if(offsetDay != 0) {
+            localDateTime = localDateTime.plusDays(offsetDay);
+        }
+        System.out.println(localDateTime);
+        return localDateTime;
+    }
 }
