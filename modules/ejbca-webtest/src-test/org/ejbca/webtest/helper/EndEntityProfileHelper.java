@@ -106,6 +106,7 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By NOTIFICATION = By.xpath("//tr[td/strong[text()='Send Notification']]/following-sibling::tr[1]/td[2][contains(text(), 'Notification')]");
         // Other Data / Send Notification  / Add
         static final By BUTTON_ADD_NOTIFICATION = By.id("eeProfiles:addButton");
+        static final By CONTAINER_NOTIFICATION_FORM = By.id("eeProfiles:userNotificationsWrapper");
         static final By BUTTON_ADD_SUBJECT_ALT_NAME = By.id("eeProfiles:addSubjectAltNameAttributeButton");
         // Other Data / Send Notification  / Delete all
         static final By BUTTON_DELETE_ALL_NOTIFICATION = By.id("eeProfiles:sendNotificationsDeleteAllButton");
@@ -513,6 +514,8 @@ public class EndEntityProfileHelper extends BaseHelper {
      */
     public void addNotification() {
         clickLink(Page.BUTTON_ADD_NOTIFICATION);
+        // Add a timeout to load notifications container after click
+        findElement(Page.CONTAINER_NOTIFICATION_FORM);
     }
 
     /**
@@ -536,6 +539,8 @@ public class EndEntityProfileHelper extends BaseHelper {
      */
     public void triggerSendNotification() {
         clickLink(Page.INPUT_USE_SEND_NOTIFICATION);
+        // Add a timeout to load button 'Add' after click
+        findElement(Page.BUTTON_ADD_NOTIFICATION);
     }
 
     /**

@@ -144,7 +144,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         WebElement revokeButton = webDriver.findElement(REVOKE_SELECTED_BUTTON_XPATH);
         revokeButton.click();
 
-        //Handles the CertificateView Popup-window.
+        // Handles the CertificateView Popup-window.
         acceptAlert();
         searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
         for (String windowHandle : webDriver.getWindowHandles()) {
