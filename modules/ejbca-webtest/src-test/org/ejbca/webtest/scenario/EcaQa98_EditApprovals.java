@@ -18,14 +18,16 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.helper.*;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
+import org.ejbca.webtest.helper.AddEndEntityHelper;
+import org.ejbca.webtest.helper.AdminRolesHelper;
+import org.ejbca.webtest.helper.ApprovalProfilesHelper;
+import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -43,7 +45,6 @@ import org.openqa.selenium.WebElement;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
 
