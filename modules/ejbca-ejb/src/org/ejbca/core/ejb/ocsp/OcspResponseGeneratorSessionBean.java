@@ -1230,8 +1230,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
                 // We only store pre-produced single responses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
+                    final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
                     if (!isPreSigning) {
-                        final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
                         // 1. If no stored response exists. Skip this, produce and new one and store it later on (if storing on-demand is enabled)
                         // 2. If a response is stored, still valid and request has no extensions: return it.
                         // 3. If a response is stored and nextUpdate is null: Ignore it and produce new response.
@@ -1258,11 +1258,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                         }
                     }
-                    // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the stagedResponse will
+                    // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the serialNrForResponseStore will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
                     if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && reqHasExtensionsOkToStoreResponse(req, ocspSigningCacheEntry)) {
-                        serialNrForResponseStore = certId.getSerialNumber().toString();
-                        caIdForResponseStore = ocspDataConfig.getCaId();
+                        TimeZone tz = TimeZone.getTimeZone("GMT");
+                        Calendar finalResponseTime = Calendar.getInstance(tz);
+                        finalResponseTime.clear();
+                        finalResponseTime.set(9999, 11, 31, 23, 59, 59); 
+                        // 99991231235959Z "final response" must not be overwritten.
+                        if (ocspResponseData == null || 
+                            ocspResponseData.getNextUpdate() != finalResponseTime.getTimeInMillis()) {
+                            serialNrForResponseStore = certId.getSerialNumber().toString();
+                            caIdForResponseStore = ocspDataConfig.getCaId();
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Not storing OCSP response for certificate with serialNr '" + certId.getSerialNumber() + 
+                                        "', a final response has already been issued.");
+                            }
+                        }
                     }
                 } else {
                     if (log.isDebugEnabled()) {
@@ -1515,6 +1528,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     if (issueFinalResponse && isPreSigning) {
                         TimeZone tz = TimeZone.getTimeZone("GMT");
                         Calendar cal = Calendar.getInstance(tz);
+                        cal.clear();
                         cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
                         nextUpdate = cal.getTimeInMillis();
                     }
@@ -1719,7 +1733,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         long producedAt = ((BasicOCSPResp)ocspResponse.getResponseObject()).getProducedAt().getTime();
         Long nextUpdate = null;
         final Date nextUpdateDate = ((BasicOCSPResp)ocspResponse.getResponseObject()).getResponses()[0].getNextUpdate();
-        nextUpdate = nextUpdateDate != null ? nextUpdateDate.getTime() : null;
+        if (nextUpdateDate == null) {
+            log.debug("Not persisting OCSP Response. nextUpdate is set to null");
+            return;
+        }
+        nextUpdate = nextUpdateDate.getTime();
         final OcspResponseData responseData = new OcspResponseData(UUID.randomUUID().toString(), caId, serialNr, producedAt, nextUpdate, ocspResponse.getEncoded());
         ocspDataSession.storeOcspData(responseData);
         publishOcspResponse(caId, responseData);
