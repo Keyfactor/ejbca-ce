@@ -211,4 +211,17 @@ public class CustomWorkerType extends WorkerType {
         }
         return EjbcaJSFHelper.getBean().getText().get(customClassSimpleName.toUpperCase() + "_" + name.toUpperCase());
     }
+    
+    public String getCustomUiPropertyHelpText() {
+        final String customClassSimpleName = getClassPath().substring(getClassPath().lastIndexOf('.')+1);
+        String name = "";
+        if (getCustomUiPropertyList()!= null && getCustomUiPropertyList().isRowAvailable()) {
+            name = (getCustomUiPropertyList().getRowData()).getName().replaceAll("\\.", "_");
+        } 
+        return EjbcaJSFHelper.getBean().getText().get(customClassSimpleName.toUpperCase() + "_" + name.toUpperCase() + "_HELP");
+    }
+    
+    public boolean isCustomUiPropertyHelpTextRendered() {
+        return !getCustomUiPropertyHelpText().contains("_HELP");
+    }
 }
