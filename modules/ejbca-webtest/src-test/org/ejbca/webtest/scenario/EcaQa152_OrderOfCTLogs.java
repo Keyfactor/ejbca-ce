@@ -17,14 +17,12 @@ import java.io.IOException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CTLogHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -36,7 +34,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 

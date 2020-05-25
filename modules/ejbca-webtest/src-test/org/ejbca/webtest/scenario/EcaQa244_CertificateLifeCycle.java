@@ -21,13 +21,11 @@ import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -41,7 +39,6 @@ import org.openqa.selenium.WebElement;
  *
  * @version $Id: EcaQa244_CertificateLifeCycle.java 31450 2019-02-08 15:46:45Z samuellb $
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa244_CertificateLifeCycle extends WebTestBase {
 
@@ -58,9 +55,9 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase {
     private static final String END_ENTITY_TOKEN = "JKS file";
     private static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
     private static final By REACTIVE_BTN_XPATH = By.xpath("//input[@value=\"Reactivate\"]");
-    private static final By AUDITLOG_DETAILS_ADDED_XPATH = By.xpath("//span[contains(text(),'Added end entity "+END_ENTITY_NAME+"')]");
-    private static final By AUDITLOG_DETAILS_REVOKED_XPATH = By.xpath("//td[contains(text(),'Revoked end entity "+END_ENTITY_NAME+".')]");
-    private static final By AUDITLOG_DETAILS_CERTIFICATEHOLD_XPATH = By.xpath("//span[contains(@title,\"Activated certificate on hold for username '"+END_ENTITY_NAME+"'\")]");
+    private static final By AUDITLOG_DETAILS_ADDED_XPATH = By.xpath("//span[contains(text(),'Added end entity " + END_ENTITY_NAME + "')]");
+    private static final By AUDITLOG_DETAILS_REVOKED_XPATH = By.xpath("//td[contains(text(),'Revoked end entity " + END_ENTITY_NAME + ".')]");
+    private static final By AUDITLOG_DETAILS_CERTIFICATEHOLD_XPATH = By.xpath("//span[contains(@title,\"Activated certificate on hold for username '" + END_ENTITY_NAME + "'\")]");
 
     @BeforeClass
     public static void init() {
