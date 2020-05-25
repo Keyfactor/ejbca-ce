@@ -141,8 +141,11 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      * @param elementToClick button to click
      */
     private void clickForRowEntry(final String cn, final By elementToClick) {
-        final WebElement row = findElement(Page.getColumnContainingCommonName(cn));
-        final WebElement button = findElement(row, elementToClick, true);
+        final WebElement button = findElement(
+                findElement(Page.getColumnContainingCommonName(cn)),
+                elementToClick,
+                true
+        );
         if(button != null) {
             button.click();
         }
