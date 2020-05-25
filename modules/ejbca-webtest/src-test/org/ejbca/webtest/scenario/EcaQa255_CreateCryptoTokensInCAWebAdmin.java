@@ -14,12 +14,10 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -29,7 +27,6 @@ import org.junit.runners.MethodSorters;
  * 
  * @version $Id: EcaQa255_CreateCryptoTokensInCAWebAdmin.java 34991 2020-05-06 20:20:43Z andrey_s_helmes
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa255_CreateCryptoTokensInCAWebAdmin extends WebTestBase {
 

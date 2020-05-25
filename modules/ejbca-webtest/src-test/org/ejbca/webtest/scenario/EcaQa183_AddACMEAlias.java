@@ -14,22 +14,19 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AcmeHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
- * This test verfies that adding and deleting Acme alias works.
+ * This test verifies that adding and deleting Acme alias works.
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-183">ECAQA-183</a>
  * 
  * @version $Id$ EcaQa183_AddACMEAlias.java 2020-04-21 15:00 tobiasM$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa183_AddACMEAlias extends WebTestBase {
     //Helpers

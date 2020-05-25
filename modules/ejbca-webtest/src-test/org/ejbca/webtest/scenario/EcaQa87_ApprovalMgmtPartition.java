@@ -18,12 +18,10 @@ import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper.ApprovalSetting;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -43,7 +41,6 @@ import java.util.List;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
 
