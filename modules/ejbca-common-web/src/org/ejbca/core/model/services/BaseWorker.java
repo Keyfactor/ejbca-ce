@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -189,7 +190,7 @@ public abstract class BaseWorker implements IWorker {
 		    if (log.isDebugEnabled()) {
 		    	log.debug("CAIds to check: "+cas);
 		    }
-			if (cas != null) {
+			if (!StringUtils.isEmpty(cas)) {
 				String[] caids = cas.split(";");
 				for(int i=0;i<caids.length;i++ ){
 					try {
