@@ -105,9 +105,10 @@
 			columnClasses="editColumn1 label,editColumn2 field"
 			rowClasses="Row0,Row1">
 			<h:column>
-				<h:outputLabel
-					value="#{editService.customWorkerType.customUiPropertyText}" 
-					/>
+				<h:outputLabel value="#{editService.customWorkerType.customUiPropertyText}" />
+				<br/>
+				<h:outputText value="#{editService.customWorkerType.customUiPropertyHelpText}" styleClass="help" 
+					rendered="#{editService.customWorkerType.customUiPropertyHelpTextRendered}"/>
 			</h:column>
 			<h:column>
 				<h:inputText rendered="#{customUiProperty.typeText}"
