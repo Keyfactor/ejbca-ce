@@ -15,12 +15,10 @@ package org.ejbca.webtest.scenario;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -31,7 +29,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @version $Id: EcaQa263_CreationOfEndEntityProfileInCAWebAdmin.java 34938 2020-04-28 14:58:22Z andrey_s_helmes
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa263_CreationOfEndEntityProfileInCAWebAdmin extends WebTestBase {
 
