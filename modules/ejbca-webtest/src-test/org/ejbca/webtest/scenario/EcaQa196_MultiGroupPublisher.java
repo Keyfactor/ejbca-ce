@@ -20,12 +20,10 @@ import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.PublisherHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -40,7 +38,6 @@ import org.junit.runners.MethodSorters;
  *  
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa196_MultiGroupPublisher extends WebTestBase {
 

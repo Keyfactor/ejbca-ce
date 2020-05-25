@@ -14,6 +14,7 @@ package org.ejbca.webtest.util;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * This class contains utility methods for web tests.
@@ -65,7 +66,7 @@ public abstract class WebTestUtil {
     }
 
     /**
-     * Returns a UTC LocalDateTime instance with possible offsets, eg:
+     * Returns a UTC ZonedDateTime instance with possible offsets, eg:
      * <ul>
      *     <li>offsetYear = -1, minus 1 year from current date;</li>
      *     <li>offsetYear = 0, current year unchanged;</li>
@@ -104,20 +105,19 @@ public abstract class WebTestUtil {
      * @param offsetMonth month offset.
      * @param offsetDay day offset.
      *
-     * @return UTC LocalDateTime instance.
+     * @return UTC ZonedDateTime instance.
      */
-    public static LocalDateTime getUtcLocalDateTime(int offsetYear, int offsetMonth, int offsetDay) {
-        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("UTC"));
+    public static ZonedDateTime getUtcLocalDateTime(int offsetYear, int offsetMonth, int offsetDay) {
+        ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"));
         if(offsetYear != 0) {
-            localDateTime = localDateTime.plusYears(offsetYear);
+            zonedDateTime = zonedDateTime.plusYears(offsetYear);
         }
         if(offsetMonth != 0) {
-            localDateTime = localDateTime.plusMonths(offsetMonth);
+            zonedDateTime = zonedDateTime.plusMonths(offsetMonth);
         }
         if(offsetDay != 0) {
-            localDateTime = localDateTime.plusDays(offsetDay);
+            zonedDateTime = zonedDateTime.plusDays(offsetDay);
         }
-        System.out.println(localDateTime);
-        return localDateTime;
+        return zonedDateTime;
     }
 }

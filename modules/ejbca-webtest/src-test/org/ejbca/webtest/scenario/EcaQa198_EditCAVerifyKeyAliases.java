@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.ejbca.webtest.utils.CommandLineHelper;
 import org.ejbca.webtest.utils.RemoveDir;
 import org.junit.AfterClass;
@@ -27,7 +26,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
@@ -39,7 +37,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     

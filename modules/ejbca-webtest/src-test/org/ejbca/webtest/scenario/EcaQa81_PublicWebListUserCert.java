@@ -13,11 +13,9 @@
 package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -38,7 +36,6 @@ import static org.junit.Assert.*;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 
     private static WebDriver webDriver;

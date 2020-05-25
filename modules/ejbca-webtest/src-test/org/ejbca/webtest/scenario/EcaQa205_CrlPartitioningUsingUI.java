@@ -19,14 +19,15 @@ import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.*;
 import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigProtokols;
 import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.ejbca.webtest.util.WebTestUtil;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -39,7 +40,6 @@ import java.util.*;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
 
@@ -235,8 +235,8 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
         swaggerUIHelper.setCertificateSerialNumber(certificateSerialNumber);
         swaggerUIHelper.setReasonToRevoke("UNSPECIFIED");
         // Get date -2 days from now
-        final LocalDateTime localDateTime = WebTestUtil.getUtcLocalDateTime(0, 0 , -2);
-        swaggerUIHelper.setDateToRevoke(DateTimeFormatter.ISO_INSTANT.format(localDateTime));
+        final ZonedDateTime zonedDateTime = WebTestUtil.getUtcLocalDateTime(0, 0 , -2);
+        swaggerUIHelper.setDateToRevoke(DateTimeFormatter.ISO_INSTANT.format(zonedDateTime));
         swaggerUIHelper.executeCertificateRevoke();
         swaggerUIHelper.assertCertificateRevokeSuccess();
     }

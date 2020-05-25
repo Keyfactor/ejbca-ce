@@ -14,12 +14,10 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -29,7 +27,6 @@ import org.junit.runners.MethodSorters;
  * 
  * @version $Id: EcaQa257_CreateCertificateAuthorityInCAWebAdmin.java 2020-04-21 15:00 tobiasM$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa257_CreateCertificateAuthorityInCAWebAdmin extends WebTestBase {
 

@@ -14,12 +14,10 @@ package org.ejbca.webtest.scenario;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.PublicWebHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 import java.util.Arrays;
@@ -32,7 +30,6 @@ import java.util.Arrays;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa64_PublicWebMenuItems extends WebTestBase {
 
     // Helpers

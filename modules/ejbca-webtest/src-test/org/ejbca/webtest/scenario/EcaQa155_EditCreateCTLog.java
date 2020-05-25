@@ -17,13 +17,11 @@ import java.io.IOException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CTLogHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
-import org.ejbca.webtest.junit.MemoryTrackingTestRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -33,7 +31,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @version $Id$
  */
-@RunWith(MemoryTrackingTestRunner.class)
 public class EcaQa155_EditCreateCTLog extends WebTestBase {
     
     private static final String INIT_LABEL = "Test";
