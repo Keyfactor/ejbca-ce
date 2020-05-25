@@ -1238,7 +1238,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if (ocspResponseData != null && 
                             ocspResponseData.getNextUpdate() != null && 
                             ocspResponseData.getNextUpdate() > System.currentTimeMillis() &&
-                            !req.hasExtensions()) {
+                            reqHasExtensionsOkToStoreResponse(req, ocspSigningCacheEntry)) {
                             boolean malformedResponseObject = false;
                             OCSPResp ocspResp = null;
                             try {
