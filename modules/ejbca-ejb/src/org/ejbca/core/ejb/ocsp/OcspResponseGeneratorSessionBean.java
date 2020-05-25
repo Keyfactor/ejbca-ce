@@ -1233,7 +1233,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
                     if (!isPreSigning) {
                         // 1. If no stored response exists. Skip this, produce and new one and store it later on (if storing on-demand is enabled)
-                        // 2. If a response is stored, still valid and request has no extensions: return it.
+                        // 2. If a response is stored, still valid and request has only supported extensions: return it.
                         // 3. If a response is stored and nextUpdate is null: Ignore it and produce new response.
                         if (ocspResponseData != null && 
                             ocspResponseData.getNextUpdate() != null && 

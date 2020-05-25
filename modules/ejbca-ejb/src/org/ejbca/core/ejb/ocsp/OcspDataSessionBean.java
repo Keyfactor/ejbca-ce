@@ -188,10 +188,8 @@ public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessio
 
     private OcspResponseData getOcspResponseDataByCaIdSerialNumber(final Integer caId, final String serialNumber) {
         final TypedQuery<OcspResponseData> query = this.entityManager.createNamedQuery("findOcspDataByCaIdSerialNumber", OcspResponseData.class);
-        long now = System.currentTimeMillis();
         query.setParameter("caId", caId);
         query.setParameter("serialNumber", serialNumber);
-        query.setParameter("currentTime", now);
         query.setMaxResults(1);
         return query.getResultList().isEmpty() ? null : query.getResultList().get(0);
     }
