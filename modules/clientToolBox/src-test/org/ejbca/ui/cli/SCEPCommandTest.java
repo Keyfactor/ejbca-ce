@@ -51,10 +51,10 @@ import java.util.Collections;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SCEPCommandTest {
 
-    private SCEPTest command  = new SCEPTest();
+    private final SCEPTest command  = new SCEPTest();
     private static String httpReqPath;
-    private static String SCEP_ALIAS = "SCEPCommandTestScepAlias";
-    private static String SCEP_CA = "SCEPCommandTestCA";
+    private static final String SCEP_ALIAS = "SCEPCommandTestScepAlias";
+    private static final String SCEP_CA = "SCEPCommandTestCA";
     private static final String CERTIFICATE_PROFILE_NAME = "SCEPCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "SCEPCommandTestEEP";
     private static final String DEFAULT_CA_DN = "CN=" + SCEP_CA;
@@ -62,9 +62,9 @@ public class SCEPCommandTest {
     private static int certificateProfileId;
     private static X509CA x509ca;
     private static final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private static final AuthenticationToken authToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SCEPCommandTestTmp"));
 
@@ -80,7 +80,6 @@ public class SCEPCommandTest {
         httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
 
         x509ca = CaTestUtils.createTestX509CA(DEFAULT_CA_DN, "foo123".toCharArray(), false);
-        x509ca.isDoEnforceKeyRenewal();
         caSession.addCA(authToken, x509ca);
         CAInfo cainfo = caSession.getCAInfo(authToken, x509ca.getCAId());
         cainfo.setDoEnforceUniquePublicKeys(false);
@@ -97,7 +96,7 @@ public class SCEPCommandTest {
         endEntityProfile.addField(DnComponents.COMMONNAME);
         endEntityProfile.addField(DnComponents.DNSNAME);
         endEntityProfile.addField(DnComponents.IPADDRESS);
-        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfile.setAvailableCertificateProfileIds(Collections.singletonList(certificateProfileId));
         endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
         endEntityProfile.setDefaultCA(x509ca.getCAId());
         endEntityProfileSession.addEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME, endEntityProfile);
