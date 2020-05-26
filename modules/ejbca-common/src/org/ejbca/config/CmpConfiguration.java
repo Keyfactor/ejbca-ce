@@ -17,9 +17,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -282,16 +279,16 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             }
             return;
         }
-        
-        if(authmodules.size() != authparams.size()) {
+
+        if (authmodules.size() != authparams.size()) {
             log.info("Did not update CMP Authentication settings because the number of authentication parameters is not " +
-            		"the same as the number of authentication modules");
+                    "the same as the number of authentication modules");
             return;
         }
         
         String authmodule = "";
         String authparam = "";
-        for(int i=0; i<authmodules.size(); i++) {
+        for (int i = 0; i < authmodules.size(); i++) {
             authmodule += ";" + authmodules.get(i);
             authparam += ";" + authparams.get(i);
         }
@@ -312,7 +309,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
     public void setAuthenticationParameters(String alias, ArrayList<String> authparameters) {
         String authparam = "";
-        for(String p : authparameters) {
+        for (String p : authparameters) {
             authparam += ";" + p;
         }
         authparam = authparam.substring(1);
@@ -324,8 +321,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             String confModule = getAuthenticationModule(alias);
             String confParams = getAuthenticationParameters(alias);
         
-            String modules[] = confModule.split(";");
-            String params[] = confParams.split(";");
+            String[] modules = confModule.split(";");
+            String[] params = confParams.split(";");
         
             if(modules.length > params.length) {
                 log.info("There are not as many authentication parameters as authentication modules. " 
@@ -680,12 +677,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     
     public List<String> getSortedAliasList() {
         List<String> result = new ArrayList<>(getAliasList());
-        Collections.sort(result, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareToIgnoreCase(o2);
-            }
-        });
+        result.sort(String::compareToIgnoreCase);
         return result;
     }
     
@@ -771,9 +763,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         }
         
         Set<String> oldKeys = getAllAliasKeys(oldAlias);
-        Iterator<String> itr = oldKeys.iterator();
-        while(itr.hasNext()) {
-            String oldkey = itr.next();
+        for (String oldkey : oldKeys) {
             String newkey = oldkey;
             newkey = StringUtils.replace(newkey, oldAlias, newAlias);
             Object value = data.get(oldkey);
@@ -804,10 +794,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             log.info("Cannot clone. CMP alias '" + cloneAlias + "' already exists.");
             return;
         }
-        
-        Iterator<String> itr = getAllAliasKeys(originAlias).iterator();
-        while(itr.hasNext()) {
-            String originalKey = itr.next();
+
+        for (String originalKey : getAllAliasKeys(originAlias)) {
             String cloneKey = originalKey;
             cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
             Object value = data.get(originalKey);
@@ -823,9 +811,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public Properties getAsProperties() {
         final Properties properties = new Properties();
         Set<String> aliases = getAliasList();
-        Iterator<String> itr = aliases.iterator();
-        while(itr.hasNext()) {
-            String alias = itr.next();
+        for (String alias : aliases) {
             Properties aliasp = getAsProperties(alias);
             properties.putAll(aliasp);
         }   
@@ -835,11 +821,9 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public Properties getAsProperties(String alias) {
         if(aliasExists(alias)) {
             final Properties properties = new Properties();
-            final Iterator<String> i = getAllAliasKeys(alias).iterator();
-            while (i.hasNext()) {
-                final String key = i.next();
+            for (String key : getAllAliasKeys(alias)) {
                 final Object value = data.get(key);
-                properties.setProperty(key, value == null? "" : value.toString());
+                properties.setProperty(key, value == null ? "" : value.toString());
             }
             return properties;
         }
@@ -857,20 +841,16 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void upgrade(){
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            log.info("Upgrading CMP Configuration with version "+Float.valueOf(getVersion()));
+            log.info("Upgrading CMP Configuration with version "+ getVersion());
             // v4
             Set<String> aliases = getAliasList();
             for (String alias : aliases) {
-                data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);                
-            
-                if (data.get(alias + "." + CONFIG_RESPONSE_CAPUBS_CA) == null) {
-                    data.put(alias + "." + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
-                }
-                if (data.get(alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA) == null) {
-                    data.put(alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
-                }
+                data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);
+
+                data.putIfAbsent(alias + "." + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
+                data.putIfAbsent(alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
             }
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
          }
     }
 
