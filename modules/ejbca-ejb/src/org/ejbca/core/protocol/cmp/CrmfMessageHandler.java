@@ -183,7 +183,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		}
 		ResponseMessage resp = null;
 		try {
-			CrmfRequestMessage crmfreq = null;
+			CrmfRequestMessage crmfreq;
 			if (cmpRequestMessage instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) cmpRequestMessage;
                 // If message was signed, use the same signature alg in response
@@ -246,17 +246,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 LOG.error(errMsg);
                 throw new IllegalStateException(errMsg);
 			}
-		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-		    // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request 
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-            LOG.info(errMsg, e);    
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (NoSuchProviderException e) {
 		    // Thrown checking for the public key in the request, if this is thrown there is something missing in the system 
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.error(errMsg, e);    
             resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.SYSTEM_UNAVAILABLE, e.getMessage());
-		} catch (AuthorizationDeniedException e) {
+		} catch (AuthorizationDeniedException | AuthLoginException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e);	
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
@@ -264,37 +259,22 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it	
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.WRONG_AUTHORITY, e.getMessage());
-		} catch (SignRequestException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-			LOG.info(errMsg, e);			
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (SignRequestSignatureException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_POP, e.getMessage());
-        } catch (CesecoreException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | CesecoreException | EjbcaException | CertificateExtensionException e) {
+            // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-            LOG.info(errMsg, e);           
+            LOG.info(errMsg, e); // info because this is something we should expect and we handle it
             resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
-        } catch (AuthLoginException e) {
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-            LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
-        } catch (EjbcaException e) {
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-            LOG.info(errMsg, e);           
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());			
-		} catch (EJBException e) {
+        } catch (EJBException e) {
 			// Fatal error
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
 			LOG.error(errMsg, e);			
 			resp = null;
-		} catch (CertificateExtensionException e) {
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-            LOG.info(errMsg, e); // info because this is something we should expect and we handle it
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
-        }							
-		if (LOG.isTraceEnabled()) {
+		}
+        if (LOG.isTraceEnabled()) {
 			LOG.trace("<handleMessage");
 		}
 		return resp;
@@ -308,7 +288,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @return IResponseMessage that can be sent back to the client
 	 * @throws AuthorizationDeniedException
 	 * @throws EjbcaException
-	 * @throws ClassNotFoundException
 	 * @throws CesecoreException 
 	 */
 	private ResponseMessage handleRaMessage(final CrmfRequestMessage crmfreq, boolean authenticated) throws AuthorizationDeniedException, EjbcaException, CesecoreException {
@@ -336,7 +315,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             return CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.SYSTEM_UNAVAILABLE, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);           
         }
 
-        ResponseMessage resp = null;
+        ResponseMessage resp;
         //Check the request's authenticity
         X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(caId, null, true);
         final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(cainfo, this.confAlias, admin, caSession, 
@@ -515,7 +494,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 LOG.debug("Found id_regCtrl_protocolEncrKey with an RSA key in request, clear to generate keys.");
             }
 
-            KeyPair keys = null;
+            KeyPair keys;
             // 2. If not, get key generation parameters from the certificate profile
             final CertificateProfile profile = certificateProfileSession.getCertificateProfile(certProfileID);
             if (profile == null) {
