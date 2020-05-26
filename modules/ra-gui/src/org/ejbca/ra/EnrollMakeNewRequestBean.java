@@ -848,7 +848,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         return extendedInformation;
     }
-
+    
     /**
      * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
      *
@@ -1798,6 +1798,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public EndEntityInformation getEndEntityInformation() {
         if (endEntityInformation == null) {
             endEntityInformation = new EndEntityInformation();
+            if (!StringUtils.isBlank(getEndEntityProfile().getUsernameDefault())) {
+                endEntityInformation.setUsername(getEndEntityProfile().getUsernameDefault());
+            }
         }
         return endEntityInformation;
     }
