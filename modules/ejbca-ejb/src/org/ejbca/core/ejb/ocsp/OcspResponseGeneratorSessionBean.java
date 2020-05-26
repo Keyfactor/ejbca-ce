@@ -1120,14 +1120,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // Only say it's ok if the response will not contain nonce
                 return true;
             }
+        } else if (ocspSigningCacheEntry == null) {
+            // If CA expired ocspSigningCacheEntry is null
+            // pre-production is then ok as this enables sending "final responses" as response for expired CAs as specified in ETSI EN 319 411-2
+            if (log.isDebugEnabled()) {
+                log.debug("ocspSigningCacheEntry is null, it may be an expired CA, allowing to use pre-produced responses to issue a 'final' response (ETSI EN 319 411-2)");
+            }
+            return true;
         }
+
         // Not ok to cache the response, it may contains extensions preventing it to be served to other clients
         if (log.isDebugEnabled()) {
-            if (ocspSigningCacheEntry != null) {
-                log.debug("Not able to store pre-produced OCSP response because there are extensions (other than Nonce): " + req.getExtensionOIDs().size());
-            } else {
-                log.debug("Not able to store pre-produced OCSP response because ocspSigningCacheEntry is null");                
-            }
+            log.debug("Not able to store pre-produced OCSP response because there are extensions (other than Nonce): " + req.getExtensionOIDs().size());
         }
         return false;
     }
