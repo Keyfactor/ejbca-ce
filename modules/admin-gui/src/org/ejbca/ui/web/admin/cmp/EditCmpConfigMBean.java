@@ -322,11 +322,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public void setHmacSecretMode(final String mode) {
-        if (mode.equals("shared")) {
-            hmacSharedSecret = true;
-        } else {
-            hmacSharedSecret = false;
-        }
+        hmacSharedSecret = mode.equals("shared");
     }
     
     public String getHmacSecretMode() {
@@ -455,7 +451,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
 
     public void actionAddVendorCa() {
         final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
-        List<String> currentVendorCaList = new ArrayList<String>();
+        List<String> currentVendorCaList = new ArrayList<>();
         if (StringUtils.isNotBlank(currentVendorCas)) {
             currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";"))); 
         }
@@ -592,7 +588,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     public void actionAddCmpResponseAdditionalCaCert() {
         final String responseCaPubsCaList = cmpConfiguration.getResponseCaPubsCA(getSelectedCmpAlias());
-        List<String> newResponseCaPubsCaList = new ArrayList<String>();
+        List<String> newResponseCaPubsCaList = new ArrayList<>();
         if (StringUtils.isNotBlank(responseCaPubsCaList)) {
             newResponseCaPubsCaList = new ArrayList<>(Arrays.asList(responseCaPubsCaList.split(";")));
         }
@@ -628,7 +624,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     public void actionAddPkiResponseAdditionalCaCert() {
         final String cas = cmpConfiguration.getResponseExtraCertsCA(getSelectedCmpAlias());
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         if (StringUtils.isNotBlank(cas)) {
             list = new ArrayList<>(Arrays.asList(cas.split(";")));
         }
