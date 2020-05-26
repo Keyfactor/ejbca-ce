@@ -17,7 +17,7 @@ import javax.ejb.Remote;
 import org.cesecore.oscp.OcspResponseData;
 
 /**
- * @version $Id
+ * @version $Id$
  */
 @Remote
 public interface OcspDataProxySessionRemote {

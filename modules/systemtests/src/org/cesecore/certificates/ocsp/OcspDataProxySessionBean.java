@@ -30,7 +30,7 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
  *
  * See OcspDataSessionBeanTest.java
  *
- * @version $Id
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
