@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.runners.MethodSorters;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Run stress tests with ClientToolBax command EjbcaWsRaCli
@@ -43,7 +43,7 @@ import java.util.Arrays;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbcaWsRaCliCommandTest {
-    private EjbcaWsRaCli command = new EjbcaWsRaCli();
+    private final EjbcaWsRaCli command = new EjbcaWsRaCli();
 
     private static final String CERTIFICATE_PROFILE_NAME = "EjbcaWsRaCliCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "EjbcaWsRaCliCommandTestEEP";
@@ -53,9 +53,9 @@ public class EjbcaWsRaCliCommandTest {
     private static int certificateProfileId;
     private static X509CA x509ca;
 
-    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private static final AuthenticationToken authToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWsRaCliCommandTestAT"));
 
@@ -66,7 +66,6 @@ public class EjbcaWsRaCliCommandTest {
     public static void setUp() throws Exception {
 
         x509ca = CaTestUtils.createTestX509CA(DEFAULT_CA_DN, "foo123".toCharArray(), false);
-        x509ca.isDoEnforceKeyRenewal();
         caSession.addCA(authToken, x509ca);
         CAInfo cainfo = caSession.getCAInfo(authToken, x509ca.getCAId());
         cainfo.setDoEnforceUniquePublicKeys(false);
@@ -76,7 +75,7 @@ public class EjbcaWsRaCliCommandTest {
         certificateProfileId = certificateProfileSession.addCertificateProfile(authToken, CERTIFICATE_PROFILE_NAME, certificateProfile);
 
         final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfile.setAvailableCertificateProfileIds(Collections.singletonList(certificateProfileId));
         endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
         endEntityProfile.setDefaultCA(x509ca.getCAId());
         endEntityProfileSession.addEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME, endEntityProfile);
