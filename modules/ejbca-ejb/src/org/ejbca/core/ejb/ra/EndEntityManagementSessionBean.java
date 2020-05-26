@@ -1019,11 +1019,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             if (extendedInformation != null) {
                 final String requestCounter = extendedInformation.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
-                // If status is set to new, we should re-set the allowed request counter to the default values
-                // But we only do this if no value is specified already, i.e. 0 or null
-                // If status is not new, we will only remove the counter if the profile does not use it
-                final boolean onlyRemoveNoUpdate = StringUtils.equals(requestCounter, "0") && newStatus == EndEntityConstants.STATUS_NEW && oldStatus != EndEntityConstants.STATUS_NEW;
-                resetRequestCounter(onlyRemoveNoUpdate, extendedInformation, username, endEntityProfileId);
+                if (StringUtils.equals(requestCounter, "0") && newStatus == EndEntityConstants.STATUS_NEW && oldStatus != EndEntityConstants.STATUS_NEW) {
+                    // If status is set to new, we should re-set the allowed request counter to the default values
+                    // But we only do this if no value is specified already, i.e. 0 or null
+                    resetRequestCounter(false, extendedInformation, username, endEntityProfileId);
+                } else {
+                    // If status is not new, we will only remove the counter if the profile does not use it
+                    resetRequestCounter(true, extendedInformation, username, endEntityProfileId);
+                }
 
                 // Make sure that information about related approval requests are carried over to the edited end entity.
                 // This is done to make it possible to  trace/find an approval request from the actually added/edited end entity
