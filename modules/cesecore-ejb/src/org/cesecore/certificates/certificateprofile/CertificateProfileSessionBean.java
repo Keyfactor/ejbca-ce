@@ -422,10 +422,11 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                         SecurityEventProperties.builder()
                                 .withMsg(INTRES.getLocalizedMessage("store.renamedprofile", oldCertificateProfileName, newCertificateProfileName))
                                 .build()
-                );
+                ); 
             }
+        } else {
+            throw new CertificateProfileExistsException(INTRES.getLocalizedMessage("store.errorcertprofileexists", newCertificateProfileName));
         }
-        throw new CertificateProfileExistsException(INTRES.getLocalizedMessage("store.errorcertprofileexists", newCertificateProfileName));
     }
 
     @Override
