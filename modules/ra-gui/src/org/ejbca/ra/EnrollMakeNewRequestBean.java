@@ -816,6 +816,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getUserDefinedValidityIfSpecified() != null) {
             extendedInformation.setCertificateEndTime(getUserDefinedValidityIfSpecified());
         }
+        
+        if (getSubjectDirectoryAttributes() != null) {
+            extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttributes().toString());
+        }
 
         // Add extension data
         if (extensionData != null) {
@@ -2005,14 +2009,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return the if there is at least one field in subject directory attributes that should be rendered
      */
     public boolean isSubjectDirectoryAttributesRendered() {
-//        if (getSubjectDirectoryAttributes()!=null) {
-//            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getFieldInstances()) {
-//                if (isFieldInstanceRendered(fieldInstance)) {
-//                    return true;
-//                }
-//            }
-//        }
-        //Commented out since Subject Directory Attributes are not supported atm.
+        if (getSubjectDirectoryAttributes()!=null) {
+            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
