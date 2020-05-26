@@ -1113,7 +1113,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         // Nonce is also ok to include in the request, because the server can ignore the nonce and send pre-signed response without nonce
         // it's configured in the OCSP key binding (or globally) if the response should contain nonce
-        if (req.getExtensionOIDs().size() == 1 && req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) {
+        if (ocspSigningCacheEntry != null && req.getExtensionOIDs().size() == 1 && req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) {
             final boolean nonceEnable = (ocspSigningCacheEntry.getOcspKeyBinding() != null ? ocspSigningCacheEntry.getOcspKeyBinding().isNonceEnabled() :
                 ((GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).getNonceEnabled());
             if (nonceEnable == false) {
@@ -1123,7 +1123,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         // Not ok to cache the response, it may contains extensions preventing it to be served to other clients
         if (log.isDebugEnabled()) {
-            log.debug("Not able to store pre-produced OCSP response because there are extensions (other than Nonce): " + req.getExtensionOIDs().size());
+            if (ocspSigningCacheEntry != null) {
+                log.debug("Not able to store pre-produced OCSP response because there are extensions (other than Nonce): " + req.getExtensionOIDs().size());
+            } else {
+                log.debug("Not able to store pre-produced OCSP response because ocspSigningCacheEntry is null");                
+            }
         }
         return false;
     }
