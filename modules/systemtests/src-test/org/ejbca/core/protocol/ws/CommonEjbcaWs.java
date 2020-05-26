@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -154,7 +147,6 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -205,6 +197,13 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
