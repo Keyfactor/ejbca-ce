@@ -26,7 +26,6 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -53,8 +52,7 @@ public class CmpServlet extends HttpServlet {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
+
     /**
      * Handles HTTP post
      * 
@@ -128,7 +126,7 @@ public class CmpServlet extends HttpServlet {
         try {
             log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr, alias));
             final long startTime = System.currentTimeMillis();
-            byte[] result = null;
+            byte[] result;
             try {
                 final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpServlet", remoteAddr));
                 result = raMasterApiProxyBean.cmpDispatch(authenticationToken, pkiMessageBytes, alias);
@@ -149,7 +147,7 @@ public class CmpServlet extends HttpServlet {
             // Send back CMP response
             RequestHelper.sendBinaryBytes(result, response, "application/pkixcmp", null);
             final long endTime = System.currentTimeMillis();
-            log.info(intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr, Long.valueOf(endTime - startTime)));
+            log.info(intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr, endTime - startTime));
         } catch (IOException | RuntimeException e) {
             log.error("Error in CmpServlet:", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

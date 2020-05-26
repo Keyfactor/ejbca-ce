@@ -93,8 +93,8 @@ public class VerifyPKIMessage {
     public ICMPAuthenticationModule getUsedAuthenticationModule(final PKIMessage pkiMessage, final String username, boolean authenticated) {
         final String authModules = this.cmpConfiguration.getAuthenticationModule(this.confAlias);
         final String authparameters = this.cmpConfiguration.getAuthenticationParameters(this.confAlias);
-        final String modules[] = authModules.split(";");
-        final String params[] = authparameters.split(";");
+        final String[] modules = authModules.split(";");
+        final String[] params = authparameters.split(";");
         if (modules.length != params.length) {
             log.error("The number of authentication modules does not match the number of authentication parameters. " +
                     modules.length + " modules - " + params.length + " paramters");

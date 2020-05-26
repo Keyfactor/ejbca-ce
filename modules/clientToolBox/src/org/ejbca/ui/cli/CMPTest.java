@@ -271,7 +271,7 @@ class CMPTest extends ClientToolBox {
             {
                 // Calculate the protection bits
                 final byte[] raSecret = password.getBytes();
-                byte basekey[] = new byte[raSecret.length + salt.length];
+                byte[] basekey = new byte[raSecret.length + salt.length];
                 System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
                 System.arraycopy(salt, 0, basekey, raSecret.length, salt.length);
                 // Construct the base key according to rfc4210, section 5.1.3.1
@@ -322,7 +322,7 @@ class CMPTest extends ClientToolBox {
                     socket.close();
                     StressTest.this.performanceTest.getLog().error("Closing socket on request from host.");
                 }
-                final byte result[] = new byte[send.response.length];
+                final byte[] result = new byte[send.response.length];
                 System.arraycopy(send.response, send.headerLength, result, 0, result.length-send.headerLength);
                 return result;
                 // could be replaced by this in java6:
@@ -341,7 +341,7 @@ class CMPTest extends ClientToolBox {
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
             final CMPSendHTTP send = CMPSendHTTP.sendMessage(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
             if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
-            	StressTest.this.performanceTest.getLog().error(intres.getLocalizedMessage("cmp.responsecodenotok", Integer.valueOf(send.responseCode)));
+            	StressTest.this.performanceTest.getLog().error(intres.getLocalizedMessage("cmp.responsecodenotok", send.responseCode));
             	return null;
             }
             if ( send.contentType==null ) {
@@ -503,8 +503,7 @@ class CMPTest extends ClientToolBox {
             //
             // Parse response message
             //
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-            try {
+            try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg))) {
                 final PKIMessage respObject = PKIMessage.getInstance(asn1InputStream.readObject());
                 if (respObject == null) {
                     StressTest.this.performanceTest.getLog().error("No PKIMessage for certificate received.");
@@ -558,7 +557,7 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No X509CertificateStructure for certificate received.");
                     return null;
                 }
-                final byte encoded[] = cmpcert.getEncoded();
+                final byte[] encoded = cmpcert.getEncoded();
                 if (encoded == null || encoded.length <= 0) {
                     StressTest.this.performanceTest.getLog().error("No encoded certificate received.");
                     return null;
@@ -570,10 +569,10 @@ class CMPTest extends ClientToolBox {
                 }
                 {// Remove this test to be able to test unid-fnr
                     final X500Name certDN = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
-                    if ( certDN.hashCode()!=sessionData.getUserDN().hashCode() ) {
+                    if (certDN.hashCode() != sessionData.getUserDN().hashCode()) {
                         StressTest.this.performanceTest.getLog().error(
                                 "Subject is '" + certDN +
-                                "' but should be '" + sessionData.getUserDN() + '\'');
+                                        "' but should be '" + sessionData.getUserDN() + '\'');
                         return null;
                     }
                 }
@@ -589,8 +588,6 @@ class CMPTest extends ClientToolBox {
                     return null;
                 }
                 return cert;
-            } finally {
-                asn1InputStream.close();
             }
         }
 
@@ -599,8 +596,7 @@ class CMPTest extends ClientToolBox {
             //
             // Parse response message
             //
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-            try {
+            try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg))) {
                 final PKIMessage respObject = PKIMessage.getInstance(asn1InputStream.readObject());
                 if (respObject == null) {
                     StressTest.this.performanceTest.getLog().error("Not possbile to get response message.");
@@ -649,8 +645,6 @@ class CMPTest extends ClientToolBox {
                 }
 
                 return true;
-            } finally {
-                asn1InputStream.close();
             }
         }
         private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
@@ -673,8 +667,7 @@ class CMPTest extends ClientToolBox {
             CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
             
             PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
-            PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-            return myPKIMessage;
+            return new PKIMessage(myPKIHeader.build(), myPKIBody);
         }
         private class GetCertificate implements Command {
             final private SessionData sessionData;
@@ -686,14 +679,13 @@ class CMPTest extends ClientToolBox {
             public boolean doIt() throws Exception {
                 this.sessionData.newSession();
                 final PKIMessage one = genPKIMessage(this.sessionData, true, genCertReq(this.sessionData.getUserDN(), null));
-                if ( one==null ) {
+                if (one == null) {
                     StressTest.this.performanceTest.getLog().error("No certificate request.");
                     return false;
                 }
-                final String password = PBEPASSWORD;
                 //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
-                final PKIMessage req = protectPKIMessage(one, false,  password);
-                if ( req==null ) {
+                final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+                if (req == null) {
                     StressTest.this.performanceTest.getLog().error("No protected message.");
                     return false;
                 }
@@ -719,11 +711,8 @@ class CMPTest extends ClientToolBox {
                 }
                 final BigInteger serialNumber = CertTools.getSerialNumber(cert);
                 if ( StressTest.this.resultCertFilePrefix!=null ) {
-                    FileOutputStream fileOutputStream = new FileOutputStream(StressTest.this.resultCertFilePrefix + serialNumber + ".dat");
-                    try {
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(StressTest.this.resultCertFilePrefix + serialNumber + ".dat")) {
                         fileOutputStream.write(cert.getEncoded());
-                    } finally {
-                        fileOutputStream.close();
                     }
                 }
                 StressTest.this.performanceTest.getLog().result(serialNumber);
@@ -745,17 +734,16 @@ class CMPTest extends ClientToolBox {
             public boolean doIt() throws Exception {
                 final String hash = "foo123";
                 final PKIMessage con = genCertConfirm(this.sessionData, hash);
-                if ( con==null ) {
+                if (con == null) {
                     StressTest.this.performanceTest.getLog().error("Not possible to generate PKIMessage.");
                     return false;
                 }
-                final String password = PBEPASSWORD;
                 //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
-                final PKIMessage confirm = protectPKIMessage(con, false, password);
+                final PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD);
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
                 final DEROutputStream out = new DEROutputStream(bao);
                 out.writeObject(confirm);
-                final byte ba[] = bao.toByteArray();
+                final byte[] ba = bao.toByteArray();
                 // Send request and receive response
                 final byte[] resp = sendCmp(ba, this.sessionData);
                 if ( resp==null || resp.length <= 0 ) {
@@ -765,11 +753,8 @@ class CMPTest extends ClientToolBox {
                 if ( !checkCmpResponseGeneral(resp, this.sessionData, false) ) {
                     return false;
                 }
-                if ( !checkCmpPKIConfirmMessage(this.sessionData, resp) ) {
-                    return false;
-                }
+                return checkCmpPKIConfirmMessage(this.sessionData, resp);
                 //StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
-                return true;
             }
             @Override
             public String getJobTimeDescription() {
