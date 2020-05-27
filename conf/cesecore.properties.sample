@@ -56,6 +56,9 @@
 
 # Default Random Number Generator algorithm for certificate serial number generation.
 # Available algorithms are: SHA1PRNG, default, defaultstrong
+# From Java 11 and onwards, DRGB is also available
+# See Java documentation on "SecureRandom Number Generation Algorithms", https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#securerandom-number-generation-algorithms
+#
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
 # Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
