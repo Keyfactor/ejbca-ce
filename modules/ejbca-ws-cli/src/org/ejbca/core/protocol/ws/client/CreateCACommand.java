@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -88,23 +87,24 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
             mapping.load(new FileInputStream(new File(args[ARG_PURPOSE_KEY_MAPPING_PATH])));
             List<KeyValuePair> purposeKeyMapping = getKeyValuePairListFromProperties(mapping);
             
-            List<KeyValuePair> caproperties = new ArrayList<KeyValuePair>();
+            List<KeyValuePair> caproperties = new ArrayList<>();
             if(args.length > 10) {
                 Properties props = new Properties();
                 props.load(new FileInputStream(new File(args[ARG_CA_PROPERTIES_PATH])));
                 caproperties = getKeyValuePairListFromProperties(props);
             }
                         
-            final long validityInDays = Long.valueOf(validityString);
+            final long validityInDays = Long.parseLong(validityString);
             if (signedByCAId == CAInfo.SIGNEDBYEXTERNALCA) {
                 final String outfile = caname + "_csr.pem";
                 byte[] csrBytes = getEjbcaRAWS().createExternallySignedCa(caname, cadn, catype, validityInDays, certprofile, signalg, cryptotokenName, purposeKeyMapping,
                         caproperties);
                 if (csrBytes != null) {
                     String csr = CertTools.buildCsr(new PKCS10CertificationRequest(csrBytes));
-                    PrintWriter printWriter = new PrintWriter(outfile);
-                    printWriter.print(csr);
-                    printWriter.close();
+                    
+                    try (PrintWriter printWriter = new PrintWriter(outfile)) {            
+                        printWriter.print(csr);
+                    } 
                     getPrintStream().println("Wrote certificate request to file: " + outfile);
                 } else {
                     getPrintStream().println("Received null reply, please check logs to find if the CA was created.");
@@ -114,13 +114,14 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
                         caproperties);
             }
             getPrintStream().println("Create new CA: " + caname);
-        } catch (Exception e) {
-            if (e instanceof EjbcaException_Exception) {
-                EjbcaException_Exception e1 = (EjbcaException_Exception)e;
-                getPrintStream().println("Error code: " + e1.getFaultInfo().getErrorCode().getInternalErrorCode());
-            }
+        } catch(EjbcaException_Exception e) {
+            EjbcaException_Exception e1 = (EjbcaException_Exception)e;
+            getPrintStream().println("Error code: " + e1.getFaultInfo().getErrorCode().getInternalErrorCode());
             ErrorAdminCommandException adminexp = new ErrorAdminCommandException(e);
             getPrintStream().println("Error message: " + adminexp.getLocalizedMessage());
+        } catch (Exception e) {
+            ErrorAdminCommandException adminexp = new ErrorAdminCommandException(e);
+            getPrintStream().println("Error message: " + adminexp.getLocalizedMessage());       
         }
         
     }
