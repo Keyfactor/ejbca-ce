@@ -2222,6 +2222,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCertificateChain(rolloverChain);
             ca.clearRolloverCertificateChain();
             ca.setExpireTime(CertTools.getNotAfter(rolloverChain.get(0)));
+            // If the CA was not active, but also not revoked, we want to set it as active now that we do rollover
+            if (ca.getStatus() == CAConstants.CA_EXPIRED || ca.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                if (log.isDebugEnabled()) {
+                    log.debug("When rolling over CA, status is " + ca.getStatus() + ", setting to active (1)");
+                }
+                ca.setStatus(CAConstants.CA_ACTIVE);
+            }
             // We need to save all this, audit logging that the CA is changed
             caSession.editCA(authenticationToken, ca, true);
 
