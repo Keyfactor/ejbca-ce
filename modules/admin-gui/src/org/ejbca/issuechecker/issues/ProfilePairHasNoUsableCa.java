@@ -14,6 +14,7 @@
 package org.ejbca.issuechecker.issues;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -37,6 +38,8 @@ import java.util.*;
  * @version $Id$
  */
 public class ProfilePairHasNoUsableCa extends ConfigurationIssue {
+    private final static Logger log = Logger.getLogger(ProfilePairHasNoUsableCa.class);
+    
     private final EndEntityProfileSession endEntityProfileSession;
     private final CertificateProfileSession certificateProfileSession;
     private final CaSessionLocal caSession;
@@ -74,6 +77,9 @@ public class ProfilePairHasNoUsableCa extends ConfigurationIssue {
             final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
             for (final int certificateProfileId : endEntityProfile.getAvailableCertificateProfileIds()) {
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
+                if (certificateProfile == null) {
+                    log.info("Certificate profile ID " + certificateProfileId + " from End Entity profile " + endEntityProfileId + " does not exist.");
+                }
                 if (hasNoCaInCommon(endEntityProfile, certificateProfile)) {
                     tickets.add(Ticket.builder(this, TicketDescription.fromResource(
                             "PROFILE_PAIR_HAS_NO_USABLE_CA_TICKET_DESCRIPTION",
@@ -89,12 +95,13 @@ public class ProfilePairHasNoUsableCa extends ConfigurationIssue {
     }
 
     private boolean hasNoCaInCommon(final EndEntityProfile endEntityProfile, final CertificateProfile certificateProfile) {
-        final Set<Integer> endEntityProfileCas = endEntityProfile.getAvailableCAs().contains(CAConstants.ALLCAS)
+        final Set<Integer> endEntityProfileCas = (endEntityProfile.getAvailableCAs().contains(CAConstants.ALLCAS)
                 ? caSession.getCAIdToNameMap().keySet()
-                : new HashSet<>(endEntityProfile.getAvailableCAs());
-        final Set<Integer> certificateProfileCas = certificateProfile.getAvailableCAs().contains(CertificateProfile.ANYCA)
+                        : new HashSet<>(endEntityProfile.getAvailableCAs()));
+        final List<Integer> cpCas = (certificateProfile == null ? Collections.emptyList() : certificateProfile.getAvailableCAs());
+        final Set<Integer> certificateProfileCas = (cpCas.contains(CertificateProfile.ANYCA)
                 ? caSession.getCAIdToNameMap().keySet()
-                : new HashSet<>(certificateProfile.getAvailableCAs());
+                        : new HashSet<>(cpCas));
 
         return intersect(endEntityProfileCas, certificateProfileCas).isEmpty();
     }
