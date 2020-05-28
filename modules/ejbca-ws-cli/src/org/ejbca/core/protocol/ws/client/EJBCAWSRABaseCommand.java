@@ -75,17 +75,25 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
         URL tmpURL = null;
         Exception tmpException = null;
         try {
-            final InputStream is = EJBCAWSRABaseCommand.class.getResourceAsStream("/" + PROPERTY_FILE);
-            if (is != null) {
-                props.load(is);
+            File f = new File(PROPERTY_FILE);
+            if (f.exists()) {
+                props.load(new FileInputStream(PROPERTY_FILE));
             } else {
-                try {
-                    props.load(new FileInputStream(PROPERTY_FILE));
-                } catch (FileNotFoundException e) {
-                    // Try in parent directory
+                // Try in parent directory
+                f = new File("../" + PROPERTY_FILE);
+                if (f.exists()) {
                     props.load(new FileInputStream("../" + PROPERTY_FILE));
+                } else {
+                    final InputStream is = EJBCAWSRABaseCommand.class.getResourceAsStream("/" + PROPERTY_FILE);
+                    if (is != null) {
+                        props.load(is);
+                    } else {
+                        System.out.println("Error : " + PROPERTY_FILE + " not found in classpath");
+                        System.exit(-1);
+                    }
                 }
             }
+
             CryptoProviderTools.installBCProvider();
             final String sharedLibraryPath = props.getProperty("ejbcawsracli.p11.sharedlibrary");
             final String trustStorePath = props.getProperty("ejbcawsracli.truststore.path");
