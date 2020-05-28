@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.ocsp;
 
 import org.apache.log4j.Logger;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.config.GlobalConfiguration;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -51,6 +53,9 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
     @EJB
     private OcspDataSessionLocal ocspDataSession;
 
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+
     @PostConstruct
     public void ejbCreate() {
         timerService = sessionContext.getTimerService();
@@ -87,7 +92,7 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
     public void start(String callerName) {
         log.info("OCSP clean up job with default schedule started by: " + callerName);
 
-        startJob(callerName, DEFAULT_SCHEDULE);
+        startJob(callerName, getConfiguredSchedule());
     }
 
     @Override
@@ -126,9 +131,63 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
         if (hasTimers(callerName)) {
             stop(callerName);
         }
-
+        log.info("Cleanup job for " + callerName + " has: " + expression.toString());
         addScheduledTimer(expression, callerName);
     }
+
+    private ScheduleExpression getConfiguredSchedule() {
+        if (useCustomSchedule()) {
+            return getCustomSchedule();
+        }
+
+        return DEFAULT_SCHEDULE;
+    }
+
+    private boolean useCustomSchedule() {
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+
+        return config.getOcspCleanupCustomScheduleUse();
+    }
+
+    private ScheduleExpression getCustomSchedule() {
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+
+        try {
+            final Integer schedule = Integer.valueOf(config.getOcspCleanupCustomSchedule());
+            final String scheduleUnit = config.getOcspCleanupCustomScheduleUnit();
+
+            if (isDays(scheduleUnit)) {
+                return OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.DAYS.toMillis(schedule));
+            }
+
+            if (isHours(scheduleUnit)) {
+                return OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.HOURS.toMillis(schedule));
+            }
+
+            if (isMinutes(scheduleUnit)) {
+                return OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.MINUTES.toMillis(schedule));
+            }
+
+        } catch (NumberFormatException e) {
+            log.warn("Custom schedule could not be converted. Using default schedule: ", e);
+            return DEFAULT_SCHEDULE;
+        }
+
+        return DEFAULT_SCHEDULE;
+    }
+
+    private boolean isDays(String timeUnit) {
+        return timeUnit.toUpperCase().equals(TimeUnit.DAYS.toString());
+    }
+
+    private boolean isHours(String timeUnit) {
+        return timeUnit.toUpperCase().equals(TimeUnit.HOURS.toString());
+    }
+
+    private boolean isMinutes(String timeUnit) {
+        return timeUnit.toUpperCase().equals(TimeUnit.MINUTES.toString());
+    }
+
 
     /**
      * Add a single action timer.
@@ -160,7 +219,12 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
     }
 
     private int cleanUpOcspResponses() {
-        return ocspDataSession.deleteOldOcspData();
+        try {
+            return ocspDataSession.deleteOldOcspData();
+        } catch (Exception ex) {
+            log.warn("OCSP cleanup job has failed: ", ex);
+            return 0;
+        }
     }
 
     private boolean ownsTimer(Timer timer, String callerName) {
