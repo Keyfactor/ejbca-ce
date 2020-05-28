@@ -168,6 +168,39 @@
 
 		</h:panelGrid>
 
+		<!-- OCSP Cleanup -->
+        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+            <h:outputLabel for="header_ocspcleanup" value="#{web.text.OCSP_SPECIFIC_OPTIONS}" style="font-weight:bold; font-size:1.2em;"/>
+            <h:panelGroup id="header_ocspcleanup"/>
+
+            <h:panelGroup id="ocspCleanup">
+                <h:outputLabel for="ocspCleanupEnable" value="#{web.text.OCSP_RESPONSE_CLEANUP}" styleClass="titles" />
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/ocsp.html')}" escape="false"/>
+                <br/>
+                <h:outputText value="#{web.text.OCSP_RESPONSE_CLEANUP_EXP}" styleClass="help"/>
+            </h:panelGroup>
+
+            <h:panelGroup id="ocspCleanupGroup">
+                <h:selectBooleanCheckbox id="ocspCleanupEnable"
+                                         value="#{systemConfigMBean.currentConfig.ocspCleanupUseCustomSchedule}"
+                                         disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+                    <f:ajax render="systemconfiguration:ocspCleanupGroup"/>
+                </h:selectBooleanCheckbox>
+                <h:outputLabel for="ocspCleanupEnable" value="#{web.text.ACTIVATE}" />
+                <br/>
+
+                <h:inputText id="ocspCleanupInterval"
+                             disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.ocspCleanupUseCustomSchedule}"
+                             value="#{systemConfigMBean.currentConfig.ocspCleanupCustomSchedule}" size="10"/>
+
+                <h:selectOneMenu disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.ocspCleanupUseCustomSchedule}"
+                                 value="#{systemConfigMBean.currentConfig.ocspCleanupCustomScheduleUnit}"
+                                 style="margin-left:5px; min-width:100px">
+                    <f:selectItems value="#{systemConfigMBean.availableOcspCleanupUnits}"/>
+                </h:selectOneMenu>
+            </h:panelGroup>
+        </h:panelGrid>
+
 		<!-- Auto Enrollment -->
 
 		<h:panelGrid id="autoenrollmentgrid" columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">

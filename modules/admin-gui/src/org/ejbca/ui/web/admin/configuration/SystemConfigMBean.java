@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -133,6 +134,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableSessionTimeout;
         private int sessionTimeoutTime;
 
+        // Settings for the cleanup job for removing old OCSP responses created by the presigners.
+        private boolean ocspCleanupUseCustomSchedule;
+        private String ocspCleanupCustomSchedule;
+        private String ocspCleanupCustomScheduleUnit;
+
         //Admin Preferences
         private int preferedLanguage;
         private int secondaryLanguage;
@@ -174,6 +180,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
+                this.ocspCleanupUseCustomSchedule = globalConfig.getOcspCleanupCustomScheduleUse();
+                this.ocspCleanupCustomSchedule = globalConfig.getOcspCleanupCustomSchedule();
+                this.ocspCleanupCustomScheduleUnit = globalConfig.getOcspCleanupCustomScheduleUnit();
+
                 // Admin Preferences
                 if(adminPreference == null) {
                     adminPreference = getEjbcaWebBean().getAdminPreference();
@@ -243,6 +253,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
         public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
+
+        // OCSP Options: Cleanup Job
+        public boolean getOcspCleanupUseCustomSchedule() { return ocspCleanupUseCustomSchedule; }
+        public void setOcspCleanupUseCustomSchedule(final boolean value) { this.ocspCleanupUseCustomSchedule = value; }
+
+        public String getOcspCleanupCustomSchedule() { return ocspCleanupCustomSchedule; }
+        public void setOcspCleanupCustomSchedule(final String value) {this.ocspCleanupCustomSchedule = value;}
+
+        public String getOcspCleanupCustomScheduleUnit() { return ocspCleanupCustomScheduleUnit; }
+        public void setOcspCleanupCustomScheduleUnit(final String value) {this.ocspCleanupCustomScheduleUnit = value;}
 
         // Admin Preferences
         public int getPreferedLanguage() { return this.preferedLanguage; }
@@ -791,6 +811,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
+
+                if (isValidOcspCleanupSettings()) {
+                    globalConfig.setOcspCleanupCustomSchedule(currentConfig.getOcspCleanupCustomSchedule());
+                    globalConfig.setOcspCleanupCustomScheduleUnit(currentConfig.getOcspCleanupCustomScheduleUnit());
+                    globalConfig.setOcspCleanupCustomScheduleUse(currentConfig.getOcspCleanupUseCustomSchedule());
+                }
+
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {
                     ctlogsMap.put(ctlog.getLogId(), ctlog);
@@ -969,6 +996,44 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         return list;
+    }
+
+    private boolean isValidOcspCleanupSettings() {
+        if (currentConfig.getOcspCleanupUseCustomSchedule()) {
+            final String unit = currentConfig.getOcspCleanupCustomScheduleUnit();
+            final Integer interval;
+
+            // Validate number
+            try {
+                interval = Integer.parseInt(currentConfig.getOcspCleanupCustomSchedule());
+            } catch (NumberFormatException ex) {
+                addErrorMessage("OCSP_ERROR_NUMBER");
+                return false;
+            }
+
+            // Validate units and amounts
+            if (unit.equals(TimeUnit.DAYS.toString())) {
+                if (interval > 31 || interval < 1) {
+                    addErrorMessage("OCSP_ERROR_DAYS");
+                    return false;
+                }
+            } else if (unit.equals(TimeUnit.HOURS.toString())) {
+                if (interval > 23 || interval < 1) {
+                    addErrorMessage("OCSP_ERROR_HOURS");
+                    return false;
+                }
+            } else if (unit.equals(TimeUnit.MINUTES.toString())) {
+                if (interval > 59 || interval < 1) {
+                    addErrorMessage("OCSP_ERROR_MINUTES");
+                    return false;
+                }
+            } else {
+                addErrorMessage("OCSP_ERROR_UNIT");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // --------------------------------------------
@@ -1671,6 +1736,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         return ret;
+    }
+
+    public List<SelectItem> getAvailableOcspCleanupUnits() {
+        final List<SelectItem> units = new ArrayList<>();
+        final String days = TimeUnit.DAYS.toString();
+        final String hours = TimeUnit.HOURS.toString();
+        final String minutes = TimeUnit.MINUTES.toString();
+
+        // Minutes
+        units.add(new SelectItem(minutes, StringUtils.capitalize(minutes.toLowerCase())));
+
+        // Hours
+        units.add(new SelectItem(hours, StringUtils.capitalize(hours.toLowerCase())));
+
+        // Days
+        units.add(new SelectItem(days, StringUtils.capitalize(days.toLowerCase())));
+
+        return units;
     }
 
     public List<SelectItem> getAvailableLanguageSelectItems() {
