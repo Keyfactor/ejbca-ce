@@ -31,6 +31,9 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  */
 public abstract class BaseWorker implements IWorker {
 
+    private static final String ERROR_EXPIRE_WORKER_MISCONFIG = "services.errorexpireworker.errorconfig";
+    private static final String ERROR_ACTION_CLASSPATH_MISCONFIG = "services.erroractionclasspath";
+    
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -69,7 +72,7 @@ public abstract class BaseWorker implements IWorker {
 				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).newInstance();
 				action.init(serviceConfiguration.getActionProperties(), serviceName);
 			} catch (Exception e) {
-				String msg = intres.getLocalizedMessage("services.erroractionclasspath", serviceName);
+				String msg = intres.getLocalizedMessage(ERROR_ACTION_CLASSPATH_MISCONFIG, serviceName);
 				log.error(msg,e);
 			}       
 		}else{
@@ -107,7 +110,7 @@ public abstract class BaseWorker implements IWorker {
 	
 	protected IAction getAction(){
 		if(action == null){
-			String msg = intres.getLocalizedMessage("services.erroractionclasspath", serviceName);
+			String msg = intres.getLocalizedMessage(ERROR_ACTION_CLASSPATH_MISCONFIG, serviceName);
 			log.error(msg);
 		}
 		return action;
@@ -141,7 +144,7 @@ public abstract class BaseWorker implements IWorker {
         if (timeBeforeExpire == -1) {
             String unit = properties.getProperty(propertyTimeUnit);
             if (unit == null) {
-                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
+                String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "UNIT");
                 throw new ServiceExecutionFailedException(msg);
             }
             int unitval = 0;
@@ -152,7 +155,7 @@ public abstract class BaseWorker implements IWorker {
                 }
             }
             if (unitval == 0) {
-                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
+                String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "UNIT");
                 throw new ServiceExecutionFailedException(msg);
             }
 
@@ -161,12 +164,12 @@ public abstract class BaseWorker implements IWorker {
             try {
                 intvalue = Integer.parseInt(properties.getProperty(propertyTimeValue));
             } catch (NumberFormatException e) {
-                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
+                String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "VALUE");
                 throw new ServiceExecutionFailedException(msg);
             }
 
             if (intvalue == 0) {
-                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
+                String msg = intres.getLocalizedMessage("ERROR_EXPIRE_WORKER_MISCONFIG", serviceName, "VALUE");
                 throw new ServiceExecutionFailedException(msg);
             }
             timeBeforeExpire = intvalue * unitval;
@@ -185,7 +188,7 @@ public abstract class BaseWorker implements IWorker {
 	 */
 	protected Collection<Integer> getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
 		if(cAIdsToCheck == null){
-			cAIdsToCheck = new ArrayList<Integer>();
+			cAIdsToCheck = new ArrayList<>();
 			String cas = properties.getProperty(PROP_CAIDSTOCHECK);
 		    if (log.isDebugEnabled()) {
 		    	log.debug("CAIds to check: "+cas);
@@ -196,7 +199,7 @@ public abstract class BaseWorker implements IWorker {
 					try {
 						Integer.valueOf(caids[i]);
 					} catch (NumberFormatException e) {
-						String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, PROP_CAIDSTOCHECK);
+						String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, PROP_CAIDSTOCHECK);
 						throw new ServiceExecutionFailedException(msg, e);						
 					}
 					cAIdsToCheck.add(Integer.valueOf(caids[i]));
