@@ -21,7 +21,14 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Query;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
@@ -349,25 +356,28 @@ public class CRLData extends ProtectedData implements Serializable {
      * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are used (i.e. crlPartitionIndex > 0)
      * then simply return:
      * <pre>
-     *     ""a.crlPartitionIndex=:crlPartitionIndex"
+     *     "a.crlPartitionIndex=:crlPartitionIndex"
      * </pre>
      *
      * <p>If the crlPartitionIndex parameter indicates that partitioned CRLs are <i>not</i> used (i.e. crlPartitionIndex =
      * {@link CertificateConstants#NO_CRL_PARTITION}),
      * a more elaborate query condition is needed to keep compatibility with data created by EJBCA <7.4. The CRL partition index
-     * in the database can either be {@link CertificateConstants#NO_CRL_PARTITION}, 0 or NULL. Thus, for this case return:
+     * in the database can either be {@link CertificateConstants#NO_CRL_PARTITION}, NULL or -1. Thus, for this case return:
      * <pre>
-     *     "a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=-1"
+     *     "a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL"
      * </pre>
      *
      * @param crlPartitionIndex the CRL partition index to use in the query condition.
      * @return a JPQL query condition to use in the <code>WHERE</code> clause when querying for CRLs.
      */
     private static String getCrlPartitionIndexCondition(final int crlPartitionIndex) {
-        if (crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION) {
-            return "(a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=-1)";
-        } else {
+        if (crlPartitionIndex > 0) {
+            // Get a partitioned CRL with the specified partition index
             return "a.crlPartitionIndex=:crlPartitionIndex";
+        } else {
+            // Get a non-partitioned CRL
+            // Old data is represented with 0 or NULL. New data uses -1 instead.
+            return "(a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL)";
         }
     }
 
