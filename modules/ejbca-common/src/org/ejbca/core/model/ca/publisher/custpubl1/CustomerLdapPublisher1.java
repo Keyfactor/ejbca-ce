@@ -217,9 +217,9 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         this.loginDN = properties.getProperty(PROPERTY_LOGINDN, "");
         this.loginPassword = properties.getProperty(PROPERTY_LOGINPASSWORD, "");
         this.logConnectionTests = Boolean.parseBoolean(properties.getProperty(PROPERTY_LOGCONNECTIONTESTS, Boolean.FALSE.toString()));
-        this.timeout = Integer.parseInt(properties.getProperty(PROPERTY_CONNECTIONTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
-        int readTimeout = Integer.parseInt(properties.getProperty(PROPERTY_READTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)).trim());
-        int storeTimeout = Integer.parseInt(properties.getProperty(PROPERTY_STORETIMEOUT, String.valueOf(DEFAULT_TIMEOUT)).trim());
+        this.timeout = Integer.parseInt(properties.getProperty(PROPERTY_CONNECTIONTIMEOUT, DEFAULT_TIMEOUT));
+        int readTimeout = Integer.parseInt(properties.getProperty(PROPERTY_READTIMEOUT, DEFAULT_TIMEOUT).trim());
+        int storeTimeout = Integer.parseInt(properties.getProperty(PROPERTY_STORETIMEOUT, DEFAULT_TIMEOUT).trim());
         this.extendedInfoObjectClass = properties.getProperty(PROPERTY_EXTENDEDINFOOBJECTCLASS, ICAOEXTENDEDINFO);
         this.dscObjectClasses = new String[]{ INETORGPERSON, extendedInfoObjectClass};
         this.crlObjectClasses = new String[] { CRLDISTRIBUTIONPOINT, extendedInfoObjectClass};
