@@ -17,10 +17,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.StartupSingletonBean;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
+import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSession;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,14 +42,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class OcspResponseCleanupSessionBeanTest {
     private static final Logger log = Logger.getLogger(OcspResponseCleanupSessionBeanTest.class);
-    private final static EjbRemoteHelper ejbRemoteHelper = EjbRemoteHelper.INSTANCE;
+    private static final EjbRemoteHelper ejbRemoteHelper = EjbRemoteHelper.INSTANCE;
 
-    private final static OcspCleanupProxySessionRemote ocspCleanup = ejbRemoteHelper.getRemoteSession(OcspCleanupProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final static OcspDataProxySessionRemote ocspDataProxySessionRemote = ejbRemoteHelper.getRemoteSession(OcspDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final OcspCleanupProxySessionRemote ocspCleanup = ejbRemoteHelper.getRemoteSession(OcspCleanupProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final OcspDataProxySessionRemote ocspDataProxySessionRemote = ejbRemoteHelper.getRemoteSession(OcspDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final GlobalConfigurationProxySessionRemote globalConfigSession = ejbRemoteHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    private final static OcspDataSessionRemote ocspDataSessionRemote = ejbRemoteHelper.getRemoteSession(OcspDataSessionRemote.class);
+    private static final OcspDataSessionRemote ocspDataSessionRemote = ejbRemoteHelper.getRemoteSession(OcspDataSessionRemote.class);
 
-    private final static Integer certificateAuth = 123456789;
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(OcspResponseCleanupSessionBeanTest.class.getName());
+    private static final Integer certificateAuth = 123456789;
 
     @Before
     public void stopAllCleanupJobs() {
@@ -106,6 +114,69 @@ public class OcspResponseCleanupSessionBeanTest {
         log.trace(">testTimersAreStartedAndStoppedCorrectly");
     }
 
+    @Test
+    public void testGlobalConfigurationSettingsAreUsed() throws AuthorizationDeniedException, InterruptedException {
+        // Change the cleanup settings in GC
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final String prevUnit = gc.getOcspCleanupCustomScheduleUnit();
+        final String prevSchedule = gc.getOcspCleanupCustomSchedule();
+
+        gc.setOcspCleanupCustomScheduleUnit("MINUTES");
+        gc.setOcspCleanupCustomScheduleUse(true);
+        gc.setOcspCleanupCustomSchedule("1");
+        globalConfigSession.saveConfiguration(alwaysAllowToken, gc);
+
+        // Persist data
+        persistOcspResponses();
+        Thread.sleep(2000);
+
+        // Run the job
+        final String callerName = "TEST02";
+        ocspCleanup.start(callerName);
+        Thread.sleep(60000);
+        ocspCleanup.stop(callerName);
+
+        // Assert only latest responses are left.
+        assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuth).size());
+
+        gc.setOcspCleanupCustomScheduleUnit(prevUnit);
+        gc.setOcspCleanupCustomSchedule(prevSchedule);
+        globalConfigSession.saveConfiguration(alwaysAllowToken, gc);
+    }
+
+    @Test
+    public void testConvertToScheduleReturnsDefaultForInvalidValues() {
+        // In this case: less than a minute.
+        ScheduleExpression expected = new ScheduleExpression().second("0").minute("0").hour("*");
+        ScheduleExpression result = OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.SECONDS.toMillis(15));
+
+        assertEqualSchedules(expected, result);
+    }
+
+    @Test
+    public void testConvertToScheduleDailySchedule() {
+        ScheduleExpression expected = new ScheduleExpression().second("0").minute("0").hour("0").dayOfMonth("1,5,10,15,20,25,30");
+
+        assertEqualSchedules(expected, OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.HOURS.toMillis(120)));
+        assertEqualSchedules(expected, OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.HOURS.toMillis(134)));
+    }
+
+    @Test
+    public void testConvertToScheduleHourlySchedule() {
+        ScheduleExpression expected = new ScheduleExpression().second("0").minute("0").hour("*/5");
+
+        assertEqualSchedules(expected, OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.MINUTES.toMillis(300)));
+        assertEqualSchedules(expected, OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.MINUTES.toMillis(330)));
+    }
+
+    @Test
+    public void testConvertToScheduleMinutesSchedule() {
+        ScheduleExpression expected = new ScheduleExpression().second("0").minute("*/5").hour("*");
+
+        assertEqualSchedules(expected, OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.SECONDS.toMillis(300)));
+        assertEqualSchedules(expected, OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.SECONDS.toMillis(330)));
+    }
+
     private void persistOcspResponses() {
         log.trace(">persistOcspResponses");
         long now = System.currentTimeMillis();
@@ -132,5 +203,13 @@ public class OcspResponseCleanupSessionBeanTest {
         log.trace(">removeOcspResponses");
         ocspDataProxySessionRemote.deleteOcspDataByCaId(certificateAuth);
         log.trace("<removeOcspResponses");
+    }
+
+    private void assertEqualSchedules(ScheduleExpression expected, ScheduleExpression result) {
+        assertEquals("Seconds should match", expected.getSecond(), result.getSecond());
+        assertEquals("Minutes should match", expected.getMinute(), result.getMinute());
+        assertEquals("Hours should match", expected.getHour(), result.getHour());
+        assertEquals("Days should match", expected.getDayOfMonth(), result.getDayOfMonth());
+        assertEquals("Years should match", expected.getYear(), result.getYear());
     }
 }
