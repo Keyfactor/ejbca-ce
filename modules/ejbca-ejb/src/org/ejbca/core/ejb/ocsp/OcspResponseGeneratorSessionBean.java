@@ -352,7 +352,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             continue;
                         }
                         final String signatureProviderName = cryptoToken.getSignProviderName();
-                        if (caCertificateChain.size() > 0) {
+                        if (!caCertificateChain.isEmpty()) {
                             X509Certificate caCertificate = caCertificateChain.get(0);
                             final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
                             OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain,
@@ -405,7 +405,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         for (final Certificate certificate : caInfo.getCertificateChain()) {
                             caCertificateChain.add((X509Certificate) certificate);
                         }
-                        if (caCertificateChain.size() > 0) {
+                        if (!caCertificateChain.isEmpty()) {
                             OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand));
                         } else {
                             log.warn("Expired CA with ID " + caId
@@ -1116,7 +1116,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (ocspSigningCacheEntry != null && req.getExtensionOIDs().size() == 1 && req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) {
             final boolean nonceEnable = (ocspSigningCacheEntry.getOcspKeyBinding() != null ? ocspSigningCacheEntry.getOcspKeyBinding().isNonceEnabled() :
                 ((GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).getNonceEnabled());
-            if (nonceEnable == false) {
+            if (!nonceEnable) {
                 // Only say it's ok if the response will not contain nonce
                 return true;
             }
