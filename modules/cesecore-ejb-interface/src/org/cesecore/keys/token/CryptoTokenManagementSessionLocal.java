@@ -29,7 +29,14 @@ public interface CryptoTokenManagementSessionLocal extends CryptoTokenManagement
      */
     CryptoToken getCryptoToken(int cryptoTokenId);
 
-    /** @return value object with non-sensitive information about the CryptoToken for UI use or similar. */
+    /**
+     * Get non-sensitive information about a crypto token. This information can be displayed
+     * in the GUI or similar.
+     *
+     * @param cryptoTokenId the ID of the crypto token to get information for.
+     * @return information about the crypto token or <code>null</code> if no crypto token
+     * with the given ID was found.
+     */
     CryptoTokenInfo getCryptoTokenInfo(int cryptoTokenId);
 
     /**

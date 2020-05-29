@@ -110,10 +110,10 @@
 					<h:selectOneMenu value="#{systemConfigMBean.currentConfig.localKeyRecoveryCryptoTokenId}"
 							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery}">
 						<f:selectItems value="#{systemConfigMBean.availableCryptoTokens}"/>
-						<f:ajax render="systemconfiguration:selectkeyalias"/>
+						<f:ajax render="systemconfiguration:keyrecoverygroup"/>
 					</h:selectOneMenu>
-					<h:selectOneMenu id="selectkeyalias" value="#{systemConfigMBean.currentConfig.localKeyRecoveryKeyAlias}"
-						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery || !systemConfigMBean.hasSelectedCryptoToken}">
+					<h:selectOneMenu id="selectkeyalias" value="#{systemConfigMBean.currentConfig.localKeyRecoveryKeyAlias}" rendered="#{systemConfigMBean.hasSelectedCryptoToken}"
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery}">
 						<f:selectItems value="#{systemConfigMBean.availableKeyAliases}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
