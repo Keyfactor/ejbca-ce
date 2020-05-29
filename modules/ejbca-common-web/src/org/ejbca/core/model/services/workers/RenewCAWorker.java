@@ -96,7 +96,7 @@ public class RenewCAWorker extends BaseWorker {
 						// Only try to renew active CAs
 						// There should be other monitoring available to check if CAs that should not be off-line are off-line (HealthCheck)
 					    try {
-					        final boolean createLinkCertificate = isRenewKeys() && (1 == info.getSignedBy());   // We want link certs for new key if CA is selfsigned..
+					        final boolean createLinkCertificate = isRenewKeys() && (CAInfo.SELFSIGNED == info.getSignedBy());   // We want link certs for new key if CA is selfsigned..
 					        caAdminSession.renewCA(getAdmin(), info.getCAId(), isRenewKeys(), null, createLinkCertificate);
 					        renewedCas.add(caname);
 					    } catch (CryptoTokenOfflineException e) {
