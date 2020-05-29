@@ -307,7 +307,9 @@ public class CRLData extends ProtectedData implements Serializable {
         final Query query = entityManager.createQuery(builder.toString());
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
-        query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
         return (CRLData) QueryResultWrapper.getSingleResult(query);
     }
     
@@ -338,14 +340,18 @@ public class CRLData extends ProtectedData implements Serializable {
                     "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
                             + getCrlPartitionIndexCondition(crlPartitionIndex));
             query.setParameter("issuerDN", issuerDN);
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            if (crlPartitionIndex > 0) {
+                query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            }
             return (Integer) QueryResultWrapper.getSingleResult(query);
         } else {
             final Query query = entityManager.createQuery(
                     "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
                             + getCrlPartitionIndexCondition(crlPartitionIndex));
             query.setParameter("issuerDN", issuerDN);
-            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            if (crlPartitionIndex > 0) {
+                query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            }
             return (Integer) QueryResultWrapper.getSingleResult(query);
         }
     }
