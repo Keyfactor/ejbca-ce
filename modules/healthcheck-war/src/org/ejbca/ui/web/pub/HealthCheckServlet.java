@@ -245,7 +245,7 @@ public class HealthCheckServlet extends HttpServlet {
                 log.info("Expected to find Maintenance File '"+ maintenanceFile + "'. File will be created.");
                 OutputStream out = null;
                 try {
-                    out = new FileOutputStream("filename.properties");
+                    out = new FileOutputStream(maintenanceFile);
                     new Properties().store(out, null);
                 } catch (IOException e2) {
                     log.error("Could not create Maintenance File at: "+ maintenanceFile);
