@@ -278,7 +278,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         updateKeyAliases();
         
         // Is this CA is a root CA? Then create link certificate on renewal by default
-        createLinkCertificate = CAInfo.SELFSIGNED == cainfo.getSignedBy() ? true : false;
+        createLinkCertificate = (CAInfo.SELFSIGNED == cainfo.getSignedBy() ? true : false);
     }
     
 
