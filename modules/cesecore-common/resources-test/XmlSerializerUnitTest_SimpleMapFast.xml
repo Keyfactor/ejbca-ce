@@ -74,10 +74,6 @@
      <string>tokensequence</string>
      <string>00000</string>
     </void>
-    <void method="put">
-     <string>property1</string>
-     <string>value1</string>
-    </void>
    </object>
   </void>
   <void method="put">
