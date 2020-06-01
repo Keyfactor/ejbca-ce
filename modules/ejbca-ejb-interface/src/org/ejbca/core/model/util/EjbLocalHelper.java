@@ -60,6 +60,7 @@ import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
@@ -184,6 +185,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
     @Override public ImportCrlSessionLocal getImportCrlSession() { return getEjbLocal().getImportCrlSession(); }
     @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return getEjbLocal().getRaMasterApiSession(); }
+    @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() {return getEjbLocal().getOcspResponseCleanupSession(); }
 
 	@Override
 	public SctDataSessionLocal getSctDataSession() {
