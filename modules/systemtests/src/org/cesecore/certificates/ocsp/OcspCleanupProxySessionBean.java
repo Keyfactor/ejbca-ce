@@ -35,22 +35,27 @@ public class OcspCleanupProxySessionBean implements OcspCleanupProxySessionRemot
     private OcspResponseCleanupSessionLocal ocspCleanupSessionLocal;
 
     @Override
-    public void start(String callerName) {
-        ocspCleanupSessionLocal.start(callerName);
+    public void start() {
+        ocspCleanupSessionLocal.start();
     }
 
     @Override
-    public void start(String callerName, ScheduleExpression expression) {
-        ocspCleanupSessionLocal.start(callerName, expression);
+    public void start(ScheduleExpression expression) {
+        ocspCleanupSessionLocal.start(expression);
     }
 
     @Override
-    public void stop(String callerName) {
-        ocspCleanupSessionLocal.stop(callerName);
+    public void stop() {
+        ocspCleanupSessionLocal.stop();
     }
 
     @Override
-    public boolean hasTimers(String callerName) {
-        return ocspCleanupSessionLocal.hasTimers(callerName);
+    public void restart() {
+        ocspCleanupSessionLocal.restart();
+    }
+
+    @Override
+    public boolean hasTimers() {
+        return ocspCleanupSessionLocal.hasTimers();
     }
 }

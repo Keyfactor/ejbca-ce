@@ -40,15 +40,17 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
 
     private static final Logger log = Logger.getLogger(OcspResponseCleanupSessionBean.class);
 
-    private static final String JOB_NAME = "OcspCleanup";
+    private static final String JOB_NAME = "OcspResponseCleanup";
     private static final String RESCHEDULED_JOB_SUFFIX = "Rescheduled";
 
+    // Fallback for when configured interval is not valid.
     private static final long DEFAULT_RESCHEDULE_INTERVAL = TimeUnit.MINUTES.toMillis(30);
     private static final ScheduleExpression DEFAULT_SCHEDULE = new ScheduleExpression().second("0").minute("0").hour("*/3");
 
+    private TimerService timerService;
+
     @Resource
     private SessionContext sessionContext;
-    private TimerService timerService;
 
     @EJB
     private OcspDataSessionLocal ocspDataSession;
@@ -79,60 +81,61 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
             if (timer.isCalendarTimer()) {
                 log.warn("OCSP clean up job failed for " + timer.getInfo().toString(), t);
 
-                addTimer(DEFAULT_RESCHEDULE_INTERVAL, timer.getInfo().toString());
+                addRescheduledTimer(DEFAULT_RESCHEDULE_INTERVAL, timer.getInfo().toString());
             } else {
                 log.warn("Rescheduled timer failed for " + timer.getInfo().toString() + " ", t);
             }
         }
-
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void start(String callerName) {
-        log.info("OCSP clean up job with default schedule started by: " + callerName);
+    public void start() {
+        log.info("OCSP clean up job with default schedule started.");
 
-        startJob(callerName, getConfiguredSchedule());
+        startJob(getConfiguredSchedule());
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void start(String callerName, ScheduleExpression expression) {
-        log.info("OCSP clean up job started by: " + callerName);
+    public void start(ScheduleExpression expression) {
+        log.info("OCSP clean up job with specific schedule started.");
 
-        startJob(callerName, expression);
+        startJob(expression);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void stop(String callerName) {
+    public void stop() {
         for (final Timer timer : timerService.getTimers()) {
-            if (ownsTimer(timer, callerName)) {
-                try {
-                    log.info("Timer (" + timer.getInfo().toString() + ") cancelled for " + callerName);
+            try {
+                log.info("Timer (" + timer.getInfo().toString() + ") is getting cancelled.");
 
-                    timer.cancel();
-                } catch (Exception e) {
-                    log.info("Exception occured canceling timer: " + e.getMessage());
-                }
+                timer.cancel();
+            } catch (Exception e) {
+                log.info("Exception occured canceling timer: " + e.getMessage());
             }
         }
     }
 
     @Override
-    public boolean hasTimers(String callerName) {
-        return timerService.getTimers()
-                           .stream()
-                           .filter(timer -> ownsTimer(timer, callerName))
-                           .count() > 0;
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void restart() {
+        stop();
+        start();
     }
 
-    private void startJob(String callerName, ScheduleExpression expression) {
-        if (hasTimers(callerName)) {
-            stop(callerName);
+    @Override
+    public boolean hasTimers() {
+        return timerService.getTimers().size() > 0;
+    }
+
+    private void startJob(ScheduleExpression expression) {
+        if (hasTimers()) {
+            stop();
         }
-        log.info("Cleanup job for " + callerName + " has: " + expression.toString());
-        addScheduledTimer(expression, callerName);
+        log.info("OCSP response cleanup job has following schedule: " + expression.toString());
+        addScheduledTimer(expression);
     }
 
     private ScheduleExpression getConfiguredSchedule() {
@@ -190,29 +193,26 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
 
 
     /**
-     * Add a single action timer.
+     * Add a single action rescheduled timer.
      *
      * @param interval waiting time for the timer
-     * @param callerName caller name used to build the the timer info
-     *
      * @return Timer
      */
-    private Timer addTimer(long interval, String callerName) {
-        String timerInfo = callerName + "_" + RESCHEDULED_JOB_SUFFIX;
+    private Timer addRescheduledTimer(long interval, String timerInfo) {
+        String info = timerInfo + "_" + RESCHEDULED_JOB_SUFFIX;
 
-        log.trace(">addTimer for " + timerInfo + ". Scheduled: " + interval + "ms");
+        log.trace(">addTimer for " + info + ". Scheduled: " + interval + "ms");
         return timerService.createSingleActionTimer(interval, new TimerConfig(timerInfo, false));
     }
 
     /**
      * Add a scheduled timer.
-     * @param expression schedule for running the timer
-     * @param callerName caller name used to build the the timer info
      *
+     * @param expression schedule for running the timer
      * @return Timer
      */
-    private Timer addScheduledTimer(ScheduleExpression expression, String callerName) {
-        String timerInfo = callerName + "_" + JOB_NAME;
+    private Timer addScheduledTimer(ScheduleExpression expression) {
+        String timerInfo = JOB_NAME;
 
         log.trace(">addScheduledTimer for " + timerInfo + ". Scheduled: " + expression.toString());
         return timerService.createCalendarTimer(expression, new TimerConfig(timerInfo, false));
@@ -225,9 +225,5 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
             log.warn("OCSP cleanup job has failed: ", ex);
             return 0;
         }
-    }
-
-    private boolean ownsTimer(Timer timer, String callerName) {
-        return timer.getInfo().toString().contains(callerName);
     }
 }

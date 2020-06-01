@@ -56,13 +56,13 @@ public class OcspResponseCleanupSessionBeanTest {
     @Before
     public void stopAllCleanupJobs() {
         log.trace(">stopAllCleanupJobs");
-        ocspCleanup.stop(StartupSingletonBean.class.getName());
+        ocspCleanup.stop();
     }
 
     @After
     public void restoreCleanupJobs() {
         log.trace(">restoreCleanupJobs");
-        ocspCleanup.start(StartupSingletonBean.class.getName());
+        ocspCleanup.start();
         removeOcspResponses();
     }
 
@@ -72,7 +72,6 @@ public class OcspResponseCleanupSessionBeanTest {
 
         final ScheduleExpression schedule = new ScheduleExpression();
         schedule.second("*/5").minute("*").hour("*");
-        final String callerName = OcspResponseCleanupSessionBeanTest.class.getName();
 
         // Persists OCSP Response data.
         persistOcspResponses();
@@ -83,9 +82,9 @@ public class OcspResponseCleanupSessionBeanTest {
         assertEquals(5, responses.size());
 
         // Start the job and stop it after it runs.
-        ocspCleanup.start(callerName, schedule);
+        ocspCleanup.start(schedule);
         Thread.sleep(TimeUnit.SECONDS.toMillis(6));
-        ocspCleanup.stop(callerName);
+        ocspCleanup.stop();
 
         // Assert only latest responses are left.
         responses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuth);
@@ -99,17 +98,17 @@ public class OcspResponseCleanupSessionBeanTest {
     @Test
     public void testTimersAreStartedAndStoppedCorrectly() {
         log.trace(">testTimersAreStartedAndStoppedCorrectly");
+
         ScheduleExpression schedule = new ScheduleExpression();
         schedule.second("59").minute("59").hour("23").year(2999);
 
-        final String callerName = "TEST01";
-        assertFalse(ocspCleanup.hasTimers(callerName));
+        assertFalse(ocspCleanup.hasTimers());
 
-        ocspCleanup.start(callerName, schedule);
-        assertTrue(ocspCleanup.hasTimers(callerName));
+        ocspCleanup.start(schedule);
+        assertTrue(ocspCleanup.hasTimers());
 
-        ocspCleanup.stop(callerName);
-        assertFalse(ocspCleanup.hasTimers(callerName));
+        ocspCleanup.stop();
+        assertFalse(ocspCleanup.hasTimers());
 
         log.trace(">testTimersAreStartedAndStoppedCorrectly");
     }
@@ -131,10 +130,9 @@ public class OcspResponseCleanupSessionBeanTest {
         Thread.sleep(2000);
 
         // Run the job
-        final String callerName = "TEST02";
-        ocspCleanup.start(callerName);
+        ocspCleanup.start();
         Thread.sleep(60000);
-        ocspCleanup.stop(callerName);
+        ocspCleanup.stop();
 
         // Assert only latest responses are left.
         assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuth).size());
