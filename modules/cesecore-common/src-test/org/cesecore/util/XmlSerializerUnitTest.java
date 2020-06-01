@@ -128,9 +128,6 @@ public class XmlSerializerUnitTest {
         // tokenproperties
         // We use an embedded Properties<String, String> in some audit record log lines
         final Properties tokenproperties = new Properties();
-        final String property1 = "property1";
-        final String value1 = "value1";
-        tokenproperties.put(property1, value1);
         final String tokensequence = "tokensequence";
         final String tokensequenceValue = "00000";
         tokenproperties.put(tokensequence, tokensequenceValue);
@@ -178,7 +175,7 @@ public class XmlSerializerUnitTest {
         try (final XMLEncoder encoder = new XMLEncoder(os)) {
             encoder.writeObject(b64DataMap);
         }
-        final String xmlEncoderXmlString = os.toString();
+        final String xmlEncoderXmlString = os.toString("UTF-8");
 
         log.debug("XmlSerializerUnitTest_SimpleMapFast.xml content XML:\n" + expectedXmlSerializerXmlString);
         log.debug("XmlSerializer.encodeSimpleMapFast produced XML:\n" + xmlSerializerXmlString);
