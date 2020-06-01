@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -182,12 +183,13 @@ public class XmlSerializer {
         }
 	    if (map instanceof LinkedHashMap) {
 	        final ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-	        final PrintStream ps = new PrintStream(os);
-	        ps.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-	        ps.println("<java version=\"" + System.getProperty("java.version") + "\" class=\"java.beans.XMLDecoder\">");
-            printObject(map, 1, ps); // Start indent 1        
-	        ps.println("</java>");
 	        try {
+    	        try (final PrintStream ps = new PrintStream(os, false, "UTF-8")) {
+        	        ps.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        	        ps.println("<java version=\"" + System.getProperty("java.version") + "\" class=\"java.beans.XMLDecoder\">");
+                    printObject(map, 1, ps); // Start indent 1        
+        	        ps.println("</java>");
+    	        }
 	            return os.toString("UTF-8");
 	        } catch (UnsupportedEncodingException e) {
 	            // Fatal. No point in handling the lack of UTF-8
@@ -355,7 +357,7 @@ public class XmlSerializer {
     private static void encodeProperties(final Object o, int indent, PrintStream ps) {
         if (o instanceof Properties) {
             final Properties p = (Properties) o;
-            final Set<Object> s = p.keySet();
+            final Set<Object> s = new TreeSet<>(p.keySet());
             ps.print(getIndent(indent));
             ps.println("<object class=\"" + o.getClass().getName() + "\">");
             for (Object key : s) {
