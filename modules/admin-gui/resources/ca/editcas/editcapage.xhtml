@@ -488,6 +488,9 @@
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
 					<h:outputLabel for="checkboxpreproduceocspresponses"
 						value="#{web.text.PREPRODUCEOCSPRESPONSES}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Pre_Produce_Ocsp_Responses')}"
+						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
@@ -530,6 +533,9 @@
 				
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509}">
 					<h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.PREPRODUCEONDEMAND}" />
+						<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Store_Responses_On_Demand')}"
+						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509}">
 					<h:selectBooleanCheckbox id="checkboxocspstoreondemand"
