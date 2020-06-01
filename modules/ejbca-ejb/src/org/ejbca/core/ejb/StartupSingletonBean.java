@@ -375,7 +375,7 @@ public class StartupSingletonBean {
 
         // Start the clean up job to remove old OCSP responses
         log.debug(">startup start OCSP clean up job");
-        ocspResponseCleanupSession.start(StartupSingletonBean.class.getName());
+        ocspResponseCleanupSession.start();
 
         log.debug(">startup completed");
     }
