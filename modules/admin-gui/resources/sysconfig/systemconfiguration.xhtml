@@ -175,7 +175,8 @@
 
             <h:panelGroup id="ocspCleanup">
                 <h:outputLabel for="ocspCleanupEnable" value="#{web.text.OCSP_RESPONSE_CLEANUP}" styleClass="titles" />
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/ocsp.html')}" escape="false"/>
+                <h:outputText value="#{web.ejbcaWebBean.getExternalHelpReference('http://confluence.primekey.com/display/EJBCADS/.OCSP+Response+Pre-Production+v7.4.0')}"
+                              escape="false"/>
                 <br/>
                 <h:outputText value="#{web.text.OCSP_RESPONSE_CLEANUP_EXP}" styleClass="help"/>
             </h:panelGroup>
