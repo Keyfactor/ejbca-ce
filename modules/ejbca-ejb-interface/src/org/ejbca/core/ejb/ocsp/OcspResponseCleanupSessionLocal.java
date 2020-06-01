@@ -25,39 +25,40 @@ import javax.ejb.Timer;
 public interface OcspResponseCleanupSessionLocal extends OcspResponseCleanupSession {
 
     /**
-     * Activate the Ocsp response clean-up job with default intervals.
-     *
-     * @param callerName name of the class that starts job
+     * Activate the Ocsp response cleanup job with default intervals.
      */
-    void start(String callerName);
+    void start();
 
     /**
-     * Activate the Ocsp response clean-up job with specific intervals.
+     * Activate the Ocsp response cleanup job with specific intervals.
      *
-     * @param callerName name of the class that starts job
      * @param expression interval for running the clean up job
      */
-    void start(String callerName, ScheduleExpression expression);
+    void start(ScheduleExpression expression);
 
     /**
-     * Cancel all existing timers for Ocsp response clean-up.
-     *
-     * @param callerName name of the class that starts job
+     * Cancel all existing timers for Ocsp response cleanup.
      */
-    void stop(String callerName);
+    void stop();
 
     /**
-     * Run the clean-up method after timer runs out.
+     * Restart all the timers for the cleanup job.
+     *
+     * Uses the configured or default schedule.
+     */
+    void restart();
+
+    /**
+     * Run the cleanup method after timer runs out.
      *
      * @param timer EJB Timer
      */
     void timeoutHandler(final Timer timer);
 
     /**
-     * Check if the caller has active timers.
+     * Check if the job has active timers.
      *
-     * @param callerName name of the class that starts job
      * @return boolean
      */
-    boolean hasTimers(String callerName);
+    boolean hasTimers();
 }
