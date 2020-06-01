@@ -243,20 +243,10 @@ public class HealthCheckServlet extends HttpServlet {
         } else {
             if (getMaintenanceProperties() == null) {
                 log.info("Expected to find Maintenance File '"+ maintenanceFile + "'. File will be created.");
-                OutputStream out = null;
-                try {
-                    out = new FileOutputStream(maintenanceFile);
+                try (final OutputStream out = new FileOutputStream(maintenanceFile)) {
                     new Properties().store(out, null);
                 } catch (IOException e2) {
                     log.error("Could not create Maintenance File at: "+ maintenanceFile);
-                } finally {
-                    if (out != null) {
-                        try {
-                            out.close();                    
-                        } catch (IOException e) {
-                            log.error("Error closing file: ", e);
-                        }
-                    }
                 }
             }
         }
@@ -266,23 +256,13 @@ public class HealthCheckServlet extends HttpServlet {
     private Properties getMaintenanceProperties() {
         final String maintenanceFile = EjbcaConfiguration.getHealthCheckMaintenanceFile();
         if (!StringUtils.isEmpty(maintenanceFile)) {
-            InputStream in = null;
-            try {
-                in = new FileInputStream(maintenanceFile);
+            try (final InputStream in = new FileInputStream(maintenanceFile)) {
                 final Properties maintenanceProperties = new Properties();
                 maintenanceProperties.load(in);
                 return maintenanceProperties;
             } catch (IOException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Could not read Maintenance File. Expected to find file at: "+ maintenanceFile);
-                }
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();                 
-                    } catch (IOException e) {
-                        log.error("Error closing file: ", e);
-                    }
                 }
             }
         }
