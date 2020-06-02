@@ -133,7 +133,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @throws UnsupportedMethodException  When trying to access this method in the community version
      * @throws CAExistsException if a CA with the given name already exists
      * @throws AuthorizationDeniedException if admin is not authorized to create CAs
-     * @throws CertificateProfileDoesNotExistException if the certificate profile specified by certprofile doesn't exist
+     * @throws CertificateProfileDoesNotExistException if the certificate profile specified by certificate profile doesn't exist
      * @throws CertificateProfileTypeNotAcceptedException if the certificate profile was not of type ROOTCA or SUBCA
      * @throws CryptoTokenOfflineException if the crypto token was unavailable
      * @throws InvalidAlgorithmException if the CA signature algorithm was invalid
