@@ -1208,6 +1208,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
+                
                 if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash)) {
                     throw new InvalidAlgorithmException("CertID with SHA1 and SHA256 are supported, not: "+certIdhash.getId());
                 }
@@ -1493,6 +1494,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
+                            // Dont persist responses with 'unknown'
+                            serialNrForResponseStore = null;
+                            caIdForResponseStore = 0;
                         }
                     } else if (status.equals(CertificateStatus.REVOKED)) {
                         // Revocation info available for this cert, handle it
@@ -1724,7 +1728,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         }
         
-        if (serialNrForResponseStore != null && caIdForResponseStore != 0 && ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL) {
+        if (serialNrForResponseStore != null && caIdForResponseStore != 0 && 
+                ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL) {
             try {
                 storeOcspResponse(caIdForResponseStore, serialNrForResponseStore, ocspResponse);
             } catch (OCSPException | IOException e) {
