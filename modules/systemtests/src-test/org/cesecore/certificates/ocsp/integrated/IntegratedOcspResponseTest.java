@@ -107,6 +107,7 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -114,6 +115,7 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.junit.After;
 import org.junit.Before;
@@ -144,6 +146,7 @@ public class IntegratedOcspResponseTest {
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
+    private OcspDataSessionRemote ocspDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspDataSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
@@ -186,6 +189,39 @@ public class IntegratedOcspResponseTest {
         setOcspDefaultResponderReference(originalDefaultResponder);
     }
 
+    @Test
+    public void testOcspPreProducedResponseDoNotStoreStatusUnknown() throws Exception {
+        final X509CAInfo x509caInfo = (X509CAInfo) testx509ca.getCAInfo();
+        final BigInteger UNKNOWN_SERIAL_NUMBER = new BigInteger("1111111111111");
+        // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
+        final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
+        x509caInfo.setDoPreProduceOcspResponses(true);
+        x509caInfo.setDoStoreOcspResponsesOnDemand(true);
+        try {
+            caSession.editCA(internalAdmin, x509caInfo);
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            // Prepare OCSP request
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, UNKNOWN_SERIAL_NUMBER));
+            OCSPReq ocspRequest = gen.build();
+            // Send OCSP Request for unknown serialNr
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
+                    .getOcspResponse();
+            // Verify return status was 'Unknown'
+            final OCSPResp ocspResponse = new OCSPResp(responseBytes);
+            final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) ocspResponse.getResponseObject();
+            final SingleResp[] singleResponses = basicOcspResponse.getResponses();
+            assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
+            // Make sure the response wasn't stored
+            OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(x509caInfo.getCAId(), UNKNOWN_SERIAL_NUMBER.toString());
+            assertNull("Response with status 'Unknown' was (wrongly) stored", ocspResponseData);
+        } finally {
+            setOcspDefaultNextUpdateTime(originalNextUpdateTime);
+        }
+    }
     
     @Test
     public void testOcspPreProducedResponseOnDemandUseCannedResponse() throws Exception {
