@@ -557,7 +557,14 @@ public class CryptokiDevice {
                 session = aquireSession();
                 final Long privateObject = getPrivateKeyByLabel(session, alias);
                 if (privateObject != null) {
-                    return new NJI11ReleasebleSessionPrivateKey(privateObject, this);
+                    final Long publicKeyRef = getPublicKeyByLabel(session, alias);
+                    if (publicKeyRef != null) {
+                        final CKA modulus = c.GetAttributeValue(session, publicKeyRef, CKA.MODULUS);
+                        if (modulus.getValue() == null) {
+                            return new NJI11ReleasebleSessionPrivateKey(privateObject, "EC", this);
+                        }
+                    }
+                    return new NJI11ReleasebleSessionPrivateKey(privateObject, "RSA", this);
                 }
                 return null;
             } finally {

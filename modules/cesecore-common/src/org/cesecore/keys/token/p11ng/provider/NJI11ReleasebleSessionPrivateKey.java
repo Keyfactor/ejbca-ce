@@ -21,13 +21,17 @@ public class NJI11ReleasebleSessionPrivateKey extends NJI11Object implements Key
     
     private static final long serialVersionUID = -1293160515130067674L;
 
-    public NJI11ReleasebleSessionPrivateKey(long object, CryptokiDevice.Slot slot) {
+    
+    private final String algorithm;
+    
+    public NJI11ReleasebleSessionPrivateKey(long object, String algorithm, CryptokiDevice.Slot slot) {
         super(object, slot);
+        this.algorithm = algorithm;
     }
     
     @Override
     public String getAlgorithm() {
-        return "RSA";
+        return algorithm;
     }
 
     @Override
