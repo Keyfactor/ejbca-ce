@@ -27,6 +27,16 @@ public class CAConstantsWS {
      * '2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt'.
      */
     public static final String POLICYID = "policyid";
+    /** Key sequence which is important properties for CVC CAs */
+    public static final String KEYSEQUENCE = "keysequence";
+    public static final String KEYSEQUENCE_FORMAT = "keysequenceformat";
+    /** When creating a CA signed by an external CA, if may be required (CVC CAs again) that the target CA is uploaded to create the request 
+     * Set as plain Base64 encoded data of the certificate encoding:
+     * KayValuePair kp = new KeyValuePair();
+     * kp.setKey(CAConstantsWS.EXTERNAL_SIGNING_CA_CERTIFICATE);
+     * kp.setValue(org.bouncycastle.util.encoders.Base64.toBase64String(cvcacert_se.getEncoded()));
+     */
+    public static final String EXTERNAL_SIGNING_CA_CERTIFICATE = "externalsigningcacert";
     
     /** Certificate signing key alias */
     public static final String CAKEYPURPOSE_CERTSIGN_STRING = CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING;
