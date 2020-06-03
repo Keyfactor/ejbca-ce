@@ -335,12 +335,12 @@
       			<h:panelGroup id="cmpresponseadditionalcacertsgroup">
 	      			<h:selectOneMenu value="#{editCmpConfigMBean.selectedCmpResponseAdditionalCaCert}" disabled="#{editCmpConfigMBean.viewOnly}">
 	      				<f:selectItems value="#{editCmpConfigMBean.additionalCaCertSelectItems}"/>
-	      				<f:ajax event="change" update="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
+	      				<f:ajax event="change" render="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
 	      			</h:selectOneMenu>
 	      			&nbsp;
 		        	<h:commandButton id="addcmpadditionalcacertbutton" value="#{web.text.ADD}" action="#{editCmpConfigMBean.actionAddCmpResponseAdditionalCaCert}"
 		        			disabled="#{editCmpConfigMBean.viewOnly}">
-	           			<f:ajax render="editcmp aliasform:cmpresponseadditionalcacertsgroup"/>
+	           			<f:ajax render="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
 	            	</h:commandButton>
 	            	&nbsp;
 	            	<h:commandButton id="removecmpadditionalcacertbutton" value="#{web.text.REMOVE}" action="#{editCmpConfigMBean.actionRemoveCmpResponseAdditionalCaCert}"
