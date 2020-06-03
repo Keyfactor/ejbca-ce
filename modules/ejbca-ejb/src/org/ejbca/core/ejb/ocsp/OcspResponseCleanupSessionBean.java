@@ -91,9 +91,12 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void start() {
-        log.info("OCSP clean up job with default schedule started.");
-
-        startJob(getConfiguredSchedule());
+        if (useOcspCleanup()) {
+            log.info("OCSP clean up job with configured schedule starting.");
+            startJob(getCleanupSchedule());
+        } else {
+            log.info("OCSP clean up job is disabled.");
+        }
     }
 
     @Override
@@ -138,26 +141,18 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
         addScheduledTimer(expression);
     }
 
-    private ScheduleExpression getConfiguredSchedule() {
-        if (useCustomSchedule()) {
-            return getCustomSchedule();
-        }
-
-        return DEFAULT_SCHEDULE;
-    }
-
-    private boolean useCustomSchedule() {
+    private boolean useOcspCleanup() {
         GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
-        return config.getOcspCleanupCustomScheduleUse();
+        return config.getOcspCleanupUse();
     }
 
-    private ScheduleExpression getCustomSchedule() {
+    private ScheduleExpression getCleanupSchedule() {
         GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
         try {
-            final Integer schedule = Integer.valueOf(config.getOcspCleanupCustomSchedule());
-            final String scheduleUnit = config.getOcspCleanupCustomScheduleUnit();
+            final Integer schedule = Integer.valueOf(config.getOcspCleanupSchedule());
+            final String scheduleUnit = config.getOcspCleanupScheduleUnit();
 
             if (isDays(scheduleUnit)) {
                 return OcspResponseCleanupSession.convertToScheduleFromMS(TimeUnit.DAYS.toMillis(schedule));

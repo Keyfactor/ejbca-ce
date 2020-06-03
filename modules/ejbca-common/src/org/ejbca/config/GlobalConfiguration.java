@@ -82,14 +82,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
 
     // OCSP Cleanup
-    private static final String OCSP_CLEANUP_CUSTOM_SCHEDULE_USE = "ocsp.cleanup.custom_schedule.use";
-    private static final boolean OCSP_CLEANUP_CUSTOM_SCHEDULE_USE_DEFAULT = false;
+    private static final String OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    private static final boolean OCSP_CLEANUP_USE_DEFAULT = false;
 
-    private static final String OCSP_CLEANUP_CUSTOM_SCHEDULE = "ocsp.cleanup.custom_schedule";
-    private static final String OCSP_CLEANUP_CUSTOM_SCHEDULE_DEFAULT = "5";
+    private static final String OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    private static final String OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
 
-    private static final String OCSP_CLEANUP_CUSTOM_SCHEDULE_UNIT = "ocsp.cleanup.custom_schedule_unit";
-    private static final String OCSP_CLEANUP_CUSTOM_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
+    private static final String OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+    private static final String OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
 
 
     // Default values for AutoEnroll
@@ -481,14 +481,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        public void setAutoEnrollUse(final boolean value) { putBoolean(AUTOENROLL_USE, value); }
        public boolean getAutoEnrollUse() { return getBoolean(AUTOENROLL_USE, AUTOENROLL_DEFAULT_USE); }
 
-       public void setOcspCleanupCustomScheduleUse(final boolean value) { putBoolean(OCSP_CLEANUP_CUSTOM_SCHEDULE_USE, value);}
-       public boolean getOcspCleanupCustomScheduleUse() {return getBoolean(OCSP_CLEANUP_CUSTOM_SCHEDULE_USE, OCSP_CLEANUP_CUSTOM_SCHEDULE_USE_DEFAULT); }
+       public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
+       public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
 
-       public void setOcspCleanupCustomSchedule(final String value) { data.put(OCSP_CLEANUP_CUSTOM_SCHEDULE, value); }
-       public String getOcspCleanupCustomSchedule() { return getString(OCSP_CLEANUP_CUSTOM_SCHEDULE, OCSP_CLEANUP_CUSTOM_SCHEDULE_DEFAULT); }
+       public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
+       public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
 
-        public void setOcspCleanupCustomScheduleUnit(final String value) { data.put(OCSP_CLEANUP_CUSTOM_SCHEDULE_UNIT, value); }
-        public String getOcspCleanupCustomScheduleUnit() { return getString(OCSP_CLEANUP_CUSTOM_SCHEDULE_UNIT, OCSP_CLEANUP_CUSTOM_SCHEDULE_UNIT_DEFAULT); }
+        public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
+        public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
 
        public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
        @SuppressWarnings("unchecked")

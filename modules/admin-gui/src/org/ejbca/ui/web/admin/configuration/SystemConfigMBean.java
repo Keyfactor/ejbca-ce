@@ -132,9 +132,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private int sessionTimeoutTime;
 
         // Settings for the cleanup job for removing old OCSP responses created by the presigners.
-        private boolean ocspCleanupUseCustomSchedule;
-        private String ocspCleanupCustomSchedule;
-        private String ocspCleanupCustomScheduleUnit;
+        private boolean ocspCleanupUse;
+        private String ocspCleanupSchedule;
+        private String ocspCleanupScheduleUnit;
 
         //Admin Preferences
         private int preferedLanguage;
@@ -177,9 +177,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
-                this.ocspCleanupUseCustomSchedule = globalConfig.getOcspCleanupCustomScheduleUse();
-                this.ocspCleanupCustomSchedule = globalConfig.getOcspCleanupCustomSchedule();
-                this.ocspCleanupCustomScheduleUnit = globalConfig.getOcspCleanupCustomScheduleUnit();
+                this.ocspCleanupUse = globalConfig.getOcspCleanupUse();
+                this.ocspCleanupSchedule = globalConfig.getOcspCleanupSchedule();
+                this.ocspCleanupScheduleUnit = globalConfig.getOcspCleanupScheduleUnit();
 
                 // Admin Preferences
                 if(adminPreference == null) {
@@ -252,14 +252,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
 
         // OCSP Options: Cleanup Job
-        public boolean getOcspCleanupUseCustomSchedule() { return ocspCleanupUseCustomSchedule; }
-        public void setOcspCleanupUseCustomSchedule(final boolean value) { this.ocspCleanupUseCustomSchedule = value; }
+        public boolean getOcspCleanupUse() { return ocspCleanupUse; }
+        public void setOcspCleanupUse(final boolean value) { this.ocspCleanupUse = value; }
 
-        public String getOcspCleanupCustomSchedule() { return ocspCleanupCustomSchedule; }
-        public void setOcspCleanupCustomSchedule(final String value) {this.ocspCleanupCustomSchedule = value;}
+        public String getOcspCleanupSchedule() { return ocspCleanupSchedule; }
+        public void setOcspCleanupSchedule(final String value) {this.ocspCleanupSchedule = value;}
 
-        public String getOcspCleanupCustomScheduleUnit() { return ocspCleanupCustomScheduleUnit; }
-        public void setOcspCleanupCustomScheduleUnit(final String value) {this.ocspCleanupCustomScheduleUnit = value;}
+        public String getOcspCleanupScheduleUnit() { return ocspCleanupScheduleUnit; }
+        public void setOcspCleanupScheduleUnit(final String value) {this.ocspCleanupScheduleUnit = value;}
 
         // Admin Preferences
         public int getPreferedLanguage() { return this.preferedLanguage; }
@@ -810,9 +810,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
 
                 if (isValidOcspCleanupSettings()) {
-                    globalConfig.setOcspCleanupCustomSchedule(currentConfig.getOcspCleanupCustomSchedule());
-                    globalConfig.setOcspCleanupCustomScheduleUnit(currentConfig.getOcspCleanupCustomScheduleUnit());
-                    globalConfig.setOcspCleanupCustomScheduleUse(currentConfig.getOcspCleanupUseCustomSchedule());
+                    globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
+                    globalConfig.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
+                    globalConfig.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
                 }
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
@@ -1004,13 +1004,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private boolean isValidOcspCleanupSettings() {
-        if (currentConfig.getOcspCleanupUseCustomSchedule()) {
-            final String unit = currentConfig.getOcspCleanupCustomScheduleUnit();
+        if (currentConfig.getOcspCleanupUse()) {
+            final String unit = currentConfig.getOcspCleanupScheduleUnit();
             final Integer interval;
 
             // Validate number
             try {
-                interval = Integer.parseInt(currentConfig.getOcspCleanupCustomSchedule());
+                interval = Integer.parseInt(currentConfig.getOcspCleanupSchedule());
             } catch (NumberFormatException ex) {
                 addErrorMessage("OCSP_ERROR_NUMBER");
                 return false;
