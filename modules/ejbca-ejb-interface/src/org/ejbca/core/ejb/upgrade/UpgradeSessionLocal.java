@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import java.util.concurrent.Future;
-
 import javax.ejb.Local;
 
 /**
@@ -27,9 +25,6 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
 
 	/** Perform upgrades that can run side by side with older EJBCA versions. */
 	boolean performUpgrade();
-
-	/** Perform upgrades that require all nodes connected to the same database to run the current EJBCA version. */
-    Future<Boolean> startPostUpgrade();
 
     /** @return true if post upgrade is required */
     boolean isPostUpgradeNeeded();

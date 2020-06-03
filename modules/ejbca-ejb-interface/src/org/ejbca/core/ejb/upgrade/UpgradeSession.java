@@ -12,8 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
+import java.util.concurrent.Future;
+
 public interface UpgradeSession {
 
+    /**Access rules removed from EJBCA 6.8.0*/
+    String ROLE_PUBLICWEBUSER               = "/public_web_user";
+    String REGULAR_CABASICFUNCTIONS_OLD     = "/ca_functionality/basic_functions";
+    String REGULAR_ACTIVATECA_OLD           = REGULAR_CABASICFUNCTIONS_OLD+"/activate_ca";
+    
     /**
      * Upgrades the database
      * 
@@ -21,8 +28,8 @@ public interface UpgradeSession {
      */
     boolean upgrade(String dbtype, String sOldVersion, boolean isPost);
     
-    /**Access rules removed from EJBCA 6.8.0*/
-    String ROLE_PUBLICWEBUSER               = "/public_web_user";
-    String REGULAR_CABASICFUNCTIONS_OLD     = "/ca_functionality/basic_functions";
-    String REGULAR_ACTIVATECA_OLD           = REGULAR_CABASICFUNCTIONS_OLD+"/activate_ca";
+    /** Perform upgrades that require all nodes connected to the same database to run the current EJBCA version. */
+    Future<Boolean> startPostUpgrade();
+    
+
 }
