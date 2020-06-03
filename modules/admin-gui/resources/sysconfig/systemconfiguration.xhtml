@@ -169,7 +169,9 @@
 		</h:panelGrid>
 
 		<!-- OCSP Cleanup -->
-        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                     rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2"
+                     rendered="#{systemConfigMBean.renderOcspSettings}">
             <h:outputLabel for="header_ocspcleanup" value="#{web.text.OCSP_SPECIFIC_OPTIONS}" style="font-weight:bold; font-size:1.2em;"/>
             <h:panelGroup id="header_ocspcleanup"/>
 
