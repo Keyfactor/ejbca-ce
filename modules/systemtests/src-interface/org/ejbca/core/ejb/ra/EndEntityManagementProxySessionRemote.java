@@ -43,4 +43,10 @@ public interface EndEntityManagementProxySessionRemote {
      * @param certificateProfileId certificate profile id
      */
     public void deleteUsersByCertificateProfileId(int certificateProfileId);
+
+    /**
+     * Deletes from userdata, whith provided certificate profile
+     * @param endEntityProfileId end entity profile id
+     */
+    public void deleteUsersByEndEntityProfileId(int endEntityProfileId);
 }
