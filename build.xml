@@ -771,22 +771,11 @@
     <!-- ========================================================================== -->
     <!-- Upgrades the database for a new version of ejbca                           -->
     <!-- ========================================================================== -->
-    <target name="base-upgrade" depends="ejbca-ejb-cli">
-        <!-- Get input -->
-        <input message="Which version of EJBCA are you upgrading from (in the form x.y.z, i.e. 6.3.2):" addproperty="ejbca.upgradefromversion"/> 
-        <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
-            <arg line="upgrade ${database.name} ${ejbca.upgradefromversion} ${upgrade.post}"/>
-        </java>
-    </target>
-    <target name="set-upgrade">
-    	<echo message="DEPRECATED: &quot;ant upgrade&quot; is only needed if you are upgrading EJBCA from 4.0 or earlier."/>
-        <property name="upgrade.post" value=""/>
-    </target>
-    <target name="set-post-upgrade">
-        <property name="upgrade.post" value="--post"/>
-    </target>
-    <target name="upgrade" description="Run upgrade operations (deprecated)" depends="set-upgrade,base-upgrade"/>
-    <target name="post-upgrade" description="Run post-upgrade operations" depends="set-post-upgrade,base-upgrade"/>
+    <target name="upgrade" description="Run post-upgrade operations">
+    	<java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
+    		<arg line="upgrade"/>
+    	</java>
+	</target>
 
 
     <!-- ================================================================ -->
