@@ -24,7 +24,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.StartupSingletonBean;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSession;
 
@@ -117,12 +116,12 @@ public class OcspResponseCleanupSessionBeanTest {
     public void testGlobalConfigurationSettingsAreUsed() throws AuthorizationDeniedException, InterruptedException {
         // Change the cleanup settings in GC
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final String prevUnit = gc.getOcspCleanupCustomScheduleUnit();
-        final String prevSchedule = gc.getOcspCleanupCustomSchedule();
+        final String prevUnit = gc.getOcspCleanupScheduleUnit();
+        final String prevSchedule = gc.getOcspCleanupSchedule();
 
-        gc.setOcspCleanupCustomScheduleUnit("MINUTES");
-        gc.setOcspCleanupCustomScheduleUse(true);
-        gc.setOcspCleanupCustomSchedule("1");
+        gc.setOcspCleanupScheduleUnit("MINUTES");
+        gc.setOcspCleanupUse(true);
+        gc.setOcspCleanupSchedule("1");
         globalConfigSession.saveConfiguration(alwaysAllowToken, gc);
 
         // Persist data
@@ -137,8 +136,8 @@ public class OcspResponseCleanupSessionBeanTest {
         // Assert only latest responses are left.
         assertEquals(2, ocspDataSessionRemote.findOcspDataByCaId(certificateAuth).size());
 
-        gc.setOcspCleanupCustomScheduleUnit(prevUnit);
-        gc.setOcspCleanupCustomSchedule(prevSchedule);
+        gc.setOcspCleanupScheduleUnit(prevUnit);
+        gc.setOcspCleanupSchedule(prevSchedule);
         globalConfigSession.saveConfiguration(alwaysAllowToken, gc);
     }
 
