@@ -185,7 +185,7 @@
 
             <h:panelGroup id="ocspCleanupGroup">
                 <h:selectBooleanCheckbox id="ocspCleanupEnable"
-                                         value="#{systemConfigMBean.currentConfig.ocspCleanupUseCustomSchedule}"
+                                         value="#{systemConfigMBean.currentConfig.ocspCleanupUse}"
                                          disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
                     <f:ajax render="systemconfiguration:ocspCleanupGroup"/>
                 </h:selectBooleanCheckbox>
@@ -193,11 +193,11 @@
                 <br/>
 
                 <h:inputText id="ocspCleanupInterval"
-                             disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.ocspCleanupUseCustomSchedule}"
-                             value="#{systemConfigMBean.currentConfig.ocspCleanupCustomSchedule}" size="10"/>
+                             disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.ocspCleanupUse}"
+                             value="#{systemConfigMBean.currentConfig.ocspCleanupSchedule}" size="10"/>
 
-                <h:selectOneMenu disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.ocspCleanupUseCustomSchedule}"
-                                 value="#{systemConfigMBean.currentConfig.ocspCleanupCustomScheduleUnit}"
+                <h:selectOneMenu disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.ocspCleanupUse}"
+                                 value="#{systemConfigMBean.currentConfig.ocspCleanupScheduleUnit}"
                                  style="margin-left:5px; min-width:100px">
                     <f:selectItems value="#{systemConfigMBean.availableOcspCleanupUnits}"/>
                 </h:selectOneMenu>
