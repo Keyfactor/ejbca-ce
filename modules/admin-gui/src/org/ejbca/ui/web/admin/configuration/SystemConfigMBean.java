@@ -989,6 +989,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         nodesInCluster = new ListDataModel<>(getListFromSet(nodes));
     }
 
+    public boolean isRenderOcspSettings() {
+        return getEjbcaWebBean().isRunningEnterprise();
+    }
+
     private List<String> getListFromSet(Set<String> set) {
         List<String> list = new ArrayList<>();
         if(set!=null && !set.isEmpty()) {
