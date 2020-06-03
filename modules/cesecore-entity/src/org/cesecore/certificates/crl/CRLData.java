@@ -142,7 +142,11 @@ public class CRLData extends ProtectedData implements Serializable {
      * @param crlPartitionIndex the CRL partition index to set.
      */
     public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
-        this.crlPartitionIndex = crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION ? -1 : crlPartitionIndex;
+        if (crlPartitionIndex == null || crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION) {
+            this.crlPartitionIndex = -1;
+        } else {
+            this.crlPartitionIndex = crlPartitionIndex;
+        }
     }
 
     // @Column
