@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
@@ -80,25 +81,25 @@ public abstract class SystemTestsConfiguration {
 
     /** @return the host that the test should access for protocols (e.g. the IP of an HTTP proxy in front of EJBCA)*/
     public static String getRemoteHost(final String defaultValue) {
-        return getProperties().getProperty("target.hostname", defaultValue);
+        return StringUtils.trim(getProperties().getProperty("target.hostname", defaultValue));
     }
 
     /** @return the HTTP port of the host that the test should access for protocols (e.g. the HTTP port of an http proxy in front of EJBCA)*/
     public static String getRemotePortHttp(final String defaultValue) {
-        return getProperties().getProperty("target.port.http", defaultValue);
+        return StringUtils.trim(getProperties().getProperty("target.port.http", defaultValue));
     }
 
     /** @return the HTTPS port of the host that the test should access for protocols (e.g. the HTTPS port of an http proxy in front of EJBCA)*/
     public static String getRemotePortHttps(final String defaultValue) {
-        return getProperties().getProperty("target.port.https", defaultValue);
+        return StringUtils.trim(getProperties().getProperty("target.port.https", defaultValue));
     }
 
     public static String[] getServerCertificateCaNames() {
-        return getProperties().getProperty(TARGET_SERVERCERT_CA, "ManagementCA;AdminCA1").split(";");
+        return StringUtils.trim(getProperties().getProperty(TARGET_SERVERCERT_CA, "ManagementCA;AdminCA1")).split(";");
     }
 
     public static String[] getClientCertificateCaNames() {
-        return getProperties().getProperty(TARGET_CLIENTCERT_CA, "ManagementCA;AdminCA1").split(";");
+        return StringUtils.trim(getProperties().getProperty(TARGET_CLIENTCERT_CA, "ManagementCA;AdminCA1")).split(";");
     }
 
     /**
@@ -107,33 +108,33 @@ public abstract class SystemTestsConfiguration {
      * Set to 0.0.0.0 to allow external connections (perhaps from a different VM).
      */
     public static String getTestServersBindAddress() {
-        return getProperties().getProperty(TESTSERVERS_BINDADDRESS, "127.0.0.1");
+        return StringUtils.trim(getProperties().getProperty(TESTSERVERS_BINDADDRESS, "127.0.0.1"));
     }
 
     /** Hostname of that EJBCA should connect to, to reach servers spawned by tests. */
     public static String getTestServersHostname() {
-        return getProperties().getProperty(TESTSERVERS_HOSTNAME, "localhost");
+        return StringUtils.trim(getProperties().getProperty(TESTSERVERS_HOSTNAME, "localhost"));
     }
 
     /** Use {@link #getHsmLibrary} instead, which has auto-detection. */
     private static String getPkcs11LibraryInternal(String defaultValue) {
-        return getProperties().getProperty(PKCS11_LIBRARY, defaultValue);
+        return StringUtils.trim(getProperties().getProperty(PKCS11_LIBRARY, defaultValue));
     }
     
     public static char[] getPkcs11SlotPin(String defaultValue) {
-        return getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue).toCharArray();
+        return StringUtils.trim(getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue)).toCharArray();
     }
     
     public static String getPkcs11SecurityProvider(String defaultValue) {
-        return getProperties().getProperty(PKCS11_SECURITY_PROVIDER, defaultValue);
+        return StringUtils.trim(getProperties().getProperty(PKCS11_SECURITY_PROVIDER, defaultValue));
     }    
     
     public static Pkcs11SlotLabelType getPkcs11SlotType(String defaultValue) {
-        return Pkcs11SlotLabelType.getFromKey(getProperties().getProperty(PKCS11_SLOT_TYPE, defaultValue));
+        return Pkcs11SlotLabelType.getFromKey(StringUtils.trim(getProperties().getProperty(PKCS11_SLOT_TYPE, defaultValue)));
     }
     
     public static String getPkcs11SlotValue(String defaultValue) {
-        return getProperties().getProperty(PKCS11_SLOT_VALUE, defaultValue);
+        return StringUtils.trim(getProperties().getProperty(PKCS11_SLOT_VALUE, defaultValue));
     }
     
     /**
