@@ -52,4 +52,11 @@ public class EndEntityManagementProxySessionBean implements EndEntityManagementP
         query.setParameter("certificateProfileId", certificateProfileId);
         query.executeUpdate();
     }
+
+    @Override
+    public void deleteUsersByEndEntityProfileId(int endEntityProfileId) {
+        Query query = entityManager.createQuery("DELETE FROM UserData u WHERE u.endEntityProfileId=:endEntityProfileId ");
+        query.setParameter("endEntityProfileId", endEntityProfileId);
+        query.executeUpdate();
+    }
 }
