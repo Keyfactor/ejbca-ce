@@ -56,6 +56,7 @@
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
 		<path refid="lib.commons-config.classpath" />
+		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.cert-cvc.classpath" />
 		<path refid="lib.ldap.classpath" />
 		<path location="${clientToolBox.build-test.dir}" />
