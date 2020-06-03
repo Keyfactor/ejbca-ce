@@ -131,9 +131,9 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 		private boolean isSign;
 		private boolean firstTime = true;
 
-		public SessionData(final CLIArgs clia, PerformanceTest _performanceTest, KeyStore keyStore) throws Exception {
+		public SessionData(final CLIArgs clia, PerformanceTest performanceTest, KeyStore keyStore) throws Exception {
 			this.cliArgs = clia;
-			this.performanceTest = _performanceTest;
+			this.performanceTest = performanceTest;
 			this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
 
 			final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
@@ -267,7 +267,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
 			// Calculate the protection bits
 			final byte[] raSecret = this.cliArgs.keystorePassword.getBytes();
-			byte basekey[] = new byte[raSecret.length + salt.length];
+			byte[] basekey = new byte[raSecret.length + salt.length];
 			System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
 			System.arraycopy(salt, 0, basekey, raSecret.length, salt.length);
 			// Construct the base key according to rfc4210, section 5.1.3.1
@@ -295,7 +295,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			final CMPSendHTTP send = CMPSendHTTP.sendMessage(message, this.cliArgs.hostName, this.cliArgs.port, this.cliArgs.urlPath, false);
 			if (send.responseCode != HttpURLConnection.HTTP_OK) {
 				this.performanceTest.getLog().error(
-						intres.getLocalizedMessage("cmp.responsecodenotok", Integer.valueOf(send.responseCode)));
+						intres.getLocalizedMessage("cmp.responsecodenotok", send.responseCode));
 				return null;
 			}
 			if (send.contentType == null) {
@@ -505,7 +505,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				this.performanceTest.getLog().error("No X509CertificateStructure for certificate received.");
 				return null;
 			}
-			final byte encoded[] = cmpcert.getEncoded();
+			final byte[] encoded = cmpcert.getEncoded();
 			if (encoded == null || encoded.length <= 0) {
 				this.performanceTest.getLog().error("No encoded certificate received.");
 				return null;
@@ -539,7 +539,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			return cert;
 		}
 
-		private boolean checkCmpPKIConfirmMessage(final byte retMsg[]) throws IOException, CertificateEncodingException {
+		private boolean checkCmpPKIConfirmMessage(final byte[] retMsg) throws IOException, CertificateEncodingException {
 			// Parse response message
 			final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(retMsg));
 			final PKIMessage respObject = PKIMessage.getInstance(ais.readObject());
@@ -628,8 +628,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			final CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
 
 			final PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
-			final PKIMessage myPKIMessage = new PKIMessage(header, myPKIBody);
-			return myPKIMessage;
+			return new PKIMessage(header, myPKIBody);
 		}
 		private final byte[] nonce = new byte[16];
 		private final byte[] transid = new byte[16];
@@ -751,7 +750,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			final DEROutputStream out = new DEROutputStream(bao);
 			out.writeObject(confirm);
 			out.close();
-			final byte ba[] = bao.toByteArray();
+			final byte[] ba = bao.toByteArray();
 			// Send request and receive response
 			final byte[] resp = this.sessionData.sendCmpHttp(ba);
 			if (resp == null || resp.length <= 0) {
@@ -761,10 +760,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			if (!this.sessionData.checkCmpResponseGeneral(resp, false)) {
 				return false;
 			}
-			if (!this.sessionData.checkCmpPKIConfirmMessage(resp)) {
-				return false;
-			}
-			return true;
+			return this.sessionData.checkCmpPKIConfirmMessage(resp);
 		}
 
 		@Override
@@ -785,7 +781,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 		final String urlPath;
 		final String resultFilePrefix;
 
-		CLIArgs( final String args[] ) throws Exception {
+		CLIArgs( final String[] args) throws Exception {
 			if (args.length < 5) {
 				System.out.println(
 						args[0] +
@@ -819,12 +815,12 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 	private static class MyCommandFactory implements CommandFactory {
 		final private PerformanceTest performanceTest;
 		final private CLIArgs cliArgs;
-		final private KeyStore keyStores[];
+		final private KeyStore[] keyStores;
 		static private int keyStoreIx = 0;
-		MyCommandFactory( final CLIArgs clia, final PerformanceTest _performanceTest, final KeyStore _keyStores[] ) {
-			this.performanceTest = _performanceTest;
+		MyCommandFactory( final CLIArgs clia, final PerformanceTest performanceTest, final KeyStore[] keyStores) {
+			this.performanceTest = performanceTest;
 			this.cliArgs = clia;
-			this.keyStores = _keyStores;
+			this.keyStores = keyStores;
 		}
 		@SuppressWarnings("synthetic-access")
 		@Override

@@ -132,7 +132,7 @@ public class PerformanceTest {
         final private int nr;
         final private int maxWaitTime;
         final private Statistic statistic;
-        final private Command commands[];
+        final private Command[] commands;
 
         /**
          * @param nr             number of threads
@@ -183,7 +183,7 @@ public class PerformanceTest {
                         this.statistic.addTime(command.getJobTimeDescription(), jobRunner.getTimeConsumed());
                     }
                     StringBuilder sResult = new StringBuilder();
-                    sResult.append("Test in thread " + this.nr + " completed ");
+                    sResult.append("Test in thread ").append(this.nr).append(" completed ");
                     if (failingCommand == null) {
                         this.statistic.taskFinished();
                         sResult.append("successfully");
@@ -208,7 +208,7 @@ public class PerformanceTest {
 
     public void execute(CommandFactory commandFactory, int numberOfThreads, int numberOfTests, int waitTime, PrintStream printStream) throws Exception {
         final Statistic statistic = new Statistic(numberOfThreads, numberOfTests, printStream);
-        final Thread threads[] = new Thread[numberOfThreads]; // NOPMD this is a standalone test, not run in jee app
+        final Thread[] threads = new Thread[numberOfThreads]; // NOPMD this is a standalone test, not run in jee app
         for (int i = 0; i < numberOfThreads; i++) {
             threads[i] = new Thread(new TestInstance(i, waitTime, statistic, commandFactory)); // NOPMD this is a standalone test, not run in jee app
         }
