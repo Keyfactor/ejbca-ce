@@ -108,6 +108,7 @@ import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
+import org.bouncycastle.tls.HashAlgorithm;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -1881,7 +1882,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
-    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr, boolean issueFinalResponse) {
+    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr, boolean issueFinalResponse, String certIDHashAlgorithm) {
         final OCSPReq req;
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -1890,7 +1891,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
         CertificateID certId;
         try {
-            certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
+            if (isSHA1(certIDHashAlgorithm)) {
+                certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
+            } else {
+                certId = new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), cacert, serialNr);
+            }
+
             gen.addRequest(certId);
             req = gen.build();
             getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse);
@@ -1902,6 +1908,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         }
         
+    }
+
+    private boolean isSHA1(String algorithmName) {
+        return algorithmName.toUpperCase().equals(HashAlgorithm.getName(HashAlgorithm.sha1).toUpperCase());
     }
     
     private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 
