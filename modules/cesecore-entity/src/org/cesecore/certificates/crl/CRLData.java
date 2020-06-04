@@ -29,6 +29,8 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.TypedQuery;
+
 import java.io.Serializable;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
@@ -325,9 +327,9 @@ public class CRLData extends ProtectedData implements Serializable {
      * @return all CRLs for the given issuer.
      */
     public static List<CRLData> findByIssuerDN(final EntityManager entityManager, final String issuerDN) {
-        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN");
+        final TypedQuery<CRLData> query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN", CRLData.class);
         query.setParameter("issuerDN", issuerDN);
-        return (List<CRLData>) query.getResultList();
+        return query.getResultList();
     }
 
     /**
@@ -384,11 +386,10 @@ public class CRLData extends ProtectedData implements Serializable {
         if (crlPartitionIndex > 0) {
             // Get a partitioned CRL with the specified partition index
             return "a.crlPartitionIndex=:crlPartitionIndex";
-        } else {
-            // Get a non-partitioned CRL
-            // Old data is represented with 0 or NULL. New data uses -1 instead.
-            return "(a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL)";
         }
+        // Get a non-partitioned CRL
+        // Old data is represented with 0 or NULL. New data uses -1 instead.
+        return "(a.crlPartitionIndex=-1 OR a.crlPartitionIndex=0 OR a.crlPartitionIndex IS NULL)";
     }
 
     /**
