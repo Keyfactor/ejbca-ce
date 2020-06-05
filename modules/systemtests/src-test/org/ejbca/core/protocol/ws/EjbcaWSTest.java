@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -211,19 +219,12 @@ import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -2328,6 +2329,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             CesecoreException_Exception, WaitingForApprovalException_Exception, CouldNotRemoveEndEntityException, InvalidKeyException,
             CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, CertificateException,
             IllegalStateException, NoSuchSlotException, EndEntityProfileExistsException {
+        Assume.assumeTrue("Skipped on community edition", enterpriseEjbBridgeSession.isRunningEnterprise());
         //Create an external CA
         final String caName = "testCreateExternallySignedCa";
         final String profileName = "testCreateExternallySignedCa";
