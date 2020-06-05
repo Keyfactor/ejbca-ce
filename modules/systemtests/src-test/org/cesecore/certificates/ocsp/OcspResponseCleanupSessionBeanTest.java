@@ -69,9 +69,6 @@ public class OcspResponseCleanupSessionBeanTest {
     public void testOldResponsesDeletedByJob() throws InterruptedException {
         log.trace(">testOldResponsesDeletedByJob");
 
-        final ScheduleExpression schedule = new ScheduleExpression();
-        schedule.second("*/5").minute("*").hour("*");
-
         // Persists OCSP Response data.
         persistOcspResponses();
         Thread.sleep(2000);
@@ -81,7 +78,8 @@ public class OcspResponseCleanupSessionBeanTest {
         assertEquals(5, responses.size());
 
         // Start the job and stop it after it runs.
-        ocspCleanup.start(schedule);
+        // Every 5 seconds.
+        ocspCleanup.start("*", "*", "*/5");
         Thread.sleep(TimeUnit.SECONDS.toMillis(6));
         ocspCleanup.stop();
 
@@ -98,12 +96,10 @@ public class OcspResponseCleanupSessionBeanTest {
     public void testTimersAreStartedAndStoppedCorrectly() {
         log.trace(">testTimersAreStartedAndStoppedCorrectly");
 
-        ScheduleExpression schedule = new ScheduleExpression();
-        schedule.second("59").minute("59").hour("23").year(2999);
-
         assertFalse(ocspCleanup.hasTimers());
 
-        ocspCleanup.start(schedule);
+        // 23:59:59
+        ocspCleanup.start("23", "59", "59");
         assertTrue(ocspCleanup.hasTimers());
 
         ocspCleanup.stop();

@@ -101,8 +101,10 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void start(ScheduleExpression expression) {
+    public void start(String hours, String minutes, String seconds) {
         log.info("OCSP clean up job with specific schedule started.");
+        ScheduleExpression expression = new ScheduleExpression();
+        expression.hour(hours).minute(minutes).second(seconds);
 
         startJob(expression);
     }

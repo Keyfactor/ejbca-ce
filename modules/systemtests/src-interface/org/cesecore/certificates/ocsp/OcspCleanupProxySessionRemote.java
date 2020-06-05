@@ -13,7 +13,6 @@
 package org.cesecore.certificates.ocsp;
 
 import javax.ejb.Remote;
-import javax.ejb.ScheduleExpression;
 
 /**
  * @version $Id$
@@ -28,9 +27,13 @@ public interface OcspCleanupProxySessionRemote {
     /**
      * Activate the Ocsp response cleanup job with specific intervals.
      *
-     * @param expression interval for running the cleanup job
+     * Parameters should match valid values for creating a ScheduleExpression.
+     *
+     * @param hours hours that wScheduleExpression
+     * @param minutes interval for running the clean up job
+     * @param seconds interval for running the clean up job
      */
-    void start(ScheduleExpression expression);
+    void start(String hours, String minutes, String seconds);
 
     /**
      * Cancel all existing timers for Ocsp response cleanup.
