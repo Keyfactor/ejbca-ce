@@ -63,7 +63,7 @@ public class UpgradeCommand extends EjbcaCommandBase {
 
     @Override
     public String getCommandDescription() {
-        return "Upgrade command. Use 'ant upgrade' instead of running this directly.";
+        return "Post upgrade command. Use 'ant upgrade' instead of running this directly.";
     }
 
     @Override
