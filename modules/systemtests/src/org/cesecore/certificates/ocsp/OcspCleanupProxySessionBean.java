@@ -16,7 +16,6 @@ import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 
 import javax.ejb.EJB;
-import javax.ejb.ScheduleExpression;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -40,8 +39,8 @@ public class OcspCleanupProxySessionBean implements OcspCleanupProxySessionRemot
     }
 
     @Override
-    public void start(ScheduleExpression expression) {
-        ocspCleanupSessionLocal.start(expression);
+    public void start(String hours, String minutes, String seconds) {
+        ocspCleanupSessionLocal.start(hours, minutes, seconds);
     }
 
     @Override
