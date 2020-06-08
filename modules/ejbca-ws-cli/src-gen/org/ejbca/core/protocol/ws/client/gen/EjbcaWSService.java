@@ -75,7 +75,7 @@ public class EjbcaWSService
     /**
      * 
      * @param features
-     *     A list of {@link javax.xml.ws.WebServiceFeature} to configure on the proxy.  Supported features not in the <code&gt;features &lt;/code&gt; parameter will have their default values.
+     *     A list of {@link javax.xml.ws.WebServiceFeature} to configure on the proxy.  Supported features not in the <CODE>features </CODE> parameter will have their default values.
      * @return
      *     returns EjbcaWS
      */

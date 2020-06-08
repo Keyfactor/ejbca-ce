@@ -21,7 +21,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 
 /**
  * Class used to represent userdata in the WebService API.
- * Is used instead of EndEntityInformation because of profilenames is used instead of id's.<br&gt;
+ * Is used instead of EndEntityInformation because of profilenames is used instead of id's.<br>
  * Example code:<pre>
  *   UserDataVOWS user = new UserDataVOWS ();
  *   user.setUsername ("tester");
@@ -41,18 +41,18 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *                                     Integer.toString(RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD)));
  *   ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
  *   user.setExtendedInformation(ei);
- * </pre>
+ *</pre>
  * 
  * @version $Id$
  */
 public class UserDataVOWS implements Serializable{
 	
-	private static final long serialVersionUID = 7557071186257332026L;
+    private static final long serialVersionUID = 7557071186257302026L;
     public static final String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
 	public static final String TOKEN_TYPE_JKS           = "JKS";
 	public static final String TOKEN_TYPE_PEM           = "PEM";
 	public static final String TOKEN_TYPE_P12           = "P12";
-		
+	
     private String username = null;
     private String password = null;
     private boolean clearPwd = false;
@@ -66,9 +66,6 @@ public class UserDataVOWS implements Serializable{
     private boolean keyRecoverable = false;
     private String endEntityProfileName = null;
     private String certificateProfileName = null;
-    /** @deprecated Since EJBCA 7.1.0. */
-    @Deprecated
-    private String hardTokenIssuerName = null;
     private String startTime = null;
     private String endTime = null;
     private BigInteger certificateSerialNumber;
@@ -91,34 +88,11 @@ public class UserDataVOWS implements Serializable{
 	 * @param subjectAltName
 	 * @param email 
 	 * @param status one of the STATUS_ constants
-	 * @param tokenType type of token, one of TOKEN_TYPE constants in this class
+	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens
 	 * @param endEntityProfileName
 	 * @param certificateProfileName
-	 * @param hardTokenIssuerName
 	 */
-    public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName) {
-        this(username, password, clearPwd, subjectDN, caName, subjectAltName, email, status, tokenType, endEntityProfileName, certificateProfileName, null);
-    }
-
-    /**
-     * Do not call this constructor. It is left here for backwards compatibility, with previous versions that still supported Hard Tokens.
-     *
-     * @param username the unique username if the user, used internally in EJBCA
-     * @param password password u sed to lock the keystore
-     * @param clearPwd true if password should be in clear
-     * @param subjectDN of 
-     * @param caName the name of the CA used in the EJBCA web gui.
-     * @param subjectAltName
-     * @param email 
-     * @param status one of the STATUS_ constants
-     * @param tokenType type of token, one of TOKEN_TYPE constants in this class
-     * @param endEntityProfileName
-     * @param certificateProfileName
-     * @param hardTokenIssuerName this parameter is now ignored, and should be null.
-     * @deprecated Since EJBCA 7.1.0.
-     */
-    @Deprecated
-	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName, String hardTokenIssuerName) {
+	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName) {
 		super();
 		this.username = username;
 		this.password = password;
@@ -131,9 +105,15 @@ public class UserDataVOWS implements Serializable{
 		this.tokenType = tokenType;
 		this.endEntityProfileName = endEntityProfileName;
 		this.certificateProfileName = certificateProfileName;
-		this.hardTokenIssuerName = hardTokenIssuerName;
 	}
 
+    /**
+     * HardTokens are removed from EJBCA since 7.1.0. This constructor is left in for compatibility reasons.
+     */
+    @Deprecated
+    public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName, String hardTokenIssuerName) {
+        this(username, password, clearPwd, subjectDN, caName, subjectAltName, email, status, tokenType, endEntityProfileName, certificateProfileName);
+    }
     
     /**
      * 
@@ -197,13 +177,6 @@ public class UserDataVOWS implements Serializable{
 	}
 
 
-	/**
-     * @deprecated No longer supported since Hard Tokens support was removed in EJBCA 7.1.0.
-     */
-    @Deprecated
-	public String getHardTokenIssuerName() {
-		return hardTokenIssuerName;
-	}
 
 
 	/**
@@ -218,7 +191,7 @@ public class UserDataVOWS implements Serializable{
 
 	/**
 	 * Observe sending usedata to clients outside EJBCA will always return false
-	 * @return Returns the clearpwd.
+	 * @return Returns if clearpwd is to be used or not (for batch generation).
 	 */
 	public boolean isClearPwd() {
 		return clearPwd;
@@ -249,7 +222,7 @@ public class UserDataVOWS implements Serializable{
 
 
 	/**
-	 * @return Returns the tokenType, one of TOKEN_TYPE constants
+	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens
 	 */
 	public String getTokenType() {
 		return tokenType;
@@ -318,13 +291,6 @@ public class UserDataVOWS implements Serializable{
 		this.endEntityProfileName = endEntityProfileName;
 	}
 
-	/**
-     * @deprecated No longer supported since Hard Tokens support was removed in EJBCA 7.1.0.
-     */
-    @Deprecated
-	public void setHardTokenIssuerName(String hardTokenIssuerName) {
-		this.hardTokenIssuerName = hardTokenIssuerName;
-	}
 
 	/**
 	 * @param password The password to set.

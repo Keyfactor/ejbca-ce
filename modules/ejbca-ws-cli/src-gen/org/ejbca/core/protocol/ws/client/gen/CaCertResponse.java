@@ -3,10 +3,9 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -16,19 +15,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="caCertResponse"&gt;
- *   &lt;complexContent&gt;
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
- *       &lt;sequence&gt;
- *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
- *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/&gt;
- *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}base64Binary" maxOccurs="unbounded" minOccurs="0"/&gt;
- *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
- *       &lt;/sequence&gt;
- *     &lt;/restriction&gt;
- *   &lt;/complexContent&gt;
- * &lt;/complexType&gt;
- *  </pre>
+ * &lt;complexType name="caCertResponse">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
+ *         &lt;element name="arg2" type="{http://www.w3.org/2001/XMLSchema}base64Binary" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
  * 
  * 
  */
@@ -42,8 +41,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CaCertResponse {
 
     protected String arg0;
-    @XmlElementRef(name = "arg1", type = JAXBElement.class, required = false)
-    protected JAXBElement<byte[]> arg1;
+    protected byte[] arg1;
     protected List<byte[]> arg2;
     protected String arg3;
 
@@ -76,10 +74,9 @@ public class CaCertResponse {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
-     *     
+     *     byte[]
      */
-    public JAXBElement<byte[]> getArg1() {
+    public byte[] getArg1() {
         return arg1;
     }
 
@@ -88,11 +85,10 @@ public class CaCertResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
-     *     
+     *     byte[]
      */
-    public void setArg1(JAXBElement<byte[]> value) {
-        this.arg1 = value;
+    public void setArg1(byte[] value) {
+        this.arg1 = ((byte[]) value);
     }
 
     /**
@@ -102,13 +98,13 @@ public class CaCertResponse {
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE&gt;set &lt;/CODE&gt; method for the arg2 property.
+     * This is why there is not a <CODE>set</CODE> method for the arg2 property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getArg2().add(newItem);
-     *  </pre>
+     * </pre>
      * 
      * 
      * <p>
