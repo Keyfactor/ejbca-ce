@@ -14,17 +14,17 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="updateCaCert">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
+ * &lt;complexType name="updateCaCert"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
+ *  </pre>
  * 
  * 
  */
@@ -68,7 +68,7 @@ public class UpdateCaCert {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
      *     
      */
     public JAXBElement<byte[]> getArg1() {
@@ -80,7 +80,7 @@ public class UpdateCaCert {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
      *     
      */
     public void setArg1(JAXBElement<byte[]> value) {
