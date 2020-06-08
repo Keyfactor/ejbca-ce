@@ -16,7 +16,7 @@ import java.io.Serializable;
 
 /**
  * Class used to represent extended information in userdata in the WebService API.
- * <br&gt;&nbsp;<br&gt;
+ * <br>&nbsp;<br>
  * Example code:<pre>
  *   UserDataVOWS user = new UserDataVOWS ();
  *   user.setUsername ("tester");
