@@ -18,6 +18,10 @@ import org.openqa.selenium.WebElement;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 'Inspect Certificate CSR' helper class for EJBCA Web Tests.
  *
@@ -97,9 +101,18 @@ public class InspectCertificateCsrHelper extends BaseHelper {
      * @param content
      */
     public void assertCertificateContent(String content) throws InterruptedException  {
-        Thread.sleep(10000);
+        Boolean found = true;
+        List<String> certificateRows = new ArrayList<String>(Arrays.asList(content.split("\n")));
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
+        for (String certificateRow : certificateRows) {
+            if (!certificateDump.getText().contains(certificateRow)) {
+                if (found) {
+                    found = false;
+                    break;
+                }
+            }
+        }
         assertEquals("Certificate file content is incorrect", true,
-                certificateDump.getText().contains(content));
+                found);
     }
 }
