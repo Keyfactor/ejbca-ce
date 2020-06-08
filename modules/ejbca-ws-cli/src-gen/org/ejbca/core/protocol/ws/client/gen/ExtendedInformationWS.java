@@ -16,7 +16,7 @@ import java.io.Serializable;
 
 /**
  * Class used to represent extended information in userdata in the WebService API.
- * <br>&nbsp;<br>
+ * <br&gt;&nbsp;<br&gt;
  * Example code:<pre>
  *   UserDataVOWS user = new UserDataVOWS ();
  *   user.setUsername ("tester");
@@ -30,7 +30,7 @@ import java.io.Serializable;
  *     .
  *     .
  *   user.setExtendedInformation (ei);
- *</pre>
+ * </pre>
  * 
  * @version $Id$
  */

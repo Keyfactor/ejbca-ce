@@ -21,7 +21,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 
 /**
  * Class used to represent userdata in the WebService API.
- * Is used instead of EndEntityInformation because of profilenames is used instead of id's.<br>
+ * Is used instead of EndEntityInformation because of profilenames is used instead of id's.<br&gt;
  * Example code:<pre>
  *   UserDataVOWS user = new UserDataVOWS ();
  *   user.setUsername ("tester");
@@ -41,7 +41,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *                                     Integer.toString(RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD)));
  *   ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
  *   user.setExtendedInformation(ei);
- *</pre>
+ * </pre>
  * 
  * @version $Id$
  */
