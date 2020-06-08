@@ -128,9 +128,9 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
                 "        ObjectIdentifier(1.2.840.113549.1.7.1)\n" +
                 "        BER Tagged [0]\n" +
                 "            BER Constructed Octet String[3830] \n" +
-                "    Sequence\n" +
-                "        Sequence\n" +
-                "            Sequence\n" +
+                "    DER Sequence\n" +
+                "        DER Sequence\n" +
+                "            DER Sequence\n" +
                 "                ObjectIdentifier(1.3.14.3.2.26)\n" +
                 "                NULL\n" +
                 "            DER Octet String[20] \n" +
@@ -190,7 +190,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepB_UploadPemCertificate() {
+    public void stepB_UploadPemCertificate() throws InterruptedException {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.PEM_CERTIFICATE);
@@ -204,7 +204,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepC_UploadDerCertificate() {
+    public void stepC_UploadDerCertificate() throws InterruptedException {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.DER_CERTIFICATE);
@@ -218,7 +218,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepD_UploadP12Certificate() {
+    public void stepD_UploadP12Certificate() throws InterruptedException {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.P12_CERTIFICATE);
@@ -232,7 +232,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepE_UploadCVCertCertificate() {
+    public void stepE_UploadCVCertCertificate() throws InterruptedException {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.CVCERT_CERTIFICATE);

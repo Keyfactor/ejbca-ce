@@ -96,7 +96,8 @@ public class InspectCertificateCsrHelper extends BaseHelper {
      *
      * @param content
      */
-    public void assertCertificateContent(String content) {
+    public void assertCertificateContent(String content) throws InterruptedException  {
+        Thread.sleep(10000);
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         assertEquals("Certificate file content is incorrect", true,
                 certificateDump.getText().contains(content));
