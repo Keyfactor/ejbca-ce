@@ -65,7 +65,7 @@ public interface EjbcaWS {
      * 
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.UserDataVOWS&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.UserDataVOWS>
      * @throws EndEntityProfileNotFoundException_Exception
      * @throws IllegalQueryException_Exception
      * @throws AuthorizationDeniedException_Exception
@@ -86,7 +86,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
@@ -106,7 +106,7 @@ public interface EjbcaWS {
      * 
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
@@ -310,7 +310,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -331,7 +331,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -354,7 +354,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -443,7 +443,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws WaitingForApprovalException_Exception
      * @throws CertificateExpiredException_Exception
      * @throws SignRequestException_Exception
@@ -917,7 +917,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.UserDataSourceVOWS&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.UserDataSourceVOWS>
      * @throws UserDataSourceException_Exception
      * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
@@ -942,7 +942,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS>
      * @throws WaitingForApprovalException_Exception
      * @throws ApprovalException_Exception
      * @throws ApprovalRequestExecutionException_Exception
@@ -1024,7 +1024,7 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS>
      * @throws CADoesntExistsException_Exception
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
@@ -1183,7 +1183,7 @@ public interface EjbcaWS {
     /**
      * 
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId>
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
      */
@@ -1198,7 +1198,7 @@ public interface EjbcaWS {
     /**
      * 
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId>
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
      */
@@ -1214,7 +1214,7 @@ public interface EjbcaWS {
      * 
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId>
      * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
@@ -1232,7 +1232,7 @@ public interface EjbcaWS {
      * 
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.NameAndId>
      * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
@@ -1430,7 +1430,7 @@ public interface EjbcaWS {
      * 
      * @param arg0
      * @return
-     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate&gt;
+     *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
      * @throws CADoesntExistsException_Exception
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
