@@ -14,16 +14,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="caRenewCertRequestResponse">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="return" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
+ * &lt;complexType name="caRenewCertRequestResponse"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="return" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
+ *  </pre>
  * 
  * 
  */
@@ -41,7 +41,7 @@ public class CaRenewCertRequestResponse {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
      *     
      */
     public JAXBElement<byte[]> getReturn() {
@@ -53,7 +53,7 @@ public class CaRenewCertRequestResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
      *     
      */
     public void setReturn(JAXBElement<byte[]> value) {
