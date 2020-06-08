@@ -36,8 +36,14 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
@@ -48,13 +54,13 @@ import static java.util.stream.Collectors.toList;
  *
  * @version $Id$
  */
-public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNameValidator {
+public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNameValidator, Serializable {
     private static final long serialVersionUID = -1L;
     public static final String TYPE_IDENTIFIER = "SAFE_BROWSING_VALIDATOR";
     private static final String API_KEY_KEY = "API_KEY";
     private static final Logger log = Logger.getLogger(GoogleSafeBrowsingValidator.class);
     protected DynamicUiModel uiModel;
-    private final Supplier<CloseableHttpClient> supplyHttpClient;
+    private transient final Supplier<CloseableHttpClient> supplyHttpClient;
 
     public GoogleSafeBrowsingValidator(final Supplier<CloseableHttpClient> supplyHttpClient) {
         this.supplyHttpClient = supplyHttpClient;
