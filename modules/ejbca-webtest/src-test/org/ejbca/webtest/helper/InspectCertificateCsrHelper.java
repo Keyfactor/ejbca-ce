@@ -106,7 +106,7 @@ public class InspectCertificateCsrHelper extends BaseHelper {
         List<String> certificateRows = new ArrayList<String>(Arrays.asList(content.split("\n")));
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         for (String certificateRow : certificateRows) {
-            if (!certificateDump.getText().contains(certificateRow)) {
+            if (!certificateDump.getText().contains(certificateRow.trim())) {
                 if (found) {
                     found = false;
                     line = certificateRow;
