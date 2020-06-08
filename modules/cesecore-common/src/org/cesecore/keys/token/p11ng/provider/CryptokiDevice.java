@@ -560,6 +560,7 @@ public class CryptokiDevice {
                     final Long publicKeyRef = getPublicKeyByLabel(session, alias);
                     if (publicKeyRef != null) {
                         final CKA modulus = c.GetAttributeValue(session, publicKeyRef, CKA.MODULUS);
+                        // If we have a modulus value, it's an RSA key. Otherwise, bravely assume it's EC.
                         if (modulus.getValue() == null) {
                             return new NJI11ReleasebleSessionPrivateKey(privateObject, "EC", this);
                         }
