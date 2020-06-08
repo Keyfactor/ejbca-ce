@@ -78,11 +78,6 @@ function confirmcaaction(message) {
     return confirm(message);
 }
 
-function checkcreatecafield(thetextfield, alerttext) {
-	checkFieldNotEmpty(thetextfield, "Please give a ca name first!");
-	return checkfieldforlegalchars(thetextfield, alerttext);
-}
-
 /**
  * Used in editcapage.xhtml
  * 
