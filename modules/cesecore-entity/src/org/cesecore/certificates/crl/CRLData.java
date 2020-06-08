@@ -30,7 +30,6 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
-
 import java.io.Serializable;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
@@ -120,35 +119,29 @@ public class CRLData extends ProtectedData implements Serializable {
     /**
      *  Get the CRL partition index for this row.
      *
+     *  <p>
+     *  <b>Implementation note</b>
+     *  <p>{@link CertificateConstants#NO_CRL_PARTITION} is represented with -1 to avoid NULLs being
+     *  stored in some databases.
+     *
      *  @since EJBCA 7.1.0
-     *  @return the CRL partition index, or {@link CertificateConstants#NO_CRL_PARTITION} if CRL partitioning is
-     *  not being used.
+     *  @return the CRL partition index, or -1 if CRL partitioning is not being used.
      */
     // @Column
     public int getCrlPartitionIndex() {
-        return crlPartitionIndex == null || crlPartitionIndex == -1
-                ? CertificateConstants.NO_CRL_PARTITION
+        return crlPartitionIndex == null || crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION
+                ? -1
                 : crlPartitionIndex;
     }
 
     /**
      * Set the CRL partition index for this row.
      *
-     * <p>
-     * <b>Implementation note</b>
-     * <p>
-     *     {@link CertificateConstants#NO_CRL_PARTITION} will be normalised to -1 to
-     *     avoid NULLs being stored in some databases.
-     *
      * @since EJBCA 7.1.0
      * @param crlPartitionIndex the CRL partition index to set.
      */
     public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
-        if (crlPartitionIndex == null || crlPartitionIndex == CertificateConstants.NO_CRL_PARTITION) {
-            this.crlPartitionIndex = -1;
-        } else {
-            this.crlPartitionIndex = crlPartitionIndex;
-        }
+        this.crlPartitionIndex = crlPartitionIndex;
     }
 
     // @Column
@@ -416,7 +409,8 @@ public class CRLData extends ProtectedData implements Serializable {
                 .append(getThisUpdate()).append(getNextUpdate()).append(getBase64Crl());
         if (version >= 2) {
             // CRL Partition Index added in EJBCA 7.1.0
-            build.append(getCrlPartitionIndex());
+            // Build the database protection string using CertificateConstants.NO_CRL_PARTITION instead of -1.
+            build.append(getCrlPartitionIndex() == -1 ? 0 : getCrlPartitionIndex());
         }
         return build.toString();
     }
