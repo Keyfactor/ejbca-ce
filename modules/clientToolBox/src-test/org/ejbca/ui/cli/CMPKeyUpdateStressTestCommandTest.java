@@ -84,6 +84,8 @@ import java.util.Date;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Run stress tests with ClientToolBax command CMPKeyUpdateStressTest
+ *
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
