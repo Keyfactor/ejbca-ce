@@ -176,11 +176,11 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         return EditCaUtil.EDIT_CA_NAV;
     }
     
-    public String createCaPage() {
-        if (createCaName == null || createCaName.isEmpty()) {
+    public String createCaPage() {   
+        if (StringUtils.isEmpty(createCaName)) {
+            addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
-        }
-        
+        }     
         if (canames.containsKey(createCaName)) {
             addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
@@ -203,7 +203,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String renameCA() {
-        if (canames.containsKey(createCaName)) {
+        if(StringUtils.isEmpty(createCaName)) {            
+            addErrorMessage("CA_NAME_EMPTY");
+            return EditCaUtil.MANAGE_CA_NAV;
+        } else if (canames.containsKey(createCaName)) {
             addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (selectedCaId == 0) {
