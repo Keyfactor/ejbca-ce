@@ -102,17 +102,19 @@ public class InspectCertificateCsrHelper extends BaseHelper {
      */
     public void assertCertificateContent(String content) throws InterruptedException  {
         Boolean found = true;
+        String line = null;
         List<String> certificateRows = new ArrayList<String>(Arrays.asList(content.split("\n")));
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         for (String certificateRow : certificateRows) {
             if (!certificateDump.getText().contains(certificateRow)) {
                 if (found) {
                     found = false;
+                    line = certificateRow;
                     break;
                 }
             }
         }
-        assertEquals("Certificate file content is incorrect", true,
+        assertEquals("Certificate file content is incorrect at line " + line, true,
                 found);
     }
 }
