@@ -13,6 +13,8 @@
 
 package org.cesecore.certificates.crl;
 
+import org.cesecore.certificates.certificate.CertificateConstants;
+
 import java.io.Serializable;
 import java.security.cert.X509CRL;
 import java.util.Date;
@@ -35,12 +37,12 @@ public final class CRLInfo implements Serializable {
      * Create information about a CRL stored in the database. The CRL itself is read lazily.
      * 
      * @param crlData ORM data object representing a CRL.
-     * @param crlPartitionIndex the partition index.
-     * @param crlNumber the CRL number.
      */
     public CRLInfo(final CRLData crlData) {
         this.subjectDn = crlData.getIssuerDN();
-        this.crlPartitionIndex = crlData.getCrlPartitionIndex();
+        this.crlPartitionIndex = crlData.getCrlPartitionIndex() == -1
+                ? CertificateConstants.NO_CRL_PARTITION
+                : crlData.getCrlPartitionIndex();
         this.crlNumber = crlData.getCrlNumber();
         this.thisUpdate = new Date(crlData.getThisUpdate());
         this.nextUpdate = new Date(crlData.getNextUpdate());
@@ -57,7 +59,7 @@ public final class CRLInfo implements Serializable {
     }
 
     /** 
-     * Get the CRL partition index or {@link #CertificateConstants.NO_CRL_PARTITION} if this object holds the main CRL.
+     * Get the CRL partition index or {@link CertificateConstants#NO_CRL_PARTITION} if this object holds the main CRL.
      * 
      * @return the CRL partition index.
      */
