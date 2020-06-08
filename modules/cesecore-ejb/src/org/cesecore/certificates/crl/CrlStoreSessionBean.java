@@ -12,18 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -39,6 +27,17 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs. CRLs are signed using
