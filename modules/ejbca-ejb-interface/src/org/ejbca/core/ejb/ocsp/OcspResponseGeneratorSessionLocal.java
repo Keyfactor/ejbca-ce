@@ -44,6 +44,7 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
      * @param cacert of the CA which signs the OCSP response
      * @param serialNr of the certificate to produce a response for.
      * @param issueFinalResponse TODO
+     * @param certIDHashAlgorithm of the certId
      */
     void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr, boolean issueFinalResponse, String certIDHashAlgorithm);
 }
