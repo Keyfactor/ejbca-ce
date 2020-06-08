@@ -190,10 +190,6 @@ import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
-import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
-import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
-import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
@@ -469,7 +465,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     private OcspSigningCacheEntry makeOcspSigningCacheEntry(X509Certificate ocspSigningCertificate, OcspKeyBinding ocspKeyBinding) {
         final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate);
-        if (caCertificateChain == null) {
+        if (caCertificateChain.isEmpty()) {
             log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has a signing certificate, but no chain and will be ignored.");
             return null;
         }
@@ -560,7 +556,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (currentLevelCertificate == null) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
-                return null;
+                return Collections.emptyList();
             }
             caCertificateChain.add(currentLevelCertificate);
         }
@@ -574,10 +570,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     "' using the latest CA certificate(s) in the database. Trying to recover from exception: " + e.getMessage());
             final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(leafCertificate));
             if(certificateInfo == null) {
-                return null;
+                return Collections.emptyList();
             }
             final List<Certificate> chainByFingerPrints = certificateStoreSession.getCertificateChain(certificateInfo);
-            if (chainByFingerPrints.size()>0) {
+            if (!chainByFingerPrints.isEmpty()) {
                 // Remove the leaf certificate itself
                 chainByFingerPrints.remove(0);
             }
@@ -589,14 +585,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                             CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                             "'. CA certificate chain contains non-X509 certificates.");
-                    return null;
+                    return Collections.emptyList();
                 }
             }
             if (caCertificateChain.isEmpty()) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. CA certificate(s) are missing in the database.");
-                return null;
+                return Collections.emptyList();
             }
             try {
                 CertTools.verify(leafCertificate, caCertificateChain, new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
@@ -604,7 +600,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. Found CA certificate(s) cannot be used for validation: " + e2.getMessage());
-                return null;
+                return Collections.emptyList();
             }
             log.info("Recovered and managed to build a valid certificate chain for OCSP signing certificate with Subject DN '" +
                     CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
@@ -1239,36 +1235,55 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }         
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
                 // We only store pre-produced single responses
-                if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProducionEnabled()) {
+                if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProductionEnabled()) {
+                    
+                    // Start logging process time for pre produced responses
+                    if (!isPreSigning && transactionLogger.isEnabled()) {
+                        transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+                    }
+
+                    if (!isPreSigning && auditLogger.isEnabled()) {
+                        auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+                        auditLogger.paramPut(AuditLogger.OCSPREQUEST, StringTools.hex(request));
+                    }
+                    
                     final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
-                    if (!isPreSigning) {
-                        // 1. If no stored response exists. Skip this, produce and new one and store it later on (if storing on-demand is enabled)
-                        // 2. If a response is stored, still valid and request has only supported extensions: return it.
-                        // 3. If a response is stored and nextUpdate is null: Ignore it and produce new response.
-                        if (ocspResponseData != null && 
-                            ocspResponseData.getNextUpdate() != null && 
-                            ocspResponseData.getNextUpdate() > System.currentTimeMillis() &&
-                            reqHasExtensionsOkToStoreResponse(req, ocspSigningCacheEntry)) {
-                            boolean malformedResponseObject = false;
-                            OCSPResp ocspResp = null;
-                            try {
-                                ocspResp = new OCSPResp(ocspResponseData.getOcspResponse());
-                            } catch (IOException e) {
-                                malformedResponseObject = true;
-                                log.warn("Pre-produced OCSP response for certificate with serialNr '" + certId.getSerialNumber() + "' was malformed. Producing new response.");
+
+                    // 1. If no stored response exists. Skip this, produce and new one and store it later on (if storing on-demand is enabled)
+                    // 2. If a response is stored, still valid and request has only supported extensions: return it.
+                    // 3. If a response is stored and nextUpdate is null: Ignore it and produce new response.
+                    if (!isPreSigning && ocspResponseData != null && ocspResponseData.getNextUpdate() != null
+                            && ocspResponseData.getNextUpdate() > System.currentTimeMillis()
+                            && reqHasExtensionsOkToStoreResponse(req, ocspSigningCacheEntry)) {
+                        OCSPResp ocspResp = null;
+                        try {
+                            ocspResp = new OCSPResp(ocspResponseData.getOcspResponse());
+                            if (ocspSigningCacheEntry != null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                                maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge() * 1000L;
                             }
-                            if (!malformedResponseObject) {
-                                if (ocspSigningCacheEntry != null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-                                    maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
-                                }
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Returning pre-produced OCSP response for CA " + ocspResponseData.getCaId() + " and cert serial " + ocspResponseData.getSerialNumber());
-                                }
-                                return new OcspResponseInformation(ocspResp, maxAge, signerCert);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Returning pre-produced OCSP response for CA " + ocspResponseData.getCaId() + " and cert serial "
+                                        + ocspResponseData.getSerialNumber());
                             }
+
+                            // Audit ant transaction log before returning the response info (if not a pre-signing situation).
+                            if (!isPreSigning && auditLogger.isEnabled()) {
+                                auditLogger.paramPut(AuditLogger.OCSPRESPONSE, StringTools.hex(ocspResponseData.getOcspResponse()));
+                                auditLogger.writeln();
+                                auditLogger.flush();
+                            }
+
+                            if (!isPreSigning && transactionLogger.isEnabled()) {
+                                transactionLogger.writeln();
+                                transactionLogger.flush();
+                            }
+                            return new OcspResponseInformation(ocspResp, maxAge, signerCert);
+                        } catch (IOException e) {
+                            log.warn("Pre-produced OCSP response for certificate with serialNr '" + certId.getSerialNumber()
+                                    + "' was malformed. Producing new response.");
                         }
                     }
-                    // All prerequisties for pre-production are ok. However, no valid response is persisted. Setting the serialNrForResponseStore will
+                    // All prerequisites for pre-production are OK. However, no valid response is persisted. Setting the serialNrForResponseStore will
                     // result in the produced one to be stored. Don't store responses without nextUpdate set.
                     if ((ocspDataConfig.isStoreResponseOnDemand() || isPreSigning) && reqHasExtensionsOkToStoreResponse(req, ocspSigningCacheEntry)) {
                         TimeZone tz = TimeZone.getTimeZone("GMT");
@@ -1290,7 +1305,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 } else {
                     if (log.isDebugEnabled()) {
                         if (ocspDataConfig != null) {
-                            log.debug("Pre-production of OCSP responses is not enabled (" + ocspDataConfig.isPreProducionEnabled() + ") for CA " + ocspDataConfig.getCaId());
+                            log.debug("Pre-production of OCSP responses is not enabled (" + ocspDataConfig.isPreProductionEnabled() + ") for CA " + ocspDataConfig.getCaId());
                         } else {
                             log.debug("Pre-production of OCSP responses is not enabled because ocspDataConfig is null");
                         }
@@ -1559,11 +1574,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                     ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(oidstr);
                     Extension extension = null;
-                    if (!useAlways) {
+                    if (!useAlways && req.hasExtensions()) {
                         // Only check if extension exists if we are not already bound to use it
-                        if (req.hasExtensions()) {
                             extension = req.getExtension(oid);
-                        }
                     }
                     //If found, or if it should be used anyway
                     if (useAlways || extension!=null) {
@@ -1572,27 +1585,26 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             log.debug("Found OCSP extension oid: " + oidstr);
                         }
                         OCSPExtension extObj = OcspExtensionsCache.INSTANCE.getExtensions().get(oidstr);
-                        if (extObj != null) {
-                            // Find the certificate from the certId
-                            if(certificateStatusHolder != null && certificateStatusHolder.getCertificate() != null) {
-                                X509Certificate cert = (X509Certificate) certificateStatusHolder.getCertificate();
-                                // From EJBCA 6.2.10 and 6.3.2 the extension must perform the reverse DNS lookup by itself if needed.
-                                final String remoteHost = remoteAddress;
-                                // Call the OCSP extension
-                                Map<ASN1ObjectIdentifier, Extension> retext = null;
-                                    retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus, ocspSigningCacheEntry.getOcspKeyBinding());
-                                if (retext != null) {
-                                    // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
-                                    if (extObj.getExtensionType().contains(OCSPExtensionType.RESPONSE)) {
-                                        responseExtensions.putAll(retext);
-                                    }
-                                    if (extObj.getExtensionType().contains(OCSPExtensionType.SINGLE_RESPONSE)) {
-                                        respItem.addExtensions(retext);
-                                    }
-                                } else {
-                                        log.error(intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
-                                                extObj.getLastErrorCode()));
+                        // Find the certificate from the certId
+                        if (extObj != null && certificateStatusHolder != null && certificateStatusHolder.getCertificate() != null) {
+                            X509Certificate cert = (X509Certificate) certificateStatusHolder.getCertificate();
+                            // From EJBCA 6.2.10 and 6.3.2 the extension must perform the reverse DNS lookup by itself if needed.
+                            final String remoteHost = remoteAddress;
+                            // Call the OCSP extension
+                            Map<ASN1ObjectIdentifier, Extension> retext = null;
+                            retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus,
+                                    ocspSigningCacheEntry.getOcspKeyBinding());
+                            if (retext != null) {
+                                // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
+                                if (extObj.getExtensionType().contains(OCSPExtensionType.RESPONSE)) {
+                                    responseExtensions.putAll(retext);
                                 }
+                                if (extObj.getExtensionType().contains(OCSPExtensionType.SINGLE_RESPONSE)) {
+                                    respItem.addExtensions(retext);
+                                }
+                            } else {
+                                log.error(intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
+                                        extObj.getLastErrorCode()));
                             }
                         }
                     }
@@ -1911,7 +1923,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     private boolean isSHA1(String algorithmName) {
-        return algorithmName.toUpperCase().equals(HashAlgorithm.getName(HashAlgorithm.sha1).toUpperCase());
+        return algorithmName.equalsIgnoreCase(HashAlgorithm.getName(HashAlgorithm.sha1));
     }
     
     private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 

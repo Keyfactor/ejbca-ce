@@ -47,7 +47,7 @@ public class OcspDataConfigCacheEntry {
     }
 
     /** @return true if OCSP response pre-production is enabled for this issuing CA related to this CertificateId */
-    public boolean isPreProducionEnabled() {
+    public boolean isPreProductionEnabled() {
         return preProductionEnabled;
     }
     
