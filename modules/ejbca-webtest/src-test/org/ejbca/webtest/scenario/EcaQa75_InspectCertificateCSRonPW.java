@@ -190,7 +190,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepB_UploadPemCertificate() throws InterruptedException {
+    public void stepB_UploadPemCertificate() {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.PEM_CERTIFICATE);
@@ -204,7 +204,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepC_UploadDerCertificate() throws InterruptedException {
+    public void stepC_UploadDerCertificate() {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.DER_CERTIFICATE);
@@ -218,7 +218,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepD_UploadP12Certificate() throws InterruptedException {
+    public void stepD_UploadP12Certificate() {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.P12_CERTIFICATE);
@@ -232,7 +232,7 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
     }
 
     @Test
-    public void stepE_UploadCVCertCertificate() throws InterruptedException {
+    public void stepE_UploadCVCertCertificate() {
         publicWebHelper.openPage(getPublicWebUrl());
         inspectCertificateCsrHelper.clickInspectCertificateCSR();
         inspectCertificateCsrHelper.setCertificateFile(TestData.CVCERT_CERTIFICATE);

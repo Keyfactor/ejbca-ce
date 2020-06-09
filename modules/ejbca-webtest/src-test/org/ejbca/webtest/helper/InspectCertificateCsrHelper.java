@@ -100,13 +100,19 @@ public class InspectCertificateCsrHelper extends BaseHelper {
      *
      * @param content
      */
-    public void assertCertificateContent(String content) throws InterruptedException  {
+    public void assertCertificateContent(final String content) {
         Boolean found = true;
         String line = null;
+
+        //Parse certificate in content to a list array
         List<String> certificateRows = new ArrayList<String>(Arrays.asList(content.split("\n")));
+
+        //Get certificate contents from screen
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         String fileContents = certificateDump.getText();
         System.out.println(fileContents);
+
+        //For each row in the array assert it exists in the fileContents
         for (String certificateRow : certificateRows) {
             line = certificateRow.trim();
             System.out.println("Expected:  " + line);
@@ -117,6 +123,7 @@ public class InspectCertificateCsrHelper extends BaseHelper {
                 }
             }
         }
+
         assertEquals("Certificate file content is incorrect at line " + line, true,
                 found);
 
