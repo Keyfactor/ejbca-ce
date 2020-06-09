@@ -1154,10 +1154,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final Date startTime = new Date();
         OCSPResp ocspResponse = null;
         // Start logging process time after we have received the request
-        if (transactionLogger.isEnabled()) {
+        if (!isPreSigning && transactionLogger.isEnabled()) {
             transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
         }
-        if (auditLogger.isEnabled()) {
+        if (!isPreSigning  && auditLogger.isEnabled()) {
             auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             auditLogger.paramPut(AuditLogger.OCSPREQUEST, StringTools.hex(request));
         }
@@ -1237,16 +1237,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // We only store pre-produced single responses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProductionEnabled()) {
                     
-                    // Start logging process time for pre produced responses
-                    if (!isPreSigning && transactionLogger.isEnabled()) {
-                        transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
-                    }
-
-                    if (!isPreSigning && auditLogger.isEnabled()) {
-                        auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
-                        auditLogger.paramPut(AuditLogger.OCSPREQUEST, StringTools.hex(request));
-                    }
-                    
                     final OcspResponseData ocspResponseData = ocspDataSession.findOcspDataByCaIdSerialNumber(ocspDataConfig.getCaId(), certId.getSerialNumber().toString());
 
                     // 1. If no stored response exists. Skip this, produce and new one and store it later on (if storing on-demand is enabled)
@@ -1267,13 +1257,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
 
                             // Audit ant transaction log before returning the response info (if not a pre-signing situation).
-                            if (!isPreSigning && auditLogger.isEnabled()) {
+                            if (auditLogger.isEnabled()) {
                                 auditLogger.paramPut(AuditLogger.OCSPRESPONSE, StringTools.hex(ocspResponseData.getOcspResponse()));
                                 auditLogger.writeln();
                                 auditLogger.flush();
                             }
 
-                            if (!isPreSigning && transactionLogger.isEnabled()) {
+                            if (transactionLogger.isEnabled()) {
                                 transactionLogger.writeln();
                                 transactionLogger.flush();
                             }
