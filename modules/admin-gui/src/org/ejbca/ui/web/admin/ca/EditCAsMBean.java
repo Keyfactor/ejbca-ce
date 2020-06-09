@@ -1111,6 +1111,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return !isEditCA || isCaUninitialized;
     }
     
+    public boolean isRenderOcspPreProduction() {
+        return getEjbcaWebBean().isRunningEnterprise();
+    }
     
     public String getCaCertLink() {
         return viewCertLink + "?caid=" + caid;
