@@ -485,7 +485,7 @@
 						value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:outputLabel for="checkboxpreproduceocspresponses"
 						value="#{web.text.PREPRODUCEOCSPRESPONSES}" />
 					<h:outputText
@@ -493,7 +493,7 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}">
@@ -512,12 +512,12 @@
 					value="#{web.text.DIRECTIVES}" style="font-weight: bold;" />
 				<h:panelGroup id="header_directives_ext" />
 				
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:outputLabel for="checkboxpreproduceocspresponsesext"
 						value="#{web.text.PREPRODUCEOCSPRESPONSES}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponsesext"
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}">
@@ -531,13 +531,13 @@
 				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
 				columnClasses="editColumn1,editColumn2">
 				
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.PREPRODUCEONDEMAND}" />
 						<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Store_Responses_On_Demand')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:selectBooleanCheckbox id="checkboxocspstoreondemand"
 						value="#{editCAsMBean.caInfoDto.doStoreOcspResponsesOnDemand}" 
 						disabled="#{not editCAsMBean.hasEditRight}"/>
