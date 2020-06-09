@@ -35,12 +35,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -62,7 +64,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
@@ -84,9 +85,12 @@ import java.util.Date;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Run stress tests with ClientToolBax command Ocsp stress
  * @version $id$
  */
 public class OCSPStressCommandTest {
+    Ocsp command = new Ocsp();
+
     private static final String END_ENTITY_PROFILE_NAME = "OCSPStressCommandTestEEP";
     private static final String CA_NAME = "OCSPStressCommandTestCA";
     private static final String DEFAULT_CA_DN = "CN=" + CA_NAME;
@@ -105,6 +109,7 @@ public class OCSPStressCommandTest {
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private static final KeyStoreCreateSessionRemote keyStoreCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
+    private final static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -115,6 +120,10 @@ public class OCSPStressCommandTest {
         x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(DEFAULT_CA_DN, "foo123".toCharArray(), true,
                 false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         caSession.addCA(authToken, x509ca);
+        caAdminSession.publishCACertificate(authToken, x509ca.getCertificateChain(), null, x509ca.getSubjectDN());
+        OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
         endEntityProfile.setAvailableCAs(Collections.singleton(x509ca.getCAId()));
@@ -151,7 +160,6 @@ public class OCSPStressCommandTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @Ignore
     @Test
     public void testCommandOCSPStressTest() throws IOException, CertificateException, InvalidAlgorithmException, WaitingForApprovalException, InvalidKeySpecException, AuthStatusException, EndEntityExistsException, CustomCertificateSerialNumberException, AuthLoginException, NoSuchEndEntityException, AuthorizationDeniedException, IllegalNameException, EndEntityProfileValidationException, CADoesntExistsException, IllegalValidityException, CustomFieldException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, CertificateRevokeException, KeyStoreException, CertificateSerialNumberException, CertificateSignatureException, ApprovalException, CertificateCreateException, IllegalKeyException, CAOfflineException {
         exit.expectSystemExitWithStatus(0);
@@ -161,7 +169,6 @@ public class OCSPStressCommandTest {
         int numberOfThreads = 30;
         int numberOfTests = 100;
         String waitTime = "1000";
-        Ocsp command = new Ocsp();
         String httpReqPath = "http://" + httpHost + ":" + httpPort + "/ejbca/publicweb/status/ocsp";
 
         //OCSP stress http://ca:8080/ejbca/publicweb/status/ocsp result.log CMPCA.cacert.pem 30:100 1000 GET keys/tester-0.p12 foo123
