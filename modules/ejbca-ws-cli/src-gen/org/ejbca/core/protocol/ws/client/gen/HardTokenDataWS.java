@@ -131,7 +131,7 @@ public class HardTokenDataWS {
 
 	/**
 	 * 
-	 * @return &gt;a list of hard token SN of copies that have been made of this token.
+	 * @return a list of hard token SN of copies that have been made of this token.
 	 */
 	public List<String> getCopies() {
 		return copies;

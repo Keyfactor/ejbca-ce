@@ -41,7 +41,7 @@ public class GetProfileResponse {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      *     
      */
     public JAXBElement<byte[]> getReturn() {
@@ -53,7 +53,7 @@ public class GetProfileResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      *     
      */
     public void setReturn(JAXBElement<byte[]> value) {

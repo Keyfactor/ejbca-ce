@@ -76,7 +76,7 @@ public class CaCertResponseForRollover {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      *     
      */
     public JAXBElement<byte[]> getArg1() {
@@ -88,7 +88,7 @@ public class CaCertResponseForRollover {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      *     
      */
     public void setArg1(JAXBElement<byte[]> value) {
@@ -102,7 +102,7 @@ public class CaCertResponseForRollover {
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set </CODE> method for the arg2 property.
+     * This is why there is not a <CODE>set</CODE> method for the arg2 property.
      * 
      * <p>
      * For example, to add a new item, do as follows:

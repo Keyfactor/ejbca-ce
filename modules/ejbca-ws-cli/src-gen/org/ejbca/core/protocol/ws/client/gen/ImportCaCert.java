@@ -68,7 +68,7 @@ public class ImportCaCert {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      *     
      */
     public JAXBElement<byte[]> getArg1() {
@@ -80,7 +80,7 @@ public class ImportCaCert {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link byte[]}{@code &gt;}
+     *     {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      *     
      */
     public void setArg1(JAXBElement<byte[]> value) {
