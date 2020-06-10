@@ -46,6 +46,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -1264,6 +1265,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
 
                             if (transactionLogger.isEnabled()) {
+                                if (ocspSigningCacheEntry != null) {
+                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, ocspSigningCacheEntry.getSigningCertificateIssuerDn());
+                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
+                                }
+                                
+                                org.bouncycastle.cert.ocsp.CertificateStatus status = ((BasicOCSPResp)ocspResp.getResponseObject()).getResponses()[0].getCertStatus();
+                                
+                                transactionLogger.paramPut(TransactionLogger.CERT_STATUS, fetchCertStatus(status));
+                                if (!Objects.isNull(status) && ((RevokedStatus)status).hasRevocationReason()) {
+                                    transactionLogger.paramPut(TransactionLogger.REV_REASON, ((RevokedStatus)status).getRevocationReason());
+                                }
                                 transactionLogger.writeln();
                                 transactionLogger.flush();
                             }
@@ -1743,6 +1755,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
     
+    private int fetchCertStatus(org.bouncycastle.cert.ocsp.CertificateStatus certStatus) {
+        if (Objects.isNull(certStatus)) {
+            return OCSPResponseItem.OCSP_GOOD;
+        } else if (certStatus instanceof RevokedStatus) {
+            return OCSPResponseItem.OCSP_REVOKED;
+        } else {
+            return OCSPResponseItem.OCSP_UNKNOWN;
+        }
+    }
+
     private void storeOcspResponse(final int caId, final String serialNr, final OCSPResp ocspResponse) throws OCSPException, IOException {
         // Redundantly storing producedAt and nextUpdate, next to the canned response itself for faster querying. 
         // Assuming this is a single response (we don't store it otherwise), we can safely pick nextUpdate from first index.
