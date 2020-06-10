@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,10 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Logger;
 
 /**
  * This is a helper classed that handles the serialization to and deserialization from XML.
@@ -263,7 +264,7 @@ public class XmlSerializer {
                 ps.print(((Class<?>) o).getName());
             } else {
                 // Escape XML special characters
-                ps.print(StringEscapeUtils.escapeXml11(o.toString()));
+                ps.print(StringEscapeUtils.escapeXml(o.toString()));
             }
             ps.println("</" + type + ">");
         }
@@ -322,7 +323,7 @@ public class XmlSerializer {
             return "double";
         }
         // instanceof Properties covered by o instanceof Map
-        if ((o instanceof Date) || (o instanceof Map) || (o instanceof List)) {
+        if ((o instanceof Date) || (o instanceof Map) || (o instanceof List) || (o instanceof PKIDisclosureStatement)) {
             return "object";
         }
         throw new IllegalArgumentException("encodeSimpleMapFast does not handle type: " + o.getClass().getName());
