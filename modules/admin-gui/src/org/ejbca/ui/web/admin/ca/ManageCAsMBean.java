@@ -177,7 +177,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String createCaPage() {   
-        if (StringUtils.isEmpty(createCaName)) {
+        if (StringUtils.isBlank(createCaName)) {
             addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
         }     
@@ -203,7 +203,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String renameCA() {
-        if(StringUtils.isEmpty(createCaName)) {            
+        if(StringUtils.isBlank(createCaName)) {            
             addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (canames.containsKey(createCaName)) {
