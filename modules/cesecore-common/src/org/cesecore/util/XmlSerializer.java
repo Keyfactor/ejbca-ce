@@ -178,7 +178,7 @@ public class XmlSerializer {
      * @param map to write to XML, in format standardized by java.beans.XMLEncoder
 	 * @throws IllegalArgumentException if the map is not a LinkedHashMap or includes types not handled by the simple encoding
 	 */
-	public static String encodeSimpleMapFast(final Map<Object, Object> map) {
+	protected static String encodeSimpleMapFastInternal(final Map<Object, Object> map) {
         if (map == null) {
             return null;
         }
@@ -198,6 +198,20 @@ public class XmlSerializer {
 	        }
 	    }
         throw new IllegalArgumentException("Input to encodeSimpleObjectFast must be a LinkedHashMap: " + map.getClass().getName());
+	}
+
+	public static String encodeSimpleMapFast(final Map<Object, Object> map) {
+	    try {
+	        return encodeSimpleMapFastInternal(map);
+	    } catch (IllegalArgumentException e) {
+	        // fall back to the ordinary slow XMLEncoder, that handles everything, log a warning so we can handle it in the next release
+	        log.warn(e.getMessage());
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+            try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);) {
+                encoder.writeObject(map);
+            }
+            return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+	    }
 	}
 
     /** Calls #encodeSimpleObjectFast after first copying the values of map into a Base64PutHashMap, encoding them as Bae64, if they are not asciiPrintable

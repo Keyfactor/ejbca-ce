@@ -40,6 +40,7 @@ import org.junit.rules.ExpectedException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test that XML serialization works as expected.
@@ -191,6 +192,25 @@ public class XmlSerializerUnitTest {
 
         // Byte for byte, It should be exactly equals
         assertTrue("Fast encoded XML vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(xmlSerializerXmlString.getBytes(StandardCharsets.UTF_8), xmlEncoderXmlString.getBytes(StandardCharsets.UTF_8)));
+        
+        // Encode something we know encodeSimpleMapFast does not handle
+        final HashMap<Object, Object> b64DataMapUnhandled = new Base64PutHashMap();
+        b64DataMapUnhandled.put("stringbuffer", new StringBuffer());
+        try {
+            XmlSerializer.encodeSimpleMapFastInternal(b64DataMapUnhandled);
+            fail("IllegalArgumentException should have been thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Exception message was wrong", "encodeSimpleMapFast does not handle type: java.lang.StringBuffer", e.getMessage());
+        }
+        final String unhandled = XmlSerializer.encodeSimpleMapFast(b64DataMapUnhandled);
+        // Get XML from XMLEncoder
+        final ByteArrayOutputStream os1 = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(os1)) {
+            encoder.writeObject(b64DataMapUnhandled);
+        }
+        final String handledByXMLEncoder = os1.toString("UTF-8");
+        assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
+        
 	}
 
     // Test decode with XMLDecoder
