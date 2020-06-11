@@ -626,20 +626,20 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @return a response with state INTERNAL_ERROR.
      * @throws OCSPException if generation of the response failed.
      */
-    private OCSPResp processDefaultError(OCSPRespBuilder responseGenerator, TransactionLogger transactionLogger, AuditLogger auditLogger, Throwable e)
+    private OCSPResp processDefaultError(final boolean isPresigning, OCSPRespBuilder responseGenerator, TransactionLogger transactionLogger, AuditLogger auditLogger, Throwable e)
             throws OCSPException {
-        if (transactionLogger.isEnabled()) {
+        if (!isPresigning && transactionLogger.isEnabled()) {
             transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
         }
-        if (auditLogger.isEnabled()) {
+        if (!isPresigning && auditLogger.isEnabled()) {
             auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
         }
         String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
         log.error(errMsg, e);
-        if (transactionLogger.isEnabled()) {
+        if (!isPresigning && transactionLogger.isEnabled()) {
             transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
         }
-        if (auditLogger.isEnabled()) {
+        if (!isPresigning && auditLogger.isEnabled()) {
             auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
         }
         return responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null); // RFC 2560: responseBytes are not set on error.
@@ -1720,7 +1720,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
             }
         } catch (NoSuchAlgorithmException | CertificateException | CryptoTokenOfflineException e) {
-            ocspResponse = processDefaultError(responseGenerator, transactionLogger, auditLogger, e);
+            ocspResponse = processDefaultError(isPreSigning, responseGenerator, transactionLogger, auditLogger, e);
         }
         try {
             respBytes = ocspResponse.getEncoded();
