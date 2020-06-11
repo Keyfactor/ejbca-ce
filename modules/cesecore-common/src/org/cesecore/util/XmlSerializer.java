@@ -206,6 +206,9 @@ public class XmlSerializer {
 	    } catch (IllegalArgumentException e) {
 	        // fall back to the ordinary slow XMLEncoder, that handles everything, log a warning so we can handle it in the next release
 	        log.warn(e.getMessage());
+	        if (log.isDebugEnabled()) {
+	            log.debug("encodeSimpleMapFast was passed an unhandled object, please fix me: ", e);
+	        }
             final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
             try (final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);) {
                 encoder.writeObject(map);

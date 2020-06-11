@@ -15,6 +15,7 @@ package org.cesecore.util;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -193,6 +194,11 @@ public class XmlSerializerUnitTest {
         // Byte for byte, It should be exactly equals
         assertTrue("Fast encoded XML vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(xmlSerializerXmlString.getBytes(StandardCharsets.UTF_8), xmlEncoderXmlString.getBytes(StandardCharsets.UTF_8)));
         
+	}
+
+    // Test adding something that fails (internally) with IllegalArgumentException, we then fall back to XMLEncoder
+	@Test
+	public void encodeSimpleMapFastUnhandled() throws UnsupportedEncodingException {
         // Encode something we know encodeSimpleMapFast does not handle
         final HashMap<Object, Object> b64DataMapUnhandled = new Base64PutHashMap();
         b64DataMapUnhandled.put("stringbuffer", new StringBuffer());
@@ -210,8 +216,21 @@ public class XmlSerializerUnitTest {
         }
         final String handledByXMLEncoder = os1.toString("UTF-8");
         assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
-        
 	}
+	
+    // Test adding something that fails with IllegalArgumentException
+    @Test
+    public void encodeSimpleMapFastWithIllegalArgumentException() {
+        // given
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("encodeSimpleMapFast does not handle type: java.util.HashSet");
+        final HashMap<Object, Object> failingMap = new Base64PutHashMap();
+        failingMap.put("longvalue", 123456789L); // this works
+        failingMap.put("list", new HashSet<String>()); // this should fail
+        // when
+        XmlSerializer.encodeSimpleMapFastInternal(failingMap);
+    }
+
 
     // Test decode with XMLDecoder
 	@Test
@@ -228,19 +247,6 @@ public class XmlSerializerUnitTest {
         assertEquals("decoded subject directory attributes was not the one we encoded", subjectDirectoryAttributes, extendedInformation.getSubjectDirectoryAttributes());
         assertEquals("decoded approval type was not the one we encoded", TestApprovalRequest.class, extendedInformation.getCachedApprovalType());
         assertEquals("decoded approval request ID was not the one we encoded", Integer.valueOf(editEndEntityApprovalRequestId), extendedInformation.getEditEndEntityApprovalRequestIds().get(0));
-    }
-
-    // Test adding something that fails with IllegalArgumentException
-	@Test
-    public void encodeSimpleMapFastWithIllegalArgumentException() {
-        // given
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("encodeSimpleMapFast does not handle type: java.util.HashSet");
-        final HashMap<Object, Object> failingMap = new Base64PutHashMap();
-        failingMap.put("longvalue", 123456789L); // this works
-        failingMap.put("list", new HashSet<String>()); // this should fail
-        // when
-        XmlSerializer.encodeSimpleMapFast(failingMap);
     }
 
 	/** Make a round trip using a xml enc and dec. */
