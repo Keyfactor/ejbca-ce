@@ -292,6 +292,27 @@ public class XmlSerializer {
             ps.println("</long>");
             ps.print(getIndent(indent));
             ps.println("</object>");                        
+        } else if (o instanceof PKIDisclosureStatement) {
+            ps.print(getIndent(indent));
+            ps.println("<object class=\"" + o.getClass().getName() + "\">");
+            ps.print(getIndent(indent + 1));
+            ps.println("<void property=\"language\">");
+            ps.print(getIndent(indent + 2));
+            ps.print("<string>");
+            ps.print(((PKIDisclosureStatement) o).getLanguage());
+            ps.println("</string>");
+            ps.print(getIndent(indent + 1));
+            ps.println("</void>");
+            ps.print(getIndent(indent + 1));
+            ps.println("<void property=\"url\">");
+            ps.print(getIndent(indent + 2));
+            ps.print("<string>");
+            ps.print(((PKIDisclosureStatement) o).getUrl());
+            ps.println("</string>");
+            ps.print(getIndent(indent + 1));
+            ps.println("</void>");
+            ps.print(getIndent(indent));
+            ps.println("</object>");                        
         } else {
             encodePrimitive(o, indent, ps);
         }

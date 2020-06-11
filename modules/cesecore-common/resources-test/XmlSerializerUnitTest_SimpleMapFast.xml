@@ -104,5 +104,16 @@
     </void>
    </object>
   </void>
+  <void method="put">
+   <string>pds</string>
+   <object class="org.cesecore.certificates.certificateprofile.PKIDisclosureStatement">
+    <void property="language">
+     <string>SE</string>
+    </void>
+    <void property="url">
+     <string>http://example.com/pdsåäö</string>
+    </void>
+   </object>
+  </void>
  </object>
 </java>
