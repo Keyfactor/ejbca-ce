@@ -16,6 +16,7 @@
 	<classpathentry kind="src" path="modules/certificatestore/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src-test"/>
+    <classpathentry kind="src" path="modules/cesecore-common/resources-test"/>
 	<classpathentry kind="src" path="modules/cesecore-cvcca/src"/>
 	<classpathentry kind="src" path="modules/cesecore-cvcca/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-ejb/src"/>
