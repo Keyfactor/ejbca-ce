@@ -1271,6 +1271,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
                                             ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
                                 }
+                                org.bouncycastle.cert.ocsp.CertificateStatus status = ((BasicOCSPResp) ocspResp.getResponseObject()).getResponses()[0]
+                                        .getCertStatus();
+
+                                transactionLogger.paramPut(TransactionLogger.CERT_STATUS, fetchCertStatus(status));
+
+                                if (!Objects.isNull(status) && ((RevokedStatus) status).hasRevocationReason()) {
+                                    transactionLogger.paramPut(TransactionLogger.REV_REASON, ((RevokedStatus) status).getRevocationReason());
+                                }
                                 transactionLogger.writeln();
                                 transactionLogger.flush();
                             }
