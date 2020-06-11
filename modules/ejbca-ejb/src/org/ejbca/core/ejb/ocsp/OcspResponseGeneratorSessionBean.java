@@ -1270,28 +1270,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                             ocspSigningCacheEntry.getSigningCertificateIssuerDn());
                                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
                                             ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
-                                } else {
-                                    ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
-
-                                    if (ocspSigningCacheEntry != null) {
-                                        final OcspKeyBinding defaultKeyBind = OcspSigningCache.INSTANCE.getDefaultEntry().getOcspKeyBinding();
-                                        if (defaultKeyBind != null && defaultKeyBind.getNonExistingRevoked()) {
-                                            // If not overridden in the default key binding, answer UnknowStatus
-                                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
-                                        } else {
-                                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
-                                        }
-                                    } else {
-
-                                        org.bouncycastle.cert.ocsp.CertificateStatus status = ((BasicOCSPResp) ocspResp.getResponseObject())
-                                                .getResponses()[0].getCertStatus();
-
-                                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, fetchCertStatus(status));
-
-                                        if (!Objects.isNull(status) && ((RevokedStatus) status).hasRevocationReason()) {
-                                            transactionLogger.paramPut(TransactionLogger.REV_REASON, ((RevokedStatus) status).getRevocationReason());
-                                        }
-                                    }
                                 }
                                 transactionLogger.writeln();
                                 transactionLogger.flush();
