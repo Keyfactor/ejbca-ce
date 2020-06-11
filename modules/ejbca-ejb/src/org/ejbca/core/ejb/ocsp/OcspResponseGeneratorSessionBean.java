@@ -1366,7 +1366,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             } else if (defaultKeyBind.getNonExistingUnauthorized()) {
                                 // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                                 ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
-                                if (auditLogger.isEnabled()) {
+                                if (!isPreSigning && auditLogger.isEnabled()) {
                                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                                 }
                                 if (!isPreSigning && transactionLogger.isEnabled()) {
@@ -1689,7 +1689,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
