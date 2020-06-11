@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -156,6 +157,10 @@ public class XmlSerializerUnitTest {
         extendedinformation.setSubjectDirectoryAttributes(subjectDirectoryAttributes);
         extendedinformation.cacheApprovalType(TestApprovalRequest.class);
         extendedinformation.addEditEndEntityApprovalRequestId(editEndEntityApprovalRequestId);
+        // PKIDisclosureStatement
+        PKIDisclosureStatement pds = new PKIDisclosureStatement();
+        pds.setLanguage("SE");
+        pds.setUrl("http://example.com/pdsåäö");
         //
         final HashMap<Object, Object> b64DataMap = new Base64PutHashMap();
         b64DataMap.putAll(extendedinformation.getRawData());
@@ -167,6 +172,7 @@ public class XmlSerializerUnitTest {
         b64DataMap.put("tokenproperties", tokenproperties);
         b64DataMap.put("linkedhashmap", linkedhashmap);
         b64DataMap.put("arraylist", arraylist);
+        b64DataMap.put("pds", pds);
 
         // Get XML from XmlSerializer
         final String xmlSerializerXmlString = XmlSerializer.encodeSimpleMapFast(b64DataMap);
