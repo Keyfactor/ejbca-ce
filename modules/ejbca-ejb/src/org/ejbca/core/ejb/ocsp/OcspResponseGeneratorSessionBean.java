@@ -1186,11 +1186,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (log.isDebugEnabled()) {
                 log.debug("The OCSP request contains " + ocspRequests.length + " simpleRequests.");
             }
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, ocspRequests.length);
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             }
             OcspSigningCacheEntry ocspSigningCacheEntry = null;
@@ -1210,13 +1210,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash)) {
                     throw new InvalidAlgorithmException("CertID with SHA1 and SHA256 are supported, not: "+certIdhash.getId());
                 }
-                if (transactionLogger.isEnabled()) {
+                if (!isPreSigning && transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID().toString());
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                     transactionLogger.paramPut(TransactionLogger.ISSUER_KEY, certId.getIssuerKeyHash());
                 }
-                if (auditLogger.isEnabled()) {
+                if (!isPreSigning && auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.ISSUER_KEY, certId.getIssuerKeyHash());
                     auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
@@ -1266,15 +1266,32 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                             if (transactionLogger.isEnabled()) {
                                 if (ocspSigningCacheEntry != null) {
-                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, ocspSigningCacheEntry.getSigningCertificateIssuerDn());
-                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
-                                }
-                                
-                                org.bouncycastle.cert.ocsp.CertificateStatus status = ((BasicOCSPResp)ocspResp.getResponseObject()).getResponses()[0].getCertStatus();
-                                
-                                transactionLogger.paramPut(TransactionLogger.CERT_STATUS, fetchCertStatus(status));
-                                if (!Objects.isNull(status) && ((RevokedStatus)status).hasRevocationReason()) {
-                                    transactionLogger.paramPut(TransactionLogger.REV_REASON, ((RevokedStatus)status).getRevocationReason());
+                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
+                                            ocspSigningCacheEntry.getSigningCertificateIssuerDn());
+                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
+                                            ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
+                                } else {
+                                    ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
+
+                                    if (ocspSigningCacheEntry != null) {
+                                        final OcspKeyBinding defaultKeyBind = OcspSigningCache.INSTANCE.getDefaultEntry().getOcspKeyBinding();
+                                        if (defaultKeyBind != null && defaultKeyBind.getNonExistingRevoked()) {
+                                            // If not overridden in the default key binding, answer UnknowStatus
+                                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
+                                        } else {
+                                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
+                                        }
+                                    } else {
+
+                                        org.bouncycastle.cert.ocsp.CertificateStatus status = ((BasicOCSPResp) ocspResp.getResponseObject())
+                                                .getResponses()[0].getCertStatus();
+
+                                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, fetchCertStatus(status));
+
+                                        if (!Objects.isNull(status) && ((RevokedStatus) status).hasRevocationReason()) {
+                                            transactionLogger.paramPut(TransactionLogger.REV_REASON, ((RevokedStatus) status).getRevocationReason());
+                                        }
+                                    }
                                 }
                                 transactionLogger.writeln();
                                 transactionLogger.flush();
@@ -1315,7 +1332,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 
                 if (ocspSigningCacheEntry != null) {
-                    if (transactionLogger.isEnabled()) {
+                    if (!isPreSigning && transactionLogger.isEnabled()) {
                         // This will be the issuer DN of the signing certificate, whether an OCSP responder or an internal CA  
                         transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, ocspSigningCacheEntry.getSigningCertificateIssuerDn());
                         transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
@@ -1352,7 +1369,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 if (auditLogger.isEnabled()) {
                                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                                 }
-                                if (transactionLogger.isEnabled()) {
+                                if (!isPreSigning && transactionLogger.isEnabled()) {
                                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                                 }
                                 log.info(intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()), "Unauthorized"));
@@ -1363,7 +1380,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         responseList.add(new OCSPResponseItem(certId, status, nextUpdate));
                         String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()), statusName);
                         log.info(errMsg);
-                        if (transactionLogger.isEnabled()) {
+                        if (!isPreSigning && transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, statusLogCode);
                         }
                         continue;
@@ -1413,7 +1430,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate),
                             CertTools.getSubjectDN(caCertificate)));
                     respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
-                    if (transactionLogger.isEnabled()) {
+                    if (!isPreSigning && transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                         transactionLogger.paramPut(TransactionLogger.REV_REASON, signerIssuerCertStatus.revocationReason);
                     }
@@ -1430,7 +1447,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(caCertificateSubjectDn, certId.getSerialNumber());
                         status = certificateStatusHolder.getCertificateStatus();
                     }
-                    if (transactionLogger.isEnabled()) {
+                    if (!isPreSigning && transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, String.valueOf(status.certificateProfileId));
                     }
                     // If we have an OcspKeyBinding configured for this request, we override the default value
@@ -1469,7 +1486,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "good";
                             certStatus = null; // null means "good" in OCSP
-                            if (transactionLogger.isEnabled()) {
+                            if (!isPreSigning && transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
@@ -1486,7 +1503,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             // - MUST NOT include a CRL references extension (Section 4.4.2) or any CRL entry extensions (Section 4.4.5).
                             certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
                                     CRLReason.lookup(CRLReason.certificateHold)));
-                            if (transactionLogger.isEnabled()) {
+                            if (!isPreSigning && transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
@@ -1496,10 +1513,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
-                            if (auditLogger.isEnabled()) {
+                            if (!isPreSigning && auditLogger.isEnabled()) {
                                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                             }
-                            if (transactionLogger.isEnabled()) {
+                            if (!isPreSigning && transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                             }
                             log.info(intres.getLocalizedMessage("ocsp.errorfindcert", certId.getSerialNumber().toString(16), caCertificateSubjectDn));
@@ -1508,7 +1525,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         } else {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
-                            if (transactionLogger.isEnabled()) {
+                            if (!isPreSigning && transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
@@ -1526,7 +1543,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                         certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
                                 CRLReason.lookup(reasonCode)));
-                        if (transactionLogger.isEnabled()) {
+                        if (!isPreSigning && transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                             transactionLogger.paramPut(TransactionLogger.REV_REASON, reasonCode);
                         }
@@ -1543,7 +1560,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     } else {
                         sStatus = "good";
                         certStatus = null;
-                        if (transactionLogger.isEnabled()) {
+                        if (!isPreSigning && transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                         }
                     }
@@ -1632,10 +1649,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 BasicOCSPResp basicresp = signOcspResponse(req, responseList, exts, ocspSigningCacheEntry, producedAt);
                 signerCert = ocspSigningCacheEntry.getSigningCertificate();
                 ocspResponse = responseGenerator.build(OCSPRespBuilder.SUCCESSFUL, basicresp);
-                if (auditLogger.isEnabled()) {
+                if (!isPreSigning && auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
                 }
-                if (transactionLogger.isEnabled()) {
+                if (!isPreSigning && transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
                 }
             } else {
@@ -1644,32 +1661,32 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.debug(intres.getLocalizedMessage("ocsp.errornocacreateresp"));
                 }
                 ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
-                if (auditLogger.isEnabled()) {
+                if (!isPreSigning && auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                 }
-                if (transactionLogger.isEnabled()) {
+                if (!isPreSigning && transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                 }
             }
         } catch (SignRequestException e) {
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
             log.info(errMsg); // No need to log the full exception here
             // RFC 2560: responseBytes are not set on error.
             ocspResponse = responseGenerator.build(OCSPRespBuilder.SIG_REQUIRED, null);
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
             }
         } catch (SignRequestSignatureException | IllegalNonceException e) {
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             if (auditLogger.isEnabled()) {
@@ -1679,27 +1696,27 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.info(errMsg); // No need to log the full exception here
             // RFC 2560: responseBytes are not set on error.
             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
             }
         } catch (InvalidAlgorithmException e) {
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
             log.info(errMsg); // No need to log the full exception here
             // RFC 2560: responseBytes are not set on error.
             ocspResponse = responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null);
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
             }
         } catch (NoSuchAlgorithmException | CertificateException | CryptoTokenOfflineException e) {
@@ -1707,12 +1724,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         try {
             respBytes = ocspResponse.getEncoded();
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.OCSPRESPONSE, StringTools.hex(respBytes));
                 auditLogger.writeln();
                 auditLogger.flush();
             }
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.writeln();
                 transactionLogger.flush();
             }
@@ -1733,11 +1750,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         } catch (IOException e) {
             log.error("Unexpected IOException caught.", e);
-            if (transactionLogger.isEnabled()) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.writeln();
                 transactionLogger.flush();
             }
-            if (auditLogger.isEnabled()) {
+            if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.writeln();
                 auditLogger.flush();
             }
