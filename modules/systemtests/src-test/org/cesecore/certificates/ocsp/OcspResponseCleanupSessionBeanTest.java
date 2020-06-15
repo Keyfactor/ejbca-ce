@@ -114,6 +114,7 @@ public class OcspResponseCleanupSessionBeanTest {
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final String prevUnit = gc.getOcspCleanupScheduleUnit();
         final String prevSchedule = gc.getOcspCleanupSchedule();
+        final boolean prevUse = gc.getOcspCleanupUse();
 
         gc.setOcspCleanupScheduleUnit("MINUTES");
         gc.setOcspCleanupUse(true);
@@ -134,6 +135,7 @@ public class OcspResponseCleanupSessionBeanTest {
 
         gc.setOcspCleanupScheduleUnit(prevUnit);
         gc.setOcspCleanupSchedule(prevSchedule);
+        gc.setOcspCleanupUse(prevUse);
         globalConfigSession.saveConfiguration(alwaysAllowToken, gc);
     }
 
