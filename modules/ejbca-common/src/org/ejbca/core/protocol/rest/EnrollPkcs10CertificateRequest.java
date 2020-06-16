@@ -20,7 +20,6 @@ import java.io.Serializable;
  * @version $Id: EnrollPkcs10CertificateRequest.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
 public class EnrollPkcs10CertificateRequest implements Serializable {
-    
     private static final long serialVersionUID = 1L;
     
     private String certificateRequest;
@@ -29,7 +28,7 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     private String certificateAuthorityName;
     private String username;
     private String password;
-
+    private boolean includeChain;
 
     public String getCertificateRequest() {
         return certificateRequest;
@@ -55,6 +54,8 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         return password;
     }
 
+    public boolean getIncludeChain() { return includeChain; }
+
     public static class Builder {
         private String certificateRequest;
         private String certificateProfileName;
@@ -62,34 +63,40 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private String certificateAuthorityName;
         private String username;
         private String password;
+        private boolean includeChain;
 
-        public Builder certificateRequest(String certificateRequest) {
+        public Builder certificateRequest(final String certificateRequest) {
             this.certificateRequest = certificateRequest;
             return this;
         }
 
-        public Builder certificateProfileName(String certificateProfileName) {
+        public Builder certificateProfileName(final String certificateProfileName) {
             this.certificateProfileName = certificateProfileName;
             return this;
         }
 
-        public Builder endEntityProfileName(String endEntityProfileName) {
+        public Builder endEntityProfileName(final String endEntityProfileName) {
             this.endEntityProfileName = endEntityProfileName;
             return this;
         }
 
-        public Builder certificateAuthorityName(String certificateAuthorityName) {
+        public Builder certificateAuthorityName(final String certificateAuthorityName) {
             this.certificateAuthorityName = certificateAuthorityName;
             return this;
         }
 
-        public Builder username(String username) {
+        public Builder username(final String username) {
             this.username = username;
             return this;
         }
 
-        public Builder password(String password) {
+        public Builder password(final String password) {
             this.password = password;
+            return this;
+        }
+
+        public Builder includeChain(final boolean includeChain) {
+            this.includeChain = includeChain;
             return this;
         }
 
@@ -98,12 +105,13 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         }
     }
     
-    private EnrollPkcs10CertificateRequest(Builder builder) {
+    private EnrollPkcs10CertificateRequest(final Builder builder) {
         this.certificateRequest = builder.certificateRequest;
         this.certificateProfileName = builder.certificateProfileName;
         this.endEntityProfileName = builder.endEntityProfileName;
         this.certificateAuthorityName = builder.certificateAuthorityName;
         this.username = builder.username;
         this.password = builder.password;
+        this.includeChain = builder.includeChain;
     }
 }
