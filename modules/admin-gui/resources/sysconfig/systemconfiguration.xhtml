@@ -177,8 +177,7 @@
 
             <h:panelGroup id="ocspCleanup">
                 <h:outputLabel for="ocspCleanupEnable" value="#{web.text.OCSP_RESPONSE_CLEANUP}" styleClass="titles" />
-                <h:outputText value="#{web.ejbcaWebBean.getExternalHelpReference('http://confluence.primekey.com/display/EJBCADS/.OCSP+Response+Pre-Production+v7.4.0')}"
-                              escape="false"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Response_Pre-Production.html')}" escape="false"/>
                 <br/>
                 <h:outputText value="#{web.text.OCSP_RESPONSE_CLEANUP_EXP}" styleClass="help"/>
             </h:panelGroup>
@@ -209,7 +208,7 @@
 		<h:panelGrid id="autoenrollmentgrid" columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
 				<h:outputLabel for="header_autoenrollment" value="#{web.text.AUTOENROLLMENT_SCRIPT}" style="font-weight: bold; font-size:1.2em;"/>
-				<h:outputText value="#{web.ejbcaWebBean.getExternalHelpReference('/Microsoft_Auto-enrollment_Support.html')}" escape="false"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Script_based_Autoenrollment_for_Windows_clients_with_EJBCA.html')}" escape="false"/>
 			</h:panelGroup>
 			<h:panelGroup id="header_autoenrollment"/>
 
