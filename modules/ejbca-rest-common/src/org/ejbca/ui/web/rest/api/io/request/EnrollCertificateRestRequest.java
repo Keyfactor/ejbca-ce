@@ -17,14 +17,13 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
  * @version $Id: EnrollCertificateRestRequest.java 29081 2018-05-31 07:19:36Z andrey_s_helmes $
  */
 public class EnrollCertificateRestRequest {
-        
     private String certificateRequest;
     private String certificateProfileName;
     private String endEntityProfileName;
     private String certificateAuthorityName;
     private String username;
     private String password;
-    
+    private boolean includeChain;
     
     public EnrollCertificateRestRequest() {
     }
@@ -77,6 +76,12 @@ public class EnrollCertificateRestRequest {
         this.password = password;
     }
 
+    public boolean getIncludeChain() { return includeChain; }
+
+    public void setIncludeChain(final boolean includeChain) {
+        this.includeChain = includeChain;
+    }
+
     /**
      * Returns a converter instance for this class.
      *
@@ -106,6 +111,7 @@ public class EnrollCertificateRestRequest {
                     .certificateAuthorityName(enrollCertificateRestRequest.getCertificateAuthorityName())
                     .username(enrollCertificateRestRequest.getUsername())
                     .password(enrollCertificateRestRequest.getPassword())
+                    .includeChain(enrollCertificateRestRequest.getIncludeChain())
                     .build();
         }
     }

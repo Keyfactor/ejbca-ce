@@ -9,6 +9,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.cesecore.util.CertTools;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -17,12 +20,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
@@ -30,16 +29,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * @version $Id: CertificateRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
 public class CertificateRestResponse {
-
     private byte[] certificate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String serialNumber;
     private String responseFormat;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<byte[]> certificateChain;
 
-    private CertificateRestResponse(byte[] certificate, String serialNumber, String responseFormat) {
-        this.certificate = certificate;
-        this.serialNumber = serialNumber;
-        this.responseFormat = responseFormat;
+    private CertificateRestResponse(final CertificateRestResponseBuilder builder) {
+        this.certificate = builder.certificate;
+        this.serialNumber = builder.serialNumber;
+        this.responseFormat = builder.responseFormat;
+        this.certificateChain = builder.certificateChain;
     }
 
     /**
@@ -72,11 +73,14 @@ public class CertificateRestResponse {
     public String getResponseFormat() {
         return responseFormat;
     }
+
+    public List<byte[]> getCertificateChain() { return certificateChain; }
     
     public static class CertificateRestResponseBuilder {
         private byte[] certificate;
         private String serialNumber;
         private String responseFormat;
+        private List<byte[]> certificateChain;
         
         private CertificateRestResponseBuilder() {
         }
@@ -95,37 +99,51 @@ public class CertificateRestResponse {
             this.responseFormat = responseFormat;
             return this;
         }
+
+        public CertificateRestResponseBuilder setCertificateChain(final List<byte[]> certificateChain) {
+            this.certificateChain = certificateChain;
+            return this;
+        }
         
         public CertificateRestResponse build() {
-            return new CertificateRestResponse(certificate, serialNumber, responseFormat);
+            return new CertificateRestResponse(this);
         }
     }
 
     public static class CertificateRestResponseConverter {
-
-        public CertificateRestResponse toRestResponse (Certificate certificate) throws CertificateEncodingException {
-            certificate.getType();
+        public CertificateRestResponse toRestResponse(final Certificate certificate) {
             return CertificateRestResponse.builder()
-                    .setCertificate(Base64.encode(certificate.getEncoded()))
+                    .setCertificate(getEncodedCertificate(certificate))
                     .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
                     .setResponseFormat("DER")
                     .build();
         }
 
-        public CertificateRestResponse toRestResponse (X509Certificate certificate) throws CertificateEncodingException {
-            certificate.getType();
+        public CertificateRestResponse toRestResponse(final List<Certificate> certificateChain, final Certificate certificate) {
             return CertificateRestResponse.builder()
-                    .setCertificate(certificate.getEncoded())
+                    .setCertificate(getEncodedCertificate(certificate))
                     .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                    .setCertificateChain(certificateChain == null ? null : certificateChain
+                            .stream()
+                            .map(c -> getEncodedCertificate(c))
+                            .collect(Collectors.toList()))
                     .setResponseFormat("DER")
                     .build();
         }
         
-        public CertificateRestResponse toRestResponse (KeyStore keyStore, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        public CertificateRestResponse toRestResponse(final KeyStore keyStore, final String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
             return CertificateRestResponse.builder()
                     .setCertificate(lockKeyStore(keyStore, password))
                     .setResponseFormat(keyStore.getType())
                     .build();
+        }
+
+        private byte[] getEncodedCertificate(final Certificate certificate) {
+            try {
+                return certificate.getEncoded();
+            } catch (CertificateEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     

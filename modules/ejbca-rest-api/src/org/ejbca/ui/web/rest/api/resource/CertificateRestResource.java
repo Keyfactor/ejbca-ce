@@ -10,45 +10,12 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.DatatypeConverter;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -96,12 +63,44 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.SwaggerDefinition.Scheme;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * JAX-RS resource handling certificate-related requests.
@@ -148,19 +147,29 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment by PKCS10 request",
-                  notes = "Enroll certificate given PKCS10 CSR.\nGiven CSR must be base64 encoded PEM format", 
-                  response = CertificateRestResponse.class, code = 201)
-    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
+    @ApiOperation(value = "Enrollment with client generated keys",
+            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+            response = CertificateRestResponse.class,
+            code = 201)
+    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, final EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
         try {
-            AuthenticationToken authenticationToken = getAdmin(requestContext, false);
-            byte[] certificate = raMasterApi.createCertificateRest(
+            final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
+            final byte[] certificateBytes = raMasterApi.createCertificateRest(
                     authenticationToken,
                     EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
             );
-            X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
-            CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(cert);
+            final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            final List<Certificate> certificateChain = enrollCertificateRestRequest.getIncludeChain()
+                    ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest.getCertificateAuthorityName())
+                        .stream()
+                        .map(certificateWrapper -> certificateWrapper.getCertificate())
+                        .collect(Collectors.toList())
+                    : null;
+            final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
+                    certificateChain,
+                    certificate
+            );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
@@ -439,8 +448,8 @@ public class CertificateRestResource extends BaseRestResource {
                 response = CertificateRestResponse.builder().setCertificate(certificateBytes).
                         setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
-                final X509Certificate x509Certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
-                response = CertificateRestResponse.converter().toRestResponse(x509Certificate);
+                final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                response = CertificateRestResponse.converter().toRestResponse(certificate);
             } else {
                 // JKS or PKCS12. Will be detected by content.
                 final KeyStore keyStore = KeyTools.createKeyStore(certificateBytes, password);
