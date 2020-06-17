@@ -504,7 +504,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
         intuneProperties.put("SERVICE_VERSION_PROP_NAME", getIntuneServiceVersionPropName(alias));
-        intuneProperties.put("PROVIDER_NAME_AND_VERSION_NAME", GlobalConfiguration.EJBCA_VERSION);
+        intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
         intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
         intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
         intuneProperties.put("TENANT", getIntuneTenant(alias));
@@ -554,10 +554,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             log.error("SCEP alias '" + alias + "' does not exist");
         }
     }
-    
-    
-    
-    
     
     public void setAliasList(final Set<String> aliaslist) { 
         data.put(ALIAS_LIST, aliaslist); 

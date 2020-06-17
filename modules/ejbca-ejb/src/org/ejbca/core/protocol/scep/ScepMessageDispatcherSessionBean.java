@@ -386,13 +386,18 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         log.debug("Attempting intune validation for alias " + alias);
                     }
                     Properties intunesProperties = scepConfig.getIntuneProperties(alias);
-                    IntuneScepServiceClient intuneScepServiceClient = new IntuneScepServiceClient(intunesProperties);
+                    IntuneScepServiceClient intuneScepServiceClient;
+                    try {
+                        intuneScepServiceClient = new IntuneScepServiceClient(intunesProperties);
+                    } catch (IllegalArgumentException e) {
+                        throw new CertificateCreateException("Intune enrollment failed for alias " + alias, e);
+                    }
                     try {
                         intuneScepServiceClient.ValidateRequest(reqmsg.getTransactionId(),
                                 new String(Base64.encode(CertTools.buildCsr(reqmsg.getCertificationRequest()).getBytes())));
                     } catch (IntuneScepServiceException e) {
                         log.error("Failed intunes validation for alias " + alias, e);
-                        throw new CertificateCreateException(e);
+                        throw new CertificateCreateException("Failed intunes validation for alias ", e);
                     } catch (Exception e) {
                         throw new CertificateCreateException("Intune enrollment failed for alias " + alias, e);
                     }
