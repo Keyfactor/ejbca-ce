@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import javax.annotation.PostConstruct;
@@ -79,6 +80,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -99,6 +101,9 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
+
+import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
+import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 
 /**
  * 
@@ -376,6 +381,23 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 if (log.isDebugEnabled()) {
                     log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                 }
+                if (scepConfig.getUseIntune(alias)) {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Attempting intune validation for alias " + alias);
+                    }
+                    Properties intunesProperties = scepConfig.getIntuneProperties(alias);
+                    IntuneScepServiceClient intuneScepServiceClient = new IntuneScepServiceClient(intunesProperties);
+                    try {
+                        intuneScepServiceClient.ValidateRequest(reqmsg.getTransactionId(),
+                                new String(Base64.encode(CertTools.buildCsr(reqmsg.getCertificationRequest()).getBytes())));
+                    } catch (IntuneScepServiceException e) {
+                        log.error("Failed intunes validation for alias " + alias, e);
+                        throw new CertificateCreateException(e);
+                    } catch (Exception e) {
+                        throw new CertificateCreateException("Intune enrollment failed for alias " + alias, e);
+                    }
+                }
+                
                 try {
                     if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
                         String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
@@ -402,6 +424,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         ret = resp.getResponseMessage();
                     }
                 } else {
+                    
                     // Get the certificate 
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
