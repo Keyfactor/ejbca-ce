@@ -169,9 +169,13 @@ public class CertificateData extends BaseCertificateData implements Serializable
             // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
             String keyId = null;
             try {
+                // It is normal to throw an NPE for CVC certificate using EC, where only public point Y is in the certificate 
+                // because the full curve parameters are in the CVCA (Root CA) certificate, and we don't have that available for enrichment here
+                // We don't really know what to do with it, we ignore it, but don't know if it maaay be a sign of an issue,
+                // so we log an INFO message for that
                 keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(pubk).getKeyIdentifier(), false));
             } catch (Exception e) {
-                log.warn("Error creating subjectKeyId for certificate with fingerprint '" + fp + ": ", e);
+                log.info("Error creating subjectKeyId for certificate with fingerprint '" + fp + ": ", e);
             }
             setSubjectKeyId(keyId);
             setTag(tag);

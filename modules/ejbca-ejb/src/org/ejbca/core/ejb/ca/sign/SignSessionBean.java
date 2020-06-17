@@ -450,7 +450,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (suppliedUserData == null) {
             ca = getCAFromRequest(admin, req, false);
         } else {
-            ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
+            ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId(), null); // Take the CAId from the supplied userdata, if any
         }
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             final String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
@@ -585,7 +585,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         // Get CA object and make sure it is active
         // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
-        final CA ca = (CA) caSession.getCANoLog(admin, data.getCAId());
+        final CA ca = (CA) caSession.getCANoLog(admin, data.getCAId(), null);
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             final String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
@@ -1122,12 +1122,21 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CA ca = null;
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
-            String dn = certificateStoreSession.getCADnFromRequest(req);
-
+            final String dn = certificateStoreSession.getCADnFromRequest(req);
+            final String keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            if (log.isDebugEnabled()) {
+                log.debug(">getCAFromRequest, dn: " + dn + ": " + keySequence);
+            }
             if (doLog) {
-                ca = (CA) caSession.getCA(admin, dn.hashCode());
+                ca = (CA) caSession.getCA(admin, dn.hashCode(), keySequence);
+                if (log.isDebugEnabled()) {
+                    log.debug(">getCAFromRequest, CA from hash: " + dn.hashCode() + ": " + (ca == null ? "null" : ca.getCAId()));
+                }
             } else {
-                ca = (CA) caSession.getCANoLog(admin, dn.hashCode());
+                ca = (CA) caSession.getCANoLog(admin, dn.hashCode(), keySequence);
+                if (log.isDebugEnabled()) {
+                    log.debug(">getCAFromRequest, CA (nolog) from hash: " + dn.hashCode() + ": " + (ca == null ? "null" : ca.getCAId()));
+                }
             }
             if (ca == null) {
                 // We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
@@ -1183,7 +1192,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (doLog) {
             ca = (CA) caSession.getCA(admin, data.getCAId());
         } else {
-            ca = (CA) caSession.getCANoLog(admin, data.getCAId());
+            ca = (CA) caSession.getCANoLog(admin, data.getCAId(), null);
         }
         if (log.isDebugEnabled()) {
             log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
