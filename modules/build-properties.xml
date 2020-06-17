@@ -492,7 +492,10 @@
 	
 	<path id="lib.intune.classpath">
 	    <fileset dir="${ejbca.home}/lib/intune">
-	        <include name="csr-validation-*.jar"/>
+	        <include name="adal4j-*.jar"/>
+	    	<include name="csr-validation-*.jar"/>
+	    	<include name="json-*.jar"/>
+	    	<include name="oauth2-oidc-sdk-*.jar"/>
         </fileset>
 	</path>
             	
