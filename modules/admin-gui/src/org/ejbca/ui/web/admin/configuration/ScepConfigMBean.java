@@ -68,6 +68,21 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String raNameGenPostfix;
         private boolean clientCertificateRenewal;
         private boolean allowClientCertificateRenewaWithOldKey;
+        
+        private boolean useIntune;
+        private String intuneServiceVersionPropName;
+        private String intuneAadAppId;
+        private String intuneAadAppKey;
+        private String intuneTenant;
+        private String intuneAppId;
+        private String intuneResourceUrl;
+        private String intuneGraphApiVersion;
+        private String intuneGraphResourceUrl;
+        private String intuneProxyHost;
+        private String intuneProxyPort;
+        private String intuneProxyUser;
+        private String intuneProxyPass;
+        private String intuneAuthAuthority;
 
         
         private ScepAliasGuiInfo(ScepConfiguration scepConfig, String alias) {
@@ -86,6 +101,20 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.raNameGenPostfix = scepConfig.getRANameGenerationPostfix(alias);
                     this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
                     this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
+                    this.setUseIntune(scepConfig.getUseIntune(alias));
+                    this.intuneServiceVersionPropName = scepConfig.getIntuneServiceVersionPropName(alias);
+                    this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
+                    this.intuneAadAppKey = scepConfig.getIntuneAadAppKey(alias);
+                    this.intuneTenant = scepConfig.getIntuneTenant(alias);
+                    this.intuneAppId = scepConfig.getIntuneAppId(alias);
+                    this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
+                    this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
+                    this.intuneGraphResourceUrl = scepConfig.getIntuneGraphResourceUrl(alias);
+                    this.intuneProxyHost = scepConfig.getIntuneProxyHost(alias);
+                    this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
+                    this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
+                    this.intuneProxyPass = scepConfig.getIntuneProxyPass(alias);
+                    this.intuneAuthAuthority = scepConfig.getIntuneAuthAuthority(alias);
                 } else {
                     this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
                     this.includeCA = Boolean.valueOf(ScepConfiguration.DEFAULT_INCLUDE_CA);
@@ -100,6 +129,20 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.clientCertificateRenewal = Boolean.valueOf(ScepConfiguration.DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
                     this.allowClientCertificateRenewaWithOldKey = Boolean
                             .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+                    this.setUseIntune(false);
+                    this.intuneServiceVersionPropName = "";
+                    this.intuneAadAppId = "";
+                    this.intuneAadAppKey = "";
+                    this.intuneTenant = "";
+                    this.intuneAppId = "";
+                    this.intuneResourceUrl = ScepConfiguration.DEFAULT_INTUNE_RESOURCE_URL;
+                    this.intuneGraphApiVersion = ScepConfiguration.DEFAULT_INTUNE_GRAPH_API_VERSION;
+                    this.intuneGraphResourceUrl = ScepConfiguration.DEFAULT_INTUNE_GRAPH_RESOURCE_URL;
+                    this.intuneProxyHost = "";
+                    this.intuneProxyPort = "";
+                    this.intuneProxyUser = "";
+                    this.intuneProxyPass = "";
+                    this.intuneAuthAuthority = ScepConfiguration.DEFAULT_INTUNE_AUTH_AUTHORITY;
                 }
             }
         }
@@ -222,6 +265,118 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setAllowClientCertificateRenewaWithOldKey(boolean allowClientCertificateRenewaWithOldKey) {
             this.allowClientCertificateRenewaWithOldKey = allowClientCertificateRenewaWithOldKey;
         }
+
+        public String getIntuneServiceVersionPropName() {
+            return intuneServiceVersionPropName;
+        }
+
+        public void setIntuneServiceVersionPropName(String intuneServiceVersionPropName) {
+            this.intuneServiceVersionPropName = intuneServiceVersionPropName;
+        }
+
+        public String getIntuneAadAppId() {
+            return intuneAadAppId;
+        }
+
+        public void setIntuneAadAppId(String intuneAadAppId) {
+            this.intuneAadAppId = intuneAadAppId;
+        }
+
+        public String getIntuneAadAppKey() {
+            return intuneAadAppKey;
+        }
+
+        public void setIntuneAadAppKey(String intuneAadAppKey) {
+            this.intuneAadAppKey = intuneAadAppKey;
+        }
+
+        public String getIntuneTenant() {
+            return intuneTenant;
+        }
+
+        public void setIntuneTenant(String intuneTenant) {
+            this.intuneTenant = intuneTenant;
+        }
+
+        public String getIntuneAppId() {
+            return intuneAppId;
+        }
+
+        public void setIntuneAppId(String intuneAppId) {
+            this.intuneAppId = intuneAppId;
+        }
+
+        public String getIntuneResourceUrl() {
+            return intuneResourceUrl;
+        }
+
+        public void setIntuneResourceUrl(String intuneResourceUrl) {
+            this.intuneResourceUrl = intuneResourceUrl;
+        }
+
+        public String getIntuneGraphApiVersion() {
+            return intuneGraphApiVersion;
+        }
+
+        public void setIntuneGraphApiVersion(String intuneGraphApiVersion) {
+            this.intuneGraphApiVersion = intuneGraphApiVersion;
+        }
+
+        public String getIntuneGraphResourceUrl() {
+            return intuneGraphResourceUrl;
+        }
+
+        public void setIntuneGraphResourceUrl(String intuneGraphResourceUrl) {
+            this.intuneGraphResourceUrl = intuneGraphResourceUrl;
+        }
+
+        public String getIntuneProxyHost() {
+            return intuneProxyHost;
+        }
+
+        public void setIntuneProxyHost(String intuneProxyHost) {
+            this.intuneProxyHost = intuneProxyHost;
+        }
+
+        public String getIntuneProxyPort() {
+            return intuneProxyPort;
+        }
+
+        public void setIntuneProxyPort(String intuneProxyPort) {
+            this.intuneProxyPort = intuneProxyPort;
+        }
+
+        public String getIntuneProxyUser() {
+            return intuneProxyUser;
+        }
+
+        public void setIntuneProxyUser(String intuneProxyUser) {
+            this.intuneProxyUser = intuneProxyUser;
+        }
+
+        public String getIntuneProxyPass() {
+            return intuneProxyPass;
+        }
+
+        public void setIntuneProxyPass(String intuneProxyPass) {
+            this.intuneProxyPass = intuneProxyPass;
+        }
+
+        public String getIntuneAuthAuthority() {
+            return intuneAuthAuthority;
+        }
+
+        public void setIntuneAuthAuthority(String intuneAuthAuthority) {
+            this.intuneAuthAuthority = intuneAuthAuthority;
+        }
+
+        public boolean isUseIntune() {
+            return useIntune;
+        }
+
+        public void setUseIntune(boolean useIntune) {
+            this.useIntune = useIntune;
+        }
     }
 
     private static final long serialVersionUID = 2L;
@@ -342,6 +497,20 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setRANameGenerationPostfix(alias, currentAlias.getRaNameGenPostfix());
             scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
             scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
+            scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
+            scepConfig.setIntuneServiceVersionPropName(alias, currentAlias.getIntuneServiceVersionPropName());
+            scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
+            scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
+            scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
+            scepConfig.setIntuneAppId(alias, currentAlias.getIntuneAppId());
+            scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
+            scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());
+            scepConfig.setIntuneGraphResourceUrl(alias, currentAlias.getIntuneGraphResourceUrl());
+            scepConfig.setIntuneProxyHost(alias, currentAlias.getIntuneProxyHost());
+            scepConfig.setIntuneProxyPort(alias, currentAlias.getIntuneProxyPort());
+            scepConfig.setIntuneProxyUser(alias, currentAlias.getIntuneProxyUser());
+            scepConfig.setIntuneProxyPass(alias, currentAlias.getIntuneProxyPass());
+            scepConfig.setIntuneAuthAuthority(alias, currentAlias.getIntuneAuthAuthority());
 
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
