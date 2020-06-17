@@ -155,6 +155,7 @@
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.11.1.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
+	<classpathentry kind="lib" path="lib/intune/csr-validation-0.0.1-SNAPSHOT.jar"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
