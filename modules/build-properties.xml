@@ -489,6 +489,12 @@
 	        <include name="protobuf-java-*.jar"/>
         </fileset>
     </path>
+	
+	<path id="lib.intune.classpath">
+	    <fileset dir="${ejbca.home}/lib/intune">
+	        <include name="csr-validation-*.jar"/>
+        </fileset>
+	</path>
             	
             	
 

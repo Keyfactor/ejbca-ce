@@ -72,6 +72,22 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RA_NAME_GENERATION_POSTFIX = "ra.namegenerationpostfix";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL = "clientCertificateRenewal";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = "clientCertificateRenewalWithOldKey";
+    
+    //Intune configuration values
+    public static final String SCEP_USE_INTUNE = "useIntune";
+    public static final String SERVICE_VERSION_PROP_NAME = "intuneServiceVersionPropName";
+    public static final String AAD_APP_ID = "intuneAadAppId";
+    public static final String AAD_APP_KEY = "intuneAadAppKey";
+    public static final String TENANT = "intuneTenant";
+    public static final String INTUNE_APP_ID = "intuneAppId";
+    public static final String INTUNE_RESOURCE_URL = "intuneResourceUrl";
+    public static final String GRAPH_API_VERSION = "intuneGraphApiVersion";
+    public static final String GRAPH_RESOURCE_URL = "intuneGraphResourceUrl";
+    public static final String PROXY_HOST = "intuneProxyHost";
+    public static final String PROXY_PORT = "intuneProxyPort";
+    public static final String PROXY_USER = "intuneProxyUser";
+    public static final String PROXY_PASS = "intuneProxyPass";
+    public static final String AUTH_AUTHORITY = "intuneAuthAuthority";
        
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA);
@@ -82,7 +98,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 3f;
+    public static final float LATEST_VERSION = 4f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
@@ -99,6 +115,11 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
+    
+    public static final String DEFAULT_INTUNE_RESOURCE_URL = "https://api.manage.microsoft.com/";
+    public static final String DEFAULT_INTUNE_GRAPH_API_VERSION = "1.6";
+    public static final String DEFAULT_INTUNE_GRAPH_RESOURCE_URL = "https://graph.windows.net/";
+    public static final String DEFAULT_INTUNE_AUTH_AUTHORITY = "https://login.microsoftonline.com/";
     
     
     /** Creates a new instance of ScepConfiguration */
@@ -129,6 +150,22 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
             data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
             data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+            
+            data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+            data.put(alias + SERVICE_VERSION_PROP_NAME, "");
+            data.put(alias + AAD_APP_ID, "");
+            data.put(alias + AAD_APP_KEY, "");
+            data.put(alias + TENANT, "");
+            data.put(alias + INTUNE_APP_ID, "");
+            data.put(alias + INTUNE_RESOURCE_URL, DEFAULT_INTUNE_RESOURCE_URL);
+            data.put(alias + GRAPH_API_VERSION, DEFAULT_INTUNE_GRAPH_API_VERSION);
+            data.put(alias + GRAPH_RESOURCE_URL, DEFAULT_INTUNE_GRAPH_RESOURCE_URL);
+            data.put(alias + PROXY_HOST, "");
+            data.put(alias + PROXY_PORT, "");
+            data.put(alias + PROXY_USER, "");
+            data.put(alias + PROXY_PASS, "");
+            data.put(alias + AUTH_AUTHORITY, DEFAULT_INTUNE_AUTH_AUTHORITY);
+               
         }
     }
     
@@ -148,6 +185,21 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_RA_NAME_GENERATION_POSTFIX);
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL);
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        
+        keys.add(alias + SCEP_USE_INTUNE);
+        keys.add(alias + SERVICE_VERSION_PROP_NAME);
+        keys.add(alias + AAD_APP_ID);
+        keys.add(alias + AAD_APP_KEY);
+        keys.add(alias + TENANT);
+        keys.add(alias + INTUNE_APP_ID);
+        keys.add(alias + INTUNE_RESOURCE_URL);
+        keys.add(alias + GRAPH_API_VERSION);
+        keys.add(alias + GRAPH_RESOURCE_URL);
+        keys.add(alias + PROXY_HOST);
+        keys.add(alias + PROXY_PORT);
+        keys.add(alias + PROXY_USER);
+        keys.add(alias + PROXY_PASS);
+        keys.add(alias + AUTH_AUTHORITY);
         return keys;
     }
     
@@ -308,10 +360,173 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         setValue(key, postfix, alias);
     }
     
+    public void setUseIntune(final String alias, final boolean useIntune) {
+        String key = alias + "." + SCEP_USE_INTUNE;
+        setValue(key, Boolean.toString(useIntune), alias);
+    }
     
+    public boolean getUseIntune(final String alias) {
+        String key = alias + "." + SCEP_USE_INTUNE;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+    }
     
+    public void setIntuneServiceVersionPropName(final String alias, final String value) {
+        String key = alias + "." + SERVICE_VERSION_PROP_NAME;
+        setValue(key, value, alias);
+    }
     
+    public String getIntuneServiceVersionPropName(final String alias) {
+        String key = alias + "." + SERVICE_VERSION_PROP_NAME;
+        return getValue(key, alias);
+    }
     
+    public void setIntuneAadAppId(final String alias, final String value) {
+        String key = alias + "." + AAD_APP_ID;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneAadAppId(final String alias) {
+        String key = alias + "." + AAD_APP_ID;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneAadAppKey(final String alias, final String value) {
+        String key = alias + "." + AAD_APP_KEY;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneAadAppKey(final String alias) {
+        String key = alias + "." + AAD_APP_KEY;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneTenant(final String alias, final String value) {
+        String key = alias + "." + TENANT;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneTenant(final String alias) {
+        String key = alias + "." + TENANT;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneAppId(final String alias, final String value) {
+        String key = alias + "." + INTUNE_APP_ID;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneAppId(final String alias) {
+        String key = alias + "." + INTUNE_APP_ID;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneResourceUrl(final String alias, final String value) {
+        String key = alias + "." + INTUNE_RESOURCE_URL;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneResourceUrl(final String alias) {
+        String key = alias + "." + INTUNE_RESOURCE_URL;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneGraphApiVersion(final String alias, final String value) {
+        String key = alias + "." + GRAPH_API_VERSION;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneGraphApiVersion(final String alias) {
+        String key = alias + "." + GRAPH_API_VERSION;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneGraphResourceUrl(final String alias, final String value) {
+        String key = alias + "." + GRAPH_RESOURCE_URL;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneGraphResourceUrl(final String alias) {
+        String key = alias + "." + GRAPH_RESOURCE_URL;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneProxyHost(final String alias, final String value) {
+        String key = alias + "." + PROXY_HOST;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneProxyHost(final String alias) {
+        String key = alias + "." + PROXY_HOST;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneProxyPort(final String alias, final String value) {
+        String key = alias + "." + PROXY_PORT;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneProxyPort(final String alias) {
+        String key = alias + "." + PROXY_PORT;
+        return getValue(key, alias);
+    }
+        
+    public void setIntuneProxyUser(final String alias, final String value) {
+        String key = alias + "." + PROXY_USER;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneProxyUser(final String alias) {
+        String key = alias + "." + PROXY_USER;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneProxyPass(final String alias, final String value) {
+        String key = alias + "." + PROXY_PASS;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneProxyPass(final String alias) {
+        String key = alias + "." + PROXY_PASS;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneAuthAuthority(final String alias, final String value) {
+        String key = alias + "." + AUTH_AUTHORITY;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneAuthAuthority(final String alias) {
+        String key = alias + "." + AUTH_AUTHORITY;
+        return getValue(key, alias);
+    }    
+    
+    public Properties getIntuneProperties(final String alias) {
+        Properties intuneProperties = new Properties();
+        intuneProperties.put("SERVICE_VERSION_PROP_NAME", getIntuneServiceVersionPropName(alias));
+        intuneProperties.put("PROVIDER_NAME_AND_VERSION_NAME", GlobalConfiguration.EJBCA_VERSION);
+        intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
+        intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
+        intuneProperties.put("TENANT", getIntuneTenant(alias));
+        intuneProperties.put("INTUNE_APP_ID", getIntuneAadAppId(alias));
+        intuneProperties.put("INTUNE_RESOURCE_URL", getIntuneResourceUrl(alias));
+        intuneProperties.put("GRAPH_API_VERSION", getIntuneGraphApiVersion(alias));
+        intuneProperties.put("GRAPH_RESOURCE_URL", getIntuneGraphResourceUrl(alias));
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("PROXY_HOST", getIntuneProxyHost(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyPort(alias))) {
+            intuneProperties.put("PROXY_PORT", getIntuneProxyPort(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyUser(alias))) {
+            intuneProperties.put("PROXY_USER", getIntuneProxyUser(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyPass(alias))) {
+            intuneProperties.put("PROXY_PASS", getIntuneProxyPass(alias));
+        }
+        intuneProperties.put("AUTH_AUTHORITY", getIntuneAuthAuthority(alias));
+        return intuneProperties;
+    }
     
     public String getValue(String key, String alias) {
         if(aliasExists(alias)) {
@@ -521,12 +736,29 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
+    /** Implementation of UpgradableDataHashMap function upgrade. */
 
     @Override
     public void upgrade(){
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
+        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {    
+            //V4.0 
+            for (String alias : getAliasList()) {
+                data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+                data.put(alias + SERVICE_VERSION_PROP_NAME, "");
+                data.put(alias + AAD_APP_ID, "");
+                data.put(alias + AAD_APP_KEY, "");
+                data.put(alias + TENANT, "");
+                data.put(alias + INTUNE_APP_ID, "");
+                data.put(alias + INTUNE_RESOURCE_URL, DEFAULT_INTUNE_RESOURCE_URL);
+                data.put(alias + GRAPH_API_VERSION, DEFAULT_INTUNE_GRAPH_API_VERSION);
+                data.put(alias + GRAPH_RESOURCE_URL, DEFAULT_INTUNE_GRAPH_RESOURCE_URL);
+                data.put(alias + PROXY_HOST, "");
+                data.put(alias + PROXY_PORT, "");
+                data.put(alias + PROXY_USER, "");
+                data.put(alias + PROXY_PASS, "");
+                data.put(alias + AUTH_AUTHORITY, DEFAULT_INTUNE_AUTH_AUTHORITY);
+            }
+            data.put(VERSION,  Float.valueOf(LATEST_VERSION));         
         }
     }
 

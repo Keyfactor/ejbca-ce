@@ -152,8 +152,113 @@
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
+		
+		<h:outputLabel for="useIntune" value="#{web.text.SCEP_RA_USE_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="useIntune" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:selectBooleanCheckbox id="useIntuneCheckbox" value="#{scepConfigMBean.currentAlias.useIntune}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+	    		<f:ajax event="change" execute="@this" render="@form currentAliasForm:intuneValues"/>
+	    	</h:selectBooleanCheckbox>
+		</h:panelGroup>
+	</h:panelGrid>		
+		
+	<!-- Intune Configuration Values -->	
+	<h:panelGrid columns="2" id="intuneValues" rendered="#{scepConfigMBean.currentAlias.useIntune and scepConfigMBean.currentAlias.modeRa}">			
+		<h:outputLabel for="intuneHeader" value="#{web.text.SCEP_RA_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneHeader" rendered="#{scepConfigMBean.currentAlias.modeRa}">	    	
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneServiceVersionPropName" value="#{web.text.SCEP_SERVICE_VERSION_PROP_NAME}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneServiceVersionPropName" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneServiceVersionPropName}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneServiceVersionPropName}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>		
+		
+		<h:outputLabel for="intuneAadAppId" value="#{web.text.SCEP_AAD_APP_ID}" rendered="#{scepConfigMBean.currentAlias.modeRa}" />
+		<h:panelGroup id="intuneAadAppId" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppId}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppId}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+			
+		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+				
+		<h:outputLabel for="intuneTenant" value="#{web.text.SCEP_TENANT}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneTenant" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneAppId" value="#{web.text.SCEP_INTUNE_APP_ID}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneAppId" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAppId}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAppId}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+				
+		<h:outputLabel for="intuneResourceUrl" value="#{web.text.SCEP_INTUNE_RESOURCE_URL}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneResourceUrl" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneGraphApiVersion" value="#{web.text.SCEP_GRAPH_API_VERSION}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneGraphApiVersion" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneGraphResourceUrl" value="#{web.text.SCEP_GRAPH_RESOURCE_URL}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneGraphResourceUrl" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneProxyHost" value="#{web.text.SCEP_PROXY_HOST}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneProxyHost" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyHost}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyHost}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+				
+		<h:outputLabel for="intuneProxyPort" value="#{web.text.SCEP_PROXY_PORT}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneProxyPort" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyPort}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyPort}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
 
-		<h:panelGroup/>
+		<h:outputLabel for="intuneProxyUser" value="#{web.text.SCEP_PROXY_USER}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneProxyUser" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyUser}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyUser}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneProxyPass" value="#{web.text.SCEP_PROXY_PASS}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneProxyPass" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyPass}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyPass}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+		
+		<h:outputLabel for="intuneAuthAuthority" value="#{web.text.SCEP_AUTH_AUTHORITY}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneAuthAuthority" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAuthAuthority}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAuthAuthority}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+	</h:panelGrid>
+	<h:panelGrid columns="2" id="actions" rendered="#{scepConfigMBean.currentAliasEditMode}">
 		<h:panelGroup>
 			<h:commandButton action="#{scepConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
 			<h:commandButton action="#{scepConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>

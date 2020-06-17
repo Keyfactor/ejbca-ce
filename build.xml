@@ -586,6 +586,10 @@
 				<include name="jackson-databind-2.*.jar"/>
 				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
+        	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
+        		<include name="csr-validation-*.jar" />
+        	</zipfileset>
+        	
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">

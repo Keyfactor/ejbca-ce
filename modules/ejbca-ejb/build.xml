@@ -21,6 +21,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.quickserver.classpath"/>
+		<path refid="lib.intune.classpath"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
