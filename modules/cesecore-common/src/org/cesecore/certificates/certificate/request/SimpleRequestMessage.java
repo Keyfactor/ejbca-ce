@@ -174,6 +174,11 @@ public class SimpleRequestMessage implements RequestMessage {
     public BigInteger getSerialNo() {
     	return null;
     }
+
+    @Override
+    public String getCASequence() {
+        return null;
+    }
     
     @Override
     public String getCRLIssuerDN() {
