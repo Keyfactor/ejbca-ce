@@ -334,7 +334,7 @@ public final class KeyTools {
         final PublicKeyEC pkec = (PublicKeyEC) pk;
         final ECParameterSpec spec = pkec.getParams();
         if (spec != null) {
-            return pk;// the key allready has its parameters.
+            return pk;// the key already has its parameters.
         }
         // The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
         final PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
