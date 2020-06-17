@@ -57,23 +57,34 @@ public interface RequestMessage extends Serializable {
 
     /**
      * Gets the number (of CA cert) from IssuerAndSerialNumber. Combined with getIssuerDN to identify
-     * the CA-certificate of the CA the request is targeted for.
+     * the CA-certificate of the CA the request is targeted for. 
+     * for only a limited set of requests, i.e. SCEP requests that should be signed by the "next CA" certificarte 
      *
-     * @return serial number of CA certificate for CA issuing CRL or null.
+     * @return serial number of CA certificate for the CA target of the request, or null.
      */
     BigInteger getSerialNo();
-    
+
+    /**
+     * Tries to get the Key Sequence of the target CA, if available in the request.
+     * For CVC request it is the "certificate serial number" of CARef (IssuerDN). 
+     * For CVC this is the "key sequence", which is part of the 
+     * "Holder/Authority-Reference" in the CVC certificate, but not part of the DN, but it is stored as serialNumber in the database.
+     *
+     * @return key sequence of CA target of the request or null.
+     */
+    String getCASequence();
+
     /**
      * Gets the requested DN if contained in the request (the desired DN for the user).
      *
-     * @return requested DN or null.
+     * @return requested DN (in no specified order, i.e. as defined by the request) or null.
      */
     String getRequestDN();
 
     /**
      * Gets the requested DN in the pure form of an X508Name (the desired DN for the user).
      *
-     * @return requested DN or null.
+     * @return requested DN, as an X500Name (in no specified order, i.e. as defined by the request) or null.
      */
     X500Name getRequestX500Name();
 
