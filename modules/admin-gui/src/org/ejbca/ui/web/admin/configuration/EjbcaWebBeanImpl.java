@@ -1449,7 +1449,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         final List<String> certificateAuthorities = new ArrayList<>();
         for (final int id : certificateAuthorityIds) {
-            final CACommon ca = caSession.getCANoLog(administrator, id);
+            final CACommon ca = caSession.getCANoLog(administrator, id, null);
             certificateAuthorities.add(ca.getName());
         }
         return addKeyIdAndSort(certificateAuthorities);

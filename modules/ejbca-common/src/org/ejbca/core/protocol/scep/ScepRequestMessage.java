@@ -665,14 +665,23 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     @Override
     public BigInteger getSerialNo() {
+        // For SCEP this is used to see if we are targeting a SCEP request or the "next CA certificate", 
+        // i.e. a rollover CA certificate that has not been activated yet
         if (log.isTraceEnabled()) {
         	log.trace(">getSerialNo()");
         }
-        // Use another method to do the decryption etc...
+        // Use another method to do the decryption etc...filling the serialNo field
         getIssuerDN();
         return serialNo;
     }
-    
+
+    @Override
+    public String getCASequence() {
+        // Same as getSerialNo for SCEP, used to see if we are targeting a SCEP request or the "next CA certificate", 
+        // i.e. a rollover CA certificate that has not been activated yet
+        return getSerialNo().toString();
+    }
+
     @Override
     public String getCRLIssuerDN() {
         if (log.isTraceEnabled()) {

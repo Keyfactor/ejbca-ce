@@ -536,7 +536,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                     try {
                         // Note that we can do lookups using the .hashCode, but we will use the objects id
-                        final CACommon ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode());
+                        final CACommon ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode(), null);
                         certificateInternalCaName = ca.getName();
                         certificateInternalCaId = ca.getCAId();
                         caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
@@ -984,7 +984,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 boundCertificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                 try {
                     // Note that we can do lookups using the .hashCode, but we will use the objects id
-                    final CACommon ca = caSession.getCANoLog(authenticationToken, boundCertificateIssuerDn.hashCode());
+                    final CACommon ca = caSession.getCANoLog(authenticationToken, boundCertificateIssuerDn.hashCode(), null);
                     boundCertificateInternalCaName = ca.getName();
                     certificateInternalCaId = ca.getCAId();
                     boundCaCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());

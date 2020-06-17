@@ -47,6 +47,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -75,8 +76,8 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.dto.SecurityEventProperties;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.dto.SecurityEventProperties;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -1156,10 +1157,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     ca.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
                 }
                 // Check that CA DN is equal to the certificate response.
-                if (!CertTools.getSubjectDN(cacert).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))) {
-                    String msg = intres.getLocalizedMessage("caadmin.errorcertrespwrongdn", CertTools.getSubjectDN(cacert), ca.getSubjectDN());
-                    log.info(msg);
-                    throw new EjbcaException(msg);
+                final String cacertSubjectDN = CertTools.getSubjectDN(cacert);
+                if (!cacertSubjectDN.equals(CertTools.stringToBCDNString(ca.getSubjectDN()))) {
+                    boolean fail = true;
+                    if (cacert.getType().equals("CVC") && CertTools.getPartFromDN(ca.getSubjectDN(), "OU") != null) {
+                        // If this is a CVC certificate, we have the ability to have more DN components in the CA subject DN than in the actual 
+                        // CVC CA certificate (which is limited to C and CN)
+                        final String limitedCVCADN = "CN=" + CertTools.getPartFromDN(ca.getSubjectDN(), "CN") + ",C=" + CertTools.getPartFromDN(ca.getSubjectDN(), "C");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Comparing CVC subjectDN '" + cacertSubjectDN + "' to limited CVC CA DN '" + limitedCVCADN + "' after stripping away OU component " + CertTools.getPartFromDN(ca.getSubjectDN(), "OU"));
+                        }
+                        if (cacertSubjectDN.equals(limitedCVCADN)) {
+                            // We did have a CVC CA where the database CA DN has an additional OU component, a special case, allow this
+                            fail = false;
+                        }
+                    } 
+                    if (fail) {
+                        String msg = intres.getLocalizedMessage("caadmin.errorcertrespwrongdn", CertTools.getSubjectDN(cacert), ca.getSubjectDN());
+                        log.info(msg);
+                        throw new EjbcaException(msg);
+                    }
                 }
                 List<Certificate> tmpchain = new ArrayList<>();
                 tmpchain.add(cacert);
@@ -2268,7 +2285,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public byte[] getLatestLinkCertificate(final int caId) {
         try {
-            CACommon ca = caSession.getCANoLog(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Fetching link certificate user.")), caId);
+            CACommon ca = caSession.getCANoLog(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Fetching link certificate user.")), caId, null);
             return ca.getLatestLinkCertificate();
         } catch (AuthorizationDeniedException e) {
             throw new RuntimeException(e); // Should always be allowed
@@ -2765,7 +2782,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Create a new CA
         int signedby = CAInfo.SIGNEDBYEXTERNALCA;
         int certprof = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
-        String description = "Imported external signed CA";
+        String description = "Imported external signed CA through CLI: " + caname;
         Certificate caSignatureCertificate = signatureCertChain[0];
         ArrayList<Certificate> certificatechain = new ArrayList<>();
         Collections.addAll(certificatechain, signatureCertChain);
@@ -2773,7 +2790,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (verifyIssuer(caSignatureCertificate, caSignatureCertificate)) {
                 signedby = CAInfo.SELFSIGNED;
                 certprof = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
-                description = "Imported root CA";
+                description = "Imported root CA through CLI: " + caname;
             } else {
                 // A less strict strategy can be to assume a certificate signed
                 // by an external CA. Useful if the admin forgot to create a
@@ -3457,9 +3474,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     private boolean verifyIssuer(Certificate subject, Certificate issuer) {
         try {
-            PublicKey issuerKey = issuer.getPublicKey();
-            subject.verify(issuerKey);
-            return true;
+            final PublicKey issuerKey = issuer.getPublicKey();
+            // Make an algorithm check first so we don't try to verify an RSA signature with an ECDSA key
+            final String certSigAlg = AlgorithmTools.getCertSignatureAlgorithmNameAsString(subject);
+            final List<String> keySigAlgs = AlgorithmTools.getSignatureAlgorithms(issuerKey);
+            boolean containsAlg = keySigAlgs.stream().anyMatch(certSigAlg::equalsIgnoreCase);
+            if (certSigAlg == null || keySigAlgs == null || !containsAlg) {
+                if (log.isDebugEnabled()) {
+                    log.info("Not trying to verify certificate signed with algorithm " + certSigAlg + " because key is only suitable for " + keySigAlgs);
+                }
+                return false;
+            } else {
+                // Algorithms match, verify signature
+                subject.verify(issuerKey);
+                return true;
+            }
         } catch (java.security.GeneralSecurityException e) {
             return false;
         }

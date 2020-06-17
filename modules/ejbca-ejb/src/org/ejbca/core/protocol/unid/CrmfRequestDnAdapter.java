@@ -47,7 +47,10 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
 		this.original = (ICrmfRequestMessage)req;
 		this.dn = _dn;
 	}
-	
+    @Override
+    public String getCASequence() {
+        return null;
+    }
 	@Override
 	public String getUsername() {
 		return this.original.getUsername();
