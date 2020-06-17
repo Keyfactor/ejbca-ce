@@ -217,13 +217,13 @@ public interface IEjbcaWS {
 	 *
      * @param caname The CA name
      * @param cadn The CA subjectDN
-     * @param catype The CA type. It could be either 'x509' or 'cvc'
+     * @param catype The CA type. It could be either 'x509' or 'cvc' (see the enum CaType)
      * @param validityInDays Validity of the CA in days.
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
      * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA,
      * GOST3411withECGOST3410, GOST3411withDSTU4145
-     * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). For externally signed CAs, use createExternallySignedCa
+     * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). For externally signed CAs, use {@link #createExternallySignedCa()}
      * @param cryptoTokenName The name of the cryptotoken associated with the CA
      * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
      * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
@@ -240,7 +240,7 @@ public interface IEjbcaWS {
      * 
      * @param caname The CA name
      * @param cadn The CA subjectDN
-     * @param catype The CA type. It could be either 'x509' or 'cvc'
+     * @param catype The CA type. It could be either 'x509' or 'cvc', from the enum {@link CaType}
      * @param validityInDays Validity of the CA in days.
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
@@ -372,7 +372,7 @@ public interface IEjbcaWS {
 	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
 
 
-	/** Generates a certificate request (CSP) from a CA. The CSR can be sent to another CA to be signed, thus making the CA a sub CA of the signing CA.
+	/** Generates a Certificate Signing Request (CSR) from a CA. The CSR can be sent to another CA to be signed, thus making the CA a sub CA of the signing CA.
 	 * Can also be used for cross-certification. The method can use an existing key pair of the CA or generate a new key pair. The new key pair does not have to be
 	 * activated and used as the CAs operational signature keys.
 	 *
