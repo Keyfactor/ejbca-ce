@@ -730,15 +730,22 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
+        return findCertificateByIssuerAndSerno(issuerDN, serno.toString());
+    }
+
+    private Certificate findCertificateByIssuerAndSerno(String issuerDN, String serno) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
+        }
         // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
         if (log.isDebugEnabled()) {
             log.debug("Looking for cert with (transformed)DN: " + dn);
         }
-        Collection<CertificateData> coll = certificateDataSession.findByIssuerDNSerialNumber(dn, serno.toString());
+        final Collection<CertificateData> coll = certificateDataSession.findByIssuerDNSerialNumber(dn, serno);
         Certificate ret = null;
         if (coll.size() > 1) {
-            String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));
+            final String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno);
             log.error(msg);
         }
         Certificate cert = null;
@@ -755,7 +762,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+            log.trace("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
         }
         return ret;
     }
@@ -1413,14 +1420,19 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.debug("Got an issuerDN: " + dn);
         }
         // If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
-        // If we don't have a serialNumber, we take a chance that it was actually the subjectDN (for example a RootCA)
-        final BigInteger serno = req.getSerialNo();
-        if (serno != null) {
+        // If we don't have a serialNumber, or CA Sequence, we take a chance that it was actually the subjectDN (for example a RootCA)
+        final BigInteger sernoBigInt = req.getSerialNo();
+        final String sernoString;
+        if (sernoBigInt == null) {
+            sernoString = req.getCASequence();
+        } else {
+            sernoString = sernoBigInt.toString();
+        }
+        if (sernoString != null) {
             if (log.isDebugEnabled()) {
-                log.debug("Got a serialNumber: " + serno.toString(16));
+                log.debug("Got a serialNumber: " + sernoString);
             }
-
-            final Certificate cert = findCertificateByIssuerAndSerno(dn, serno);
+            final Certificate cert = findCertificateByIssuerAndSerno(dn, sernoString);
             if (cert != null) {
                 dn = CertTools.getSubjectDN(cert);
             }

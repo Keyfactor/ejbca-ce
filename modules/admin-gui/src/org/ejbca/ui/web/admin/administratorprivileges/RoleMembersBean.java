@@ -348,7 +348,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                     // it's safe to assume that this was a user error (wrong CA selected or invalid serialnumber).
                     if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
                         final String issuerDn = caSession.getCaSubjectDn(getCaIdToNameMap().get(tokenIssuerId));
-                        final boolean isExternalCa = caSession.getCANoLog(getAdmin(), tokenIssuerId).getStatus() ==  CAConstants.CA_EXTERNAL;
+                        final boolean isExternalCa = caSession.getCANoLog(getAdmin(), tokenIssuerId, null).getStatus() ==  CAConstants.CA_EXTERNAL;
                         if (!isExternalCa && !certificateStoreSession.existsByIssuerAndSerno(issuerDn, matchValueSerialNr)) {
                             super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "WITH_SERIALNUMBER_UNKNOWN", tokenMatchValue, issuerDn);
                             return;

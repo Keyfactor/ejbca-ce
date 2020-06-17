@@ -169,17 +169,27 @@ public class CVCRequestMessage implements RequestMessage {
 
     /**
      * Could get the sequence (of CVC cert). For CVC certificate this does not combine well with getIssuerDN to identify
-     * the CA-certificate of the CA the request is targeted for, so it always return null.
+     * the CA-certificate of the CA the request is targeted for, so it always return null. 
+     * When key sequence is needed from CVC requests, use {@link #getCASequence()}
      *
      * @return null.
      */
     @Override
     public BigInteger getSerialNo() {
-    	//CardVerifiableCertificate cc = getCardVerifiableCertificate()
-        //return CertTools.getSerialNumber(cc);
     	return null;
     }
-    
+
+    @Override
+    public String getCASequence() {
+        CardVerifiableCertificate cc = getCardVerifiableCertificate();
+        try {
+            return cc.getCVCertificate().getCertificateBody().getAuthorityReference().getSequence();
+        } catch (NoSuchFieldException e) {
+            log.error("getSerialNumber: NoSuchFieldException: ", e);
+            return null;
+        }
+    }
+
     @Override
     public String getCRLIssuerDN() {
         return null;
@@ -349,7 +359,8 @@ public class CVCRequestMessage implements RequestMessage {
         this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
     }
 
-    /** Specific to CVC request messages, EAC requests contains a sequence */
+    /** Specific to CVC request messages, EAC requests contains a sequence.
+     * This is the sequence of the Holder Reference in the CVC request */
     public String getKeySequence() {
     	String ret = null;
     	try {

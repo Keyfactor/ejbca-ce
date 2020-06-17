@@ -102,7 +102,25 @@ public interface CaSessionLocal extends CaSession {
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
     CACommon getCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
-  
+
+    /**
+     * Get the CA object performing the regular authorization check. Checks if
+     * the CA has expired or the certificate isn't valid yet and in that case
+     * sets the correct CA status.
+     * NOTE: This method will return a shared CA object from a cache. Not suitable for reading a CA object that you 
+     * plan to edit. Use this when you need to use the CA, since it's faster. User getCAForEdit if you want to edit the 
+     * CA object and does not want your changes to be overwritten by another thread.
+     *
+     * @see #getCAForEdit(AuthenticationToken, String)
+     * 
+     * @param admin AuthenticationToken of admin
+     * @param caid identifies the CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode())
+     * @param keySequence identifies additionally a specific (CVC) CA certificate by it's key sequence, can be null as it is not relevant for most certificate types (i.e. X.509 does not have this)
+     * @return the CA object, or null if it doesn't exist.
+     * @throws AuthorizationDeniedException if not authorized to get CA
+     */
+    CACommon getCA(AuthenticationToken admin, int caid, String keySequence) throws AuthorizationDeniedException;
+    
     /**
      * Get the CA object performing the regular authorization check. Checks if
      * the CA has expired or the certificate isn't valid yet and in that case
@@ -235,10 +253,11 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @param admin AuthenticationToken of admin
      * @param caid identifies the CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode())
+     * @param keySequence identifies additionally a specific (CVC) CA certificate by it's key sequence, can be null as it is not relevant for most certificate types (i.e. X.509 does not have this)
      * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CACommon getCANoLog(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    CACommon getCANoLog(AuthenticationToken admin, int caid, String keySequence) throws AuthorizationDeniedException;
 
     /**
      * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
@@ -248,11 +267,12 @@ public interface CaSessionLocal extends CaSession {
      *
      * @param caid numerical id of CA (subjectDN.hashCode()) that we search for, or -1 if a name is to be used instead
      * @param name human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
+     * @param keySequence identifies additionally a specific (CVC) CA certificate by it's key sequence, can be null as it is not relevant for most certificate types (i.e. X.509 does not have this)
      * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
      *             a completely distinct object, for edit, and not a shared cached instance.
      * @return CA value object, or null if it doesn't exist.
      */
-    CACommon getCAInternal(int caid, String name, boolean fromCache);
+    CACommon getCAInternal(int caid, String name, String keySequence, boolean fromCache);
 
     /**
      * Local access CRUD method for persisting the CA object to the database and removes any old

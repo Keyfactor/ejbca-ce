@@ -63,7 +63,8 @@ public class CAToken extends UpgradeableDataHashMap {
     @Deprecated // Used by upgrade code
     public static final String KEYSTORE = "KEYSTORE";
 
-    // The Initial sequence number is 00000-99999 or starts at 00001 according to generated doc 2012-12-03.
+    /** The Initial sequence number is 00000-99999 or starts at 00001 according to generated doc 2012-12-03.
+     * It is of format StringTools.KEY_SEQUENCE_FORMAT_NUMERIC (1) */
     public static final String DEFAULT_KEYSEQUENCE = "00000";
 
     public static final String SOFTPRIVATESIGNKEYALIAS = "signKey";
@@ -318,12 +319,16 @@ public class CAToken extends UpgradeableDataHashMap {
         data.put(SEQUENCE, sequence);
     }
 
-    /** Sets the SequenceFormat */
+    /** Sets the SequenceFormat 
+     * @param sequence one of StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, etc
+     */
     public void setKeySequenceFormat(int sequence) {
         data.put(SEQUENCE_FORMAT, sequence);
     }
 
-    /** Returns the Sequence format, that is the format of the key sequence */
+    /** Returns the Sequence format, that is the format of the key sequence 
+     * @return one of StringTools.KEY_SEQUENCE_FORMAT_NUMERIC etc
+     */
     public int getKeySequenceFormat() {
         Object seqF = data.get(SEQUENCE_FORMAT);
         if (seqF == null) {
@@ -417,6 +422,9 @@ public class CAToken extends UpgradeableDataHashMap {
 
     /**
      * Use current key sequence to generate and store a "next" key sequence and "next" singing key alias.
+     * The method will take the current keySequence, increase it using StringTools#incrementKeySequence, generate a new alias
+     * by "StringUtils.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence", i.e. i the current
+     * keySequence is SE003 and current alias if signKeySE002 the nextSignKeyAlias will be signKeySE003.
      * @return the next sign key alias.
      */
     public String generateNextSignKeyAlias() {
