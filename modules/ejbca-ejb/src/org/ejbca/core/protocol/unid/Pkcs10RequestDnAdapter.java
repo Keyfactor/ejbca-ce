@@ -45,7 +45,10 @@ public class Pkcs10RequestDnAdapter implements RequestMessage {
         this.original = (PKCS10RequestMessage) req;
 		this.dn = _dn;
 	}
-	
+    @Override
+    public String getCASequence() {
+        return null;
+    }
 	@Override
 	public String getUsername() {
 		return this.original.getUsername();
