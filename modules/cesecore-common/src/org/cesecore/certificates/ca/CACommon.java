@@ -139,7 +139,7 @@ public interface CACommon extends IUpgradeableData {
      * Returns a collection of CA-certificates, with this CAs cert i position 0, or null if no CA-certificates exist. The root CA certificate will
      * thus be in the last position.
      *
-     * @return Collection of Certificate
+     * @return Collection of Certificate, or null if there are no certificates stored in the CA object in the database for this CA
      */
     List<Certificate> getCertificateChain();
 

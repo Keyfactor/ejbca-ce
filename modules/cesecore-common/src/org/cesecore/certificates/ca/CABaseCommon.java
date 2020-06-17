@@ -433,12 +433,6 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         this.requestcertchain.addAll(requestcertificatechain);
     }
 
-    /**
-     * Returns a collection of CA-certificates, with this CAs cert i position 0, or null if no CA-certificates exist. The root CA certificate will
-     * thus be in the last position.
-     *
-     * @return Collection of Certificate
-     */
     @Override
     public List<Certificate> getCertificateChain() {
         if (certificatechain == null) {
