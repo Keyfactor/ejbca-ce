@@ -2782,7 +2782,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Create a new CA
         int signedby = CAInfo.SIGNEDBYEXTERNALCA;
         int certprof = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
-        String description = "Imported external signed CA through CLI: " + caname;
+        String description = "Imported external signed CA: " + caname;
         Certificate caSignatureCertificate = signatureCertChain[0];
         ArrayList<Certificate> certificatechain = new ArrayList<>();
         Collections.addAll(certificatechain, signatureCertChain);
@@ -2790,7 +2790,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (verifyIssuer(caSignatureCertificate, caSignatureCertificate)) {
                 signedby = CAInfo.SELFSIGNED;
                 certprof = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
-                description = "Imported root CA through CLI: " + caname;
+                description = "Imported root CA: " + caname;
             } else {
                 // A less strict strategy can be to assume a certificate signed
                 // by an external CA. Useful if the admin forgot to create a
@@ -3478,7 +3478,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Make an algorithm check first so we don't try to verify an RSA signature with an ECDSA key
             final String certSigAlg = AlgorithmTools.getCertSignatureAlgorithmNameAsString(subject);
             final List<String> keySigAlgs = AlgorithmTools.getSignatureAlgorithms(issuerKey);
-            boolean containsAlg = keySigAlgs.stream().anyMatch(certSigAlg::equalsIgnoreCase);
+            // SHA1WithECDSA returns as ECDSA for certSigAlg (has been always, don't know why), while keySigAlgs will contain SHA1WithECDSA
+            // therefore we need to make a more complex match, checking if keySigAlgs contains the part,
+            // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
+            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or SHA256WithDSA, or... 
+            boolean containsAlg = keySigAlgs.stream().anyMatch(x -> StringUtils.containsIgnoreCase(x, certSigAlg));
             if (certSigAlg == null || keySigAlgs == null || !containsAlg) {
                 if (log.isDebugEnabled()) {
                     log.info("Not trying to verify certificate signed with algorithm " + certSigAlg + " because key is only suitable for " + keySigAlgs);
