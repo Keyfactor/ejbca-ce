@@ -413,7 +413,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                                 cryptoToken.getSignProviderName());
                         reqmsg.verify();
-                        intuneScepServiceClient.ValidateRequest(reqmsg.getTransactionId(), CertTools.buildCsr(reqmsg.getCertificationRequest()));
+                        intuneScepServiceClient.ValidateRequest(reqmsg.getTransactionId(), new String(Base64.encode(reqmsg.getCertificationRequest().getEncoded())));
                     } catch (IntuneScepServiceException e) {
                         log.error("Failed intunes validation for alias " + alias, e);
                         throw new CertificateCreateException("Failed intunes validation for alias ", e);
