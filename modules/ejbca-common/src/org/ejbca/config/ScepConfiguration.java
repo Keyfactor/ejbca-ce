@@ -503,15 +503,31 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
-        intuneProperties.put("SERVICE_VERSION_PROP_NAME", getIntuneServiceVersionPropName(alias));
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("SERVICE_VERSION_PROP_NAME", getIntuneServiceVersionPropName(alias));
+        }
         intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
-        intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
-        intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
-        intuneProperties.put("TENANT", getIntuneTenant(alias));
-        intuneProperties.put("INTUNE_APP_ID", getIntuneAadAppId(alias));
-        intuneProperties.put("INTUNE_RESOURCE_URL", getIntuneResourceUrl(alias));
-        intuneProperties.put("GRAPH_API_VERSION", getIntuneGraphApiVersion(alias));
-        intuneProperties.put("GRAPH_RESOURCE_URL", getIntuneGraphResourceUrl(alias));
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("TENANT", getIntuneTenant(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("INTUNE_APP_ID", getIntuneAadAppId(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("INTUNE_RESOURCE_URL", getIntuneResourceUrl(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("GRAPH_API_VERSION", getIntuneGraphApiVersion(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+            intuneProperties.put("GRAPH_RESOURCE_URL", getIntuneGraphResourceUrl(alias));
+        }
         if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("PROXY_HOST", getIntuneProxyHost(alias));
         }
