@@ -424,6 +424,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public boolean forceCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
+        if(caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
+            return false;
+        }
+        
         result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
         final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
@@ -437,6 +441,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
+        if(caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
+            return false;
+        }
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
         final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
@@ -534,7 +541,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 final Date now = new Date();
                 final Date lastCrlCreationDate = lastBaseCrlInfo==null ? now : lastBaseCrlInfo.getCreateDate();
                 final AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
-                final boolean keepexpiredcertsoncrl = cainfo.getKeepExpiredCertsOnCRL();
+                final boolean keepexpiredcertsoncrl = ((X509CAInfo) cainfo).getKeepExpiredCertsOnCRL();
                 if (keepexpiredcertsoncrl) {
                     log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificate but will keep them on the CRL (for ever growing): " + keepexpiredcertsoncrl);
                 }

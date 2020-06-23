@@ -33,6 +33,7 @@ public class ObjectFactory {
     private final static QName _ApprovalRequestExecutionException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "ApprovalRequestExecutionException");
     private final static QName _EjbcaException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaException");
     private final static QName _GetLastCertChainResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLastCertChainResponse");
+    private final static QName _EnrollAndIssueSshCertificateResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "enrollAndIssueSshCertificateResponse");
     private final static QName _IsApprovedResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "isApprovedResponse");
     private final static QName _GetCertificatesByExpirationTimeAndIssuerResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getCertificatesByExpirationTimeAndIssuerResponse");
     private final static QName _CvcRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "cvcRequestResponse");
@@ -46,6 +47,7 @@ public class ObjectFactory {
     private final static QName _CADoesntExistsException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CADoesntExistsException");
     private final static QName _EditUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "editUserResponse");
     private final static QName _DeleteUserDataFromSource_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "deleteUserDataFromSource");
+    private final static QName _SshKeyException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "SshKeyException");
     private final static QName _CheckRevokationStatusResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "checkRevokationStatusResponse");
     private final static QName _GetAvailableCAsResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCAsResponse");
     private final static QName _SpkacRequestResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "spkacRequestResponse");
@@ -66,10 +68,13 @@ public class ObjectFactory {
     private final static QName _GetPublisherQueueLengthResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getPublisherQueueLengthResponse");
     private final static QName _RevokeCertWithMetadata_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCertWithMetadata");
     private final static QName _RolloverCACert_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "rolloverCACert");
+    private final static QName _EndEntityProfileValidationException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "EndEntityProfileValidationException");
+    private final static QName _GetSshCaPublicKeyResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getSshCaPublicKeyResponse");
     private final static QName _GetLatestCRLPartitionResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLatestCRLPartitionResponse");
     private final static QName _ImportCaCertResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "importCaCertResponse");
     private final static QName _RevokeToken_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeToken");
     private final static QName _SoftTokenRequest_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "softTokenRequest");
+    private final static QName _EnrollAndIssueSshCertificate_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "enrollAndIssueSshCertificate");
     private final static QName _NotFoundException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "NotFoundException");
     private final static QName _CaCertResponseForRolloverResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "caCertResponseForRolloverResponse");
     private final static QName _RemoveSubjectFromRole_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "removeSubjectFromRole");
@@ -161,13 +166,14 @@ public class ObjectFactory {
     private final static QName _UnknownProfileTypeException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "UnknownProfileTypeException");
     private final static QName _CertificateExpiredException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CertificateExpiredException");
     private final static QName _CesecoreException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CesecoreException");
+    private final static QName _GetSshCaPublicKey_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getSshCaPublicKey");
     private final static QName _GetAvailableCertificateProfiles_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getAvailableCertificateProfiles");
     private final static QName _CreateCA_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCA");
     private final static QName _Pkcs12ReqResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "pkcs12ReqResponse");
     private final static QName _FindUserResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "findUserResponse");
     private final static QName _KeyRecoverEnrollResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverEnrollResponse");
     private final static QName _RevokeUser_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeUser");
-    private final static QName _GetProfileResponseReturn_QNAME = new QName("", "return");
+    private final static QName _CreateExternallySignedCaResponseReturn_QNAME = new QName("", "return");
     private final static QName _CaCertResponseArg1_QNAME = new QName("", "arg1");
 
     /**
@@ -178,11 +184,28 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link SshRequestMessageWs }
+     * 
+     */
+    public SshRequestMessageWs createSshRequestMessageWs() {
+        return new SshRequestMessageWs();
+    }
+
+
+    /**
      * Create an instance of {@link EditUserResponse }
      * 
      */
     public EditUserResponse createEditUserResponse() {
         return new EditUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link SshKeyException }
+     * 
+     */
+    public SshKeyException createSshKeyException() {
+        return new SshKeyException();
     }
 
     /**
@@ -303,6 +326,14 @@ public class ObjectFactory {
      */
     public IsApprovedResponse createIsApprovedResponse() {
         return new IsApprovedResponse();
+    }
+
+    /**
+     * Create an instance of {@link EnrollAndIssueSshCertificateResponse }
+     * 
+     */
+    public EnrollAndIssueSshCertificateResponse createEnrollAndIssueSshCertificateResponse() {
+        return new EnrollAndIssueSshCertificateResponse();
     }
 
     /**
@@ -682,6 +713,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link EnrollAndIssueSshCertificate }
+     * 
+     */
+    public EnrollAndIssueSshCertificate createEnrollAndIssueSshCertificate() {
+        return new EnrollAndIssueSshCertificate();
+    }
+
+    /**
      * Create an instance of {@link RevokeCertWithMetadata }
      * 
      */
@@ -695,6 +734,22 @@ public class ObjectFactory {
      */
     public RolloverCACert createRolloverCACert() {
         return new RolloverCACert();
+    }
+
+    /**
+     * Create an instance of {@link EndEntityProfileValidationException }
+     * 
+     */
+    public EndEntityProfileValidationException createEndEntityProfileValidationException() {
+        return new EndEntityProfileValidationException();
+    }
+
+    /**
+     * Create an instance of {@link GetSshCaPublicKeyResponse }
+     * 
+     */
+    public GetSshCaPublicKeyResponse createGetSshCaPublicKeyResponse() {
+        return new GetSshCaPublicKeyResponse();
     }
 
     /**
@@ -1146,6 +1201,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link GetSshCaPublicKey }
+     * 
+     */
+    public GetSshCaPublicKey createGetSshCaPublicKey() {
+        return new GetSshCaPublicKey();
+    }
+
+    /**
      * Create an instance of {@link CreateCA }
      * 
      */
@@ -1523,6 +1586,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EnrollAndIssueSshCertificateResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "enrollAndIssueSshCertificateResponse")
+    public JAXBElement<EnrollAndIssueSshCertificateResponse> createEnrollAndIssueSshCertificateResponse(EnrollAndIssueSshCertificateResponse value) {
+        return new JAXBElement<EnrollAndIssueSshCertificateResponse>(_EnrollAndIssueSshCertificateResponse_QNAME, EnrollAndIssueSshCertificateResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IsApprovedResponse }{@code >}}
      * 
      */
@@ -1637,6 +1709,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "deleteUserDataFromSource")
     public JAXBElement<DeleteUserDataFromSource> createDeleteUserDataFromSource(DeleteUserDataFromSource value) {
         return new JAXBElement<DeleteUserDataFromSource>(_DeleteUserDataFromSource_QNAME, DeleteUserDataFromSource.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link SshKeyException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "SshKeyException")
+    public JAXBElement<SshKeyException> createSshKeyException(SshKeyException value) {
+        return new JAXBElement<SshKeyException>(_SshKeyException_QNAME, SshKeyException.class, null, value);
     }
 
     /**
@@ -1820,6 +1901,24 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EndEntityProfileValidationException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "EndEntityProfileValidationException")
+    public JAXBElement<EndEntityProfileValidationException> createEndEntityProfileValidationException(EndEntityProfileValidationException value) {
+        return new JAXBElement<EndEntityProfileValidationException>(_EndEntityProfileValidationException_QNAME, EndEntityProfileValidationException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetSshCaPublicKeyResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getSshCaPublicKeyResponse")
+    public JAXBElement<GetSshCaPublicKeyResponse> createGetSshCaPublicKeyResponse(GetSshCaPublicKeyResponse value) {
+        return new JAXBElement<GetSshCaPublicKeyResponse>(_GetSshCaPublicKeyResponse_QNAME, GetSshCaPublicKeyResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRLPartitionResponse }{@code >}}
      * 
      */
@@ -1853,6 +1952,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "softTokenRequest")
     public JAXBElement<SoftTokenRequest> createSoftTokenRequest(SoftTokenRequest value) {
         return new JAXBElement<SoftTokenRequest>(_SoftTokenRequest_QNAME, SoftTokenRequest.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link EnrollAndIssueSshCertificate }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "enrollAndIssueSshCertificate")
+    public JAXBElement<EnrollAndIssueSshCertificate> createEnrollAndIssueSshCertificate(EnrollAndIssueSshCertificate value) {
+        return new JAXBElement<EnrollAndIssueSshCertificate>(_EnrollAndIssueSshCertificate_QNAME, EnrollAndIssueSshCertificate.class, null, value);
     }
 
     /**
@@ -2675,6 +2783,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetSshCaPublicKey }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getSshCaPublicKey")
+    public JAXBElement<GetSshCaPublicKey> createGetSshCaPublicKey(GetSshCaPublicKey value) {
+        return new JAXBElement<GetSshCaPublicKey>(_GetSshCaPublicKey_QNAME, GetSshCaPublicKey.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCertificateProfiles }{@code >}}
      * 
      */
@@ -2732,18 +2849,18 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
-    public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetProfileResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = CreateExternallySignedCaResponse.class)
+    public JAXBElement<byte[]> createCreateExternallySignedCaResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, CreateExternallySignedCaResponse.class, ((byte[]) value));
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
-    public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = GetSshCaPublicKeyResponse.class)
+    public JAXBElement<byte[]> createGetSshCaPublicKeyResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, GetSshCaPublicKeyResponse.class, ((byte[]) value));
     }
 
     /**
@@ -2759,36 +2876,27 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponseForRollover.class)
-    public JAXBElement<byte[]> createCaCertResponseForRolloverArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_CaCertResponseArg1_QNAME, byte[].class, CaCertResponseForRollover.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
+    public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, GetProfileResponse.class, ((byte[]) value));
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = CreateExternallySignedCaResponse.class)
-    public JAXBElement<byte[]> createCreateExternallySignedCaResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, CreateExternallySignedCaResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLPartitionResponse.class)
+    public JAXBElement<byte[]> createGetLatestCRLPartitionResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, GetLatestCRLPartitionResponse.class, ((byte[]) value));
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
-    public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, ((byte[]) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "", name = "arg1", scope = ImportCaCert.class)
-    public JAXBElement<byte[]> createImportCaCertArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_CaCertResponseArg1_QNAME, byte[].class, ImportCaCert.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
+    public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, CaRenewCertRequestResponse.class, ((byte[]) value));
     }
 
     /**
@@ -2804,9 +2912,36 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLPartitionResponse.class)
-    public JAXBElement<byte[]> createGetLatestCRLPartitionResponseReturn(byte[] value) {
-        return new JAXBElement<byte[]>(_GetProfileResponseReturn_QNAME, byte[].class, GetLatestCRLPartitionResponse.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
+    public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, GetLatestCRLResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = EnrollAndIssueSshCertificateResponse.class)
+    public JAXBElement<byte[]> createEnrollAndIssueSshCertificateResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CreateExternallySignedCaResponseReturn_QNAME, byte[].class, EnrollAndIssueSshCertificateResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponseForRollover.class)
+    public JAXBElement<byte[]> createCaCertResponseForRolloverArg1(byte[] value) {
+        return new JAXBElement<byte[]>(_CaCertResponseArg1_QNAME, byte[].class, CaCertResponseForRollover.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "", name = "arg1", scope = ImportCaCert.class)
+    public JAXBElement<byte[]> createImportCaCertArg1(byte[] value) {
+        return new JAXBElement<byte[]>(_CaCertResponseArg1_QNAME, byte[].class, ImportCaCert.class, ((byte[]) value));
     }
 
 }

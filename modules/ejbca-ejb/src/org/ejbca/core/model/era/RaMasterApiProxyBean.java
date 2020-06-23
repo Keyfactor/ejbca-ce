@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
@@ -89,6 +90,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -143,6 +145,7 @@ import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.cvc.exception.ConstructionException;
@@ -1344,6 +1347,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
+        }
+        return null;
+    }
+    
+    @Override
+    public byte[] enrollAndIssueSshCertificateWs(final AuthenticationToken authenticationToken, final UserDataVOWS userDataVOWS,
+            final SshRequestMessage sshRequestMessage)
+            throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling enrollAndIssueSshCertificateWs: " + raMasterApi.getApiVersion() + ", "
+                        + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+                try {
+                    return raMasterApi.enrollAndIssueSshCertificateWs(authenticationToken, userDataVOWS, sshRequestMessage);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         return null;
     }
@@ -2666,6 +2699,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public byte[] getSshCaPublicKey(String caName) throws SshKeyException, CADoesntExistsException {
+        SshKeyException sshKeyException = null;
+        CADoesntExistsException caDoesntExistsException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getSshCaPublicKey(caName);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (SshKeyException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA of name " + caName + " is not an SSH CA. " + e.getMessage());
+                    }
+                    if (sshKeyException == null) {
+                        sshKeyException = e;
+                    }
+                    // Just try next implementation
+                }  catch (CADoesntExistsException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA of name " + caName +  " does not exist. " + e.getMessage());
+                    }
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
+                    }
+                    // Just try next implementation
+                }
+            }
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        if (sshKeyException != null) {
+            throw sshKeyException;
+        }
+        return null;
+    }
 
     @Override
     public byte[] getCertificateProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
@@ -3095,5 +3166,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+
     
 }

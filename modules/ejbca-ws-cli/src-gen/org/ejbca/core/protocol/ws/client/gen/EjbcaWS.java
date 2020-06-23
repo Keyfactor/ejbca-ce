@@ -1444,5 +1444,45 @@ public interface EjbcaWS {
         String arg0)
         throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception
     ;
+    
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns byte[]
+     * @throws CADoesntExistsException_Exception
+     * @throws SshKeyException_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getSshCaPublicKey", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetSshCaPublicKey")
+    @ResponseWrapper(localName = "getSshCaPublicKeyResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetSshCaPublicKeyResponse")
+    public byte[] getSshCaPublicKey(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0)
+        throws CADoesntExistsException_Exception, SshKeyException_Exception
+    ;
+    
+    /**
+     * 
+     * @param arg1
+     * @param arg0
+     * @return
+     *     returns byte[]
+     * @throws AuthorizationDeniedException_Exception
+     * @throws EjbcaException_Exception
+     * @throws EndEntityProfileValidationException_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "enrollAndIssueSshCertificate", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.EnrollAndIssueSshCertificate")
+    @ResponseWrapper(localName = "enrollAndIssueSshCertificateResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.EnrollAndIssueSshCertificateResponse")
+    public byte[] enrollAndIssueSshCertificate(
+        @WebParam(name = "arg0", targetNamespace = "")
+        UserDataVOWS arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        SshRequestMessageWs arg1)
+        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, EndEntityProfileValidationException_Exception
+    ;
 
 }

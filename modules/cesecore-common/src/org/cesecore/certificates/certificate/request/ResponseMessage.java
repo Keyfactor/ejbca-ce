@@ -70,7 +70,7 @@ public interface ResponseMessage extends Serializable {
      * 
      * @throws CertificateEncodingException if encoding of certificate fails. 
      */
-    byte[] getResponseMessage() throws CertificateEncodingException;
+    byte[] getResponseMessage();
 
     /**
      * Sets the status of the response message.

@@ -95,26 +95,25 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias)
             throws NoSuchAliasException {
-        try {
-            final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-            if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
-                final String msg = intres.getLocalizedMessage("protocol.nosuchalias", "CMP", cmpConfigurationAlias);
-                log.info(msg);
-                throw new NoSuchAliasException(msg);
-            }
-            final PKIMessage pkiMessage = CmpMessageHelper.getPkiMessageFromBytes(pkiMessageBytes, false);
-            if (pkiMessage == null) {
-                // Log that we handled a bad request and respond to the client
-                final String msg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
-                log.info(msg);
-                return CmpMessageHelper.createUnprotectedErrorMessage(msg);
-            }
-            final ResponseMessage responseMessage = dispatch(authenticationToken, pkiMessage, pkiMessage.getHeader(), cmpConfiguration, cmpConfigurationAlias, /*levelOfNesting=*/0);
-            return responseMessage == null ? null : responseMessage.getResponseMessage();
-        } catch (CertificateEncodingException e) {
-            log.warn("Could not retrieve byte representation of from org.cesecore.certificates.certificate.request.ResponseMessage", e);
-            return null;
+
+        final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession
+                .getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
+            final String msg = intres.getLocalizedMessage("protocol.nosuchalias", "CMP", cmpConfigurationAlias);
+            log.info(msg);
+            throw new NoSuchAliasException(msg);
         }
+        final PKIMessage pkiMessage = CmpMessageHelper.getPkiMessageFromBytes(pkiMessageBytes, false);
+        if (pkiMessage == null) {
+            // Log that we handled a bad request and respond to the client
+            final String msg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
+            log.info(msg);
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg);
+        }
+        final ResponseMessage responseMessage = dispatch(authenticationToken, pkiMessage, pkiMessage.getHeader(), cmpConfiguration,
+                cmpConfigurationAlias, /*levelOfNesting=*/0);
+        return responseMessage == null ? null : responseMessage.getResponseMessage();
+
     }
 
     /**

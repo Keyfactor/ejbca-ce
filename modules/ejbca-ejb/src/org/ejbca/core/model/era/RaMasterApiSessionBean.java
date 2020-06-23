@@ -22,6 +22,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -87,6 +89,7 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -103,7 +106,11 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.SshResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificate.ssh.SshKeyException;
+import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
+import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
@@ -213,6 +220,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -338,8 +346,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>6<td>=<td>7.0.0
      * <tr><th>7<td>=<td>7.1.0
      * <tr><th>8<td>=<td>7.3.0
+     * <tr><th>9<td>=<td>7.4.1
      */
-    private static final int RA_MASTER_API_VERSION = 8;
+    private static final int RA_MASTER_API_VERSION = 9;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1931,6 +1940,50 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
     }
+    
+    @Override
+    public byte[] enrollAndIssueSshCertificateWs(final AuthenticationToken authenticationToken, final UserDataVOWS userDataVOW,
+            final SshRequestMessage sshRequestMessage)
+            throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException {
+        try {
+            // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
+            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOW);
+            ExtendedInformation extendedInformation = (endEntityInformation.getExtendedInformation() != null
+                    ? endEntityInformation.getExtendedInformation()
+                    : new ExtendedInformation());
+            extendedInformation.setSshPrincipals(new HashSet<>(sshRequestMessage.getPrincipals()));
+            extendedInformation.setSshCriticalOptions(sshRequestMessage.getCriticalOptions());
+            endEntityInformation.setExtendedInformation(extendedInformation);
+            SshResponseMessage sshResponseMessage = (SshResponseMessage) certificateRequestSession.processCertReq(authenticationToken,
+                    endEntityInformation, sshRequestMessage, SshResponseMessage.class);
+            return sshResponseMessage.getResponseMessage();
+        } catch (NotFoundException e) {
+            log.debug("EJBCA WebService error", e);
+            throw e; // NFE extends EjbcaException
+        } catch (CertificateExtensionException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage(), e);
+        } catch (IllegalKeyException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage(), e);
+        } catch (AuthStatusException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage(), e);
+        } catch (AuthLoginException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage(), e);
+        } catch (SignRequestSignatureException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(e.getMessage());
+        } catch (CesecoreException e) {
+            log.debug("EJBCA WebService error", e);
+            // Will convert the CESecore exception to an EJBCA exception with the same error code
+            throw new EjbcaException(e.getErrorCode(), e);
+        } catch (RuntimeException e) { // EJBException, ClassCastException, ...
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage(), e);
+        }
+    }
 
     @Override
     public List<CertificateWrapper> getLastCertChain(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException, EjbcaException {
@@ -2520,6 +2573,25 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         return endEntityProfileSession.getProfileAsXml(authenticationToken, profileId);
     }
+    
+    @Override
+    public byte[] getSshCaPublicKey(String caName) throws SshKeyException, CADoesntExistsException {
+        CAInfo caInfo = caSession.getCAInfoInternal(-1, caName, true);
+        if(caInfo == null) {
+            throw new CADoesntExistsException("CA with name " + caName + " does not exist.");
+        }        
+        if(caInfo.getCAType() != SshCaInfo.CATYPE_SSH) {
+            throw new SshKeyException("CA of name " + caName + " is not an SSH CA.");
+        } else {
+            PublicKey publicKey = caInfo.getCertificateChain().get(0).getPublicKey();
+            SshPublicKey sshPublicKey = SshKeyFactory.INSTANCE.getSshPublicKey(publicKey);
+            try {
+                return sshPublicKey.encodeForExport(caName);
+            } catch (IOException e) {
+                throw new SshKeyException("Could not encode public key for export.", e);
+            }
+        }  
+    }
 
     @Override
     public byte[] getCertificateProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
@@ -2784,4 +2856,5 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return result;
     }
+
 }
