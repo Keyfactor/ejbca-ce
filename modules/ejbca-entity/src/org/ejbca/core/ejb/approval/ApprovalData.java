@@ -61,11 +61,16 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private String requestData;
 	private long requestDate;
 	private long expireDate;
+	private String email;
+	private String subjectDn;	
 	private int remainingApprovals;
 	private int rowVersion = 0;
 	private String rowProtection;
+		
 
-	/**
+	
+
+    /**
 	 * Entity holding data of a approval data.
 	 * 
 	 * The constructor is responsible for populating all non-nullable fields!
@@ -211,7 +216,30 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	 * means that the request/approval never expires
 	 */
 	public void setExpiredate(long expireDate) { this.expireDate = expireDate; }
+	
+    /**
+     * SujectDn included in user credentials
+     * @return subjectDn
+     */
+    public String getSubjectDn() { return subjectDn; }
 
+    /**
+     * Method used to set the subjectDn which included in the user credentials
+     */
+    public void setSubjectDn(String subjectDn) { this.subjectDn = subjectDn; }
+    
+    /**
+     * Email included in user Credentials
+     * @return email
+     */
+    public String getEmail() { return email; }
+
+    /**
+     * Method used to set the email which included in the user credentials
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
 	 * @deprecated in 6.6.0, the type of approval handled is now part of the approval profile
@@ -348,7 +376,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
     
     @Transient
     public List<Approval> getApprovals() {
-        List<Approval> retval = new ArrayList<Approval>();
+        List<Approval> retval = new ArrayList<>();
         try{
             ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(getApprovaldata().getBytes())));
             int size = ois.readInt();

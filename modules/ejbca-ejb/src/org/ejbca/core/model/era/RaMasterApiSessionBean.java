@@ -869,7 +869,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             RAAuthorization raAuthorization = new RAAuthorization(authenticationToken, globalConfigurationSession,
                     authorizationSession, caSession, endEntityProfileSession);
             approvals = approvalSession.queryByStatus(request.isSearchingWaitingForMe() || request.isSearchingPending(), request.isSearchingHistorical(),
-                    request.isSearchingExpired(), request.getStartDate(), request.getEndDate(), request.getExpiresBefore(), 0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
+                    request.isSearchingExpired(), request.getStartDate(), request.getEndDate(), request.getExpiresBefore(), request.getCustomSearchSubjectDn(), request.getCustomSearchEmail(), 0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
             // Not currently ever thrown by query()
             throw new IllegalStateException(e);

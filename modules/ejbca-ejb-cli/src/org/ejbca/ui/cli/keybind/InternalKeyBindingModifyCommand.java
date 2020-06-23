@@ -208,7 +208,7 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                         addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
                     } else {
                         try {
-                            final BigInteger serialNumber = new BigInteger(StringTools.replaceWhitespaceAndColon(value), 16);
+                            final BigInteger serialNumber = new BigInteger(StringTools.removeAllWhitespaceAndColon(value), 16);
                             addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), serialNumber));
                         } catch (NumberFormatException e) {
                             getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);

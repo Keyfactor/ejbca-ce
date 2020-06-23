@@ -48,12 +48,13 @@ public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
             String endEntityProfileAuthorizationString) throws IllegalQueryException {
         return approvalSession.query(query, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
     }
-
+   
     @Override
-    public List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate,
-            Date expiresBefore, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) {
-        return approvalSession.queryByStatus(includeUnfinished, includeProcessed, includeExpired, startDate, endDate, expiresBefore,
-                index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
+    public List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate,
+            Date endDate, Date expiresBefore, String subjectDn, String email, int index, int numberofrows, String caAuthorizationString,
+            String endEntityProfileAuthorizationString) {        
+        return approvalSession.queryByStatus(includeUnfinished, includeProcessed, includeExpired, startDate, endDate, expiresBefore, subjectDn,
+                email, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString);
     }
     
     @Override
@@ -76,5 +77,9 @@ public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
         query.setParameter("endEntityProfileId", endEntityProfileId);
         return query.getResultList();
     }
+
+
+
+   
 
 }

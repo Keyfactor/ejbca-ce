@@ -92,4 +92,28 @@ public class ApprovalMatch extends BasicMatch {
     public boolean isLegalQuery() {
         return StringUtils.isNotBlank(matchvalue);
     }
+
+   
+    @Override
+    public void addToPreparedStatement(QueryWrapper queryWrapper) {
+        queryWrapper.add("");
+        if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+            // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+            // like "where status='10'" instead of "where status=10", we have to have some special handling here.
+            final Object value;
+            if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_REMAININGAPPROVALS)) {
+                value = Integer.parseInt(matchvalue); 
+            } else {
+                value = matchvalue.trim();
+            }
+            queryWrapper.add( MATCH_WITH_SQLNAMES[matchwith] + " = ?", value);
+        }
+        if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+            queryWrapper.add(MATCH_WITH_SQLNAMES[matchwith] + " LIKE ? || '%'", matchvalue);
+        }
+        if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+            queryWrapper.add(MATCH_WITH_SQLNAMES[matchwith] + " LIKE '%' || ? || '%'", matchvalue);
+        }  
+        
+    }
 }

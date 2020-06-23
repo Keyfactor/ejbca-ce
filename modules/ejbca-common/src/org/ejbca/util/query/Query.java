@@ -177,6 +177,22 @@ public class Query implements Serializable {
         returnval += matches.get(matches.size() - 1).getQueryString();
         return returnval;
     }
+    
+    
+    /**
+     * Gives the QueryWrapper object to be used in the 'WHERE' clause in the prepared statements.
+     * 
+     * @return QueryWrapper object which included queryString and values
+     */
+    public QueryWrapper getPreparedStatement() {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        for (int i = 0; i < (matches.size() - 1); i++) {
+            matches.get(i).addToPreparedStatement(queryWrapper);
+            queryWrapper.add(CONNECTOR_SQL_NAMES[connectors.get(i).intValue()]);
+        }
+        matches.get(matches.size() - 1).addToPreparedStatement(queryWrapper);
+        return queryWrapper;
+    }
 
     /**
      * Checks if the present query is legal by checking if every match is legal and that the number

@@ -51,8 +51,8 @@ public interface ApprovalSessionProxyRemote {
     /**
      * @see ApprovalSessionBean#queryByStatus(boolean, boolean, boolean, java.util.Date, java.util.Date, java.util.Date, int, int, String, String)
      */
-    List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate, Date expiresBefore,
-            int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString);
+    List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired, Date startDate, Date endDate, Date expiresBefore, 
+            final String subjectDn, final String email, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString);
     
     /**
      * Extends the validity of an approval request.

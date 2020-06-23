@@ -76,6 +76,8 @@ public class RaManageRequestsBean implements Serializable {
     private String customSearchStartDate;
     private String customSearchEndDate;
     private String customSearchExpiresDays;
+    private String customSearchSubjectDn;
+    private String customSearchEmail;
 
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
@@ -137,7 +139,13 @@ public class RaManageRequestsBean implements Serializable {
                     customSearchingWaiting = true;
                     customSearchingProcessed = false;
                     customSearchingExpired = false;
-                }
+                }               
+                if (StringUtils.isNotBlank(customSearchSubjectDn)) {
+                    searchRequest.setCustomSearchSubjectDn(customSearchSubjectDn);                
+                }            
+                if (StringUtils.isNotBlank(customSearchEmail)) {
+                    searchRequest.setCustomSearchEmail(customSearchEmail);                    
+                }                             
                 searchRequest.setSearchingWaitingForMe(customSearchingWaiting);
                 searchRequest.setSearchingPending(customSearchingWaiting); // those are also waiting
                 searchRequest.setSearchingHistorical(customSearchingProcessed);
@@ -200,7 +208,13 @@ public class RaManageRequestsBean implements Serializable {
     public String getCustomSearchEndDate() { return customSearchEndDate; }
     public void setCustomSearchEndDate(final String endDate) { this.customSearchEndDate = StringUtils.trim(endDate); }
     public String getCustomSearchExpiresDays() { return customSearchExpiresDays; }
-    public void setCustomSearchExpiresDays(final String customSearchExpiresDays) { this.customSearchExpiresDays = StringUtils.trim(customSearchExpiresDays); }
+    public void setCustomSearchExpiresDays(final String customSearchExpiresDays) { this.customSearchExpiresDays = StringUtils.trim(customSearchExpiresDays); }    
+    public String getCustomSearchSubjectDn() { return customSearchSubjectDn; }
+    public void setCustomSearchSubjectDn(final String customSearchSubjectDn) {this.customSearchSubjectDn = StringUtils.trim(customSearchSubjectDn); }
+    public String getCustomSearchEmail() { return customSearchEmail; }
+    public void setCustomSearchEmail(final String customSearchEmail) { this.customSearchEmail = StringUtils.trim(customSearchEmail); }  
+    
+    
 
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
         return resultsFiltered;

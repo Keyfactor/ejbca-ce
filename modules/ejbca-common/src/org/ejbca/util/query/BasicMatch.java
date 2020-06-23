@@ -43,4 +43,12 @@ public abstract class BasicMatch implements Serializable {
     public String escapeSql(final String matchValue) {
         return StringEscapeUtils.escapeSql(matchValue);
     }
+    
+    /**
+     * Wrap queryString and values into the queryWrapper object, which used for SQL prepared statements
+     *
+     * @param queryWrapper QueryWrapper object 
+     */
+    public abstract void addToPreparedStatement(QueryWrapper queryWrapper);
+     
 }
