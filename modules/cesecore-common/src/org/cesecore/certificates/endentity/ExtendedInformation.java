@@ -132,13 +132,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
     private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
-    
-    //SSH values, see https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD for more information
-    /** Principals to add to the SSH certificate for this end entity. */
-    private static String SSH_PRINCIPALS = "SSH_PRINCIPALS";
-    /** Critical options to add to the SSH certificate for this end entity. */
-    private static String SSH_CRITICAL_OPTIONS = "SSH_CRITICAL_OPTIONS";
-    
 
     /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
@@ -253,30 +246,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         } else {
             data.put(SUBJECTDIRATTRIBUTES, subjdirattr);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public Set<String> getSshPrincipals() {
-        if(!data.containsKey(SSH_PRINCIPALS)) {
-            data.put(SSH_PRINCIPALS, new HashSet<>());
-        }
-        return (Set<String>) data.get(SSH_PRINCIPALS);
-    }
-    
-    public void setSshPrincipals(final Set<String> principals) {
-        data.put(SSH_PRINCIPALS, principals);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public Map<String, String> getSshCriticalOptions() {
-        if(!data.containsKey(SSH_CRITICAL_OPTIONS)) {
-            data.put(SSH_CRITICAL_OPTIONS, new HashMap<>());
-        }
-        return (Map<String, String>) data.get(SSH_CRITICAL_OPTIONS);
-    }
-    
-    public void setSshCriticalOptions(final Map<String, String> criticalOptions) {
-        data.put(SSH_CRITICAL_OPTIONS, criticalOptions);
     }
     
     /**
