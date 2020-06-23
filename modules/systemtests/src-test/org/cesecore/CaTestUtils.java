@@ -472,7 +472,10 @@ public abstract class CaTestUtils {
         return x509ca;
     }
 
-    private static int initCryptoTokenId(final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession, final AuthenticationToken authenticationToken, final String cryptoTokenName) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidKeyException {
+    private static int initCryptoTokenId(final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession,
+            final AuthenticationToken authenticationToken, final String cryptoTokenName)
+            throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, CryptoTokenNameInUseException,
+            InvalidAlgorithmParameterException, InvalidKeyException {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");

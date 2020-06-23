@@ -46,4 +46,8 @@ public class InvalidAlgorithmException extends CesecoreException {
     public InvalidAlgorithmException(final Exception exception) {
         super(exception);
     }
+    
+    public InvalidAlgorithmException(final String message, final Throwable exception) {
+        super(message, exception);
+    }
 }

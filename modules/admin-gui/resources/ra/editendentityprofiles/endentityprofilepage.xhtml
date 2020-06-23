@@ -423,6 +423,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Subject_DN_Fields')}"
                         escape="false" />
                 </h:panelGroup>
+                
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
                 </h:panelGroup>
@@ -430,6 +431,7 @@
                     <h:outputText value="#{web.text.SELECTFORREMOVAL}"
                         rendered="#{not empty endEntityProfileMBean.subjectDnComponentList and not endEntityProfileMBean.viewOnly}" />
                 </h:panelGroup>
+                
                 <h:outputText style="font-weight: bold;"
                     value="#{web.text.CERT_SUBJECTDN_ATTRIBUTES}" />
                 <h:panelGrid id="subjectDNAttributeGrid" columns="2">
@@ -817,8 +819,216 @@
 					</h:panelGroup>
             </h:panelGrid>
 
-            <!-- MAIN CERTIFICATE DATA -->
+			<!-- SSH Certificate Data -->
 
+            
+			<h:panelGrid id="header_sshcertificatedata" columns="3"
+                styleClass="edit-top" cellspacing="3" cellpadding="3"
+                border="0" width="100%" rowClasses="Row0,Row1"
+                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+                <h:panelGroup>
+                    <h:outputText value="&nbsp;" escape="false"></h:outputText>
+                </h:panelGroup>
+                <h:panelGroup>
+                	<h:outputText value="#{web.text.SSH_CERTIFICATE_DATA}"
+                    style="font-weight: bold;" />
+                </h:panelGroup>             
+                
+                <h:panelGroup>
+                    <h:outputText value="&nbsp;" escape="false"></h:outputText>
+                </h:panelGroup>
+                <h:panelGroup id="sshFieldRemovalHeader">
+                    <h:outputText value="#{web.text.SELECTFORREMOVAL}"
+                        rendered="#{not empty endEntityProfileMBean.sshFieldList and not endEntityProfileMBean.viewOnly}" />
+                </h:panelGroup>
+                
+                <h:outputText style="font-weight: bold;"
+                    value="#{web.text.SSH_FIELDS}" />
+                <h:panelGrid id="sshFieldGrid" columns="2">
+                    <h:selectOneMenu id="sshFieldType"
+                        value="#{endEntityProfileMBean.currentSshField}"
+                        rendered="#{not endEntityProfileMBean.viewOnly}">
+                        <f:ajax />
+                        <!-- Needed to submit the selected item via AJAX -->
+                        <f:selectItems id="sshFieldList"
+                            value="#{endEntityProfileMBean.sshFields}" />
+                    </h:selectOneMenu>
+                    <h:commandButton id="addSshFieldButton"
+                        value="#{web.text.ADD}"
+                        rendered="#{not endEntityProfileMBean.viewOnly}"
+                        action="#{endEntityProfileMBean.addSshField}">
+                        <f:ajax
+                            render="sshFieldComponents principalRemovalHeader removeSshFieldGroup" />
+                    </h:commandButton>
+                </h:panelGrid>
+			</h:panelGrid>
+			                
+            <h:dataTable id="sshFieldComponents" var="sshFieldComponent"
+	                value="#{endEntityProfileMBean.sshFieldList}"
+	                cellspacing="1" cellpadding="3" border="0" width="100%"
+	                rowClasses="Row0,Row1"
+	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+                <h:column>
+                    <h:selectBooleanCheckbox
+                        id="removeSshFieldCheckBox"
+                        value="#{sshFieldComponent.shouldRemove}"
+                        rendered="#{not endEntityProfileMBean.viewOnly}">
+                        <f:ajax />
+                    </h:selectBooleanCheckbox>
+                </h:column>
+                <h:column>
+                    <h:outputLabel for="sshFieldTextField"
+                        value="#{sshFieldComponent.name}" />
+                </h:column>
+                <h:column>
+                    <h:panelGrid id="sshFieldTextFieldGrid" column="1">
+                        <h:inputText id="sshFieldTextField"
+                            value="#{sshFieldComponent.value}" size="45"
+                            maxlength="1024"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                            <f:ajax />
+                        </h:inputText>
+                        <h:panelGrid id="sshFieldCheckBoxesGrid"
+                            columns="7">
+                            <h:selectBooleanCheckbox
+                                id="sshFieldRequiredCheckBox"
+                                value="#{sshFieldComponent.required}"
+                                disabled="#{endEntityProfileMBean.viewOnly}">
+                                <f:ajax />
+                            </h:selectBooleanCheckbox>
+                            <h:outputLabel
+                                for="sshFieldRequiredCheckBox"
+                                value="#{web.text.REQUIRED}" />
+                            <h:selectBooleanCheckbox
+                                id="sshFieldModifiableCheckBox"
+                                value="#{sshFieldComponent.modifiable}"
+                                disabled="#{endEntityProfileMBean.viewOnly}">
+                                <f:ajax render="sshFieldCheckBoxesGrid" />
+                            </h:selectBooleanCheckbox>
+                            <h:outputLabel for="sshFieldModifiableCheckBox"
+                                value="#{web.text.MODIFYABLE}"
+                                />
+                            <h:selectBooleanCheckbox
+                                id="sshFieldValidationCheckBox"
+                                value="#{sshFieldComponent.useValidation}"                              
+                                disabled="#{not sshFieldComponent.modifiable or endEntityProfileMBean.viewOnly}">
+                                <f:ajax render="sshFieldCheckBoxesGrid" />
+                            </h:selectBooleanCheckbox>
+                            <h:outputLabel
+                                for="sshFieldValidationCheckBox"
+                                value="#{web.text.VALIDATION}" />
+                            <h:inputText
+                                id="sshFieldValidationTextField"
+                                style="font-size: 9pt"
+                                value="#{sshFieldComponent.validationString}"
+                                title="#{web.text.FORMAT_REGEX}"
+                                disabled="#{not sshFieldComponent.useValidation or not sshFieldComponent.modifiable or endEntityProfileMBean.viewOnly}">
+                                <f:ajax />
+                            </h:inputText>
+                        </h:panelGrid>
+                    </h:panelGrid>
+                </h:column>
+            </h:dataTable>
+            <h:panelGrid id="bottom_sshFields" columns="3"
+                cellspacing="3" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row1"
+                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
+                rendered="#{not endEntityProfileMBean.viewOnly}">
+                <h:panelGroup id="removeSshFieldGroup">
+                    <h:commandButton id="removeSshFieldButton"
+                        value="#{web.text.REMOVE}"
+                        action="#{endEntityProfileMBean.removeSshField}"
+                        rendered="#{not empty endEntityProfileMBean.sshFieldList}">
+                        <f:ajax
+                            render="sshFieldComponents sshFieldRemovalHeader removeSshFieldGroup" />
+                    </h:commandButton>
+                </h:panelGroup>
+                <h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
+                <h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
+            </h:panelGrid>
+            <!-- SSH Critical Options -->
+            <h:panelGrid id="sshCriticalOptions" columns="3"
+                cellspacing="3" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row1"
+                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
+                rendered="#{not endEntityProfileMBean.viewOnly}">
+            	<h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
+                <h:panelGroup id="sshForceCommandGroup">
+                    <h:outputText value="#{web.text.SSH_OPTION_FORCE_COMMAND}" />
+                </h:panelGroup>
+                <h:panelGrid id="sshForceCommandGrid" columns="2">
+                    <h:inputText id="forceComandInputText"
+                        value="#{endEntityProfileMBean.profiledata.sshForceCommand}" size="45"
+                        maxlength="1024"
+                        disabled="#{endEntityProfileMBean.viewOnly}">
+                    </h:inputText>
+                    <br />
+                    <h:panelGrid id="sshForceCommandRequiredAndModifiableGrid"
+                        columns="4">
+                        <h:selectBooleanCheckbox
+                            id="sshForceCommandRequiredCheckBox"
+                            value="#{endEntityProfileMBean.profiledata.sshForceCommandRequired}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="sshForceCommandRequiredCheckBox"
+                            value="#{web.text.REQUIRED}" />
+                        <h:selectBooleanCheckbox
+                            id="sshForceCommandRequiredModifiableCheckBox"
+                            value="#{endEntityProfileMBean.profiledata.sshForceCommandModifiable}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="sshForceCommandRequiredModifiableCheckBox"
+                            value="#{web.text.MODIFYABLE}" />
+                    </h:panelGrid>
+                    <br />
+                    <h:outputText styleClass="help"
+                        value="#{web.text.SSH_OPTION_FORCE_COMMAND_HELP}" />
+                </h:panelGrid>
+                <h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
+                <h:panelGroup id="sshSourceAddressGroup">
+                    <h:outputText value="#{web.text.SSH_OPTION_SOURCE_ADDRESS}" />
+                </h:panelGroup>
+                <h:panelGrid id="sshSourceAddressGrid" columns="2">
+                    <h:inputText id="sshSourceAddressInputText"
+                        value="#{endEntityProfileMBean.profiledata.sshSourceAddress}" size="45"
+                        maxlength="1024"
+                        disabled="#{endEntityProfileMBean.viewOnly}">
+                    </h:inputText>
+                    <br />
+                    <h:panelGrid id="sshSourceAddressRequiredAndModifiableGrid"
+                        columns="4">
+                        <h:selectBooleanCheckbox
+                            id="sshSourceAddressRequiredCheckBox"
+                            value="#{endEntityProfileMBean.profiledata.sshSourceAddressRequired}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="sshSourceAddressRequiredCheckBox"
+                            value="#{web.text.REQUIRED}" />
+                        <h:selectBooleanCheckbox
+                            id="sshSourceAddressRequiredModifiableCheckBox"
+                            value="#{endEntityProfileMBean.profiledata.sshSourceAddressModifiable}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="sshSourceAddressRequiredModifiableCheckBox"
+                            value="#{web.text.MODIFYABLE}" />
+                    </h:panelGrid>
+                    <br />
+                    <h:outputText styleClass="help"
+                        value="#{web.text.SSH_OPTION_SOURCE_ADDRESS_HELP}" />
+                </h:panelGrid>
+            </h:panelGrid>
+                
+                    
+
+			<!-- MAIN CERTIFICATE DATA -->
             <h:panelGrid id="header_maincertificatedata" columns="3"
                 styleClass="edit-top" cellspacing="3" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"

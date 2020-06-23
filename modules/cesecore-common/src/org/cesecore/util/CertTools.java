@@ -70,8 +70,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.novell.ldap.LDAPDN;
-
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -155,6 +153,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -170,6 +169,8 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
+
+import com.novell.ldap.LDAPDN;
 
 /**
  * Tools to handle common certificate operations.
@@ -841,7 +842,11 @@ public abstract class CertTools {
      * @return String containing the subjects DN.
      */
     public static String getSubjectDN(final Certificate cert) {
-        return getDN(cert, 1);
+        if (cert == null || StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            return "";
+        } else {
+            return getDN(cert, 1);
+        }
     }
 
     /**
@@ -864,7 +869,12 @@ public abstract class CertTools {
      * @return String containing the issuers DN, or null if cert is null.
      */
     public static String getIssuerDN(final Certificate cert) {
-        return getDN(cert, 2);
+        if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            SshCertificate sshCertificate = (SshCertificate) cert;
+            return sshCertificate.getIssuerIdentifier();
+        } else {
+            return getDN(cert, 2);
+        }
     }
 
     /**
@@ -968,6 +978,9 @@ public abstract class CertTools {
                 log.error("getSerialNumber: NoSuchFieldException: ", e);
                 ret = BigInteger.valueOf(0);
             }
+        } else if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            SshCertificate sshCertificate = (SshCertificate) cert;
+            ret = new BigInteger(sshCertificate.getSerialNumberAsString());
         } else {
             throw new IllegalArgumentException("getSerialNumber: Certificate of type " + cert.getType() + " is not implemented");
         }
@@ -1057,6 +1070,9 @@ public abstract class CertTools {
                 log.error("getSerialNumber: NoSuchFieldException: ", e);
                 ret = "N/A";
             }
+        } else if(StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+            SshCertificate sshCertificate = (SshCertificate) cert;
+            ret = sshCertificate.getSerialNumberAsString();           
         } else {
             throw new IllegalArgumentException("getSerialNumber: Certificate of type " + cert.getType() + " is not implemented");
         }
@@ -1087,6 +1103,9 @@ public abstract class CertTools {
                     log.error("NoSuchFieldException: ", e);
                     return null;
                 }
+            } else if(StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+                SshCertificate sshCertificate = (SshCertificate) cert;
+                ret = sshCertificate.getSignature();
             }
         }
         return ret;

@@ -15,6 +15,7 @@
     	<antcall target="optionaltestplugins" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestssh-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
@@ -119,7 +120,11 @@
     <target name="optionaltestunidfnr" if="${unidfnr.exists}">
         <ant antfile="build.xml" dir="modules/unidfnr" target="test" inheritall="true" inheritrefs="true"/>
     </target>
-
+    <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
+    <target name="optionaltestssh-system" if="${ssh.exists}">
+        <ant antfile="build.xml" dir="modules/ssh" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
+        
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
@@ -160,6 +165,7 @@
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
                     <include name="modules/cli-util/src-test/**/${test.runone}.java" />
                     <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
+                    <include name="modules/ssh/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -185,6 +191,9 @@
     	</condition>
     	<condition property="module" value="modules/ct">
     		<matches string="${test-fullname}" pattern="^modules/ct/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ssh">
+    		<matches string="${test-fullname}" pattern="^modules/ssh/.*$"/>
     	</condition>
     	<condition property="module" value="modules/systemtests">
     		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>

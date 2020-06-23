@@ -16,6 +16,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
+import org.ejbca.core.protocol.ws.objects.SshRequestMessageWs;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 /**
@@ -71,5 +73,7 @@ public interface EjbcaWSHelperSession {
      * @throws CADoesntExistsException if the CA referenced by the EndEntityInformation does not exist
      */
     UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation) throws EjbcaException, CADoesntExistsException;
+    
+    SshRequestMessage convertSshRequestMessage(final SshRequestMessageWs sshRequestMessageWs);
     
 }

@@ -96,9 +96,10 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         private final Boolean deltaPeriodEnabled;
         private final Boolean caStatusActive;
         private final boolean showJksDownloadForm[];
+        private final String caType;
 
         public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final CRLInfo crlinfo,
-                final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive) {
+                final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive, final String caType) {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
@@ -109,6 +110,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             this.deltaPeriodEnabled = deltaPeriodEnabled;
             showJksDownloadForm = new boolean[certificatechain.size()];
             this.caStatusActive = caStatusActive;
+            this.caType = caType;
         }
 
         public String getName() {
@@ -188,6 +190,10 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         public Boolean getCaStatusActive() {
             return caStatusActive;
         }
+
+        public String getCaType() {
+            return caType;
+        }
     }
 
     public List<CAGuiInfo> getCaInfos(){
@@ -218,7 +224,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
-                    cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE);
+                    cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }
     }
@@ -242,6 +248,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     public String getDownloadCertificateLink(){
         final StringBuilder link = new StringBuilder();
         link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/cacert");
+        return link.toString();
+    }
+    
+    public String getSshPublicKeyLink(){
+        final StringBuilder link = new StringBuilder();
+        link.append(getEjbcaWebBean().getBaseUrl()).append("ssh");
         return link.toString();
     }
 

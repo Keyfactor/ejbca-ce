@@ -65,12 +65,14 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -79,6 +81,7 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -144,6 +147,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.logger.TransactionLogger;
@@ -153,6 +157,7 @@ import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
+import org.ejbca.core.protocol.ws.objects.SshRequestMessageWs;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -1663,6 +1668,39 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
 	}
+    
+    @Override
+    public byte[] enrollAndIssueSshCertificate(final UserDataVOWS userDataVOWS, final SshRequestMessageWs sshRequestMessageWs)
+            throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
+        if (!CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE)) {
+            throw new UnsupportedOperationException("SSH module does not exist on this instance of EJBCA.");
+        } else {
+            setUserDataVOWS(userDataVOWS);
+            try {
+                SshRequestMessage sshRequestMessage = ejbcaWSHelperSession.convertSshRequestMessage(sshRequestMessageWs);
+                sshRequestMessage.setUsername(userDataVOWS.getUsername());
+                sshRequestMessage.setPassword(userDataVOWS.getPassword());
+                return raMasterApiProxyBean.enrollAndIssueSshCertificateWs(getAdmin(), userDataVOWS, sshRequestMessage);
+            } catch (EjbcaException e) {
+                Level loglevel = Level.DEBUG;
+                if (e.getErrorCode() != null) {
+                    final String err = e.getErrorCode().getInternalErrorCode();
+                    // Don't log at ERROR log level for the following cases (for example):
+                    //   - user's key length too small (ILLEGAL_KEY)
+                    //   - wrong user status (USER_WRONG_STATUS)
+                    //   - other EjbcaExceptions and CESeCoreExceptions
+                    if (ErrorCode.INTERNAL_ERROR.getInternalErrorCode().equals(err) || ErrorCode.SIGNATURE_ERROR.getInternalErrorCode().equals(err)
+                            || ErrorCode.INVALID_KEY.getInternalErrorCode().equals(err) || ErrorCode.LOGIN_ERROR.getInternalErrorCode().equals(err)
+                            || ErrorCode.INVALID_KEY_SPEC.getInternalErrorCode().equals(err)) {
+                        loglevel = Level.ERROR;
+                    }
+                }
+                log.log(loglevel, "EJBCA WebService error", e);
+                throw e;
+            }
+
+        }
+    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -1731,7 +1769,16 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
 	}
-
+    
+    @Override
+    public byte[] getSshCaPublicKey(final String caName) throws SshKeyException, CADoesntExistsException {
+        if(!CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE)) {
+            throw new UnsupportedOperationException("SSH module does not exist on this instance of EJBCA.");
+        } else {
+            return raMasterApiProxyBean.getSshCaPublicKey(caName);                     
+        }
+    }
+   
     @Override
     public List<Certificate> getLastCAChain(String caname)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {

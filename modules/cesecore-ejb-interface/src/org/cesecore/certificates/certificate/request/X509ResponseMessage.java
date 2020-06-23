@@ -104,7 +104,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
         try {
             this.certbytes = certificate.getEncoded();
         } catch (CertificateEncodingException e) {
-            throw new Error("Could not encode certificate. This should not happen", e);
+            throw new IllegalStateException("Could not encode certificate. This should not happen", e);
         }
     }
 
@@ -135,7 +135,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public byte[] getResponseMessage() throws CertificateEncodingException {
+    public byte[] getResponseMessage() {
         return certbytes;
     }
 

@@ -140,6 +140,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             //Always include
             authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
                     CertificateConstants.CERTTYPE_ENDENTITY));
+            authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),
+                    CertificateConstants.CERTTYPE_SSH));
             if (isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
                 //Only root users may use CA profiles
                 authorizedProfileIds.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),

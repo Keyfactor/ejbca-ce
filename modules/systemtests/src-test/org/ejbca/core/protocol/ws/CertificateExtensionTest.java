@@ -101,7 +101,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
-    private static List<File> fileHandles = new ArrayList<File>();
+    private static List<File> fileHandles = new ArrayList<>();
 
     @BeforeClass
     public static void setupAccessRights() throws Exception{

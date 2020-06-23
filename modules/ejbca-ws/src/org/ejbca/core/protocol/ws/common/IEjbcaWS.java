@@ -21,7 +21,9 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -35,9 +37,11 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
@@ -45,6 +49,7 @@ import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
+import org.ejbca.core.protocol.ws.objects.SshRequestMessageWs;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
@@ -1288,9 +1293,23 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException
 	 * @see #editUser(UserDataVOWS)
 	 */
-	CertificateResponse certificateRequest(UserDataVOWS userData, String requestData, int requestType, String hardTokenSN, String responseType)
-	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException;
+    CertificateResponse certificateRequest(UserDataVOWS userData, String requestData, int requestType, String hardTokenSN, String responseType)
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            WaitingForApprovalException, EjbcaException;
+	
+    /**
+     * Enrolls (if the end entity doesn't already exist) and issues an SSH certificate
+     * 
+     * @param userDataVOWS a value object for the end entity.
+     *  and critical options for this end entity.
+     * @param sshRequestMessage a SshRequestMessageWs containing all pertinent request details
+     * @return the SSH certificate in OpenSSH format, as a byte array
+     * @throws AuthorizationDeniedException if the caller doesn't have authorization to enroll end entities
+     * @throws EjbcaException
+     * @throws EndEntityProfileValidationException
+     */
+    byte[] enrollAndIssueSshCertificate(UserDataVOWS userDataVOWS,  SshRequestMessageWs sshRequestMessage)
+            throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException;
 
 
     /**
@@ -1360,5 +1379,17 @@ public interface IEjbcaWS {
      * @throws EjbcaException if at least one of the certificates is unreadable
      */
     List<Certificate> getCertificatesByExpirationTimeAndType(long days, int certificateType, int maxNumberOfResults) throws EjbcaException;
+
+    /**
+     * Retrieves an SSH CA's public key in SSH .pub format
+     * 
+     * Retrieving keys requires no authentication. 
+     * 
+     * @param caName the name of the CA
+     * @return the CA's public key in SSH format, as a byte array. 
+     * @throws SshKeyException if the CA was not a SSH CA, or if there was an error in encoding the key.
+     * @throws CADoesntExistsException if no CA by that name was found.
+     */
+    byte[] getSshCaPublicKey(String caName) throws SshKeyException, CADoesntExistsException;
 
 }

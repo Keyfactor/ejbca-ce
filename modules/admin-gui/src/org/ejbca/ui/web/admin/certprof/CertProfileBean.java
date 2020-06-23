@@ -40,10 +40,14 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CvcCABase;
+import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
+import org.cesecore.certificates.certificate.ssh.SshCertificateType;
+import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -283,8 +287,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     certificateProfile.setQCEtsiPds(pdsCleaned);
                 }
                 Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
-                for(ApprovalRequestItem approvalRequestItem : approvalRequestItems) {
-                    approvals.put(approvalRequestItem.getRequestType(), approvalRequestItem.getApprovalProfileId());
+                if (approvalRequestItems != null) {
+                    for (ApprovalRequestItem approvalRequestItem : approvalRequestItems) {
+                        approvals.put(approvalRequestItem.getRequestType(), approvalRequestItem.getApprovalProfileId());
+                    }
                 }
                 certificateProfile.setApprovals(approvals);
 
@@ -336,12 +342,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isTypeSubCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
 
     public boolean isTypeRootCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
-
+    public boolean isTypeSshAvailable() { return CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE); }
+    
+    
     public boolean isTypeEndEntity() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ENDENTITY; }
 
     public boolean isTypeSubCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_SUBCA; }
 
     public boolean isTypeRootCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_ROOTCA; }
+    public boolean isTypeSsh() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_SSH; }
 
     public void setTypeEndEntity() {
         getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY);
@@ -349,7 +358,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     }
-
+    
     public void setTypeSubCa() {
         getCertificateProfile().setType(CertificateConstants.CERTTYPE_SUBCA);
         getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
@@ -363,6 +372,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
         getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
     }
+    
+    public void setTypeSsh() {
+        getCertificateProfile().setType(CertificateConstants.CERTTYPE_SSH);
+        getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
+        getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
+        getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
+    }
 
     public boolean isUniqueCertificateSerialNumberIndex() {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();
@@ -373,7 +389,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
             ret.add(new SelectItem(current));
-        }
+        }        
         return ret;
     }
     
@@ -451,8 +467,26 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         // null becomes ""-value.
         ret.add(new SelectItem(null, getEjbcaWebBean().getText("INHERITFROMCA")));
-        for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
-            ret.add(new SelectItem(current, current));
+        if (certificateProfile.getType() != CertificateConstants.CERTTYPE_SSH) {
+            for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
+                ret.add(new SelectItem(current, current));
+            }
+        }
+        return ret;
+    }
+    
+    public List<SelectItem> getSshCertificateTypes() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(SshCertificateType sshCertificateType : SshCertificateType.values()) {
+            ret.add(new SelectItem(sshCertificateType, sshCertificateType.getLabel()));
+        }
+        return ret;
+    }
+    
+    public List<SelectItem> getSshExtensionsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(SshExtension sshExtension : SshExtension.values()) {
+            ret.add(new SelectItem(sshExtension.getLabel(), sshExtension.getLabel()));
         }
         return ret;
     }

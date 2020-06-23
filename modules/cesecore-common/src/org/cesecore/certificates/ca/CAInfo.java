@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang.math.IntRange;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.util.CertTools;
@@ -42,6 +43,7 @@ public abstract class CAInfo implements Serializable {
     private static final long serialVersionUID = 2L;
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
+    public static final int CATYPE_SSH = 3;
 
     /**
      * Constants indicating that the CA is selfsigned.
@@ -180,13 +182,16 @@ public abstract class CAInfo implements Serializable {
     public void setCAType(int catype) {
         this.catype = catype;
     }
-
+    
     public String getCaTypeAsString() {
         if (catype == CAInfo.CATYPE_CVC) {
             return "CVC";
         }
         if (catype == CAInfo.CATYPE_X509) {
             return "X.509";
+        }
+        if (catype == CAInfo.CATYPE_SSH) {
+            return SshCa.CA_TYPE;
         }
         return String.valueOf(catype);
     }

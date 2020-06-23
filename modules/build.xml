@@ -54,7 +54,7 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, plugins-ee-clean, clover.clean, 
-		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean"/>
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -162,6 +162,10 @@
 	</target>
 	<target name="edition-specific-clean">
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="ssh-clean" if="${mod.ssh.exists}">
+	    <ant antfile="${mod.ssh.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<condition property="mod.plugins-ee.exists">
@@ -544,7 +548,7 @@
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
 					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-cryptotoken, ejbca-rest-camanagement, 
-					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca">
+					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
@@ -595,6 +599,10 @@
 	
     <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins-ee, peerconnector, caa" if="${mod.configdump.exists}">
         <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
+    </target>
+	
+    <target name="ssh" depends="cesecore-common" if="${mod.ssh.exists}">
+        <ant antfile="${mod.ssh.path}/build.xml" target="build-ssh" inheritall="true" inheritrefs="true"/>
     </target>
     
 	<target name="cmpclient" depends="ejbca-ejb-interface, ejbca-ejb-cli">

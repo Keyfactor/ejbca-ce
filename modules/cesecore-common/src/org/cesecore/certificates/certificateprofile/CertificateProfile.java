@@ -40,6 +40,8 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.ssh.SshCertificateType;
+import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -61,13 +63,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 46.0;
+    public static final float LATEST_VERSION = (float) 47.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
     public static final String ENDUSERPROFILENAME = "ENDUSER";
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
+    public static final String SSHPROFILENAME = "SSH";
     
     public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
@@ -76,6 +79,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(ENDUSERPROFILENAME);
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
+        FIXED_PROFILENAMES.add(SSHPROFILENAME);
     }
  
     /**
@@ -86,7 +90,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      *
      */
     private static final long serialVersionUID = -8069608639716545206L;
-
 
 
     /** Microsoft Template Constants */
@@ -293,7 +296,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
     protected static final String USECERTIFICATETRANSPARENCYINPUBLISHERS  = "usecertificatetransparencyinpublisher";
-    
+        
     /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
@@ -341,6 +344,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String OVERRIDABLEEXTENSIONOIDS = "overridableextensionoids";
     protected static final String NONOVERRIDABLEEXTENSIONOIDS = "nonoverridableextensionoids";
 
+    //SSH Certificate specific values
+    protected static final String SSH_CERTIFICATE_TYPE = "sshcertificatetype";
+    protected static final String SSH_EXTENSIONS = "sshextensions";
+    protected static final String SSH_ALLOW_EXTERNAL_EXTENSIONS = "allowExternalSshExtensions";
+    protected static final String SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED = "requireExternalSshExtensionsDefined";
+
+    
     /**
      * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
      */
@@ -678,7 +688,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * @see ValidityDate#getDateBeforeVersion661(long, java.util.Date)
      * @return a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
-     * @deprecated since since EJBCA 6.6.1
+     * @deprecated since EJBCA 6.6.1
      */
     @Deprecated
     public long getValidity() {
@@ -2890,6 +2900,67 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setCTMaxRetries(int numRetries) {
         data.put(CTMAXRETRIES, numRetries);
+    }
+    
+    public SshCertificateType getSshCertificateType() {
+        if(data.get(SSH_CERTIFICATE_TYPE) == null) {
+            data.put(SSH_CERTIFICATE_TYPE, SshCertificateType.USER);
+        }
+        return (SshCertificateType) data.get(SSH_CERTIFICATE_TYPE);
+    }
+    
+    public void setSshCertificateType(final SshCertificateType certificateType) {
+        data.put(SSH_CERTIFICATE_TYPE, certificateType);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Map<String, byte[]> getSshExtensionsMap() {    
+        if(!data.containsKey(SSH_EXTENSIONS)) {
+            Map<String, byte[]> extensions = new HashMap<>();
+            for(SshExtension sshExtension : SshExtension.values()) {
+                extensions.put(sshExtension.getLabel(), sshExtension.getValue());
+            }
+            data.put(SSH_EXTENSIONS, extensions);
+        }
+        return (Map<String, byte[]>) data.get(SSH_EXTENSIONS);
+    }
+    
+    public List<String> getSshExtensions() {
+        return new ArrayList<>(getSshExtensionsMap().keySet());
+    }
+    
+    public void setSshExtensions(Map<String, byte[]> extensions) {
+        data.put(SSH_EXTENSIONS, extensions);
+    }
+    
+    public void setSshExtensions(List<String> extensionsList) {
+        Map<String, String> extensions = new HashMap<>();
+        for(String extension : extensionsList) {
+            extensions.put(extension, "");
+        }
+        data.put(SSH_EXTENSIONS, extensions);
+    }
+    
+    public boolean getAllowExternalSshExtensions() {
+        if(!data.containsKey(SSH_ALLOW_EXTERNAL_EXTENSIONS)) {
+            data.put(SSH_ALLOW_EXTERNAL_EXTENSIONS, false);
+        }
+        return (boolean) data.get(SSH_ALLOW_EXTERNAL_EXTENSIONS);
+    }
+    
+    public void setAllowExternalSshExtensions(boolean allow) {
+        data.put(SSH_ALLOW_EXTERNAL_EXTENSIONS, allow);
+    }
+    
+    public boolean getRequireExternalSshExtensionsDefined() {
+        if(!data.containsKey(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED)) {
+            data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, false);
+        }
+        return (boolean) data.get(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED);
+    }
+    
+    public void setRequireExternalSshExtensionsDefined(boolean allow) {
+        data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, allow);
     }
     
     /**

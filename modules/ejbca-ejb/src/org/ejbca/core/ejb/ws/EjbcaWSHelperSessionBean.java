@@ -82,8 +82,10 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.ExtendedInformationWS;
+import org.ejbca.core.protocol.ws.objects.SshRequestMessageWs;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.cert.OID;
@@ -635,6 +637,18 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
         int caid = caSession.getCAInfo(admin, caname).getCAId();
         caAdminSession.rolloverCA(admin, caid);
+    }
+
+    @Override
+    public SshRequestMessage convertSshRequestMessage(SshRequestMessageWs sshRequestMessageWs) {
+            String keyId = sshRequestMessageWs.getKeyId();
+            String comment = sshRequestMessageWs.getComment();
+            byte[] publicKey = sshRequestMessageWs.getPublicKey();
+            List<String> principals = sshRequestMessageWs.getPrincipals();
+            Map<String, String> criticalOptions = sshRequestMessageWs.getCriticalOptions();
+            Map<String, byte[]> additionalExtensions = sshRequestMessageWs.getAdditionalExtensions();
+        
+        return new SshRequestMessage(publicKey, keyId, principals, additionalExtensions, criticalOptions, comment);
     }
 
 }

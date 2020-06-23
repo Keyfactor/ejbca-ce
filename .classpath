@@ -98,6 +98,9 @@
 	<classpathentry kind="src" path="modules/plugins-ee/src-test"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/ra-gui/src"/>
+	<classpathentry kind="src" path="modules/ssh/src"/>
+	<classpathentry kind="src" path="modules/ssh/src-test"/>
+	<classpathentry kind="src" path="modules/ssh/src-war"/>
 	<classpathentry kind="src" path="modules/statedump/src-cli"/>
 	<classpathentry kind="src" path="modules/statedump/src-common"/>
 	<classpathentry kind="src" path="modules/statedump/src-ejb"/>

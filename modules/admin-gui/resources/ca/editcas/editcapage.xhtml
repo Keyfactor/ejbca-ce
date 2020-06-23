@@ -83,6 +83,14 @@
 						value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}">
 						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
+					<h:commandButton
+						id="catypessh"
+						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeSSH?'selected':''}"
+						action="#{editCAsMBean.setCaTypeSSH}"
+						value="#{editCAsMBean.caTypeSSH?'✓':' '}#{web.text.SSHCA}"
+						rendered="#{editCAsMBean.renderSshAvailable}">
+						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
+					</h:commandButton>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.editCA}">
@@ -634,7 +642,7 @@
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:validator
 							validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
-							disabled="#{editCAsMBean.caInfoDto.caTypeX509}" />
+							disabled="#{not editCAsMBean.caInfoDto.caTypeCVC}" />
 					</h:inputText>
 					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225"
 						id="textfieldsubjectdn" value="#{editCAsMBean.caInfoDto.caSubjectDN}"
@@ -645,7 +653,7 @@
 						required="true">
 						<f:validator
 							validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
-							disabled="#{editCAsMBean.caInfoDto.caTypeX509}" />
+							disabled="#{not editCAsMBean.caInfoDto.caTypeCVC}" />
 					</h:inputText>
                     <br />
 					<h:outputText styleClass="smallHelp" value="#{web.text.SUBJECTDN_CA_HELP}"
@@ -741,12 +749,12 @@
 						rendered="#{not editCAsMBean.hideValidity}"/>
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeSsh}">
 					<h:outputLabel for="textfieldsubjectaltname"
 						value="#{web.text.EXT_PKIX_SUBJECTALTNAME}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeSsh}">
 					<h:outputText name="textfieldsubjectaltname"
 						value="#{editCAsMBean.caSubjectAltName}"
 						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.caInfoDto.caTypeX509}" />
@@ -810,7 +818,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.caExternal and editCAsMBean.caInfoDto.caTypeX509}">
+					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.caTypeCVC}">
 					<h:outputLabel for="checkboxuseldapdnorder"
 						value="#{web.text.CERT_SUBJECTDN_LDAPORDER}"
 						style="font-weight: bold;" />
@@ -820,20 +828,20 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.caExternal and editCAsMBean.caInfoDto.caTypeX509}">
+					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.caTypeCVC}">
 					<h:selectBooleanCheckbox id="checkboxuseldapdnorder"
 						value="#{editCAsMBean.caInfoDto.useLdapDNOrder}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:outputLabel for="checkboxuseldapdnorder" value="#{web.text.USE}" />
 				</h:panelGroup>
 
-                <h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caExternal}">
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.caExternal}">
                     <h:outputLabel for="caSerialNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Serial_Number_Octet_Size')}"
                         escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caExternal}">
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeCVC and not editCAsMBean.caExternal}">
                     <h:inputText id="caSerialNumberOctetSize" size="4" maxlength="2"
                         value="#{editCAsMBean.caInfoDto.caSerialNumberOctetSize}"
                         disabled="#{not editCAsMBean.hasEditRight}">
@@ -1348,11 +1356,10 @@
 			<!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->
 
 			<!-- ==================================================================== Approval Settings  =========================================================================== -->
-
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caInfoDto.caTypeSsh}">
 				<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="approvals" />
@@ -1361,7 +1368,7 @@
 				var="requestItem" cellspacing="1" cellpadding="3" border="0"
 				width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caInfoDto.caTypeSsh}">
 				<h:column>
 					<h:outputText value="#{requestItem.displayText}" />
 				</h:column>
@@ -1382,7 +1389,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caInfoDto.caTypeSsh}">
 				<h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="otherdata" />

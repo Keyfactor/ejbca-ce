@@ -218,7 +218,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         String fp = null;
         try {
             // Set the CA to keep expired certificates on the CRL
-            CAInfo info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            X509CAInfo info = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
             info.setKeepExpiredCertsOnCRL(true);
             caSession.editCA(alwaysAllowToken, info);
 
@@ -249,7 +249,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
             // And two more times, to make sure it doesn't disappear, since we use keepExpiredCertsOnCRL
-            info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            info = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
             assertTrue(info.getKeepExpiredCertsOnCRL());
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
@@ -264,7 +264,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertTrue("CRL does not contain the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to true", extensions.contains("2.5.29.60"));
             
             // Change to not keep expired certificates on CRL
-            info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            info = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
             info.setKeepExpiredCertsOnCRL(false);
             caSession.editCA(alwaysAllowToken, info);
             // It should be in the first, because it is now that status is set to archived to it will not appear on the next CRL
@@ -292,7 +292,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // Remove generated certificate
             internalCertificateStoreSession.removeCertificate(fp);
             // Set back default value for keep expired certificates on CRL
-            CAInfo info = caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            X509CAInfo info = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
             info.setKeepExpiredCertsOnCRL(false);
             caSession.editCA(alwaysAllowToken, info);
         }

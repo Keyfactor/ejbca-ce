@@ -266,7 +266,7 @@ public interface RequestMessage extends Serializable {
      * (i.e. to be appended to the user certificates CA certificate returned in the CMP response message caPubs field).
      * @param certificates the list of CA certificates.
      */
-    public void setAdditionalCaCertificates(final List<Certificate> certificates);
+    public void setAdditionalCaCertificates(final List<Certificate> additionalExtraCertificates);
     
     /**
      * Gets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
@@ -278,5 +278,5 @@ public interface RequestMessage extends Serializable {
      * Sets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
      * @param certificates the list of CA certificates.
      */
-    public void setAdditionalExtraCertsCertificates(final List<Certificate> certificates);
+    public void setAdditionalExtraCertsCertificates(final List<Certificate> additionalExtraCertificates);
 }

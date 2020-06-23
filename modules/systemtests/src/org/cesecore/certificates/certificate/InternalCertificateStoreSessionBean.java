@@ -129,10 +129,12 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     
     @Override
     public void removeCertificatesByUsername(final String username) {
-        Collection<CertificateWrapper> certs = certStore.findCertificatesByUsername(username);
-        for (CertificateWrapper certificate : certs) {
-            removeCertificate(certificate.getCertificate());
-        }
+        Query query = entityManager.createQuery("DELETE FROM CertificateData a WHERE a.username=:username");
+        query.setParameter("username", username);
+        query.executeUpdate();
+        query = entityManager.createQuery("DELETE FROM NoConflictCertificateData a WHERE a.username=:username");
+        query.setParameter("username", username);
+        query.executeUpdate();
     }
     
     @Override

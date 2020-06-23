@@ -162,6 +162,7 @@
 	<property name="mod.edition-specific-ejb.lib" location="${mod.dist.path}/edition-specific-ejb.jar"/>
 	<property name="mod.edition-specific-ee-ejb.path" location="${mod.path}/edition-specific-ee"/>
 	<property name="mod.plugins-ee.lib"  location="${mod.dist.path}/plugins-ee.jar"/>
+	<property name="mod.systemtest-src-test.path" location="${mod.path}/systemtests/src-test" />
 	<property name="mod.systemtest-interface.lib" location="${mod.dist.path}/systemtests-interfaces.jar" />
 	<property name="mod.systemtest-common.lib" location="${mod.dist.path}/systemtests-common.jar" />
 	<property name="mod.systemtest-ejb.lib" location="${mod.dist.path}/systemtests-ejb.jar" />
@@ -183,6 +184,9 @@
     <property name="mod.ejbca-rest-camanagement.lib" location="${mod.dist.path}/ejbca-rest-camanagement.jar" />
     <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
     <property name="swagger-ui.war" location="${ejbca.home}/lib/swagger/swagger-ui.war" />
+	<property name="mod.ssh.path" location="${mod.path}/ssh" />
+	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
+	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -588,6 +592,10 @@
         <available file="${mod.est-war.path}/build.xml" />
     </condition>
 
+	<condition property="mod.ssh.exists">
+		<available file="${mod.ssh.path}/build.xml" />
+	</condition>
+	
     <condition property="mod.acme.exists">
     	<available file="${mod.acme.path}/build.xml"/>
     </condition>

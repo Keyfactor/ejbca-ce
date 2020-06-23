@@ -301,7 +301,7 @@ public abstract class RequestMessageUtils {
                 }
             }
             ret = reqmsg;
-        }
+        } 
         return ret;
 	}
 

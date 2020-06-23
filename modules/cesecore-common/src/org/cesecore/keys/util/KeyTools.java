@@ -314,6 +314,60 @@ public final class KeyTools {
         }
         return ret;
     }
+
+    /**
+     * Encodes an EC point
+     * 
+     * @param ecPoint an EC point
+     * @param curve an EC curve
+     * @return the EC point as a byte array or null if the point couldn't be encoded
+     */
+    public static byte[] encodeEcPoint(final ECPoint ecPoint, final EllipticCurve curve) {
+        byte[] x = ecPoint.getAffineX().toByteArray();
+        byte[] y = ecPoint.getAffineY().toByteArray();
+        int i, xoff = 0, yoff = 0;
+        for (i = 0; i < x.length - 1; i++) {
+            if (x[i] != 0) {
+                xoff = i;
+                break;
+            }
+        }
+        for (i = 0; i < y.length - 1; i++) {
+            if (y[i] != 0) {
+                yoff = i;
+                break;
+            }
+        }
+        int len = (curve.getField().getFieldSize() + 7) / 8;
+        if ((x.length - xoff) > len || (y.length - yoff) > len) {
+            return null;
+        }
+        byte[] ret = new byte[len * 2 + 1];
+        ret[0] = 4;
+        System.arraycopy(x, xoff, ret, 1 + len - (x.length - xoff), x.length - xoff);
+        System.arraycopy(y, yoff, ret, ret.length - (y.length - yoff), y.length - yoff);
+        return ret;
+    }
+    
+    /**
+     * Decodes an EC Point
+     * 
+     * @param encodedKey the encoded key
+     * @param curve an EC curve 
+     * @return the decoded point or null if the point couldn't be decoded
+     */
+    public static ECPoint decodeEcPoint(final byte[] encodedKey, final EllipticCurve curve) {
+        int length = (curve.getField().getFieldSize() + 7) / 8;
+        if (encodedKey.length != 2 * length + 1 || encodedKey[0] != 4) {
+            return null;
+        }
+        byte[] x = new byte[length];
+        byte[] y = new byte[length];
+        System.arraycopy(encodedKey, 1, x, 0, length);
+        System.arraycopy(encodedKey, length + 1, y, 0, length);
+        return new ECPoint(new BigInteger(1,x), new BigInteger(1,y));
+    }
+    
     /**
      * An ECDSA key can be stripped of the curve parameters so it only contains the public point, and this is not enough to use the key for
      * verification. However, if we know the curve name we can fill in the curve parameters and get a usable EC public key
@@ -1403,7 +1457,7 @@ public final class KeyTools {
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
             final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             return keyFact.generatePublic(xKeySpec);
-        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException | IllegalArgumentException e) {
             log.debug("Unable to decode PublicKey.", e);
         }
         return null;

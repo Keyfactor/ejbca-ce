@@ -113,6 +113,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -553,7 +554,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private CA createCAObject(CAInfo cainfo, CAToken catoken, CertificateProfile certprofile) throws InvalidAlgorithmException {
         CA ca;
         // X509 CA is the most normal type of CA
-        if (cainfo instanceof X509CAInfo) {
+        if (cainfo.getCAType() == X509CAInfo.CATYPE_X509) {
             log.info("Creating an X509 CA: " + cainfo.getName());
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
             // Create X509CA
@@ -561,13 +562,23 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(x509cainfo, certprofile);
-        } else {
+        } else if (cainfo.getCAType() == X509CAInfo.CATYPE_CVC) {
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA: " + cainfo.getName());
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
             // Create CVCCA
             ca = CvcCABase.getInstance(cvccainfo);
             ca.setCAToken(catoken);
+        } else if (cainfo.getCAType() == X509CAInfo.CATYPE_SSH) {
+            log.info("Creating an SSH CA: " + cainfo.getName());
+            SshCaInfo sshCainfo = (SshCaInfo) cainfo;
+            // Create SSH CA
+            ca = (CA) CAFactory.INSTANCE.getSshCaImpl(sshCainfo);
+            ca.setCAToken(catoken);
+            // Set certificate policies in profile object
+            mergeCertificatePoliciesFromCAAndProfile(sshCainfo, certprofile);
+        } else {
+            throw new IllegalStateException("CA of unknown type " + cainfo.getCAType() + " was encountered.");
         }
         return ca;
     }
@@ -738,9 +749,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
             try {
                 caSession.editCA(admin, ca, false); // store any activates CA services
-                // create initial CRLs
-                publishingCrlSession.forceCRL(admin, ca.getCAId());
-                publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
+                if (ca.getCaImplType() == X509CA.CA_TYPE) {
+                    // create initial CRLs
+                    publishingCrlSession.forceCRL(admin, ca.getCAId());
+                    publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
+                }
             } catch (CADoesntExistsException | CAOfflineException e) {
                 logAuditEvent(
                         EventTypes.CA_CREATION, EventStatus.FAILURE,
@@ -785,7 +798,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
             try {
-                // create selfsigned certificate
+                // create self signed certificate
                 Certificate cacertificate;
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());

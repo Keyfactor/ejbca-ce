@@ -78,6 +78,12 @@
                         styleClass="selectButton largeSelectButton #{certProfileBean.typeRootCa?'selected':''} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         action="#{certProfileBean.setTypeRootCa}"
                         value="#{certProfileBean.typeRootCa?'✓':' '}#{web.text.ROOTCA}" />
+                     <h:commandButton
+                        rendered="#{certProfileBean.typeSshAvailable}"
+                        disabled="#{certProfileBean.typeSsh or certProfileBean.viewOnly}"
+                        styleClass="selectButton largeSelectButton #{certProfileBean.typeSsh?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
+                        action="#{certProfileBean.setTypeSsh}"
+                        value="#{certProfileBean.typeSsh?'✓':' '}#{web.text.SSH_TYPE}" />
                 </h:panelGroup>
        		</h:panelGrid>
         </h:form>
@@ -86,14 +92,14 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="selectavailablekeyalgorithms"
                         value="#{web.text.AVAILABLEKEYALGORITHMS}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableKeyAlgorithms')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:selectManyListbox styleClass="select-list"
+                <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh}"
                     id="selectavailablekeyalgorithms"
                     value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}"
                     size="#{certProfileBean.availableKeyAlgorithmsSize}" disabled="#{certProfileBean.viewOnly}">
@@ -101,14 +107,14 @@
                     <f:ajax event="change" execute="@this" render="@form"/>
                 </h:selectManyListbox>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="selectavailableeccurves"
                         value="#{web.text.AVAILABLEECDSACURVES}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableEcdsaCurves')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:selectManyListbox styleClass="select-list"
+                <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh}"
                     id="selectavailableeccurves"
                     value="#{certProfileBean.certificateProfile.availableEcCurves}"
                     size="5" disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsECType }">
@@ -116,14 +122,14 @@
                     <f:ajax event="change" execute="@this" render="@form"/>
                 </h:selectManyListbox>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="selectavailablebitlengths"
                         value="#{web.text.AVAILABLEBITLENGTHS}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:selectManyListbox id="selectavailablebitlengths"
+                <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh}"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
                     size="5" styleClass="number select-list"
                     disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsRequireKeySizes}">
@@ -135,7 +141,7 @@
                     value="#{web.text.SIGNATUREALGORITHM}" />
                 <h:selectOneMenu id="selectsignaturealgorithm"
                     value="#{certProfileBean.signatureAlgorithm}"
-                    disabled="#{certProfileBean.viewOnly}">
+                    disabled="#{certProfileBean.viewOnly || certProfileBean.typeSsh}">
                     <f:selectItems
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
@@ -143,7 +149,8 @@
 
 			</h:panelGrid>
 		</h:form>
-                <!-- Validity -->
+		
+        <!-- Validity -->
 		<h:form id="content">
 			<h:panelGrid columns="2" styleClass="edit-ctnd"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
@@ -179,7 +186,7 @@
 
                 <!-- Validity offset (ECA-3554) -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel
                         for="checkusecertificatevalidityoffsetgroup"
                         value="#{web.text.CERT_VALIDITY_OFFSET}" />
@@ -188,7 +195,7 @@
                         escape="false" />
                 </h:panelGroup>
                 <h:panelGrid id="certificatevalidityoffsetgrid"
-                    columns="1">
+                    columns="1" rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup
                         id="checkusecertificatevalidityoffsetgroup">
                         <h:selectBooleanCheckbox
@@ -227,7 +234,7 @@
 
                 <!-- Expiration restriction for weekdays (ECA-5330) -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel
                         for="checkuseexpirationtrestrictionforweekdaysgroup"
                         value="#{web.text.CERT_EXPIRATION_RESTRICTIONS}" />
@@ -236,7 +243,7 @@
                         escape="false" />
                 </h:panelGroup>
                 <h:panelGrid id="expirationtrestrictionforweekdaysgrid"
-                    columns="1">
+                    columns="1" rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup
                         id="checkuseexpirationtrestrictionforweekdaysgroup">
                         <h:selectBooleanCheckbox
@@ -323,7 +330,7 @@
                         </h:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-
+	
                 <h:panelGroup id="descriptionGroup">
                     <h:outputText value="#{web.text.PROFILEDESCRIPTION}" />
                 </h:panelGroup>
@@ -339,6 +346,77 @@
                     </h:panelGroup>
                 </h:panelGrid>
             </h:panelGrid>
+            
+            <!-- SSH Values -->
+            <h:panelGrid columns="2" styleClass="edit-top"
+                cellspacing="3" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row1"
+                columnClasses="editColumn1,editColumn2"
+                rendered="#{certProfileBean.typeSsh}">
+                
+                <h:outputLabel for="header_ssh_values"
+                    value="#{web.text.SSH_CONFIGURATION}"
+                    style="font-weight: bold;" rendered="#{certProfileBean.typeSsh}"/>
+                <h:panelGroup id="header_ssh_values"/>
+                
+            	<!-- SSH Certificate Type -->
+				<h:panelGroup id="sshCertificatetTypeDescription">
+                    <h:outputText value="#{web.text.SSH_CERTIFICATE_TYPE}" />
+                </h:panelGroup>
+                <h:panelGroup id="sshCertificatetType">
+	                <h:selectOneMenu id="selectsshCertificatetType"
+	                    value="#{certProfileBean.certificateProfile.sshCertificateType}"
+	                    disabled="#{certProfileBean.viewOnly}">
+	                    <f:ajax event="change" execute="@this" render="@form"/>
+	                    <f:selectItems
+	                        value="#{certProfileBean.sshCertificateTypes}" />
+	                </h:selectOneMenu>
+                </h:panelGroup>
+                
+                <!-- SSH Extensions -->
+                <h:panelGroup rendered="#{certProfileBean.certificateProfile.sshCertificateType.type eq '1'}">
+                    <h:outputLabel for="sshExtensions" value="#{web.text.SSH_EXTENSIONS}" />               
+                </h:panelGroup>
+				<h:panelGroup id="sshExtensions" rendered="#{certProfileBean.certificateProfile.sshCertificateType.type eq '1'}">
+					<h:panelGrid id="sshExtensionsGrid" columns="1">                    
+	                    <h:selectManyListbox styleClass="select-list"
+	                        id="selectSshExtensions"
+	                        value="#{certProfileBean.certificateProfile.sshExtensions}"
+	                        size="6"
+	                        disabled="#{certProfileBean.viewOnly}">
+	                        <f:selectItems
+	                            value="#{certProfileBean.sshExtensionsAvailable}" />
+	                    </h:selectManyListbox>
+	                </h:panelGrid>
+	             </h:panelGroup>
+	             <h:panelGroup rendered="#{certProfileBean.certificateProfile.sshCertificateType.type eq '1'}">
+                    <h:outputLabel for="allowExternalSshExtensionsGroup"
+                        value="#{web.text.SSH_ALLOW_EXTERNAL_EXTENSIONS}" />
+                </h:panelGroup>
+                <h:panelGroup id="allowExternalSshExtensionsGroup" rendered="#{certProfileBean.certificateProfile.sshCertificateType.type eq '1'}">
+                    <h:selectBooleanCheckbox
+                        id="allowExternalSshExtensions"
+                        value="#{certProfileBean.certificateProfile.allowExternalSshExtensions}"
+                        disabled="#{certProfileBean.viewOnly}">
+                         <f:ajax event="change" execute="@this" render="@form"/>
+                    </h:selectBooleanCheckbox>     
+                    <h:outputLabel for="allowExternalSshExtensions"
+                        value="#{web.text.ALLOW} " />
+                </h:panelGroup>
+                <h:panelGroup rendered="#{certProfileBean.certificateProfile.sshCertificateType.type eq '1'}">
+                    <h:outputLabel for="requireAdditionalExtensionsDefinedGroup"
+                        value="#{web.text.SSH_REQUIRE_EXTERNAL_EXTENSION_DEFINED}" />
+                </h:panelGroup>
+                <h:panelGroup id="requireAdditionalExtensionsDefinedGroup" rendered="#{certProfileBean.certificateProfile.sshCertificateType.type eq '1'}">
+                    <h:selectBooleanCheckbox
+                        id="requireAdditionalExtensionsDefined"
+                        value="#{certProfileBean.certificateProfile.requireExternalSshExtensionsDefined}"
+                        disabled="#{certProfileBean.viewOnly or not certProfileBean.certificateProfile.allowExternalSshExtensions}" />
+                    <h:outputLabel for="requireAdditionalExtensionsDefined"
+                        value="#{web.text.REQUIRE} " />
+                </h:panelGroup>
+             </h:panelGrid>
+            
 
 
             <h:panelGrid columns="2" styleClass="edit-top"
@@ -346,6 +424,7 @@
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
 
+                
                 <!-- Authorizations -->
 
                 <h:outputLabel for="header_permissions"
@@ -353,14 +432,14 @@
                     style="font-weight: bold;" />
                 <h:panelGroup id="header_permissions" />
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkallowvalidityoverridegroup"
                         value="#{web.text.ALLOWVALIDITYOVERRIDE}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Validity')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkallowvalidityoverridegroup">
+                <h:panelGroup id="checkallowvalidityoverridegroup" rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox
                         id="checkallowvalidityoverride"
                         value="#{certProfileBean.certificateProfile.allowValidityOverride}"
@@ -369,7 +448,7 @@
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel
                         for="checkallowextensionoverridegroup"
                         value="#{web.text.ALLOWEXTENSIONOVERRIDE}" />
@@ -377,7 +456,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#AllowExtensionOverride')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="allowextensionoverridegrid" columns="1">
+                <h:panelGrid id="allowextensionoverridegrid" columns="1" rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup id="checkallowextensionoverridegroup">
                         <h:selectBooleanCheckbox
                             id="checkallowextensionoverride"
@@ -420,7 +499,7 @@
                     </h:panelGrid>
                 </h:panelGrid>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel
                         for="allowcertserialnumberoverridegroup"
                         value="#{web.text.ALLOWCERTSERIALNUMBEROVERRIDE}" />
@@ -428,7 +507,8 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#AllowCertificateSerialNumberOverride')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="allowcertserialnumberoverridegroup">
+                <h:panelGroup id="allowcertserialnumberoverridegroup"
+                	rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox
                         rendered="#{!certProfileBean.uniqueCertificateSerialNumberIndex}"
                         id="allowcertserialnumberoverridefalse"
@@ -452,14 +532,15 @@
                         value="#{web.text.CERTSERIALNOUNIQUEIX}" />
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkallowdnoverridegroup"
                         value="#{web.text.ALLOWDNOVERRIDECSR}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#CertificateProfileFields')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkallowdnoverridegroup">
+                <h:panelGroup id="checkallowdnoverridegroup"
+                	rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox id="checkallowdnoverride"
                         value="#{certProfileBean.certificateProfile.allowDNOverride}"
                         disabled="#{certProfileBean.viewOnly}" />
@@ -467,14 +548,14 @@
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkallowdnoverrideeeigroup"
                         value="#{web.text.ALLOWDNOVERRIDEEEI}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#CertificateProfileFields')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkallowdnoverrideeeigroup">
+                <h:panelGroup id="checkallowdnoverrideeeigroup" rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox
                         id="checkallowdnoverrideeei"
                         value="#{certProfileBean.certificateProfile.allowDNOverrideByEndEntityInformation}"
@@ -483,14 +564,15 @@
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkallowkeyusageoverridegroup"
                         value="#{web.text.ALLOWKEYUSAGEOVERRIDE}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#AllowKeyUsageOverride')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkallowkeyusageoverridegroup">
+                <h:panelGroup id="checkallowkeyusageoverridegroup" 
+                	rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox
                         id="checkallowkeyusageoverride"
                         value="#{certProfileBean.certificateProfile.allowKeyUsageOverride}"
@@ -499,7 +581,8 @@
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup 
+                	rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel
                         for="checkallowbackdatedrevokationgroup"
                         value="#{web.text.ALLOWBACKDATEDREVOCATION}" />
@@ -507,7 +590,8 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#AllowBackatedRevocation')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkallowbackdatedrevokationgroup">
+                <h:panelGroup id="checkallowbackdatedrevokationgroup" 
+                	rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox
                         id="checkallowbackdatedrevokation"
                         value="#{certProfileBean.certificateProfile.allowBackdatedRevocation}"
@@ -562,7 +646,7 @@
             <h:panelGrid columns="2" styleClass="edit-top"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- X.509v3 extensions (PKIX) -->
 
@@ -661,7 +745,7 @@
             <h:panelGrid columns="2" styleClass="edit-top subsection"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- X.509v3 extensions (PKIX) : Usages -->
                 <h:outputLabel for="header_x509v3extensions_usages"
@@ -763,7 +847,7 @@
 
                 <!-- PKIX Extended Key Usage (EKU) extension -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkuseextendedkeyusagegroup"
                         value="#{web.text.EXT_PKIX_EXTENDEDKEYUSAGE}"
                         style="font-weight: bold;" />
@@ -771,7 +855,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#ExtendedKeyUsage')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="extendedkeyusagegrid" columns="1">
+                <h:panelGrid id="extendedkeyusagegrid" columns="1" rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup id="checkuseextendedkeyusagegroup">
                         <h:selectBooleanCheckbox
                             id="checkuseextendedkeyusage"
@@ -804,7 +888,7 @@
 
                 <!-- PKIX Certificate Policies extension -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="certificatePolicies"
                         value="#{web.text.EXT_PKIX_CERTIFICATEPOLICIES}"
                         style="font-weight: bold;" />
@@ -813,7 +897,7 @@
                         escape="false" />
                 </h:panelGroup>
 
-                <h:panelGrid id="certificatePolicies" columns="1">
+                <h:panelGrid id="certificatePolicies" columns="1" rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup>
                         <h:selectBooleanCheckbox
                             id="checkusecertificatepolicies"
@@ -950,7 +1034,7 @@
             <h:panelGrid columns="2" styleClass="edit-top subsection"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- X.509v3 extensions (PKIX) : Names -->
 
@@ -999,7 +1083,7 @@
 
                 <!-- PKIX Issuer Alternative Name (IAN) extension -->
 
-                <h:panelGroup>
+                <h:panelGroup >
                     <h:outputLabel for="cbissueralternativenamegroup"
                         value="#{web.text.EXT_PKIX_ISSUERALTNAME}" />
                     <h:outputText
@@ -1074,7 +1158,8 @@
                 styleClass="edit-top subsection" cellspacing="3"
                 cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2"
+                rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- X.509v3 extensions (PKIX) : Validation data -->
 
@@ -1415,7 +1500,7 @@
             <h:panelGrid id="qcStatementsGrid" columns="2"
                 styleClass="edit-top" cellspacing="3" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- Qualified Certificates Statements (qcStatements) extension -->
                 <h:outputLabel for="header_qcStatements"
@@ -1766,7 +1851,7 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
-                rendered="#{certProfileBean.ctAvailable}">
+                rendered="#{certProfileBean.ctAvailable and !certProfileBean.typeSsh}">
 
                 <!-- Certificate Transparency -->
 
@@ -1961,7 +2046,8 @@
             <h:panelGrid columns="2" styleClass="edit-top"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2"
+                rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- Other extensions -->
 
@@ -2061,7 +2147,8 @@
             <h:panelGrid id="epassportgrid" columns="2" styleClass="edit-top"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2" 
+                rendered="#{!certProfileBean.typeSsh}">
 
                 <!-- ePassport -->
 
@@ -2232,7 +2319,8 @@
                 styleClass="edit-top lone-edit-heading" cellspacing="3"
                 cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
-                columnClasses="editColumn1,editColumn2">
+                columnClasses="editColumn1,editColumn2"
+                rendered="#{!certProfileBean.typeSsh}">
                 <!-- Approvals -->
                 <h:outputLabel for="approvals"
                     value="#{web.text.APPROVALSETTINGS}"
@@ -2243,7 +2331,8 @@
                 var="requestItem" cellspacing="1" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
-                style="padding-right: 4px;">
+                style="padding-right: 4px;"
+                rendered="#{!certProfileBean.typeSsh}">
                 <h:column>
                     <h:outputText
                         value="#{requestItem.getDisplayText()}" />
@@ -2272,7 +2361,7 @@
                     style="font-weight: bold;" />
                 <h:panelGroup id="otherdata" />
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkuseldapdnordergroup"
                         value="#{web.text.CERT_SUBJECTDN_LDAPORDER}"
                         style="font-weight: bold;" />
@@ -2280,7 +2369,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Use_LDAP_DN_Order')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkuseldapdnordergroup">
+                <h:panelGroup id="checkuseldapdnordergroup" rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox id="checkuseldapdnorder"
                         value="#{certProfileBean.certificateProfile.useLdapDnOrder}"
                         disabled="#{certProfileBean.viewOnly}" />
@@ -2289,8 +2378,10 @@
                 </h:panelGroup>
 
                 <h:outputLabel for="customdnordergroup"
-                    value="#{web.text.CERT_SUBJECTDN_CUSTOMORDER}" />
-                <h:panelGroup id="customdnordergroup">
+                    value="#{web.text.CERT_SUBJECTDN_CUSTOMORDER}" 
+                    rendered="#{!certProfileBean.typeSsh}"/>
+                <h:panelGroup id="customdnordergroup"
+               		rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox id="checkusecustomdnorder"
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCustomDnOrder}"
@@ -2324,8 +2415,10 @@
                 </h:panelGroup>
 
                 <h:outputLabel for="cnpostfixgroup"
-                    value="#{web.text.CERT_SUBJECTDN_CNPOSTFIX}" />
-                <h:panelGroup id="cnpostfixgroup">
+                    value="#{web.text.CERT_SUBJECTDN_CNPOSTFIX}" 
+                    rendered="#{!certProfileBean.typeSsh}"/>
+                <h:panelGroup id="cnpostfixgroup"
+                	rendered="#{!certProfileBean.typeSsh}">
                     <h:selectBooleanCheckbox id="checkusecnpostfix"
                         styleClass="checkBoxOverlay"
                         value="#{certProfileBean.certificateProfile.useCNPostfix}"
@@ -2346,14 +2439,14 @@
                         value=" #{web.text.CERT_SUBJECTDN_CNPF_HELP}" />
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
                     <h:outputLabel for="checkusesubjectdnsubsetgroup"
                         value="#{web.text.CERT_SUBJECTDN_SUBSET}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Subset_of_Subject_DN')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="usesubjectdnsubsetgrid" columns="1">
+                <h:panelGrid id="usesubjectdnsubsetgrid" columns="1" rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup id="checkusesubjectdnsubsetgroup">
                         <h:selectBooleanCheckbox
                             id="checkusesubjectdnsubset"
@@ -2379,10 +2472,11 @@
                     </h:selectManyListbox>
                 </h:panelGrid>
 
-                <h:outputLabel for="checkusesubjectaltnamesubsetgroup"
+                <h:outputLabel for="checkusesubjectaltnamesubsetgroup" rendered="#{!certProfileBean.typeSsh}"
                     value="#{web.text.EXT_PKIX_SAN_SUBSET}" />
                 <h:panelGrid id="usesubjectaltnamesubsetgrid"
-                    columns="1">
+                    columns="1"
+                    rendered="#{!certProfileBean.typeSsh}">
                     <h:panelGroup id="checkusesubjectaltnamesubsetgroup">
                         <h:selectBooleanCheckbox
                             id="checkusesubjectaltnamesubset"
