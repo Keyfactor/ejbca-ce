@@ -102,6 +102,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       *            TimeMatch
       * @param index where the ResultSet should start
       * @param numberofrows maximum number of rows 
+      * 
       * @param caAuthorizationString
       *            a list of authorized CA Ids in the form 'cAId=... OR cAId=...'
       * @param endEntityProfileAuthorizationString
@@ -133,7 +134,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       * @return a List of ApprovalDataVO, never null
       */
      List<ApprovalDataVO> queryByStatus(boolean includeUnfinished, boolean includeProcessed, boolean includeExpired,
-             final Date startDate, final Date endDate, final Date expiresBefore, int index, int numberofrows, String caAuthorizationString,
-             String endEntityProfileAuthorizationString);
+             final Date startDate, final Date endDate, final Date expiresBefore, final String subjectDn, final String email, int index, int numberofrows, 
+             String caAuthorizationString, String endEntityProfileAuthorizationString);
 
 }

@@ -157,7 +157,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         
         String matchValue = null;
         if (accessMatchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
-           matchValue = StringTools.replaceWhitespaceAndColon(parameters.get(MATCH_VALUE_KEY));   
+           matchValue = StringTools.removeAllWhitespaceAndColon(parameters.get(MATCH_VALUE_KEY));   
         } else {
            matchValue = parameters.get(MATCH_VALUE_KEY);
         }  

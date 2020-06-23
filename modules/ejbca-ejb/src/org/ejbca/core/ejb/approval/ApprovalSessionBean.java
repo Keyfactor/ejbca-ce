@@ -57,6 +57,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.ProfileID;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValueExtractor;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
@@ -88,6 +89,7 @@ import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
+import org.ejbca.util.query.QueryWrapper;
 
 /**
  * Keeps track of approval requests and their approval or rejects.
@@ -235,6 +237,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
         //Kept for legacy reasons
         approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
+        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            AddEndEntityApprovalRequest addEndEntity = (AddEndEntityApprovalRequest) approvalRequest;           
+            approvalData.setEmail(addEndEntity.getEndEntityInformation().getEmail());
+            approvalData.setSubjectDn(addEndEntity.getEndEntityInformation().getDN());
+        }   
     }
 
     @Override
@@ -402,12 +409,18 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     public List<ApprovalDataVO> query(final Query query, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString) throws IllegalQueryException {
         log.trace(">query()");
+        final QueryWrapper queryWrapper = new QueryWrapper();
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
-        }
-        final String queryString = (query != null ? query.getQueryString() : "1 = 1");
-        final List<ApprovalDataVO> ret = queryInternal(queryString, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString, null);
+        }       
+        if (query != null) {
+            queryWrapper.add(query.getQueryString());
+        } else {           
+            queryWrapper.add("1 = 1");
+        }  
+
+        final List<ApprovalDataVO> ret = queryInternal(queryWrapper, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString, null);
         log.trace("<query()");
         return ret;
     }
@@ -415,7 +428,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalDataVO> queryByStatus(final boolean includeUnfinished, final boolean includeProcessed, final boolean includeExpired,
-            final Date startDate, final Date endDate, final Date expiresBefore, int index, int numberofrows, String caAuthorizationString,
+            final Date startDate, final Date endDate, final Date expiresBefore, final String subjectDn, final String email, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString) {
         log.trace(">queryByStatus()");
         
@@ -423,77 +436,76 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw new IllegalArgumentException("At least one of includeUnfinished, includeProcessed or includeExpired must be true");
         }
         
-        final StringBuilder sb = new StringBuilder();
+        QueryWrapper queryWrapper = new QueryWrapper();
         
         String orderByString = null;
-        sb.append('(');
+        queryWrapper.add("(");
         boolean first = true;
         if (includeUnfinished || includeExpired) {
-            sb.append('(');
+            queryWrapper.add("(");
             if (includeUnfinished && includeExpired) {
                 // No additional filtering
             } else if (!includeExpired) {
                 // Do not include expired requests
-                sb.append("expireDate >= ");
-                sb.append(new Date().getTime());
-                sb.append(" AND ");
+                queryWrapper.add("expireDate >=? AND ", new Date().getTime());
             } else if (includeExpired) {
-                sb.append("expireDate < ");
-                sb.append(new Date().getTime());
-                sb.append(" AND ");
+                queryWrapper.add("expireDate <? AND ", new Date().getTime());
             } else if (expiresBefore != null) {
                 // Only include expired requests
-                sb.append("expireDate < ");
-                sb.append(new Date().getTime());
-                sb.append(" AND ");
+                queryWrapper.add("expireDate <? AND ", new Date().getTime());
             }
             if (expiresBefore != null) {
-                sb.append("expireDate < ");
-                sb.append(expiresBefore.getTime());
-                sb.append(" AND ");
+                queryWrapper.add("expireDate <? AND ", expiresBefore.getTime());
             }
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
-            sb.append("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + (includeExpired ? ", " + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") + "))");
+            queryWrapper.add("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + (includeExpired ? ", " 
+                    +            + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") + "))");
             orderByString = "ORDER BY requestDate ASC"; // oldest first
             first = false;
         }
         if (includeProcessed) {
-            if (!first) { sb.append(" OR "); }
-            sb.append("status IN (" + ApprovalDataVO.STATUS_EXECUTED + ", " + ApprovalDataVO.STATUS_EXECUTIONDENIED + ", " +
-                    ApprovalDataVO.STATUS_EXECUTIONFAILED + ", " + ApprovalDataVO.STATUS_REJECTED + ")");
+            if (!first) {
+                queryWrapper.add(" OR ");
+            }
+            queryWrapper.add("status IN (" + ApprovalDataVO.STATUS_EXECUTED + ", " + ApprovalDataVO.STATUS_EXECUTIONDENIED + ", "
+                    + ApprovalDataVO.STATUS_EXECUTIONFAILED + ", " + ApprovalDataVO.STATUS_REJECTED + ")");
             orderByString = "ORDER BY requestDate DESC"; // most recently created first
             first = false;
         }
-        sb.append(')');
+        queryWrapper.add(")");
         
         if (startDate != null) {
-            sb.append(" AND requestDate >= " + startDate.getTime());
+            queryWrapper.add(" AND requestDate >=? ", startDate.getTime());
         }
         if (endDate != null) {
-            sb.append(" AND requestDate < " + endDate.getTime()); 
+            queryWrapper.add(" AND requestDate <? ", endDate.getTime());
         }
-        final List<ApprovalDataVO> ret = queryInternal(sb.toString(), index, numberofrows,
-                caAuthorizationString, endEntityProfileAuthorizationString,
+        if (subjectDn != null) {
+            queryWrapper.add(" AND subjectDn LIKE '%' || ? || '%'", subjectDn);
+        }
+        if (email != null) {
+            queryWrapper.add(" AND email LIKE '%' || ? || '%'", email);
+        }
+        final List<ApprovalDataVO> ret = queryInternal(queryWrapper, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);
         log.trace("<queryByStatus()");
         return ret;
     }
     
-    private List<ApprovalDataVO> queryInternal(final String query, int index, int numberofrows, String caAuthorizationString,
+    private List<ApprovalDataVO> queryInternal(final QueryWrapper queryWrapper, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString, final String orderByString) {
         log.trace(">queryInternal()");
-        String customQuery = "(" + query + ")";
         if (StringUtils.isNotEmpty(caAuthorizationString)) {
-            customQuery += " AND " + caAuthorizationString;
+            queryWrapper.add(" AND " + caAuthorizationString);
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
-            customQuery += " AND " + endEntityProfileAuthorizationString;
+            queryWrapper.add(" AND " + endEntityProfileAuthorizationString);
         }
         if (StringUtils.isNotEmpty(orderByString)) {
-            customQuery += " " + orderByString;
+            queryWrapper.add(" " + orderByString);
         }
         
-        final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, customQuery);
+        final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, queryWrapper);
         final List<ApprovalDataVO> returnData = new ArrayList<>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
             final ApprovalDataVO approvalInformation = approvalData.getApprovalDataVO();
@@ -912,7 +924,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     /** @return return the query results as a List<ApprovalData>. */
-    private List<ApprovalData> findByCustomQuery(final int index, final int numberofrows, final String customQuery) {
+    private List<ApprovalData> findByCustomQuery(final int index, final int numberofrows, final QueryWrapper queryWrapper) {
         final List<ApprovalData> ret = new ArrayList<ApprovalData>();
         /* Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
          * Ingres wont let us access a LOB in a List using a native query for all fields.
@@ -923,7 +935,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
          * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
          * where the first value is the value and the second is the row.
          */
-        final javax.persistence.Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
+        final javax.persistence.Query query = entityManager.createQuery("SELECT id FROM ApprovalData WHERE " + queryWrapper.getQueryString());
+        for (int i = 0; i < queryWrapper.getValues().size(); i++) {
+            query.setParameter(i + 1, queryWrapper.getValues().get(i));
+        }
         query.setFirstResult(index);
         query.setMaxResults(numberofrows);
         @SuppressWarnings("unchecked")
