@@ -16,6 +16,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+
 /**
  * A class used by Query class to build a query for EJBCA RA modules.
  *
@@ -100,5 +101,26 @@ public class TimeMatch extends BasicMatch {
     @Override
     public boolean isLegalQuery() {
         return startdate != null || enddate != null;
+    }
+
+    @Override
+    public void addToPreparedStatement(QueryWrapper queryWrapper) {   
+        queryWrapper.add("( ");
+        if (startdate != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Making match with startdate: " + startdate);
+            }
+            queryWrapper.add(MATCH_WITH_SQLNAMES[(type * 2) + matchwith] + " >= ? ", startdate.getTime());
+            if (enddate != null) {
+                queryWrapper.add(" AND ");
+            }
+        }
+        if (enddate != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Making match with enddate: " + enddate);
+            }
+            queryWrapper.add(MATCH_WITH_SQLNAMES[(type * 2) + matchwith] + " <= ? ", enddate.getTime());
+        }
+        queryWrapper.add(" )");
     }
 }
