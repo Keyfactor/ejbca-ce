@@ -135,9 +135,7 @@ public final class StringTools {
 
     private static final Pattern WS = Pattern.compile("\\s+");    
     private static final Pattern SPACE_AND_COLON = Pattern.compile("[: ]");
-    private static final Pattern PERCENT_SIGN = Pattern.compile("[%\"\\\\]");
 
-    
 
     /** plain numeric format 00001, 00002, etc */
     public static final int KEY_SEQUENCE_FORMAT_NUMERIC = 1;
@@ -389,19 +387,15 @@ public final class StringTools {
     /**
      * Remove all whitespace and colon
      * Remove "0x" if the serialNumber from input contain a "0x" prefix
+     *
+     * @param str
+     * @return a string/serialNumber from input without whitespace,colon and "0x" prefix, null if input is invalid
      */
-    public static String replaceWhitespaceAndColon(final String str) {
+    public static String removeAllWhitespaceAndColon(final String str) {
         if(str == null) {
             return null;
         }        
         return SPACE_AND_COLON.matcher(StringUtils.removeStart(str, "0x")).replaceAll("");
-    }
-
-    public static String replacePercentSign(String str) {
-        if(str == null) {
-            return null;
-        }
-        return PERCENT_SIGN.matcher(str).replaceAll("");
     }
 
     /**
