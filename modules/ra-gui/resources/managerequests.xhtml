@@ -110,6 +110,16 @@
                     </h:panelGroup>
                     
                     <h:panelGroup layout="block" styleClass="pure-control-group">
+                        <h:outputLabel for="searchSubjectDn" value="#{msg.manage_requests_page_search_subjectdn}"/>
+                        <h:inputText id="searchSubjectDn" value="#{raManageRequestsBean.customSearchSubjectDn}" size="10" />                                                        
+                    </h:panelGroup>
+                    
+                     <h:panelGroup layout="block" styleClass="pure-control-group">
+                        <h:outputLabel for="searchEmail" value="#{msg.manage_requests_page_search_email}"/>
+                        <h:inputText id="searchEmail" value="#{raManageRequestsBean.customSearchEmail}" size="15" />                                                        
+                    </h:panelGroup>                 
+                                         
+                    <h:panelGroup layout="block" styleClass="pure-control-group">
                         <h:commandButton id="customSearchCommand" action="#{raManageRequestsBean.searchAndFilter}"
                             value="#{msg.manage_requests_page_custom_search_command}" styleClass="pure-button ra-button"/>
                     </h:panelGroup>
