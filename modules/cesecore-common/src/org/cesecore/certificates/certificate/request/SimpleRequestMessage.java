@@ -30,8 +30,6 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CeSecoreNameStyle;
 
-
-
 /**
  * Class to handle simple requests from only a public key, all required parameters must be set.
  *

@@ -17,7 +17,7 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.2
  * 
  */
-@WebServiceClient(name = "EjbcaWSService", targetNamespace = "http://ws.protocol.core.ejbca.org/", wsdlLocation = "file:/Users/mikek/eclipse-workspace/ejbca_trunk_alpha/modules/dist/EjbcaWSService.wsdl")
+@WebServiceClient(name = "EjbcaWSService", targetNamespace = "http://ws.protocol.core.ejbca.org/", wsdlLocation = "file:/Users/mikek/eclipse-workspace/ejbca_trunk_beta/modules/dist/EjbcaWSService.wsdl")
 public class EjbcaWSService
     extends Service
 {
@@ -30,7 +30,7 @@ public class EjbcaWSService
         URL url = null;
         WebServiceException e = null;
         try {
-            url = new URL("file:/Users/mikek/eclipse-workspace/ejbca_trunk_alpha/modules/dist/EjbcaWSService.wsdl");
+            url = new URL("file:/Users/mikek/eclipse-workspace/ejbca_trunk_beta/modules/dist/EjbcaWSService.wsdl");
         } catch (MalformedURLException ex) {
             e = new WebServiceException(ex);
         }

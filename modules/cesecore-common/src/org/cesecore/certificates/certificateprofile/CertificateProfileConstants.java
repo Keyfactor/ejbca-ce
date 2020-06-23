@@ -43,6 +43,7 @@ public final class CertificateProfileConstants {
     public static final int CERTPROFILE_FIXED_SUBCA           = 2;
     public static final int CERTPROFILE_FIXED_ROOTCA          = 3;
 	public static final int CERTPROFILE_FIXED_OCSPSIGNER      = 4;
+	public static final int CERTPROFILE_FIXED_SSH             = 5;
 	public static final int CERTPROFILE_FIXED_SERVER          = 9;
 
     /**

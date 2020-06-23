@@ -19,10 +19,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -57,7 +60,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final long serialVersionUID = 3981761824188420320L;
 
     private static final float LATEST_VERSION = 4;
-
 
     /**
      * Used to store subject directory attributes, which are put in an extension in the certificate. SubjectDirectoryAttributes are standard
@@ -130,6 +132,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
     private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
+    
+    //SSH values, see https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD for more information
+    /** Principals to add to the SSH certificate for this end entity. */
+    private static String SSH_PRINCIPALS = "SSH_PRINCIPALS";
+    /** Critical options to add to the SSH certificate for this end entity. */
+    private static String SSH_CRITICAL_OPTIONS = "SSH_CRITICAL_OPTIONS";
     
 
     /** Creates a new instance of ExtendedInformation */
@@ -247,6 +255,30 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<String> getSshPrincipals() {
+        if(!data.containsKey(SSH_PRINCIPALS)) {
+            data.put(SSH_PRINCIPALS, new HashSet<>());
+        }
+        return (Set<String>) data.get(SSH_PRINCIPALS);
+    }
+    
+    public void setSshPrincipals(final Set<String> principals) {
+        data.put(SSH_PRINCIPALS, principals);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getSshCriticalOptions() {
+        if(!data.containsKey(SSH_CRITICAL_OPTIONS)) {
+            data.put(SSH_CRITICAL_OPTIONS, new HashMap<>());
+        }
+        return (Map<String, String>) data.get(SSH_CRITICAL_OPTIONS);
+    }
+    
+    public void setSshCriticalOptions(final Map<String, String> criticalOptions) {
+        data.put(SSH_CRITICAL_OPTIONS, criticalOptions);
+    }
+    
     /**
      * @return The number of remaining allowed failed login attempts or -1 for unlimited
      */

@@ -205,7 +205,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public byte[] getResponseMessage() throws CertificateEncodingException {
+    public byte[] getResponseMessage() {
         return responseMessage;
     }
 
