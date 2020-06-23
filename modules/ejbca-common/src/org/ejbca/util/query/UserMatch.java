@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.util.query;
 
+import java.util.Locale;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -163,5 +165,52 @@ public class UserMatch extends BasicMatch {
     
     private boolean isSubjectAltNameMatch() {
         return this.matchwith >= 200 && this.matchwith < 300;
+    }
+    
+    @Override
+    public void addToPreparedStatement(QueryWrapper queryWrapper) {
+        queryWrapper.add("");
+        final String matchvalue = this.matchvalue.toUpperCase(Locale.ROOT);
+        if (isSubjectDNMatch()) {
+            // Ignore MATCH_TYPE_EQUALS.
+            queryWrapper.add(MATCH_WITH_SUBJECTDN + " LIKE " + "'%' || ? || '%'", MATCH_WITH_SUBJECTDN_NAMES[matchwith - 100] +  matchvalue);
+        } else if (isSubjectAltNameMatch()) {
+            queryWrapper.add(MATCH_WITH_SUBJECTALTNAME + " LIKE " + "'%' || ? || '%'",MATCH_WITH_SUBJECTALTNAME_NAMES[matchwith - 200] +  matchvalue);
+        } else if (matchwith == MATCH_WITH_DN) {
+            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+                queryWrapper.add(MATCH_WITH_SUBJECTDN + " = ?", matchvalue.trim());
+            } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                queryWrapper.add(MATCH_WITH_SUBJECTDN + " LIKE ? || '%'", matchvalue);
+            } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+                queryWrapper.add(MATCH_WITH_SUBJECTDN + " LIKE '%' || ? || '%'", matchvalue);
+            }
+        } else if (matchwith == MATCH_WITH_USERNAME) {
+            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+                queryWrapper.add(MATCH_WITH_USERNAMESTRING + " = ?", matchvalue.trim());
+            } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                queryWrapper.add(MATCH_WITH_USERNAMESTRING + " LIKE ? || '%'", matchvalue);
+            } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+                queryWrapper.add(MATCH_WITH_USERNAMESTRING + " LIKE '%' || ? || '%'", matchvalue);
+            }
+        } else if (matchwith == MATCH_WITH_EMAIL) {
+            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+                queryWrapper.add(MATCH_WITH_EMAILSTRING + " = ?", matchvalue.trim());
+            } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                queryWrapper.add(MATCH_WITH_EMAILSTRING + " LIKE ? || '%'", matchvalue);
+            } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+                queryWrapper.add(MATCH_WITH_EMAILSTRING + " LIKE '%' || ? || '%'", matchvalue);
+            }
+        } else if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+            // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+            // like "where status='10'" instead of "where status=10", we have to have some special handling here.
+            Object value = matchvalue;
+            if (matchwith == MATCH_WITH_STATUS || matchwith == MATCH_WITH_CA || matchwith == MATCH_WITH_CERTIFICATEPROFILE
+                    || matchwith == MATCH_WITH_ENDENTITYPROFILE || matchwith == MATCH_WITH_TOKEN) {
+                value = Integer.parseInt(matchvalue);
+            }
+            queryWrapper.add(MATCH_WITH_SQLNAMES[matchwith] + " = ?", value);
+        } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+            queryWrapper.add(MATCH_WITH_SQLNAMES[matchwith] + " LIKE ? || '%'", matchvalue);
+        }
     }
 }
