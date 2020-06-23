@@ -46,6 +46,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
@@ -101,6 +102,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private final List<String> editerrors = new ArrayList<>();
     private String validityStartTime;
     private String validityEndTime;
+    private String currentSubjectDnAttribute;
+    private String currentSubjectDirectoryAttribute;
+    private String currentSshField;
+    private List<NameComponentGuiWrapper> subjectDnComponentList = null;
+    private List<NameComponentGuiWrapper> subjectAltNameComponentList;
+    private List<NameComponentGuiWrapper> sshFieldList = null;
 
     private Part templateFileUpload;
 
@@ -535,8 +542,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return attributesReturned;
     }
 
-    private String currentSubjectDnAttribute;
-
     public String getCurrentSubjectDNAttribute() {
         return currentSubjectDnAttribute;
     }
@@ -563,7 +568,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         subjectDnComponentList = null; // reload state from profile
     }
 
-    public List<NameComponentGuiWrapper> subjectDnComponentList;
+    
 
     public List<NameComponentGuiWrapper> getSubjectDnComponentList() {
         if (subjectDnComponentList == null) {
@@ -582,10 +587,65 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
         return subjectDnComponentList;
     }
+    
+    public List<NameComponentGuiWrapper> getSshFieldList() {
+        if(sshFieldList == null) {
+            final List<NameComponentGuiWrapper> principals = new ArrayList<>();
+            final List<int[]> fieldDataList = new ArrayList<>();
+            final int numberOfFields = profiledata.getSshFieldOrderLength();
+            for (int i = 0; i < numberOfFields; i++) {
+                fieldDataList.add(profiledata.getSshFieldsInOrder(i));
+            }
+            for (int[] field : fieldDataList) {
+                final String fieldName = ejbcaWebBean.getText(SshEndEntityProfileFields.getLanguageKey(field[EndEntityProfile.FIELDTYPE]));
+                principals.add(new NameComponentGuiWrapper(fieldName, field, false, false));
+            }
+            sshFieldList = principals;
+        }
+        return sshFieldList;
+    }
+    
+    public String getCurrentSshField() {
+        return currentSshField;
+    }
+    
+    public void setCurrentSshField(final String currentSshField) {
+         this.currentSshField = currentSshField;
+    }
 
+    public List<SelectItem> getSshFields() {
+        final List<SelectItem> attributesReturned = new ArrayList<>();
+        final String[] attributeStrings = EndEntityProfile.getSshFieldProfileFields();
+        Map<String, String> sshFields = SshEndEntityProfileFields.getSshFields();
+        for (final String attribute : attributeStrings) {
+            if (currentSshField == null) {
+                currentSshField = attribute;
+            }
+            final String displayText = sshFields.get(attribute);
+            attributesReturned.add(new SelectItem(attribute, displayText));
+        }
+        return attributesReturned;
+    }
+    
+    public void addSshField() {
+        if (StringUtils.isBlank(currentSshField)) {
+            log.debug("No SSH Field attribute type selected");
+            return;
+        }
+        profiledata.addField(currentSshField);
+        sshFieldList = null; // reload state from profile
+    }
+    
+    public void removeSshField() {
+        for (final NameComponentGuiWrapper nameComponent : getSshFieldList()) {
+            if (nameComponent.isShouldRemove()) {
+                profiledata.removeField(nameComponent.getFieldType(), nameComponent.getNumber());
+            }
+        }
+        sshFieldList = null; // reload state from profile
+    }
+    
     // OTHER SUBJECT ATTRIBUTES
-
-    public List<NameComponentGuiWrapper> subjectAltNameComponentList;
 
     public List<SelectItem> getSubjectAltNameTypes() {
         final List<SelectItem> subjectAltNamesReturned = new ArrayList<>();
@@ -669,8 +729,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return subjectDirectoryAttributesReturned;
     }
 
-    private String currentSubjectDirectoryAttribute;
-
     public void addSubjectDirectoryAttribute() {
         profiledata.addField(currentSubjectDirectoryAttribute);
         subjectDirectoryAttributesComponentList = null; // reload state from profile
@@ -716,9 +774,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final List<SelectItem> allAuthorizedCertProfiles = new ArrayList<>();
         final TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
         final TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
+        final TreeMap<String, Integer> sshcertificateprofilenames = ejbcaWebBean.getAuthorizedSshCertificateProfileNames();
         final TreeMap<String, Integer> mergedMap = new TreeMap<>();
         mergedMap.putAll(eecertificateprofilenames);
         mergedMap.putAll(subcacertificateprofilenames);
+        mergedMap.putAll(sshcertificateprofilenames);
         for (final Entry<String,Integer> entry : mergedMap.entrySet()) {
             final int certProfileId = entry.getValue(); // map is inverted
             final String certProfileName = entry.getKey();

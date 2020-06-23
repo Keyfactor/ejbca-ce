@@ -346,7 +346,6 @@ public class KeyStoreTools {
      */
     public void generateKeyPair(final String keySpec, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
-
         if (keySpec.toUpperCase().startsWith("ED")) {
             generateEdDSA(keySpec, keyEntryName);
         } else if (keySpec.toUpperCase().startsWith("DSA")) {
@@ -416,6 +415,8 @@ public class KeyStoreTools {
             this.keySize = _keySize;
         }
     }
+        
+    
     private void generateKeyPair(
             final AlgorithmParameterSpec keyParams, final String keyAlias,
             final String keyAlgorithm,
@@ -449,7 +450,9 @@ public class KeyStoreTools {
                 final KeyPair keyPair = kpg.generateKeyPair();
                 final X509Certificate selfSignedCert = getSelfCertificate("CN=Dummy certificate created by a CESeCore application", (long) 30 * 24 * 60 * 60 * 365, certSignAlgorithms, keyPair);
                 final X509Certificate chain[] = new X509Certificate[]{selfSignedCert};
-                log.debug("Creating certificate with entry " + keyAlias + '.');
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating certificate with entry " + keyAlias + '.');
+                }
                 setKeyEntry(keyAlias, keyPair.getPrivate(), chain);
                 if ( CesecoreConfiguration.makeKeyUnmodifiableAfterGeneration() ) {
                     PKCS11Utils.getInstance().makeKeyUnmodifiable(keyPair.getPrivate(), this.providerName);

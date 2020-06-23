@@ -81,7 +81,6 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;

@@ -548,6 +548,9 @@ public class JAXWSDocAndConvTools {
 					}
 				}
 			}
+			if(server.methods.get(s) == null) {
+			    System.err.println("foo: " + s);
+			}
 			String jdoc = server.methods.get(s).java_doc;
 			if (jdoc == null) { 
 				bad ("missing javadoc for " + s);
