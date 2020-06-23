@@ -37,6 +37,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -153,6 +154,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     
     /** CA/B Forum Organization Identifier extension */
     private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";
+    
 
     // Default values
     // These must be in a strict order that can never change 
@@ -192,6 +194,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(NAMECONSTRAINTS_PERMITTED, 89);
     	DATA_CONSTANTS.put(NAMECONSTRAINTS_EXCLUDED, 88);
     	DATA_CONSTANTS.put(CABFORGANIZATIONIDENTIFIER, 87);
+    	
+    	DATA_CONSTANTS.put(CABFORGANIZATIONIDENTIFIER, 87);
+    	
+    	DATA_CONSTANTS.put(SshEndEntityProfileFields.SSH_PRINCIPAL, SshEndEntityProfileFields.SSH_PRINCIPAL_FIELD_NUMBER);
+    	DATA_CONSTANTS.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER);
+    	DATA_CONSTANTS.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_FIELD_NUMBER);
     }
 	// The max value in dataConstants (we only want to do this once)
     private static final int DATA_CONSTANTS_MAX_VALUE = Collections.max(DATA_CONSTANTS.values());
@@ -236,7 +244,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static final int NUMBER    = 1;
 
 
-    /** Number array keeps track of how many fields there are of a specific type, for example 2 OranizationUnits, 0 TelephoneNumber */
+    /** Number array keeps track of how many fields there are of a specific type, for example 2 OrganizationUnits, 0 TelephoneNumber */
     private static final String NUMBERARRAY               = "NUMBERARRAY";
     private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
     private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
@@ -308,6 +316,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         data.put(SUBJECTDNFIELDORDER, new ArrayList<Integer>());
         data.put(SUBJECTALTNAMEFIELDORDER, new ArrayList<Integer>());
         data.put(SUBJECTDIRATTRFIELDORDER, new ArrayList<Integer>());
+        data.put(SshEndEntityProfileFields.SSH_FIELD_ORDER, new ArrayList<Integer>());
         
         if (emptyProfile) {
         	for (final String key : DATA_CONSTANTS_USED_IN_EMPTY) {
@@ -430,19 +439,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	if (DnComponents.isDnProfileField(parameterName)) {
     		@SuppressWarnings("unchecked")
-            final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
+            final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     		final int val = (NUMBERBOUNDRARY*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isAltNameField(parameterName)) {
     		@SuppressWarnings("unchecked")
-            final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
+            final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     		final int val = (NUMBERBOUNDRARY*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isDirAttrField(parameterName)) {
     		@SuppressWarnings("unchecked")
-            final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
+            final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     		final int val = (NUMBERBOUNDRARY*parameter) + size;
     		fieldorder.add(val);
+    	} else if(SshEndEntityProfileFields.isSshField(parameterName)) {
+    	    @SuppressWarnings("unchecked")
+            final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SshEndEntityProfileFields.SSH_FIELD_ORDER);
+            final int val = (NUMBERBOUNDRARY*parameter) + size;
+            fieldorder.add(val);
     	}
     	incrementFieldnumber(parameter);
     }
@@ -471,23 +485,29 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		// Remove last element from Subject DN order list.
     		if (DnComponents.isDnProfileField(param)) {
     			@SuppressWarnings("unchecked")
-                final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
+                final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
     			fieldOrder.remove(value); // must use Integer type to avoid calling remove(index) method
     		}
     		// Remove last element from Subject AltName order list.
     		if (DnComponents.isAltNameField(param)) {
     			@SuppressWarnings("unchecked")
-                final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
+                final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
     			fieldOrder.remove(value);
     		}
     		// Remove last element from Subject DirAttr order list.
     		if (DnComponents.isDirAttrField(param)) {
     			@SuppressWarnings("unchecked")
-                final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
+                final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
     			fieldOrder.remove(value);
+    		}
+    		if(SshEndEntityProfileFields.isSshField(param)) {
+    		    @SuppressWarnings("unchecked")
+                final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SshEndEntityProfileFields.SSH_FIELD_ORDER);
+                final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+                fieldOrder.remove(value);
     		}
     		// Remove last element of the type from hashmap
     		data.remove(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY * (size - 1)) + parameter);
@@ -679,6 +699,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     @SuppressWarnings("unchecked")
     public int getSubjectDNFieldOrderLength(){
+        if(data.get(SUBJECTDNFIELDORDER) == null) {
+            data.put(SUBJECTDNFIELDORDER, new ArrayList<>());
+        }
     	return ((ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER)).size();
     }
 
@@ -738,6 +761,64 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
     	return returnval;
+    }
+    
+    public int[] getSshFieldsInOrder(final int index) {
+        final int[] returnval = new int[2];
+        @SuppressWarnings("unchecked")
+        final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SshEndEntityProfileFields.SSH_FIELD_ORDER);
+        final int i = fieldOrder.get(index);
+        returnval[NUMBER] = i % NUMBERBOUNDRARY;
+        returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+        return returnval;
+    }
+    
+    public String getSshForceCommand() {
+        return getValue(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, 0);
+    }
+
+    public void setSshForceCommand(final String domain) {
+        setValue(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, domain);
+    }
+
+    public boolean isSshForceCommandModifiable() {
+        return isModifyable(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, 0);
+    }
+
+    public void setSshForceCommandModifiable(final boolean modifiable) {
+        setModifyable(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, modifiable);
+    }
+
+    public boolean isSshForceCommandRequired() {
+        return isRequired(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, 0);
+    }
+
+    public void setSshForceCommandRequired(final boolean required) {
+        setRequired(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, required);
+    }
+    
+    public String getSshSourceAddress() {
+        return getValue(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0);
+    }
+
+    public void setSshSourceAddress(final String address) {
+        setValue(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, address);
+    }
+
+    public boolean isSshSourceAddressModifiable() {
+        return isModifyable(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0);
+    }
+
+    public void setSshSourceAddressModifiable(final boolean modifiable) {
+        setModifyable(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, modifiable);
+    }
+
+    public boolean isSshSourceAddressRequired() {
+        return isRequired(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0);
+    }
+
+    public void setSshSourceAddressRequired(final boolean required) {
+        setRequired(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, required);
     }
     
     /**
@@ -2739,7 +2820,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static String[] getSubjectDirAttrProfileFields() {
     	return DnComponents.getDirAttrFields().toArray(new String[0]);
     }
-
+    
+    public static String[] getSshFieldProfileFields() {
+        return SshEndEntityProfileFields.getSshFields().keySet().toArray(new String[0]);
+    }
+    
     public boolean isNameConstraintsPermittedUsed() {
         return getUse(NAMECONSTRAINTS_PERMITTED, 0);
     }
@@ -2804,6 +2889,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setRequired(CABFORGANIZATIONIDENTIFIER, 0, required);
     }
 
+    @SuppressWarnings("unchecked")
+    public int getSshFieldOrderLength(){
+        if(data.get(SshEndEntityProfileFields.SSH_FIELD_ORDER) == null) {
+            data.put(SshEndEntityProfileFields.SSH_FIELD_ORDER, new ArrayList<>());
+        }
+        return ((ArrayList<Integer>) data.get(SshEndEntityProfileFields.SSH_FIELD_ORDER)).size();
+    }
+    
+    
     /**
      * @return true if it should be possible to add extension data in the GUI.
      */

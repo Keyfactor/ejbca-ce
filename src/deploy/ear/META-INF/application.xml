@@ -92,6 +92,7 @@
        <!--@ra-gui.war@-->
        <!--@acme.war@-->
        <!--@est.war@-->
+       <!--@ssh.war@-->
        <!--@unidfnr-ejb.jar@-->
        <!--@ejbca-rest-api.war@-->
        <!--@swagger-ui.war@-->

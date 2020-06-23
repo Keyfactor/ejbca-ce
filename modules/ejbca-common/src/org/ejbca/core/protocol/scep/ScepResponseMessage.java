@@ -194,7 +194,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public byte[] getResponseMessage() throws CertificateEncodingException {
+    public byte[] getResponseMessage() {
         return responseMessage;
     }
 
