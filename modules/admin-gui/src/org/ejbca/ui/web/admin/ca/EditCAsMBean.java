@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -56,6 +57,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -67,6 +69,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -314,12 +317,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setCaType(CAInfo.CATYPE_CVC);
     }
     
+    public void setCaTypeSSH() {
+        caInfoDto.setCaType(CAInfo.CATYPE_SSH);
+    }
+    
     public String getCurrentCaType() {
         switch (caInfoDto.getCaType()) {
         case CAInfo.CATYPE_X509:
             return "X509";
         case CAInfo.CATYPE_CVC:
             return "CVC";
+        case CAInfo.CATYPE_SSH:
+            return SshCa.CA_TYPE;
         default:
             return "UNKNOWN";
         }
@@ -578,6 +587,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public boolean isCaTypeCVC() {
         return caInfoDto.getCaType() == CAInfo.CATYPE_CVC;
+    }
+    
+    public boolean isCaTypeSSH() {
+        return caInfoDto.getCaType() == CAInfo.CATYPE_SSH;
     }
     
     public String getCaSubjectAltName() {
@@ -1146,6 +1159,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public boolean isRenderCvcAvailable() {
         return (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) && (!isCvcAvailable || isUniqueIssuerDnSerialNoIndexPresent);
+    }
+    
+    public boolean isRenderSshAvailable() {
+        return CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE);
     }
     
     public boolean isCvcAvailable() {

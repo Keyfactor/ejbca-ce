@@ -210,7 +210,21 @@ public class CAInfoView implements Serializable, Cloneable {
         
         final String caTypeText = ejbcawebbean.getText("CATYPE");
         final int caType = cainfo.getCAType();
-        final String caTypeValue = (caType == CAInfo.CATYPE_CVC) ? ejbcawebbean.getText("CVCCA") : ejbcawebbean.getText("X509");
+        final String caTypeValue;
+        switch(caType) {
+        case CAInfo.CATYPE_CVC:
+            caTypeValue = ejbcawebbean.getText("CVCCA");
+            break;
+        case CAInfo.CATYPE_X509:
+            caTypeValue = ejbcawebbean.getText("X509");
+            break;
+        case CAInfo.CATYPE_SSH:
+            caTypeValue = "SSH";
+            break;
+        default:
+            caTypeValue = "";
+            break;
+        }        
         caGuiInfo.setCaType(new CaInfoProperty(caTypeText, caTypeValue));
         
         final String expireTimeText = ejbcawebbean.getText("EXPIRES");

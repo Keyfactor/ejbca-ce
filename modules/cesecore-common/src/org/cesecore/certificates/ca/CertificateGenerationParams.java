@@ -67,11 +67,11 @@ public final class CertificateGenerationParams implements Serializable {
 
     /* Package internal methods are called from X509CA */
 
-    CTSubmissionConfigParams getCTSubmissionConfigParams() {
+    public CTSubmissionConfigParams getCTSubmissionConfigParams() {
         return ctSubmissionConfigParams;
     }
 
-    CTAuditLogCallback getCTAuditLogCallback() {
+    public CTAuditLogCallback getCTAuditLogCallback() {
         return ctAuditLogCallback;
     }
 
