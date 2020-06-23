@@ -361,7 +361,7 @@ public class XmlSerializer {
             return "double";
         }
         // instanceof Properties covered by o instanceof Map
-        if ((o instanceof Date) || (o instanceof Map) || (o instanceof List) || (o instanceof PKIDisclosureStatement)) {
+        if ((o instanceof Date) || (o instanceof Map) || (o instanceof List) || (o instanceof Set) ||  (o instanceof PKIDisclosureStatement)) {
             return "object";
         }
         throw new IllegalArgumentException("encodeSimpleMapFast does not handle type: " + o.getClass().getName());
