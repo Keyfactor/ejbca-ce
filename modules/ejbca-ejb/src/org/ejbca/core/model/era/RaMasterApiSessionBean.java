@@ -1948,12 +1948,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOW);
-            ExtendedInformation extendedInformation = (endEntityInformation.getExtendedInformation() != null
-                    ? endEntityInformation.getExtendedInformation()
-                    : new ExtendedInformation());
-            extendedInformation.setSshPrincipals(new HashSet<>(sshRequestMessage.getPrincipals()));
-            extendedInformation.setSshCriticalOptions(sshRequestMessage.getCriticalOptions());
-            endEntityInformation.setExtendedInformation(extendedInformation);
             SshResponseMessage sshResponseMessage = (SshResponseMessage) certificateRequestSession.processCertReq(authenticationToken,
                     endEntityInformation, sshRequestMessage, SshResponseMessage.class);
             return sshResponseMessage.getResponseMessage();
