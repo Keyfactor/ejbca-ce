@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.ssh.SshCa;
+import org.cesecore.certificates.ca.ssh.SshCaInfo;
 
 
 /**
@@ -21,6 +23,8 @@ public enum CAFactory {
     private static final String CA_TYPE_X509 = "X509CA";
     private static final String CA_TYPE_X509_EXT = "X509CA_EXTERNAL";
     private static final String CA_TYPE_CVC_EAC = "CVC_EAC";
+    private static final String CA_TYPE_SSH = SshCa.CA_TYPE;
+
 
     private static final Logger log = Logger.getLogger(CAFactory.class);
     
@@ -73,6 +77,9 @@ public enum CAFactory {
         return null;
     }
     
+    public boolean existsCaType(final String caType) {
+        return caImplMap.containsKey(caType);
+    }
     
     public CACommon getCvcCaImpl(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
             final Date updateTime, final Date expireTime) {
@@ -88,6 +95,23 @@ public enum CAFactory {
             return CvcCABase.getInstance(cvccainfo);
         }
         log.error("CVC CA implementation not found");
+        return null;
+    }
+    
+    public CACommon getSshCaImpl(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
+            final Date updateTime, final Date expireTime) {
+        if (caImplMap.containsKey(CA_TYPE_SSH)) {
+            return createCaByImpl(CA_TYPE_SSH, data, caId, subjectDn, name, status, updateTime, expireTime);
+        }
+        log.error("SSH CA implementation not found");
+        return null;
+    }
+    
+    public CACommon getSshCaImpl(SshCaInfo caInfo) {
+        if (caImplMap.containsKey(CA_TYPE_SSH)) {
+            return createCaByImpl(CA_TYPE_SSH, SshCaInfo.class, caInfo);
+        }
+        log.error("SSH CA implementation not found");
         return null;
     }
     

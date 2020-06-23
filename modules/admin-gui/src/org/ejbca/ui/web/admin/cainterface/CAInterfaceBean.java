@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -65,6 +66,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -496,7 +498,7 @@ public class CAInterfaceBean implements Serializable {
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
-	        if (caInfoDto.isCaTypeX509()) {
+	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
 	            if (caInfoDto.getCaSubjectAltName() == null) {
                     caInfoDto.setCaSubjectAltName("");
@@ -623,9 +625,7 @@ public class CAInterfaceBean implements Serializable {
 	                    saveRequestInfo(x509cainfo);                
 	                }
 	            }
-	        }
-
-	        if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
+	        } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
 	            // Only default values for these that are not used
 	            long crlPeriod = 2400;
 	            long crlIssueInterval = 0;
@@ -662,7 +662,95 @@ public class CAInterfaceBean implements Serializable {
 	                    saveRequestInfo(cvccainfo);                
 	                }
 	            }
-	        }
+	        } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
+                // Create a X509 CA
+                if (caInfoDto.getCaSubjectAltName() == null) {
+                    caInfoDto.setCaSubjectAltName("");
+                }
+
+                // Check for invalid or malformed SAN
+                String errorMessage = checkSubjectAltName(caInfoDto.getCaSubjectAltName());
+                if (!StringUtils.isEmpty(errorMessage)) {
+                   throw new ParameterException(errorMessage);
+                }
+                // TODO: Implement KRL publishing after initial release
+                
+                // TODO: Implement validators after initial release
+                //final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
+                
+           
+                final List<String> nameConstraintsPermitted = parseNameConstraintsInput(caInfoDto.getNameConstraintsPermitted());
+                final List<String> nameConstraintsExcluded = parseNameConstraintsInput(caInfoDto.getNameConstraintsExcluded());
+                final boolean hasNameConstraints = !nameConstraintsPermitted.isEmpty() || !nameConstraintsExcluded.isEmpty();
+                if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
+                   throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
+                }
+                
+                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
+                        Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
+                    SshCaInfo.SshCAInfoBuilder sshCAInfoBuilder = new SshCaInfo.SshCAInfoBuilder()
+                            .setSubjectDn(caInfoDto.getCaSubjectDN())
+                            .setName(caInfoDto.getCaName())
+                            .setStatus(CAConstants.CA_ACTIVE)
+                            .setCertificateProfileId(certprofileid)
+                            .setDefaultCertProfileId(defaultCertProfileId)
+                            .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                            .setEncodedValidity(caInfoDto.getCaEncodedValidity())
+                            .setCaType(caInfoDto.getCaType())
+                            .setCertificateChain(null)
+                            .setCaToken(caToken)
+                            .setDescription(caInfoDto.getDescription())
+                            .setCaSerialNumberOctetSize(caSerialNumberOctetSize)                                    
+                            .setFinishUser(caInfoDto.isFinishUser())
+                            .setExtendedCaServiceInfos(extendedCaServiceInfos)
+                            .setUseUtf8PolicyText(caInfoDto.isUseUtf8Policy())
+                            .setUsePrintableStringSubjectDN(caInfoDto.isUsePrintableStringSubjectDN())
+                            .setUseLdapDnOrder(caInfoDto.isUseLdapDNOrder())
+                            .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
+                            .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
+                            .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
+                            .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                            .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
+                            .setUseUserStorage(caInfoDto.isUseUserStorage())
+                            .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                            .setSubjectAltName(caInfoDto.getCaSubjectAltName())
+                            .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                            // TODO: SSH, add approvals here
+                            .setApprovals(new HashMap<ApprovalRequestType, Integer>());
+              
+                    
+                    
+                            
+                    if (buttonCreateCa) {
+                        SshCaInfo sshCaInfo = sshCAInfoBuilder
+                                .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
+                                .setSignedBy(signedBy)
+                                .build();
+                        try {
+                            caadminsession.createCA(authenticationToken, sshCaInfo);
+                        } catch (EJBException e) {
+                            if (e.getCausedByException() instanceof IllegalArgumentException) {
+                                //Couldn't create CA from the given parameters
+                                illegaldnoraltname = true;
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
+
+                    if (buttonMakeRequest) {
+                        SshCaInfo sshCaInfo =  sshCAInfoBuilder
+                                .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
+                                .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check because it's not active
+                                .build();
+                        saveRequestInfo(sshCaInfo);                
+                    }
+                }
+            } else {
+                throw new IllegalStateException("Unknown CA type with identifier " + caInfoDto.getCaType() + " was encountered.");
+            }
 	    }
         if (buttonMakeRequest && !illegaldnoraltname) {
             CAInfo cainfo = getRequestInfo();
@@ -901,9 +989,10 @@ public class CAInterfaceBean implements Serializable {
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                        .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                cainfo = x509CAInfoBuilder.buildForUpdate();
-            }
-           // Info specific for CVC CA
-           if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
+               // Info specific for CVC CA
+               
+           
                // Edit CVC CA data                            
                // A CVC CA does not have any of the external services OCSP, CMS
                final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
@@ -922,7 +1011,32 @@ public class CAInterfaceBean implements Serializable {
                        caInfoDto.isUseUserStorage(),
                        caInfoDto.isUseCertificateStorage(),
                        caInfoDto.isAcceptRevocationsNonExistingEntry(), caInfoDto.getDefaultCertProfileId());
-           }
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
+                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
+                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize())
+                        : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(),
+                        caInfoDto.isServiceCmsActive());
+
+                SshCaInfo.SshCAInfoBuilder sshCAInfoBuilder = new SshCaInfo.SshCAInfoBuilder().setSubjectDn(caInfoDto.getCaSubjectDN())
+                        .setName(caInfoDto.getCaName()).setStatus(CAConstants.CA_ACTIVE)
+                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                        .setEncodedValidity(caInfoDto.getCaEncodedValidity()).setCaType(caInfoDto.getCaType()).setCertificateChain(null)
+                        .setCaToken(catoken).setDescription(caInfoDto.getDescription()).setCaSerialNumberOctetSize(caSerialNumberOctetSize)
+                        .setFinishUser(caInfoDto.isFinishUser()).setExtendedCaServiceInfos(extendedCaServiceInfos)
+                        .setUseUtf8PolicyText(caInfoDto.isUseUtf8Policy()).setUsePrintableStringSubjectDN(caInfoDto.isUsePrintableStringSubjectDN())
+                        .setUseLdapDnOrder(caInfoDto.isUseLdapDNOrder()).setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
+                        .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
+                        .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
+                        .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                        .setUseCertReqHistory(caInfoDto.isUseCertReqHistory()).setUseUserStorage(caInfoDto.isUseUserStorage())
+                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage()).setSubjectAltName(caInfoDto.getCaSubjectAltName())
+                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                        .setCaId(caid)
+                        // TODO: SSH, add approvals here
+                        .setApprovals(new HashMap<ApprovalRequestType, Integer>());
+                cainfo = sshCAInfoBuilder.buildForUpdate();
+            }
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(caInfo.getStatus());
             cainfo.setName(caInfo.getName());

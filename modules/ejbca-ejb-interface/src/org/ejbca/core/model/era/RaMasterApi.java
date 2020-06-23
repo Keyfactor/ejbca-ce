@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
@@ -57,6 +58,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -69,6 +71,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.GlobalAcmeConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -103,6 +106,7 @@ import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.cvc.exception.ConstructionException;
@@ -575,6 +579,24 @@ public interface RaMasterApi {
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
             EndEntityProfileValidationException;
+    
+    /**
+     * Enrolls a new end entity and creates an SSH certificate according to the profiles defined for that end entity
+     * 
+     * @param authenticationToken an authentication token
+     * @param userDataVOWS a {@link UserDataVOWS} object describing the end entity to be created
+     * @param sshRequestMessage a {@link SshRequestMessage} container with the request details
+     * 
+     * @return an SSH encoded certificate
+     * 
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
+     * @throws ApprovalException if the request requires approval
+     * @since RA Master API version 9 (EJBCA 7.4.1)
+     */
+    byte[] enrollAndIssueSshCertificateWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOW, SshRequestMessage sshRequestMessage)
+            throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException;
 
     /**
      * Generates a certificate. This variant is used from the REST Service interface.
@@ -946,7 +968,17 @@ public interface RaMasterApi {
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
     Collection<CertificateWrapper> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
-
+    
+    /**
+     * Retrieved the CA's public key as an SSH Public Key
+     * 
+     * @param caName the name of the CA
+     * @return the CA's public key encoded in SSH format
+     * @throws SshKeyException if the CA is not an SSH CA
+     * @throws CADoesntExistsException if the CA doesn't exist
+     */
+    byte[] getSshCaPublicKey(final String caName) throws SshKeyException, CADoesntExistsException;
+    
     /**
      * Finds count of certificates  expiring within a specified time and that have
      * status "active" or "notifiedaboutexpiration".
@@ -1211,6 +1243,7 @@ public interface RaMasterApi {
     * @see org.ejbca.core.ejb.ca.sign.SignSession#createCardVerifiableCertificateWS
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
+   @SuppressWarnings("deprecation")
    Collection<CertificateWrapper> processCardVerifiableCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String cvcreq)
            throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
@@ -1368,4 +1401,6 @@ public interface RaMasterApi {
      * @return the global configuration or null.
      */
     <T extends ConfigurationBase> T getGlobalConfiguration(Class<T> type);
+
+    
 }

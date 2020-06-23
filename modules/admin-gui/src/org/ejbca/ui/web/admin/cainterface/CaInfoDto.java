@@ -111,6 +111,11 @@ public class CaInfoDto {
     public boolean isCaTypeCVC() {
         return caType == CAInfo.CATYPE_CVC;
     }
+    
+    public boolean isCaTypeSsh() {
+        return caType == CAInfo.CATYPE_SSH;
+    }
+
 
     String getKeySequenceFormatAsString() {
         return String.valueOf(this.keySequenceFormat);
