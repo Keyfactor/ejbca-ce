@@ -55,9 +55,13 @@
 #ca.keystorepass=!secret!
 
 # Default Random Number Generator algorithm for certificate serial number generation.
-# Available algorithms are: SHA1PRNG, default, defaultstrong
+# Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
 # From Java 11 and onwards, DRGB is also available
 # See Java documentation on "SecureRandom Number Generation Algorithms", https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#securerandom-number-generation-algorithms
+# 
+# BCSP800Hybrid implements a FIPS/SP800 compliant DRBG chain. After initial seed generation the base source uses a 
+# separate thread to gather seed material and a core DRBG to satisfy any requests for seed material while it waits.
+# There is no noticeable performance difference using this algorithm, so it could be used instead of the default to prove a FIPS compliant method in use. 
 #
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
@@ -66,8 +70,11 @@
 #   Before using "defaultstrong" take note that it will on most cases use a blocking random number generator, 
 #   and if you don't have enough entropy it may take a long time, >60 seconds, to create a single random number (i.e. to generate a certificate). 
 #   Test well before using. 
-# Default value (if property left unset) is SHA1PRNG which is FIPS compliant according to Java documentation
+# Default value (if property left unset) is SHA1PRNG which is/was FIPS compliant according to Java documentation
 #ca.rngalgorithm=SHA1PRNG
+#ca.rngalgorithm=default
+#ca.rngalgorithm=DRBG
+#ca.rngalgorithm=BCSP800Hybrid
 
 # The default length in octets of certificate serial numbers configured when creating new CAs. 
 # Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 

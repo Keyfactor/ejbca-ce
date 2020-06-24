@@ -18,9 +18,18 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.crypto.prng.EntropySource;
+import org.bouncycastle.crypto.prng.EntropySourceProvider;
+import org.bouncycastle.crypto.prng.SP800SecureRandom;
+import org.bouncycastle.crypto.prng.SP800SecureRandomBuilder;
+import org.bouncycastle.util.Strings;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 
@@ -128,22 +137,35 @@ public class SernoGeneratorRandom implements SernoGenerator {
         // Init random number generator for random serial numbers. 
         // SecureRandom provides a cryptographically strong random number generator (CSPRNG).
         try {
-            // Use a specified algorithm if ca.rngalgorithm is provided and it's not set to default
-            if (!StringUtils.isEmpty(algorithm) && !StringUtils.containsIgnoreCase(algorithm, "default")) {
-                random = SecureRandom.getInstance(algorithm);
-                log.info("Using "+algorithm+" serialNumber RNG algorithm.");
-            } else if (!StringUtils.isEmpty(algorithm) && StringUtils.equalsIgnoreCase(algorithm, "defaultstrong")) {
+            if (StringUtils.equalsIgnoreCase(algorithm, "BCSP800HYBRID")) {
+                // Use a BC hybrid (FIPS/SP800 compliant) DRBG chain if ca.rngalgorithm is provided and it's defined as BCSP800Hybrid
+                // create the seed material source - note can only be used to seed others. More info at HybridSecureRandom below.
+                final SecureRandom source = new HybridSecureRandom();
+                // create an actual random we can use
+                random = new SP800SecureRandomBuilder(source, true)
+                     .setPersonalizationString(Strings.toByteArray("Bouncy Castle Hybrid Random"))
+                     .buildHash(new SHA512Digest(), null, false);
+                // Using FIPS libraries we could...
+                // random = FipsDRBG.SHA256.fromEntropySource(entropySource, true).build(null, true);
+                // and also register it as the default:
+                // CryptoServicesRegistrar.setSecureRandom(random);
+                log.info("Using FIPS/SP800 compliant Bouncy Castle Hybrid serialNumber RNG algorithm.");
+            } else if (StringUtils.equalsIgnoreCase(algorithm, "defaultstrong")) {
                 // If defaultstrong is specified and we use >=JDK8 try the getInstanceStrong to get a guaranteed strong random number generator.
                 // Note that this may give you a generator that takes >30 seconds to create a single random number. 
                 // On JDK8/Linux this gives you a NativePRNGBlocking, while SecureRandom.getInstance() gives a NativePRNG.
                 random = SecureRandom.getInstanceStrong();
                 log.info("Using SecureRandom.getInstanceStrong() with " + random.getAlgorithm() + " for serialNumber RNG algorithm.");
-            } else if (!StringUtils.isEmpty(algorithm) && StringUtils.equalsIgnoreCase(algorithm, "default")) {
+            } else if (StringUtils.equalsIgnoreCase(algorithm, "default")) {
                 // We entered "default" so let's use a good default SecureRandom this should be good enough for just about everyone (on Linux at least)
                 // On Linux the default Java implementation uses the (secure) /dev/(u)random, but on windows something else
                 // On JDK8/Linux this gives you a NativePRNG, while SecureRandom.getInstanceStrong() gives a NativePRNGBlocking.
                 random = new SecureRandom();
                 log.info("Using default " + random.getAlgorithm() + " serialNumber RNG algorithm.");
+            } else if (!StringUtils.isEmpty(algorithm)) {
+                // Use a specified algorithm if ca.rngalgorithm is provided and it's not set to BCSP800Hybrid, default or defaultstrong
+                random = SecureRandom.getInstance(algorithm);
+                log.info("Using "+algorithm+" serialNumber RNG algorithm.");
             }
         } catch (NoSuchAlgorithmException e) {
             //This state is unrecoverable, and since algorithm is set in configuration requires a redeploy to handle
@@ -221,6 +243,121 @@ public class SernoGeneratorRandom implements SernoGenerator {
      */
     protected String getAlgorithm() {
         return random.getAlgorithm();
+    }
+
+    //Random using SecureRandomgetInstanceStrong() with
+    //a FIPS compliant DRBG chain. Basically what happens is after initial
+    //seed generation the base source uses a separate thread to gather
+    //seed material and a core DRBG to satisfy any requests for seed material while
+    //it waits. The only restriction on its use is that the HybridSecureRandom
+    //can only be used as a source to other DRBGs which are then used
+    //to generate randomness - if it's used for generating keys as well it will no
+    //longer be FIPS compliant as the keys will effectively be exposing
+    //samples of the random stream that is being used for seeding other DRBGs.
+
+    /** Base seed material pool class */
+    private static class HybridSecureRandom extends SecureRandom {
+        private static final long serialVersionUID = 1L;
+        private final AtomicBoolean seedAvailable = new AtomicBoolean(false);
+        private final AtomicInteger samples = new AtomicInteger(0);
+        private final SecureRandom baseRandom;
+        private final SP800SecureRandom drbg;
+
+        HybridSecureRandom() {
+            super(null, null); // stop getDefaultRNG() call
+            try {
+                // JDK 1.8 and later
+                baseRandom = SecureRandom.getInstanceStrong();
+            } catch (Exception e) {
+                throw new IllegalStateException("unable to create baseRandom: " + e.getMessage(), e);
+            }
+            drbg = new SP800SecureRandomBuilder(new EntropySourceProvider() {
+                public EntropySource get(final int bitsRequired) {
+                    return new SignallingSeedMaterialSource(bitsRequired);
+                }
+            })
+            .setPersonalizationString(Strings.toByteArray("Bouncy Castle Hybrid Seed Material"))
+            .buildHash(new SHA512Digest(), baseRandom.generateSeed(32), false); // 32 byte nonce
+        }
+
+        @Override
+        public void setSeed(byte[] seed) {
+            if (drbg != null) {
+                drbg.setSeed(seed);
+            }
+        }
+
+        @Override
+        public void setSeed(long seed) {
+            if (drbg != null) {
+                drbg.setSeed(seed);
+            }
+        }
+
+        @Override
+        public byte[] generateSeed(int numBytes) {
+            byte[] data = new byte[numBytes];
+            // after 20 samples we'll start to check if there is new seed material.
+            if (samples.getAndIncrement() > 20) {
+                if (seedAvailable.getAndSet(false)) {
+                    samples.set(0);
+                    drbg.reseed((byte[])null);
+                }
+            }
+            drbg.nextBytes(data);
+            return data;
+        }
+
+        private class SignallingSeedMaterialSource implements EntropySource {
+            private final int byteLength;
+            private final AtomicReference<byte[]> seedmaterial = new AtomicReference<>();
+            private final AtomicBoolean scheduled = new AtomicBoolean(false);
+
+            SignallingSeedMaterialSource(int bitsRequired) {
+                this.byteLength = (bitsRequired + 7) / 8;
+            }
+
+            @Override
+            public boolean isPredictionResistant() {
+                return true;
+            }
+            
+            @Override
+            public byte[] getEntropy() {
+                byte[] seed = seedmaterial.getAndSet(null);
+
+                if (seed == null || seed.length != byteLength) {
+                    seed = baseRandom.generateSeed(byteLength);
+                } else {
+                    scheduled.set(false);
+                }
+
+                if (!scheduled.getAndSet(true)) {
+                    new Thread(new SignallingSeedMaterialSource.EntropyGatherer(byteLength)).start();
+                }
+
+                return seed;
+            }
+
+            @Override
+            public int entropySize() {
+                return byteLength * 8;
+            }
+
+            private class EntropyGatherer implements Runnable {
+                private final int numBytes;
+
+                EntropyGatherer(int numBytes) {
+                    this.numBytes = numBytes;
+                }
+
+                @Override
+                public void run() {
+                    seedmaterial.set(baseRandom.generateSeed(numBytes));
+                    seedAvailable.set(true);
+                }
+            }
+        }
     }
 
 }
