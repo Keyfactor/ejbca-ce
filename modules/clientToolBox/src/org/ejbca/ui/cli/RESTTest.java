@@ -363,9 +363,11 @@ class RESTTest extends ClientToolBox {
 	protected void execute(String[] args) {
         if ( args.length < 8 ) {
             System.out.println(args[0]+" <hostname:port> <CA certificate filename> <CA name> <certificate profile name> <end entity profile name> <keystore filename> <keystore password> [<'m:n' m # of threads, n # of tests>] [<wait time (ms) between each thread is started>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
+            System.out.println("Tests the 'pkcs10enroll' command of the REST API");
             System.out.println("Requirements for the 'REST profiles':");
             System.out.println("EJBCA CA configuration requires 'Enforce unique public keys' to be unchecked, i.e. to not enforce unique public keys. The same key pair is used for all users in order to gain maximum speed in the test client.");
-            System.out.println("EJBCA Certificate Profile configuration requires TODO.");
+            System.out.println("Sample command: running 25 concurrent threads:");
+            System.out.println("./ejbcaClientToolBox.sh RESTTest localhost:8443 ~/tmp/ManagementCA.cacert.pem ManagementCA ENDUSER EMPTY ../../p12/superadmin.p12 ejbca 25 1");
             return;
         }
         final String hostName = args[1];
