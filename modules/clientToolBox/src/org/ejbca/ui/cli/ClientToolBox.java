@@ -64,6 +64,7 @@ public abstract class ClientToolBox {
                 new CaIdGenerator(),
                 new JdbcTool(),
                 new UrlGenerator(),
+                new RESTTest(),
         };
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {
