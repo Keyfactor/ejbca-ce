@@ -12,12 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -28,6 +22,12 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -135,7 +135,22 @@ public class SernoGeneratorTest {
         assertEquals("SHA1PRNG", algo);
         BigDecimal time = BigDecimal.valueOf(end-start);
         BigDecimal div = time.divide(BigDecimal.valueOf(500000));
-        log.info("Creating "+noRounds*1000+" 8 octet serNos with "+algo+" took "+(end-start)+" ms, thats "+div+" ms per serno");
+        log.info("Creating "+noRounds*1000+" 20 octet serNos with "+algo+" took "+(end-start)+" ms, thats "+div+" ms per serno");
+    }
+
+    /** Test certificate serialNumber generation with 20 octets size (160 bits) using the BC Hybrid random. 
+     */
+    @Test
+    public void testGenerateSernos20OctetsBCHybrid() throws Exception {
+        final long start = System.currentTimeMillis();
+        final int noRounds = 500;
+        generateSernos(20, "BCSP800HYBRID", 0, noRounds);
+        final long end = System.currentTimeMillis();
+        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(20)).getAlgorithm();
+        assertEquals("unknown", algo); // see explanation in #testGettingBCHybrid
+        BigDecimal time = BigDecimal.valueOf(end-start);
+        BigDecimal div = time.divide(BigDecimal.valueOf(500000));
+        log.info("Creating "+noRounds*1000+" 20 octet serNos with "+algo+" took "+(end-start)+" ms, thats "+div+" ms per serno");
     }
 
 
@@ -163,6 +178,17 @@ public class SernoGeneratorTest {
                 assumeTrue("Test is only relevant on Java 8.", false);
             }
         }
+    }
+
+    @Test
+    public void testGettingBCHybrid() throws Exception {
+        generateSernos(4, "bcsp800hybrid", 0, 0);
+        // If running on JDK >= 8 we will come here
+        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(4)).getAlgorithm();
+        // Using the builder generated versions getAlgorithm() will be overridden in later versions of BC
+        // (>1.65), but for ones pulled out of the JCA the SPI (Java) doesn't have a getAlgorithm method so we're 
+        // stuck with "unknown".
+        assertEquals("unknown", algo);        
     }
 
     /** Try fetching a random number generator of type "default". This will create a default SecureRandom implementation. 
