@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,6 +55,8 @@ import org.junit.Test;
  */
 @Deprecated
 public class Eca7277RegressionTest {
+    
+    private static final Logger log = Logger.getLogger(Eca7277RegressionTest.class);
 
     private boolean isDatabaseProtectionImplementationAvailable() {
         try {
@@ -112,6 +115,7 @@ public class Eca7277RegressionTest {
      */
     @Test
     public void certificateProfileCreatedInEjbca614Verifies() throws Exception {
+        log.trace(">certificateProfileCreatedInEjbca614Verifies");
         assumeTrue(isDatabaseProtectionImplementationAvailable());
 
         final ByteArrayInputStream bis = new ByteArrayInputStream(
@@ -187,6 +191,7 @@ public class Eca7277RegressionTest {
                 + "4437f9c0580a610e6bc5c9a22655bbe9cfa914625dcb2a084c946d4c32b9ca3b70ab7eab13959b4bd8d6b2d021a8f15e");
 
         cannedData.verifyData();
+        log.trace("<certificateProfileCreatedInEjbca614Verifies");
     }
 
     /**
@@ -195,6 +200,7 @@ public class Eca7277RegressionTest {
      */
     @Test
     public void certificateProfileCreatedInEjbca611Verifies() throws Exception {
+        log.trace(">certificateProfileCreatedInEjbca611Verifies");
         assumeTrue(isDatabaseProtectionImplementationAvailable());
 
         final ByteArrayInputStream bis = new ByteArrayInputStream(
@@ -276,5 +282,6 @@ public class Eca7277RegressionTest {
                 + "c1eb482fc3247b616f438dfd510945c0982fffbdf98c50c01c3dca2ad965554405");
 
         cannedData.verifyData();
+        log.trace("<certificateProfileCreatedInEjbca611Verifies");
     }
 }

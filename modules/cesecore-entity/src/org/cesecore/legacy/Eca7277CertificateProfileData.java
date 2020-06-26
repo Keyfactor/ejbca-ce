@@ -39,7 +39,12 @@ public class Eca7277CertificateProfileData extends CertificateProfileData {
     private final static Logger log = Logger.getLogger(Eca7277CertificateProfileData.class);
 
     public Eca7277CertificateProfileData(final CertificateProfileData data) {
-        super(data.getId(), data.getCertificateProfileName(), data.getCertificateProfile());
+        // We cannot use the standard constructor, since it performs upgrades,
+        // which could modify the data and change the resulting protect string.
+        super();
+        setId(data.getId());
+        setCertificateProfileName(data.getCertificateProfileName());
+        setDataUnsafe(data.getDataUnsafe());
         this.setRowVersion(data.getRowVersion());
         this.setRowProtection(data.getRowProtection());
     }
@@ -51,6 +56,9 @@ public class Eca7277CertificateProfileData extends CertificateProfileData {
                     + " failed. Trying to fix the protect string now.");
         }
         // Signature was computer over "Add or Edit End Entity" ect. in EJBCA 6.11-6.14
+        if (log.isTraceEnabled()) {
+            log.trace("protectString before replacement: "+super.getProtectString(rowversion));
+        }
         return super.getProtectString(rowversion)
             .replace("ADDEDITENDENTITY=", "Add or Edit End Entity=")
             .replace("KEYRECOVER=", "Key Recovery=")
