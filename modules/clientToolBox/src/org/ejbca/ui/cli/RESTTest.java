@@ -171,15 +171,15 @@ class RESTTest extends ClientToolBox {
                     //StressTest.this.performanceTest.getLog().info("JSON response: " + s);
                 }
                 if (response.getStatusLine().getStatusCode() == 404) {
-                    StressTest.this.performanceTest.getLog().error("No REST API found (HTTP 404 returned): " + restUrl);
+                    StressTest.this.performanceTest.getLog().error("No REST API found (HTTP 404 returned): " + restUrl + ", content: " + s);
                     return null;
                 }
                 if (response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 201) {
-                    StressTest.this.performanceTest.getLog().error("Call to REST API returns error: " + response.getStatusLine().getStatusCode() + ", returning null: " + restUrl);
+                    StressTest.this.performanceTest.getLog().error("Call to REST API returns error: " + response.getStatusLine().toString() + ", returning null: " + restUrl + ", content: " + s);
                     return null;
                 }
                 if (s == null) {
-                    StressTest.this.performanceTest.getLog().error("We got HTTP 200 or 201 as response code, but no JSON content returned. Unknown error state from EJBCA. Returning null: " + restUrl);
+                    StressTest.this.performanceTest.getLog().error("We got HTTP 200 or 201 as response code, but no JSON content returned. Unknown error state from EJBCA. Returning null: " + restUrl + ", content: " + s);
                     return null;
                 }
             }
