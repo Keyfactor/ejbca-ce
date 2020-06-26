@@ -44,10 +44,17 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -119,8 +126,21 @@ class RESTTest extends ClientToolBox {
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, numberOfTests, waitTime, System.out);
         }
         private PKCS10CertificationRequest genCertReq(final X500Name userDN) throws IOException {
+            // Add an altName extension with an email address
+            GeneralNames san = CertTools.getGeneralNamesFromAltName("rfc822Name=tomas@primekey.se");
+            ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+            extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, san);
+            final Extensions extensions = extensionsGenerator.generate();
+            // Add the extension(s) to the PKCS#10 request as a pkcs_9_at_extensionRequest
+            ASN1EncodableVector extensionattr = new ASN1EncodableVector();
+            extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            extensionattr.add(new DERSet(extensions));
+            // Complete the Attribute section of the request, the set (Attributes) contains one sequence (Attribute)
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new DERSequence(extensionattr));
+            DERSet attributes = new DERSet(v);
             try {
-                return CertTools.genPKCS10CertificationRequest("SHA256WithRSA", userDN, keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
+                return CertTools.genPKCS10CertificationRequest("SHA256WithRSA", userDN, keyPair.getPublic(), attributes, keyPair.getPrivate(), null);
             } catch (OperatorCreationException e) {
                 StressTest.this.performanceTest.getLog().error("Unable to generate CSR: " + e.getLocalizedMessage());
                 e.printStackTrace();
@@ -334,9 +354,7 @@ class RESTTest extends ClientToolBox {
                     x500nb.addRDN( BCStyle.CN, "REST Test User Nr " + getRandomAndRepeated() );
                     x500nb.addRDN(BCStyle.O, "REST Test");
                     x500nb.addRDN(BCStyle.C, "SE");
-                    x500nb.addRDN(BCStyle.EmailAddress, "email.address@example.com");
                 } else {
-                    x500nb.addRDN(BCStyle.EmailAddress, "email.address@example.com");
                     x500nb.addRDN(BCStyle.C, "SE");
                     x500nb.addRDN(BCStyle.O, "REST Test");
                     x500nb.addRDN( BCStyle.CN, "REST Test User Nr " + getRandomAndRepeated() );
