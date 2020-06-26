@@ -14,6 +14,7 @@ package org.cesecore.util;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -223,10 +224,10 @@ public class XmlSerializerUnitTest {
     public void encodeSimpleMapFastWithIllegalArgumentException() {
         // given
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("encodeSimpleMapFast does not handle type: java.util.HashSet");
+        expectedException.expectMessage("encodeSimpleMapFast does not handle type: java.io.File");
         final HashMap<Object, Object> failingMap = new Base64PutHashMap();
         failingMap.put("longvalue", 123456789L); // this works
-        failingMap.put("list", new HashSet<String>()); // this should fail
+        failingMap.put("unsupported", new File("bad")); // this should fail
         // when
         XmlSerializer.encodeSimpleMapFastInternal(failingMap);
     }
