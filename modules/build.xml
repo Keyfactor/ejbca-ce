@@ -215,7 +215,7 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web, cesecore-p11">
+	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-properties, ejbca-common-web, cesecore-p11">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
