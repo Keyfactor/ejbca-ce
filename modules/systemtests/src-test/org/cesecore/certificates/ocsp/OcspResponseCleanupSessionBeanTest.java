@@ -34,6 +34,7 @@ import org.junit.Test;
 import javax.ejb.ScheduleExpression;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 /**
@@ -86,8 +87,10 @@ public class OcspResponseCleanupSessionBeanTest {
         // Assert only latest responses are left.
         responses = ocspDataSessionRemote.findOcspDataByCaId(certificateAuth);
         assertEquals(2, responses.size());
-        assertEquals("test-id-3", responses.get(0).getId());
-        assertEquals("test-id-5", responses.get(1).getId());
+
+        List<String> responseIds = responses.stream().map(r -> r.getId()).collect(Collectors.toList());
+        assertTrue("Response id (test-id-3) should be found", responseIds.contains("test-id-3"));
+        assertTrue("Response id (test-id-5) should be found", responseIds.contains("test-id-5"));
 
         log.trace(">testOldResponsesDeletedByJob");
     }
