@@ -79,14 +79,14 @@ class RESTTest extends ClientToolBox {
     static private class StressTest {
         final PerformanceTest performanceTest;
 
-        final private KeyPair keyPair;
-        final private String hostName;
-        final private X509Certificate cacert;
-        final private String caName;
-        final private String cpName;
-        final private String eepName;
-        final private KeyStore keystore;
-        final private String keystorePwd;        
+        private final KeyPair keyPair;
+        private final String hostName;
+        private final X509Certificate cacert;
+        private final String caName;
+        private final String cpName;
+        private final String eepName;
+        private final KeyStore keystore;
+        private final String keystorePwd;        
         final String resultCertFilePrefix;
         final SSLContext sslContext;
         
@@ -170,7 +170,6 @@ class RESTTest extends ClientToolBox {
             pm.writeObject(pkcs10);
             pm.close();
             final String p10pem = pemout.toString();
-            //System.out.println(p10pem);
             JSONObject param = new JSONObject();
             param.put("certificate_request", p10pem);
             param.put("certificate_profile_name", cpName);
@@ -188,7 +187,6 @@ class RESTTest extends ClientToolBox {
                 final InputStream content = response.getEntity().getContent();
                 if (content != null){
                     s = IOUtils.toString(content, StandardCharsets.UTF_8);
-                    //StressTest.this.performanceTest.getLog().info("JSON response: " + s);
                 }
                 if (response.getStatusLine().getStatusCode() == 404) {
                     StressTest.this.performanceTest.getLog().error("No REST API found (HTTP 404 returned): " + restUrl + ", content: " + s);
@@ -209,29 +207,18 @@ class RESTTest extends ClientToolBox {
         private CloseableHttpResponse performRESTAPIRequest(final String restUrl, final String payload) throws IOException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
             final HttpPost request = new HttpPost(restUrl); 
             request.setHeader("Content-Type", "application/json");
-            //System.out.println("Request: " + request.toString());            
             request.setEntity(new StringEntity(payload));
-            //StressTest.this.performanceTest.getLog().info("Request payload: " + payload);
             final HttpClientBuilder builder = HttpClientBuilder.create();
             // sslContext should be pre-created because it takes something like 25ms to create, and it's the same for every call (and thread for that matter)
             final CloseableHttpClient httpClient = builder.setSSLContext(sslContext).build(); 
-            //long start2 = System.currentTimeMillis();
             final CloseableHttpResponse response = httpClient.execute(request);
-            //long end = System.currentTimeMillis();
-            //StressTest.this.performanceTest.getLog().info("HTTPS execute took " + (end - start2) + "ms"); 
-            //StressTest.this.performanceTest.getLog().info("Status code for request is: " + response.getStatusLine().getStatusCode());
-            //StressTest.this.performanceTest.getLog().info("Response.toString: " + response.toString());
-            //Header h = response.getFirstHeader("Content-Type");
-            //StressTest.this.performanceTest.getLog().info("Header: " + h);
             return response;
         }
 
-        private X509Certificate checkCertResponse(final SessionData sessionData,
-                                                       final String retMsg) throws IOException, CertificateException {
+        private X509Certificate checkCertResponse(final SessionData sessionData, final String retMsg) throws IOException, CertificateException {
             //
             // Parse response message JSON
             //
-            //System.out.println("JSON response: " + retMsg);
             final JSONParser jsonParser = new JSONParser();
             JSONObject parse = null;
             try {
@@ -260,7 +247,6 @@ class RESTTest extends ClientToolBox {
             X509Certificate cert = null;
             if (value != null) {
                 // We have a certificate
-                //StressTest.this.performanceTest.getLog().info("Cert is: " + value);
                 cert = CertTools.getCertfromByteArray(Base64.decode(value.getBytes("UTF-8")), X509Certificate.class);
             } else {
                 StressTest.this.performanceTest.getLog().error("No certificate in response.");
@@ -306,7 +292,6 @@ class RESTTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No certificate request.");
                     return false;
                 }
-                //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
                 // Send request and receive response
                 final String resp = sendREST(pkcs10, this.sessionData);
                 if ( StringUtils.isEmpty(resp) ) {
