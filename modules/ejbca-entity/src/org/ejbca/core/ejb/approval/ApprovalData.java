@@ -237,9 +237,8 @@ public class ApprovalData extends ProtectedData implements Serializable {
     /**
      * Method used to set the email which included in the user credentials
      */
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public void setEmail(String email) { this.email = email; }
+
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
 	 * @deprecated in 6.6.0, the type of approval handled is now part of the approval profile
