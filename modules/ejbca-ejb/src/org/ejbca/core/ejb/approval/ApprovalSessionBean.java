@@ -57,7 +57,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.ProfileID;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValueExtractor;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;

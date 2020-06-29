@@ -19,22 +19,17 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.util.StringTools.CharSet;
 import org.junit.Test;
 
 /**
