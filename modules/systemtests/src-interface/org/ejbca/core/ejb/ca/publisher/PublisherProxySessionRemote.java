@@ -21,6 +21,8 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
+import java.util.Map;
+
 /**
  * @version $Id$
  *
@@ -61,6 +63,14 @@ public interface PublisherProxySessionRemote {
      * @return the name or null if id does not exist
      */
     String getPublisherName(int id);
+
+    /**
+     * Returns a Map of Publisher for given Peer Connector.
+     *
+     * @param peerId Peer system id
+     * @return Map of BasePublishers mapped by ID
+     */
+    Map<Integer, BasePublisher> getPublishersForPeer(int peerId);
 
     /**
      * Removes publisher data. Ignores if there are any references to the publisher from CA, certificate profiles

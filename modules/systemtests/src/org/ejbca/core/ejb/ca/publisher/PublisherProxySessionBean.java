@@ -28,6 +28,8 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
+import java.util.Map;
+
 /**
  * @version $Id$
  *
@@ -64,6 +66,11 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     @Override
     public String getPublisherName(int id) {
         return publisherSession.getPublisherName(id);
+    }
+
+    @Override
+    public Map<Integer, BasePublisher> getPublishersForPeer(int peerId) {
+        return publisherSession.getPublishersForPeer(peerId);
     }
 
     @Override
