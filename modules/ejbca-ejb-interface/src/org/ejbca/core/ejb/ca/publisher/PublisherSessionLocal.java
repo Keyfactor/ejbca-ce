@@ -76,6 +76,14 @@ public interface PublisherSessionLocal extends PublisherSession {
     int getPublisherId(String name);
 
     /**
+     * Returns a Map of Publisher for given Peer Connector.
+     *
+     * @param peerId Peer system id
+     * @return Map of BasePublishers mapped by ID
+     */
+    Map<Integer, BasePublisher> getPublishersForPeer(int peerId);
+
+    /**
      * Use from Healthcheck only! Test connection for all publishers. No
      * authorization checks are performed.
      * @return an error message or an empty String if all are ok.
