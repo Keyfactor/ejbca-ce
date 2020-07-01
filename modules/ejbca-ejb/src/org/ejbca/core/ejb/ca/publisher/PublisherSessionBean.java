@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -754,6 +756,17 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public List<PublisherData> findAll() {
         final TypedQuery<PublisherData> query = entityManager.createQuery("SELECT a FROM PublisherData a", PublisherData.class);
         return query.getResultList();
+    }
+
+    @Override
+    public Map<Integer, BasePublisher> getPublishersForPeer(int peerId) {
+        return findAll().stream()
+                        .map(publisherData -> getPublisher(publisherData))
+                        .filter(CustomPublisherContainer.class::isInstance)
+                        .map(CustomPublisherContainer.class::cast)
+                        .filter(p -> p.getPeerId().equals(String.valueOf(peerId)))
+                        .collect(Collectors.toMap(BasePublisher::getPublisherId, Function.identity()));
+
     }
 
     @Override

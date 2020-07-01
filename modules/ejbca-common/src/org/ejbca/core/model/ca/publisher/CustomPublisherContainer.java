@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +56,7 @@ public class CustomPublisherContainer extends BasePublisher {
     
     public static final String CLASSPATH = "classpath";
     protected static final String PROPERTYDATA = "propertydata";
+    private static final String PROPERTYDATA_PEERID = "peerId";
 		
     public CustomPublisherContainer() {
     	super();
@@ -205,6 +207,11 @@ public class CustomPublisherContainer extends BasePublisher {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to encode properties", e);
         }
+    }
+
+    public String getPeerId() {
+	    return Optional.ofNullable(getProperties().getProperty(PROPERTYDATA_PEERID))
+                       .orElse("");
     }
   
 	@Override

@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -25,6 +26,8 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +52,25 @@ public class PublisherSessionTest {
 
     @After
     public void tearDown() throws Exception {
+    }
+
+
+    @Test
+    public void testGetPublishersForPeer() throws PublisherException, AuthorizationDeniedException {
+        final int peerId = 123456789;
+        final String name = "PeerPublisherTest1234";
+
+        CustomPublisherContainer publisher = new CustomPublisherContainer();
+        publisher.setPropertyData("peerId=" + peerId);
+
+        try {
+            publisherProxySession.addPublisher(internalAdmin, name, publisher);
+            assertFalse(publisherProxySession.getPublishersForPeer(peerId).isEmpty());
+        } catch (PublisherExistsException e) {
+            e.printStackTrace();
+        } finally {
+            publisherProxySession.removePublisherInternal(internalAdmin, name);
+        }
     }
 
     @Test
