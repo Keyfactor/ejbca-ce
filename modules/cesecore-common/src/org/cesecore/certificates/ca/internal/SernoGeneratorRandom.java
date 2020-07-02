@@ -298,11 +298,9 @@ public class SernoGeneratorRandom implements SernoGenerator {
         public byte[] generateSeed(int numBytes) {
             byte[] data = new byte[numBytes];
             // after 20 samples we'll start to check if there is new seed material.
-            if (samples.getAndIncrement() > 20) {
-                if (seedAvailable.getAndSet(false)) {
-                    samples.set(0);
-                    drbg.reseed((byte[])null);
-                }
+            if (samples.getAndIncrement() > 20 && seedAvailable.getAndSet(false)) {
+                samples.set(0);
+                drbg.reseed((byte[])null);
             }
             drbg.nextBytes(data);
             return data;
