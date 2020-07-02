@@ -41,7 +41,7 @@ import org.cesecore.internal.InternalResources;
  * to be 8 octets, the serial number will be 8 octets, if you specify 20 octets it will be 20 octets, etc.
  * To achieve this the following process is performed:
  * 
- * - The specified number of octets is retrieved from a CSPRNG (SecureRandom).
+ * - The specified number of octets is retrieved from a CSPRNG (SecureRandom in various shapes and forms, see the init method).
  * - The octets are converted into a positive BigInteger (serial numbers are ASN.1 INTEGERs) by taking the absolute value of the BigInteger 
  *   created from the random bytes 
  * - If this integer does not fulfill requirements and limitations specified by RFC5280 and X.690, the serial number is discarded
