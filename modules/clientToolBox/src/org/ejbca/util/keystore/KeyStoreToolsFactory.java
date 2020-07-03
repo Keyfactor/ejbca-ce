@@ -35,8 +35,7 @@ public class KeyStoreToolsFactory {
     private static final Logger log = Logger.getLogger(KeyStoreToolsFactory.class);
 
     private static KeyStoreTools getInstance(final String slot, final Pkcs11SlotLabelType slotLabelType, final String libName,
-            final String attributesFile, final KeyStore.ProtectionParameter protectionParameter, final String privateKeyLabel) throws Exception,
-            IOException {
+            final String attributesFile, final KeyStore.ProtectionParameter protectionParameter, final String privateKeyLabel) throws Exception {
         final Provider provider = Pkcs11SlotLabel.getP11Provider(slot, slotLabelType, libName, attributesFile, privateKeyLabel);
         final String providerName = provider.getName();
         log.debug("Adding provider with name: " + providerName);
@@ -49,7 +48,7 @@ public class KeyStoreToolsFactory {
         return getInstance(providerName, protectionParameter);
     }
     private static KeyStoreTools getInstance(final String providerName,
-                                         final KeyStore.ProtectionParameter protectionParameter) throws Exception, IOException {
+                                         final KeyStore.ProtectionParameter protectionParameter) throws Exception {
         // Make a default password callback handler, if we don't specify one on the command line
         KeyStore.ProtectionParameter pp = protectionParameter;
         if (pp == null) {

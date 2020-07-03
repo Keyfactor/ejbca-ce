@@ -105,13 +105,13 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String SIGN_SWITCH = "sign";
     private static final String LINKCERT_SWITCH = "linkcert";
 
-    final static private Logger log = Logger.getLogger(HSMKeyTool.class);
+    private static final Logger log = Logger.getLogger(HSMKeyTool.class);
 
-    final static private String TOKEN_ID_PARAM = "<PKCS#11 token identifier>";
-    static private void sunConfigFileUseDescription(){
+    private static final String TOKEN_ID_PARAM = "<PKCS#11 token identifier>";
+    private static void sunConfigFileUseDescription(){
         System.err.println("If <PKCS#11 token identifier> is omitted then <the shared library name> will specify the sun config file.");
     }
-    static private void printTokenIdDescription() {
+    private static void printTokenIdDescription() {
         System.err.print("The ");
         System.err.print(TOKEN_ID_PARAM);
         System.err.println(" is one of these:");
@@ -161,8 +161,8 @@ public class HSMKeyTool extends ClientToolBox {
             }
         }
     }
-    final static String KEY_SPEC_DESC = "all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn";
-    private static void printCommandString( final String args[], final boolean withCharedLib, Object... objects) {
+    static final String KEY_SPEC_DESC = "all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn";
+    private static void printCommandString(final String[] args, final boolean withCharedLib, Object... objects) {
         final StringBuilder sb = new StringBuilder();
         sb.append(args[0]);
         sb.append(' ');
@@ -177,10 +177,10 @@ public class HSMKeyTool extends ClientToolBox {
         }
         System.err.println(sb);
     }
-    private static void printCommandString( final String args[], Object... objects) {
+    private static void printCommandString(final String[] args, Object... objects) {
         printCommandString(args, true, objects);
     }
-    private static void printCommandStringNoSharedLib( final String args[], Object... objects) {
+    private static void printCommandStringNoSharedLib(final String[] args, Object... objects) {
         printCommandString(args, false, objects);
     }
     private static boolean doIt(final String[] orgArgs) throws Exception {
@@ -220,7 +220,7 @@ public class HSMKeyTool extends ClientToolBox {
         }
         if ( args[1].toLowerCase().trim().contains(GENERATE_SWITCH) ) {
             if ( args.length < 4 ) {
-                printCommandString( args, Character.valueOf('<'), KEY_SPEC_DESC, "> <key entry name> [", TOKEN_ID_PARAM, "]");
+                printCommandString( args, '<', KEY_SPEC_DESC, "> <key entry name> [", TOKEN_ID_PARAM, "]");
                 printTokenIdDescription();
                 sunConfigFileUseDescription();
                 tooFewArguments(args);
@@ -272,7 +272,7 @@ public class HSMKeyTool extends ClientToolBox {
             final List<String> argsListLocal = CliTools.getAsModifyableList(args);
             final boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
             final boolean forAllKeys = argsListLocal.remove("-all");
-            final String modArgs[] = argsListLocal.toArray(new String[argsListLocal.size()]);
+            final String[] modArgs = argsListLocal.toArray(new String[argsListLocal.size()]);
             if ( modArgs.length < 4 || (modArgs.length < 5 && !forAllKeys) ) {
                 printCommandString( args, TOKEN_ID_PARAM, " <key entry name> [<CN>] [-explicitecc]");
                 printCommandString( args, TOKEN_ID_PARAM, " [-all] [-explicitecc]");
@@ -548,8 +548,13 @@ public class HSMKeyTool extends ClientToolBox {
                 final ExtensionsGenerator extgen = new ExtensionsGenerator();
                 final Set<String> oids = new LinkedHashSet<>();
                 final Set<String> criticalOids = newCertX509.getCriticalExtensionOIDs();
-                oids.addAll(criticalOids);
-                oids.addAll(newCertX509.getNonCriticalExtensionOIDs());
+                if (criticalOids != null) {
+                    oids.addAll(criticalOids);
+                }
+                Set<String> nonCriticalExtensionOIDs = newCertX509.getNonCriticalExtensionOIDs();
+                if (nonCriticalExtensionOIDs != null) {
+                    oids.addAll(nonCriticalExtensionOIDs);
+                }
                 for (final String extOidStr : oids) {
                     final ASN1ObjectIdentifier extoid = new ASN1ObjectIdentifier(extOidStr);
                     if (!extoid.equals(Extension.authorityKeyIdentifier) && !extoid.equals(Extension.issuerAlternativeName)) {
@@ -613,7 +618,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(VERIFY_SWITCH)) {
             final CMS.VerifyResult verifyResult;
             if ( args.length < 5 ) {
-                System.err.println("There are two ways of doing the encryption:");
+                System.err.println("There are two ways of doing the verification:");
                 printCommandString( args, TOKEN_ID_PARAM, " <input file> <output file> <key alias>");
                 printTokenIdDescription();
                 printCommandStringNoSharedLib(args, "<input file> <output file> <file with certificate with public key to use>");
@@ -705,7 +710,7 @@ public class HSMKeyTool extends ClientToolBox {
                 final String alias = e.nextElement();
                 if (fromKS.getKeyStore().isKeyEntry(alias)) {
                     final Key key=fromKS.getKeyStore().getKey(alias, null);
-                    final Certificate chain[] = fromKS.getKeyStore().getCertificateChain(alias);
+                    final Certificate[] chain = fromKS.getKeyStore().getCertificateChain(alias);
                     toKS.setKeyEntry(alias, key, chain);
                 }
                 fromKS.getKeyStore().deleteEntry(alias);
@@ -761,14 +766,14 @@ public class HSMKeyTool extends ClientToolBox {
         return "PKCS11HSMKeyTool";
     }
 
-    private static final String trimStoreId(String storeId) {
+    private static String trimStoreId(String storeId) {
         if(storeId.contains(":")) {
             return storeId.split(":", 2)[1];
         }
         return storeId;
     }
 
-    private static final Pkcs11SlotLabelType getTokenLabelType(String storeId) {
+    private static Pkcs11SlotLabelType getTokenLabelType(String storeId) {
         if(storeId.contains(":")) {
             String prefix = storeId.split(":", 2)[0].trim();
             if(prefix.equals("TOKEN_LABEL") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
