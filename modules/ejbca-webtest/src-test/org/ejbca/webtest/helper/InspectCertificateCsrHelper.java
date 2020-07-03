@@ -111,22 +111,24 @@ public class InspectCertificateCsrHelper extends BaseHelper {
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         String fileContents = certificateDump.getText();
         List<String> fileContentsList = new ArrayList<>(Arrays.asList(fileContents.split("\n")));
-        System.out.println(fileContents);
 
         //For each row in the array assert it exists in the fileContents
         for (String certificateRow : certificateRows) {
             line = certificateRow.trim();
-            System.out.println("Expected:  " + line);
-            if (!fileContents.contains(line)) {
-                if (found) {
-                    found = false;
-                    break;
+            //System.out.println("Expected:  " + line);
+            if (! (line.contains("Date:") || line.contains("Public Key:"))) {
+                if (!fileContents.contains(line)) {
+                    if (found) {
+                        found = false;
+                        break;
+                    }
                 }
+            } else {
+                System.out.println("Skipping verification:  " + line);
             }
         }
 
         assertEquals("Certificate file content is incorrect at line " + line, true,
                 found);
-
     }
 }
