@@ -62,11 +62,11 @@ import org.ejbca.util.keystore.KeyStoreToolsFactory;
 class KeyStoreContainerTest {
     final String alias;
     final KeyPair keyPair;
-    final protected String providerName;
-    final private static PrintStream termOut = System.out;
-    final private static PrintStream termErr = System.err;
-    final private static InputStream termIn = System.in;
-    final static private Logger log = Logger.getLogger(KeyStoreContainerTest.class);
+    protected final String providerName;
+    private static final PrintStream termOut = System.out;
+    private static final PrintStream termErr = System.err;
+    private static final InputStream termIn = System.in;
+    private static final Logger log = Logger.getLogger(KeyStoreContainerTest.class);
     KeyStoreContainerTest(String a, KeyPair kp, String pn) {
         this.alias = a;
         this.keyPair = kp;
@@ -96,7 +96,7 @@ class KeyStoreContainerTest {
                     nrOfThreads,
                     nrOfTests,
                     alias,
-                    typeOfOperation==null || typeOfOperation.toLowerCase().indexOf("sign")>=0,
+                    typeOfOperation==null || typeOfOperation.toLowerCase().contains("sign"),
                     protectionParameter);
         }
     }
@@ -133,7 +133,7 @@ class KeyStoreContainerTest {
             final int nrOfTests,
             final ProtectionParameter protectionParameter) throws Exception {
         termOut.println("Test of keystore with ID "+storeID+'.');
-        NormalTest tests[] = null;
+        NormalTest[] tests = null;
         final KeyStoreTools keyStore = getKeyStoreTools(
                 p11moduleName, storeID, slotLabelType, protectionParameter);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) { // if nrOfTests == 0, run continuously until user presses ctrl-c
@@ -141,9 +141,9 @@ class KeyStoreContainerTest {
                 if ( tests==null || nrOfTests==-5 ) {
                     tests = getTests(keyStore);
                 }
-                for( int j = 0; j<tests.length; j++ ) {
+                for (NormalTest test : tests) {
                     termOut.println();
-                    tests[j].doIt();
+                    test.doIt();
                 }
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 tests = null;
@@ -176,7 +176,7 @@ class KeyStoreContainerTest {
                 -1,
                 isSign);
     }
-    static private KeyStoreTools getKeyStoreTools(
+    private static KeyStoreTools getKeyStoreTools(
             final String p11moduleName,
             final String storeID,
             final Pkcs11SlotLabelType slotLabelType,
@@ -213,12 +213,10 @@ class KeyStoreContainerTest {
     class Crypto implements Test {
         final int modulusLength;
         final int byteLength;
-        final private String testS = "   01 0123456789   02 0123456789   03 0123456789   04 0123456789   05 0123456789   06 0123456789   07 0123456789   08 0123456789   09 0123456789   10 0123456789   11 0123456789   12 0123456789   13 0123456789   14 0123456789   15 0123456789   16 0123456789   17 0123456789   18 0123456789   19 0123456789   20 0123456789   21 0123456789   22 0123456789   23 0123456789   24 0123456789   25 0123456789   26 0123456789   27 0123456789   28 0123456789   29 0123456789   30 0123456789   31 0123456789   32 0123456789   33 0123456789   34 0123456789   35 0123456789   36 0123456789   37 0123456789   38 0123456789   39 0123456789   40 0123456789   41 0123456789   42 0123456789   43 0123456789   44 0123456789   45 0123456789   46 0123456789   47 0123456789   48 0123456789   49 0123456789   50 0123456789   51 0123456789   52 0123456789   53 0123456789   54 0123456789   55 0123456789   56 0123456789   57 0123456789   58 0123456789   59 0123456789   60 0123456789   61 0123456789   62 0123456789   63 0123456789   64 0123456789";
-        final private byte original[];
-        final private String pkcs1Padding="RSA/ECB/PKCS1Padding";
-//      final String noPadding="RSA/ECB/NoPadding";
-        private byte encoded[];
-        private byte decoded[];
+        private final byte[] original;
+        //      final String noPadding="RSA/ECB/NoPadding";
+        private byte[] encoded;
+        private byte[] decoded;
         private Cipher cipherEnCryption;
         private Cipher cipherDeCryption;
         private boolean result;
@@ -228,14 +226,16 @@ class KeyStoreContainerTest {
             }
             this.modulusLength = ((RSAKey)KeyStoreContainerTest.this.keyPair.getPublic()).getModulus().bitLength();
             this.byteLength = (this.modulusLength+7)/8-11;
-            this.original = this.testS.substring(0, this.byteLength).getBytes();
+            String testS = "   01 0123456789   02 0123456789   03 0123456789   04 0123456789   05 0123456789   06 0123456789   07 0123456789   08 0123456789   09 0123456789   10 0123456789   11 0123456789   12 0123456789   13 0123456789   14 0123456789   15 0123456789   16 0123456789   17 0123456789   18 0123456789   19 0123456789   20 0123456789   21 0123456789   22 0123456789   23 0123456789   24 0123456789   25 0123456789   26 0123456789   27 0123456789   28 0123456789   29 0123456789   30 0123456789   31 0123456789   32 0123456789   33 0123456789   34 0123456789   35 0123456789   36 0123456789   37 0123456789   38 0123456789   39 0123456789   40 0123456789   41 0123456789   42 0123456789   43 0123456789   44 0123456789   45 0123456789   46 0123456789   47 0123456789   48 0123456789   49 0123456789   50 0123456789   51 0123456789   52 0123456789   53 0123456789   54 0123456789   55 0123456789   56 0123456789   57 0123456789   58 0123456789   59 0123456789   60 0123456789   61 0123456789   62 0123456789   63 0123456789   64 0123456789";
+            this.original = testS.substring(0, this.byteLength).getBytes();
         }
         @Override
         public void prepare() throws Exception {
-            this.cipherEnCryption = Cipher.getInstance(this.pkcs1Padding);
+            String pkcs1Padding = "RSA/ECB/PKCS1Padding";
+            this.cipherEnCryption = Cipher.getInstance(pkcs1Padding);
             this.cipherEnCryption.init(Cipher.ENCRYPT_MODE, KeyStoreContainerTest.this.keyPair.getPublic());
             this.encoded = this.cipherEnCryption.doFinal(this.original);
-            this.cipherDeCryption = Cipher.getInstance(this.pkcs1Padding, KeyStoreContainerTest.this.providerName);
+            this.cipherDeCryption = Cipher.getInstance(pkcs1Padding, KeyStoreContainerTest.this.providerName);
             this.cipherDeCryption.init(Cipher.DECRYPT_MODE, KeyStoreContainerTest.this.keyPair.getPrivate());
         }
         @Override
@@ -266,7 +266,7 @@ class KeyStoreContainerTest {
         }
     }
 
-    static private class TestData {
+    private static class TestData {
         private static final byte[] STATIC_TEST_DATA = "Lillan gick on the roaden ut.".getBytes();
         private static final String FILENAME = "./testData";
 
@@ -303,7 +303,7 @@ class KeyStoreContainerTest {
                     return;
                 }
                 // Load the found file with test data into the signer
-                final byte buffer[] = new byte[16*1024];
+                final byte[] buffer = new byte[16*1024];
                 while ( true ) {
                     final int length = is.read(buffer);
                     if ( length<0 ) {
@@ -337,11 +337,11 @@ class KeyStoreContainerTest {
     }
     class Sign implements Test {
         private final String sigAlgName;
-        private byte signBA[];
+        private byte[] signBA;
         private Signature signature;
         private boolean result;
         @SuppressWarnings("synthetic-access")
-        Sign() throws NoSuchProviderException, GeneralSecurityException, TaskWithSigningException {
+        Sign() throws GeneralSecurityException, TaskWithSigningException {
             final SignOperation operation = new SignOperation();
             // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
             final List<String> availableAlogorithms = AlgorithmTools.getSignatureAlgorithms(KeyStoreContainerTest.this.keyPair.getPublic());
@@ -386,8 +386,8 @@ class KeyStoreContainerTest {
             return "sign";
         }
     }
-    static private class StressTest extends KeyStoreContainerTest {
-        final private PerformanceTest performanceTest;
+    private static class StressTest extends KeyStoreContainerTest {
+        private final PerformanceTest performanceTest;
         private StressTest(
                 final String alias,
                 final KeyPair keyPair,
@@ -416,9 +416,9 @@ class KeyStoreContainerTest {
             this.performanceTest.execute(new MyCommandFactory(isSignTest), numberOfThreads, nrOfTests, waitTime, termOut);
         }
         private class Prepare implements Command {
-            final private Test test;
-            Prepare(Test _test) {
-                this.test = _test;
+            private final Test test;
+            Prepare(Test test) {
+                this.test = test;
             }
             @Override
             public boolean doIt() throws Exception {
@@ -431,9 +431,9 @@ class KeyStoreContainerTest {
             }
         }
         private class DoOperation implements Command {
-            final private Test test;
-            DoOperation(Test _test) {
-                this.test = _test;
+            private final Test test;
+            DoOperation(Test test) {
+                this.test = test;
             }
             @Override
             public boolean doIt() throws Exception {
@@ -446,9 +446,9 @@ class KeyStoreContainerTest {
             }
         }
         private class Verify implements Command {
-            final private Test test;
-            Verify(Test _test) {
-                this.test = _test;
+            private final Test test;
+            Verify(Test test) {
+                this.test = test;
             }
             @SuppressWarnings("synthetic-access")
             @Override
@@ -470,9 +470,9 @@ class KeyStoreContainerTest {
         }
         private class MyCommandFactory implements CommandFactory {
             private final boolean isSignTest;
-            MyCommandFactory(boolean _isSignTest) {
+            MyCommandFactory(boolean isSignTest) {
                 super();
-                this.isSignTest = _isSignTest;
+                this.isSignTest = isSignTest;
             }
             @Override
             public Command[] getCommands() throws Exception {
@@ -482,7 +482,7 @@ class KeyStoreContainerTest {
         }
     }
     @SuppressWarnings("synthetic-access")
-    static private class NormalTest extends KeyStoreContainerTest {
+    private static class NormalTest extends KeyStoreContainerTest {
         long totalSignTime = 0;
         long totalDecryptTime = 0;
         int nrOfTests = 0;

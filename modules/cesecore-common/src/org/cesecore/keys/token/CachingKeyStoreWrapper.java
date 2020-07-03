@@ -79,7 +79,7 @@ public class CachingKeyStoreWrapper {
             this.key = tmpKey;
         }
         public KeyStoreMapEntry(
-                final String alias, final KeyStore keyStore, final char password[],
+                final String alias, final KeyStore keyStore, final char[] password,
                 final KeyStoreMapEntry oldEntry)
                         throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
             assert !oldEntry.isTrusted;
@@ -187,8 +187,8 @@ public class CachingKeyStoreWrapper {
         if ( !isSunP11(this.keyStore) ) {
             return orig;
         }
-        final byte bvIn[] = orig.getBytes(StandardCharsets.UTF_16BE);
-        final byte bvOut[] = new byte[bvIn.length/2];
+        final byte[] bvIn = orig.getBytes(StandardCharsets.UTF_16BE);
+        final byte[] bvOut = new byte[bvIn.length/2];
         for ( int i=1; i<bvIn.length; i += 2) {
             bvOut[i/2] = (byte)(bvIn[i]&0xff);
         }
@@ -205,8 +205,8 @@ public class CachingKeyStoreWrapper {
         if ( !isSunP11(this.keyStore) ) {
             return orig;
         }
-        final byte bvIn[] = orig.getBytes(StandardCharsets.UTF_8);
-        final byte bvOut[] = new byte[bvIn.length*2];
+        final byte[] bvIn = orig.getBytes(StandardCharsets.UTF_8);
+        final byte[] bvOut = new byte[bvIn.length*2];
         for ( int i=0; i<bvIn.length; i += 1) {
             bvOut[i*2] = 0;
             bvOut[i*2+1] = (byte)(bvIn[i]&0xff);

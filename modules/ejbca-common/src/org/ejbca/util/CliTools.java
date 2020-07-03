@@ -13,6 +13,7 @@
 package org.ejbca.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** Tools used in command line handling
@@ -33,11 +34,7 @@ public class CliTools {
      *  }
      */
     public static List<String> getAsModifyableList(String[] stringArray) {
-    	List<String> list = new ArrayList<String>();
-    	for (String string : stringArray) {
-    		list.add(string);
-    	}
-    	return list;
+        return new ArrayList<>(Arrays.asList(stringArray));
     }
     
     /** 

@@ -40,7 +40,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -86,9 +86,9 @@ public class KeyStoreTools {
     protected final CachingKeyStoreWrapper keyStore;
     private final String providerName;
 
-    public KeyStoreTools(CachingKeyStoreWrapper _keyStore, String _providerName){
-        this.keyStore = _keyStore;
-        this.providerName = _providerName;
+    public KeyStoreTools(CachingKeyStoreWrapper keyStore, String providerName){
+        this.keyStore = keyStore;
+        this.providerName = providerName;
     }
 
     /**
@@ -105,7 +105,7 @@ public class KeyStoreTools {
         return this.keyStore;
     }
 
-    public void setKeyEntry(String alias, Key key, Certificate chain[]) throws KeyStoreException {
+    public void setKeyEntry(String alias, Key key, Certificate[] chain) throws KeyStoreException {
         // Removal of old key is only needed for sun-p11 with none ASCII chars in the alias.
         // But it makes no harm to always do it and it should be fast.
         // If not done the entry will not be stored correctly in the p11 KeyStore.
@@ -152,8 +152,8 @@ public class KeyStoreTools {
 
     private class CertificateSignOperation implements ISignOperation {
 
-        final private PrivateKey privateKey;
-        final private X509v3CertificateBuilder certificateBuilder;
+        private final PrivateKey privateKey;
+        private final X509v3CertificateBuilder certificateBuilder;
         private X509CertificateHolder result;
 
         public CertificateSignOperation(
@@ -396,7 +396,7 @@ public class KeyStoreTools {
         if (specName.equals(EdDSAParameterSpec.class.getName())) {
             EdDSAParameterSpec edSpec = (EdDSAParameterSpec) keyParams;
             keyAlgorithm = edSpec.getCurveName();
-            certSignAlgorithms = Arrays.asList(edSpec.getCurveName());
+            certSignAlgorithms = Collections.singletonList(edSpec.getCurveName());
         } else if (specName.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DSA;
             certSignAlgorithms = AlgorithmTools.SIG_ALGS_DSA;
@@ -567,11 +567,11 @@ public class KeyStoreTools {
 
     /**
      * Install certificate chain to key in keystore.
-     * @param file name of the file with chain. Starting with the certificate of the key. Ending with the root certificate.
+     * @param fileName name of the file with chain. Starting with the certificate of the key. Ending with the root certificate.
      */
     public void installCertificate(final String fileName) {
         try( final InputStream is = new FileInputStream(fileName) ) {
-            final X509Certificate chain[];
+            final X509Certificate[] chain;
             chain = CertTools.getCertsFromPEM(is, X509Certificate.class).toArray(new X509Certificate[0]);
             final PublicKey importPublicKey = chain[0].getPublicKey();
             final String importKeyHash = CertTools.getFingerprintAsString(importPublicKey.getEncoded());
@@ -602,7 +602,7 @@ public class KeyStoreTools {
     
     /**
      * Install trusted root in trust store
-     * @param File name of the trusted root.
+     * @param fileName name of the trusted root.
      */
     public void installTrustedRoot(String fileName) {
         try( final InputStream is = new FileInputStream(fileName) ) {
