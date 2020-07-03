@@ -34,6 +34,13 @@ public abstract class SystemTestsConfiguration {
     private static final String PKCS11_SECURITY_PROVIDER = "pkcs11.provider";
     private static final String PKCS11_SLOT_TYPE = "pkcs11.slottype"; 
     private static final String PKCS11_SLOT_VALUE = "pkcs11.slottypevalue";
+    private static final String PKCS11_TOKEN_NUMBER = "pkcs11.token_number";
+    private static final String PKCS11_TOKEN_INDEX = "pkcs11.token_index";
+    private static final String PKCS11_TOKEN_LABEL = "pkcs11.token_label";
+    private static final String PKCS11_TOKEN2_NUMBER = "pkcs11.token2_number";
+    private static final String PKCS11_TOKEN2_INDEX = "pkcs11.token2_index";
+    private static final String PKCS11_TOKEN2_LABEL = "pkcs11.token2_label";
+
     // These are public so they can be used in error messages
     public static final String TARGET_CLIENTCERT_CA = "target.clientcert.ca";
     public static final String TARGET_SERVERCERT_CA = "target.servercert.ca";
@@ -179,5 +186,57 @@ public abstract class SystemTestsConfiguration {
             }
         }
         return null;
+    }
+
+    /** Returns the token number for the configured token, or null if not configured. Use in tests that require specifically a token number. */
+    public static String getPkcs11TokenNumber() {
+        final String ret = StringUtils.trimToNull(getProperties().getProperty(PKCS11_TOKEN_NUMBER, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_NUMBER: "+ret);
+        }
+        return ret;
+    }
+    /** Returns the token number for the configured token2, or null if not configured. Use in tests that require specifically a token number. */
+    public static String getPkcs11Token2Number() {
+        final String ret = StringUtils.trimToNull(getProperties().getProperty(PKCS11_TOKEN2_NUMBER, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_NUMBER: "+ret);
+        }
+        return ret;
+    }
+
+    /** Returns the token index for the configured token, or null if not configured. Use in tests that require specifically a token index. */
+    public static String getPkcs11TokenIndex() {
+        final String ret = StringUtils.trimToNull(getProperties().getProperty(PKCS11_TOKEN_INDEX, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_INDEX: "+ret);
+        }
+        return ret;
+    }
+    /** Returns the token index for the configured token2, or null if not configured. Use in tests that require specifically a token index. */
+    public static String getPkcs11Token2Index() {
+        final String ret = StringUtils.trimToNull(getProperties().getProperty(PKCS11_TOKEN2_INDEX, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_INDEX: "+ret);
+        }
+        return ret;
+    }
+
+    /** Returns the token label for the configured token, or null if not configured. Use in tests that require specifically a token label. */
+    public static String getPkcs11TokenLabel() {
+        final String ret = StringUtils.trimToNull(getProperties().getProperty(PKCS11_TOKEN_LABEL, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_LABEL: "+ret);
+        }
+        return ret;
+    }
+
+    /** Returns the token label for the configured token2, or null if not configured. Use in tests that require specifically a token label. */
+    public static String getPkcs11Token2Label() {
+        final String ret = StringUtils.trimToNull(getProperties().getProperty(PKCS11_TOKEN2_LABEL, null));
+        if (log.isDebugEnabled()) {
+            log.debug("PKCS11_TOKEN_LABEL: "+ret);
+        }
+        return ret;
     }
 }
