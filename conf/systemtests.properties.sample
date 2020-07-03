@@ -55,3 +55,7 @@
 #pkcs11.token_number=1
 #pkcs11.token_label=TEST
 #pkcs11.token_index=i0
+#second slot references
+#pkcs11.token2_number=2
+#pkcs11.token2_label=TEST1
+#pkcs11.token2_index=i1
