@@ -163,7 +163,7 @@ class KeyStoreContainerTest {
         final KeyStoreTools keyStore = getKeyStoreTools(
                 p11moduleName, storeID, slotLabelType, protectionParameter);
         if ( !keyStore.getKeyStore().isKeyEntry(alias) ) {
-            termErr.println("Key alias does not exist.");
+            termErr.println("Key alias " +alias + " does not exist.");
             return;
         }
         PrivateKey privateKey = (PrivateKey)keyStore.getKeyStore().getKey(alias, null);
