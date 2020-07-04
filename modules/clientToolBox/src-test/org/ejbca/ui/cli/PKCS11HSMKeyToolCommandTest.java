@@ -103,7 +103,7 @@ public class PKCS11HSMKeyToolCommandTest {
             "All mimsy were the borogoves, \n" +
             "And the mome raths outgrabe. ";
 
-    private static String[] aliases = new String[]{"rsa1", "rsa2", "kot", "ecc", "dsa", "TestRootOld", "TestRootNew"};
+    private static String[] aliases = new String[]{"rsa1", "rsa2", "rsa3", "ecc", "dsa", "TestRootOld", "TestRootNew"};
 
     private static File inFile;
     private static File certFile;
