@@ -186,7 +186,7 @@
 
                 <!-- Validity offset (ECA-3554) -->
 
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup>
                     <h:outputLabel
                         for="checkusecertificatevalidityoffsetgroup"
                         value="#{web.text.CERT_VALIDITY_OFFSET}" />
@@ -195,7 +195,7 @@
                         escape="false" />
                 </h:panelGroup>
                 <h:panelGrid id="certificatevalidityoffsetgrid"
-                    columns="1" rendered="#{!certProfileBean.typeSsh}">
+                    columns="1">
                     <h:panelGroup
                         id="checkusecertificatevalidityoffsetgroup">
                         <h:selectBooleanCheckbox
@@ -234,7 +234,7 @@
 
                 <!-- Expiration restriction for weekdays (ECA-5330) -->
 
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup>
                     <h:outputLabel
                         for="checkuseexpirationtrestrictionforweekdaysgroup"
                         value="#{web.text.CERT_EXPIRATION_RESTRICTIONS}" />
@@ -242,8 +242,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Expiration_Restrictions')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="expirationtrestrictionforweekdaysgrid"
-                    columns="1" rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGrid id="expirationtrestrictionforweekdaysgrid" columns="1">
                     <h:panelGroup
                         id="checkuseexpirationtrestrictionforweekdaysgroup">
                         <h:selectBooleanCheckbox
@@ -432,14 +431,14 @@
                     style="font-weight: bold;" />
                 <h:panelGroup id="header_permissions" />
 
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup>
                     <h:outputLabel for="checkallowvalidityoverridegroup"
                         value="#{web.text.ALLOWVALIDITYOVERRIDE}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Validity')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGroup id="checkallowvalidityoverridegroup" rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup id="checkallowvalidityoverridegroup">
                     <h:selectBooleanCheckbox
                         id="checkallowvalidityoverride"
                         value="#{certProfileBean.certificateProfile.allowValidityOverride}"
