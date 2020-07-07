@@ -17,11 +17,12 @@ import java.security.PrivateKey;
 import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 
 /**
- * @version $Id$
+ * SSH Key Pair.
  *
+ * @version $Id$
  */
 public interface SshKeyPair {
     SshPublicKey getPublicKey();
-    
+
     PrivateKey getPrivateKey();
   }

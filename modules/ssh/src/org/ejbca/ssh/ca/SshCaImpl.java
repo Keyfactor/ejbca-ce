@@ -90,7 +90,6 @@ import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
@@ -144,9 +143,9 @@ import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
 
 /**
- * 
+ *
  * TODO SSH: Remove all references to CT in ECA-9182
- * 
+ *
  * @version $Id$
  *
  */
@@ -160,10 +159,10 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
     private static final String USEPRINTABLESTRINGSUBJECTDN = "useprintablestringsubjectdn";
     private static final String USELDAPDNORDER = "useldapdnorder";
 
-    /** Buffer size used for BufferingContentSigner, this is the max buffer is collect before making a "sign" call. 
+    /** Buffer size used for BufferingContentSigner, this is the max buffer is collect before making a "sign" call.
      * This is important in order to not make several calls to a network attached HSM for example, as that slows signing down a lot
      * due to network round-trips. As long as the object to sign is smaller than this buffer a single round-trip is done.
-     * Size is selected as certificates are almost never this big, and this is a reasonable size to do round-tripping on for CRLs. 
+     * Size is selected as certificates are almost never this big, and this is a reasonable size to do round-tripping on for CRLs.
      */
     private static final int SIGN_BUFFER_SIZE = 20480;
 
@@ -234,7 +233,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
          */
 
         // Before we start, check if the CA is off-line, we don't have to waste time
-        // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline      
+        // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
         final int purpose = getUseNextCACert(request) ? CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT : CATokenConstants.CAKEYPURPOSE_CERTSIGN;
         final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(purpose));
@@ -255,7 +254,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
                 throw new InvalidAlgorithmException("Unable to process either signature or public key.", e);
             } catch (CertificateEncodingException e) {
                 throw new CertificateCreateException("Could not create certificate", e);
-            }  
+            }
         default:
             throw new CertificateCreateException("SSH CA can not generate certificates for other CA types than ROOT, SUBCA or SSH");
         }
@@ -264,8 +263,8 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
 
     /**
      * Produces an OpenSSH encoded SSH certificate
-     * 
-     * @param endEntityInformation the end entity to create the certificate for 
+     *
+     * @param endEntityInformation the end entity to create the certificate for
      * @param requestMessage a {@link SshRequestMessage} containing all pertinent information
      * @param publicKey the public key to sign for (also included in requestMessage)
      * @param notBefore the start date of the certificate
@@ -273,9 +272,9 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
      * @param certificateProfile the certificate profile for this certificate
      * @param caPublicKey the CA's public key, to be embedded in the certificate
      * @param caPrivateKey the CA's private key, used to sign the certificate
-     * 
+     *
      * @return a signed SSH certificate
-     * 
+     *
      * @throws InvalidKeySpecException if either the public key or signing keys were of incorrect type
      * @throws SignatureException if the signature couldn't be produced
      * @throws InvalidKeyException if the signing keys were invalid
@@ -289,9 +288,9 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
             SignatureException, InvalidKeyException, CertificateEncodingException, CAOfflineException, IllegalValidityException {
 
         //Generate a nine octet serial number - since the serial number generator always produces positive numbers, we'll simply squeeze it into an unsigned long.
-        SernoGenerator sernoGenerator = SernoGeneratorRandom.instance(9); 
+        SernoGenerator sernoGenerator = SernoGeneratorRandom.instance(9);
         String serialNumber = Long.toUnsignedString(sernoGenerator.getSerno().longValue());
-        //Create a 32 byte nonce 
+        //Create a 32 byte nonce
         byte[] nonceBytes = new byte[32];
         try {
             SecureRandom.getInstance("SHA1PRNG").nextBytes(nonceBytes);
@@ -308,10 +307,10 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         } else {
             criticalOptions = new HashMap<>();
         }
-        TreeMap<String, byte[]> extensions = new TreeMap<>();
+        TreeMap<String, byte[]> extensions;
         //No extensions are defined for host certificates
         if (certificateType.equals(SshCertificateType.USER)) {
-            extensions.putAll(certificateProfile.getSshExtensionsMap());
+            extensions = new TreeMap<>(certificateProfile.getSshExtensionsMap());
             //Check if certificate profile allows adding additional extensions
             if (certificateProfile.getAllowExternalSshExtensions()) {
                 //TODO SSH: Once defined in system configuration, also check (if required) that all additional extensions be known ECA-9183
@@ -345,14 +344,14 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         default:
             throw new InvalidKeySpecException("Key algorithm " + AlgorithmTools.getKeyAlgorithm(caPublicKey) + " is not supported for SSH.");
         }
-        
+
         final X509Certificate cacert = (X509Certificate) getCACertificate();
         final Date checkDate = new Date();
         // Check CA certificate PrivateKeyUsagePeriod if it exists (throws CAOfflineException if it exists and is not within this time)
         CertificateValidity.checkPrivateKeyUsagePeriod(cacert, checkDate);
         // Get certificate validity time notBefore and notAfter
         final CertificateValidity validity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter, cacert, false, false);
-        
+
         SshCertificateBase sshCertificate;
         if (publicKey instanceof ECPublicKey) {
             sshCertificate = new SshEcCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, validity.getNotBefore(), validity.getNotAfter(),
@@ -377,11 +376,11 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
      * TODO: Method is boilerplate, please move into a common class for SSH and X509 Certs ECA-9182
      */
     private X509Certificate generateX509Certificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage,
-            final PublicKey providedPublicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
+            final PublicKey providedPublicKey, final int keyUsage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
             final Extensions extensions, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate,
             boolean caNameChange) throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
-            CertificateExtensionException, OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
+            CertificateExtensionException, OperatorCreationException, CertificateCreateException, IllegalKeyException {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
@@ -464,12 +463,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         }
 
         // Will we use LDAP DN order (CN first) or X500 DN order (CN last) for the subject DN
-        final boolean ldapdnorder;
-        if ((!getUseLdapDNOrder()) || (!certProfile.getUseLdapDnOrder())) {
-            ldapdnorder = false;
-        } else {
-            ldapdnorder = true;
-        }
+        final boolean ldapdnorder = (getUseLdapDNOrder()) && (certProfile.getUseLdapDnOrder());
         // If we have a custom order defined in the certificate profile, take this. If this is null or empty it will be ignored
         String[] customDNOrder = null;
         if (certProfile.getUseCustomDnOrder()) {
@@ -560,7 +554,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
                 ? new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo)
                 : null;
 
-        // Check that the certificate fulfills name constraints, as a service to the CA, so they don't issue certificates that 
+        // Check that the certificate fulfills name constraints, as a service to the CA, so they don't issue certificates that
         // later fail verification in clients (browsers)
         if (cacert != null) {
             GeneralNames altNameGNs = null;
@@ -637,12 +631,12 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
 
         // Second we see if there is Key usage override
         Extensions overridenexts = extgen.generate();
-        if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
+        if (certProfile.getAllowKeyUsageOverride() && (keyUsage >= 0)) {
             if (log.isDebugEnabled()) {
-                log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: " + keyusage);
+                log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: " + keyUsage);
             }
-            if (certProfile.getUseKeyUsage() && (keyusage >= 0)) {
-                final KeyUsage ku = new KeyUsage(keyusage);
+            if (certProfile.getUseKeyUsage()) {
+                final KeyUsage ku = new KeyUsage(keyUsage);
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
@@ -730,14 +724,12 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
             }
         }
         // Match remaining extensions (wild cards)
-        final Iterator<Integer> certExtWildcardIter = wildcardExt.iterator();
-        while (certExtWildcardIter.hasNext()) {
-            final int id = certExtWildcardIter.next();
+        for (int id : wildcardExt) {
             final int remainingOidsToMatch = requestOids.size();
             final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
             if (certExt != null) {
                 for (final String oid : requestOids) {
-                    // Match requested OID with wildcard in CCE configuration 
+                    // Match requested OID with wildcard in CCE configuration
                     if (oid.matches(CertTools.getOidWildcardPattern(certExt.getOID()))) {
                         if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
                             final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val, oid);
@@ -871,7 +863,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
                  */
                 final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey),
                         SIGN_BUFFER_SIZE);
-                // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
+                // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 // ECA-6051 Re-Factored with Domain Service Layer.
@@ -898,7 +890,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
                     chain.add(cert);
                     chain.addAll(getCertificateChain());
                     // Submit to logs and get signed timestamps
-                    byte[] sctlist = null;
+                    byte[] sctlist;
                     try {
                         sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(),
                                 certGenParams.getSctDataCallback());
@@ -1123,34 +1115,33 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
 
     @Override
     public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) {
-        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", new Object[] { "SSH" });
+        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "SSH");
         log.info(msg);
         return null;
     }
 
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
-            int basecrlnumber) {
-        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", new Object[] { "SSH" });
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlNumber,
+            int baseCrlNumber) {
+        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "SSH");
         log.info(msg);
         return null;
     }
 
-    public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+    public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) {
         return null;
     }
 
-    public byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException {
+    public byte[] createPKCS7Rollover(CryptoToken cryptoToken) {
         return null;
     }
 
     public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert,
-            int signatureKeyPurpose, CertificateProfile certificateProfile, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws CryptoTokenOfflineException, CertificateExtensionException {
+            int signatureKeyPurpose, CertificateProfile certificateProfile, AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         return null;
     }
 
-    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException {
+    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) {
         return null;
     }
 
@@ -1159,7 +1150,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
     }
 
     public void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
-            AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException {
+            AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) {
     }
 
     public float getLatestVersion() {

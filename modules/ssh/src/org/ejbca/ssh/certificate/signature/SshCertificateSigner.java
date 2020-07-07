@@ -16,17 +16,17 @@ import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.X509Certificate;
 
 /**
- * @version $Id$
+ * SSH Certificate Signer.
  *
+ * @version $Id$
  */
 public interface SshCertificateSigner {
 
     /**
      * Sign the given payload and return a signature that can be inserted into an SSH certificate
-     * 
+     *
      * @param payload the payload to be signed, typically the contents of an SSH certificate except for the signature itself
      * @param signingPublicKey used to verify that the correct signing algorithm is being used
      * @param signingKey the CA's private key

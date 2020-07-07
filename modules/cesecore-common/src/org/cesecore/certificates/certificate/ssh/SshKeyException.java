@@ -16,9 +16,8 @@ import javax.xml.ws.WebFault;
 
 /**
  * Thrown to mark any unresolvable issues with SSH keys.
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
 @WebFault
 public class SshKeyException extends Exception {
@@ -26,38 +25,42 @@ public class SshKeyException extends Exception {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 
+     * Constructor.
      */
     public SshKeyException() {
     }
 
     /**
-     * @param message
+     * Constructor.
+     * @param message message.
      */
     public SshKeyException(String message) {
         super(message);
     }
 
     /**
-     * @param cause
+     * Constructor.
+     * @param cause cause.
      */
     public SshKeyException(Throwable cause) {
         super(cause);
     }
 
     /**
-     * @param message
-     * @param cause
+     * Constructor.
+     * @param message message.
+     * @param cause cause.
      */
     public SshKeyException(String message, Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * @param message
-     * @param cause
-     * @param enableSuppression
-     * @param writableStackTrace
+     * Constructor.
+     * @param message message.
+     * @param cause cause.
+     * @param enableSuppression enable suppression flag.
+     * @param writableStackTrace writable stack trace flag.
      */
     public SshKeyException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);

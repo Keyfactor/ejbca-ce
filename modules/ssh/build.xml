@@ -4,7 +4,7 @@
 	<dirname property="ssh.dir" file="${ant.file.ssh}"/>
 
 	<import file="../build-helpers.xml"/>
-	
+
 	<property name="ssh.build.dir" location="${ssh.dir}/build-ssh"/>
 	<property name="ssh.build-test.dir" location="${ssh.dir}/build-test"/>
 	<property name="ssh.src.plugins.dir" location="${ssh.dir}/src"/>
@@ -12,7 +12,6 @@
 	<property name="ssh.src-war.dir" location="${ssh.dir}/src-war"/>
 	<property name="ssh.build-war.dir" location="${ssh.dir}/build-war"/>
 	<property name="resources.dir" location="${ssh.dir}/resources"/>
-
 
 	<path id="compile.classpath">
 		<path refid="lib.servlet.classpath"/>
@@ -36,19 +35,19 @@
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
-	
+
 	<path id="compile.war.classpath">
 		<path refid="compile.classpath"/>
 		<path location="${ssh.build.dir}"/>
 		<path refid="lib.servlet.classpath"/>
 	</path>
-	
+
 	<path id="test.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
-		<path refid="lib.cert-cvc.classpath"/> 
+		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xmlpull.classpath"/>
 		<path location="${ssh.build.dir}"/>
@@ -67,44 +66,44 @@
 		<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
 		<path location="${ssh.build-war.dir}/WEB-INF/classes/"/>
 	</path>
-	
+
     <target name="clean" description="Clean up this module">
 		<delete dir="${ssh.build-test.dir}" />
 		<delete dir="${ssh.build.dir}" />
 	 	<delete file="${mod.ssh.lib}" />
     	<delete dir="${ssh.build-war.dir}" />
     </target>
-	
+
     <condition property="src.exists">
     	<available file="${ssh.src.plugins.dir}" />
     </condition>
-	
-	
+
+
 	<target name="build-ssh" depends="compile, build-war">
 		<buildservicemanifest interface="org.cesecore.certificates.ca.CACommon;org.cesecore.certificates.certificate.ssh.SshPublicKey;org.cesecore.certificates.certificate.ssh.SshCertificate" file="${ssh.build.dir}" classpath="compile.classpath"/>
 		<jar destfile="${mod.ssh.lib}" basedir="${ssh.build.dir}"/>
 	</target>
-	
+
 	<target name="build-war" depends="compile-war">
 		<war destfile="${mod.ssh.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${ssh.build-war.dir}">
 	    	<fileset dir="${resources.dir}" excludes="WEB-INF/web.xml"/>
 		</war>
 	</target>
-		
+
 	<target name="compile-war" depends="with.clover, compile">
 		<mkdir dir="${ssh.build-war.dir}/WEB-INF/classes" />
 	    <javac srcdir="${ssh.src-war.dir}" destdir="${ssh.build-war.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 	        	classpathref="compile.war.classpath"/>
 	</target>
-	
+
 	<target name="compile">
 		<mkdir dir="${ssh.build.dir}" />
-		<javac srcdir="${ssh.src.plugins.dir}" destdir="${ssh.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" 
+		<javac srcdir="${ssh.src.plugins.dir}" destdir="${ssh.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
 			target="${java.target.version}" classpathref="compile.classpath"/>
 	</target>
-	
+
     <target name="tests-compile" depends="compile">
-    	<mkdir dir="${ssh.build-test.dir}" />		
+    	<mkdir dir="${ssh.build-test.dir}" />
     	<copy file="${log4j.test.file}" tofile="${ssh.build-test.dir}/log4j.xml" failonerror="true"/>
     	<copy todir="${ssh.build-test.dir}" failonerror="true">
             <fileset dir="${ejbca.home}/src" includes="intresources/**"/>
@@ -120,8 +119,8 @@
 			<sourcepath location="${mod.systemtests.path}/src-test/"/>
     	</javac>
     </target>
-	
-	<target name="test" depends="tests-compile">
+
+	<target name="test:unit" depends="tests-compile">
 	    <antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ssh.dir}">
 			<classpath>
@@ -130,7 +129,23 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${ssh.build-test.dir}" includes="**/*Test.class" />
+				<fileset dir="${ssh.build-test.dir}" includes="**/*UnitTest.class" />
+			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="test:system" depends="tests-compile">
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ssh.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${ssh.build-test.dir}" includes="**/*SystemTest.class" />
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
 		</junit>

@@ -38,8 +38,9 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 
 /**
- * @version $Id$
+ * SSH EC Public Key.
  *
+ * @version $Id$
  */
 public class SshEcPublicKey implements SshPublicKey {
     public static final String ENCODING_ALGORITHM_BASE = "ecdsa-sha2-";
@@ -52,9 +53,9 @@ public class SshEcPublicKey implements SshPublicKey {
     public static final String PRIME256V1 = "prime256v1";
     public static final String PRIME384V1 = "prime384v1";
     public static final String PRIME521V1 = "prime521v1";
-    
+
     private static final List<String> keyAlgorithms = Arrays.asList("ecdsa-sha2-nistp256", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp521");
-    
+
     private static final long serialVersionUID = 1L;
 
     private ECPublicKey ecPublicKey;
@@ -75,20 +76,19 @@ public class SshEcPublicKey implements SshPublicKey {
 
     /**
      * Read an RSA public key encoded in SSH format
-     * 
-     * @param encodedBytes a byte array containing the public key, in the format: <br>
-     * @throws SshKeyException if the key was not an EC key, or the encoded array could not be read. 
+     *
+     * @param encodedBytes a byte array containing the public key, in the format: <br/>
+     * @throws SshKeyException if the key was not an EC key, or the encoded array could not be read.
      * @throws InvalidKeySpecException if the key specification was incorrect
      */
     public SshEcPublicKey(final byte[] encodedBytes) throws SshKeyException, InvalidKeySpecException {
         init(encodedBytes);
     }
-    
+
     @Override
     public void init(byte[] keyBody) throws SshKeyException, InvalidKeySpecException {
-        SshCertificateReader sshCertificateReader = new SshCertificateReader(keyBody);
 
-        try {
+        try (SshCertificateReader sshCertificateReader = new SshCertificateReader(keyBody)) {
             String algorithm = sshCertificateReader.readString();
             if (!algorithm.startsWith(ENCODING_ALGORITHM_BASE)) {
                 throw new SshKeyException("Endoded key was not prefixed with " + ENCODING_ALGORITHM_BASE + ", was " + algorithm + ".");
@@ -109,15 +109,12 @@ public class SshEcPublicKey implements SshPublicKey {
                     .generatePublic(new ECPublicKeySpec(ecPoint, EC5Util.convertSpec(ellipticCurve, ecParameterSpec)));
         } catch (IOException e) {
             throw new SshKeyException("Could not read encoded key.", e);
-        } finally {
-            sshCertificateReader.close();
         }
-        
     }
 
     /**
-     * The nistp* curves are not widely known in crypto libraries - translate the curve name into a more known one. 
-     * 
+     * The nistp* curves are not widely known in crypto libraries - translate the curve name into a more known one.
+     *
      * @param curve the original curve name
      * @return the converted curve name
      * @throws InvalidKeySpecException if the curve name didn't match up to nistp256, nistp384 or nistp521
@@ -135,7 +132,7 @@ public class SshEcPublicKey implements SshPublicKey {
 
         }
     }
-    
+
     public static String getSshCurveNameFromPublicKey(ECPublicKey publicKey) throws InvalidKeySpecException {
         switch (AlgorithmTools.getKeySpecification(publicKey)) {
         case SECP256R1:
@@ -199,7 +196,7 @@ public class SshEcPublicKey implements SshPublicKey {
     public List<String> getSshKeyAlgorithms() {
         return keyAlgorithms;
     }
-    
+
     @Override
     public String getKeyAlgorithm() {
         return AlgorithmConstants.KEYALGORITHM_EC;
@@ -226,7 +223,7 @@ public class SshEcPublicKey implements SshPublicKey {
     public PublicKey getPublicKey() {
         return ecPublicKey;
     }
-    
+
     public String getCurveName() {
         return curveName;
     }

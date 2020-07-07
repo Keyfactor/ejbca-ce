@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ssh.certificate;
 
 import java.io.ByteArrayOutputStream;
@@ -50,31 +49,28 @@ import org.cesecore.util.Base64;
 import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 
 /**
- * 
- * 
- * 
- * @version $Id$
+ * SSH EC Certificate.
  *
+ * @version $Id$
  */
-
 public class SshEcCertificate extends SshCertificateBase {
 
     public static final String SSH_EC_CERT_PREFIX = "ecdsa-sha2-";
     public static final String SSH_EC_CERT_POSTFIX = "-cert-v01@openssh.com";
-    
-    private static Set<String> knownPrefixes = new HashSet<>(Arrays.asList(SSH_EC_CERT_PREFIX + SshEcPublicKey.NISTP256 + SSH_EC_CERT_POSTFIX,
+
+    private static final Set<String> knownPrefixes = new HashSet<>(Arrays.asList(SSH_EC_CERT_PREFIX + SshEcPublicKey.NISTP256 + SSH_EC_CERT_POSTFIX,
             SSH_EC_CERT_PREFIX + SshEcPublicKey.NISTP384 + SSH_EC_CERT_POSTFIX, SSH_EC_CERT_PREFIX + SshEcPublicKey.NISTP521+ SSH_EC_CERT_POSTFIX));
 
     public SshEcCertificate() {
         super();
     }
-    
+
     public SshEcCertificate(final SshPublicKey publicKey, byte[] nonce, final String serialNumber, final SshCertificateType sshCertificateType,
             final String keyId, final Set<String> principals, final Date validAfter, final Date validBefore,
             final Map<String, String> criticalOptions, final Map<String, byte[]> extensions, final SshPublicKey signKey, final String comment, final String issuerIdentifier) {
         super(publicKey, nonce, serialNumber, sshCertificateType, keyId, principals, validAfter, validBefore, criticalOptions, extensions, signKey, comment, issuerIdentifier);
     }
-    
+
     @Override
     public void init(byte[] encodedCertificate) throws CertificateEncodingException, SshKeyException {
         String certificateString = new String(encodedCertificate);
@@ -84,14 +80,13 @@ public class SshEcCertificate extends SshCertificateBase {
                     "Certificate was of unknown type, was '" + splitCertificateString[0] + "'.");
         }
         byte[] certificateBody = Base64.decode(splitCertificateString[1].getBytes());
-        SshCertificateReader sshCertificateReader = new SshCertificateReader(certificateBody);
-        try {
+        try (SshCertificateReader sshCertificateReader = new SshCertificateReader(certificateBody)) {
             final String certificateAlgorithm = sshCertificateReader.readString();
-            if(!knownPrefixes.contains(certificateAlgorithm)) {
+            if (!knownPrefixes.contains(certificateAlgorithm)) {
                 throw new CertificateEncodingException(
                         "Certificate was of unknown type, was '" + certificateAlgorithm + "'.");
             }
-            setNonce(sshCertificateReader.readByteArray());          
+            setNonce(sshCertificateReader.readByteArray());
             final String curveName = sshCertificateReader.readString();
             final byte[] pointBytes = sshCertificateReader.readByteArray();
             final ECParameterSpec ecParameterSpec = ECNamedCurveTable
@@ -110,13 +105,9 @@ public class SshEcCertificate extends SshCertificateBase {
             init(sshCertificateReader);
         } catch (IOException | InvalidKeySpecException e) {
             throw new CertificateEncodingException(e);
-        } finally {
-            sshCertificateReader.close();
         }
-        
     }
-    
-    
+
     @Override
     protected void getEncoded(SshCertificateWriter sshCertificateWriter) throws IOException {
         sshCertificateWriter.writeString(getCertificatePrefix());
@@ -156,8 +147,7 @@ public class SshEcCertificate extends SshCertificateBase {
 
     /**
      * Encodes this certificate for export to the standard SSH certificate format
-     * 
-     * @param comment a comment to append
+     *
      * @return a byte array containing the encoded certificate
      * @throws CertificateEncodingException if this method was run on a pre-cert (without the signature set), or any encoding error happened
      */
@@ -187,7 +177,7 @@ public class SshEcCertificate extends SshCertificateBase {
 
     @Override
     public String toString() {
-        //TODO: SSH Implement
+        // TODO ECA-9293: SSH Implement
         return null;
     }
 
@@ -214,7 +204,7 @@ public class SshEcCertificate extends SshCertificateBase {
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             DERSequenceGenerator seq = new DERSequenceGenerator(byteArrayOutputStream);
-            SshCertificateReader sshCertificateReader = new SshCertificateReader(signatureBytes);       
+            SshCertificateReader sshCertificateReader = new SshCertificateReader(signatureBytes);
             seq.addObject(new ASN1Integer(sshCertificateReader.readBigInteger()));
             seq.addObject(new ASN1Integer(sshCertificateReader.readBigInteger()));
             sshCertificateReader.close();
@@ -235,7 +225,5 @@ public class SshEcCertificate extends SshCertificateBase {
                 SSH_EC_CERT_PREFIX + SshEcPublicKey.NISTP384 + SSH_EC_CERT_POSTFIX,
                 SSH_EC_CERT_PREFIX + SshEcPublicKey.NISTP521 + SSH_EC_CERT_POSTFIX);
     }
-
-
 
 }

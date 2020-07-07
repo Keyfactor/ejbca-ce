@@ -26,41 +26,39 @@ import org.cesecore.keys.util.KeyTools;
 import org.ejbca.ssh.keys.SshKeyPair;
 
 /**
- * @version $Id$
+ * SSH RSA Key Pair.
  *
+ * @version $Id$
  */
 public class SshRsaKeyPair implements SshKeyPair {
-    
+
     private final SshRsaPublicKey rsaPublicKey;
     private final RSAPrivateKey rsaPrivateKey;
-    
+
     public SshRsaKeyPair(int size) {
       KeyPair keyPair;
       try {
         keyPair = KeyTools.genKeys(Integer.toString(size), AlgorithmConstants.KEYALGORITHM_RSA);
       } catch (InvalidAlgorithmParameterException e) {
         throw new IllegalStateException("Could not create RSA keys of size " + size, e);
-      } 
+      }
       this.rsaPublicKey = new SshRsaPublicKey((RSAPublicKey)keyPair.getPublic());
       this.rsaPrivateKey = (RSAPrivateKey)keyPair.getPrivate();
     }
-    
+
     @Override
     public SshRsaPublicKey getPublicKey() {
       return this.rsaPublicKey;
     }
-    
+
     public PrivateKey getPrivateKey() {
       return this.rsaPrivateKey;
     }
-    
+
     public void exportPublicKeyToFile(File file, String comment) throws IOException {
-      FileOutputStream out = new FileOutputStream(file);
-      try {
-        out.write(this.rsaPublicKey.encodeForExport(comment));
-        out.flush();
-      } finally {
-        out.close();
-      } 
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            out.write(this.rsaPublicKey.encodeForExport(comment));
+            out.flush();
+        }
     }
   }

@@ -21,10 +21,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @version $Id$
+ * SSH RSA Keys tests.
  *
+ * @version $Id$
  */
-public class SshRsaKeysTest {
+public class SshRsaKeysUnitTest {
 
     @BeforeClass
     public static void beforeClass() {
@@ -32,13 +33,13 @@ public class SshRsaKeysTest {
     }
 
     @Test
-    public void testRsaKeysExport() throws IOException {
+    public void rsaKeysExport() throws IOException {
         SshRsaKeyPair sshRsaKeyPair = new SshRsaKeyPair(1024);
-        final String commment = "foo";
-        String exportedPublicKey = new String(sshRsaKeyPair.getPublicKey().encodeForExport(commment));
+        final String comment = "foo";
+        String exportedPublicKey = new String(sshRsaKeyPair.getPublicKey().encodeForExport(comment));
         assertTrue("Exported public key did not contain RSA prefix.", exportedPublicKey.startsWith("ssh-rsa "));
         assertTrue("Exported public key BASE64 did not contain RSA prefix.", exportedPublicKey.contains("AAAAB3NzaC1yc2EA"));
-        assertTrue("Exported public key did not end with comment.", exportedPublicKey.endsWith(commment));
+        assertTrue("Exported public key did not end with comment.", exportedPublicKey.endsWith(comment));
     }
 
 }

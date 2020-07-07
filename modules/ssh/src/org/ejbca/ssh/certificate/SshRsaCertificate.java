@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ssh.certificate;
 
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -38,30 +37,28 @@ import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.Base64;
 import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
-/**
- * 
- * 
- * 
- * @version $Id$
- *
- */
 
+/**
+ * SSH RSA Certificate.
+ *
+ * @version $Id$
+ */
 public class SshRsaCertificate extends SshCertificateBase {
 
     private static final Logger log = Logger.getLogger(SshRsaCertificate.class);
-    
+
     private static final String SSH_RSA_CERT_V01 = "ssh-rsa-cert-v01@openssh.com";
 
     public SshRsaCertificate() {
         super();
     }
-    
+
     public SshRsaCertificate(final SshPublicKey publicKey, byte[] nonce, final String serialNumber, final SshCertificateType sshCertificateType,
             final String keyId, final Set<String> principals, final Date validAfter, final Date validBefore, final Map<String, String> criticalOptions,
             final Map<String, byte[]> extensions, final SshPublicKey signKey, final String comment, final String issuerIdentifier) {
-        super(publicKey, nonce, serialNumber, sshCertificateType, keyId, principals, validAfter, validBefore, criticalOptions, extensions, signKey, comment, issuerIdentifier);   
+        super(publicKey, nonce, serialNumber, sshCertificateType, keyId, principals, validAfter, validBefore, criticalOptions, extensions, signKey, comment, issuerIdentifier);
     }
-    
+
     @Override
     public void init(byte[] encodedCertificate) throws CertificateEncodingException, SshKeyException {
         String certificateString = new String(encodedCertificate);
@@ -71,8 +68,7 @@ public class SshRsaCertificate extends SshCertificateBase {
                     "Certificate was not of type '" + SSH_RSA_CERT_V01 + "', was '" + splitCertificateString[0] + "'.");
         }
         byte[] certificateBody = Base64.decode(splitCertificateString[1].getBytes());
-        SshCertificateReader sshCertificateReader = new SshCertificateReader(certificateBody);
-        try {
+        try (SshCertificateReader sshCertificateReader = new SshCertificateReader(certificateBody)) {
             String algorithm = sshCertificateReader.readString();
             if (!algorithm.equals(SSH_RSA_CERT_V01)) {
                 throw new SshKeyException("Endoded key was not prefixed with " + SSH_RSA_CERT_V01 + ", was " + algorithm + ".");
@@ -84,12 +80,9 @@ public class SshRsaCertificate extends SshCertificateBase {
             init(sshCertificateReader);
         } catch (IOException | InvalidKeySpecException e) {
             throw new CertificateEncodingException(e);
-        } finally {
-            sshCertificateReader.close();
         }
-        
     }
-    
+
     @Override
     protected void getEncoded(SshCertificateWriter sshCertificateWriter) throws IOException {
         sshCertificateWriter.writeString(getCertificatePrefix());
@@ -114,7 +107,7 @@ public class SshRsaCertificate extends SshCertificateBase {
             throw new CertificateEncodingException(e);
         }
     }
-    
+
     @Override
     public byte[] getEncoded() throws CertificateEncodingException {
         return encodeForExport();
@@ -127,8 +120,7 @@ public class SshRsaCertificate extends SshCertificateBase {
 
     /**
      * Encodes this certificate for export to the standard SSH certificate format
-     * 
-     * @param comment a comment to append
+     *
      * @return a byte array containing the encoded certificate
      * @throws CertificateEncodingException if this method was run on a pre-cert (without the signature set), or any encoding error happened
      */
@@ -172,7 +164,7 @@ public class SshRsaCertificate extends SshCertificateBase {
                 break;
             case SshRsaPublicKey.SSH_RSA2_SHA256:
                 signature = Signature.getInstance(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-                break;      
+                break;
             case SshRsaPublicKey.SSH_RSA:
                 signature = Signature.getInstance(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
                 break;
@@ -184,7 +176,7 @@ public class SshRsaCertificate extends SshCertificateBase {
             throw new IllegalStateException("Unknown algorithm was found", e);
         }
     }
-    
+
     private boolean verifySignature(final Signature signature, byte[] signatureBytes, byte[] data, boolean allowCorrect)
             throws SignatureException, InvalidKeyException {
         RSAPublicKey rsaPublicKey = (RSAPublicKey) getSigningKey().getPublicKey();
@@ -196,7 +188,7 @@ public class SshRsaCertificate extends SshCertificateBase {
         if(log.isDebugEnabled()) {
             log.debug("Signing payload of size: " + data.length);
             log.debug("Signature: " + signature.toString());
-            
+
         }
         if (signatureBytes.length < expectedLength) {
             if (log.isDebugEnabled()) {
@@ -232,7 +224,7 @@ public class SshRsaCertificate extends SshCertificateBase {
     }
 
     /**
-     * 
+     *
      * @param modulus the modulus of an RSA key
      * @return the expected signature length
      */
@@ -247,10 +239,7 @@ public class SshRsaCertificate extends SshCertificateBase {
 
     @Override
     public List<String> getCertificateImplementations() {
-        return Arrays.asList(SSH_RSA_CERT_V01);
+        return Collections.singletonList(SSH_RSA_CERT_V01);
     }
 
-
-    
-    
 }

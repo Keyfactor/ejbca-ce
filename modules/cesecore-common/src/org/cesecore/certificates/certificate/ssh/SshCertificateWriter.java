@@ -13,17 +13,18 @@
 
 package org.cesecore.certificates.certificate.ssh;
 
-/**
- * @version $Id$
- *
- */
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
+/**
+ * SSH Certificate Writer.
+ *
+ * @version $Id$
+ */
 public class SshCertificateWriter extends ByteArrayOutputStream {
-    private static String CHARSET_ENCODING = "UTF8";
+
+    private static final String CHARSET_ENCODING = "UTF8";
 
     public SshCertificateWriter() {
     }
@@ -76,7 +77,6 @@ public class SshCertificateWriter extends ByteArrayOutputStream {
         write(raw);
     }
 
-    
     public void writeLong(long value) throws IOException {
         byte[] raw = new byte[8];
         raw[0] = (byte) (value >> 56);
@@ -108,6 +108,7 @@ public class SshCertificateWriter extends ByteArrayOutputStream {
         try {
             close();
         } catch (IOException iOException) {
+            // Silent
         }
     }
 

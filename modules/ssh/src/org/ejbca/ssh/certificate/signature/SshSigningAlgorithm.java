@@ -17,15 +17,14 @@ import java.security.Signature;
 
 /**
  * Interface for SSH Signing Algorithm enums
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
 
 public interface SshSigningAlgorithm {
 
     /**
-     * @return the commong identifier for this signing algorithm
+     * @return the common identifier for this signing algorithm
      */
     String getIdentifier();
 

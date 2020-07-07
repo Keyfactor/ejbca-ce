@@ -21,8 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.cert.CertificateException;
@@ -52,11 +52,10 @@ import org.junit.Test;
 
 /**
  * System tests for the SSH servlet
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
-public class SshServletTest {
+public class SshServletSystemTest {
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SshServletTest"));
 
@@ -64,14 +63,14 @@ public class SshServletTest {
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
-    
+
     @Test
-    public void testGetSshPublicKey() throws MalformedURLException, IOException, CryptoTokenOfflineException,
+    public void testGetSshPublicKey() throws IOException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException, NoSuchSlotException,
             OperatorCreationException, CertificateException, CAExistsException, InvalidKeyException, InvalidAlgorithmParameterException,
             InvalidAlgorithmException {
         final String caName = "testGetSshPublicKey";
-        
+
         SshCa sshCa = SshCaTestUtils.addSshCa(caName, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         try {
             URL url = getUrl();
@@ -82,7 +81,7 @@ public class SshServletTest {
             // POST it
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             OutputStream os = connection.getOutputStream();
-            os.write((SshServlet.NAME_PROPERTY + "=" + caName).getBytes("UTF-8"));
+            os.write((SshServlet.NAME_PROPERTY + "=" + caName).getBytes(StandardCharsets.UTF_8));
             os.close();
             assertEquals("Response code", 200, connection.getResponseCode());
             InputStream is = connection.getInputStream();
@@ -100,7 +99,7 @@ public class SshServletTest {
         }
     }
 
-    private URL getUrl() throws MalformedURLException, IOException {
+    private URL getUrl() throws IOException {
         final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class,
                 EjbRemoteHelper.MODULE_TEST);
         String port = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);

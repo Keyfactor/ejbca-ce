@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
+ * SSH Key Factory.
  * @version $Id$
- *
  */
 public enum SshKeyFactory {
     INSTANCE;
@@ -29,14 +29,14 @@ public enum SshKeyFactory {
     /**
      * Sorts potential instances by their SSH prefixes, e.g. ecdsa-sha2-nistp384
      */
-    private Map<String, Class<? extends SshPublicKey>> sshKeyImplementations = new HashMap<>();
-    
+    private final Map<String, Class<? extends SshPublicKey>> sshKeyImplementations = new HashMap<>();
+
     /**
      * Sorts potential instances by their official implementations, e.g EC
      */
-    private Map<String, Class<? extends SshPublicKey>> publicKeyImplementations = new HashMap<>();
+    private final Map<String, Class<? extends SshPublicKey>> publicKeyImplementations = new HashMap<>();
 
-    private SshKeyFactory() {
+    SshKeyFactory() {
         for (SshPublicKey sshPublicKey : ServiceLoader.load(SshPublicKey.class)) {
             for (String keyAlgorithm : sshPublicKey.getSshKeyAlgorithms()) {
                 sshKeyImplementations.put(keyAlgorithm, sshPublicKey.getClass());
@@ -47,7 +47,7 @@ public enum SshKeyFactory {
 
     /**
      * Creates an SshPublicKey based on a standard java public key
-     * 
+     *
      * @param publicKey a standard public key
      * @return a SshPublicKey
      */
@@ -61,11 +61,11 @@ public enum SshKeyFactory {
                     "Could not instance class of type " + publicKeyImplementations.get(publicKey.getAlgorithm()).getCanonicalName(), e);
         }
     }
-    
+
     /**
      * Decodes an SSH public key
-     * 
-     * @param publicKey the SSH public key body, not including the prefix and comment. 
+     *
+     * @param publicKey the SSH public key body, not including the prefix and comment.
      * @return an a SshPublicKey
      * @throws SshKeyException if the key was not a proper SSH key
      * @throws InvalidKeySpecException if the key body could not be parsed
@@ -80,7 +80,7 @@ public enum SshKeyFactory {
         } finally {
             sshCertificateReader.close();
         }
-        
+
         try {
             SshPublicKey result = sshKeyImplementations.get(algorithm).newInstance();
             result.init(publicKey);
@@ -89,7 +89,5 @@ public enum SshKeyFactory {
             throw new IllegalStateException(
                     "Could not instance class of type " + sshKeyImplementations.get(algorithm).getCanonicalName(), e);
         }
-        
-        
     }
 }

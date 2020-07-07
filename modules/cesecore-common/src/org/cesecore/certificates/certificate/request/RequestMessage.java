@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
 import java.io.Serializable;
@@ -26,14 +26,13 @@ import java.util.List;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 
-
 /**
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB business methods.
  *
  * @version $Id$
  */
-public interface RequestMessage extends Serializable {    
+public interface RequestMessage extends Serializable {
     /**
      * Get the username used to request a certificate from EJBCA.
      *
@@ -57,8 +56,8 @@ public interface RequestMessage extends Serializable {
 
     /**
      * Gets the number (of CA cert) from IssuerAndSerialNumber. Combined with getIssuerDN to identify
-     * the CA-certificate of the CA the request is targeted for. 
-     * for only a limited set of requests, i.e. SCEP requests that should be signed by the "next CA" certificarte 
+     * the CA-certificate of the CA the request is targeted for.
+     * for only a limited set of requests, i.e. SCEP requests that should be signed by the "next CA" certificarte
      *
      * @return serial number of CA certificate for the CA target of the request, or null.
      */
@@ -66,8 +65,8 @@ public interface RequestMessage extends Serializable {
 
     /**
      * Tries to get the Key Sequence of the target CA, if available in the request.
-     * For CVC request it is the "certificate serial number" of CARef (IssuerDN). 
-     * For CVC this is the "key sequence", which is part of the 
+     * For CVC request it is the "certificate serial number" of CARef (IssuerDN).
+     * For CVC this is the "key sequence", which is part of the
      * "Holder/Authority-Reference" in the CVC certificate, but not part of the DN, but it is stored as serialNumber in the database.
      *
      * @return key sequence of CA target of the request or null.
@@ -94,29 +93,29 @@ public interface RequestMessage extends Serializable {
      * @return requested altNames or null.
      */
     String getRequestAltNames();
-    
+
     /**
      * Gets a validity date from the request, if the request contains a desired validity.
-     * The requested validity may, or may not be used, it depends if allowValidityOverride is set in 
+     * The requested validity may, or may not be used, it depends if allowValidityOverride is set in
      * the certificate profile.
-     * 
+     *
      * @return A date now or in the future for notBefore validity in the certificate, or null if no desired validity is in the certificate.
      */
 	Date getRequestValidityNotBefore();
-	
+
     /**
      * Gets a validity date from the request, if the request contains a desired validity.
-     * The requested validity may, or may not be used, it depends if allowValidityOverride is set in 
+     * The requested validity may, or may not be used, it depends if allowValidityOverride is set in
      * the certificate profile.
-     * 
+     *
      * @return A date in the future for notAfter validity in the certificate, or null if no desired validity is in the certificate.
      */
 	Date getRequestValidityNotAfter();
 
-	/** 
+	/**
 	 * Gets any requested extensions, if the request message type is able to contain request extensions
 	 * and if there are any. Requested extensions are (currently) in the form of X509Extensions.
-	 * 
+	 *
 	 * @return X509Extensions or null
 	 */
 	Extensions getRequestExtensions();
@@ -215,37 +214,37 @@ public interface RequestMessage extends Serializable {
      * @return request key info
      */
     byte[] getRequestKeyInfo();
-    
+
     /**
      * Returns the name of the preferred Digest algorithm to be used in the response if applicable.
      * Defaults to CMSSignedGenerator.DIGEST_SHA1 for normal messages.
-     *  
+     *
      * @return oid of digest algorithm ex CMSSignedGenerator.DIGEST_SHA1, SHA256 etc
      */
-    String getPreferredDigestAlg(); 
-    
-    
+    String getPreferredDigestAlg();
+
+
     /** If the CA certificate should be included in the response or not, default to true = yes.
      * Not applicable for all request/response types.
-     * 
+     *
      * @return true or false
      */
     boolean includeCACert();
 
-    /** Sometimes (CMP) the response identifier sent depends on which request identifier was used, 
+    /** Sometimes (CMP) the response identifier sent depends on which request identifier was used,
      * even if the messages themselves are the same messages.
-     * 
-     * @param reqtype which type of request message this response is in response to
-     */ 
+     *
+     * @return type of request message this response is in response to
+     */
     int getRequestType();
-    
+
     /**
      * For some types of request-responses there is a need for a requestId to match the request and the
      * response together.
-     * @param reqId the id from the request matching to this response
+     * @return the id from the request matching to this response
      */
     int getRequestId();
-    
+
     /**
      * Sets the private key needed to create a response message.
      *
@@ -259,24 +258,24 @@ public interface RequestMessage extends Serializable {
      * (i.e. to be appended to the user certificates CA certificate returned in the CMP response message caPubs field).
      * @return the list of CA certificates.
      */
-    public List<Certificate> getAdditionalCaCertificates();
+    List<Certificate> getAdditionalCaCertificates();
 
     /**
-     * Sets the list of additional CA certificates 
+     * Sets the list of additional CA certificates
      * (i.e. to be appended to the user certificates CA certificate returned in the CMP response message caPubs field).
-     * @param certificates the list of CA certificates.
+     * @param additionalExtraCertificates the list of CA certificates.
      */
-    public void setAdditionalCaCertificates(final List<Certificate> additionalExtraCertificates);
-    
+    void setAdditionalCaCertificates(final List<Certificate> additionalExtraCertificates);
+
     /**
      * Gets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
      * @return the list of CA certificates.
      */
-    public List<Certificate> getAdditionalExtraCertsCertificates();
-    
+    List<Certificate> getAdditionalExtraCertsCertificates();
+
     /**
      * Sets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
-     * @param certificates the list of CA certificates.
+     * @param additionalExtraCertificates the list of CA certificates.
      */
-    public void setAdditionalExtraCertsCertificates(final List<Certificate> additionalExtraCertificates);
+    void setAdditionalExtraCertsCertificates(final List<Certificate> additionalExtraCertificates);
 }

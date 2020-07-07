@@ -23,37 +23,35 @@ import java.util.List;
 import org.cesecore.certificates.util.AlgorithmConstants;
 
 /**
- * 
  * Marker interface for SSH Public Keys
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
 public interface SshPublicKey extends Serializable {
 
-    static List<String> availableKeyAlgorithms = Collections.unmodifiableList(Arrays.asList(AlgorithmConstants.KEYALGORITHM_ECDSA,
+    List<String> availableKeyAlgorithms = Collections.unmodifiableList(Arrays.asList(AlgorithmConstants.KEYALGORITHM_ECDSA,
             AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED448));
 
     /**
      * Initializes this public key based on the key body from an encoded certificate
-     * 
+     *
      * @param keyBody an encoded key body
      * @throws SshKeyException if the key was not a proper SSH key
      * @throws InvalidKeySpecException if the key body could not be parsed
      */
     void init(final byte[] keyBody) throws SshKeyException, InvalidKeySpecException;
-    
+
     String getKeyAlgorithm();
-    
+
     List<String> getSshKeyAlgorithms();
 
     void setPublicKey(final PublicKey publicKey);
-    
+
     PublicKey getPublicKey();
-    
+
     /**
      * Encodes the contents of this public key
-     * 
+     *
      * @return a byte array of the contents of this public key, including SSH-appropriate prefix
      * @throws IOException if any failure happened during the encoding process
      */
@@ -61,12 +59,11 @@ public interface SshPublicKey extends Serializable {
 
     /**
      * Encodes this public key for export as an SSH Public Key
-     * 
+     *
      * @param comment any comment to add
      * @return the public key exported as a byte array
      * @throws IOException if any failure happened during the encoding process
      */
     byte[] encodeForExport(String comment) throws IOException;
-
 
 }

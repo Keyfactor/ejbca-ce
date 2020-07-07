@@ -16,37 +16,38 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * @version $Id$
+ * SSH Certificate Type.
  *
+ * @version $Id$
  */
 public enum SshCertificateType implements Serializable{
     USER(1, "User"),
     HOST(2, "Host");
-    
+
     private static final HashMap<Integer, SshCertificateType> typeMap = new HashMap<>();
-    
+
     static {
         for(SshCertificateType sshCertificateType : SshCertificateType.values()) {
             typeMap.put(sshCertificateType.getType(), sshCertificateType);
         }
     }
-    
+
     private final int type;
     private final String label;
-    
-    private SshCertificateType(int type, final String label) {
+
+    SshCertificateType(int type, final String label) {
       this.type = type;
       this.label = label;
     }
-    
+
     public int getType() {
       return this.type;
     }
-    
+
     public String getLabel() {
         return this.label;
     }
-    
+
     public static SshCertificateType fromInt(final int type) {
         return typeMap.get(type);
     }
