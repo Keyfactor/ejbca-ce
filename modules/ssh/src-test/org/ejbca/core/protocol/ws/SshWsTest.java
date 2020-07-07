@@ -256,7 +256,7 @@ public class SshWsTest extends CommonEjbcaWs {
         userDataVOWS.setEndEntityProfileName(profileName);
         userDataVOWS.setCertificateProfileName(profileName);
         Map<String, String> criticalOptions = new HashMap<>();
-        criticalOptions.put(SshCertificate.CRITICAL_OPTION_SOURCE_ADDRESS, "127.0.0.1");
+        criticalOptions.put(SshCertificate.CRITICAL_OPTION_SOURCE_ADDRESS, "127.0.0.1,192.168.0.1");
         List<String> principals = Arrays.asList("ejbca0", "ejbca1");
         Map<String, byte[]> additionalExtensions = new HashMap<>();
         additionalExtensions.put(customExtensionName, customExtensionValue);
@@ -344,22 +344,15 @@ public class SshWsTest extends CommonEjbcaWs {
             while (optionsReader.available() > 0) {
                 String optionName = optionsReader.readString();
                 //Value will be coded as a set of Strings
-                byte[] optionValue = optionsReader.readByteArray();
-                SshCertificateReader optionReader = new SshCertificateReader(optionValue);
-                String optionList = "";
-                while (optionReader.available() > 0) {
-                    optionList += optionReader.readString();
-                    if (optionReader.available() > 0) {
-                        optionList += ",";
-                    }
-                }
+                SshCertificateReader optionReader = new SshCertificateReader(optionsReader.readByteArray());
+                String optionValue = optionReader.readString();        
                 optionReader.close();
-                options.put(optionName, optionList);
+                options.put(optionName, optionValue);
             }
             optionsReader.close();
             assertEquals("Incorrect critical options were read.", 1, options.size());
             assertTrue("Option was not found", options.containsKey("source-address"));
-            assertEquals("Option value was incorrect", "127.0.0.1", options.get("source-address"));
+            assertEquals("Option value was incorrect", "127.0.0.1,192.168.0.1", options.get("source-address"));
             //Extensions are enclosed in a byte structure of their own
             Map<String, byte[]> certificateExtensions = new HashMap<>();
             byte[] extensionsBytes = sshCertificateReader.readByteArray();
