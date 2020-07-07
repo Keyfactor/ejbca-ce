@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
@@ -32,8 +31,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.RequestHelper;
 
 /**
- * Servlet used to distribute CA keys in SSH format. <br>
- *
+ * Servlet used to distribute CA keys in SSH format.
  *
  * @version $Id$
  */
@@ -54,7 +52,7 @@ public class SshServlet extends HttpServlet {
     		log.error("Local EJB injection failed.");
     	}
     }
-    
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost() SshServlet");
@@ -77,7 +75,7 @@ public class SshServlet extends HttpServlet {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "CA of name '" + caName + "' not an SSH CA.");
         } else {
             final String fileName = caName + ".pub";
-            PublicKey publicKey = caInfo.getCertificateChain().get(0).getPublicKey();        
+            PublicKey publicKey = caInfo.getCertificateChain().get(0).getPublicKey();
             String out = new String(SshKeyFactory.INSTANCE.getSshPublicKey(publicKey).encodeForExport(caName));
             res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(fileName) + "\"");
             res.setContentType("application/octet-stream");
@@ -88,6 +86,5 @@ public class SshServlet extends HttpServlet {
             }
         }
         log.trace("<doGet() SshServlet");
-     
     }
 }

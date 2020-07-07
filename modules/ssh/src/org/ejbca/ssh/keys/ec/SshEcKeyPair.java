@@ -27,8 +27,9 @@ import org.cesecore.keys.util.KeyTools;
 import org.ejbca.ssh.keys.SshKeyPair;
 
 /**
- * @version $Id$
+ * SSH EC KeyPair.
  *
+ * @version $Id$
  */
 public class SshEcKeyPair implements SshKeyPair {
 
@@ -37,7 +38,7 @@ public class SshEcKeyPair implements SshKeyPair {
 
     /**
      * Creates an EC keypair of the given curve
-     * 
+     *
      * @param curveName one of nistp256, nistp384 or nistp521
      * @throws InvalidKeySpecException if the curve name was invalid
      */
@@ -62,12 +63,9 @@ public class SshEcKeyPair implements SshKeyPair {
     }
 
     public void exportPublicKeyToFile(File file, String comment) throws IOException {
-        FileOutputStream out = new FileOutputStream(file);
-        try {
+        try (FileOutputStream out = new FileOutputStream(file)) {
             out.write(sshEcPublicKey.encodeForExport(comment));
             out.flush();
-        } finally {
-            out.close();
         }
     }
 }

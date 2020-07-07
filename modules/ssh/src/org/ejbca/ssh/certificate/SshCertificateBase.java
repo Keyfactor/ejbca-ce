@@ -14,8 +14,6 @@ package org.ejbca.ssh.certificate;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -39,12 +37,12 @@ import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 
 /**
  * Base class for SSH certificates
- * 
- * 
+ *
+ *
  * Contents:
  *  In addition to the values derived from the respective public keys, the contents of an SSH certificate are as follows:
  *  https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD
- * 
+ *
  *  82:     uint64    serial
  *  83:     uint32    type
  *  84:     string    key id
@@ -55,8 +53,8 @@ import org.cesecore.certificates.certificate.ssh.SshPublicKey;
  *  89:     string    extensions
  *  90:     string    reserved <-- Ignored
  *  91:     string    signature key
- *  92:     string    signature 
- * 
+ *  92:     string    signature
+ *
  * @version $Id$
  *
  */
@@ -76,12 +74,12 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
     private SshPublicKey signKey;
     private byte[] encodedSignature = null;
     private String comment;
-    
+
     /**
      * Non-standard identifier for the issuing CA
      */
     private transient String issuerIdentifier;
-    
+
     public SshCertificateBase() {
         super(CERTIFICATE_TYPE);
     }
@@ -98,44 +96,41 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         this.principals = principals;
         this.validAfter = validAfter;
         this.validBefore = validBefore;
-        this.criticalOptions = criticalOptions != null ? criticalOptions : new HashMap<String, String>();
-        
+        this.criticalOptions = criticalOptions != null ? criticalOptions : new HashMap<>();
+
         if(SshCertificateType.USER.getType() == sshCertificateType.getType() && extensions != null) {
             this.extensions = extensions;
         } else {
-            //No extensions are defined for host certificates, so ignore. 
+            //No extensions are defined for host certificates, so ignore.
             this.extensions = new TreeMap<>();
-        }        
+        }
         this.signKey = signKey;
         this.comment = comment;
         this.issuerIdentifier = issuerIdentifier;
     }
-    
+
     @Override
     public abstract void init(final byte[] encodedCertificate) throws CertificateEncodingException, SshKeyException;
-    
+
     /**
-     * Decodes the rest of the certificate body that belongs to the base class. 
-     * 
+     * Decodes the rest of the certificate body that belongs to the base class.
+     *
      * @param sshCertificateReader an {@link SshCertificateReader}
      * @throws IOException if the content of the certificate reader couldn't be read
      * @throws SshKeyException if the signing key could not be read
-     * @throws InvalidKeySpecException 
+     * @throws InvalidKeySpecException invalid key specification exception.
      */
     protected void init(final SshCertificateReader sshCertificateReader) throws IOException, InvalidKeySpecException, SshKeyException {
         this.serialNumber = sshCertificateReader.readLong();
         this.sshCertificateType = SshCertificateType.fromInt(new Long(sshCertificateReader.readInt()).intValue());
         this.keyId = sshCertificateReader.readString();
         byte[] principalsBytes = sshCertificateReader.readByteArray();
-        SshCertificateReader principalReader = new SshCertificateReader(principalsBytes);
-        try {
+        try (SshCertificateReader principalReader = new SshCertificateReader(principalsBytes)) {
             Set<String> principals = new HashSet<>();
             while (principalReader.available() > 0) {
                 principals.add(principalReader.readString());
             }
             this.principals = principals;
-        } finally {
-            principalReader.close();
         }
         this.validAfter = new Date(sshCertificateReader.readLong()*1000);
         this.validBefore = new Date(sshCertificateReader.readLong()*1000);
@@ -143,12 +138,12 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         SshCertificateReader optionsReader = new SshCertificateReader(optionsBytes);
         Map<String, String> options = new HashMap<>();
         while (optionsReader.available() > 0) {
-            String optionName = optionsReader.readString();
-            //Value will be coded as a set of Strings
-            SshCertificateReader optionReader = new SshCertificateReader(optionsReader.readByteArray());
-            String optionValue = optionReader.readString();        
-            optionReader.close();
+            final String optionName = optionsReader.readString();
+            // Value will be coded as a set of Strings
+            final SshCertificateReader optionReader = new SshCertificateReader(optionsReader.readByteArray());
+            final String optionValue = optionReader.readString();
             options.put(optionName, optionValue);
+            optionReader.close();
         }
         optionsReader.close();
         this.criticalOptions = options;
@@ -172,7 +167,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         this.reserved = sshCertificateReader.readString();
         byte[] signKeyBytes = sshCertificateReader.readByteArray();
         this.signKey = SshKeyFactory.INSTANCE.getSshPublicKey(signKeyBytes);
-        this.encodedSignature = sshCertificateReader.readByteArray();        
+        this.encodedSignature = sshCertificateReader.readByteArray();
     }
 
     /**
@@ -182,7 +177,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
 
     /**
      * Writes the contents of this certificate, minus the signature which is based on the results of this method.
-     * 
+     *
      * @param sshCertificateWriter a SshCertificateWriter
      * @throws IOException if any encoding errors occurred
      */
@@ -190,7 +185,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         sshCertificateWriter.writeLong(serialNumber);
         sshCertificateWriter.writeInt(sshCertificateType.getType());
         sshCertificateWriter.writeString(keyId);
-        //Write principals in their own enclosed structure
+        // Write principals in their own enclosed structure
         SshCertificateWriter principalsWriter = new SshCertificateWriter();
         for (String user : principals) {
             principalsWriter.writeString(user);
@@ -200,11 +195,12 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         principalsWriter.close();
         sshCertificateWriter.writeLong(validAfter.getTime()/1000L);
         sshCertificateWriter.writeLong(validBefore.getTime()/1000L);
-        //Critical Options are written in their own enclosed structure
-        SshCertificateWriter criticalOptionsWriter = new SshCertificateWriter();
+        // Critical Options are written in their own enclosed structure
+        final SshCertificateWriter criticalOptionsWriter = new SshCertificateWriter();
         for (String option : criticalOptions.keySet()) {
             criticalOptionsWriter.writeString(option);
-            SshCertificateWriter optionWriter = new SshCertificateWriter();
+            // Each option can also be a comma separated list, so that goes into its own structure.
+            final SshCertificateWriter optionWriter = new SshCertificateWriter();
             optionWriter.writeString(criticalOptions.get(option));
             criticalOptionsWriter.writeByteArray(optionWriter.toByteArray());
             optionWriter.flush();
@@ -214,7 +210,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         criticalOptionsWriter.flush();
         criticalOptionsWriter.close();
 
-        //Extensions are written in their own enclosed structure
+        // Extensions are written in their own enclosed structure
         SshCertificateWriter extensionsWriter = new SshCertificateWriter();
         for (String extensionKey : extensions.keySet()) {
             extensionsWriter.writeString(extensionKey);
@@ -228,7 +224,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
             } else {
                 extensionsWriter.writeByteArray(new byte[0]);
             }
-        }      
+        }
         sshCertificateWriter.writeByteArray(extensionsWriter.toByteArray());
         extensionsWriter.flush();
         extensionsWriter.close();
@@ -247,7 +243,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
 
     @Override
     public void verify(PublicKey key, String sigProvider)
-            throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+            throws CertificateException, InvalidKeyException, SignatureException {
         if (!verify()) {
             throw new SignatureException("Signature verification failed.");
         }
@@ -257,13 +253,13 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
     public abstract byte[] encodeCertificateBody() throws CertificateEncodingException;
 
     /**
-     * Verifies the signature on this certificate. The other two verification methods will lead here as well, ignoring their respective 
+     * Verifies the signature on this certificate. The other two verification methods will lead here as well, ignoring their respective
      * parameters, as the signing key is incorporated into this certificate type.
-     * 
+     *
      * @return true if the the signature in this certificate verified according to the included signing key
      * @throws InvalidKeyException if the signature key in this certificate was invalid
      * @throws CertificateEncodingException if the data body of this certificate couldn't be encoded
-     * @throws SignatureException
+     * @throws SignatureException signature exception
      */
     @Override
     public boolean verify() throws SignatureException, InvalidKeyException, CertificateEncodingException {
@@ -287,11 +283,11 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
     }
 
     /**
-     * 
+     *
      * @param signatureAlgorithm a signature algorithm
      * @return a Signature object based on the signature algorithm
-     * @throws SignatureException 
-     * @throws InvalidKeyException 
+     * @throws SignatureException signature exception
+     * @throws InvalidKeyException invalid key exception
      */
     protected abstract boolean verifySignature(final String signatureAlgorithm, final byte[] signatureBytes, final byte[] data)
             throws InvalidKeyException, SignatureException;
@@ -311,7 +307,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
     public PublicKey getPublicKey() {
         return publicKey.getPublicKey();
     }
-    
+
     @Override
     public SshPublicKey getSshPublicKey() {
         return publicKey;
@@ -331,7 +327,7 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
     public void setSignature(byte[] signature) {
         this.encodedSignature = signature;
     }
-    
+
     @Override
     public byte[] getSignature() {
         return encodedSignature;
@@ -346,12 +342,12 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
     public long getSerialNumber() {
         return serialNumber;
     }
-    
+
     @Override
     public String getSerialNumberAsString() {
         return Long.toUnsignedString(serialNumber);
     }
-    
+
     @Override
     public String getIssuerIdentifier() {
         return issuerIdentifier;

@@ -13,9 +13,11 @@
 package org.ejbca.ssh.keys;
 
 /**
+ * SSH Key types.
+ *
  * @version $Id$
  *
  */
 public enum SshKeyType {
-    RSA, DSS, ECDSA, ED25519;
+    RSA, DSS, ECDSA, ED25519
 }

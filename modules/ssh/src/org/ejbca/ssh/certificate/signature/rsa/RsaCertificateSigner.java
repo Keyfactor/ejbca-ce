@@ -23,8 +23,9 @@ import org.cesecore.certificates.certificate.ssh.SshCertificateWriter;
 import org.ejbca.ssh.certificate.signature.SshCertificateSigner;
 
 /**
- * @version $Id$
+ * RSA Certificate Signer.
  *
+ * @version $Id$
  */
 public class RsaCertificateSigner implements SshCertificateSigner {
 

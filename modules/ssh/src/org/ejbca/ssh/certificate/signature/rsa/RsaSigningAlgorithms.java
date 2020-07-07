@@ -21,21 +21,20 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.ejbca.ssh.certificate.signature.SshSigningAlgorithm;
 
 /**
- * Enum representation of all possible signing algorithms for SSH EC certificates 
- * 
- * @version $Id$
+ * Enum representation of all possible signing algorithms for SSH EC certificates
  *
+ * @version $Id$
  */
 public enum RsaSigningAlgorithms implements SshSigningAlgorithm {
-    SHA1(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, "ssh-rsa"), 
+    SHA1(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, "ssh-rsa"),
     SHA256(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, "rsa-sha2-256"),
     SHA512(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, "rsa-sha2-512");
 
-   
+
     private final String identifier;
     private final String prefix;
 
-    private RsaSigningAlgorithms(final String identifier, final String prefix) {
+    RsaSigningAlgorithms(final String identifier, final String prefix) {
         this.identifier = identifier;
         this.prefix = prefix;
     }

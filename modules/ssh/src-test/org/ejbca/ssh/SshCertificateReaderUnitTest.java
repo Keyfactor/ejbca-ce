@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.ejbca.ssh;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -33,12 +33,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.DERSequenceGenerator;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECParameterSpec;
@@ -51,30 +48,31 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ssh.assertion.SshAssert;
 import org.ejbca.ssh.certificate.SshRsaCertificate;
 import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
+import org.ejbca.ssh.util.SshTestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Includes unit tests for the SSH certificate reader. Note that if this test fails it invalidates nearly everything else, as this reader is then used
- * to verify the integrity of other certificates.  
+ * to verify the integrity of other certificates.
  *
  * @version $Id$
- *
  */
-public class SshCertificateReaderTest {
+public class SshCertificateReaderUnitTest {
 
     private static final Logger log = Logger.getLogger(SshRsaCertificate.class);
-    
-    //The output of an SSH RSA certificate produced by OpenSSH
+
+    // The output of an SSH RSA certificate produced by OpenSSH
     private static final String RSA_CERTIFICATE_BODY = "AAAAHHNzaC1yc2EtY2VydC12MDFAb3BlbnNzaC5jb20AAAAg4Hbw/qGbHD3rtZTTecLT93+tEG/JLrMzCtPGGGFOocEAAAADAQABAAABAQC6sQfyd6Qcw/t6ueW2IFYtJ82eSB0Lj+4SiE57wlpXai2lwKqJKOJ+Uzb90l/ClpXJ397REhV5+z+UhywAkOWnL+UtFFvmIm1WowkVut58+4NWP8/T2io/NTLfP1wl6zcqHoDZxVDju62CYpN50TUSZWBCx2W4+jlLyZljZxOK2qdDpSuq9H8oj+DNSMCyhBA5Yfr4f0TJk2LBDficJJVXAplBOztcpECtE24IRMfJRo5m8bneCTMIVaDrT5zxPm1NrwuvllOolL/3cL5XjJ89VITSye80S5vcyxW+cq2lU9HyHBg2397FIC+q414IA95yTNGPb/dmmQFr3vFFYqjnAAAAAAAABTkAAAABAAAABWVqYmNhAAAAEwAAAAVlamJjYQAAAAZlamJjYTEAAAAAXsJSyAAAAABgojU2AAAAIwAAAA5zb3VyY2UtYWRkcmVzcwAAAA0AAAAJMTI3LjAuMC4xAAAAggAAABVwZXJtaXQtWDExLWZvcndhcmRpbmcAAAAAAAAAF3Blcm1pdC1hZ2VudC1mb3J3YXJkaW5nAAAAAAAAABZwZXJtaXQtcG9ydC1mb3J3YXJkaW5nAAAAAAAAAApwZXJtaXQtcHR5AAAAAAAAAA5wZXJtaXQtdXNlci1yYwAAAAAAAAAAAAABFwAAAAdzc2gtcnNhAAAAAwEAAQAAAQEAyl+zbTwY+yr4MQhURkpOlsIjWQiW5GnioZ21BNvZWjuMDJtB1ejbOVWc6E2LWzSIA0RUlfyzZKjBtTYIF/FGEn1OulNlTPTkOOfnqO9av5w570OL5F9MhIkRbG4WWtLkTgLW1OvclNMkvqsc6x2p9j3bakwRqxtxJohRk8EPEj6ECbJGxQGfno86WOrxTnOhOl0aoMG2r84i+xjf0P1WIlHARoYK5qy4jfveTqM57EccqaOdMNBTmDLxVNEwl0fITMlOl/IPQdjYIN+xr0oJRp4HE2QByA1usFmQyWFFuyt6MjKVklnEz/k+Go8gamBPJ0kg3dN1xxYtDhWkz7AqwQAAAQ8AAAAHc3NoLXJzYQAAAQBXg01RcCz1I9oeON8bOpz6BLIT4Q8DQdAmtWmYJuNMnR3cuCBtv66/k/sBvGKGic0gl2GuLHitMfD1npY4lfrJuj01xYdrt3mF1TXIHju0ivYQ/dMM5W7gePbuCo7zPZOj5OwNDAlNjiNX/R2BqyADNjsTw8vzBp1P2VX5nK8aJ55MS+LlfofOZU/Ey6cL6fyJ7T//sI4eULVsLLSP5oiXdnQA5GA93uikbmqLGWJC3iAPdSOPMSiCxp0cWoKrCgQNMA8YLfPLbQJnjGWU8HfKtcXMgbuYsIGbM5/k2CYNYCCloiUguyidRD40Td5+nNFJoIkVsoAlHUzi0OB91St2";
-    //The output of an SSH EC certificate produced by OpenSSH, containing a custom extension
+    // The output of an SSH EC certificate produced by OpenSSH, containing a custom extension
     private static final String EC_CERTIFICATE_BODY = "AAAAKGVjZHNhLXNoYTItbmlzdHAzODQtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgcbdeNfLG+N120Fqlls2vBYj+3IWKaE3zO8wlWfr9Zf0AAAAIbmlzdHAzODQAAABhBEhwk8QN5sLpxVZWrTWRr66RO0JUKnji6Ewi/vV5eFFVR7y0DnlrX1QbSKUPSOwaFWzupW9hPJqDmuQlb03amTI+4UgqAQHCfjJwRJsTSQxeGehJkr5jNnO2uqPtNHloGQAAAAAAAAAAAAAAAQAAAAVlamJjYQAAABQAAAAGZWpiY2EwAAAABmVqYmNhMQAAAABe8NiMAAAAAGDQutgAAAAAAAAAqAAAABVwZXJtaXQtWDExLWZvcndhcmRpbmcAAAAAAAAAF3Blcm1pdC1hZ2VudC1mb3J3YXJkaW5nAAAAAAAAABZwZXJtaXQtcG9ydC1mb3J3YXJkaW5nAAAAAAAAAApwZXJtaXQtcHR5AAAAAAAAAA5wZXJtaXQtdXNlci1yYwAAAAAAAAAPY3VzdG9tRXh0ZW5zaW9uAAAADwAAAAtjdXN0b21WYWx1ZQAAAAAAAACIAAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBEhwk8QN5sLpxVZWrTWRr66RO0JUKnji6Ewi/vV5eFFVR7y0DnlrX1QbSKUPSOwaFWzupW9hPJqDmuQlb03amTI+4UgqAQHCfjJwRJsTSQxeGehJkr5jNnO2uqPtNHloGQAAAIMAAAATZWNkc2Etc2hhMi1uaXN0cDM4NAAAAGgAAAAwGkyooNOtzFMN6USY9rQEHY1K4Lu6SMeynusjqD69gWJ5Hqnpu0tlBDlJvtZi2I2vAAAAMH7sTWdGZ3r/LcXZxWxOQErAiBi4wbpCauehyJFigmwQp9pIu/AO1g0tQjzPOWjX5w==";
-    
+
     private static final String RSA_2048_CERTIFICATE_BODY = "AAAAHHNzaC1yc2EtY2VydC12MDFAb3BlbnNzaC5jb20AAAAg5XCeFvniKnNbRZaclB83kTyF8zITCde4uRrv4mqesn4AAAADAQABAAABAQDiFqTBdKOWPeBeP1PiKSVy8ilfNChu5/6Z3iXu3Rdtg5ozu98IoAl4MtlklDdUDzvFkB+VPD/9gqHPKK8fTOhqgUPGoiCeZP3Ktr6NR53xd1QPQDeBvOMiYkPqQXziCQiVyL1WFzN616szrxsJ1Ni7WCHXcMTKOMruLv4es8FfB03wGDbBKVzMwo0JuZCicGg2pg/o8n9BPlzW6CvjUkmvUO3ycGKibPPFkiDgyuYynIbkMcmdShhY3XSOGB4UPeA3U4OiH6Z+09K9LqogWIcjxJeK0tObORd9QnQ4k1ba+/bbEfnFIQwLyzqXXPsPQ0Ud9upxVHD1lezRNE1DAIr9AAAAAAAAAAAAAAABAAAABWVqYmNhAAAAFAAAAAZlamJjYTAAAAAGZWpiY2ExAAAAAF7Q0HgAAAAAYLCytwAAAAAAAACCAAAAFXBlcm1pdC1YMTEtZm9yd2FyZGluZwAAAAAAAAAXcGVybWl0LWFnZW50LWZvcndhcmRpbmcAAAAAAAAAFnBlcm1pdC1wb3J0LWZvcndhcmRpbmcAAAAAAAAACnBlcm1pdC1wdHkAAAAAAAAADnBlcm1pdC11c2VyLXJjAAAAAAAAAAAAAAEXAAAAB3NzaC1yc2EAAAADAQABAAABAQC8ajEtOvKxSPYSRL+A1y7Ye0baYHaR65KkzaT3U5XugHKHusvVPsDlRfSl598TsMjPQhbJt0O1SefMvXCbqdj776PWok5I1ScnLKJWRKzreeslEJZdcKTOUoT9Y5sg/LxC3xXwhIz+yLm8SbvQ7yQvPMmmlg5ldwccC8/0cua/25Vrjm0JhRjgxny65s2bNkClXXLmtevhvlQ7rXMQhpGmg5th156Ny/BUac7CQPEnDkRkhfsH8zKuh0NX19Y/93bwLsI7z+zP7CJJ11C0CpZl5yi2/8vqZUkufjRu/TH78EnLdCE/bkKcn0yyahG5BTh9dInrSclgCSiEPOYojvzjAAABFAAAAAxyc2Etc2hhMi0yNTYAAAEAj4/d9pKGGReo7B1ZbVBtHD9ftBfa5fjyPnuM8qbEMtYWgbx/MlCqVf2CL6VfJe2lvsg4ZZWvHyq0XBucFQqVHMekHJ71CymAs5/boGF4efLo56Ck6FF7tqM4dYmcO0aWRRQt3DyC24bLUZ4ZcdkyAgEm4EbTj9nPyvzbR57VsP/p+6WlszrGAHPwBlZ6my0g3cwPJSxwdV0USfMUIWooMIXLS7ocVZ7a8y+HF6qC2FGYIXYSgJuBaG5jlfXOojfKwA4tzwdy3ZziHxW50WDRkPrw6ZnXeRantJfMOhJ7ol9NSt1WcdkiAHqzDbEUpOz9UF0aSwxtIQYI7ONgl29a7w==";
-    
+
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -84,7 +82,7 @@ public class SshCertificateReaderTest {
      * This test reads an RSA SSH certificate produced by OpenSSH. All values read from this method are arbitrary
      */
     @Test
-    public void testReadOpenSshRsaCertificate()
+    public void readOpenSshRsaCertificate()
             throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, InvalidKeySpecException, SshKeyException {
         byte[] decoded = Base64.decode(RSA_CERTIFICATE_BODY.getBytes());
         SshCertificateReader sshCertificateReader = new SshCertificateReader(decoded);
@@ -96,7 +94,7 @@ public class SshCertificateReaderTest {
         assertEquals("Certificate serial number was not correct", "1337", Long.toUnsignedString(sshCertificateReader.readLong()));
         assertEquals("Certificate type was not correct", SshCertificateType.USER.getType(), sshCertificateReader.readInt());
         assertEquals("Key ID was not correct", "ejbca", sshCertificateReader.readString());
-        //Principals are enclosed in a byte structure of their own.
+        // Principals are enclosed in a byte structure of their own.
         byte[] principalsBytes = sshCertificateReader.readByteArray();
         SshCertificateReader principalReader = new SshCertificateReader(principalsBytes);
         Set<String> principals = new HashSet<>();
@@ -108,31 +106,9 @@ public class SshCertificateReaderTest {
         assertTrue("Principal was not correct", principals.containsAll(knownPrincipals));
         assertEquals("validAfter was not correct", 1589793480L, sshCertificateReader.readLong());
         assertEquals("validBefore was not correct", 1621243190L, sshCertificateReader.readLong());
-        //Critical options are enclosed in a byte structure of their own
-        byte[] optionsBytes = sshCertificateReader.readByteArray();
-        SshCertificateReader optionsReader = new SshCertificateReader(optionsBytes);
-        Map<String, String> options = new HashMap<>();
-        while (optionsReader.available() > 0) {
-            String optionName = optionsReader.readString();
-            //Value will be coded as a set of Strings
-            byte[] optionValue = optionsReader.readByteArray();
-            SshCertificateReader optionReader = new SshCertificateReader(optionValue);
-            String optionList = "";
-            while (optionReader.available() > 0) {
-                optionList += optionReader.readString();
-                if (optionReader.available() > 0) {
-                    optionList += ",";
-                }
-            }
-            optionReader.close();
-            options.put(optionName, optionList);
-        }
-        optionsReader.close();
-        assertEquals("Incorrect critical options were read.", 1, options.size());
-        assertTrue("Option was not found", options.containsKey("source-address"));
-        assertEquals("Option value was incorrect", "127.0.0.1", options.get("source-address"));
-        //Extensions are enclosed in a byte structure of their own
-        Map<String, String> extensions = new HashMap<>();
+        SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, "127.0.0.1");
+        // Extensions are enclosed in a byte structure of their own
+        final Map<String, String> extensions = new HashMap<>();
         byte[] extensionsBytes = sshCertificateReader.readByteArray();
         SshCertificateReader extensionsReader = new SshCertificateReader(extensionsBytes);
         while (extensionsReader.available() > 0) {
@@ -141,12 +117,7 @@ public class SshCertificateReaderTest {
             extensions.put(extensionName, extensionValue);
         }
         extensionsReader.close();
-        Map<String, byte[]> knownExtensions = new HashMap<>();
-        knownExtensions.put(SshExtension.PERMIT_X11_FORWARDING.getLabel(), SshExtension.PERMIT_X11_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_AGENT_FORWARDING.getLabel(), SshExtension.PERMIT_AGENT_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_PORT_FORWARDING.getLabel(), SshExtension.PERMIT_PORT_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_PTY.getLabel(), SshExtension.PERMIT_PTY.getValue());
-        knownExtensions.put(SshExtension.PERMIT_USER_RC.getLabel(), SshExtension.PERMIT_USER_RC.getValue());
+        final Map<String, byte[]> knownExtensions = SshTestUtils.getSshExtensionsMapWithExclusions(SshExtension.NO_PRESENCE_REQUIRED);
         assertEquals("Wrong number of extensions were decoded.", knownExtensions.size(), extensions.size());
         assertTrue("Reserved should not be used.", StringUtils.isEmpty(sshCertificateReader.readString()));
 
@@ -156,7 +127,7 @@ public class SshCertificateReaderTest {
         final String signKeyModulus = "25547329468668581448091006941867027738038190836229900309672701178314122728749422243355594308864841337990746855748272649185884412541200550449006024829082442250488432150471208064044260936743102331557333020586995952294528482648654154599499263029123976834734548773569895818099757157619987625766903165802506045539701449300859984248542541406038762425921481782854607434520219275274407070036111381046244934613665145523484940396940906944450608845898213677455683364009270884192632435384974143129022050881360746325810457273040614471865445431721678423582168005826886559053825728431347612687702230157772516471395624801586526563009";
         assertEquals("Sign key modulus was not correct.", new BigInteger(signKeyModulus), signKey.getModulus());
 
-        //The signature also lives in its own structure
+        // The signature also lives in its own structure
         byte[] signatureBytes = sshCertificateReader.readByteArray();
         assertEquals("Signature structure of incorrect size", 271, signatureBytes.length);
         SshCertificateReader signatureReader = new SshCertificateReader(signatureBytes);
@@ -173,12 +144,12 @@ public class SshCertificateReaderTest {
                 verifyRsaSignature((RSAPublicKey) signKey.getPublicKey(), strippedSignatureBytes, signaturePrefix, data, true));
         sshCertificateReader.close();
     }
-    
+
     /**
      * This test reads an RSA 2048 SSH certificate produced by OpenSSH. All values read from this method are arbitrary
      */
     @Test
-    public void testReadOpenSshRrsa2048Certificate()
+    public void readOpenSshRsa2048Certificate()
             throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, InvalidKeySpecException, SshKeyException {
         byte[] decoded = Base64.decode(RSA_2048_CERTIFICATE_BODY.getBytes());
         SshCertificateReader sshCertificateReader = new SshCertificateReader(decoded);
@@ -190,7 +161,7 @@ public class SshCertificateReaderTest {
         assertEquals("Certificate serial number was not correct", "0", Long.toUnsignedString(sshCertificateReader.readLong()));
         assertEquals("Certificate type was not correct", SshCertificateType.USER.getType(), sshCertificateReader.readInt());
         assertEquals("Key ID was not correct", "ejbca", sshCertificateReader.readString());
-        //Principals are enclosed in a byte structure of their own.
+        // Principals are enclosed in a byte structure of their own.
         byte[] principalsBytes = sshCertificateReader.readByteArray();
         SshCertificateReader principalReader = new SshCertificateReader(principalsBytes);
         Set<String> principals = new HashSet<>();
@@ -202,29 +173,11 @@ public class SshCertificateReaderTest {
         assertTrue("Principal was not correct", principals.containsAll(knownPrincipals));
         assertEquals("validAfter was not correct", 1590743160L, sshCertificateReader.readLong());
         assertEquals("validBefore was not correct", 1622192823L, sshCertificateReader.readLong());
-        //Critical options are enclosed in a byte structure of their own
-        byte[] optionsBytes = sshCertificateReader.readByteArray();
-        SshCertificateReader optionsReader = new SshCertificateReader(optionsBytes);
-        Map<String, String> options = new HashMap<>();
-        while (optionsReader.available() > 0) {
-            String optionName = optionsReader.readString();
-            //Value will be coded as a set of Strings
-            byte[] optionValue = optionsReader.readByteArray();
-            SshCertificateReader optionReader = new SshCertificateReader(optionValue);
-            String optionList = "";
-            while (optionReader.available() > 0) {
-                optionList += optionReader.readString();
-                if (optionReader.available() > 0) {
-                    optionList += ",";
-                }
-            }
-            optionReader.close();
-            options.put(optionName, optionList);
-        }
-        optionsReader.close();
+        // Critical options are enclosed in a byte structure of their own
+        final Map<String, String> options = SshAssert.readCriticalOptions(sshCertificateReader);
         assertEquals("Incorrect critical options were read.", 0, options.size());
-        //Extensions are enclosed in a byte structure of their own
-        Map<String, byte[]> extensions = new HashMap<>();
+        // Extensions are enclosed in a byte structure of their own
+        final Map<String, byte[]> extensions = new HashMap<>();
         byte[] extensionsBytes = sshCertificateReader.readByteArray();
         SshCertificateReader extensionsReader = new SshCertificateReader(extensionsBytes);
         while (extensionsReader.available() > 0) {
@@ -233,12 +186,7 @@ public class SshCertificateReaderTest {
             extensions.put(extensionName, extensionValue);
         }
         extensionsReader.close();
-        Map<String, byte[]> knownExtensions = new HashMap<>();
-        knownExtensions.put(SshExtension.PERMIT_X11_FORWARDING.getLabel(), SshExtension.PERMIT_X11_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_AGENT_FORWARDING.getLabel(), SshExtension.PERMIT_AGENT_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_PORT_FORWARDING.getLabel(), SshExtension.PERMIT_PORT_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_PTY.getLabel(), SshExtension.PERMIT_PTY.getValue());
-        knownExtensions.put(SshExtension.PERMIT_USER_RC.getLabel(), SshExtension.PERMIT_USER_RC.getValue());  
+        final Map<String, byte[]> knownExtensions = SshTestUtils.getSshExtensionsMapWithExclusions(SshExtension.NO_PRESENCE_REQUIRED);
         assertEquals("Wrong number of extensions were decoded.", knownExtensions.size(), extensions.size());
         assertTrue("Reserved should not be used.", StringUtils.isEmpty(sshCertificateReader.readString()));
 
@@ -248,7 +196,7 @@ public class SshCertificateReaderTest {
         final String signKeyModulus = "23785166608038845116032746741122004087121020393639867097553570258160243609972547991094992734931060304415272005297752144832612741617138414065365574970159269967919935080363655503699219828496450407677667848174555341386180677818208058193663098717616998136612820087668053179033544160618340850976413204713874648513789809442590791528856536960088790206800218410705639275585078633044727528795158572301070445907456376711472160860769709545642952079067210529123328883354600328342778020581199725648550643186199885711535717639992668171320106022334234062264355029132469207080966007593023306612100559686113591109148285912068796644579";
         assertEquals("Sign key modulus was not correct.", new BigInteger(signKeyModulus), signKey.getModulus());
 
-        //The signature also lives in its own structure
+        // The signature also lives in its own structure
         byte[] signatureBytes = sshCertificateReader.readByteArray();
         assertEquals("Signature structure of incorrect size", 276, signatureBytes.length);
         SshCertificateReader signatureReader = new SshCertificateReader(signatureBytes);
@@ -270,7 +218,7 @@ public class SshCertificateReaderTest {
      * This test reads an EC SSH certificate produced by OpenSSH. All values read from this method are arbitrary
      */
     @Test
-    public void testReadOpenSshEcCertificate()
+    public void readOpenSshEcCertificate()
             throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, InvalidKeySpecException, SshKeyException {
         byte[] decoded = Base64.decode(EC_CERTIFICATE_BODY.getBytes());
         SshCertificateReader sshCertificateReader = new SshCertificateReader(decoded);
@@ -291,7 +239,7 @@ public class SshCertificateReaderTest {
         assertEquals("Certificate serial number was not correct", "0", Long.toUnsignedString(sshCertificateReader.readLong()));
         assertEquals("Certificate type was not correct", SshCertificateType.USER.getType(), sshCertificateReader.readInt());
         assertEquals("Key ID was not correct", "ejbca", sshCertificateReader.readString());
-        //Principals are enclosed in a byte structure of their own.
+        // Principals are enclosed in a byte structure of their own.
         byte[] principalsBytes = sshCertificateReader.readByteArray();
         SshCertificateReader principalReader = new SshCertificateReader(principalsBytes);
         Set<String> principals = new HashSet<>();
@@ -303,32 +251,14 @@ public class SshCertificateReaderTest {
         assertTrue("Principal was not correct", principals.containsAll(knownPrincipals));
         assertEquals("validAfter was not correct", 1592842380L, sshCertificateReader.readLong());
         assertEquals("validBefore was not correct", 1624292056L, sshCertificateReader.readLong());
-        //Critical options are enclosed in a byte structure of their own
-        byte[] optionsBytes = sshCertificateReader.readByteArray();
-        SshCertificateReader optionsReader = new SshCertificateReader(optionsBytes);
-        Map<String, String> options = new HashMap<>();
-        while (optionsReader.available() > 0) {
-            String optionName = optionsReader.readString();
-            //Value will be coded as a set of Strings
-            byte[] optionValue = optionsReader.readByteArray();
-            SshCertificateReader optionReader = new SshCertificateReader(optionValue);
-            String optionList = "";
-            while (optionReader.available() > 0) {
-                optionList += optionReader.readString();
-                if (optionReader.available() > 0) {
-                    optionList += ",";
-                }
-            }
-            optionReader.close();
-            options.put(optionName, optionList);
-        }
-        optionsReader.close();
+        // Critical options are enclosed in a byte structure of their own
+        final Map<String, String> options = SshAssert.readCriticalOptions(sshCertificateReader);
         assertEquals("Incorrect critical options were read.", 0, options.size());
-        //Extensions are enclosed in a byte structure of their own
-        Map<String, byte[]> extensions = new HashMap<>();
+        // Extensions are enclosed in a byte structure of their own
+        final Map<String, byte[]> extensions = new HashMap<>();
         byte[] extensionsBytes = sshCertificateReader.readByteArray();
         SshCertificateReader extensionsReader = new SshCertificateReader(extensionsBytes);
-        while (extensionsReader.available() > 0) {        
+        while (extensionsReader.available() > 0) {
             String extensionName = extensionsReader.readString();
             SshCertificateReader extensionValueReader = new SshCertificateReader(extensionsReader.readByteArray());
             byte[] extensionValue;
@@ -341,15 +271,10 @@ public class SshCertificateReaderTest {
             extensionValueReader.close();
         }
         extensionsReader.close();
-        Map<String, byte[]> knownExtensions = new TreeMap<>();
-        knownExtensions.put(SshExtension.PERMIT_X11_FORWARDING.getLabel(), SshExtension.PERMIT_X11_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_AGENT_FORWARDING.getLabel(), SshExtension.PERMIT_AGENT_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_PORT_FORWARDING.getLabel(), SshExtension.PERMIT_PORT_FORWARDING.getValue());
-        knownExtensions.put(SshExtension.PERMIT_PTY.getLabel(), SshExtension.PERMIT_PTY.getValue());
-        knownExtensions.put(SshExtension.PERMIT_USER_RC.getLabel(), SshExtension.PERMIT_USER_RC.getValue()); 
-        knownExtensions.put("customExtension", "customValue".getBytes());      
+        final Map<String, byte[]> knownExtensions = SshTestUtils.getSshExtensionsMapWithExclusions(SshExtension.NO_PRESENCE_REQUIRED);
+        knownExtensions.put("customExtension", "customValue".getBytes());
         assertEquals("Wrong number of extensions were decoded.", knownExtensions.size(), extensions.size());
-        assertTrue("Custom extension was not decoded correctly.", Arrays.equals(extensions.get("customExtension"), "customValue".getBytes()));
+        assertArrayEquals("Custom extension was not decoded correctly.", extensions.get("customExtension"), "customValue".getBytes());
         assertTrue("Reserved should not be used.", StringUtils.isEmpty(sshCertificateReader.readString()));
 
         byte[] signKeyBytes = sshCertificateReader.readByteArray();
@@ -361,7 +286,7 @@ public class SshCertificateReaderTest {
                 new BigInteger(
                         "16766201897911275583566113562262925059747392579900791138787621834513613947952227341389795012146525597560280333248537"));
         assertEquals("Signer EC point was incorrect", knownSignerEcPoint, signerEcPoint);
-        //The signature also lives in its own structure
+        // The signature also lives in its own structure
         byte[] signatureBytes = sshCertificateReader.readByteArray();
         assertEquals("Signature structure of incorrect size", 131, signatureBytes.length);
         SshCertificateReader signatureReader = new SshCertificateReader(signatureBytes);
@@ -374,12 +299,12 @@ public class SshCertificateReaderTest {
         byte[] data = new byte[sshCertificateReader.array().length - (signatureBytes.length + 4)];
         System.arraycopy(sshCertificateReader.array(), 0, data, 0, data.length);
         assertTrue("Certificate signature could not be verified",
-                verifyEcSignature((ECPublicKey) signKey.getPublicKey(), strippedSignatureBytes, curveName, data));
+                SshAssert.verifyEcSignature((ECPublicKey) signKey.getPublicKey(), strippedSignatureBytes, curveName, data));
         sshCertificateReader.close();
     }
 
     /**
-     * 
+     *
      * @param modulus the modulus of an RSA key
      * @return the expected signature length
      */
@@ -445,34 +370,5 @@ public class SshCertificateReaderTest {
             }
         }
         return result;
-    }
-
-    private boolean verifyEcSignature(ECPublicKey publicKey, byte[] signatureBytes, String signatureAlgorithm, byte[] data)
-            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        Signature signature;
-        switch (signatureAlgorithm) {
-        case SshEcPublicKey.NISTP521:
-            signature = Signature.getInstance(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
-            break;
-        case SshEcPublicKey.NISTP384:
-            signature = Signature.getInstance(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
-            break;
-        default:
-            signature = Signature.getInstance(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-            break;
-        }
-                       
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DERSequenceGenerator seq = new DERSequenceGenerator(byteArrayOutputStream);
-        SshCertificateReader sshCertificateReader = new SshCertificateReader(signatureBytes);
-        seq.addObject(new ASN1Integer(sshCertificateReader.readBigInteger()));
-        seq.addObject(new ASN1Integer(sshCertificateReader.readBigInteger()));
-        sshCertificateReader.close();
-        seq.close();
-        byte[] encoded = byteArrayOutputStream.toByteArray();
-        byteArrayOutputStream.close();
-        signature.initVerify(publicKey);
-        signature.update(data);
-        return signature.verify(encoded);
     }
 }

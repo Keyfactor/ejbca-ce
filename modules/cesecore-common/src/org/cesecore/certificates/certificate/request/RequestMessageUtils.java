@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
 import java.io.ByteArrayInputStream;
@@ -53,18 +53,18 @@ import org.ejbca.cvc.exception.ParseException;
  * @version $Id$
  */
 public abstract class RequestMessageUtils {
-	
+
 	private static final Logger log = Logger.getLogger(RequestMessageUtils.class);
 
 	/** Tries to parse the byte array to create a request message of the correct type.
 	 * Currently handles PKCS10 request messages and CVC request messages.
-	 * 
+	 *
 	 * @return IRequestMessage
 	 */
 	public static RequestMessage parseRequestMessage(byte[] request) {
-		RequestMessage ret = null;
+		RequestMessage ret;
 		try {
-			ret = genPKCS10RequestMessage(request);			
+			ret = genPKCS10RequestMessage(request);
 		} catch (IllegalArgumentException e) {
 			log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
 			ret = genCVCRequestMessage(request);
@@ -76,28 +76,28 @@ public abstract class RequestMessageUtils {
 		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
-		}		
+		}
 		return new PKCS10RequestMessage(buffer);
 	} // genPKCS10RequestMessageFromPEM
-	
 
-	public static CVCRequestMessage genCVCRequestMessage(byte[] bytes) { 
+
+	public static CVCRequestMessage genCVCRequestMessage(byte[] bytes) {
 		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
-		}		
+		}
 		return new CVCRequestMessage(buffer);
 	} // genCvcRequestMessageFromPEM
-	
+
 	/** Tries to get decoded, if needed, bytes from a certificate request or certificate
-	 * 
-	 * @param bytes pem (with headers), plain base64, or binary bytes with a CSR of certificate 
+	 *
+	 * @param bytes pem (with headers), plain base64, or binary bytes with a CSR of certificate
 	 * @return binary bytes
 	 */
 	public static byte[] getDecodedBytes(byte[] bytes) {
-		byte[] buffer = null;
+		byte[] buffer;
 		try {
-			 buffer = getRequestBytes(bytes); 
+			 buffer = getRequestBytes(bytes);
 		} catch (IOException e) {
 			log.debug("Message not base64 encoded? Trying as binary: "+e.getMessage());
 			buffer = bytes;
@@ -106,8 +106,8 @@ public abstract class RequestMessageUtils {
 	}
 
 	/** Tries to get decoded bytes from a certificate request or certificate
-	 * 
-	 * @param b64Encoded pem (with headers) or plain base64 with a CSR of certificate 
+	 *
+	 * @param b64Encoded pem (with headers) or plain base64 with a CSR of certificate
 	 * @return binary bytes
 	 */
 	public static byte[] getRequestBytes(byte[] b64Encoded) throws IOException {
@@ -139,10 +139,10 @@ public abstract class RequestMessageUtils {
                 }
             }
             if (buffer == null) {
-                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);                
+                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
             }
 		} else {
-            throw new IOException("Base64 decode fails, message is empty");		    
+            throw new IOException("Base64 decode fails, message is empty");
 		}
 		return buffer;
 	}
@@ -184,7 +184,7 @@ public abstract class RequestMessageUtils {
                 }
                 PublicKey pubKey = nscr.getPublicKey();
                 ret = new SimpleRequestMessage(pubKey, username, password);
-            }       
+            }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
             final byte[] certificateRequestMessages = Base64.decode(req.getBytes());
             final CertReqMsg certReqMsg = CertReqMsg.getInstance(((ASN1Sequence)ASN1Sequence.fromByteArray(certificateRequestMessages)).getObjectAt(0));
@@ -301,7 +301,7 @@ public abstract class RequestMessageUtils {
                 }
             }
             ret = reqmsg;
-        } 
+        }
         return ret;
 	}
 

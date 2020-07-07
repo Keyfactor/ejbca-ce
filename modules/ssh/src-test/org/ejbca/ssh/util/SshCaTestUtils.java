@@ -52,19 +52,20 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ssh.ca.SshCaImpl;
 
 /**
- * @version $Id$
+ * SSH CA Test utilities.
  *
+ * @version $Id$
  */
 public abstract class SshCaTestUtils {
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SshCaTestUtils"));
-    
+
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
     public static SshCa addSshCa(final String caName, String keyparams, String signatureAlgorithm)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException,
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidAlgorithmException, OperatorCreationException,
@@ -81,7 +82,7 @@ public abstract class SshCaTestUtils {
         if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
             cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder(keyparams).build());
         }
-        
+
         CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, signatureAlgorithm,
                 AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 
@@ -93,10 +94,10 @@ public abstract class SshCaTestUtils {
                 .setCaToken(caToken)
                 .setEncodedValidity("1y")
                 .build();
-        
+
         SshCa sshCa = new SshCaImpl(sshCaInfo);
         sshCa.setCAToken(caToken);
-        
+
         // A CA certificate
         X509Certificate cacert = CertTools.genSelfCert(caDn, 10L, "1.1.1.1",
                 cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),

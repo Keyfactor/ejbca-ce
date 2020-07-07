@@ -32,17 +32,18 @@ import org.ejbca.ssh.certificate.signature.SshCertificateSigner;
 import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 
 /**
- * @version $Id$
+ * EC Certificate Signer.
  *
+ * @version $Id$
  */
 public class EcCertificateSigner implements SshCertificateSigner {
 
     private final EcSigningAlgorithm signingAlgorithm;
-    
+
     public EcCertificateSigner(final EcSigningAlgorithm sshSigningAlgorithm) {
         this.signingAlgorithm = sshSigningAlgorithm;
     }
-    
+
     @Override
     public byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey) throws InvalidKeyException, SignatureException {
         try {
@@ -53,15 +54,14 @@ public class EcCertificateSigner implements SshCertificateSigner {
         } catch (InvalidKeySpecException e) {
             throw new InvalidKeyException(e);
         }
-     
-        
+
         try {
             Signature signer = signingAlgorithm.getSigner();
             signer.initSign(signingKey);
             signer.update(payload);
-            byte[] signatureBytes = signer.sign();         
+            byte[] signatureBytes = signer.sign();
             SshCertificateWriter sshCertificateWriter = new SshCertificateWriter();
-            sshCertificateWriter.writeString(signingAlgorithm.getPrefix());          
+            sshCertificateWriter.writeString(signingAlgorithm.getPrefix());
             SshCertificateWriter signatureWriter = new SshCertificateWriter();
             ByteArrayInputStream inStream = new ByteArrayInputStream(signatureBytes);
             ASN1InputStream asnInputStream = new ASN1InputStream(inStream);
@@ -77,12 +77,10 @@ public class EcCertificateSigner implements SshCertificateSigner {
             signatureWriter.close();
             sshCertificateWriter.flush();
             sshCertificateWriter.close();
-            return sshCertificateWriter.toByteArray();            
+            return sshCertificateWriter.toByteArray();
         } catch (IOException | SignatureException e) {
             throw new SignatureException("Given payload could not be signed.", e);
         }
     }
-
-
 
 }
