@@ -65,10 +65,12 @@ public class UserNotificationParamGen extends NotificationParamGen {
 
 	public UserNotificationParamGen(EndEntityInformation userData) {
 		populateWithUserData(userData);
+		populateWithEmailAddresses(userData);
 	}
 
 	public UserNotificationParamGen(EndEntityInformation userData, Certificate expiringCert) {
 		populateWithUserData(userData);
+		populateWithEmailAddresses(userData);
 		populateWithExpiringCert(expiringCert);
 	}
 
@@ -189,6 +191,14 @@ public class UserNotificationParamGen extends NotificationParamGen {
 			
 		}
 	}
+	
+	protected void populateWithEmailAddresses(EndEntityInformation userdata) {
+        if(userdata != null) {
+            paramPut("user.EE.EMAIL", userdata.getEmail());
+            final DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+            paramPut("user.SAN.EMAIL", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
+        }
+    }
 	
 	protected void populateWithEmailAddresses(EndEntityInformation userdata, EndEntityInformation requestAdmin) {
 		if(userdata != null) {
