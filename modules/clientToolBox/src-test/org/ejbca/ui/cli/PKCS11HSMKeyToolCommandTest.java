@@ -77,6 +77,7 @@ import static org.junit.Assert.*;
 
 /**
  * Run tests with ClientToolBax command HSMKeyTool
+ *
  * @version Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -117,6 +118,8 @@ public class PKCS11HSMKeyToolCommandTest {
     public static void setUp() {
         String data = "xx";
         final ByteArrayInputStream inStream = new ByteArrayInputStream(data.getBytes());
+        inStream.mark(0);
+        inStream.reset();
         System.setIn(inStream);
         System.setErr(new PrintStream(errStream));
     }
@@ -128,7 +131,6 @@ public class PKCS11HSMKeyToolCommandTest {
         System.setErr(originalSystemError);
         System.err.println(errStream.toString());
         errStream.reset();
-        System.out.println("CLEAN UP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         KeyStore.ProtectionParameter protectionParameter = new KeyStore.PasswordProtection(TOKEN_PIN.toCharArray());
         ;
         final KeyStoreTools store1 = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT_LABEL,
@@ -201,7 +203,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} ${id_1} 10:35 rsa2
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                SLOT_ID, numberOfThreads + ":" + numberOfTests, aliases[1]};
+                SLOT_ID, numberOfThreads + ":" + numberOfTests, aliases[1], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -209,7 +211,7 @@ public class PKCS11HSMKeyToolCommandTest {
     public void testA4MoveAllKeysFromToken1ToToken2() {
         //PKCS11HSMKeyTool move ./p11m.so ${label_1} ${label_2}
         String[] args = new String[]{"PKCS11HSMKeyTool", "move", PKCS11_LIBRARY,
-                SLOT_LABEL, SLOT2_LABEL};
+                SLOT_LABEL, SLOT2_LABEL, "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -220,7 +222,8 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_2} 10:35 rsa2
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT2_LABEL, numberOfThreads + ":" + numberOfTests, aliases[1]};
+                "TOKEN_LABEL:" + SLOT2_LABEL, numberOfThreads + ":" + numberOfTests, aliases[1],
+                "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -228,7 +231,7 @@ public class PKCS11HSMKeyToolCommandTest {
     public void testA6RenameKeyWithAliasRsa2ToRsa3OnToken2() {
         //PKCS11HSMKeyTool rename ./p11m.so SLOT_LABEL:${label_2} rsa2 rsa3
         String[] args = new String[]{"PKCS11HSMKeyTool", "rename", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT2_LABEL, aliases[1], aliases[2]};
+                "TOKEN_LABEL:" + SLOT2_LABEL, aliases[1], aliases[2], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -239,7 +242,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} i${ix_2} 10:35 rsa3
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                SLOT2_ID, numberOfThreads + ":" + numberOfTests, aliases[2]};
+                SLOT2_ID, numberOfThreads + ":" + numberOfTests, aliases[2], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -249,7 +252,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_2} 10:35 rsa2
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT2_LABEL, numberOfThreads + ":" + numberOfTests, aliases[1]};
+                "TOKEN_LABEL:" + SLOT2_LABEL, numberOfThreads + ":" + numberOfTests, aliases[1], "-password", TOKEN_PIN};
         command.execute(args);
 
         final String consoleOutput = errStream.toString();
@@ -279,7 +282,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 ecc
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[3]};
+                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[3], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -290,7 +293,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 dsa
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[4]};
+                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[4], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -322,16 +325,17 @@ public class PKCS11HSMKeyToolCommandTest {
         //PKCS11HSMKeyTool linkcert ${p11m} TOKEN_LABEL:${label_1} TestRootOld.der TestRootNew.der linkCert.der TestRootOld
         String[] args = new String[]{"PKCS11HSMKeyTool", "linkcert", PKCS11_LIBRARY,
                 "TOKEN_LABEL:" + SLOT_LABEL, oldRootCertFile.getCanonicalPath(), newRootCertFile.getCanonicalPath(),
-                linkedRootCertFile.getCanonicalPath(), oldName};
+                linkedRootCertFile.getCanonicalPath(), oldName, "-password", TOKEN_PIN};
         command.execute(args);
-        checkLinkCert(oldRootCertFile.getCanonicalPath(), newRootCertFile.getCanonicalPath(), linkedRootCertFile.getCanonicalPath());
+        checkLinkCert(oldRootCertFile.getCanonicalPath(), newRootCertFile.getCanonicalPath(),
+                linkedRootCertFile.getCanonicalPath());
     }
 
     @Test
     public void testB13CertКeq() {
         //PKCS11HSMKeyTool certreq ${p11m} TOKEN_LABEL:${label_2} rsa3
         String[] args = new String[]{"PKCS11HSMKeyTool", "certreq", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, aliases[0]};
+                "TOKEN_LABEL:" + SLOT_LABEL, aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -356,10 +360,11 @@ public class PKCS11HSMKeyToolCommandTest {
         //PKCS11HSMKeyTool installcert ${p11m} TOKEN_LABEL:${label_2} rsa3cert.pem
         //<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.InstallCert" />
         String[] args = new String[]{"PKCS11HSMKeyTool", "installcert", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, certFile.getCanonicalPath()};
+                "TOKEN_LABEL:" + SLOT_LABEL, certFile.getCanonicalPath(), "-password", TOKEN_PIN};
         command.execute(args);
 
-        checkInstalledCert(certFile.getCanonicalPath(), alias, protectionParameter, (X509Certificate[]) caEntry.getCertificateChain());
+        checkInstalledCert(certFile.getCanonicalPath(), alias, protectionParameter,
+                (X509Certificate[]) caEntry.getCertificateChain());
     }
 
     @Test
@@ -369,7 +374,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_2} 10:35 rsa3
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[0]};
+                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -382,12 +387,12 @@ public class PKCS11HSMKeyToolCommandTest {
             fileOutputStream.write(CONTENT.getBytes());
         }
         //PKCS11HSMKeyTool encrypt ./p11m.so TOKEN_LABEL:${label_1} orig.bin encr1.bin rsa1
-        String[] args = new String[]{"PKCS11HSMKeyTool", "encrypt", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, inFile.getCanonicalPath(), encriptedFile.getCanonicalPath(), aliases[0]};
+        String[] args = new String[]{"PKCS11HSMKeyTool", "encrypt", PKCS11_LIBRARY, "TOKEN_LABEL:" + SLOT_LABEL,
+                inFile.getCanonicalPath(), encriptedFile.getCanonicalPath(), aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
         //PKCS11HSMKeyTool decrypt ./p11m.so TOKEN_LABEL:${label_1} encr1.bin decr1.bin rsa1
-        args = new String[]{"PKCS11HSMKeyTool", "decrypt", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, encriptedFile.getCanonicalPath(), decriptedFile.getCanonicalPath(), aliases[0]};
+        args = new String[]{"PKCS11HSMKeyTool", "decrypt", PKCS11_LIBRARY, "TOKEN_LABEL:" + SLOT_LABEL,
+                encriptedFile.getCanonicalPath(), decriptedFile.getCanonicalPath(), aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
         //<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
         checkDecryptedData(inFile.getCanonicalPath(), decriptedFile.getCanonicalPath());
@@ -399,12 +404,12 @@ public class PKCS11HSMKeyToolCommandTest {
         File verifiedFile = folder.newFile("verified.bin");
 
         //PKCS11HSMKeyTool sign ./p11m.so TOKEN_LABEL:${label_1} orig.bin signed1.bin ecc
-        String[] args = new String[]{"PKCS11HSMKeyTool", "sign", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, inFile.getCanonicalPath(), signedFile.getCanonicalPath(), aliases[3]};
+        String[] args = new String[]{"PKCS11HSMKeyTool", "sign", PKCS11_LIBRARY, "TOKEN_LABEL:" + SLOT_LABEL,
+                inFile.getCanonicalPath(), signedFile.getCanonicalPath(), aliases[3], "-password", TOKEN_PIN};
         command.execute(args);
         //PKCS11HSMKeyTool verify ./p11m.so TOKEN_LABEL:${label_1} signed1.bin verified1.bin ecc
-        args = new String[]{"PKCS11HSMKeyTool", "verify", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, signedFile.getCanonicalPath(), verifiedFile.getCanonicalPath(), aliases[3]};
+        args = new String[]{"PKCS11HSMKeyTool", "verify", PKCS11_LIBRARY, "TOKEN_LABEL:" + SLOT_LABEL,
+                signedFile.getCanonicalPath(), verifiedFile.getCanonicalPath(), aliases[3], "-password", TOKEN_PIN};
         command.execute(args);
         //<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
         checkDecryptedData(inFile.getCanonicalPath(), verifiedFile.getCanonicalPath());
@@ -422,8 +427,8 @@ public class PKCS11HSMKeyToolCommandTest {
         command.execute(args);
 
         //PKCS11HSMKeyTool decrypt ./p11m.so TOKEN_LABEL:${label_2} encr2.bin decr2.bin rsa3
-        args = new String[]{"PKCS11HSMKeyTool", "decrypt", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, encriptedFile.getCanonicalPath(), decriptedFile.getCanonicalPath(), aliases[0]};
+        args = new String[]{"PKCS11HSMKeyTool", "decrypt", PKCS11_LIBRARY, "TOKEN_LABEL:" + SLOT_LABEL,
+                encriptedFile.getCanonicalPath(), decriptedFile.getCanonicalPath(), aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
 
         //<class name="org.ejbca.ui.cli.clientToolBoxTest.tests.FileDiffOfOriginAndResult" />
@@ -436,8 +441,8 @@ public class PKCS11HSMKeyToolCommandTest {
         File verifiedFile = folder.newFile("verified2.bin");
 
         //PKCS11HSMKeyTool sign ./p11m.so TOKEN_LABEL:${label_2} orig.bin signed2.bin rsa3
-        String[] args = new String[]{"PKCS11HSMKeyTool", "sign", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, inFile.getCanonicalPath(), signedFile.getCanonicalPath(), aliases[0]};
+        String[] args = new String[]{"PKCS11HSMKeyTool", "sign", PKCS11_LIBRARY, "TOKEN_LABEL:" + SLOT_LABEL,
+                inFile.getCanonicalPath(), signedFile.getCanonicalPath(), aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
         //PKCS11HSMKeyTool verify signed2.bin verified2.bin rsa3cert.pem
         args = new String[]{"PKCS11HSMKeyTool", "verify", signedFile.getCanonicalPath(), verifiedFile.getCanonicalPath(),
@@ -459,14 +464,17 @@ public class PKCS11HSMKeyToolCommandTest {
     //    expected errors
     @Test
     public void testC21CfgKeyRsa3OnToken1ShouldFail() {
-        //TODO check stderr "Key alias rsa2 does not exist"
 //        exit.expectSystemExitWithStatus(2);  does not throw exception
         int numberOfThreads = 10;
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} ${id_1} 10:35 rsa3
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                SLOT_ID, numberOfThreads + ":" + numberOfTests, aliases[2]};
+                SLOT_ID, numberOfThreads + ":" + numberOfTests, aliases[2], "-password", TOKEN_PIN};
         command.execute(args);
+        final String consoleOutput = errStream.toString();
+        String message = "Key alias " + aliases[2] + " does not exist";
+        assertTrue("System.err should contain: " + message, consoleOutput.contains(message));
+
     }
 
     @Test
@@ -475,7 +483,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 dsa
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[4]};
+                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[4], "-password", TOKEN_PIN};
         command.execute(args);
         final String consoleOutput = errStream.toString();
         String message = "Key alias " + aliases[4] + " does not exist";
@@ -489,7 +497,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfTests = 35;
         //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:nonexist 10:35 rsa1
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:nonexist", numberOfThreads + ":" + numberOfTests, aliases[0]};
+                "TOKEN_LABEL:nonexist", numberOfThreads + ":" + numberOfTests, aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -498,7 +506,7 @@ public class PKCS11HSMKeyToolCommandTest {
         exit.expectSystemExitWithStatus(-1);
         //PKCS11HSMKeyTool test /opt/PTK/lib/notExisting.so TOKEN_LABEL:${label_2}
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", "/opt/PTK/lib/notExisting.so",
-                "TOKEN_LABEL:" + SLOT2_LABEL};
+                "TOKEN_LABEL:" + SLOT2_LABEL, "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -508,7 +516,7 @@ public class PKCS11HSMKeyToolCommandTest {
         int numberOfThreads = 10;
         int numberOfTests = 35;
         String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                SLOT_INDEX, numberOfThreads + ":" + numberOfTests, aliases[0]};
+                SLOT_INDEX, numberOfThreads + ":" + numberOfTests, aliases[0], "-password", TOKEN_PIN};
         command.execute(args);
     }
 
@@ -517,8 +525,8 @@ public class PKCS11HSMKeyToolCommandTest {
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
         int numberOfTests = 35;
-        String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                SLOT2_INDEX, numberOfThreads + ":" + numberOfTests, aliases[2]};
+        String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY, SLOT2_INDEX,
+                numberOfThreads + ":" + numberOfTests, aliases[2], "-password", TOKEN_PIN, "-password", TOKEN_PIN};
         command.execute(args);
     }
 
