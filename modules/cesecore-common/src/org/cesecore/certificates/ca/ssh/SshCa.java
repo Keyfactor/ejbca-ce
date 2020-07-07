@@ -16,21 +16,20 @@ import org.cesecore.certificates.ca.CA;
 
 /**
  * General interface for SSH CAs
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
 public interface SshCa extends CA {
-    
-    static final String CA_TYPE = "SSHCA";
-    
+
+    String CA_TYPE = "SSHCA";
+
     Integer getSerialNumberOctetSize();
     void setCaSerialNumberOctetSize(int serialNumberOctetSize);
-    
+
     boolean getUsePrintableStringSubjectDN();
-    void setUsePrintableStringSubjectDN(boolean useprintablestring);
-    
+    void setUsePrintableStringSubjectDN(boolean usePrintableStringSubjectDN);
+
     boolean getUseLdapDNOrder();
-    void setUseLdapDNOrder(boolean useldapdnorder);
+    void setUseLdapDNOrder(boolean useLdapDNOrder);
 
 }

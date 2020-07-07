@@ -18,8 +18,8 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
@@ -72,7 +72,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
 
-    private GlobalConfiguration globalConfiguration;
+    private final GlobalConfiguration globalConfiguration;
     List<CAGuiInfo> caGuiInfos = null;
     private UploadedFile uploadFile;
     List<String> extCaNameList;
@@ -82,9 +82,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
         globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
-        extCaNameList = new ArrayList<String>(externalCANames.keySet());
+        extCaNameList = new ArrayList<>(externalCANames.keySet());
     }
-    
+
     /** GUI representation of a CA for the CA Structure page */
     public class CAGuiInfo {
         private final String name;
@@ -103,7 +103,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
-            this.certificatechain = new ArrayList<Certificate>(certificatechain); 
+            this.certificatechain = new ArrayList<>(certificatechain);
             Collections.reverse(this.certificatechain);
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
@@ -142,9 +142,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
 
         public void hideJksDownloadForm(){
-            for(int i = 0; i<showJksDownloadForm.length; i++){
-                showJksDownloadForm[i] = false;
-            }
+            Arrays.fill(showJksDownloadForm, false);
         }
 
         public CRLInfo getDeltacrlinfo() {
@@ -205,16 +203,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        final TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
-        final List<String> caNameList = new ArrayList<String>(canames.keySet());
-        Collections.sort(caNameList, new Comparator<String>() {
-            @Override
-            public int compare(final String o1, final String o2) {
-                return o1.compareToIgnoreCase(o2);
-            }
-        });
-        for (final String caname : caNameList) {
-            final int caid = canames.get(caname);
+        final TreeMap<String, Integer> caNames = getEjbcaWebBean().getCANames();
+        final List<String> caNameList = new ArrayList<>(caNames.keySet());
+        caNameList.sort(String::compareToIgnoreCase);
+        for (final String caName : caNameList) {
+            final int caid = caNames.get(caName);
             final CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
@@ -223,7 +216,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
-            final CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
+            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
                     cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }
@@ -234,33 +227,23 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCertificatePopupLink(final int caid) {
-        final StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getAdminWebPath()).append("viewcertificate.xhtml?caid=").append(caid);
-        return link.toString();
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "viewcertificate.xhtml?caid=" + caid;
     }
 
     public String openCertificateInfoPopup(final int caid) {
-        final StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/viewcainfo.xhtml?caid=").append(caid);
-        return link.toString();
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/viewcainfo.xhtml?caid=" + caid;
     }
 
     public String getDownloadCertificateLink(){
-        final StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/cacert");
-        return link.toString();
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/cacert";
     }
-    
+
     public String getSshPublicKeyLink(){
-        final StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append("ssh");
-        return link.toString();
+        return getEjbcaWebBean().getBaseUrl() + "ssh";
     }
 
     public String getDownloadCrlLink(){
-        final StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/getcrl/getcrl");
-        return link.toString();
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/getcrl/getcrl";
     }
 
     public void showJksDownloadForm(final CAGuiInfo caGuiInfo, final int index) {

@@ -26,8 +26,6 @@ import java.util.Map;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.ca.X509CAInfo.X509CAInfoBuilder;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.util.CertTools;
@@ -39,7 +37,7 @@ import org.cesecore.util.CertTools;
 public class SshCaInfo extends CAInfo {
 
     private static final long serialVersionUID = 1L;
-       
+
     private int caSerialNumberOctetSize;
     private boolean useUTF8PolicyText;
     private boolean usePrintableStringSubjectDN;
@@ -47,21 +45,21 @@ public class SshCaInfo extends CAInfo {
     private String subjectaltname;
 
 
-    private SshCaInfo(final String encodedValidity, final CAToken catoken, final String description, final int caSerialNumberOctetSize,
-            final boolean finishuser,
-            final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals,
+    private SshCaInfo(final String encodedValidity, final CAToken caToken, final String description, final int caSerialNumberOctetSize,
+            final boolean finishUser,
+            final Collection<ExtendedCAServiceInfo> extendedCaServiceInfos, final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals,
             final boolean usePrintableStringSubjectDN, final boolean useLdapDnOrder, final boolean includeInHealthCheck,
             final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
-            final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
-            final boolean useCertificateStorage, final boolean acceptRevocationNonExistingEntry, final int defaultCertprofileId,
+            final boolean doEnforceUniqueSubjectDNSerialNumber, final boolean useCertReqHistory, final boolean useUserStorage,
+            final boolean useCertificateStorage, final boolean acceptRevocationNonExistingEntry, final int defaultCertProfileId,
             final boolean useNoConflictCertificateData) {
-        
+
         this.encodedValidity = encodedValidity;
-        this.catoken = catoken;
+        this.catoken = caToken;
         this.description = description;
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
-        this.finishuser = finishuser;
-        this.extendedcaserviceinfos = extendedcaserviceinfos;
+        this.finishuser = finishUser;
+        this.extendedcaserviceinfos = extendedCaServiceInfos;
         this.useUTF8PolicyText = useUTF8PolicyText;
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
@@ -69,16 +67,16 @@ public class SshCaInfo extends CAInfo {
         this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
         this.doEnforceKeyRenewal = doEnforceKeyRenewal;
         this.doEnforceUniqueDistinguishedName = doEnforceUniqueDistinguishedName;
-        this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialnumber;
+        this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialNumber;
         this.useCertReqHistory = useCertReqHistory;
         this.useUserStorage = useUserStorage;
         this.useCertificateStorage = useCertificateStorage;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
-        this.defaultCertificateProfileId = defaultCertprofileId;
+        this.defaultCertificateProfileId = defaultCertProfileId;
         this.useNoConflictCertificateData = useNoConflictCertificateData;
         setApprovals(approvals);
     }
-    
+
     public int getCaSerialNumberOctetSize() {
         return caSerialNumberOctetSize;
     }
@@ -86,7 +84,7 @@ public class SshCaInfo extends CAInfo {
     public void setCaSerialNumberOctetSize(int caSerialNumberOctetSize) {
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
     }
-    
+
 
     public boolean getUseUTF8PolicyText() {
         return useUTF8PolicyText;
@@ -95,7 +93,7 @@ public class SshCaInfo extends CAInfo {
     public void setUseUTF8PolicyText(final boolean useUTF8PolicyText) {
         this.useUTF8PolicyText = useUTF8PolicyText;
     }
-    
+
 
     public boolean getUsePrintableStringSubjectDN() {
         return usePrintableStringSubjectDN;
@@ -105,17 +103,17 @@ public class SshCaInfo extends CAInfo {
     public void setUsePrintableStringSubjectDN(final boolean usePrintableStringSubjectDN) {
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
     }
-    
-   
+
+
     public boolean getUseLdapDnOrder() {
         return useLdapDNOrder;
     }
 
- 
+
     public void setUseLdapDnOrder(final boolean useLdapDNOrder) {
         this.useLdapDNOrder = useLdapDNOrder;
     }
-    
+
 
     public String getSubjectAltName() {
         return subjectaltname;
@@ -163,12 +161,12 @@ public class SshCaInfo extends CAInfo {
         private String subjectAltName = "";
         private Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
 
-        
+
         public SshCAInfoBuilder setCaId(int caId) {
             this.caId = caId;
             return this;
         }
-        
+
         /**
          * @param subjectDn the Subject DN of the CA as found in the certificate
          */
@@ -364,7 +362,7 @@ public class SshCaInfo extends CAInfo {
             this.useCertificateStorage = useCertificateStorage;
             return this;
         }
-        
+
         public SshCAInfoBuilder setSubjectAltName(final String subjectAltName) {
             this.subjectAltName = subjectAltName;
             return this;
@@ -374,7 +372,7 @@ public class SshCaInfo extends CAInfo {
             this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
             return this;
         }
-        
+
         /**
          * @param approvals a map of approval profiles which should be used for different operations
          */
@@ -390,7 +388,7 @@ public class SshCaInfo extends CAInfo {
             this.caSerialNumberOctetSize = caSerialNumberOctetSize;
             return this;
         }
-        
+
         public SshCaInfo buildForUpdate() {
             SshCaInfo caInfo = new SshCaInfo(encodedValidity, caToken, description, caSerialNumberOctetSize, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals, usePrintableStringSubjectDN, useLdapDnOrder,
                     includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal, doEnforceUniqueDistinguishedName,
