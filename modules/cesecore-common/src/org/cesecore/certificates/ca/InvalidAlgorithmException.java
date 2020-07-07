@@ -9,25 +9,23 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/  
+ *************************************************************************/
 package org.cesecore.certificates.ca;
 
 import javax.ejb.ApplicationException;
 
 import org.cesecore.CesecoreException;
 
-
-
 /**
  * Error due to an invalid request certificate signature algorithm for a certificate.
  *
  * @version $Id$
  */
-@ApplicationException(rollback=true) 
+@ApplicationException(rollback=true)
 public class InvalidAlgorithmException extends CesecoreException {
- 
+
     private static final long serialVersionUID = 6774153561528947364L;
-  
+
     /**
      * Constructor used to create exception with an error message. Calls the same constructor in
      * baseclass <code>Exception</code>.
@@ -46,7 +44,7 @@ public class InvalidAlgorithmException extends CesecoreException {
     public InvalidAlgorithmException(final Exception exception) {
         super(exception);
     }
-    
+
     public InvalidAlgorithmException(final String message, final Throwable exception) {
         super(message, exception);
     }

@@ -17,8 +17,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * @version $Id$
+ * SSH End Entity Profile Fields.
  *
+ * @version $Id$
  */
 public abstract class SshEndEntityProfileFields {
 
@@ -45,7 +46,7 @@ public abstract class SshEndEntityProfileFields {
     public static Map<String, String> getSshFields() {
         return sshFields;
     }
-    
+
     public static String getLanguageKey(int fieldNumber) {
         return sshFieldsLanguageKeys.get(fieldNumber);
     }

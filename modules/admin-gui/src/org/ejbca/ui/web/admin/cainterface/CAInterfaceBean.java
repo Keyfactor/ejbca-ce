@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
@@ -126,7 +126,7 @@ public class CAInterfaceBean implements Serializable {
 	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
 	private static final String LIST_SEPARATOR = ";";
 
-	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private AuthorizationSessionLocal authorizationSession;
     private CAAdminSessionLocal caadminsession;
     private CaSessionLocal casession;
@@ -135,9 +135,9 @@ public class CAInterfaceBean implements Serializable {
     private CertReqHistorySessionLocal certreqhistorysession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private PublisherSessionLocal publishersession;
-    
-    private SignSession signsession; 
-   
+
+    private SignSession signsession;
+
     private CADataHandler cadatahandler;
 
     private boolean initialized;
@@ -147,7 +147,7 @@ public class CAInterfaceBean implements Serializable {
     /** The certification request in binary format */
     private transient byte[] request;
     private Certificate processedcert;
-	
+
 	/** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
 
@@ -161,7 +161,7 @@ public class CAInterfaceBean implements Serializable {
           casession = ejbLocalHelper.getCaSession();
           authorizationSession = ejbLocalHelper.getAuthorizationSession();
           signsession = ejbLocalHelper.getSignSession();
-          publishersession = ejbLocalHelper.getPublisherSession();               
+          publishersession = ejbLocalHelper.getPublisherSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
           authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
@@ -190,7 +190,7 @@ public class CAInterfaceBean implements Serializable {
      */
     @Deprecated
     public Map<Integer, String>  getCAIdToNameMap(){
-    	return casession.getCAIdToNameMap();      
+    	return casession.getCAIdToNameMap();
     }
 
     /**
@@ -208,72 +208,72 @@ public class CAInterfaceBean implements Serializable {
 
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
     public CAInfoView getCAInfo(int caid) throws AuthorizationDeniedException {
-      return cadatahandler.getCAInfo(caid);   
+      return cadatahandler.getCAInfo(caid);
     }
-    
+
     public int getCAStatusNoAuth(int caid) {
         final CAInfo caInfo = casession.getCAInfoInternal(caid);
         return (caInfo != null ? caInfo.getStatus() : 0);
     }
-    
+
     @Deprecated
     public void saveRequestInfo(CAInfo cainfo){
     	this.cainfo = cainfo;
     }
-    
+
     @Deprecated
     public CAInfo getRequestInfo(){
     	return this.cainfo;
     }
-    
+
 	public void saveRequestData(byte[] request){
 		this.request = request;
 	}
-    
+
 	public byte[] getRequestData(){
 		return this.request;
-	}    
-	
+	}
+
 	public String getRequestDataAsString() throws Exception{
-		String returnval = null;	
+		String returnval = null;
 		if(request != null ){
 			returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
 			+ new String(Base64.encode(request, true))
-			+ RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;  
-		}      
+			+ RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
+		}
 		return returnval;
 	}
-    
+
 	public void saveProcessedCertificate(Certificate cert){
 		this.processedcert =cert;
 	}
 
     Certificate getProcessedCertificate(){
 		return this.processedcert;
-	}    
+	}
 
 	public String getProcessedCertificateAsString() throws Exception{
-		String returnval = null;	
+		String returnval = null;
 		if(request != null ){
 			byte[] b64cert = Base64.encode(this.processedcert.getEncoded(), true);
 			returnval = CertTools.BEGIN_CERTIFICATE_WITH_NL;
 			returnval += new String(b64cert);
 			returnval += CertTools.END_CERTIFICATE_WITH_NL;
-		}      
+		}
 		return returnval;
 	}
 
 	public AuthenticationToken getAuthenticationToken() {
 	    return authenticationToken;
 	}
-	
+
 	public String republish(CertificateView certificateView) throws AuthorizationDeniedException {
 		String returnval = "CERTREPUBLISHFAILED";
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 		String password = null;
 		ExtendedInformation ei = null;
 		// Unescaped subjectDN is used to avoid causing issues in custom publishers (see ECA-6761)
-		String dn = certificateView.getSubjectDNUnescaped(); 
+		String dn = certificateView.getSubjectDNUnescaped();
 		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(certificateView.getSerialNumberBigInt(), certificateView.getIssuerDN());
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
@@ -308,14 +308,14 @@ public class CAInterfaceBean implements Serializable {
 				returnval = "CERTPROFILENOTFOUND";
 			}
 		}
-		return returnval; 
+		return returnval;
 	}
 
 	/** Class used to sort CertReq History by users modified time, with latest first*/
-	private class CertReqUserCreateComparator implements Comparator<CertReqHistory> {
+	private static class CertReqUserCreateComparator implements Comparator<CertReqHistory> {
 		@Override
 		public int compare(CertReqHistory o1, CertReqHistory o2) {
-			return 0 - (o1.getEndEntityInformation().getTimeModified().compareTo(o2.getEndEntityInformation().getTimeModified()));
+			return -(o1.getEndEntityInformation().getTimeModified().compareTo(o2.getEndEntityInformation().getTimeModified()));
 		}
 	}
 
@@ -398,14 +398,14 @@ public class CAInterfaceBean implements Serializable {
             throw e;
         }
     }
-    
+
     private void capitalizeCountryCodeInSubjectDN(final CaInfoDto caInfoDto) {
         String subjectDN = caInfoDto.getCaSubjectDN();
         String delimiter = "C=";
         int delimeterStartIndex = subjectDN.indexOf(delimiter);
         int countryStartIndex = delimeterStartIndex + delimiter.length();
         if (delimeterStartIndex != -1) {
-            // Assume country code is 2 characters long. In special cases when it's longer and it's lowercase not all of it will be capitalized. 
+            // Assume country code is 2 characters long. In special cases when it's longer and it's lowercase not all of it will be capitalized.
             // In that case CA creation fails just like it always used to anyway.
             int countryEndIndex = countryStartIndex + 2;
             String replacement = subjectDN.substring(countryStartIndex, countryEndIndex).toUpperCase(Locale.ENGLISH);
@@ -452,7 +452,7 @@ public class CAInterfaceBean implements Serializable {
         }
         final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
         if (caInfoDto.getSignatureAlgorithmParam() == null) {
-            throw new Exception("No signature algorithm supplied!");  
+            throw new Exception("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
         caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam()));
@@ -493,7 +493,7 @@ public class CAInterfaceBean implements Serializable {
             }
         }
 
-	    if (caToken != null && caInfoDto.getCaType() != 0 && caInfoDto.getCaSubjectDN() != null && caInfoDto.getCaName() != null && signedBy != 0) {
+	    if (caInfoDto.getCaType() != 0 && caInfoDto.getCaSubjectDN() != null && caInfoDto.getCaName() != null && signedBy != 0) {
 	        // Approvals is generic for all types of CAs
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
@@ -509,13 +509,13 @@ public class CAInterfaceBean implements Serializable {
 	            if (!StringUtils.isEmpty(errorMessage)) {
 	               throw new ParameterException(errorMessage);
 	            }
-	            
+
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
 	            final List<Integer> crlPublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
 	            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-	            
+
 	            List<String> authorityInformationAccess = new ArrayList<>();
 	            if (StringUtils.isNotBlank(caInfoDto.getAuthorityInformationAccess())) {
 	            	authorityInformationAccess = new ArrayList<>( Arrays.asList(caInfoDto.getAuthorityInformationAccess().split(LIST_SEPARATOR)));
@@ -531,14 +531,14 @@ public class CAInterfaceBean implements Serializable {
 	            if (caInfoDto.isUsePartitionedCrl() && (caInfoDto.getSuspendedCrlPartitions() >= caInfoDto.getCrlPartitions())) {
                     throw new ParameterException(ejbcawebbean.getText("CRLPARTITIONNUMBERINVALID"));
                 }
-                	            
+
 	            final List<String> nameConstraintsPermitted = parseNameConstraintsInput(caInfoDto.getNameConstraintsPermitted());
 	            final List<String> nameConstraintsExcluded = parseNameConstraintsInput(caInfoDto.getNameConstraintsExcluded());
 	            final boolean hasNameConstraints = !nameConstraintsPermitted.isEmpty() || !nameConstraintsExcluded.isEmpty();
 	            if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
 	               throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
 	            }
-	            
+
 	            final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
@@ -622,7 +622,7 @@ public class CAInterfaceBean implements Serializable {
                                 .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
                                 .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check because it's not active
                                 .build();
-	                    saveRequestInfo(x509cainfo);                
+	                    saveRequestInfo(x509cainfo);
 	                }
 	            }
 	        } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
@@ -631,11 +631,11 @@ public class CAInterfaceBean implements Serializable {
 	            long crlIssueInterval = 0;
 	            long crlOverlapTime = 0;
 	            long deltaCrlPeriod = 0;
-	            final List<Integer> crlpublishers = new ArrayList<>(); 
+	            final List<Integer> crlPublishers = new ArrayList<>();
 	            final List<Integer> keyValidators = new ArrayList<>();
                 if (!illegaldnoraltname) {
                     // A CVC CA does not have any of the external services OCSP, CMS
-	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
+	                List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>();
 	                if (buttonMakeRequest) {
 	                    signedBy = CAInfo.SIGNEDBYEXTERNALCA;
 	                }
@@ -644,8 +644,8 @@ public class CAInterfaceBean implements Serializable {
 	                        certprofileid, defaultCertProfileId, caInfoDto.getCaEncodedValidity(),
 	                        null, caInfoDto.getCaType(), signedBy,
 	                        null, caToken, caInfoDto.getDescription(), -1, null,
-	                        crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, crlpublishers, keyValidators,
-	                        caInfoDto.isFinishUser(), extendedcaservices,
+	                        crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, crlPublishers, keyValidators,
+	                        caInfoDto.isFinishUser(), extendedCaServices,
 	                        approvals,
 	                        false, // Do not automatically include new CAs in health-check
 	                        caInfoDto.isDoEnforceUniquePublickeys(),
@@ -659,7 +659,7 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonCreateCa) {
 	                    caadminsession.createCA(authenticationToken, cvccainfo);
 	                } else if (buttonMakeRequest) {
-	                    saveRequestInfo(cvccainfo);                
+	                    saveRequestInfo(cvccainfo);
 	                }
 	            }
 	        } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
@@ -674,18 +674,18 @@ public class CAInterfaceBean implements Serializable {
                    throw new ParameterException(errorMessage);
                 }
                 // TODO: Implement KRL publishing after initial release
-                
+
                 // TODO: Implement validators after initial release
                 //final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-                
-           
+
+
                 final List<String> nameConstraintsPermitted = parseNameConstraintsInput(caInfoDto.getNameConstraintsPermitted());
                 final List<String> nameConstraintsExcluded = parseNameConstraintsInput(caInfoDto.getNameConstraintsExcluded());
                 final boolean hasNameConstraints = !nameConstraintsPermitted.isEmpty() || !nameConstraintsExcluded.isEmpty();
                 if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
                    throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
                 }
-                
+
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
@@ -702,7 +702,7 @@ public class CAInterfaceBean implements Serializable {
                             .setCertificateChain(null)
                             .setCaToken(caToken)
                             .setDescription(caInfoDto.getDescription())
-                            .setCaSerialNumberOctetSize(caSerialNumberOctetSize)                                    
+                            .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
                             .setFinishUser(caInfoDto.isFinishUser())
                             .setExtendedCaServiceInfos(extendedCaServiceInfos)
                             .setUseUtf8PolicyText(caInfoDto.isUseUtf8Policy())
@@ -717,12 +717,9 @@ public class CAInterfaceBean implements Serializable {
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                             .setSubjectAltName(caInfoDto.getCaSubjectAltName())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
-                            // TODO: SSH, add approvals here
-                            .setApprovals(new HashMap<ApprovalRequestType, Integer>());
-              
-                    
-                    
-                            
+                            // TODO ECA-9293: SSH, add approvals here
+                            .setApprovals(new HashMap<>());
+
                     if (buttonCreateCa) {
                         SshCaInfo sshCaInfo = sshCAInfoBuilder
                                 .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
@@ -732,7 +729,7 @@ public class CAInterfaceBean implements Serializable {
                             caadminsession.createCA(authenticationToken, sshCaInfo);
                         } catch (EJBException e) {
                             if (e.getCausedByException() instanceof IllegalArgumentException) {
-                                //Couldn't create CA from the given parameters
+                                // Couldn't create CA from the given parameters
                                 illegaldnoraltname = true;
                             } else {
                                 throw e;
@@ -745,7 +742,7 @@ public class CAInterfaceBean implements Serializable {
                                 .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
                                 .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check because it's not active
                                 .build();
-                        saveRequestInfo(sshCaInfo);                
+                        saveRequestInfo(sshCaInfo);
                     }
                 }
             } else {
@@ -754,7 +751,7 @@ public class CAInterfaceBean implements Serializable {
 	    }
         if (buttonMakeRequest && !illegaldnoraltname) {
             CAInfo cainfo = getRequestInfo();
-            caadminsession.createCA(authenticationToken, cainfo);                           
+            caadminsession.createCA(authenticationToken, cainfo);
             int caid = cainfo.getCAId();
             try {
                 byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -772,13 +769,13 @@ public class CAInterfaceBean implements Serializable {
         } catch (CertificateExtensionException e) {
             throw new ParameterException(ejbcawebbean.getText("INVALIDNAMECONSTRAINT", false, e.getMessage()));
         }
-        
+
     }
-	
+
     public String isValidityTimeValid(String validityString) {
         // Fixed end dates are not limited
         if (ValidityDate.isValidIso8601Date(validityString)) {
-            //We have a valid date, let's just check that it's in the future as well. 
+            //We have a valid date, let's just check that it's in the future as well.
             Date validityDate;
             try {
                 validityDate = ValidityDate.parseAsIso8601(validityString);
@@ -800,14 +797,14 @@ public class CAInterfaceBean implements Serializable {
         }
         return "";
     }
-	
-    
+
+
     private boolean isNameConstraintAllowedInProfile(int certProfileId) {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
-        
+
         final boolean isCA = (certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
                 certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA);
-        
+
         return isCA && certProfile.getUseNameConstraints();
     }
 
@@ -826,9 +823,9 @@ public class CAInterfaceBean implements Serializable {
                 keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
             }
         }
-        
+
         final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
-	    
+
         List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         // Create and active External CA Services.
         extendedcaservices.add(
@@ -912,7 +909,7 @@ public class CAInterfaceBean implements Serializable {
 //           final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
            final List<Integer> crlpublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-           
+
            // Info specific for X509 CA
            if (caInfoDto.isCaTypeX509()) {
                List<String> authorityInformationAccess = new ArrayList<>();
@@ -931,10 +928,10 @@ public class CAInterfaceBean implements Serializable {
                final int cmsactive = caInfoDto.isServiceCmsActive() ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false));
-               
+
                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
-               
+
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -991,9 +988,9 @@ public class CAInterfaceBean implements Serializable {
                cainfo = x509CAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
                // Info specific for CVC CA
-               
-           
-               // Edit CVC CA data                            
+
+
+               // Edit CVC CA data
                // A CVC CA does not have any of the external services OCSP, CMS
                final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
                // Create the CAInfo to be used for either generating the whole CA or making a request
@@ -1033,8 +1030,8 @@ public class CAInterfaceBean implements Serializable {
                         .setUseCertificateStorage(caInfoDto.isUseCertificateStorage()).setSubjectAltName(caInfoDto.getCaSubjectAltName())
                         .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                         .setCaId(caid)
-                        // TODO: SSH, add approvals here
-                        .setApprovals(new HashMap<ApprovalRequestType, Integer>());
+                        // TODO ECA-9293: SSH, add approvals here
+                        .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
             }
             cainfo.setSubjectDN(subjectDn);
@@ -1082,7 +1079,7 @@ public class CAInterfaceBean implements Serializable {
         }
 	    return availableCryptoTokens;
 	}
-	
+
 	public List<Entry<String, String>> getFailedCryptoTokens(final String caSigingAlgorithm) throws AuthorizationDeniedException {
         final List<Entry<String, String>> failedCryptoTokens = new ArrayList<>();
         if (caSigingAlgorithm != null && caSigingAlgorithm.length()>0) {
@@ -1103,7 +1100,7 @@ public class CAInterfaceBean implements Serializable {
         }
         return failedCryptoTokens;
     }
-	
+
 	public List<KeyPairInfo> getKeyPairInfos(int cryptoTokenId) throws CryptoTokenOfflineException, AuthorizationDeniedException {
 	    if (cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId) == null) {
            log.debug("CryptoToken didn't exist when trying to get aliases");
@@ -1114,8 +1111,7 @@ public class CAInterfaceBean implements Serializable {
 
     /** @return a list of key pair aliases that can be used for either signing or encryption under the supplied CA signing algorithm */
     public List<String> getAvailableCryptoTokenMixedAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
-        final List<String> aliases = new ArrayList<>();
-        aliases.addAll(getAvailableCryptoTokenAliases(keyPairInfos, caSigingAlgorithm));
+        final List<String> aliases = new ArrayList<>(getAvailableCryptoTokenAliases(keyPairInfos, caSigingAlgorithm));
         final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caSigingAlgorithm);
         aliases.removeAll(encAliases);  // Avoid duplicates
         aliases.addAll(encAliases);
@@ -1143,19 +1139,19 @@ public class CAInterfaceBean implements Serializable {
         }
         return aliases;
     }
-	
+
 	/**
-	 * 
-	 * @return true if admin has general read rights to CAs, but no edit rights. 
+	 *
+	 * @return true if admin has general read rights to CAs, but no edit rights.
 	 */
     public boolean hasEditRight() {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAEDIT.resource());
     }
-    
+
     public boolean hasCreateRight() {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAADD.resource());
     }
-	
+
 	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
@@ -1200,7 +1196,7 @@ public class CAInterfaceBean implements Serializable {
             final String ecNamedCurve = ecNamedCurves.nextElement();
             ret.add(new SimpleEntry<>(ecNamedCurve, "ECDSA "+ecNamedCurve));
         }
-        
+
         for (String alg : CesecoreConfiguration.getExtraAlgs()) {
             for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
                 final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
@@ -1211,7 +1207,7 @@ public class CAInterfaceBean implements Serializable {
 
         return ret;
     }
-    
+
     public boolean createAuthCertSignRequest(int caid, byte[] request) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         if (request != null) {
             byte[] signedreq = caadminsession.createAuthCertSignRequest(authenticationToken, caid, request);
@@ -1220,7 +1216,7 @@ public class CAInterfaceBean implements Serializable {
         }
         return false;
     }
-    
+
     public byte[] parseRequestParameters(HttpServletRequest request, Map<String, String> requestMap) throws IOException {
         byte[] fileBuffer = null;
         try {
@@ -1228,8 +1224,8 @@ public class CAInterfaceBean implements Serializable {
                 final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
                 diskFileItemFactory.setSizeThreshold(59999);
                 ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-                upload.setSizeMax(60000);                   
-                final List<FileItem> items = upload.parseRequest(request);     
+                upload.setSizeMax(60000);
+                final List<FileItem> items = upload.parseRequest(request);
                 for (final FileItem item : items) {
                     if (item.isFormField()) {
                         final String fieldName = item.getFieldName();
@@ -1247,7 +1243,7 @@ public class CAInterfaceBean implements Serializable {
                             fileBuffer = fileBufferTmp;
                         }
                     }
-                } 
+                }
             } else {
                 final Set<String> keySet = request.getParameterMap().keySet();
                 for (final String key : keySet) {
@@ -1261,7 +1257,7 @@ public class CAInterfaceBean implements Serializable {
         }
         return fileBuffer;
     }
-    
+
     /** Returns true if any CVC CA implementation is available, false otherwise.
      * Used to hide/give warning when no CVC CA implementation is available.
      */
@@ -1273,14 +1269,14 @@ public class CAInterfaceBean implements Serializable {
         }
         return ret;
     }
-    /** Returns true if a unique (issuerDN,serialNumber) is present in the database. 
-     * If this is available, you can not use CVC CAs. Returns false if a unique index is 
+    /** Returns true if a unique (issuerDN,serialNumber) is present in the database.
+     * If this is available, you can not use CVC CAs. Returns false if a unique index is
      * Used to hide/give warning when no CVC CA implementation is available.
      */
     public boolean isUniqueIssuerDNSerialNoIndexPresent() {
         return certificatesession.isUniqueCertificateSerialNumberIndex();
     }
-    
+
     /** Returns the "not before" date of the next certificate during a rollover period, or null if no next certificate exists.
      * @throws CADoesntExistsException If the CA doesn't exist.
      */
@@ -1305,7 +1301,7 @@ public class CAInterfaceBean implements Serializable {
     /**
      * Returns the current CA validity "not after" date.
      * @return Not after date, or null if the CA does not have a certificate yet.
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException authorization denied exception.
      */
     public Date getCANotAfter(int caid) throws AuthorizationDeniedException {
         final Collection<Certificate> chain = casession.getCAInfo(authenticationToken, caid).getCertificateChain();
@@ -1314,14 +1310,14 @@ public class CAInterfaceBean implements Serializable {
 
     /**
      * Checks if keys in current crypto token are already in use by another CA or not
-     * This method used while creating a new CA to warn users about keys which are already in use 
+     * This method used while creating a new CA to warn users about keys which are already in use
      * by other CAs.
-     * 
-     * @param CAIds
-     * @param alias
-     * @param currentCryptoTokenId
+     *
+     * @param CAIds CA ids.
+     * @param alias alias.
+     * @param currentCryptoTokenId crypto token id.
      * @return boolean true if crypto key is used by another CA or false otherwise.
-     * @throws IllegalStateException 
+     * @throws IllegalStateException illegal state exception.
      */
     public boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
         for (final int caId : CAIds) {

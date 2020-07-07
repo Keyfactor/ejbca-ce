@@ -71,7 +71,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
     public static final String SSHPROFILENAME = "SSH";
-    
+
     public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
         FIXED_PROFILENAMES.add(ROOTCAPROFILENAME);
@@ -81,7 +81,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
         FIXED_PROFILENAMES.add(SSHPROFILENAME);
     }
- 
+
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -296,7 +296,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
     protected static final String USECERTIFICATETRANSPARENCYINPUBLISHERS  = "usecertificatetransparencyinpublisher";
-        
+
     /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
@@ -309,7 +309,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CT_MAX_SCTS = "ctmaxscts"; // Only used to fetch old value after upgrade, replaced by CT_MAX_NON_MANDATORY_SCTS and CT_MAX_MANDATORY_SCTS
     @Deprecated
     protected static final String CT_MAX_SCTS_OCSP = "ctmaxsctsocsp"; // Only used to fetch old value after upgrade, replaced by CT_MAX_NONMANDATORY_SCTS_OCSP and CT_MAX_MANDATORY_SCTS
-    
+
     /* All deprecated below were removed in 6.10.1. Keep for upgrade purposes or move keys to UpgradeSessionBean */
     @Deprecated
     protected static final String CT_MIN_MANDATORY_SCTS = "ctminmandatoryscts";
@@ -350,7 +350,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String SSH_ALLOW_EXTERNAL_EXTENSIONS = "allowExternalSshExtensions";
     protected static final String SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED = "requireExternalSshExtensionsDefined";
 
-    
+
     /**
      * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
      */
@@ -1255,20 +1255,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean isTypeEndEntity() {
         return (Integer) data.get(TYPE) == CertificateConstants.CERTTYPE_ENDENTITY;
     }
-    
+
     public boolean isKeyAlgorithmsECType() {
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_EC)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
     }
-    
+
     public boolean doSelectedEcRequirebitLenths() {
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_EC)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) && getAvailableEcCurvesAsList().contains(ANY_EC_CURVE);
     }
-    
+
     public boolean isKeyAlgorithmsRequireKeySizes() {
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return  doSelectedEcRequirebitLenths()
@@ -1535,7 +1535,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return ret;
     }
 
-    /** Set to true if we should apply the rules for LDAP DN Order (separate flag) 
+    /** Set to true if we should apply the rules for LDAP DN Order (separate flag)
      * to the custom DN order
      * @param useldap true or false
      */
@@ -1543,9 +1543,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(USECUSTOMDNORDERLDAP, useldap);
     }
 
-    /** 
-     * @return true if we should apply the rules for LDAP DN Order (separate flag), default to false for new usage, where no custom order exists, 
-     * and to true for old usage to be backward compatible 
+    /**
+     * @return true if we should apply the rules for LDAP DN Order (separate flag), default to false for new usage, where no custom order exists,
+     * and to true for old usage to be backward compatible
      */
     public boolean getUseCustomDnOrderWithLdap() {
         boolean ret = true; // Default value is true here
@@ -1650,7 +1650,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /**
      * Sets a subset of subject DN fields to use in the certificate.
-     * 
+     *
      * @param subjectDNSubset a list of {@link DNFieldExtractor} constants.
      */
     public void setSubjectDNSubSet(final List<Integer> subjectDNSubset) {
@@ -1946,7 +1946,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(OCSPSERVICELOCATORURI, ocspservicelocatoruri);
         }
     }
-    
+
     public String getDescription() {
         return (String) data.get(DESCRIPTION);
     }
@@ -2125,7 +2125,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.remove(QCETSIPDSLANG);
     }
 
-    /** 
+    /**
      * @return true if the PSD2 QC statement should be included, or false (default) if it should not
      */
     public boolean getUseQCPSD2() {
@@ -2172,7 +2172,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
-    /** 
+    /**
      * @return true if the CA/B Forum Organization Identifier extension should be included, or false (default) if it should not
      */
     public boolean getUseCabfOrganizationIdentifier() {
@@ -2242,7 +2242,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setCVCTerminalType(int termtype) {
         data.put(CVCTERMINALTYPE, termtype);
     }
-    
+
     public boolean isCvcTerminalTypeIs() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_IS; }
     public boolean isCvcTerminalTypeAt() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_AT; }
     public boolean isCvcTerminalTypeSt() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_ST; }
@@ -2360,7 +2360,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return ret;
     }
-    
+
     /** Returns the names of all allowed built-in extensions in the profile. The keys are used in the ExtendedInformation class. */
     public Set<String> getUsedStandardCertificateExtensionKeys() {
         final Set<String> ret = new HashSet<>();
@@ -2372,7 +2372,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return ret;
     }
-    
+
     /** Returns the names of all supported (i.e. not only used) built-in certificate extensions. The keys are used in the ExtendedInformation class. */
     public static Set<String> getAllStandardCertificateExtensionKeys() {
         final Set<String> ret = new HashSet<>();
@@ -2602,7 +2602,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseCertificateTransparencyInPublishers(boolean use) {
         data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, use);
     }
-    
+
     public boolean isCtEnabled() {
         return isUseCertificateTransparencyInCerts() ||
             isUseCertificateTransparencyInOCSP() ||
@@ -2616,7 +2616,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Boolean)data.get(CT_NUMBER_OF_SCTS_BY_VALIDITY);
     }
-    
+
     public void setNumberOfSctByValidity(boolean use) {
         data.put(CT_NUMBER_OF_SCTS_BY_VALIDITY, use);
     }
@@ -2628,45 +2628,45 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Boolean)data.get(CT_NUMBER_OF_SCTS_BY_CUSTOM);
     }
-    
+
     public void setNumberOfSctByCustom(boolean use) {
         data.put(CT_NUMBER_OF_SCTS_BY_CUSTOM, use);
     }
-    
+
     public String getNumberOfSctBy() {
         if (isNumberOfSctByValidity()) {
             return CT_NUMBER_OF_SCTS_BY_VALIDITY;
         }
         return CT_NUMBER_OF_SCTS_BY_CUSTOM;
     }
-    
+
     public void setNumberOfSctBy(String choice) {
         if (CT_NUMBER_OF_SCTS_BY_VALIDITY.equals(choice)) {
             setNumberOfSctByValidity(true);
             setNumberOfSctByCustom(false);
         } else {
             setNumberOfSctByValidity(false);
-            setNumberOfSctByCustom(true);            
+            setNumberOfSctByCustom(true);
         }
     }
-    
+
     public String getMaxNumberOfSctBy() {
         if (isMaxNumberOfSctByValidity()) {
             return CT_NUMBER_OF_SCTS_BY_VALIDITY;
         }
         return CT_NUMBER_OF_SCTS_BY_CUSTOM;
     }
-    
+
     public void setMaxNumberOfSctBy(String choice) {
         if (CT_NUMBER_OF_SCTS_BY_VALIDITY.equals(choice)) {
             setMaxNumberOfSctByValidity(true);
             setMaxNumberOfSctByCustom(false);
         } else {
             setMaxNumberOfSctByValidity(false);
-            setMaxNumberOfSctByCustom(true);            
+            setMaxNumberOfSctByCustom(true);
         }
     }
-    
+
     public boolean isMaxNumberOfSctByValidity() {
         if (data.get(CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY) == null) {
             // Default value
@@ -2674,11 +2674,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Boolean)data.get(CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY);
     }
-    
+
     public void setMaxNumberOfSctByValidity(boolean use) {
         data.put(CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY, use);
     }
-    
+
     public boolean isMaxNumberOfSctByCustom() {
         if (data.get(CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM) == null) {
             // Default value
@@ -2686,11 +2686,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Boolean)data.get(CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM);
     }
-    
+
     public void setMaxNumberOfSctByCustom(boolean use) {
         data.put(CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM, use);
     }
-    
+
     /**
      * Whether existing certificates should be submitted by the CT publisher and the CT OCSP extension class.
      */
@@ -2732,7 +2732,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setEnabledCtLabels(final Set<String> ctLabels) {
         data.put(CTLABELS, new LinkedHashSet<>(ctLabels));
     }
-    
+
     /**
      * <p>Number of CT logs to require an SCT from, or it will be considered an error. If zero, CT is completely optional and
      * ignored if no log servers can be contacted.</p>
@@ -2851,45 +2851,45 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Integer) data.get(CT_SCTS_MIN);
     }
-    
+
     public void setCtMinScts(int value) {
         data.put(CT_SCTS_MIN, value);
     }
-    
+
     public int getCtMaxScts() {
         if (data.get(CT_SCTS_MAX) == null) {
             return getCtMinTotalScts();
         }
         return (Integer) data.get(CT_SCTS_MAX);
     }
-    
+
     public void setCtMaxScts(int value) {
         data.put(CT_SCTS_MAX, value);
     }
-    
+
     public int getCtMinSctsOcsp() {
         if (data.get(CT_SCTS_MIN_OCSP) == null) {
             return getCtMinTotalScts();
         }
         return (Integer) data.get(CT_SCTS_MIN_OCSP);
     }
-    
+
     public void setCtMinSctsOcsp(int value) {
         data.put(CT_SCTS_MIN_OCSP, value);
     }
-    
+
     public int getCtMaxSctsOcsp() {
         if (data.get(CT_SCTS_MAX_OCSP) == null) {
             return getCtMinTotalScts();
         }
         return (Integer) data.get(CT_SCTS_MAX_OCSP);
     }
-    
+
     public void setCtMaxSctsOcsp(int value) {
         data.put(CT_SCTS_MAX_OCSP, value);
     }
-    
-    
+
+
     /** Number of times to retry connecting to a Certificate Transparency log */
     public int getCTMaxRetries() {
         if (data.get(CTMAXRETRIES) == null) {
@@ -2901,20 +2901,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setCTMaxRetries(int numRetries) {
         data.put(CTMAXRETRIES, numRetries);
     }
-    
+
     public SshCertificateType getSshCertificateType() {
-        if(data.get(SSH_CERTIFICATE_TYPE) == null) {
-            data.put(SSH_CERTIFICATE_TYPE, SshCertificateType.USER);
-        }
+        data.putIfAbsent(SSH_CERTIFICATE_TYPE, SshCertificateType.USER);
         return (SshCertificateType) data.get(SSH_CERTIFICATE_TYPE);
     }
-    
+
     public void setSshCertificateType(final SshCertificateType certificateType) {
         data.put(SSH_CERTIFICATE_TYPE, certificateType);
     }
-    
+
     @SuppressWarnings("unchecked")
-    public Map<String, byte[]> getSshExtensionsMap() {    
+    public Map<String, byte[]> getSshExtensionsMap() {
         if(!data.containsKey(SSH_EXTENSIONS)) {
             Map<String, byte[]> extensions = new HashMap<>();
             for(SshExtension sshExtension : SshExtension.values()) {
@@ -2924,15 +2922,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Map<String, byte[]>) data.get(SSH_EXTENSIONS);
     }
-    
+
     public List<String> getSshExtensions() {
         return new ArrayList<>(getSshExtensionsMap().keySet());
     }
-    
+
     public void setSshExtensions(Map<String, byte[]> extensions) {
         data.put(SSH_EXTENSIONS, extensions);
     }
-    
+
     public void setSshExtensions(List<String> extensionsList) {
         Map<String, String> extensions = new HashMap<>();
         for(String extension : extensionsList) {
@@ -2940,32 +2938,32 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         data.put(SSH_EXTENSIONS, extensions);
     }
-    
+
     public boolean getAllowExternalSshExtensions() {
         if(!data.containsKey(SSH_ALLOW_EXTERNAL_EXTENSIONS)) {
             data.put(SSH_ALLOW_EXTERNAL_EXTENSIONS, false);
         }
         return (boolean) data.get(SSH_ALLOW_EXTERNAL_EXTENSIONS);
     }
-    
+
     public void setAllowExternalSshExtensions(boolean allow) {
         data.put(SSH_ALLOW_EXTERNAL_EXTENSIONS, allow);
     }
-    
+
     public boolean getRequireExternalSshExtensionsDefined() {
         if(!data.containsKey(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED)) {
             data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, false);
         }
         return (boolean) data.get(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED);
     }
-    
+
     public void setRequireExternalSshExtensionsDefined(boolean allow) {
         data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, allow);
     }
-    
+
     /**
-     * Usage only intended for post upgrade! 
-     * Removes CT data prior to EJBCA 6.10.1 from certificate profile. 
+     * Usage only intended for post upgrade!
+     * Removes CT data prior to EJBCA 6.10.1 from certificate profile.
      * */
     public void removeLegacyCtData() {
         if (data.get(CT_MAX_SCTS) != null) {
@@ -3059,7 +3057,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         List<Integer> availableCAs = getAvailableCAs();
         return availableCAs.contains(-1) || availableCAs.contains(caId);
     }
-    
+
     @Override
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);

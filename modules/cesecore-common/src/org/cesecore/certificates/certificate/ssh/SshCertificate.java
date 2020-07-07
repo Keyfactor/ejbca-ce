@@ -20,9 +20,8 @@ import java.util.List;
 
 /**
  * Base interface for SSH certificates
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
 
 public interface SshCertificate {
@@ -33,20 +32,20 @@ public interface SshCertificate {
 
     /**
      * Encodes the certificte body of this certificate, minus the signature
-     * 
+     *
      * @return a byte array containing the certificate body
      * @throws CertificateEncodingException if the certificate couldn't be encoded
      */
     byte[] encodeCertificateBody() throws CertificateEncodingException;
 
     /**
-     * Verifies the signature on this certificate. The other two verification methods will lead here as well, ignoring their respective 
+     * Verifies the signature on this certificate. The other two verification methods will lead here as well, ignoring their respective
      * parameters, as the signing key is incorporated into this certificate type.
-     * 
+     *
      * @return true if the the signature in this certificate verified according to the included signing key
      * @throws InvalidKeyException if the signature key in this certificate was invalid
      * @throws CertificateEncodingException if the data body of this certificate couldn't be encoded
-     * @throws SignatureException
+     * @throws SignatureException signature exception.
      */
     boolean verify() throws SignatureException, InvalidKeyException, CertificateEncodingException;
 
@@ -71,25 +70,25 @@ public interface SshCertificate {
     long getSerialNumber();
 
     String getSerialNumberAsString();
-    
+
     /**
      * Non standard field for identifying the issuing CA
-     * 
+     *
      * @return the issuer identifier
      */
     String getIssuerIdentifier();
-    
+
     /**
-     * 
+     *
      * @return the implementation type of this certificate
      */
     List<String> getCertificateImplementations();
 
     void setComment(String comment);
-    
+
     /**
      * Decodes this certificate from a byte array
-     * 
+     *
      * @param encodedCertificate an SSH encoded certificate
      * @throws CertificateEncodingException if the certificate was incorrectly encoded
      * @throws SshKeyException if the public key could not be read

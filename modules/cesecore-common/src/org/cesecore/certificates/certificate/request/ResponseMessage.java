@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
 import java.io.Serializable;
@@ -25,15 +25,15 @@ import java.util.Collection;
 
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
- * implement Serializable if they are to be sent to any EJB business methods. 
+ * implement Serializable if they are to be sent to any EJB business methods.
  * Example: <code>
- * ResponseMessage resp = new ResponseMessage(); 
- * resp.setCertificate(cert); resp.setStatus(OK); 
- * if (resp.requireSignKeyInfo()) { 
- *     resp.setSignKeyInfo(signcert,signkey) 
- * }; 
- * resp.create(); 
- * byte[] responseMessage = resp.getResponseMessage(); 
+ * ResponseMessage resp = new ResponseMessage();
+ * resp.setCertificate(cert); resp.setStatus(OK);
+ * if (resp.requireSignKeyInfo()) {
+ *     resp.setSignKeyInfo(signcert,signkey)
+ * };
+ * resp.create();
+ * byte[] responseMessage = resp.getResponseMessage();
  * </code>
  *
  * @version $Id$
@@ -46,19 +46,19 @@ public interface ResponseMessage extends Serializable {
      * @param crl crl in the response message.
      */
     void setCrl(CRL crl);
-    
-    /** 
+
+    /**
      * Determines if the CA certificate should be included in the response message, if
      * applicable for the response message type.
-     * 
-     * @param includeCACert true or false
+     *
+     * @param incCACert true or false
      */
     void setIncludeCACert(boolean incCACert);
 
-    /** 
+    /**
      * Explicitly sets the CA certificate if it is not the same as the signer certificate. Used if
      * IncludeCACert is set to true and the CA certificate is not the same as the signer certificate.
-     * 
+     *
      * @param caCert a Certificate
      */
     void setCACert(Certificate caCert);
@@ -67,8 +67,6 @@ public interface ResponseMessage extends Serializable {
      * Gets the response message in the default encoding format.
      *
      * @return the response message in the default encoding format.
-     * 
-     * @throws CertificateEncodingException if encoding of certificate fails. 
      */
     byte[] getResponseMessage();
 
@@ -145,7 +143,7 @@ public interface ResponseMessage extends Serializable {
      * Sets the public and private key needed to sign the message. Must be set if
      * requireSignKeyInfo() returns true.
      *
-     * @param cert certificate containing the public key.
+     * @param certs certificates containing the public key.
      * @param key private key.
      * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
@@ -180,33 +178,33 @@ public interface ResponseMessage extends Serializable {
      * @param recipientKeyInfo key info
      */
     void setRecipientKeyInfo(byte[] recipientKeyInfo);
-    
+
     /**
-     * Sets preferred digest algorithm for the response message, if applicable. 
+     * Sets preferred digest algorithm for the response message, if applicable.
      * If this is not called, a default is used.
-     * 
-     * @param String oid of digest algorithm ex CMSSignedDataGenerator.SHA1, SHA256 etc
+     *
+     * @param digest String oid of digest algorithm ex CMSSignedDataGenerator.SHA1, SHA256 etc
      */
     void setPreferredDigestAlg(String digest);
-    
-    /** Sometimes (CMP) the response identifier sent depends on which request identifier was used, 
+
+    /** Sometimes (CMP) the response identifier sent depends on which request identifier was used,
      * even if the messages themselves are the same mesages.
-     * 
+     *
      * @param reqtype which type of request message this response is in response to
-     */ 
+     */
     void setRequestType(int reqtype);
-    
+
     /**
      * For some types of request-responses there is a need for a requetsId to match the request and the
      * response together.
      * @param reqId the id from the request matching to this response
      */
-    void setRequestId(int reqid);
-    
+    void setRequestId(int reqId);
+
     /**
      * For some types of requests, the protection used depends on parameters from the request,
      * for example password based protection where algorithms, keyId etc is the same in the response as in the request
-     * @param RequestMessage the request from where to pick protection parameters
+     * @param reqMsg the request from where to pick protection parameters
      */
     void setProtectionParamsFromRequest(RequestMessage reqMsg);
 }

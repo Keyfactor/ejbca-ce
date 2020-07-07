@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,18 +144,14 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                 // Check authorization before cloning
                 final EndEntityProfile profile = pdl.getProfile();
                 authorizedToEditProfile(admin, profile);
-            	try {
-            		final int profileid = findFreeEndEntityProfileId();
-            		entityManager.persist(new EndEntityProfileData(profileid, newname, (EndEntityProfile)profile.clone()));
-            		flushProfileCache();
-            		final String msg = INTRES.getLocalizedMessage("ra.clonedprofile", newname, orgname);
-                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                    details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-            		success = true;
-            	} catch (CloneNotSupportedException e) {
-            		LOG.error("Cloe not supported?: ", e);
-            	}
+                final int profileid = findFreeEndEntityProfileId();
+                entityManager.persist(new EndEntityProfileData(profileid, newname, (EndEntityProfile)profile.clone()));
+                flushProfileCache();
+                final String msg = INTRES.getLocalizedMessage("ra.clonedprofile", newname, orgname);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                success = true;
             }
             if (!success) {
             	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
@@ -191,16 +186,14 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean existsCAInEndEntityProfiles(final int caid) {
-        String[] availablecas = null;
+        String[] availableCas ;
         boolean exists = false;
         final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        final Iterator<EndEntityProfileData> i = result.iterator();
-        while (i.hasNext() && !exists) {
-        	final EndEntityProfileData ep = i.next();
-            availablecas = ep.getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-            for (int j = 0; j < availablecas.length; j++) {
-                if (StringUtils.isNotEmpty(availablecas[j])) {
-                    if (Integer.parseInt(availablecas[j]) == caid) {
+        for (EndEntityProfileData ep : result) {
+            availableCas = ep.getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+            for (String availableCa : availableCas) {
+                if (StringUtils.isNotEmpty(availableCa)) {
+                    if (Integer.parseInt(availableCa) == caid) {
                         exists = true;
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("CA exists in entity profile " + ep.getProfileName());
@@ -208,8 +201,11 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                         break;
                     }
                 } else if (LOG.isDebugEnabled()) {
-                    LOG.debug("One of the availableCAs is empty string, fishy, but we ignore it. EE profile: "+ep.getProfileName());
+                    LOG.debug("One of the availableCAs is empty string, fishy, but we ignore it. EE profile: " + ep.getProfileName());
                 }
+            }
+            if(exists) {
+                break;
             }
         }
         return exists;
@@ -245,13 +241,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
 
         EndEntityProfile returnval = getEndEntityProfileNoClone(profilename);
-        try {
-            if (returnval != null) {
-                returnval = (EndEntityProfile)returnval.clone();
-            }
-        } catch (CloneNotSupportedException e) {
-            LOG.error("Should never happen: ", e);
-            throw new RuntimeException(e);
+        if (returnval != null) {
+            returnval = (EndEntityProfile)returnval.clone();
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
@@ -279,7 +270,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return returnval;
     }
-    
+
     private boolean isAuthorizedToProfile(final AuthenticationToken admin, final int profileId, final EndEntityProfile profile,
             final boolean hasRootRuleAccess, final Set<Integer> authorizedCaIds, final Set<Integer> allCaIds, final String endentityAccessRule) {
         // Check if all profiles available CAs exists in authorizedcaids.
@@ -356,7 +347,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return returnval;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isAuthorizedToView(final AuthenticationToken admin, final int id) {
@@ -375,13 +366,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             LOG.trace(">getEndEntityProfile(" + id + ")");
         }
         EndEntityProfile returnval = getEndEntityProfileNoClone(id);
-        try {
-            if (returnval != null) {
-                returnval = (EndEntityProfile)returnval.clone();
-            }
-        } catch (CloneNotSupportedException e) {
-            LOG.error("Should never happen: ", e);
-            throw new RuntimeException(e);
+        if (returnval != null) {
+            returnval = (EndEntityProfile)returnval.clone();
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
@@ -407,7 +393,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return result;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<String, Integer> getAvailableCasInProfile(final AuthenticationToken admin, final int entityProfileId)
@@ -495,11 +481,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Override
     public void initializeAndUpgradeProfiles() {
     	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-    	final Iterator<EndEntityProfileData> iter = result.iterator();
-        while (iter.hasNext()) {
-        	final EndEntityProfileData pdata = iter.next();
+        for (EndEntityProfileData pdata : result) {
             if (LOG.isDebugEnabled()) {
-            	final String name = pdata.getProfileName();
+                final String name = pdata.getProfileName();
                 LOG.debug("Loaded end entity profile: " + name);
             }
             pdata.upgradeProfile();
@@ -666,7 +650,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return foundfree;
     }
-    
+
     /**
      * Help function that checks if administrator is authorized to view profile.
      * @param profile is the end entity profile or null for EndEntityConstants.EMPTY_END_ENTITY_PROFILE

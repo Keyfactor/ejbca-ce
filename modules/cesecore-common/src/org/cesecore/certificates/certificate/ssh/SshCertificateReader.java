@@ -19,11 +19,13 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
 /**
- * @version $Id$
+ * SSH Certificate Reader.
  *
+ * @version $Id$
  */
 public class SshCertificateReader extends ByteArrayInputStream {
 
+    private static final String DEFAULT_CHARSET_ENCODING = "UTF8";
     private static String CHARSET_ENCODING = "UTF8";
 
     public static boolean encode;
@@ -34,9 +36,9 @@ public class SshCertificateReader extends ByteArrayInputStream {
 
     /**
      * Construct a reader.
-     * @param buffer
-     * @param start
-     * @param len
+     * @param buffer buffer
+     * @param start start position
+     * @param len length
      */
     public SshCertificateReader(byte[] buffer, int start, int len) {
         super(buffer, start, len);
@@ -55,29 +57,27 @@ public class SshCertificateReader extends ByteArrayInputStream {
     }
 
     /**
-     * Allows the default encoding to be overriden for String variables processed
+     * Allows the default encoding to be overridden for String variables processed
      * by the class. This currently defaults to UTF-8.
      *
-     * @param charset
-     * @throws UnsupportedEncodingException
+     * @param charset characters encoding.
      */
     public static void setCharsetEncoding(String charset) {
         try {
-
-            String test = "123456890";
-            test.getBytes(charset);
+            // Test charset
+            "123456890".getBytes(charset);
             CHARSET_ENCODING = charset;
             encode = true;
         } catch (UnsupportedEncodingException ex) {
             // Reset the encoding to default
-            CHARSET_ENCODING = "";
+            CHARSET_ENCODING = DEFAULT_CHARSET_ENCODING;
             encode = false;
         }
     }
 
     /**
-     * Get the current encoding being used for Strings variables.
-     * @return
+     * Return the current encoding being used for Strings variables.
+     * @return the current encoding being used for Strings variables.
      */
     public static String getCharsetEncoding() {
         return CHARSET_ENCODING;
@@ -85,10 +85,10 @@ public class SshCertificateReader extends ByteArrayInputStream {
 
     /**
      * Read until the buffer supplied is full.
-     * @param b
-     * @param off
-     * @param len
-     * @throws IOException
+     * @param b buffer
+     * @param off offset
+     * @param len length
+     * @throws IOException IO exception.
      */
     public void readFully(byte b[], int off, int len) throws IOException {
         if (len < 0) {
@@ -107,10 +107,8 @@ public class SshCertificateReader extends ByteArrayInputStream {
 
     /**
      * Write a boolean value to the array.
-     * @param b
-     * @throws IOException
      */
-    public boolean readBoolean() throws IOException {
+    public boolean readBoolean() {
         return read() == 1;
     }
 
@@ -121,7 +119,7 @@ public class SshCertificateReader extends ByteArrayInputStream {
     /**
      * Read a BigInteger from the array.
      * @return the BigInteger value.
-     * @throws IOException
+     * @throws IOException IO exception.
      */
     public BigInteger readBigInteger() throws IOException {
         int len = (int) readInt();
@@ -134,21 +132,19 @@ public class SshCertificateReader extends ByteArrayInputStream {
      * Read an integer (4 bytes) from the array. This is returned as a long
      * as we deal with unsigned ints so the value may be higher than the
      * standard java int.
-     * @param data
-     * @param start
+     * @param data data
+     * @param start start position
      * @return the value represent by a long.
      */
     public static long readInt(byte[] data, int start) {
-        long ret = (((long) (data[start] & 0xFF) << 24) & 0xFFFFFFFFL) | ((data[start + 1] & 0xFF) << 16) | ((data[start + 2] & 0xFF) << 8)
+        return (((long) (data[start] & 0xFF) << 24) & 0xFFFFFFFFL) | ((data[start + 1] & 0xFF) << 16) | ((data[start + 2] & 0xFF) << 8)
                 | ((data[start + 3] & 0xFF) << 0);
-
-        return ret;
     }
 
     /**
      * Read an array of bytes from the array.
      * @return the byte array.
-     * @throws IOException
+     * @throws IOException IO exception.
      */
     public byte[] readByteArray() throws IOException {
         int len = (int) readInt();
@@ -162,7 +158,7 @@ public class SshCertificateReader extends ByteArrayInputStream {
      * as we deal with unsigned ints so the value may be higher than the
      * standard java int.
      * @return the integer value as a long.
-     * @throws IOException
+     * @throws IOException IO exception.
      */
     public long readInt() throws IOException {
         int ch1 = read();
@@ -172,13 +168,12 @@ public class SshCertificateReader extends ByteArrayInputStream {
         if ((ch1 | ch2 | ch3 | ch4) < 0)
             throw new EOFException();
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0)) & 0xFFFFFFFFL;
-
     }
 
     /**
      * Read a String from the array.
      * @return the String value.
-     * @throws IOException
+     * @throws IOException IO exception.
      */
     public String readString() throws IOException {
         return readString(CHARSET_ENCODING);
@@ -186,9 +181,9 @@ public class SshCertificateReader extends ByteArrayInputStream {
 
     /**
      * Read a String from the array converting using the given character set.
-     * @param charset
-     * @return
-     * @throws IOException
+     * @param charset characters encoding.
+     * @return a String from the array converting using the given character set.
+     * @throws IOException IO exception.
      */
     public String readString(String charset) throws IOException {
         long len = readInt();
@@ -219,7 +214,6 @@ public class SshCertificateReader extends ByteArrayInputStream {
             throw new EOFException();
         }
         return ((ch1 << 56) + (ch2 << 48) + (ch3 << 40) + (ch4 << 32) + (ch5 << 24) + (ch6 << 16) + (ch7 << 8) + (ch8 << 0)) & 0xFFFFFFFFFFFFFFFFL;
-
     }
 
     public void silentClose() {
@@ -230,6 +224,7 @@ public class SshCertificateReader extends ByteArrayInputStream {
         try {
             super.close();
         } catch (IOException e) {
+            // Silent
         }
     }
 }

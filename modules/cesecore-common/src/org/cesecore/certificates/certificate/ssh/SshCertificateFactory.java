@@ -18,25 +18,25 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
- * @version $Id$
+ * SSH Certificate Factory.
  *
+ * @version $Id$
  */
 public enum SshCertificateFactory {
     INSTANCE;
-    
-    private Map<String, Class<? extends SshCertificate>> sshCertificateImplementations = new HashMap<>();
 
-    private SshCertificateFactory() {
+    private final Map<String, Class<? extends SshCertificate>> sshCertificateImplementations = new HashMap<>();
+
+    SshCertificateFactory() {
         for (SshCertificate sshCertificate : ServiceLoader.load(SshCertificate.class)) {
             for(String implementation : sshCertificate.getCertificateImplementations()) {
                 sshCertificateImplementations.put(implementation, sshCertificate.getClass());
             }
-            
         }
     }
 
     public SshCertificate getSshCertificate(byte[] encodedCertificate) throws CertificateEncodingException, SshKeyException {
-        String certificateAsString = new String(encodedCertificate);  
+        String certificateAsString = new String(encodedCertificate);
         String[] splitCertificate = certificateAsString.split(" ");
         String comment = certificateAsString.substring(certificateAsString.indexOf(' ' , 1), certificateAsString.length());
         try {

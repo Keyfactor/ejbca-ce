@@ -9,13 +9,9 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
@@ -30,7 +26,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.util.CertTools;
 
 /**
- * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can 
+ * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can
  * care any type of "Certificate", for example a CV certificate.
  *
  * @version $Id$
@@ -47,7 +43,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      */
     static final long serialVersionUID = -2157072605987735913L;
 
-    private static Logger log = Logger.getLogger(X509ResponseMessage.class);
+    private static final Logger log = Logger.getLogger(X509ResponseMessage.class);
 
     /** Certificate to be in response message, */
     private byte[] certbytes = null;
@@ -60,16 +56,16 @@ public class X509ResponseMessage implements CertificateResponseMessage {
 
     /** Possible clear text error information in the response. Defaults to null. */
     private String failText = null;
-    
+
     private transient Certificate certificate;
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
-    
+
     @Override
     public CertificateData getCertificateData() {
         return certificateData;
     }
-    
+
     @Override
     public void setCertificateData(CertificateData certificateData) {
         if (certificateData != null) {
@@ -78,12 +74,12 @@ public class X509ResponseMessage implements CertificateResponseMessage {
             this.certificateData = null;
         }
     }
-    
+
     @Override
     public Base64CertData getBase64CertData() {
         return base64CertData;
     }
-    
+
     @Override
     public void setBase64CertData(final Base64CertData base64CertData) {
         if (base64CertData != null) {
@@ -196,14 +192,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @return True if signature/encryption was successful, false if it failed, request should not
      *         be sent back if failed.
-     *
-     * @throws IOException If input/output or encoding failed.
-     * @throws InvalidKeyException If the key used for signing/encryption is invalid.
-     * @throws NoSuchProviderException if there is an error with the Provider.
-     * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
-     *         algorithm.
-     *
-     * @see #setSignKeyInfo()
+     * @see #setSignKeyInfo(Collection, PrivateKey, String)
      */
     @Override
     public boolean create() {
@@ -214,12 +203,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating a STATUS_FAILED message (or throwing an exception): " + failInfo);
                 }
-                if (failInfo.equals(FailInfo.WRONG_AUTHORITY)) {
-                    return false;
-                }
-                if (failInfo.equals(FailInfo.INCORRECT_DATA)) {
-                    return false;
-                }
+                return !failInfo.equals(FailInfo.WRONG_AUTHORITY) && !failInfo.equals(FailInfo.INCORRECT_DATA);
             } else {
                 log.debug("Creating a STATUS_PENDING message.");
             }
@@ -257,7 +241,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     @Override
     public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
     }
-    
+
     @Override
     public void setPreferredDigestAlg(String digest) {
     }
@@ -273,7 +257,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     @Override
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
     }
-    
+
     @Override
     public void addAdditionalCaCertificates(final List<Certificate> certificates) {
         // NOOP. Only for CMP.
