@@ -145,17 +145,10 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         while (optionsReader.available() > 0) {
             String optionName = optionsReader.readString();
             //Value will be coded as a set of Strings
-            byte[] optionValue = optionsReader.readByteArray();
-            SshCertificateReader optionReader = new SshCertificateReader(optionValue);
-            String optionList = "";
-            while (optionReader.available() > 0) {
-                optionList += optionReader.readString();
-                if (optionReader.available() > 0) {
-                    optionList += ",";
-                }
-            }
+            SshCertificateReader optionReader = new SshCertificateReader(optionsReader.readByteArray());
+            String optionValue = optionReader.readString();        
             optionReader.close();
-            options.put(optionName, optionList);
+            options.put(optionName, optionValue);
         }
         optionsReader.close();
         this.criticalOptions = options;
@@ -211,11 +204,8 @@ public abstract class SshCertificateBase extends Certificate implements SshCerti
         SshCertificateWriter criticalOptionsWriter = new SshCertificateWriter();
         for (String option : criticalOptions.keySet()) {
             criticalOptionsWriter.writeString(option);
-            //Each option can also be a comma separated list, so that goes into its own structure.
             SshCertificateWriter optionWriter = new SshCertificateWriter();
-            for (String optionValue : criticalOptions.get(option).split(",")) {
-                optionWriter.writeString(optionValue);
-            }
+            optionWriter.writeString(criticalOptions.get(option));
             criticalOptionsWriter.writeByteArray(optionWriter.toByteArray());
             optionWriter.flush();
             optionWriter.close();

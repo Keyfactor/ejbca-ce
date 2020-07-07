@@ -240,7 +240,7 @@ public class SshCertificateTest {
         SshEcKeyPair sshEcKeyPair = new SshEcKeyPair(SshEcPublicKey.NISTP384);
         KeyPair signatureKeys = KeyTools.genKeys("secp384r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         Map<String, String> options = new HashMap<>();
-        options.put("source-address", "127.0.0.1");
+        options.put("source-address", "127.0.0.1,192.168.0.1");
         TreeMap<String, byte[]> extensions = new TreeMap<>();
         extensions.put("permit-X11-forwarding", new byte[0]);
         extensions.put("permit-agent-forwarding", new byte[0]);
@@ -266,6 +266,7 @@ public class SshCertificateTest {
         SshEcCertificate importedEcCertificate = new SshEcCertificate();   
         importedEcCertificate.init(exportedCert);
         assertTrue("SSH Certificate did not verify correctly", importedEcCertificate.verify());
+        System.out.println(new String(exportedCert));
 
     }
     
