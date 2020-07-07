@@ -30,7 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Tests variables for user notifications
- * @version $Id:
+ * @version $Id$
  */
 public class UserNotificationParamGenSystemTest {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);    
