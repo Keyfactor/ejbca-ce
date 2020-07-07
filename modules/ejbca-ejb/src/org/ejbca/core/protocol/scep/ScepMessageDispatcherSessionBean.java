@@ -297,7 +297,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @throws CADoesntExistsException if CA mode if being used for the alias, no message is provided and the default SCEP CA is undefined.
      */
     private String getCAName(final String caName, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
-        if (!StringUtils.isEmpty(caName)) {
+        if (!StringUtils.isEmpty(caName) || !scepConfiguration.getUseIntune(alias)) {
             // Use the CA defined by the message if present
             return caName;
         }
