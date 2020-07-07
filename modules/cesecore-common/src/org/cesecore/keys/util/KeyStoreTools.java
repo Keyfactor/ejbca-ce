@@ -117,9 +117,9 @@ public class KeyStoreTools {
         getKeyStore().deleteEntry(alias);
     }
     /** Deletes an entry in the keystore
-     * 
+     *
      * @param alias is a reference to the entry in the KeyStore that should be deleted, if alias is null, all entries are deleted.
-     * @throws KeyStoreException 
+     * @throws KeyStoreException  key store exception.
      */
     public void deleteEntry(final String alias) throws KeyStoreException {
         if ( alias!=null ) {
@@ -137,7 +137,7 @@ public class KeyStoreTools {
      * This has just been tested on pkcs#11 keystores. On other keystore it might
      * be that you will get two aliases for the same key (copy). But on p11
      * we know that the oldAlias is not existing after the method is called.
-     *  
+     *
      * @param oldAlias is the current name
      * @param newAlias is the new name
      */
@@ -150,7 +150,7 @@ public class KeyStoreTools {
         }
     }
 
-    private class CertificateSignOperation implements ISignOperation {
+    private static class CertificateSignOperation implements ISignOperation {
 
         private final PrivateKey privateKey;
         private final X509v3CertificateBuilder certificateBuilder;
@@ -178,12 +178,13 @@ public class KeyStoreTools {
             return this.result;
         }
     }
-    private X509Certificate getSelfCertificate(String myname, long validity, List<String> sigAlgs, KeyPair keyPair) throws InvalidKeyException,
+
+    private X509Certificate getSelfCertificate(String myName, long validity, List<String> sigAlgs, KeyPair keyPair) throws InvalidKeyException,
             CertificateException {
         final long currentTime = new Date().getTime();
         final Date firstDate = new Date(currentTime - 24 * 60 * 60 * 1000);
         final Date lastDate = new Date(currentTime + validity * 1000);
-        final X500Name issuer = new X500Name(myname);
+        final X500Name issuer = new X500Name(myName);
         final BigInteger serno = BigInteger.valueOf(firstDate.getTime());
         final PublicKey publicKey = keyPair.getPublic();
         if (publicKey == null) {
@@ -243,7 +244,7 @@ public class KeyStoreTools {
                     throw new InvalidAlgorithmParameterException("Can not generate EC curve, no OID and no ECParameters found: "+ecNamedCurveBc);
                 }
                 keyParams = new org.bouncycastle.jce.spec.ECParameterSpec(
-                        ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed()); 
+                        ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed());
             }
         }
         try {
@@ -285,7 +286,7 @@ public class KeyStoreTools {
                 name, keyEntryName, AlgorithmConstants.KEYALGORITHM_ECGOST3410,
                 AlgorithmTools.SIG_ALGS_ECGOST3410);
     }
-    
+
     private void generateDSTU4145(final String name, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
         generateExtraEC(
@@ -326,10 +327,10 @@ public class KeyStoreTools {
         // Generate the EdDSA Keypair
         switch (keySpec) {
         case AlgorithmConstants.KEYALGORITHM_ED25519:
-            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmTools.SIG_ALGS_ED25519);            
+            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmTools.SIG_ALGS_ED25519);
             break;
         case AlgorithmConstants.KEYALGORITHM_ED448:
-            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmTools.SIG_ALGS_ED448);            
+            generateKeyPair(null, keyAlias, AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmTools.SIG_ALGS_ED448);
             break;
         default:
             throw new InvalidAlgorithmParameterException("Only Ed25519 and Ed448 is allowed for EdDSA key generation");
@@ -340,9 +341,9 @@ public class KeyStoreTools {
     }
 
     /** Generates asymmteric keys in the Keystore token.
-     * 
+     *
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
-     * @param keyEntryName
+     * @param keyEntryName key entry name.
      */
     public void generateKeyPair(final String keySpec, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
@@ -362,15 +363,15 @@ public class KeyStoreTools {
             }
         }
     }
-    
+
     /** Generates symmetric keys in the Keystore token.
-     * 
+     *
      * @param algorithm symmetric algorithm specified in http://download.oracle.com/javase/1.5.0/docs/api/index.html, suggest AES, DESede or DES
      * @param keysize keysize of symmetric key, suggest 128 or 256 for AES, 64 for 168 for DESede and 64 for DES
      * @param keyEntryName the alias the key will get in the keystore
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
-     * @throws KeyStoreException 
+     * @throws NoSuchProviderException provider exception.
+     * @throws NoSuchAlgorithmException algorithm exception.
+     * @throws KeyStoreException  key store exception.
      */
     public void generateKey(final String algorithm, final int keysize,
                             final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException {
@@ -381,15 +382,15 @@ public class KeyStoreTools {
     }
 
     /** Generates keys in the Keystore token.
-     * @param keyParams AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec. 
-     * @param keyAlias
-     * @throws InvalidAlgorithmParameterException 
+     * @param keyParams AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec.
+     * @param keyAlias key alias.
+     * @throws InvalidAlgorithmParameterException invalid algorithm parameter exception.
      */
     public void generateKeyPair(final AlgorithmParameterSpec keyParams, final String keyAlias) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
             log.trace(">generate from AlgorithmParameterSpec: "+keyParams.getClass().getName());
         }
-        // Generate the Keypair
+        // Generate the KeyPair
         final String keyAlgorithm;
         final List<String> certSignAlgorithms;
         final String specName = keyParams.getClass().getName();
@@ -409,14 +410,14 @@ public class KeyStoreTools {
         }
         generateKeyPair(keyParams, keyAlias, keyAlgorithm, certSignAlgorithms);
     }
-    private class SizeAlgorithmParameterSpec implements AlgorithmParameterSpec {
+
+    private static class SizeAlgorithmParameterSpec implements AlgorithmParameterSpec {
         final int keySize;
         public SizeAlgorithmParameterSpec(final int _keySize) {
             this.keySize = _keySize;
         }
     }
-        
-    
+
     private void generateKeyPair(
             final AlgorithmParameterSpec keyParams, final String keyAlias,
             final String keyAlgorithm,
@@ -523,8 +524,6 @@ public class KeyStoreTools {
         public void taskWithSigning(final String signAlgorithm, final Provider provider) throws TaskWithSigningException {
             try {
                 signCSR(signAlgorithm, provider);
-            } catch (TaskWithSigningException e) {
-                throw e;
             } catch (OperatorCreationException | UnrecoverableKeyException | NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
                 throw new TaskWithSigningException(String.format("Not possible to sign CSR: %s", e.getMessage()), e);
             }
@@ -599,7 +598,7 @@ public class KeyStoreTools {
             throw new KeyUtilRuntimeException("Failed to install cert chain into keystore.", e);
         }
     }
-    
+
     /**
      * Install trusted root in trust store
      * @param fileName name of the trusted root.

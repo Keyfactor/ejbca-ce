@@ -29,7 +29,7 @@
     	</condition>
 	</target>
 
-	<target name="deleteDirectories" depends="evaluateAggregate" unless="${aggregate.test.results}" > 
+	<target name="deleteDirectories" depends="evaluateAggregate" unless="${aggregate.test.results}" >
 		<echo message="Deleting old test results."/>
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
     	<delete dir="${reports.dir}" />
@@ -58,6 +58,7 @@
     	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestunidfnr" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
@@ -121,10 +122,13 @@
         <ant antfile="build.xml" dir="modules/unidfnr" target="test" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
-    <target name="optionaltestssh-system" if="${ssh.exists}">
-        <ant antfile="build.xml" dir="modules/ssh" target="test" inheritall="true" inheritrefs="true"/>
+    <target name="optionaltestssh-unit" if="${ssh.exists}">
+        <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
-        
+    <target name="optionaltestssh-system" if="${ssh.exists}">
+        <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
+
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
@@ -322,12 +326,12 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test-dbschema" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-    
+
     <target name="test:statedump" description="run JUnit Statedump test." depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/statedump" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-    
+
     <target name="test:configdump" description="run JUnit Configdump test." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/configdump" inheritall="true" inheritrefs="true">
             <target name="test:unit" />
@@ -342,22 +346,22 @@
         </ant>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-    
+
     <target name="test:ct" description="run JUnit Certificate Transparency test." depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/ct" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-   
+
     <target name="test:pc" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-    
+
     <target name="test:vapub" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/va" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
-    
+
     <target name="test:unidfnr" description="run UNID-FNR test." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/unidfnr" target="test" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
