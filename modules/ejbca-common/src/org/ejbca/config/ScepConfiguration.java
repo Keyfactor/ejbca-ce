@@ -503,32 +503,19 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
+
+        intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
+        intuneProperties.put("AUTH_AUTHORITY", getIntuneAuthAuthority(alias));
+
         if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("SERVICE_VERSION_PROP_NAME", getIntuneServiceVersionPropName(alias));
-        }
-        intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("TENANT", getIntuneTenant(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("INTUNE_APP_ID", getIntuneAadAppId(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("INTUNE_RESOURCE_URL", getIntuneResourceUrl(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("GRAPH_API_VERSION", getIntuneGraphApiVersion(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("GRAPH_RESOURCE_URL", getIntuneGraphResourceUrl(alias));
-        }
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("PROXY_HOST", getIntuneProxyHost(alias));
         }
         if (StringUtils.isNotBlank(getIntuneProxyPort(alias))) {
@@ -540,7 +527,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         if (StringUtils.isNotBlank(getIntuneProxyPass(alias))) {
             intuneProperties.put("PROXY_PASS", getIntuneProxyPass(alias));
         }
-        intuneProperties.put("AUTH_AUTHORITY", getIntuneAuthAuthority(alias));
+
         return intuneProperties;
     }
     
