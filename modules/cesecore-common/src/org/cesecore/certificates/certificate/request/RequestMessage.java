@@ -65,7 +65,6 @@ public interface RequestMessage extends Serializable {
 
     /**
      * Tries to get the Key Sequence of the target CA, if available in the request.
-     * For CVC request it is the "certificate serial number" of CARef (IssuerDN).
      * For CVC this is the "key sequence", which is part of the
      * "Holder/Authority-Reference" in the CVC certificate, but not part of the DN, but it is stored as serialNumber in the database.
      *
