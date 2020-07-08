@@ -947,6 +947,10 @@
         	<not><equals arg1="${variant}" arg2="va" casesensitive="false"/></not>
         </condition>
 		
+        <condition property="build.contains.ssh" value="true">
+        	<equals arg1="${variant}" arg2="ssh" casesensitive="false"/>
+        </condition>
+		
         <condition property="build.contains.cesecore-x509ca" value="true">
         	<istrue value="${running.full.ejbca}" />
         </condition>
@@ -968,6 +972,10 @@
 
 		<condition property="variant.suffix" value="_eIDAS">
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
+		</condition>
+		
+		<condition property="variant.suffix" value="_SSH">
+			<equals arg1="${variant}" arg2="ssh" casesensitive="false"/>
 		</condition>
 		
 		<condition property="variant.suffix" value="">
@@ -1079,6 +1087,7 @@
                 <exclude unless="edition.is.ee" name="lib/ext/swagger docs/**"/>
                 <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/ssh/**"/>
 		    	<!-- List of modules to exclude from non-eIDAS editions -->
 		    	<exclude unless="build.contains.eidas" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
 		    	<exclude unless="build.contains.eidas" name="modules/p11ng-cli/**"/>
@@ -1093,6 +1102,9 @@
 		    	
 		    	<exclude unless="build.contains.va" name="modules/va/src-war/org/ejbca/ui/web/protocol/OCSPServlet.java"/>
 		    	<exclude unless="build.contains.va" name="modules/va/resources/WEB-INF/web-status-ejbca.xml"/>
+		    	
+		    	<!-- Only include SSH module if specified -->
+		    	<exclude unless="build.contains.ssh" name="modules/ssh/**"/>
 		    	
 				<!-- List of subcommands for ejbca.sh script that must be hidden when we are running on limited ejbca (va/ra) installation. -->
 		    	<!-- The excluded parts are listed in the ticket ECA-7904 and could be updated accordingly if needed.   -->
