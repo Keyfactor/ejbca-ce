@@ -7,7 +7,6 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ssh.certificate.signature;
 
 import java.security.Signature;
