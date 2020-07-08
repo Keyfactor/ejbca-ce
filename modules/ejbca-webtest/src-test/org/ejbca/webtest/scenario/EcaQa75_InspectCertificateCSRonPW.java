@@ -128,9 +128,9 @@ public class EcaQa75_InspectCertificateCSRonPW extends WebTestBase {
                 "        ObjectIdentifier(1.2.840.113549.1.7.1)\n" +
                 "        BER Tagged [0]\n" +
                 "            BER Constructed Octet String[3830] \n" +
-                "    DER Sequence\n" +
-                "        DER Sequence\n" +
-                "            DER Sequence\n" +
+                "    Sequence\n" +
+                "        Sequence\n" +
+                "            Sequence\n" +
                 "                ObjectIdentifier(1.3.14.3.2.26)\n" +
                 "                NULL\n" +
                 "            DER Octet String[20] \n" +
