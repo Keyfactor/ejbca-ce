@@ -503,7 +503,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
-        if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
+        if (StringUtils.isNotBlank(getIntuneServiceVersionPropName(alias))) {
             intuneProperties.put("SERVICE_VERSION_PROP_NAME", getIntuneServiceVersionPropName(alias));
         }
         intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
