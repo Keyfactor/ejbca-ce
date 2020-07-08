@@ -10,7 +10,7 @@
  *                                                                       *
  *************************************************************************/
 
- @version: $Id: web.xml 33656 2019-10-19 13:38:58Z bastianf $
+ @version: $Id$
  -->
 <web-app version="3.1" id="ssh"
     metadata-complete="false"
