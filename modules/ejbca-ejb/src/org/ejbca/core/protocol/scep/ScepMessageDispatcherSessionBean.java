@@ -297,7 +297,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @throws CADoesntExistsException if CA mode if being used for the alias, no message is provided and the default SCEP CA is undefined.
      */
     private String getCAName(final String caName, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
-        if (!StringUtils.isEmpty(caName) || !scepConfiguration.getUseIntune(alias)) {
+        if(scepConfiguration.getUseIntune(alias)) {
+            //Always return the scep
+            return scepConfiguration.getRADefaultCA(alias);
+        }
+        
+        if (!StringUtils.isEmpty(caName)) {
             // Use the CA defined by the message if present
             return caName;
         }
@@ -669,6 +674,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     }
     
     private String getCaName(final ScepRequestMessage reqmsg, final ScepConfiguration scepConfiguration, final String configAlias) throws AuthorizationDeniedException {
+        if(scepConfiguration.getUseIntune(configAlias)) {
+            //Always return the scep
+            return scepConfiguration.getRADefaultCA(configAlias);
+        }
+        
         String issuerDN = certificateStoreSession.getCADnFromRequest(reqmsg);
         String caName = null;     
         if (caSession.existsCa(issuerDN.hashCode())) {
