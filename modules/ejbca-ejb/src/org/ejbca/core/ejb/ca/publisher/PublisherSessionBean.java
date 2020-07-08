@@ -840,8 +840,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public int getPublisherId(String name) {
         // Get publisher to ensure it is in the cache, or read
         final BasePublisher pub = getPublisherInternal(-1, name, true);
-        final int ret = (pub != null) ? pub.getPublisherId() : 0;
-        return ret;
+        return (pub != null) ? pub.getPublisherId() : 0;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -1010,11 +1009,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             //Attempt to create the legacy publisher if available, if not return null. 
             try {
                 return (BasePublisher) Class.forName(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME).newInstance();
-            } catch (InstantiationException e) {
-                return null;
-            } catch (IllegalAccessException e) {
-                return null;
-            } catch (ClassNotFoundException e) {
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                 return null;
             }
         case PublisherConst.TYPE_MULTIGROUPPUBLISHER:

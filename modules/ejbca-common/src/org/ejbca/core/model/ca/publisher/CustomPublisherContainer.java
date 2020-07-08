@@ -60,7 +60,7 @@ public class CustomPublisherContainer extends BasePublisher {
 		
     public CustomPublisherContainer() {
     	super();
-    	data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
+    	data.put(TYPE, PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER);
     	setClassPath("");
     	try {
             setPropertyData("");
@@ -75,7 +75,7 @@ public class CustomPublisherContainer extends BasePublisher {
      */
     public CustomPublisherContainer(BasePublisher basePublisher) {
         super(basePublisher);
-        data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
+        data.put(TYPE, PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER);
         setClassPath("");
         try {
             setPropertyData("");
@@ -132,7 +132,7 @@ public class CustomPublisherContainer extends BasePublisher {
                 } else {
                     value = properties.getProperty((String) key);
                 }
-	            encryptedProperties.append(key + "=" + value + "\n");
+	            encryptedProperties.append(key).append("=").append(value).append("\n");
 	        }
 	        data.put(PROPERTYDATA, encryptedProperties.toString());  
 	    } else {
@@ -306,11 +306,9 @@ public class CustomPublisherContainer extends BasePublisher {
 		CustomPublisherContainer clone = new CustomPublisherContainer();
         HashMap clonedata = (HashMap) clone.saveData();
 
-		Iterator i = (data.keySet()).iterator();
-		while(i.hasNext()){
-			Object key = i.next();
-			clonedata.put(key, data.get(key));
-		}
+		for (Object key: data.keySet()) {
+            clonedata.put(key, data.get(key));
+        }
 
 		clone.loadData(clonedata);
 		return clone;	
