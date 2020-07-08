@@ -43,7 +43,9 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -899,6 +901,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setValidityStartTime(final String startTime) {
         this.validityStartTime = StringUtils.trim(startTime);
     }
+    
+    public boolean isTypeSshAvailable() { return CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE); }
 
     public boolean isCertValidityStartTimeModifiable() {
         return profiledata.isValidityStartTimeModifiable();
