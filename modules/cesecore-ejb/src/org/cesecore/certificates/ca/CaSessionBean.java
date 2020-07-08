@@ -41,6 +41,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
@@ -936,7 +937,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // Using CVC (especially with multiple DVs using the same mnemoinc (CN), messes up caching big time
         if (keySequence != null && CaCache.INSTANCE.getEntry(caId) != null) {
             final CACommon ca = CaCache.INSTANCE.getEntry(caId);
-            if (ca != null && ca.getCertificateChain() != null && ca.getCertificateChain().get(0) != null) {
+            if (ca != null && CollectionUtils.isNotEmpty(ca.getCertificateChain())) {
                 final String sequence = CertTools.getSerialNumberAsString(ca.getCertificateChain().get(0));
                 if (!StringUtils.equals(keySequence, sequence)) {
                     // it was not the right CA, remove it from cache so we will find the right one instead
