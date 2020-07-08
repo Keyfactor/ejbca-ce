@@ -541,7 +541,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 final Date now = new Date();
                 final Date lastCrlCreationDate = lastBaseCrlInfo==null ? now : lastBaseCrlInfo.getCreateDate();
                 final AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
-                final boolean keepexpiredcertsoncrl = ((X509CAInfo) cainfo).getKeepExpiredCertsOnCRL();
+                final boolean keepexpiredcertsoncrl = ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CAInfo) cainfo).getKeepExpiredCertsOnCRL();
                 if (keepexpiredcertsoncrl) {
                     log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificate but will keep them on the CRL (for ever growing): " + keepexpiredcertsoncrl);
                 }
