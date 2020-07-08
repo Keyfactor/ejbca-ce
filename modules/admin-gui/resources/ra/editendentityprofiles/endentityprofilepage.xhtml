@@ -825,7 +825,8 @@
 			<h:panelGrid id="header_sshcertificatedata" columns="3"
                 styleClass="edit-top" cellspacing="3" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"
-                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
+                rendered="#{endEntityProfileMBean.typeSshAvailable}">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
                 </h:panelGroup>
