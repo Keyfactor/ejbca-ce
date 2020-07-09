@@ -79,12 +79,12 @@ public class SshRequestMessage implements RequestMessage {
         this.publicKey = publicKey;
         this.principals = (principals != null ? principals : new ArrayList<>());
         this.criticalOptions = (criticalOptions != null ? criticalOptions : new HashMap<>());
-        this.additionalExtensions = (additionalExtensions != null ? additionalExtensions : new HashMap<String, byte[]>());
+        this.additionalExtensions = (additionalExtensions != null ? additionalExtensions : new HashMap<>());
     }
     
     public byte[] getEncoded() throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
+        ObjectOutput out;
         byte[] encodedObject;
         try {
             out = new ObjectOutputStream(bos);
@@ -170,7 +170,7 @@ public class SshRequestMessage implements RequestMessage {
     }
 
     @Override
-    public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public PublicKey getRequestPublicKey() throws InvalidKeyException {
         //Key can either come in as a straight java public key or an SSH public key, we'll accept both. First try a standard public key.
         PublicKey result = KeyTools.getPublicKeyFromBytes(publicKey);
         if(result != null) {
@@ -187,7 +187,7 @@ public class SshRequestMessage implements RequestMessage {
     }
 
     @Override
-    public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public boolean verify() {
         return true;
     }
 
