@@ -34,16 +34,6 @@ public class SshCertificateReader extends ByteArrayInputStream {
         setCharsetEncoding(CHARSET_ENCODING);
     }
 
-    /**
-     * Construct a reader.
-     * @param buffer buffer
-     * @param start start position
-     * @param len length
-     */
-    public SshCertificateReader(byte[] buffer, int start, int len) {
-        super(buffer, start, len);
-    }
-
     public SshCertificateReader(byte[] buffer) {
         super(buffer, 0, buffer.length);
     }
@@ -73,14 +63,6 @@ public class SshCertificateReader extends ByteArrayInputStream {
             CHARSET_ENCODING = DEFAULT_CHARSET_ENCODING;
             encode = false;
         }
-    }
-
-    /**
-     * Return the current encoding being used for Strings variables.
-     * @return the current encoding being used for Strings variables.
-     */
-    public static String getCharsetEncoding() {
-        return CHARSET_ENCODING;
     }
 
     /**
@@ -167,7 +149,7 @@ public class SshCertificateReader extends ByteArrayInputStream {
         int ch4 = read();
         if ((ch1 | ch2 | ch3 | ch4) < 0)
             throw new EOFException();
-        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0)) & 0xFFFFFFFFL;
+        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4)) & 0xFFFFFFFFL;
     }
 
     /**
@@ -202,23 +184,20 @@ public class SshCertificateReader extends ByteArrayInputStream {
     }
 
     public long readLong() throws IOException {
-        int ch1 = read();
-        int ch2 = read();
-        int ch3 = read();
-        int ch4 = read();
-        int ch5 = read();
-        int ch6 = read();
-        int ch7 = read();
-        int ch8 = read();
+        long ch1 = read();
+        long ch2 = read();
+        long ch3 = read();
+        long ch4 = read();
+        long ch5 = read();
+        long ch6 = read();
+        long ch7 = read();
+        long ch8 = read();
         if ((ch1 | ch2 | ch3 | ch4 | ch5 | ch6 | ch7 | ch8) < 0) {
             throw new EOFException();
         }
         return ((ch1 << 56) + (ch2 << 48) + (ch3 << 40) + (ch4 << 32) + (ch5 << 24) + (ch6 << 16) + (ch7 << 8) + (ch8 << 0)) & 0xFFFFFFFFFFFFFFFFL;
     }
 
-    public void silentClose() {
-        close();
-    }
 
     public void close() {
         try {
