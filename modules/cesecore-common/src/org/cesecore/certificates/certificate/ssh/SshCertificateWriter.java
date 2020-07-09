@@ -29,10 +29,6 @@ public class SshCertificateWriter extends ByteArrayOutputStream {
     public SshCertificateWriter() {
     }
 
-    public SshCertificateWriter(int length) {
-        super(length);
-    }
-
     public byte[] array() {
         return this.buf;
     }
@@ -101,14 +97,6 @@ public class SshCertificateWriter extends ByteArrayOutputStream {
             byte[] tmp = str.getBytes(charset);
             writeInt(tmp.length);
             write(tmp);
-        }
-    }
-
-    public void silentClose() {
-        try {
-            close();
-        } catch (IOException iOException) {
-            // Silent
         }
     }
 
