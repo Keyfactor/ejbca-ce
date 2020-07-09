@@ -26,6 +26,7 @@ import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.cesecore.certificates.certificate.ssh.SshCertificateReader;
 import org.cesecore.certificates.certificate.ssh.SshCertificateType;
+import org.cesecore.certificates.certificate.ssh.SshCertificateWriter;
 import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -101,6 +103,7 @@ public class SshCertificateReaderUnitTest {
         Set<String> knownPrincipals = new HashSet<>(Arrays.asList("ejbca", "ejbca1"));
         principalReader.close();
         assertTrue("Principal was not correct", principals.containsAll(knownPrincipals));
+        System.out.println(new Date(1589793480));
         assertEquals("validAfter was not correct", 1589793480L, sshCertificateReader.readLong());
         assertEquals("validBefore was not correct", 1621243190L, sshCertificateReader.readLong());
         SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, "127.0.0.1");
@@ -367,5 +370,20 @@ public class SshCertificateReaderUnitTest {
             }
         }
         return result;
+    }
+    
+    @Test
+    public void testReadLong() throws IOException {
+        long now = System.currentTimeMillis();
+        SshCertificateWriter sshCertificateWriter = new SshCertificateWriter();
+        sshCertificateWriter.writeLong(now);
+        byte[] bytes =  sshCertificateWriter.toByteArray();
+        sshCertificateWriter.flush();
+        sshCertificateWriter.close();
+        
+        SshCertificateReader sshCertificateReader = new SshCertificateReader(bytes);
+        long readLong = sshCertificateReader.readLong();
+        sshCertificateReader.close();
+        assertEquals("Written long did not equal read long", now, readLong);
     }
 }
