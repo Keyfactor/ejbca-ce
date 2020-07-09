@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
@@ -1354,7 +1353,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] enrollAndIssueSshCertificateWs(final AuthenticationToken authenticationToken, final UserDataVOWS userDataVOWS,
             final SshRequestMessage sshRequestMessage)
-            throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException {
+            throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
         AuthorizationDeniedException authorizationDeniedException = null;
 
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
