@@ -314,7 +314,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
         build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());
         if (version >= 3) {
             build.append(getSubjectDn());
-            build.append(getSubjectDn());
+            build.append(getEmail());
         }
         return build.toString();
     }
