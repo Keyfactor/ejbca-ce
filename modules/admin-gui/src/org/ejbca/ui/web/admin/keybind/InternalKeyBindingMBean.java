@@ -534,17 +534,24 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     certificateSubjectDn = CertTools.getSubjectDN(certificate);
                     certificateIssuerDn = CertTools.getIssuerDN(certificate);
                     certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
+                    boolean caAvailable = false;
                     try {
                         // Note that we can do lookups using the .hashCode, but we will use the objects id
                         final CACommon ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode(), null);
-                        certificateInternalCaName = ca.getName();
-                        certificateInternalCaId = ca.getCAId();
-                        caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
-                        caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());
-                        // Check that the current CA certificate is the issuer of the IKB certificate
-                        certificate.verify(ca.getCACertificate().getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                        if (ca != null) {
+                            certificateInternalCaName = ca.getName();
+                            certificateInternalCaId = ca.getCAId();
+                            caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
+                            caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());
+                            // Check that the current CA certificate is the issuer of the IKB certificate
+                            certificate.verify(ca.getCACertificate().getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                            caAvailable = true;
+                        }
                     } catch (AuthorizationDeniedException | InvalidKeyException | CertificateException | NoSuchAlgorithmException |
                             NoSuchProviderException | SignatureException e) {
+                        // CA is not available
+                    }
+                    if (!caAvailable) {
                         // The CA is for the purpose of "internal" renewal not available to this administrator.
                         // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate
                         CertificateInfo info = certificateStoreSession.getCertificateInfo(certificateId);
