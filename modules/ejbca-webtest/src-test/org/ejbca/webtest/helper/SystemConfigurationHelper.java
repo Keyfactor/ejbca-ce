@@ -42,8 +42,14 @@ public class SystemConfigurationHelper extends BaseHelper {
         static By getSystemConfigTabContainingText(final String text) {
             return By.xpath("//div/span/a[contains(text(),'" + text + "' )]");
         }
-        static By getEnableButtonFromProtocolssTableRowContainingText(final String text) {
+        static By getEnableButtonFromProtocolsTableRowContainingText(final String text) {
             return By.xpath("//tr/td[contains(text(), '" + text + "')]/following-sibling::td//input[@value='Enable']");
+        }
+        static By getDisableButtonFromProtocolsTableRowContainingText(final String text) {
+            return By.xpath("//tr/td[contains(text(), '" + text + "')]/following-sibling::td//input[@value='Disable']");
+        }
+        static By getEnabledStatusFromProtocolsTableRowContainingText(final String text) {
+            return By.xpath("//tr/td[contains(text(), '" + text + "')]/following-sibling::td/div[contains(text(), 'Enabled')]");
         }
     }
     
@@ -170,10 +176,26 @@ public class SystemConfigurationHelper extends BaseHelper {
 
     /**
      * Enables selected protocol
-     * @param protocol protocol to enable.
+     * @param protocol protocol to enable
      */
     public void enableProtocol(SysConfigProtokols protocol) {
-        clickLinkIfExists(Page.getEnableButtonFromProtocolssTableRowContainingText(protocol.getLabel()));
+        clickLinkIfExists(Page.getEnableButtonFromProtocolsTableRowContainingText(protocol.getLabel()));
+    }
+    
+    /**
+     * Disables selected protocol
+     * @param protocol protocol to disable
+     */
+    public void disableProtocol(SysConfigProtokols protocol) {
+        clickLinkIfExists(Page.getDisableButtonFromProtocolsTableRowContainingText(protocol.getLabel()));
+    }
+    
+    /**
+     * Asserts the specified protocol is enabled
+     * @param protocol protocol to assert
+     */
+    public void assertProtocolEnabled(SysConfigProtokols protocol) {
+        assertElementExists(Page.getEnabledStatusFromProtocolsTableRowContainingText(protocol.getLabel()), protocol.getLabel() + " is not in enabled state");
     }
 
 }
