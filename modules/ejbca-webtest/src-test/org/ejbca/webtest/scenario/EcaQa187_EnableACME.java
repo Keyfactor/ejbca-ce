@@ -42,7 +42,7 @@ public class EcaQa187_EnableACME extends WebTestBase {
     private static AuditLogHelper auditLogHelper;
     private static SystemConfigurationHelper systemConfigurationHelper;
 
-    private static final By AUDITLOG_ACME_ENABLED_XPATH = By.xpath("//span[contains(text(),'Saved global configuration with id AVAILABLE_PROTOCOLS.; changed:ACME=true')]");
+    private static final By AUDITLOG_ACME_ENABLED_XPATH = By.xpath("//span[contains(text(),'changed:ACME=true')]");
     
     @BeforeClass
     public static void init() {
@@ -66,6 +66,7 @@ public class EcaQa187_EnableACME extends WebTestBase {
         systemConfigurationHelper.openPage(getAdminWebUrl());
         systemConfigurationHelper.openTab(SysConfigTabs.PROTOCOLCONFIG);
         systemConfigurationHelper.disableProtocol(SysConfigProtokols.ACME);
+        systemConfigurationHelper.assertProtocolDisabled(SysConfigProtokols.ACME);
     }
     
     @Test
