@@ -117,7 +117,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     /** @return the pattern we will use for "http-01" challenge validation. Defaults to example from RFC draft 06. */
     public String getValidationHttpCallBackUrlTemplate() {
         final String urlTemplate = (String) super.data.get(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE);
-        return urlTemplate==null ? "http://{identifer}:80/.well-known/acme-challenge/{token}" : urlTemplate;
+        return urlTemplate==null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
     }
     public void setValidationHttpCallBackUrlTemplate(final String urlTemplate) {
         super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
