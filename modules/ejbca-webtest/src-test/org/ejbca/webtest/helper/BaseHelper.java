@@ -530,7 +530,7 @@ public class BaseHelper {
      * @param failureMessage failure message.
      */
     protected void assertElementExists(final By elementId, final String failureMessage) {
-        if(findElement(elementId) == null) {
+        if (findElement(elementId) == null) {
             fail(failureMessage);
         }
     }
@@ -542,7 +542,7 @@ public class BaseHelper {
      * @param failureMessage failure message.
      */
     void assertElementDoesNotExist(final By elementId, final String failureMessage) {
-        if(findElementWithoutWait(elementId, false) != null) {
+        if (findElementWithoutWait(elementId, false) != null) {
             fail(failureMessage);
         }
     }
