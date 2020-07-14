@@ -51,6 +51,9 @@ public class SystemConfigurationHelper extends BaseHelper {
         static By getEnabledStatusFromProtocolsTableRowContainingText(final String text) {
             return By.xpath("//tr/td[contains(text(), '" + text + "')]/following-sibling::td/div[contains(text(), 'Enabled')]");
         }
+        static By getDisabledStatusFromProtocolsTableRowContainingText(final String text) {
+            return By.xpath("//tr/td[contains(text(), '" + text + "')]/following-sibling::td/div[contains(text(), 'Disabled')]");
+        }
     }
     
     /**
@@ -198,4 +201,11 @@ public class SystemConfigurationHelper extends BaseHelper {
         assertElementExists(Page.getEnabledStatusFromProtocolsTableRowContainingText(protocol.getLabel()), protocol.getLabel() + " is not in enabled state");
     }
 
+    /**
+     * Asserts the specified protocol is disabled
+     * @param protocol protocol to assert
+     */
+    public void assertProtocolDisabled(SysConfigProtokols protocol) {
+        assertElementExists(Page.getDisabledStatusFromProtocolsTableRowContainingText(protocol.getLabel()), protocol.getLabel() + " is not in disabled state");
+    }
 }
