@@ -42,7 +42,7 @@ public class EcaQa187_EnableACME extends WebTestBase {
     private static AuditLogHelper auditLogHelper;
     private static SystemConfigurationHelper systemConfigurationHelper;
 
-    private static final By AUDITLOG_ACME_ENABLED_XPATH = By.xpath("//span[contains(text(),'changed:ACME=true')]");
+    private static final By AUDITLOG_ACME_ENABLED_XPATH = By.xpath("//span[contains(text(),'msg=Saved global configuration with id AVAILABLE_PROTOCOLS.; changed:ACME=true')]");
     
     @BeforeClass
     public static void init() {
@@ -59,24 +59,36 @@ public class EcaQa187_EnableACME extends WebTestBase {
     }
 
     /**
-     * Disables ACME so it can be enabled in the next step.
+     * Enables ACME. Will do nothing if ACME is already enabled.
      */
     @Test
-    public void stepA_DisableAcme() {
+    public void stepA_EnableAcmeFirstTime() {
         systemConfigurationHelper.openPage(getAdminWebUrl());
         systemConfigurationHelper.openTab(SysConfigTabs.PROTOCOLCONFIG);
+        systemConfigurationHelper.enableProtocol(SysConfigProtokols.ACME);
+        systemConfigurationHelper.assertProtocolEnabled(SysConfigProtokols.ACME);
+    }
+    
+    /**
+     * Disables ACME so it can be enabled (again) in the next step.
+     */
+    @Test
+    public void stepB_DisableAcme() {
         systemConfigurationHelper.disableProtocol(SysConfigProtokols.ACME);
         systemConfigurationHelper.assertProtocolDisabled(SysConfigProtokols.ACME);
     }
     
+    /**
+     * Enables ACME the second time since if there is no configuration to begin with the first enabling won't generate a configuration edit event in the audit log.
+     */
     @Test
-    public void stepB_EnableAcme() {
+    public void stepC_EnableAcmeSecondTime() {
         systemConfigurationHelper.enableProtocol(SysConfigProtokols.ACME);
         systemConfigurationHelper.assertProtocolEnabled(SysConfigProtokols.ACME);
     }
 
     @Test
-    public void stepC_CheckAuditLog() {
+    public void stepD_CheckAuditLog() {
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.reloadView();
         WebElement addedElement = webDriver.findElement(AUDITLOG_ACME_ENABLED_XPATH);
