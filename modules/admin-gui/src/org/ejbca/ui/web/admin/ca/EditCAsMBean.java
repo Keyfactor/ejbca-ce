@@ -2060,10 +2060,31 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private void generateKeyAlreadyInUseMap() {
         // Create already in use key map
         for (final String alias : availableCryptoTokenMixedAliases) {
-            final String alreadyInUse = caBean.isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
+            final String alreadyInUse = isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
                     : StringUtils.EMPTY;
             aliasUsedMap.put(alias, alreadyInUse);
         }
+    }
+    
+    /**
+     * Checks if keys in current crypto token are already in use by another CA or not
+     * This method used while creating a new CA to warn users about keys which are already in use
+     * by other CAs.
+     *
+     * @param CAIds CA ids.
+     * @param alias alias.
+     * @param currentCryptoTokenId crypto token id.
+     * @return boolean true if crypto key is used by another CA or false otherwise.
+     * @throws IllegalStateException illegal state exception.
+     */
+    private boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
+        for (final int caId : CAIds) {
+            final CAInfo caInfo = caSession.getCAInfoInternal(caId);
+            if (caInfo != null && currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void initPageVariables(final Map<String, Object> requestMap) {

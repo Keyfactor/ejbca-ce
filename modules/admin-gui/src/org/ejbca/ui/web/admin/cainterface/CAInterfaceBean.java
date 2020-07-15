@@ -1308,23 +1308,4 @@ public class CAInterfaceBean implements Serializable {
         return CollectionUtils.isNotEmpty(chain) ? CertTools.getNotAfter(chain.iterator().next()) : null;
     }
 
-    /**
-     * Checks if keys in current crypto token are already in use by another CA or not
-     * This method used while creating a new CA to warn users about keys which are already in use
-     * by other CAs.
-     *
-     * @param CAIds CA ids.
-     * @param alias alias.
-     * @param currentCryptoTokenId crypto token id.
-     * @return boolean true if crypto key is used by another CA or false otherwise.
-     * @throws IllegalStateException illegal state exception.
-     */
-    public boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
-        for (final int caId : CAIds) {
-            final CAInfo caInfo = casession.getCAInfoInternal(caId);
-            if (cainfo != null && currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias))
-                return true;
-        }
-        return false;
-    }
 }
