@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 /**
- * This file handles configuration from ejbca.properties
+ * This file handles configuration from cesecore.properties
  *
  * @version $Id$
  */
