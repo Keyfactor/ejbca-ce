@@ -56,7 +56,7 @@
 
 # Default Random Number Generator algorithm for certificate serial number generation.
 # Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
-# From Java 11 and onwards, DRGB is also available
+# From Java 11 and onwards, DRBG is also available
 # See Java documentation on "SecureRandom Number Generation Algorithms", https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#securerandom-number-generation-algorithms
 # 
 # BCSP800Hybrid implements a FIPS/SP800 compliant DRBG chain. After initial seed generation the base source uses a 
