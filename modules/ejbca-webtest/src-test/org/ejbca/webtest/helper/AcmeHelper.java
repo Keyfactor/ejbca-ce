@@ -111,13 +111,24 @@ public class AcmeHelper extends BaseHelper {
     }
 
     /**
-     * Checks that ACME alias already exist. 
+     * Checks that ACME alias already exists when trying to add a new alias. 
      *
-     *@param name The Alias name to check.
+     *@param name The alias name to check.
      */
-    public void confirmAliasAlreadyExist(String name) {
+    public void confirmNewAliasAlreadyExists(String name) {
         assertErrorMessageAppears("Cannot add alias. Alias '" + name + "' already exists."
                 ,"Cannot Add Alias error message was not found"
+                ,"Expected Alias error message was not displayed");
+    }
+    
+    /**
+     * Checks that ACME alias already exists when renaming an alias. 
+     *
+     *@param name The alias name to check.
+     */
+    public void confirmRenamedAliasAlreadyExists(String name) {
+        assertErrorMessageAppears("Cannot rename alias. Either the new alias is empty or it already exists."
+                ,"Cannot Rename Alias error message was not found"
                 ,"Expected Alias error message was not displayed");
     }
 
