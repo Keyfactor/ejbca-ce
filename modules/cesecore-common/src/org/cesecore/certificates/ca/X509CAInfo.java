@@ -138,6 +138,7 @@ public class X509CAInfo extends CAInfo {
                 .setUseUserStorage(true)
                 .setUseCertificateStorage(true)
                 .setDoPreProduceOcspResponses(false)
+                .setDoStoreOcspResponsesOnDemand(false)
                 .setAcceptRevocationNonExistingEntry(false)
                 .setCmpRaAuthSecret(null)
                 .setKeepExpiredCertsOnCRL(false)
