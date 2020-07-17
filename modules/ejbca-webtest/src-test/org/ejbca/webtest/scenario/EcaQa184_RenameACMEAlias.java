@@ -21,20 +21,21 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * This test verifies that adding and deleting Acme alias works.
+ * This test verifies that renaming an Acme alias works.
  * <br/>
- * Reference: <a href="https://jira.primekey.se/browse/ECAQA-183">ECAQA-183</a>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-184">ECAQA-184</a>
  * 
- * @version $Id$ EcaQa183_AddACMEAlias.java 2020-04-21 15:00 tobiasM$
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa183_AddACMEAlias extends WebTestBase {
+public class EcaQa184_RenameACMEAlias extends WebTestBase {
     //Helpers
     private static AcmeHelper acmeHelper;
 
     //Test Data
     public static class TestData {
-        private static final String ACME_ALIAS = "EcaQa183TestAlias";
+        private static final String INITIAL_ACME_ALIAS = "EcaQa184TestAlias";
+        private static final String RENAMED_ACME_ALIAS = "EcaQa184RenamedTestAlias";
     }
 
     @BeforeClass
@@ -49,27 +50,34 @@ public class EcaQa183_AddACMEAlias extends WebTestBase {
     }
 
     @Test
-    public void stepA_AddAcme() {
+    public void stepA_AddAlias() {
         acmeHelper.openPage(getAdminWebUrl());
         acmeHelper.clickAdd();
-        acmeHelper.alertTextfieldAndAccept(TestData.ACME_ALIAS);
+        acmeHelper.alertTextfieldAndAccept(TestData.INITIAL_ACME_ALIAS);
     }
 
     @Test
-    public void stepB_AddSameAcmeAgain() {
-        acmeHelper.clickAdd();
-        acmeHelper.alertTextfieldAndAccept(TestData.ACME_ALIAS);
-        acmeHelper.confirmNewAliasAlreadyExists(TestData.ACME_ALIAS);
+    public void stepB_RenameAlias() {
+        acmeHelper.rename(TestData.INITIAL_ACME_ALIAS);
+        acmeHelper.alertTextfieldAndAccept(TestData.RENAMED_ACME_ALIAS);
     }
 
     @Test
-    public void stepC_AddAcmeAliasWithoutName() {
-        acmeHelper.clickAdd();
+    public void stepC_RenameAliasAgain() {
+        acmeHelper.rename(TestData.RENAMED_ACME_ALIAS);
+        acmeHelper.alertTextfieldAndAccept(TestData.RENAMED_ACME_ALIAS);
+        acmeHelper.confirmRenamedAliasAlreadyExists(TestData.RENAMED_ACME_ALIAS);
+    }
+
+    @Test
+    public void stepD_RenameAliasEmpty() {
+        acmeHelper.rename(TestData.RENAMED_ACME_ALIAS);
         acmeHelper.alertTextfieldAndAccept("");
+        acmeHelper.confirmRenamedAliasAlreadyExists(TestData.RENAMED_ACME_ALIAS);
     }
-
+    
     @Test
-    public void stepD_DeleteAcme() {
-        acmeHelper.deleteWithName(TestData.ACME_ALIAS);
+    public void stepE_DeleteAlias() {
+        acmeHelper.deleteWithName(TestData.RENAMED_ACME_ALIAS);
     }
 }
