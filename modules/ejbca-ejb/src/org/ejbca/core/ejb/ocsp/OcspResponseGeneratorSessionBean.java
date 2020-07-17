@@ -1227,12 +1227,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequestwxff", certId.getSerialNumber().toString(16), hash, remoteAddress, xForwardedFor));
                 }
                 
-                // Locate the CA which gave out the certificate
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
-                if(ocspSigningCacheEntry == null) {
-                    //Could it be that we haven't updated the OCSP Signing Cache?
-                    ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
-                }         
+                // Locate the CA which gave out the certificate
+                if (Objects.isNull(ocspSigningCacheEntry)) {
+                    GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                            .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    if (ocspConfiguration.getOcspSigningCacheUpdateEnabled()) {
+                        //Could it be that we haven't updated the OCSP Signing Cache?
+                        ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
+                    }
+                }
                 final OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
                 // We only store pre-produced single responses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProductionEnabled()) {
