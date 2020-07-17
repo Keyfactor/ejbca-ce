@@ -13,6 +13,7 @@
 package org.cesecore.config;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
@@ -32,7 +33,19 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String DEFAULT_OCSP_RESPONDER_REFERENCE = "defaultOcspResponderReference";
     private static final String OCSP_RESPONDER_ID_TYPE_REFERENCE = "ocspResponderIdType";
     private static final String DEFAULT_NONCE_ENABLED_REFERENCE = "defaultNonceEnabled";
+    private static final String OCSP_SIGNING_CACHE_UPDATE_ENABLED = "ocspSigningCacheUpdateEnabled";
     
+    public boolean getOcspSigningCacheUpdateEnabled() {
+        if (Objects.isNull(data.get(OCSP_SIGNING_CACHE_UPDATE_ENABLED))) {
+            setOcspSigningCacheUpdateEnabled(false); // Put the default if not already present 
+        }
+        return (Boolean) data.get(OCSP_SIGNING_CACHE_UPDATE_ENABLED);
+    }
+    
+    public void setOcspSigningCacheUpdateEnabled(final boolean ocspSigningCacheUpdateEnable) {
+        data.put(OCSP_SIGNING_CACHE_UPDATE_ENABLED, ocspSigningCacheUpdateEnable);
+    }
+
     public String getOcspDefaultResponderReference() {
         return CertTools.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
     }
