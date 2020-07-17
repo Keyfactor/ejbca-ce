@@ -758,7 +758,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                                                 + CertTools.getFingerprintAsString(caCertificate));
                                     }
                                     try {
-                                        // The CVCA certificate always contains the full key parameters, no need to du any EC curve parameter magic here
+                                        // The CVCA certificate always contains the full key parameters, no need to do any EC curve parameter magic here
                                         request.verify(caCertificate.getPublicKey());
                                         if (log.isDebugEnabled()) {
                                             log.debug("Verified outer signature");
