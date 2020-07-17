@@ -191,6 +191,21 @@
 			<h:commandButton action="#{internalKeyBindingMBean.saveResponderIdType}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 		</h:panelGrid>
 	</h:form>
+	
+	<h:form id="enableOcspSigningCacheUpdate" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
+		<h3>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>	
+			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>		
+			</h3>
+		<h:panelGrid columns="2">
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="globallyEnableOcspSigningCacheUpdate" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableOcspSigningCacheUpdate}"/>
+				<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
+			</h:panelGroup>
+			<h:commandButton action="#{internalKeyBindingMBean.saveEnableOcspSigningCacheUpdate}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
+		</h:panelGrid>	
+	</h:form>
 
 	</ui:define>
 </ui:composition>
