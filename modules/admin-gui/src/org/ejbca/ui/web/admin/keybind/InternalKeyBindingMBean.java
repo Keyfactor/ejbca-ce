@@ -273,6 +273,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String defaultResponderTarget;
     private Boolean nonceEnabled;
     private OcspKeyBinding.ResponderIdType responderIdType;
+    private Boolean ocspSigningCacheUpdate;
 
     public String getSelectedInternalKeyBindingType() {
         final String typeHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("type");
@@ -438,6 +439,19 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             }
         }
     }
+    
+    public void saveEnableOcspSigningCacheUpdate() {
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (!ocspSigningCacheUpdate.equals(globalConfiguration.getOcspSigningCacheUpdateEnabled())) {
+            globalConfiguration.setOcspSigningCacheUpdateEnabled(ocspSigningCacheUpdate);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+        }
+    }
 
     public boolean getGloballyEnableNonce() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
@@ -447,6 +461,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public void setGloballyEnableNonce(boolean nonceEnabled) {
         this.nonceEnabled = nonceEnabled;
+    }
+    
+    public boolean getGloballyEnableOcspSigningCacheUpdate() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        return configuration.getOcspSigningCacheUpdateEnabled();
+    }
+    
+    public void setGloballyEnableOcspSigningCacheUpdate(final boolean ocspSigningCacheUpdateEnabled) {
+        this.ocspSigningCacheUpdate = ocspSigningCacheUpdateEnabled;
     }
 
     public String getDefaultResponderTarget() {
