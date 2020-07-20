@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -75,6 +76,10 @@ public class AuditLogHelper extends BaseHelper {
 
         static By getEventLogRowByEventText(final String eventText) {
             return By.xpath("//tr[td[2]/text()='" + eventText + "']");
+        }
+
+        static By getProtocolEnabled(final String protocol) {
+            return By.xpath("//span[contains(text(),'msg=Saved global configuration with id AVAILABLE_PROTOCOLS.; changed:" + protocol + "=true')]");
         }
     }
 
@@ -219,6 +224,11 @@ public class AuditLogHelper extends BaseHelper {
         }
     }
 
+    public void assertProtocolEnabledLogExists(final String protocol) {
+        final WebElement addedElement = webDriver.findElement(Page.getProtocolEnabled(protocol));
+        assertLogEntryByEventText("System Configuration Edit", "Success", null, Collections.singletonList(addedElement.getText()));
+    }
+
     //==================================================================================================================
     // TODO Refactor remaining
     //==================================================================================================================
@@ -256,5 +266,4 @@ public class AuditLogHelper extends BaseHelper {
         final List<String> actualEntries = AuditLogHelper.getEntries(webDriver);
         assertEquals("Unexpected elements found in table", Arrays.asList(expectedEntries), actualEntries);
     }
-
 }
