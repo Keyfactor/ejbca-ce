@@ -13,8 +13,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
+import java.security.MessageDigestSpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -23,11 +25,13 @@ import java.security.ProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11ng.MechanismNames;
@@ -50,7 +54,7 @@ public class JackNJI11Provider extends Provider {
 
     public JackNJI11Provider() {
         super(NAME, 0.3, "JackNJI11 Provider");
-
+ 
         putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "MD5withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withRSA", MySignature.class.getName()));
@@ -70,6 +74,10 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "MessageDigest", "SHA256", MyMessageDigiest.class.getName()));
+        putService(new MySigningService(this, "MessageDigest", "SHA384", MyMessageDigiest.class.getName()));
+        putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
+        putService(new MySigningService(this, "AlgorithmParameters", "PSS", MyAlgorithmParameters.class.getName()));
     }
 
     private static class MyService extends Service {
@@ -105,7 +113,7 @@ public class JackNJI11Provider extends Provider {
     }
 
     private static class MySigningService extends MyService {
-
+        
         MySigningService(Provider provider, String type, String algorithm,
                 String className) {
             super(provider, type, algorithm, className);
@@ -135,9 +143,8 @@ public class JackNJI11Provider extends Provider {
                     LOG.debug(sb.toString());
                 }
                 return false;
-            } else {
-                return true;
             }
+            return true;
         }
     }
 
@@ -186,7 +193,7 @@ public class JackNJI11Provider extends Provider {
                 throw new InvalidKeyException("Not an NJI11Object: " + pk);
             }
             myKey = (NJI11Object) pk;
-
+            
             if (pk instanceof NJI11StaticSessionPrivateKey) {
                 session = ((NJI11StaticSessionPrivateKey) pk).getSession();
             } else {
@@ -319,9 +326,14 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineSetParameter(String string, Object o) throws InvalidParameterException {
+            // Super method is deprecated. Use engineSetParameter(AlgorithmParameterSpec params)
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        protected void engineSetParameter(AlgorithmParameterSpec params) throws InvalidAlgorithmParameterException {
+        }
+        
         @Override
         protected Object engineGetParameter(String string) throws InvalidParameterException {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -345,6 +357,42 @@ public class JackNJI11Provider extends Provider {
             } finally {
                 super.finalize();
             }
+        }
+    }
+    
+    private static class MyAlgorithmParameters extends PSS {
+        
+        public MyAlgorithmParameters(Provider provider, String algorithm) {
+            super();
+        }
+    }
+    
+    private static class MyMessageDigiest extends MessageDigestSpi {
+        // While this 'MessageDigiest' implementation doesn't do anything currently, it's required
+        // in order for MGF1 Algorithms to work since BC performs a sanity check before
+        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)   
+        public MyMessageDigiest(Provider provider, String algorithm) {
+            super();
+        }
+        
+        @Override
+        protected void engineUpdate(byte input) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected void engineUpdate(byte[] input, int offset, int len) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected byte[] engineDigest() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected void engineReset() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
