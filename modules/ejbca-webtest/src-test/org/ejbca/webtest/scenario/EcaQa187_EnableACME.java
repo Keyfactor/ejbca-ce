@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.Collections;
-
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
@@ -24,9 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * This test verifies that enabling ACME works.
@@ -41,8 +37,6 @@ public class EcaQa187_EnableACME extends WebTestBase {
     private static WebDriver webDriver;
     private static AuditLogHelper auditLogHelper;
     private static SystemConfigurationHelper systemConfigurationHelper;
-
-    private static final By AUDITLOG_ACME_ENABLED_XPATH = By.xpath("//span[contains(text(),'msg=Saved global configuration with id AVAILABLE_PROTOCOLS.; changed:ACME=true')]");
     
     @BeforeClass
     public static void init() {
@@ -91,7 +85,6 @@ public class EcaQa187_EnableACME extends WebTestBase {
     public void stepD_CheckAuditLog() {
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.reloadView();
-        WebElement addedElement = webDriver.findElement(AUDITLOG_ACME_ENABLED_XPATH);
-        auditLogHelper.assertLogEntryByEventText("System Configuration Edit", "Success", null, Collections.singletonList(addedElement.getText()));
+        auditLogHelper.assertProtocolEnabledLogExists("ACME");
     }
 }
