@@ -361,16 +361,16 @@ public class JackNJI11Provider extends Provider {
     }
     
     private static class MyAlgorithmParameters extends PSS {
-        
+        // Fall back on BC PSS parameter configuration. 
         public MyAlgorithmParameters(Provider provider, String algorithm) {
             super();
         }
     }
     
     private static class MyMessageDigiest extends MessageDigestSpi {
-        // While this 'MessageDigiest' implementation doesn't do anything currently, it's required
+        // While this MessageDigiest "implementation" doesn't do anything currently, it's required
         // in order for MGF1 Algorithms to work since BC performs a sanity check before
-        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)   
+        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
         public MyMessageDigiest(Provider provider, String algorithm) {
             super();
         }
