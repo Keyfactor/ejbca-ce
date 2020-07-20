@@ -234,6 +234,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         
         setOcspDefaultResponderReference(null);
+        setOcspResponseCacheUpdateEnabled(true);
         try {
             activateKeyBinding(internalKeyBindingId);
             ocspResponseGeneratorSession.reloadOcspSigningCache();
@@ -1529,5 +1530,11 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         configuration.setOcspDefaultResponderReference(dn);
         globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
         return originalDefaultResponder;
+    }
+    
+    private void setOcspResponseCacheUpdateEnabled(final boolean enabled) throws AuthorizationDeniedException {
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        configuration.setOcspSigningCacheUpdateEnabled(enabled);
+        globalConfigurationSession.saveConfiguration(authenticationToken, configuration);
     }
 }
