@@ -75,7 +75,7 @@ public class EcaQa184_RenameACMEAlias extends WebTestBase {
         acmeHelper.alertTextfieldAndAccept("");
         acmeHelper.confirmRenamedAliasAlreadyExists(TestData.RENAMED_ACME_ALIAS);
     }
-    
+
     @Test
     public void stepE_DeleteAlias() {
         acmeHelper.deleteWithName(TestData.RENAMED_ACME_ALIAS);
