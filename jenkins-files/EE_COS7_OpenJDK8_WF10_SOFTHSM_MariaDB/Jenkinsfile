@@ -18,7 +18,7 @@ pipeline {
         }
 	stage('database') {
             steps {
-                sh "docker run --name mariadb_softhsm -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca --net=net_ee_cos7_openjdk8_wf10_softhsm_mariadb -d mariadb:10.2.17 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+                sh "docker run --name mariadb_softhsm -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca --net=net_ee_cos7_openjdk8_wf10_softhsm_mariadb -d mariadb:10.2.17"
             }
         }
         stage('deploy and run system tests') {
