@@ -114,6 +114,7 @@ public class JackNJI11ProviderTest {
     }
     
     private static final int MAX_SIGN_BUFFER_SIZE = 20480;
+    public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin();
     private static CryptoToken cryptoToken;
     
     @BeforeClass
@@ -123,7 +124,7 @@ public class JackNJI11ProviderTest {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         Security.addProvider(new JackNJI11Provider());
         cryptoToken = createPkcs11NgTokenWithAttributesFile();
-        cryptoToken.activate("foo123".toCharArray());
+        cryptoToken.activate(tokenpin.toCharArray());
         cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_1);
         cryptoToken.generateKeyPair("secp256r1", PKCS11TestUtils.ECC_TEST_KEY_1);
     }
@@ -165,7 +166,7 @@ public class JackNJI11ProviderTest {
     }
     
     // Create a P11NgCryptoToken using whichever library is installed
-    private static CryptoToken createPkcs11NgTokenWithAttributesFile(   ) throws NoSuchSlotException {
+    private static CryptoToken createPkcs11NgTokenWithAttributesFile() throws NoSuchSlotException {
         Properties prop = new Properties();
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull("No HSM library installed for testing", hsmlib);
