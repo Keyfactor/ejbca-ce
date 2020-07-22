@@ -61,7 +61,7 @@ CREATE TABLE ApprovalData (
 
 CREATE TABLE AuditRecordData (
     pk VARCHAR(250) BINARY NOT NULL,
-    additionalDetails LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    additionalDetails LONGTEXT,
     authToken VARCHAR(250) BINARY NOT NULL,
     customId VARCHAR(250) BINARY,
     eventStatus VARCHAR(250) BINARY NOT NULL,
