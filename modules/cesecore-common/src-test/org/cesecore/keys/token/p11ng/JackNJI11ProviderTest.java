@@ -137,15 +137,21 @@ public class JackNJI11ProviderTest {
     }
     
     @Test
-    public void testSignature() throws Exception {
-        // Test with RSA key 
+    public void testSignatureRsa() throws Exception {
         signWithProvider("SHA256withRSA", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA384withRSA", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA512withRSA", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
+    }
+    
+    @Test
+    public void testSignatureRsaWithMfg1() throws Exception {
         signWithProvider("SHA256withRSAandMGF1", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA384withRSAandMGF1", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA512withRSAandMGF1", PKCS11TestUtils.RSA_TEST_KEY_1, cryptoToken.getSignProviderName());
-        // Test with EC key
+    }
+    
+    @Test
+    public void testSignatureEcdsa() throws Exception {
         signWithProvider("SHA256withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA384withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA512withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
