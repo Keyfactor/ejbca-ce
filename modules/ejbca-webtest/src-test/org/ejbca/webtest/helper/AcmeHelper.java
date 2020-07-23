@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import static org.junit.Assert.assertEquals;
+
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -36,11 +38,25 @@ public class AcmeHelper extends BaseHelper {
         static final By DEFAULT_ACME_CONFIG_LIST = By.id("acmeConfigs:selectOneMenuEEP");
         static final String DELETE_ALIAS_CONFIRM_MESSAGE = "Are you sure you want to delete this?";
 
+        //Edit Alias fields
+        static final By SELECT_ONE_EEP = By.id("currentAliasForm:selectOneMenuEEP");
+        static final By PRE_AUTH_ALLOWED = By.id("currentAliasForm:preautorisation");
+        static final By WILDCARD_ALLOWED = By.id("currentAliasForm:wildcard");
+        static final By SITE_URL = By.id("currentAliasForm:webUrl");
+        static final By TERMS_URL = By.id("currentAliasForm:termsUrl");
+        static final By TERMS_INPUT_URL = By.id("currentAliasForm:termsOfServiceUrl");
+        static final By VERSION_APPROVAL = By.id("currentAliasForm:versionApproval");
+        static final By DNS_RESOLVER = By.id("currentAliasForm:dnsResolver");
+        static final By DNS_PORT = By.id("currentAliasForm:dnsPort");
+        static final By USE_DNSSEC = By.id("currentAliasForm:useDnsSec");
+        static final By DNSSEC_TRUST_ANCHOR = By.id("currentAliasForm:dnssecTrustAnchor");
+
         //Buttons
         static final By BUTTON_ADD_ALIAS = By.xpath("//a[@title='Add Alias']");
         static final By BUTTON_SAVE = By.id("acmeConfigs:save");
         static final By BUTTON_RENAME_ALIAS = By.xpath("//a[@title='Rename Alias']");
         static final By BUTTON_DELETE_ALIAS = By.xpath("//a[@title='Delete Alias']");
+        static final By BUTTON_EDIT_ALIAS_FIELDS = By.xpath("//input[@value='Switch to edit mode']");
 
         //Dynamic Reference
 
@@ -48,6 +64,10 @@ public class AcmeHelper extends BaseHelper {
         //  buttonName - Rename / Delete
         static By getActionsButton(String name, String buttonName) {
             return By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']/following::td/a[@title='" + buttonName + " Alias']");
+        }
+
+        static By getAliasEditButton(String name) {
+            return By.xpath("//a[@href='acmealiasconfiguration.xhtml?alias=" + name + "']");
         }
     }
 
@@ -84,6 +104,14 @@ public class AcmeHelper extends BaseHelper {
     }
 
     /**
+     * Clicks on the Alias name
+     *
+     */
+    public void clickAlias(String name) {
+        clickLink(Page.getAliasEditButton(name));
+    }
+    
+    /**
      * Clicks the 'Add' button
      *
      */
@@ -98,6 +126,14 @@ public class AcmeHelper extends BaseHelper {
      */
     public void rename(String name) {
         clickLink(Page.getActionsButton(name, "Rename"));
+    }
+    
+    /**
+     * Clicks the 'Add' button
+     *
+     */
+    public void clickEdit() {
+        clickLink(Page.BUTTON_EDIT_ALIAS_FIELDS);
     }
 
     /**
@@ -120,7 +156,7 @@ public class AcmeHelper extends BaseHelper {
                 ,"Cannot Add Alias error message was not found"
                 ,"Expected Alias error message was not displayed");
     }
-    
+
     /**
      * Checks that ACME alias already exists when renaming an alias. 
      *
@@ -132,4 +168,251 @@ public class AcmeHelper extends BaseHelper {
                 ,"Expected Alias error message was not displayed");
     }
 
+    /**
+     * Asserts the element 'End Entity Profile' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertEEPIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'End Entity Profile' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.SELECT_ONE_EEP)
+        );
+    }
+
+    /**
+     * Asserts the element 'Pre-Authorization Allowed' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertPreAuthorizationAllowedIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'Pre-Authorization Allowed' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.PRE_AUTH_ALLOWED)
+        );
+    }
+
+    /**
+     * Asserts the element 'Pre-Authorization Allowed' is/isn't selected.
+     *
+     * @param isSelected true for selected and false for not selected.
+     */
+    public void assertPreAuthorizationAllowedIsSelected(final boolean isSelected) {
+        assertEquals(
+                "'Pre-Authorization Allowed' field isSelected [" + isSelected + "]",
+                isSelected,
+                isSelectedElement(Page.PRE_AUTH_ALLOWED)
+        );
+    }
+
+    
+    /**
+     * Asserts the element 'Wildcard Certificate Issuance Allowed' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertWildcardIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'Wildcard Certificate Issuance Allowed' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.WILDCARD_ALLOWED)
+        );
+    }
+    
+    /**
+     * Asserts the element 'Wildcard Certificate Issuance Allowed' is/isn't selected.
+     *
+     * @param isSelected true for enabled and false for not selected.
+     */
+    public void assertWildcardIsSelected(final boolean isSelected) {
+        assertEquals(
+                "'Wildcard Certificate Issuance Allowed' field isSelected [" + isSelected + "]",
+                isSelected,
+                isSelectedElement(Page.WILDCARD_ALLOWED)
+        );
+    }
+
+    /**
+     * Asserts the element 'Site URL' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertSiteURLIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'Site URL' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.SITE_URL)
+        );
+    }
+
+    /**
+     * Asserts the element 'Site URL' has the correct text.
+     *
+     * @param text the expected text of the element.
+     */
+    public void assertSiteURLText(String text) {
+        assertEquals(
+                "'Site URL' field text [" + text + "]",
+                text,
+                getElementText(Page.SITE_URL)
+        );
+    }
+
+    /**
+     * Asserts the element 'Terms of Service URL' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertTermsURLIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'Terms of Service URL' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.TERMS_INPUT_URL)
+        );
+    }
+    
+    /**
+     * Asserts the element 'Terms of Service URL' has the correct text.
+     *
+     * @param text the expected text of the element.
+     */
+    public void assertTermsURLText(String text) {
+        assertEquals(
+                "'Terms of Service URL' field text [" + text + "]",
+                text,
+                getElementText(Page.TERMS_URL)
+        );
+    }
+
+    /**
+     * Asserts the element 'Require client approval for Terms of Service changes' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertVersionApprovalIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'Require client approval for Terms of Service changes' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.VERSION_APPROVAL)
+        );
+    }
+    
+    /**
+     * Asserts the element 'Require client approval for Terms of Service changes' is/isn't selected.
+     *
+     * @param isSelected true for selected and false for not selected.
+     */
+    public void assertVersionApprovalIsSelected(final boolean isSelected) {
+        assertEquals(
+                "'Require client approval for Terms of Service changes' field isSelected [" + isSelected + "]",
+                isSelected,
+                isSelectedElement(Page.VERSION_APPROVAL)
+        );
+    }
+
+    /**
+     * Asserts the element 'DNS Resolver' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertDNSResolverIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'DNS Resolver' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.DNS_RESOLVER)
+        );
+    }
+    
+    /**
+     * Asserts the element 'DNS Resolver' has the correct text.
+     *
+     * @param text the expected text of the element.
+     */
+    public void assertDNSResolverText(String text) {
+        assertEquals(
+                "'DNS Resolver' field text [" + text + "]",
+                text,
+                getElementText(Page.DNS_RESOLVER)
+        );
+    }
+
+    /**
+     * Asserts the element 'DNS Port' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertDNSPortIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'DNS Port' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.DNS_PORT)
+        );
+    }
+    
+    /**
+     * Asserts the element 'DNS Port' has the correct text.
+     *
+     * @param text the expected text of the element.
+     */
+    public void assertDNSPortText(String text) {
+        assertEquals(
+                "'DNS Port' field text [" + text + "]",
+                text,
+                getElementText(Page.DNS_PORT)
+        );
+    }
+
+    /**
+     * Asserts the element 'Validate DNSSEC' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertValidateDNSSECIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'Validate DNSSEC' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.USE_DNSSEC)
+        );
+    }
+    
+    /**
+     * Asserts the element 'Validate DNSSEC' is/isn't selected.
+     *
+     * @param isSelected true for selected and false not selected.
+     */
+    public void assertValidateDNSSECIsSelected(final boolean isSelected) {
+        assertEquals(
+                "'Validate DNSSEC' field isSelected [" + isSelected + "]",
+                isSelected,
+                isSelectedElement(Page.USE_DNSSEC)
+        );
+    }
+
+    /**
+     * Asserts the element 'DNSSEC Trust Anchor' is enabled/disabled.
+     *
+     * @param isEnabled true for enabled and false for disabled.
+     */
+    public void assertDNSSECTrustAnchorIsEnabled(final boolean isEnabled) {
+        assertEquals(
+                "'DNSSEC Trust Anchor' field isEnabled [" + isEnabled + "]",
+                isEnabled,
+                isEnabledElement(Page.DNSSEC_TRUST_ANCHOR)
+        );
+    }
+    
+    /**
+     * Asserts the element 'DNSSEC Trust Anchor' has the correct text.
+     *
+     * @param text the expected text of the element.
+     */
+    public void assertDNSSECTrustAnchorText(String text) {
+        assertEquals(
+                "'DNSSEC Trust Anchor' field text [" + text + "]",
+                text,
+                getElementText(Page.DNSSEC_TRUST_ANCHOR)
+        );
+    }
 }
