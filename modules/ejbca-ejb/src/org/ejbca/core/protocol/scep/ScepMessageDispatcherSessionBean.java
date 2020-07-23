@@ -750,7 +750,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             Collection<Certificate> racertColl = new ArrayList<Certificate>();
             racertColl.add(signingCertificate);
-            ret.setSignKeyInfo(racertColl, signingKey, BouncyCastleProvider.PROVIDER_NAME);
+            ret.setSignKeyInfo(racertColl, signingKey, caCryptoToken.getSignProviderName());
         }
         if (req.getSenderNonce() != null) {
             ret.setRecipientNonce(req.getSenderNonce());
