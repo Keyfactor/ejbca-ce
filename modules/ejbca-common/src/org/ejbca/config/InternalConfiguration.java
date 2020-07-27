@@ -54,8 +54,8 @@ public class InternalConfiguration {
 	/**
 	 * SVN revision
 	 */
-	public static String getSvnRevision() {
-		return EjbcaConfigurationHolder.getExpandedString("svn.revision");
+	public static String getGitRevision() {
+		return EjbcaConfigurationHolder.getExpandedString("git.revision");
 	}
 
 	/**
