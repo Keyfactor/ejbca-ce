@@ -928,7 +928,7 @@
 	          str = project.getProperty("ejbca.zipversion");
 		    ]]>
 	    </scriptdef>
-		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
+		<antcall target="update-gitrev" /> <!-- update git revision version property -->
 		<antcall target="update-edition" />
         
 		<condition property="edition.is.ee" value="true">
@@ -1341,43 +1341,43 @@ SHA-256 checksum: ${cesecorebinSHA256}
 	</target>
 
     <!-- ======================================================================= -->
-    <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
+    <!-- Target updating git revision string in propertiesAndPaths.xml           -->
     <!-- ======================================================================= -->
-	<target name="update-svnrev" depends="deprecated:check">
-		<echo>Trying to update src/internal.properties with SVN revision of COMMITTED.</echo>
-        <property name="revision" value="COMMITTED"/>	
-		
-        <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
-        <exec executable="svn" output="svnlog.out" failonerror="false" failifexecutionfails="false" resultproperty="exec.svn.errorcode">
-            <arg line="info -r ${revision} --force-interactive"/>
+	<target name="update-gitrev" depends="deprecated:check">
+		<echo>Trying to update src/internal.properties with Git revision of 'rev-parse HEAD'.</echo>
+        <!-- find out git hash of HEAD, need git.exe installed on local machine will end up in property ${Revision} -->
+        <exec executable="git" output="gitlog.out" failonerror="false" failifexecutionfails="false" resultproperty="exec.git.errorcode">
+            <arg line="rev-parse HEAD"/>
         </exec>
-        <!-- Allow the revision to be specified using -Drelease.revision=12345 on systems where the "svn" CLI is not avilable. -->
-        <condition property="failifsvnfails" value="true">
-            <and>
+        <!-- Allow the revision to be specified using -Drelease.revision=12345 on systems where the "git" CLI is not avilable. -->
+        <condition property="failifgitfails" value="true">
+        	<and>
             	<not><isset property="release.revision"/></not>
                 <!-- Either the executable did not start (and hence this is unset) or the command failed with an error code. -->
-                <not><equals arg1="${exec.svn.errorcode}" arg2="0"/></not>
+                <not><equals arg1="${exec.git.errorcode}" arg2="0"/></not>
             </and>
         </condition>
-		<fail if="failifsvnfails" message="Failed to get current version using 'svn' CLI. Consider installing subversion or use -Drelease.revision=&lt;number&gt;."/>
-		<echo message="" append="true" file="svnlog.out"/>
-		<loadproperties srcFile="svnlog.out">
-		      <filterchain>
-		        <linecontains>
-		          <contains value="Revision"/>
-		        </linecontains>
-		      </filterchain>
-		</loadproperties>
-        <!-- If we failed to get the SVN revision from the CLI command, use the specified one -->
+		<fail if="failifgitfails" message="Failed to get current version using 'git' CLI. Consider installing git or use -Drelease.revision=&lt;number&gt;."/>
+		<echo message="" append="true" file="gitlog.out"/>
+		<loadfile property="Revision" srcfile="gitlog.out">
+			<filterchain>
+				<linecontainsregexp>
+					<!-- Match SHA1 only. File main contain error message if Git command above failed -->
+					<regexp pattern="/\b([a-f0-9]{40})\b/"/>
+				</linecontainsregexp>
+			</filterchain>
+		</loadfile>
+        <!-- If we failed to get the Git revision from the CLI command, use the specified one -->
         <property name="Revision" value="${release.revision}"/>
-		<delete file="svnlog.out"/>
-		<antcall target="update-svnrev-updatefile" /> <!-- do update of file only if property is set -->
+		<delete file="gitlog.out"/>
+		<antcall target="update-gitrev-updatefile" /> <!-- do update of file only if property is set -->
     </target>
 	
-	<target name="update-svnrev-updatefile" if="Revision">
-		<replaceregexp file="src/internal.properties" encoding="UTF-8" match='(svn.revision=).*'
-			replace='\1r${Revision}' />
-		<echo>Updated "svn.revision" to: r${Revision}</echo>
+	
+	<target name="update-gitrev-updatefile" if="Revision">
+		<replaceregexp file="src/internal.properties" encoding="UTF-8" match='(git.revision=).*'
+			replace='\1${Revision}' />
+		<echo>Updated "git.revision" to: ${Revision}</echo>
     </target>
 	
 	<target name="update-edition" depends="deprecated:check">

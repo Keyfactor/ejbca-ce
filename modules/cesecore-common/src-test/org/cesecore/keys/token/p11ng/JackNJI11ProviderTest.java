@@ -56,6 +56,7 @@ import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -117,10 +118,14 @@ public class JackNJI11ProviderTest {
     public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin();
     private static CryptoToken cryptoToken;
     
+    @BeforeClass
+    public static void beforeClass() {
+        assumeTrue("No HSM library configured", PKCS11TestUtils.getHSMLibrary() != null);
+        assumeTrue("No PKCS#11 Provider configured", PKCS11TestUtils.getHSMProvider() != null);
+    }
+    
     @Before
     public void setup() throws Exception {
-        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
-        assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
         CryptoProviderTools.installBCProviderIfNotAvailable();
         Security.addProvider(new JackNJI11Provider());
         cryptoToken = createPkcs11NgTokenWithAttributesFile();
