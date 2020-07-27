@@ -94,7 +94,7 @@ import org.ejbca.util.query.Query;
 /**
  * Contains methods that are used by both the EjbcaWS, the Ejbca WS tests and by RAMasterApiSessionBean.
  * For instance, methods to convert between EndEntityInformation and UserDataWO.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaWSHelperSessionRemote")
@@ -177,16 +177,16 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             throw new AuthorizationDeniedException(msg);
         }
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid,
-            final int certificateprofileid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException {
+    public EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userData, final int caId, final int endEntityProfileId,
+                                                            final int certificateProfileId, final int tokenId, final boolean useRawSubjectDN) throws EjbcaException {
         final ExtendedInformation ei = new ExtendedInformation();
         boolean useEI = false;
 
-        if (userdata.getStartTime() != null) {
-            String customStartTime = userdata.getStartTime();
+        if (userData.getStartTime() != null) {
+            String customStartTime = userData.getStartTime();
             try {
                 if (customStartTime.length() > 0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
                     customStartTime = customStartTime.replace("Z", "+00:00");
@@ -208,12 +208,12 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \""
-                        + userdata.getSubjectDN() + "\" and customStartTime was '" + customStartTime + "'.");
+                        + userData.getSubjectDN() + "\" and customStartTime was '" + customStartTime + "'.");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime");
             }
         }
-        if (userdata.getEndTime() != null) {
-            String customEndTime = userdata.getEndTime();
+        if (userData.getEndTime() != null) {
+            String customEndTime = userData.getEndTime();
             try {
                 if (customEndTime.length() > 0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
                     if (!customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
@@ -233,71 +233,71 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 useEI = true;
             } catch (ParseException e) {
                 log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \""
-                        + userdata.getSubjectDN() + "\"");
+                        + userData.getSubjectDN() + "\"");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
             }
         }
-        if (userdata.getCertificateSerialNumber() != null) {
-            ei.setCertificateSerialNumber(userdata.getCertificateSerialNumber());
+        if (userData.getCertificateSerialNumber() != null) {
+            ei.setCertificateSerialNumber(userData.getCertificateSerialNumber());
             useEI = true;
         }
 
         if (useRawSubjectDN) {
             // It could/should B64 encoded to avoid XML baddies, ExtendedInformation.getRawSubjectDn does encoding, if the string is encoded
-            final String value = StringTools.putBase64String(userdata.getSubjectDN());
+            final String value = StringTools.putBase64String(userData.getSubjectDN());
             ei.setMapData(ExtendedInformation.RAWSUBJECTDN, value);
             useEI = true;
         }
-        useEI = setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
+        useEI = setExtendedInformationFromUserDataVOWS(userData, ei) || useEI;
 
-        final EndEntityInformation endEntityInformation = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), caid,
-                userdata.getSubjectAltName(), userdata.getEmail(), userdata.getStatus(), userdata.getType(), endentityprofileid, certificateprofileid,
-                null, null, tokenid, useEI ? ei : null);
+        final EndEntityInformation endEntityInformation = new EndEntityInformation(userData.getUsername(), userData.getSubjectDN(), caId,
+                userData.getSubjectAltName(), userData.getEmail(), userData.getStatus(), userData.getType(), endEntityProfileId, certificateProfileId,
+                null, null, tokenId, useEI ? ei : null);
 
-        endEntityInformation.setPassword(userdata.getPassword());
-        endEntityInformation.setCardNumber(userdata.getCardNumber());
-        endEntityInformation.setSendNotification(userdata.isSendNotification());
+        endEntityInformation.setPassword(userData.getPassword());
+        endEntityInformation.setCardNumber(userData.getCardNumber());
+        endEntityInformation.setSendNotification(userData.isSendNotification());
         return endEntityInformation;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation convertUserDataVOWS(final AuthenticationToken admin, final UserDataVOWS userdata)
+    public EndEntityInformation convertUserDataVOWS(final AuthenticationToken authenticationToken, final UserDataVOWS userData)
             throws CADoesntExistsException, EjbcaException {
-        // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
+        // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when
         // trying to add/edit the user
-        final CAInfo cainfo = caSession.getCAInfoInternal(-1, userdata.getCaName(), true);
+        final CAInfo cainfo = caSession.getCAInfoInternal(-1, userData.getCaName(), true);
         if (cainfo == null) {
-            throw new CADoesntExistsException("No CA found by name of " + userdata.getCaName());
+            throw new CADoesntExistsException("No CA found by name of " + userData.getCaName());
         }
         final int caid = cainfo.getCAId();
         if (caid == 0) {
-            throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
+            throw new CADoesntExistsException("Error CA " + userData.getCaName() + " have caid 0, which is impossible.");
         }
 
         int endentityprofileid;
         try {
-            endentityprofileid = endEntityProfileSession.getEndEntityProfileId(userdata.getEndEntityProfileName());
+            endentityprofileid = endEntityProfileSession.getEndEntityProfileId(userData.getEndEntityProfileName());
         } catch (EndEntityProfileNotFoundException e) {
             throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS,
-                    "Error End Entity profile " + userdata.getEndEntityProfileName() + " does not exist.", e);
+                    "Error End Entity profile " + userData.getEndEntityProfileName() + " does not exist.", e);
         }
 
-        final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userdata.getCertificateProfileName());
+        final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userData.getCertificateProfileName());
         if (certificateprofileid == 0) {
             throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
-                    "Error Certificate profile " + userdata.getCertificateProfileName() + " does not exist.");
+                    "Error Certificate profile " + userData.getCertificateProfileName() + " does not exist.");
         }
         final CertificateProfile cp = certificateProfileSession.getCertificateProfile(certificateprofileid);
         final boolean useRawSubjectDN = cp.getAllowDNOverrideByEndEntityInformation();
 
-        
-        final int tokenid = getTokenId(admin, userdata.getTokenType());
+
+        final int tokenid = getTokenId(authenticationToken, userData.getTokenType());
         if (tokenid == 0) {
-            throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, "Error Token Type  " + userdata.getTokenType() + " does not exist.");
+            throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, "Error Token Type  " + userData.getTokenType() + " does not exist.");
         }
 
-        return convertUserDataVOWSInternal(userdata, caid, endentityprofileid, certificateprofileid, tokenid, useRawSubjectDN);
+        return convertUserDataVOWSInternal(userData, caid, endentityprofileid, certificateprofileid, tokenid, useRawSubjectDN);
     }
 
     /** Sets generic Custom ExtendedInformation from potential data in UserDataVOWS.
@@ -340,14 +340,14 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation, final String caname,
-            final String endentityprofilename, final String certificateprofilename, final String tokenname) {
+    public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation, final String caName,
+                                                    final String endEntityProfileName, final String certificateProfileName, final String tokenName) {
         final UserDataVOWS dataWS = new UserDataVOWS();
         dataWS.setUsername(endEntityInformation.getUsername());
-        dataWS.setCaName(caname);
-        dataWS.setEndEntityProfileName(endentityprofilename);
-        dataWS.setCertificateProfileName(certificateprofilename);
-        dataWS.setTokenType(tokenname);
+        dataWS.setCaName(caName);
+        dataWS.setEndEntityProfileName(endEntityProfileName);
+        dataWS.setCertificateProfileName(certificateProfileName);
+        dataWS.setTokenType(tokenName);
 
         dataWS.setPassword(null);
         dataWS.setClearPwd(false);
@@ -404,7 +404,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     @Override
     public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation) throws EjbcaException, CADoesntExistsException {
         final String username = endEntityInformation.getUsername();
-        // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
+        // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when
         // trying to add/edit the user
         final String caname = caSession.getCAInfoInternal(endEntityInformation.getCAId(), null, true).getName();
 
@@ -423,7 +423,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             log.error(message);
             throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
         }
-        
+
         final String tokenname = getTokenName(endEntityInformation.getTokenType());
         if (tokenname == null) {
             final String message = "Error Token Type id " + endEntityInformation.getTokenType() + " does not exist. User: " + username;
@@ -432,7 +432,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         }
         return convertEndEntityInformation(endEntityInformation, caname, endentityprofilename, certificateprofilename, tokenname);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch)
@@ -516,14 +516,14 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
     private int getTokenId(AuthenticationToken admin, String tokenname) {
         int returnval = 0;
-        
+
         for (int i = 0; i < softtokennames.length; i++) {
             if (softtokennames[i].equals(tokenname)) {
                 returnval = softtokenids[i];
                 break;
             }
         }
-        
+
         return returnval;
     }
 
@@ -536,7 +536,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 break;
             }
         }
-        
+
         return returnval;
     }
 
@@ -565,7 +565,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             log.info(msg);
             endEntityManagementSession.setPassword(admin, username, password);
             endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
-            // If we managed to verify the certificate we will break out of the loop									
+            // If we managed to verify the certificate we will break out of the loop
         } catch (CertificateNotYetValidException e) {
             // If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
             if (log.isDebugEnabled()) {
@@ -647,7 +647,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             List<String> principals = sshRequestMessageWs.getPrincipals();
             Map<String, String> criticalOptions = sshRequestMessageWs.getCriticalOptions();
             Map<String, byte[]> additionalExtensions = sshRequestMessageWs.getAdditionalExtensions();
-        
+
         return new SshRequestMessage(publicKey, keyId, principals, additionalExtensions, criticalOptions, comment);
     }
 
