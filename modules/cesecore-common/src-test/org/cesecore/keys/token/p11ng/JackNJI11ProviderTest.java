@@ -54,8 +54,8 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.util.CryptoProviderTools;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -117,8 +117,8 @@ public class JackNJI11ProviderTest {
     public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin();
     private static CryptoToken cryptoToken;
     
-    @BeforeClass
-    public static void setup() throws Exception {
+    @Before
+    public void setup() throws Exception {
         assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
         assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -129,8 +129,8 @@ public class JackNJI11ProviderTest {
         cryptoToken.generateKeyPair("secp256r1", PKCS11TestUtils.ECC_TEST_KEY_1);
     }
     
-    @AfterClass
-    public static void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         // Delete created HSM keys. CryptoToken is never persiste.
         cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
         cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
