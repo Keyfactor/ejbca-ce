@@ -32,7 +32,7 @@ pipeline {
 					echo  "kot debug"
 					sh "ls ${env.WORKSPACE}"
 					sh "ls ${env.WORKSPACE}/ejbca"
-					sh "ls ${env.WORKSPACE}/doc"
+					sh "ls ${env.WORKSPACE}/ejbca/doc"
 
                     sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-tables-ejbca-db2.sql ./"
                     sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ./"
