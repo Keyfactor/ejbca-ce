@@ -28,6 +28,12 @@ pipeline {
 		stage('database') {
 			steps {
                 dir ("ejbca/jenkins-files/${env.JENKINS_JOB_FOLDER}/db2") {
+
+					echo  "kot debug"
+					sh "ls ${env.WORKSPACE}"
+					sh "ls ${env.WORKSPACE}/ejbca"
+					sh "ls ${env.WORKSPACE}/doc"
+
                     sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-tables-ejbca-db2.sql ./"
                     sh "cp ${env.WORKSPACE}/ejbca/doc/sql-scripts/create-index-ejbca.sql ./"
                     sh "docker build -t ${env.DOCKER_NAME_DB} -m 3GB . "
