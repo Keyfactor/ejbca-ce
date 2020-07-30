@@ -21,7 +21,7 @@ import org.openqa.selenium.WebDriver;
 /**
  * ACME helper class for EJBCA Web Tests.
  *
- *  @version $Id: AcmeHelper.java 2020-04-21 15:00 tobiasM$
+ *  @version $Id$
  */
 public class AcmeHelper extends BaseHelper {
 
@@ -129,7 +129,7 @@ public class AcmeHelper extends BaseHelper {
     }
     
     /**
-     * Clicks the 'Add' button
+     * Clicks the 'Switch to edit mode' button
      *
      */
     public void clickEdit() {
