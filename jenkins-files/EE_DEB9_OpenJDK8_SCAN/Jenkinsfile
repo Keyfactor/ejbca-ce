@@ -45,6 +45,21 @@ pipeline {
         dockerBuildNoCache = ''
     }
     stages {
+        stage('Checkout code analizer tools') {
+            steps {
+                sh 'mkdir -p code-analyzer-tools'
+                dir("code-analyzer-tools")
+                    {
+                        checkout([
+                            $class: 'SubversionSCM',
+                            locations: [[
+                                credentialsId: 'e8aa0eb0-9eb8-42d2-8596-6a7a90c8f7cc',
+                                local: '.',
+                                remote: 'https://svn.cesecore.eu/svn/ejbca-restricted/trunk/code-analyzer-tools'
+                            ]]])
+                    }
+            }
+        }
         stage('Init') {
             steps {
                 script {
