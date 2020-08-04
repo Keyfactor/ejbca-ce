@@ -108,6 +108,61 @@
 
 				<!-- "IF CVC AVAILABLE"  -->
 				<h:panelGroup
+						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+					<h:outputLabel value="#{web.text.CRYPTOTOKEN}"
+								   style="font-weight: bold;" />
+					<h:outputText
+							value="#{web.ejbcaWebBean.getHelpReference('/Managing_Crypto_Tokens.html')}"
+							escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+
+				<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
+					<h:outputLink value="#{editCAsMBean.currentCaCryptoTokenLink}"
+								  rendered="#{editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}" />
+					</h:outputLink>
+					<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}"
+								  rendered="#{not editCAsMBean.currentCaCryptoTokenPresent}" />
+				</h:panelGroup>
+
+				<h:panelGroup
+						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+					<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}"
+								  rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
+					<h:selectOneMenu name="selectcryptotoken"
+									 id="selectcryptotoken"
+									 rendered="#{editCAsMBean.cryptoTokenSuitable}"
+									 value="#{editCAsMBean.cryptoTokenIdParam}">
+						<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}" />
+						<f:ajax event="change" render="editcapage" />
+					</h:selectOneMenu>
+					<br />
+					<ui:repeat value="#{editCAsMBean.selectedCryptoTokenInfo}" var="info">
+						<h:outputLabel styleClass="help" value="#{info}" /> <br/>
+					</ui:repeat>
+
+					<h:outputLabel value="#{web.text.CRYPTOTOKEN_NEED_EXISTING_OR_GEN}"
+								   style="font-weight: bold;"
+								   rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenNeedExistingOrGen}" />
+					<h:outputLabel
+							value="You need to select a Crypto Token that exists, or generate keys if it exists, before you can initialize!"
+							style="font-weight: bold;"
+							rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenIdParamNull}" />
+				</h:panelGroup>
+
+				<h:panelGroup
+						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.failedCryptoTokenExist}">
+					<h:outputLabel value="Failed to access these CryptoTokens:"
+								   style="font-weight: bold;" />
+					<ui:repeat var="failedCrypto"
+							   value="editCAsMBean.failedCryptoTokenLinkMap()">
+						<h:outputLink value="#{failedCrypto.key}" />
+						<h:outputText value="#{failedCrypto.value}" />
+					</ui:repeat>
+				</h:panelGroup>
+
+				<h:panelGroup
 					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="getsigningalgorithm"
 						value="#{web.text.SIGNINGALGORITHM}" style="font-weight: bold;" />
@@ -129,62 +184,10 @@
 					<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}"
 						value="#{editCAsMBean.caInfoDto.signatureAlgorithmParam}">
 						<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
-						<f:ajax listener="#{editCAsMBean.resetCryptoTokenParam()}" render="@form" />
 					</h:selectOneMenu>
+					<br/>
+					<h:outputLabel styleClass="smallHelp" value="#{web.text.SIGNINGALGORITHM_FILTERED}" />
 				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
-					<h:outputLabel value="#{web.text.CRYPTOTOKEN}"
-						style="font-weight: bold;" />
-					<h:outputText
-						value="#{web.ejbcaWebBean.getHelpReference('/Managing_Crypto_Tokens.html')}"
-						escape="false" styleClass="helpReference"/>
-				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
-					<h:outputLink value="#{editCAsMBean.currentCaCryptoTokenLink}"
-						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}">
-						<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}" />
-					</h:outputLink>
-					<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}"
-						rendered="#{not editCAsMBean.currentCaCryptoTokenPresent}" />
-				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
-					<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}"
-						rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
-					<h:selectOneMenu name="selectcryptotoken"
-						id="selectcryptotoken"
-						rendered="#{editCAsMBean.cryptoTokenSuitable}"
-						value="#{editCAsMBean.cryptoTokenIdParam}">
-						<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}" />
-						<f:ajax event="change" render="editcapage" />
-					</h:selectOneMenu>
-					<br />
-					<h:outputLabel value="#{web.text.CRYPTOTOKEN_NEED_EXISTING_OR_GEN}"
-						style="font-weight: bold;" 
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenNeedExistingOrGen}" />
-					<h:outputLabel
-						value="You need to select a Crypto Token that exists, or generate keys if it exists, before you can initialize!"
-						style="font-weight: bold;" 
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenIdParamNull}" />
-				</h:panelGroup>
-
-				<h:panelGroup
-					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.failedCryptoTokenExist}">
-					<h:outputLabel value="Failed to access these CryptoTokens:"
-						style="font-weight: bold;" />
-					<ui:repeat var="failedCrypto"
-						value="editCAsMBean.failedCryptoTokenLinkMap()">
-						<h:outputLink value="#{failedCrypto.key}" />
-						<h:outputText value="#{failedCrypto.value}" />
-					</ui:repeat>
-				</h:panelGroup>
-
-
 
 				<!-- Edit CA -->
 				<h:panelGroup
