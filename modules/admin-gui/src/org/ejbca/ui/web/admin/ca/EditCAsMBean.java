@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -174,6 +173,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private boolean suitableCryptoTokenExists;
     private List<SelectItem> availableCryptoTokenSelectItems;
+    private List<SelectItem> availableSigningAlgorithmSelectItems;
     private Map<String,String> failedCryptoTokenLinkMap;
     private int currentCryptoTokenId = 0;
     private boolean currentCryptoTokenPresent;
@@ -922,13 +922,70 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableSigningAlgList() {
         final List<SelectItem> resultList = new ArrayList<>();
+        final String cryptoTokenIdParam = caInfoDto.getCryptoTokenIdParam();
+
         for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
             if (!AlgorithmTools.isSigAlgEnabled(current)) {
                 continue; // e.g. GOST3410 if not configured
             }
             resultList.add(new SelectItem(current, current, ""));
         }
+
+        // "0" is the first "Create a new Crypto Token..." option in the select list.
+        // There is no information to filter signing algorithms by.
+        if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals("0")) {
+            try {
+                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), Integer.parseInt(cryptoTokenIdParam));
+                return resultList.stream()
+                                 .filter(sa -> signingAlgorithmApplicableForCT(sa.getLabel(), cryptoTokenKeyPairInfos))
+                                 .collect(Collectors.toList());
+            } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
+                log.error("Crypto token key pair infos could not be fetched.", e);
+            }
+        }
+
         return resultList;
+    }
+
+    /**
+     * Check if given signing algorithm can be found in crypto token keys.
+     *
+     * @param signingAlgorithm Signing algorithm
+     * @param cryptoTokenKeyPairInfos Key pairs in a crypto token
+     * @return true if found
+     */
+    private boolean signingAlgorithmApplicableForCT(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
+        String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm);
+        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+            if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return a list of values that describe the key pairs in selected
+     * Crypto Token.
+     *
+     * @return list of description i.e. ["defaultKey - RSA 2048", "testKey - RSA 1024"]
+     */
+    public List<String> getSelectedCryptoTokenInfo() {
+        final String cryptoTokenIdParam = caInfoDto.getCryptoTokenIdParam();
+        final List<String> keys = new ArrayList<>();
+
+        if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals("0")){
+            try {
+                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), Integer.parseInt(cryptoTokenIdParam));
+                for (KeyPairInfo keyPair : cryptoTokenKeyPairInfos) {
+                    keys.add(String.format("%s - %s %s", keyPair.getAlias(), keyPair.getKeyAlgorithm(), keyPair.getKeySpecification()));
+                }
+            } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
+                log.error("Crypto token key pair infos could not be fetched.", e);
+            }
+        }
+
+        return keys;
     }
 
     public boolean isCryptoTokenSuitable() {
@@ -1201,11 +1258,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setCreateLinkCertificate(final boolean createLinkCertificate) {
         this.createLinkCertificate = createLinkCertificate;
-    }
-
-    public void resetCryptoTokenParam() {
-        caInfoDto.setCryptoTokenIdParam(StringUtils.EMPTY);
-        updateAvailableCryptoTokenList();
     }
 
     // ===================================================== Create CA Actions ============================================= //
@@ -1741,6 +1793,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         usedValidators = new ArrayList<>();
 
         updateAvailableCryptoTokenList();
+        updateAvailableSigningAlgorithmList();
     }
 
     private void initEditCaPage() {
@@ -1949,6 +2002,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         if (isCaUninitialized) {
             updateAvailableCryptoTokenList();
+            updateAvailableSigningAlgorithmList();
+        }
+    }
+
+    private void updateAvailableSigningAlgorithmList() {
+        availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
+
+        // Update caInfoDTO with a default algorithm
+        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.size() > 0){
+            caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
         }
     }
 
@@ -1957,7 +2020,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         suitableCryptoTokenExists = true;
         availableCryptoTokenSelectItems = Collections.emptyList();
         try {
-            List<Entry<String, String>> availableCryptoTokens = caBean.getAvailableCryptoTokens(caInfoDto.getSignatureAlgorithmParam(), isEditCA);
+            List<Entry<String, String>> availableCryptoTokens = caBean.getAvailableCryptoTokens(isEditCA);
             if (availableCryptoTokens == null) {
                 availableCryptoTokens = Collections.emptyList();
             }

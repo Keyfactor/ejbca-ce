@@ -1042,43 +1042,36 @@ public class CAInterfaceBean implements Serializable {
         return null;
 	}
 
-    public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm, boolean isEditingCA)
+	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA)
             throws AuthorizationDeniedException {
-	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
-	    if (caSigingAlgorithm != null && caSigingAlgorithm.length()>0) {
-	        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
-            for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
-                // Make sure we may use it
-                if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
-                        && cryptoTokenInfo.isActive()) {
-	                final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
-	                try {
-    	                // Fetch a list of all keys and their specs
-    	                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
-    	                // Only allow tokens with at least one keypair
-    	                if (!cryptoTokenKeyPairInfos.isEmpty()) {
-    	                    for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-    	                        String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm);
-    	                        if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-    	                            // We have at least on key in this token with the right key algorithm mathing the CA's singing algorithm, so add the token!
-    	                            availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
-    	                            break; // This token is fine, proceed with next token
-    	                        }
-    	                    }
-    	                }
-	                } catch (CryptoTokenOfflineException ctoe) {
-	                   // The CryptoToken might have timed out
-	                }
-	            }
-	        }
-	    }
+        final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
+        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
+
+        for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
+            // Make sure we may use it
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
+                    && cryptoTokenInfo.isActive()) {
+                final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
+                try {
+                    // Fetch a list of all keys and their specs
+                    final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+                    // Only allow tokens with at least one keypair
+                    if (!cryptoTokenKeyPairInfos.isEmpty()) {
+                        availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+                    }
+                } catch (CryptoTokenOfflineException ctoe) {
+                    // The CryptoToken might have timed out
+                }
+            }
+        }
+
         availableCryptoTokens.sort(new EntryValueComparator<>(new AsStringComparator()));
         if (!isEditingCA && authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             // Add a quick setup option for key generation (not visible when editing an uninitialized CA)
             availableCryptoTokens.add(0, new AbstractMap.SimpleEntry<>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
         }
-	    return availableCryptoTokens;
-	}
+        return availableCryptoTokens;
+    }
 
 	public List<Entry<String, String>> getFailedCryptoTokens(final String caSigingAlgorithm) throws AuthorizationDeniedException {
         final List<Entry<String, String>> failedCryptoTokens = new ArrayList<>();
