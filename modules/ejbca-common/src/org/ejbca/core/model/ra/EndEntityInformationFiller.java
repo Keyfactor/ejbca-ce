@@ -12,15 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.Rdn;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -33,9 +24,17 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.dn.DistinguishedName;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.Rdn;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /** This class gives facilities to populate user data with default values from profile.
  *
- * @version $Id$
+ * @version $Id: EndEntityInformationFiller.java 34943 2020-04-29 12:12:05Z anatom $
  */
 public class EndEntityInformationFiller {
 
