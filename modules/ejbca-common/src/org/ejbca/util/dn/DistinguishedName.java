@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.ejbca.util.dn;
 
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.DnComponents;
+
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,13 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.DnComponents;
 
 /** This class aims to be DN representation.
  * It offers facilities to merge two DN.
