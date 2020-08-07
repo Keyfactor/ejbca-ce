@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificates.pinning.TrustEntry;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.provider.EkuPKIXCertPathChecker;
+
+import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
 import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.X509Certificate;
@@ -22,14 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.certificates.pinning.TrustEntry;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
 /**
  * 
@@ -69,11 +68,12 @@ public class ClientX509TrustManager implements X509TrustManager {
             }
         }
         if (!CertTools.verifyWithTrustedCertificates(leafCertificate, trustedCertificateChains, pkixPathChecker)) {
-            String subjectdn = CertTools.getSubjectDN(leafCertificate);
+            String subjectAltName = CertTools.getSubjectAlternativeName(leafCertificate);
             String issuerdn = CertTools.getIssuerDN(leafCertificate);
             String sn = CertTools.getSerialNumberAsString(leafCertificate);
-            String errmsg = "Certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
-                    "' and serial number '" + sn + "' is NOT trusted.";
+            String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + subjectAltName + " issued by '" + issuerdn +
+                    "' is NOT trusted. Ensure the certificate is a TLS server certificate issued by a CA known to EJBCA, and permitted by" +
+                    "your authentication key binding.";
             throw new CertificateException(errmsg);
         }
     }
