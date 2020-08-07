@@ -50,13 +50,11 @@ pipeline {
                 sh 'mkdir -p code-analyzer-tools'
                 dir("code-analyzer-tools")
                     {
-                        checkout([
-                            $class: 'SubversionSCM',
-                            locations: [[
-                                credentialsId: 'e8aa0eb0-9eb8-42d2-8596-6a7a90c8f7cc',
-                                local: '.',
-                                remote: 'https://svn.cesecore.eu/svn/ejbca-restricted/trunk/code-analyzer-tools'
-                            ]]])
+                        git (
+                                poll: true,
+                                branch: "${params.BRANCH_NAME}",
+                                credentialsId: '245f7352-7f08-45db-be79-baab8c1c3eae',
+                                url: "git@neo.repoman.primekey.com:ejbca/code-analyzer-tools.git")
                     }
             }
         }
