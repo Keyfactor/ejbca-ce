@@ -57,7 +57,10 @@ pipeline {
                                                     local: '.',
                                                     remote: 'https://svn.cesecore.eu/svn/ejbca-restricted/trunk/code-analyzer-tools'
                                             ]]])
+                        echo 'Git checkout done!'
+                        sh 'ls'
                     }
+                sh 'ls'
             }
         }
         stage('Init') {
