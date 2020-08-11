@@ -178,10 +178,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -550,6 +552,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
         final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
+        final Set<String> includedDn = new HashSet<>();
         while (!CertTools.getIssuerDN(currentLevelCertificate).equals(CertTools.getSubjectDN(currentLevelCertificate))) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
             currentLevelCertificate = certificateStoreSession.findLatestX509CertificateBySubject(issuerDn);
@@ -557,6 +560,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
                 return Collections.emptyList();
+            }
+            if (!includedDn.add(issuerDn)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
+                }
+                break;
             }
             caCertificateChain.add(currentLevelCertificate);
         }
