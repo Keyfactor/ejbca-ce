@@ -254,7 +254,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     protected final void generateCertificateAfterCheck(){
         try {
             generatedToken = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
-            log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
+            log.info("Token (type " + endEntityInformation.getTokenType() + ") has been generated for the end entity with username " +
                     endEntityInformation.getUsername());
         } catch (AuthorizationDeniedException e){
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
