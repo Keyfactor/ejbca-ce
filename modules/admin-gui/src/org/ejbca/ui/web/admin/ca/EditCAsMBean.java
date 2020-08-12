@@ -1029,6 +1029,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
+    public String getSignatureAlgorithmParam() {
+        return caInfoDto.getSignatureAlgorithmParam();
+    }
+
+    public void setSignatureAlgorithmParam(final String signatureAlgorithmParam) {
+        caInfoDto.setSignatureAlgorithmParam(signatureAlgorithmParam);
+
+        // Create already in use key map
+        if (!isEditCA || isCaUninitialized) {
+            updateKeyAliases();
+        }
+    }
+
     private void setDefaultKeyAliases() {
         // Make up defaults based on key alias names
         caInfoDto.setSelectedKeyEncryptKey("");
@@ -1258,6 +1271,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setCreateLinkCertificate(final boolean createLinkCertificate) {
         this.createLinkCertificate = createLinkCertificate;
+    }
+
+    public void resetSigningAlgorithmTokenParam() {
+        caInfoDto.setSignatureAlgorithmParam(StringUtils.EMPTY);
+        updateAvailableSigningAlgorithmList();
+
+        // Create already in use key map
+        if (!isEditCA || isCaUninitialized) {
+            updateKeyAliases();
+        }
     }
 
     // ===================================================== Create CA Actions ============================================= //
