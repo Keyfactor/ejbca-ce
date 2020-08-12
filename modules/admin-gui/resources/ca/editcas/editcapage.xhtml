@@ -135,7 +135,7 @@
 									 rendered="#{editCAsMBean.cryptoTokenSuitable}"
 									 value="#{editCAsMBean.cryptoTokenIdParam}">
 						<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}" />
-						<f:ajax event="change" render="editcapage" />
+						<f:ajax listener="#{editCAsMBean.resetSigningAlgorithmTokenParam()}" render="@form"/>
 					</h:selectOneMenu>
 					<br />
 					<ui:repeat value="#{editCAsMBean.selectedCryptoTokenInfo}" var="info">
@@ -182,8 +182,9 @@
 				<h:panelGroup
 					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}"
-						value="#{editCAsMBean.caInfoDto.signatureAlgorithmParam}">
+						value="#{editCAsMBean.signatureAlgorithmParam}">
 						<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
+						<f:ajax event="change" render="editcapage" />
 					</h:selectOneMenu>
 					<br/>
 					<h:outputLabel styleClass="smallHelp" value="#{web.text.SIGNINGALGORITHM_FILTERED}" />
