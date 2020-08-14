@@ -35,6 +35,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.runners.model.InitializationError;
@@ -64,6 +65,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
 
     @Override
     public X509CA createX509Ca() throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(getSubjectDn()).hashCode());
         X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, getSubjectDn());
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, KeyGenParams.builder("RSA1024").build());      
