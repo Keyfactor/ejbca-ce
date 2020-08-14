@@ -46,6 +46,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 
@@ -77,6 +78,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
 
     @Override
     public X509CA createX509Ca() throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(getSubjectDn()).hashCode());
         X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(getSubjectDn(), SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
                 true, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         CAToken caToken = x509ca.getCAToken();
