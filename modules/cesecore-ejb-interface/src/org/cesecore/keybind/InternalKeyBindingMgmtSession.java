@@ -40,13 +40,13 @@ public interface InternalKeyBindingMgmtSession {
     Map<String, Map<String, DynamicUiProperty<? extends Serializable>>> getAvailableTypesAndProperties();
     
     /**
-     * Get a list of all InternalKeyBindings of the requested type, regardless of authorization.
+     * Get a list of all InternalKeyBindings of the requested type (or of all types), regardless of authorization.
      * 
-     * @param internalKeyBindingType is the identifier of the type of InternalKeyBinding
-     * @return a list of IDs for the specific type and that the caller is authorized to view
+     * @param internalKeyBindingType is the identifier of the type of InternalKeyBinding, or null to return all types.
+     * @return a list of IDs for the specific type.
      */
     List<Integer> getInternalKeyBindingIds(String internalKeyBindingType);
-    
+
     /**
      * Get a list of all InternalKeyBindings the caller is authorized to view of the requested type.
      * 
