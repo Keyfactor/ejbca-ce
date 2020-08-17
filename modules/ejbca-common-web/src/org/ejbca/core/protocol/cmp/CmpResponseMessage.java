@@ -297,6 +297,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                                             new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
                                             new JceCRMFEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
                                     // encBldr.build encrypts the privateKey using the wrapper above, i.e. encrypted with AES128_CBC with the symmkey wrapped with kp.getPublic
+                                    // encBldr.build will encode the private key as a PrivateKeyInfo from RFC 5958
                                     myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);                                    
                             } else if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() == null) {
                                 // We should actually check this in the outer CMP layers before trying to create a real certificate response, but of course we have to check in here as well
