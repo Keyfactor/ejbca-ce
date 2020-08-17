@@ -51,7 +51,7 @@ pipeline {
                 dir("code-analyzer-tools")
                     {
                         git (
-                                branch: "trunk",
+                                branch: "main",
                                 credentialsId: '245f7352-7f08-45db-be79-baab8c1c3eae',
                                 url: "git@neo.repoman.primekey.com:ejbca/code-analyzer-tools.git")
                     }
