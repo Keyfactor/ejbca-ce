@@ -50,14 +50,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
@@ -126,7 +126,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
     private static final String ALT_NAME_KEY = "--subjectaltname";
     private static final String TOKEN_TYPE_KEY = "--tokenType";
     private static final String TOKEN_PASSWORD_KEY = "--tokenPass";
-    private static final String TOKEN_NAME_KEY = "--tokenName";
     private static final String KEY_SPEC_KEY = "--keyspec";
     private static final String KEY_TYPE_KEY = "--keytype";
     private static final String VALIDITY_KEY = "-v";
@@ -167,31 +166,25 @@ public class CaInitCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(DN_KEY, "DN", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "DN"));
         registerParameter(new Parameter(
                 TOKEN_TYPE_KEY,
-                "Crypto Token Type to create new Crypto Token",
-                MandatoryMode.OPTIONAL,
+                "Token Type",
+                MandatoryMode.MANDATORY,
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
-                "Defines if the CA Crypto Token should be created with soft keys or on a HSM. Use 'soft' for software keys, 'org.cesecore.keys.token.PKCS11CryptoToken' "
-                + "for PKCS#11 HSMs and 'org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken' for Utimaco CP5 HSM."));
-        registerParameter(new Parameter(
-                TOKEN_NAME_KEY,
-                "Name of Crypto Token",
-                MandatoryMode.OPTIONAL,
-                StandaloneMode.FORBID,
-                ParameterMode.ARGUMENT,
-                "Specifies an existing Crypto Token to create the CA with, or the name of the crypto token to create if " + TOKEN_TYPE_KEY + " is specified."));
+                "Defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys, 'org.cesecore.keys.token.PKCS11CryptoToken' "
+                + "for PKCS#11 HSMs and 'org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken' for Utimaco CP5 HSM"));
+        //Password kept as a mandatory argument for legacy reasons
         registerParameter(new Parameter(
                 TOKEN_PASSWORD_KEY,
                 "Password",
-                MandatoryMode.OPTIONAL,
+                MandatoryMode.MANDATORY,
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
                 "catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal."));
         registerParameter(new Parameter(KEY_SPEC_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key specification for CA signing key (soft crypto token) and OCSP/CMS service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
+                "Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
                         + "Keyspec for ECDSA keys is name of curve or 'implicitlyCA'' (see docs)."));
         registerParameter(new Parameter(KEY_TYPE_KEY, "Key Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key type for CA signing key (soft crypto token) and OCSP/CMS service keys. Keytype is RSA, DSA, ECDSA, Ed25519 or Ed448"));
+                "Keytype is RSA, DSA or ECDSA."));
         registerParameter(new Parameter(VALIDITY_KEY, "Validity", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Validity of the CA in days."));
         //Policy ID keyt as mandatory parameter for legacy reasons.
@@ -204,33 +197,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
 
         //Optional values
         registerParameter(new Parameter(CA_TOKEN_PROPERTIES_KEY, "Filename", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Token properties is a file were you define key aliases, library name and pin for the HSM. Similar to the CA Crypto Token settings in the admin UI."
-                        + "An example properties file for creating a new PKCS#11 crypto token is (between dashes):\n"
-                        + "---\n"
-                        + "sharedLibrary /usr/local/lib/softhsm/libsofthsm2.so\n" 
-                        + "slotLabelType SLOT_LABEL\n" 
-                        + "slotLabelValue slot1\n"
-                        + "certSignKey signKey\n" 
-                        + "crlSignKey signKey\n" 
-                        + "keyEncryptKey encryptKey\n" 
-                        + "testKey testKey\n" 
-                        + "defaultKey encryptKey\n" 
-                        + "---\n"
-                        + "An example properties file for using an existing crypto token is (between dashes):\n"
-                        + "---\n"
-                        + "certSignKey signKey\n" 
-                        + "crlSignKey signKey\n" 
-                        + "keyEncryptKey encryptKey\n" 
-                        + "testKey testKey\n" 
-                        + "defaultKey encryptKey\n" 
-                        + "---"
-                ));
+                "CA Token properties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin gui."));
         registerParameter(new Parameter(CERTIFICATE_PROFILE_KEY, "Profile name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT, "Makes the CA use the certificate profile 'profileName' instead of the default ROOTCA or SUBCA."
                         + " Optional parameter that can be completely left out."));
         registerParameter(new Parameter(SUPERADMIN_CN_KEY, "Superadmin CN", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Adding the parameters '-superadmincn SuperAdmin' makes an initial CA "
-                        + "and initializes the authorization module with an initial super administrator using the common name SuperAdmin. "
+                "Adding the parameters '-superadmincn SuperAdmin' makes an initial CA use the common name SuperAdmin "
+                        + "and initializes the authorization module with an initial super administrator. "
                         + "Note only used when creating initial CA. If parameter is not given, the authorization rules are untouched."));
         registerParameter(new Parameter(TYPE_KEY, "CA Type", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Type is the CA type. May be [" + typesStringBuilder.toString() + "]. Optional parameter, defaults to x509."));
@@ -276,11 +249,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final String catokentype = parameters.get(TOKEN_TYPE_KEY);
-        final String catokenname = parameters.get(TOKEN_NAME_KEY);
-        if (catokentype == null && catokenname == null) {
-            log.error("Must define either a token type or a token name.");
-            return CommandResult.FUNCTIONAL_FAILURE;            
-        }
         String catokenpassword = StringTools.passwordDecryption(parameters.get(TOKEN_PASSWORD_KEY), "ca.tokenpassword");
         if (StringUtils.equals(catokenpassword, "prompt")) {
             getLogger().info("Enter CA token password: ");
@@ -309,16 +277,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
         Properties cryptoTokenProperties = new Properties();
         String caTokenPropertiesFile = parameters.get(CA_TOKEN_PROPERTIES_KEY);
         if (caTokenPropertiesFile != null && "soft".equals(catokentype)) {
-            log.error("Can't define a token properties file for a soft token.");
-            return CommandResult.FUNCTIONAL_FAILURE;
-        } else if (caTokenPropertiesFile == null && !"soft".equals(catokentype)) {
-            log.error("Must define a token properties file for any token except soft.");
+            log.error("Can't define a CAToken properties file for a soft token.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } else if (caTokenPropertiesFile != null) {
             if ((caTokenPropertiesFile != null) && (!caTokenPropertiesFile.equalsIgnoreCase("null"))) {
                 File file = new File(caTokenPropertiesFile);
                 if (!file.exists()) {
-                    log.error("CA Token properties file " + caTokenPropertiesFile + " does not exist.");
+                    log.error("CA Token propoerties file " + caTokenPropertiesFile + " does not exist.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 } else if (file.isDirectory()) {
                     log.error("CA Token propoerties file " + caTokenPropertiesFile + " is a directory.");
@@ -474,10 +439,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // If authentication code is provided as "null", use the default token password for soft tokens (from cesecore.properties), and auto activation
             // If a user defined authentication code is provided, use this and do not enable auto activation for soft tokens
             final char[] authenticationCode;
-            if (catokenpassword == null || StringUtils.equalsIgnoreCase(catokenpassword, "null")) {
+            if (StringUtils.equalsIgnoreCase(catokenpassword, "null")) {
                 authenticationCode = null;
                 // auto activation is enabled by default when using the default soft token pwd, which is used by default
-                // for existing, active, crypto tokens no authenticationCode is needed
             } else {
                 authenticationCode = catokenpassword.toCharArray();
             }
@@ -490,65 +454,49 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     getLogger().info("Non default password used for soft CA token, auto activation disabled.");
                     cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
                 }
+            } else if (catokentype.equals(CryptoTokenFactory.JACKNJI_NAME)) {
+                // Don't reference by class.getName() since this class may not be available.
+                className = CryptoTokenFactory.JACKNJI_NAME;
             } else {
-                // if no catokentype was specified className will be null, and we will use an existing crypto token.
-                className = catokentype;
+                className = PKCS11CryptoToken.class.getName();
             }
+            // Create the CryptoToken
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            Integer cryptoTokenId;
-            if (className != null) {
-                // If a className was specified, we will create a new crypto token
+            int cryptoTokenId;
+            try {
                 try {
-                    // If no token name specified on command line, use CA name as crypto token name
-                    final String name = (catokenname == null ? caname : catokenname); 
+                    cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(), caname, className,
+                            cryptoTokenProperties, null, authenticationCode);
+                } catch (CryptoTokenNameInUseException e) {
+                    // If the name was already in use we simply add a timestamp to the name to make it unique
+                    final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
                     try {
-                        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(), name, className,
+                        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(), caname + postfix, className,
                                 cryptoTokenProperties, null, authenticationCode);
-                    } catch (CryptoTokenNameInUseException e) {
-                        // If the name was already in use we simply add a timestamp to the name to make it unique
-                        final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-                        try {
-                            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(), name + postfix, className,
-                                    cryptoTokenProperties, null, authenticationCode);
-                        } catch (CryptoTokenNameInUseException e1) {
-                            //Shouldn't be able to happen.
-                            throw new IllegalStateException("Crypto token name was in use, even though a unique name was just generated.", e);
-                        }
+                    } catch (CryptoTokenNameInUseException e1) {
+                        //Shouldn't be able to happen.
+                        throw new IllegalStateException("Crypto token name was in use, even though a unique name was just generated.", e);
                     }
-                } catch (NoSuchSlotException e) {
-                    log.error("Slot as defined in the file " + caTokenPropertiesFile + " was not found: " + e.getMessage());
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                } catch (CryptoTokenAuthenticationFailedException e) {
-                    log.error("Authentication to crypto token failed: " + e.getMessage());
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                }                
-            } else {
-                // Find an existing crypto token, if we came here, we implicitly know that catokenname is not null
-                cryptoTokenId = cryptoTokenManagementSession.getIdFromName(catokenname);
-                if (cryptoTokenId == null) {
-                    log.error("Crypto token " + catokenname + " does not exist.");
-                    return CommandResult.FUNCTIONAL_FAILURE;                    
                 }
+            } catch (NoSuchSlotException e) {
+                log.error("Slot as defined in the file " + caTokenPropertiesFile + " was not found: " + e.getMessage());
+                return CommandResult.FUNCTIONAL_FAILURE;
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                log.error("Authentication to crypto token failed: " + e.getMessage());
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
             // Create the CA Token
             final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
             caToken.setSignatureAlgorithm(signAlg);
-            caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signAlg));
+            caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Generate CA keys if it is a soft CryptoToken
             if ("soft".equals(catokentype)) {
                 final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 final String signKeySpecification = "DSA".equals(keytype) ? "DSA" + keyspec : keyspec;
-//                final String signKeySpecification;
-//                if ("RSA".equals(keytype)) {
-//                    signKeySpecification = "RSA" + keyspec;                    
-//                } else if ("DSA".equals(keytype)) {
-//                    signKeySpecification = "DSA" + keyspec;
-//                } else {
-//                    signKeySpecification = keyspec;
-//                }
+
                 try {
-                    cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, signKeyAlias, KeyGenParams.builder(signKeySpecification).build());
+                    cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, signKeyAlias, signKeySpecification);
                 } catch (InvalidAlgorithmParameterException e) {
                     log.error(signKeySpecification + " was not a valid alias: " + e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
@@ -557,10 +505,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 final String defaultKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-                // Encryption key must be RSA
+                // Decryption key must be RSA
                 final String defaultKeySpecification = "RSA".equals(keytype) ? keyspec : "2048";
                 try {
-                    cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, defaultKeyAlias, KeyGenParams.builder(defaultKeySpecification).build());
+                    cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, defaultKeyAlias, defaultKeySpecification);
                 } catch (InvalidAlgorithmParameterException e) {
                     log.error(defaultKeySpecification + " was not a valid alias: " + e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
@@ -669,7 +617,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }
      
             getLogger().info("CA initialized");
-            getLogger().info("Note that open browser sessions may have to be restarted to interact with this CA.");
+            getLogger().info("Note that any open browser sessions must be restarted to interact with this CA.");
         } catch (AuthorizationDeniedException e) {
             log.error("Current CLI user not authorized to create CA: " + e.getMessage());
             return CommandResult.AUTHORIZATION_FAILURE;
@@ -719,12 +667,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     
     @Override
     public String getCommandDescription() {
-        return "Create a CA and its first CRL. Publishes the CRL and CA certificate. Can create a new crypto token for the CA, or re-use an existing crypto token.\n"
-                + "Example to create a new PKCS#11 crypto token and a CA using this token:\n"
-                + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenType org.cesecore.keys.token.PKCS11CryptoToken --tokenprop p11cainit.properties --tokenPass mypin  --keyspec 2048 --keytype RSA --policy null -v 3 -s SHA256WithRSA"
-                + "Example to create a new CA using an existing crypto token:\n"
-                + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenName \"My Token\" -v 3 --policy null -s SHA256WithRSA --keyspec 2048 --keytype RSA --tokenprop token.properties";
-    
+        return "Create a CA and its first CRL. Publishes the CRL and CA certificate";
 
     }
 
