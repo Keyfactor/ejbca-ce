@@ -1,0 +1,7 @@
+/p12/
+dist/
+build*/
+tmp/
+conf/*.properties
+velocity.log
+
