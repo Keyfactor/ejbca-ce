@@ -26,4 +26,4 @@ You can simulate what Jenkins does for individual containers by running commands
         -e "JAVA_OPTS=-Xms1024m -Xmx1024m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m" \
         pk-dev/scan-pmd
 
-(You need to checkout "code-analyzer-tools" sub project from SVN trunk as well as EJBCA.)
+(You need to checkout "code-analyzer-tools" sub project from Git as well as EJBCA.)
