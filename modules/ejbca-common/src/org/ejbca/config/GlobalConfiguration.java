@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
@@ -35,7 +36,7 @@ import org.ejbca.util.URIUtil;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id$
+ * @version $Id: GlobalConfiguration.java 35186 2020-06-03 12:24:16Z serkano $
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -117,6 +118,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
 
+    // Default OAuth Keys
+    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
+    
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
 
@@ -184,6 +188,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String REPORTS_PATH        = "reports_path";
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
+    
+    private static final   String OAUTH_KEYS          = "oauthkeys";
     
     private static final   String CTLOGS              = "ctlogs";
 
@@ -550,6 +556,29 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         } else {
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
+        final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);
+        return (ret == null ? OAUTH_KEYS_DEFAULT : new LinkedHashMap<>(ret));
+    }
+
+    /** Sets the available OAuth keys */
+    public void setOauthKeys(LinkedHashMap<Integer,OAuthKeyInfo> oAuthKeys) {
+        data.put(OAUTH_KEYS, oAuthKeys);
+    }
+
+    public void addOauthKey(OAuthKeyInfo oAuthKey) {
+        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        keys.put(oAuthKey.getOauthInternalKeyId(), oAuthKey);
+        setOauthKeys(keys);
+    }
+
+    public void removeOauthKey(int oAuthKeyId) {
+        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        keys.remove(oAuthKeyId);
+        setOauthKeys(keys);
     }
     
     @SuppressWarnings("unchecked")
