@@ -83,7 +83,7 @@ public final class OAuthKeyInfo implements Serializable {
         this.publicKeyBytes = publicKeyBytes;
     }
 
-    /** @return Log Key ID as specified by the RFC, in human-readable format */
+    /** @return OAuth Key ID as specified by the RFC, in human-readable format */
     public String getOauthInternalKeyIdString() {
         try {
             ensureParsed();
@@ -97,7 +97,7 @@ public final class OAuthKeyInfo implements Serializable {
             return e.getLocalizedMessage();
         }
     }
-    
+
     public int getSkewLimit() {
         return skewLimit;
     }
@@ -109,7 +109,7 @@ public final class OAuthKeyInfo implements Serializable {
     public void setKeyIdentifier(final String keyIdentifier) {
         this.keyIdentifier = keyIdentifier;
     }
-    
+
     public void setSkewLimit(final int skewLimit) {
         if (skewLimit < 0) {
             throw new IllegalArgumentException("Skew limit value is negative");
