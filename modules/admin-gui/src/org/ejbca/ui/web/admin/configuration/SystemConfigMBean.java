@@ -243,7 +243,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public boolean getEnableExternalScripts() { return this.enableExternalScripts; }
         public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
         public List<OAuthKeyInfo> getOauthKeys() { return this.oauthKeys; }
-        public void setOauthKeys(List<OAuthKeyInfo> oAuthKeys) { this.oauthKeys = oAuthKeys; }
+        public void setOauthKeys(List<OAuthKeyInfo> oauthKeys) { this.oauthKeys = oauthKeys; }
         public List<CTLogInfo> getCtLogs() { return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs = ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -359,8 +359,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             throw new AuthorizationDeniedException("You are not authorized to view this page.");
         }
     }
-    
-    public void authorizeViewOAuthKeys(ComponentSystemEvent event) throws Exception {
+
+    public void authorizeViewOauthKeys(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
             getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource());
@@ -398,8 +398,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getCurrentConfig().getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
-                    public void saveOAuthKeys(final List<OAuthKeyInfo> oAuthKeys) {
-                        getCurrentConfig().setOauthKeys(oAuthKeys);
+                    public void saveOauthKeys(final List<OAuthKeyInfo> oauthKeys) {
+                        getCurrentConfig().setOauthKeys(oauthKeys);
                         saveCurrentConfig();
                     }
 
@@ -470,7 +470,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ctLogManager;
     }
-    
+
     public GoogleCtPolicy getGoogleCtPolicy() {
         if (googleCtPolicy == null) {
             googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
@@ -864,12 +864,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     globalConfig.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
                     globalConfig.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
                 }
-                
-                LinkedHashMap<Integer, OAuthKeyInfo> oAuthKeysMap = new LinkedHashMap<>();
-                for (OAuthKeyInfo oAuthKey : currentConfig.getOauthKeys()) {
-                    oAuthKeysMap.put(oAuthKey.getOauthInternalKeyId(), oAuthKey);
+
+                LinkedHashMap<Integer, OAuthKeyInfo> oauthKeysMap = new LinkedHashMap<>();
+                for (OAuthKeyInfo oauthKey : currentConfig.getOauthKeys()) {
+                    oauthKeysMap.put(oauthKey.getInternalId(), oauthKey);
                 }
-                globalConfig.setOauthKeys(oAuthKeysMap);
+                globalConfig.setOauthKeys(oauthKeysMap);
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for (CTLogInfo ctlog : currentConfig.getCtLogs()) {
@@ -1290,7 +1290,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         for (String name : extKeyUsageNames) {
             translatedNames.add(getEjbcaWebBean().getText(name));
         }
-        
+
         if (StringUtils.isEmpty(currentEKUOid)) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
@@ -1762,7 +1762,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isAllowedToEditSystemConfiguration() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
-    
+
     /** @return true if admin may create new or modify System Configuration. */
     public boolean isAllowedToEditOauthKeys() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource());
