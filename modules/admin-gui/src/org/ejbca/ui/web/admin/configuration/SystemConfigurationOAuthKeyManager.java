@@ -22,9 +22,9 @@ import org.cesecore.keys.util.KeyTools;
 
 /**
  * This class is used to manage OAuth Keys in EJBCA's system configuration. It adds some additional
- * functionality to the OAuthKeyManager, such as loading and saving state from the database, editing of
- * new OAuth Keys, checking whether a CT log is in use before removing it and language awareness.
- * 
+ * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
+ * new OAuth Keys.
+ *
  * @version $Id$
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
@@ -47,7 +47,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public UploadedFile getPublicKeyFile() {
             return publicKeyFile;
         }
-        
+
         public int getSkewLimit() {
             return skewLimit;
         }
@@ -59,13 +59,13 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void setPublicKeyFile(final UploadedFile publicKeyFile) {
             this.publicKeyFile = publicKeyFile;
         }
-        
+
         public void setSkewLimit(final int skewLimit) {
             this.skewLimit = skewLimit;
         }
 
         /**
-         * Load an existing CT log into the editor.
+         * Load an existing OAuth Key into the editor.
          */
         public void loadIntoEditor(final OAuthKeyInfo oauthKey) {
             // Only replace the key if a new one was uploaded
@@ -76,16 +76,17 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
 
         /**
-         * Reset all input to this CT log editor.
+         * Reset all input to this OAuth Key editor.
          */
         public void clear() {
             keyIdentifier = null;
             publicKeyFile = null;
+            skewLimit = 5000;
         }
 
         /**
-         * Returns the CT log currently being edited by this CT log editor.
-         * @return the CT log being edited, or null
+         * Returns the OAuth Key currently being edited by this OAuth Key editor.
+         * @return the OAuth Key being edited, or null
          */
         public OAuthKeyInfo getOauthKeyBeingEdited() {
             return oauthKeyBeingEdited;
@@ -142,14 +143,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYFILE", upload.getName(), e.getMessage());
             return null;
         } catch (final Exception e) {
-            log.info("Failed to add CT Log.", e);
+            log.info("Failed to add OAuth Key.", e);
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_GENERICADDERROR", e.getLocalizedMessage());
             return null;
         }
     }
 
     /**
-     * Adds a CT log with the information stored in the CT log editor.
+     * Adds an OAuth Key with the information stored in the OAuth Key editor.
      */
     public void addOauthKey() {
         if (oauthKeyEditor.getPublicKeyFile() == null) {
@@ -182,9 +183,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     /**
-     * Prepares for a CT log to be edited. This method will load the specified CT log into
-     * the CT log editor and set the editor in edit mode.
-     * @param oauthKey the CT log to be edited
+     * Prepares for an OAuth Key to be edited. This method will load the specified OAuth Key into
+     * the OAuth Key editor and set the editor in edit mode.
+     * @param oauthKey the OAuth Key to be edited
      * @return the constant string EDIT_OAUTH_KEY
      */
     public String editOauthKey(final OAuthKeyInfo oauthKey) {
@@ -193,7 +194,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     /**
-     * Retrieves the CT log editor for this CT log manager.
+     * Retrieves the OAuth Key editor for this OAuth Key manager.
      * @return an editor which can be used to edit OAuth Keys
      */
     public OAuthKeyEditor getOauthKeyEditor() {
