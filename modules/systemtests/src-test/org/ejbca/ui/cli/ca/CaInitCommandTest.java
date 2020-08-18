@@ -46,7 +46,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -64,9 +63,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
- * System test class for CaInitCommandTest
+ * System test class for CaInitCommandTest, tests rudimentary behavior of the "ca init" CLI command
  * 
- * @version $Id$
  */
 public class CaInitCommandTest {
 
@@ -110,6 +108,31 @@ public class CaInitCommandTest {
         CaTestCase.removeTestCA(CA_NAME);
         // Make sure CA certificates are wiped from the DB
         internalCertStoreSession.removeCertificatesBySubject(CA_DN);
+    }
+
+    /** Test with some missing token arguments to see that we check this input and give errors. */
+    @Test
+    public void testExecuteInvalidTokenArgs() throws Exception {
+        // Arguments missing both --tokenType and --tokenName
+        final String[] NO_TOKEN_TYPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        CommandResult result = caInitCommand.execute(NO_TOKEN_TYPE);
+        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+
+        // Arguments with PKCS#11 --tokenType, but missing --tokenprop
+        final String[] NO_TOKEN_PROP_WITH_TyPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "org.cesecore.keys.token.PKCS11CryptoToken", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        result = caInitCommand.execute(NO_TOKEN_PROP_WITH_TyPE);
+        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+
+        // Arguments with --tokenName, but missing --tokenprop
+        final String[] NO_TOKEN_PROP_WITH_NAME = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", "My Token", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        result = caInitCommand.execute(NO_TOKEN_PROP_WITH_NAME);
+        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+
+        // Arguments with Soft --tokenType, but including --tokenprop
+        final String[] SOFT_WITH_TOKEN_PROP = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "soft", "--tokenprop", "my.properties", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        result = caInitCommand.execute(SOFT_WITH_TOKEN_PROP);
+        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+
     }
 
     /** Test trivial happy path for execute, i.e, create an ordinary CA. */
