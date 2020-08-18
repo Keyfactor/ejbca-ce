@@ -13,13 +13,12 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.Random;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 
 /**
  * Represents an OAuth Public Key entry
@@ -29,7 +28,7 @@ import org.cesecore.keys.util.KeyTools;
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final int internalKeyId;
+    private final int internalId;
     private byte[] publicKeyBytes;
     private String keyIdentifier;
     private int skewLimit = 5000;
@@ -46,7 +45,7 @@ public final class OAuthKeyInfo implements Serializable {
      * @param publicKeyBytes  The ASN1 encoded public key.
      */
     public OAuthKeyInfo(final String keyIdentifier, final byte[] publicKeyBytes, final int skewLimit) {
-        this.internalKeyId = random.nextInt();
+        this.internalId = random.nextInt();
         this.keyIdentifier = keyIdentifier;
         if (publicKeyBytes == null) {
             throw new IllegalArgumentException("publicKeyBytes is null");
@@ -64,9 +63,9 @@ public final class OAuthKeyInfo implements Serializable {
         }
     }
 
-    /** @return Internal Id consisting of the hashcode of the issuer */
-    public int getOauthInternalKeyId() {
-        return internalKeyId;
+    /** @return Internal Id*/
+    public int getInternalId() {
+        return internalId;
     }
 
     public PublicKey getOauthPublicKey() {
@@ -83,16 +82,12 @@ public final class OAuthKeyInfo implements Serializable {
         this.publicKeyBytes = publicKeyBytes;
     }
 
-    /** @return OAuth Key ID as specified by the RFC, in human-readable format */
-    public String getOauthInternalKeyIdString() {
+    /** @return OAuth Public Key fingerprint */
+    public String getKeyFingerprint() {
         try {
             ensureParsed();
-            final MessageDigest md = MessageDigest.getInstance("SHA256");
-            final byte[] keyId = md.digest(publicKey.getEncoded());
-            return Base64.toBase64String(keyId);
-        } catch (NoSuchAlgorithmException e) {
-            // Should not happen, but not critical.
-            return "";
+            final byte[] fingerprint = CertTools.generateSHA256Fingerprint(publicKey.getEncoded());
+            return Base64.toBase64String(fingerprint);
         } catch (Exception e) {
             return e.getLocalizedMessage();
         }
@@ -123,14 +118,14 @@ public final class OAuthKeyInfo implements Serializable {
             return false;
         }
 
-        final OAuthKeyInfo ctLogInfo = (OAuthKeyInfo) o;
-        return internalKeyId == ctLogInfo.getOauthInternalKeyId() &&
-                keyIdentifier.equals(ctLogInfo.getKeyIdentifier());
+        final OAuthKeyInfo oauthKeyInfo = (OAuthKeyInfo) o;
+        return internalId == oauthKeyInfo.getInternalId() &&
+                keyIdentifier.equals(oauthKeyInfo.getKeyIdentifier());
     }
 
     @Override
     public int hashCode() {
-        return internalKeyId + (keyIdentifier.hashCode() * 4711);
+        return internalId + (keyIdentifier.hashCode() * 4711);
     }
 
     @Override
