@@ -78,8 +78,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * CLI command for creating a CA and its first CRL. Publishes the CRL and CA certificate if it should.
+ * Can create a new crypto token for the CA, or re-use an existing crypto token.
  * 
- * @version $Id$
  */
 enum CaType {
     X509("x509"), CVC("cvc");
@@ -260,7 +260,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             type = CaType.lookupCaType(parameters.get(TYPE_KEY));
             if (type == null) {
                 log.error("CA type of name " + parameters.get(TYPE_KEY) + " unknown. Available types: " + CaType.getTypeNames());
-                return CommandResult.FUNCTIONAL_FAILURE;
+                return CommandResult.CLI_FAILURE;
             }
         } else {
             type = CaType.X509;
@@ -273,13 +273,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
         final String subjectAltName = parameters.get(ALT_NAME_KEY);
         if (subjectAltName != null && !checkSubjectAltName(subjectAltName)) {
             log.error("Invalid Subject Alternative Name");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.CLI_FAILURE;
         }
         final String catokentype = parameters.get(TOKEN_TYPE_KEY);
         final String catokenname = parameters.get(TOKEN_NAME_KEY);
         if (catokentype == null && catokenname == null) {
             log.error("Must define either a token type or a token name.");
-            return CommandResult.FUNCTIONAL_FAILURE;            
+            return CommandResult.CLI_FAILURE;            
         }
         String catokenpassword = StringTools.passwordDecryption(parameters.get(TOKEN_PASSWORD_KEY), "ca.tokenpassword");
         if (StringUtils.equals(catokenpassword, "prompt")) {
@@ -309,20 +309,21 @@ public class CaInitCommand extends BaseCaAdminCommand {
         Properties cryptoTokenProperties = new Properties();
         String caTokenPropertiesFile = parameters.get(CA_TOKEN_PROPERTIES_KEY);
         if (caTokenPropertiesFile != null && "soft".equals(catokentype)) {
-            log.error("Can't define a token properties file for a soft token.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            log.error("Can't define a token properties file for a new soft token.");
+            return CommandResult.CLI_FAILURE;
         } else if (caTokenPropertiesFile == null && !"soft".equals(catokentype)) {
+            // This also catches if catokentype == null and caTokenPropertiesFile == null, i.e. if we have a catokenname without properties
             log.error("Must define a token properties file for any token except soft.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.CLI_FAILURE;
         } else if (caTokenPropertiesFile != null) {
             if ((caTokenPropertiesFile != null) && (!caTokenPropertiesFile.equalsIgnoreCase("null"))) {
                 File file = new File(caTokenPropertiesFile);
                 if (!file.exists()) {
                     log.error("CA Token properties file " + caTokenPropertiesFile + " does not exist.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
+                    return CommandResult.CLI_FAILURE;
                 } else if (file.isDirectory()) {
                     log.error("CA Token propoerties file " + caTokenPropertiesFile + " is a directory.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
+                    return CommandResult.CLI_FAILURE;
                 } else {
                     try {
                         cryptoTokenProperties.load(new FileInputStream(caTokenPropertiesFile));
@@ -341,7 +342,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 signedByCAId = CAInfo.SIGNEDBYEXTERNALCA;
                 if (extcachainName == null) {
                     log.error("Signing by external CA requires parameter " + EXTERNAL_CHAIN_KEY);
-                    return CommandResult.FUNCTIONAL_FAILURE;
+                    return CommandResult.CLI_FAILURE;
                 }
             } else {
                 signedByCAId = Integer.valueOf(parameters.get(SIGNED_BY));
