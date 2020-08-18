@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * This class is responsible for managing a list of OAuth Keys.
- * 
+ *
  * @version $Id$
  */
 public class OAuthKeyManager {
@@ -75,7 +75,7 @@ public class OAuthKeyManager {
      */
     public boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existing : oauthKeys) {
-            final boolean hasSameId = existing.getOauthInternalKeyId() == oauthKey.getOauthInternalKeyId();
+            final boolean hasSameId = existing.getInternalId() == oauthKey.getInternalId();
             if (hasSameId) {
                 return false;
             }

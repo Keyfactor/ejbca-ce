@@ -16,7 +16,7 @@
  	 *  commercial license terms.                                            *
  	 *                                                                       *
  	 *************************************************************************/
-     
+
      $Id$
      -->
 </ui:remove>
@@ -24,7 +24,7 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{systemConfigMBean}" />
 	<ui:define name="content">
-	
+
 	<h1>
         <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_EDITKEY}: #{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyBeingEdited.keyIdentifier}"/>
     </h1>
@@ -36,20 +36,20 @@
             <h:panelGroup id="placeholder1"/>
 
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
-            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyIdentifier}" size="46" id="keyId">
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyIdentifier}" size="46" id="keyId">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
-            
+
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CURRENT_PUBLICKEY}"/>
-            <h:outputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyBeingEdited.oauthInternalKeyIdString}" styleClass="monospace"/>
-            
+            <h:outputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyBeingEdited.keyFingerprint}" styleClass="monospace"/>
+
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REPLACE_PUBLICKEY} "/>
-            <t:inputFileUpload id="editedOAuthKeyFile" 
-                value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyFile}" 
+            <t:inputFileUpload id="editedOAuthKeyFile"
+                value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyFile}"
                 title="#{web.text.OAUTHKEYCONFIGURATION_NEW_PUBLICKEYFILE}"/>
-                
+
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SKEWLIMIT}"/>
-            <h:inputText id="editedCTLogSkewLimit" 
+            <h:inputText id="editedCTLogSkewLimit"
                 required="true"
                 value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.skewLimit}"
                 title="#{web.text.FORMAT_MILLISECONDS}"
