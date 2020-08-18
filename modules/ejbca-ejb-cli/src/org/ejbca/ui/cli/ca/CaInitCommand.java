@@ -539,14 +539,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if ("soft".equals(catokentype)) {
                 final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 final String signKeySpecification = "DSA".equals(keytype) ? "DSA" + keyspec : keyspec;
-//                final String signKeySpecification;
-//                if ("RSA".equals(keytype)) {
-//                    signKeySpecification = "RSA" + keyspec;                    
-//                } else if ("DSA".equals(keytype)) {
-//                    signKeySpecification = "DSA" + keyspec;
-//                } else {
-//                    signKeySpecification = keyspec;
-//                }
                 try {
                     cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, signKeyAlias, KeyGenParams.builder(signKeySpecification).build());
                 } catch (InvalidAlgorithmParameterException e) {
