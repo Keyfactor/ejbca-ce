@@ -55,6 +55,8 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -105,6 +107,7 @@ import org.ejbca.ui.web.configuration.exception.AdminExistsException;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
+import org.ejbca.util.HttpTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
@@ -217,11 +220,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
             requestServerPort = httpServletRequest.getServerPort();
             currentRemoteIp = httpServletRequest.getRemoteAddr();
+            final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
-            if (WebConfiguration.getRequireAdminCertificate() && certificate == null) {
-                throw new AuthenticationFailedException("Client certificate required.");
+            if (WebConfiguration.getRequireAdminCertificate() && certificate == null && oauthBearerToken == null) {
+                throw new AuthenticationFailedException("Client certificate or OAuth bearer token required.");
             }
             if (certificate != null) {
                 administrator = authenticationSession.authenticateUsingClientCertificate(certificate);
@@ -244,52 +248,41 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
                     throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
                 }
-                Map<String, Object> details = new LinkedHashMap<>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
                     details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
                 }
-                if (WebConfiguration.getAdminLogRemoteAddress()) {
-                    details.put("remoteip", currentRemoteIp);
-                }
-                if (WebConfiguration.getAdminLogForwardedFor()) {
-                    details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
-                }
-                // Also check if this administrator is present in any role, if not, login failed
-                if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
-                    details.put("reason", "Certificate has no access");
-                    auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                            administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
+                if (!checkRoleMembershipAndLog(httpServletRequest, "Client certificate", issuerDN, sernostr, details)) {
                     throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
                 }
-                // Continue with login
-                if (details.isEmpty()) {
-                    details = null;
+            } else if (oauthBearerToken != null) {
+                administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                if (administrator == null) {
+                    throw new AuthenticationFailedException("Authentication failed using OAuth Bearer Token");
                 }
-                auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                        administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
+                final Map<String, Object> details = new LinkedHashMap<>();
+                final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) administrator;
+                final OAuth2Principal principal = oauth2Admin.getClaims();
+                details.put("keyhash", oauth2Admin.getPublicKeyBase64Fingerprint());
+                if (principal.getIssuer() != null) {
+                    details.put("issuer", principal.getIssuer());
+                }
+                if (principal.getSubject() != null) {
+                    details.put("subject", principal.getSubject());
+                }
+                if (principal.getAudience() != null) {
+                    details.put("audience", principal.getAudience()); // FIXME check that we can store a list here
+                }
+                if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
+                    throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
+                }
             } else {
                 // TODO: When other types of authentication are implemented, check the distinct configured tokenTypes and try to authenticate for each
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
-                Map<String, Object> details = new LinkedHashMap<>();
-                if (WebConfiguration.getAdminLogRemoteAddress()) {
-                    details.put("remoteip", currentRemoteIp);
+                final Map<String, Object> details = new LinkedHashMap<>();
+                if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
+                    throw new AuthenticationFailedException("Authentication failed for certificate with no access");
                 }
-                if (WebConfiguration.getAdminLogForwardedFor()) {
-                    details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
-                }
-                // Also check if this administrator is present in any role, if not, login failed
-                if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
-                    details.put("reason", "AuthenticationToken has no access");
-                    auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                            administrator.toString(), null, null, null, details);
-                    throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
-                }
-                // Continue with login
-                if (details.isEmpty()) {
-                    details = null;
-                }
-                auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                        administrator.toString(), null, null, null, details);
             }
             commonInit();
             // Set the current TLS session
@@ -322,6 +315,38 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
 
         return globalconfiguration;
+    }
+
+    /**
+     * @param httpServletRequest
+     * @param issuerDN Issuer DN, or null if not relevant for the authentication method.
+     * @param searchDetail1 Authentication method specific data, such as a certificate serial number.
+     * @param details Additional details to include in audit log record.
+     * @return true on successful authentication, false on failure.
+     */
+    private boolean checkRoleMembershipAndLog(final HttpServletRequest httpServletRequest, final String tokenDescription, final String issuerDN,
+            final String searchDetail1, Map<String, Object> details) {
+        final String caIdString = issuerDN != null ? Integer.toString(issuerDN.hashCode()) : null;
+        if (WebConfiguration.getAdminLogRemoteAddress()) {
+            details.put("remoteip", currentRemoteIp);
+        }
+        if (WebConfiguration.getAdminLogForwardedFor()) {
+            details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
+        }
+        // Also check if this administrator is present in any role, if not, login failed
+        if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
+            details.put("reason", tokenDescription + " has no access");
+            auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                    administrator.toString(), caIdString, searchDetail1, null, details);
+            return false;
+        }
+        // Continue with login
+        if (details.isEmpty()) {
+            details = null;
+        }
+        auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                administrator.toString(), caIdString, searchDetail1, null, details);
+        return true;
     }
 
     @Override
@@ -694,13 +719,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public String formatAsISO8601(final Date date) {
         return ValidityDate.formatAsISO8601(date, timeZone);
-    }
-
-    /** Parse a Date and reformat it as vailidation. */
-    // TODO appears to be unused. Remove?
-    @Override
-    public String validateDateFormat(final String value) throws ParseException {
-        return ValidityDate.formatAsUTC(ValidityDate.parseAsUTC(value));
     }
 
     /** Check if the argument is a relative date/time in the form days:min:seconds. */
@@ -1605,6 +1623,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
     }
 
+    @Override
     public boolean isRunningBuildWithRAWeb() {
         return !isRunningEnterprise() || isRunningBuildWithRA();
     }
