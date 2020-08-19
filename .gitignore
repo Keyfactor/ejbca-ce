@@ -1,7 +1,9 @@
+out/
 /p12/
 dist/
 build*/
 tmp/
 conf/*.properties
 velocity.log
-
+src/java/jndi.properties
+validationtool.log
