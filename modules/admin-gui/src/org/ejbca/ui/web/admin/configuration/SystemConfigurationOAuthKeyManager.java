@@ -37,7 +37,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     public class OAuthKeyEditor {
         private String keyIdentifier;
         private UploadedFile publicKeyFile;
-        private int skewLimit = 5000;
+        private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
 
         public String getKeyIdentifier() {
@@ -81,7 +81,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void clear() {
             keyIdentifier = null;
             publicKeyFile = null;
-            skewLimit = 5000;
+            skewLimit = 60000;
         }
 
         /**
@@ -158,6 +158,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return;
         }
 
+        if (oauthKeyEditor.getSkewLimit() < 0) {
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_SKEWLIMITNEGATIVE");
+            return;
+        }
+
         final byte[] newOauthKeyPublicKey = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
         if (newOauthKeyPublicKey == null) {
             // Error already reported
@@ -219,7 +224,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 return StringUtils.EMPTY;
             }
         }
-        if (oauthKeyEditor.getSkewLimit() <= 0) {
+        if (oauthKeyEditor.getSkewLimit() < 0) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_SKEWLIMITNEGATIVE");
             return StringUtils.EMPTY;
         }
