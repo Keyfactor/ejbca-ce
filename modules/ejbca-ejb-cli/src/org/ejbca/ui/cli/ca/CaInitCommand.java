@@ -715,7 +715,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         return "Create a CA and its first CRL. Publishes the CRL and CA certificate. Can create a new crypto token for the CA, or re-use an existing crypto token.\n"
                 + "Example to create a new PKCS#11 crypto token and a CA using this token:\n"
                 + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenType org.cesecore.keys.token.PKCS11CryptoToken --tokenprop p11cainit.properties --tokenPass mypin  --keyspec 2048 --keytype RSA --policy null -v 3 -s SHA256WithRSA"
-                + "Example to create a new CA using an existing crypto token:\n"
+                + "\nExample to create a new CA using an existing crypto token:\n"
                 + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenName \"My Token\" -v 3 --policy null -s SHA256WithRSA --keyspec 2048 --keytype RSA --tokenprop token.properties";
     
 
