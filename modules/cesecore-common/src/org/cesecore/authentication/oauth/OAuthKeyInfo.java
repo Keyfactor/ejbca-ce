@@ -31,7 +31,7 @@ public final class OAuthKeyInfo implements Serializable {
     private final int internalId;
     private byte[] publicKeyBytes;
     private String keyIdentifier;
-    private int skewLimit = 5000;
+    private int skewLimit = 60000;
 
     private transient PublicKey publicKey;
 
