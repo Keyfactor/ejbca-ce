@@ -69,7 +69,7 @@ public class OAuthKeyManager {
      * Determine whether the OAuth Key given as input can be added to this OAuth Key manager. A OAuth Key cannot be added
      * if any of the following conditions hold for another OAuth Key:
      * <ul>
-     *   <li>The other key has an ID identical to the new OAuth Key</li>
+     *   <li>The other key has an key identifier identical to the new OAuth Key</li>
      * </ul>
      * @param oauthKey the new OAuth Key to check
      * @return true if the OAuth Key given as input can be added, false otherwise
@@ -84,6 +84,27 @@ public class OAuthKeyManager {
         }
         return true;
     }
+
+    /**
+     * Determine whether the OAuth Key given as input can be edited.
+     * This just checks whether the new key identifier of the entry being edited is unique.
+     * <ul>
+     *   <li>The other key has a key identifier identical to the OAuth Key being edited</li>
+     * </ul>
+     * @param oauthKey the OAuth Key to check, but it doesn't yet have the new key identifier
+     * @param newKeyIdentifier the new key identifier
+     * @return true if the OAuth Key given as input can be edited, false otherwise
+     */
+     public boolean canEdit(final OAuthKeyInfo oauthKey, final String newKeyIdentifier) {
+         for (OAuthKeyInfo existing : oauthKeys) {
+             final boolean hasSameKeyIdentifier = StringUtils.equals(existing.getKeyIdentifier(), newKeyIdentifier);
+             final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
+             if (hasSameKeyIdentifier && !hasSameInternalId) {
+                 return false;
+             }
+         }
+         return true;
+     }
 
     /**
      * Returns the string representation of this object containing
