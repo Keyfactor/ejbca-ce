@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -69,7 +70,9 @@ import static org.junit.Assert.assertNull;
 public class CaInitCommandTest {
 
     private static final String CA_NAME = "CaInitCommandTest";
-    private static final String CA_DN = "CN=CLI Test CA "+CA_NAME+"ca2,O=EJBCA,C=SE";
+    private static final String CA_DN = "CN=CLI Test CA "+CA_NAME+",O=EJBCA,C=SE";
+    private static final String CA_NAME_2 = "CaInitCommandTest2";
+    private static final String CA_DN_2 = "CN=CLI Test CA "+CA_NAME_2+",O=EJBCA,C=SE";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile"+CA_NAME;
     private static final String[] HAPPY_PATH_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA" };
     private static final String[] X509_TYPE_ARGS = { CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "-type",
@@ -101,13 +104,16 @@ public class CaInitCommandTest {
         caInitCommand = new CaInitCommand();
         caImportCaCertCommand = new CaImportCACertCommand();
         CaTestCase.removeTestCA(CA_NAME);
+        CaTestCase.removeTestCA(CA_NAME_2);
     }
 
     @After
     public void tearDown() throws Exception {
         CaTestCase.removeTestCA(CA_NAME);
+        CaTestCase.removeTestCA(CA_NAME_2);
         // Make sure CA certificates are wiped from the DB
         internalCertStoreSession.removeCertificatesBySubject(CA_DN);
+        internalCertStoreSession.removeCertificatesBySubject(CA_DN_2);
     }
 
     /** Test with some missing token arguments to see that we check this input and give errors. */
@@ -116,30 +122,52 @@ public class CaInitCommandTest {
         // Arguments missing both --tokenType and --tokenName
         final String[] NO_TOKEN_TYPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
         CommandResult result = caInitCommand.execute(NO_TOKEN_TYPE);
-        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+        assertEquals("Result should be failure for NO_TOKEN_TYPE", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
         // Arguments with PKCS#11 --tokenType, but missing --tokenprop
         final String[] NO_TOKEN_PROP_WITH_TyPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "org.cesecore.keys.token.PKCS11CryptoToken", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
         result = caInitCommand.execute(NO_TOKEN_PROP_WITH_TyPE);
-        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+        assertEquals("Result should be failure for NO_TOKEN_PROP_WITH_TyPE", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
         // Arguments with --tokenName, but missing --tokenprop
         final String[] NO_TOKEN_PROP_WITH_NAME = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", "My Token", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
         result = caInitCommand.execute(NO_TOKEN_PROP_WITH_NAME);
-        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+        assertEquals("Result should be failure for NO_TOKEN_PROP_WITH_NAME", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
         // Arguments with Soft --tokenType, but including --tokenprop
         final String[] SOFT_WITH_TOKEN_PROP = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "soft", "--tokenprop", "my.properties", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
         result = caInitCommand.execute(SOFT_WITH_TOKEN_PROP);
-        assertEquals("Result should be failure", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
+        assertEquals("Result should be failure for SOFT_WITH_TOKEN_PROP", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
     }
 
-    /** Test trivial happy path for execute, i.e, create an ordinary CA. */
+    /** Test trivial happy path for execute, i.e, create an ordinary CA, both creating a new crypto token, and re-using an existing crypto token. */
     @Test
     public void testExecuteHappyPath() throws Exception {
-        caInitCommand.execute(HAPPY_PATH_ARGS);
+        // 1. Create new crypto token
+        // Create a new CA, also creating a new crypto token. The crypto token will get the same name as the CA
+        CommandResult result = caInitCommand.execute(HAPPY_PATH_ARGS);
         assertNotNull("Happy path CA was not created.", caSession.getCAInfo(admin, CA_NAME));
+        assertEquals("Result should be success", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
+        
+        // 2. Use existing crypto token
+        // Test creating CA from an existing crypto token, i.e. not creating a new crypto token, re-use the crypto token created above
+        // First create the token.properties file that we need for the command
+        File f = File.createTempFile("cainit", "test");
+        try {
+            try (FileWriter fw = new FileWriter(f)) {
+                // Create a configuration file
+                fw.write("certSignKey signKey\n");
+                fw.write("crlSignKey signKey\n");
+                fw.write("encryptKey defaultKey\n");
+            }
+        } finally {
+            f.deleteOnExit();
+        }        
+        final String[] HAPPY_PATH_WITH_TOKENNAME = {  "--caname", CA_NAME_2, "--dn", CA_DN_2, "--tokenName", CA_NAME, "--tokenprop", f.getAbsolutePath(), "--keyspec", "2048", "--keytype", "RSA", "-v", "30", "--policy", "null", "-s", "SHA256withRSA" };
+        result = caInitCommand.execute(HAPPY_PATH_WITH_TOKENNAME);
+        assertNotNull("Happy path CA 2 was not created.", caSession.getCAInfo(admin, CA_NAME_2));
+        assertEquals("Result should be success", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
     }
 
     @Test
