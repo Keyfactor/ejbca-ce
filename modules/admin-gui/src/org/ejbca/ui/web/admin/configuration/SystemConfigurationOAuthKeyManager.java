@@ -172,7 +172,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit());
 
         if (!super.canAdd(newOauthKey)) {
-            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS", newOauthKey.toString());
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
             return;
         }
 
@@ -215,8 +215,6 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         if (oauthKeyEditor.getOauthKeyBeingEdited() == null) {
             throw new IllegalStateException("The OAuth Key being edited has already been saved or was never loaded.");
         }
-
-        /* Validate data entry by the user */
         if (oauthKeyEditor.getPublicKeyFile() != null) {
             final byte[] keyBytes = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
             if (keyBytes == null) {
@@ -228,10 +226,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_SKEWLIMITNEGATIVE");
             return StringUtils.EMPTY;
         }
-
-        /* Update the configuration */
         final OAuthKeyInfo oauthKeyToUpdate = oauthKeyEditor.getOauthKeyBeingEdited();
         final String keyIdentifier = oauthKeyEditor.getKeyIdentifier();
+        if (!super.canEdit(oauthKeyToUpdate, keyIdentifier)) {
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
+            return StringUtils.EMPTY;
+        }
+
+        /* Update the configuration */
         final byte[] keyBytes = oauthKeyEditor.getPublicKeyFile() != null ? getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile())
                 : oauthKeyEditor.getOauthKeyBeingEdited().getPublicKeyBytes();
         final int skewLimit = oauthKeyEditor.getSkewLimit();
