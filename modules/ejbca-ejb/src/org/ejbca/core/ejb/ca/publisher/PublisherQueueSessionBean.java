@@ -90,6 +90,18 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
 
+
+    public PublisherQueueSessionBean() { }
+
+    /** Constructor for unit tests */
+    protected PublisherQueueSessionBean(final EntityManager entityManager, final NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession,
+            final OcspDataSessionLocal ocspDataSession, final PublisherQueueSessionLocal publisherQueueSession) {
+        this.entityManager = entityManager;
+        this.noConflictCertificateStoreSession = noConflictCertificateStoreSession;
+        this.ocspDataSession = ocspDataSession;
+        this.publisherQueueSession = publisherQueueSession;
+    }
+
     @PostConstruct
     public void postConstruct() {
         publisherQueueSession = sessionContext.getBusinessObject(PublisherQueueSessionLocal.class);
@@ -285,16 +297,18 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, BasePublisher publisher) {
-        PublishingResult result = new PublishingResult();
+    public PublishingResult plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(final AuthenticationToken admin, final BasePublisher publisher) {
+        final PublishingResult result = new PublishingResult();
+        PublishingResult intermediateResult;
         // Repeat this process as long as we actually manage to publish something
         // this is because when publishing starts to work we want to publish everything in one go, if possible.
         // However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
         int totalcount = 0;
         do {
-            result.append(publisherQueueSession.doChunk(admin, publisher));
-            totalcount += result.getSuccesses();
-        } while ((result.getSuccesses() > 0) && (totalcount < 20000));
+            intermediateResult = publisherQueueSession.doChunk(admin, publisher);
+            result.append(intermediateResult);
+            totalcount += intermediateResult.getSuccesses();
+        } while ((intermediateResult.getSuccesses() > 0) && (totalcount < 20000));
         return result;
     }
 
@@ -322,7 +336,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         if (log.isDebugEnabled()) {
             log.debug("Found " + publisherQueueData.size() + " certificates to republish for publisher " + publisherId);
         }
-        PublishingResult result = new PublishingResult();
+        final PublishingResult result = new PublishingResult();
         for (PublisherQueueData pqd : publisherQueueData) {
             String fingerprint = pqd.getFingerprint();
             int publishType = pqd.getPublishType();
