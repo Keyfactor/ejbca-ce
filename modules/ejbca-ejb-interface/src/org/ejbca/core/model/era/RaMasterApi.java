@@ -358,7 +358,7 @@ public interface RaMasterApi {
      * Searches for a certificate. If present locally, then the data (revocation status etc.) from the local database will be returned.
      * Returns a certificate and its Ca chain
      * @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise
-     * @since Initial RA Master API version (EJBCA 6.6.0)
+     * @since Initial RA Master API version (EJBCA 7.4.2)
      */
     List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint);
 
