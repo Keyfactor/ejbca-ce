@@ -712,6 +712,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint) {
+        List<CertificateWrapper> searchResponse = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 10) {
+                try {
+                    searchResponse = raMasterApi.searchForCertificateChain(authenticationToken, fingerprint);
+                    if (searchResponse != null) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return searchResponse;
+    }
+
+    @Override
     public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serNo) {
         CertificateDataWrapper searchResponse = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
