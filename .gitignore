@@ -5,4 +5,5 @@ build*/
 tmp/
 conf/*.properties
 velocity.log
-
+src/java/jndi.properties
+validationtool.log
