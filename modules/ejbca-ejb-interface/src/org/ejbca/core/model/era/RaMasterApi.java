@@ -132,7 +132,6 @@ import org.ejbca.util.query.IllegalQueryException;
  *
  * <p>See the "RA Master API conventions" page in Confluence for more detailed information.
  *
- * @version $Id$
  */
 public interface RaMasterApi {
 

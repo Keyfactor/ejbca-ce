@@ -49,7 +49,6 @@ import org.ejbca.core.protocol.acme.AcmeRaMasterApiSessionLocal;
  * 
  * Not available in Community Edition
  *
- * @version $Id$
  */
 @Stateless
 // We can't rely on transactions for calls that will do persistence over the RaMasterApi, so avoid the overhead of when methods are invoked

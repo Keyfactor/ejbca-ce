@@ -228,7 +228,6 @@ import org.ejbca.util.query.IllegalQueryException;
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
  *
- * @version $Id$
  */
 @Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "RaMasterApiSessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)

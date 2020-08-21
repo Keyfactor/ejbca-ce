@@ -40,8 +40,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * Proxy for identifying all calls that are needed in the RaMasterApi to fully support ACME.
  *
- *
- * @version $Id$
  */
 @Local
 public interface AcmeRaMasterApiSessionLocal {
