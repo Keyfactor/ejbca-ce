@@ -65,14 +65,17 @@ public class EditOAuthKeyCommand extends BaseOAuthConfigCommand {
 
         for (Map.Entry<Integer, OAuthKeyInfo> entry : getGlobalConfiguration().getOauthKeys().entrySet()) {
             if (entry.getValue().getKeyIdentifier().equals(kid)) {
-                checkParametersAndSet(parameters.get(NEW_KEY_IDENTIFIER), parameters.get(NEW_SKEW_LIMIT), parameters.get(NEW_PUBLIC_KEY),
-                        entry.getValue());
-                if (saveGlobalConfig()) {
-                    log.info("OAuth key with kid: " + kid + " successfully updated!");
-                    return CommandResult.SUCCESS;
+                if (checkParametersAndSet(parameters.get(NEW_KEY_IDENTIFIER), parameters.get(NEW_SKEW_LIMIT), parameters.get(NEW_PUBLIC_KEY),
+                        entry.getValue())) {
+                    if (saveGlobalConfig()) {
+                        log.info("OAuth key with kid: " + kid + " successfully updated!");
+                        return CommandResult.SUCCESS;
+                    } else {
+                        log.info("Failed to update configuration due to authorization issue!");
+                        return CommandResult.AUTHORIZATION_FAILURE;
+                    }
                 } else {
-                    log.info("Failed to update configuration due to authorization issue!");
-                    return CommandResult.AUTHORIZATION_FAILURE;
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 }
             }
         }
@@ -90,19 +93,36 @@ public class EditOAuthKeyCommand extends BaseOAuthConfigCommand {
         return log;
     }
 
-    private void checkParametersAndSet(final String newKid, final String newSkewLimit, final String newPublicKey,
+    private boolean checkParametersAndSet(final String newKid, final String newSkewLimit, final String newPublicKey,
             final OAuthKeyInfo keyInfoToBeEdited) {
-        if (newKid != null && canEditKid(newKid)) {
-            keyInfoToBeEdited.setKeyIdentifier(newKid);
+        if (newKid != null) { 
+            if (canEditKid(newKid)) {
+                keyInfoToBeEdited.setKeyIdentifier(newKid);
+            } else {
+                log.info("New given kid is null or kid with same name already exists!");
+                return false;
+            }
+        }
+            
+        if (newSkewLimit != null) {
+            if (validateSkewLimit(newSkewLimit) >= 0) {
+                keyInfoToBeEdited.setSkewLimit(validateSkewLimit(newSkewLimit));
+            } else {
+                log.info("New given skew limit is invalid!");
+                return false;
+            }
         }
 
-        if (newSkewLimit != null && validateSkewLimit(newSkewLimit) >= 0) {
-            keyInfoToBeEdited.setSkewLimit(validateSkewLimit(newSkewLimit));
+        if (newPublicKey != null) {
+            if(!ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
+                keyInfoToBeEdited.setOauthPublicKey(getOauthKeyPublicKey(newPublicKey));
+            } else {
+                log.info("New given public key is invalid!");
+                return false;
+            }
         }
-
-        if (newPublicKey != null && !ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
-            keyInfoToBeEdited.setOauthPublicKey(getOauthKeyPublicKey(newPublicKey));
-        }
+            
+        return true;
     }
 
 }
