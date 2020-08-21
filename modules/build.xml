@@ -211,7 +211,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface, peerconnector-cli" description="Build EJBCA EJB CLI">
+	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface, peerconnector-cli, plugins-ee" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
