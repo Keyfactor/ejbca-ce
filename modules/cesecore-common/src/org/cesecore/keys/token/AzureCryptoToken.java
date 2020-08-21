@@ -111,8 +111,13 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public static final String KEY_VAULT_TYPE = "keyVaultType";
     
     /** Property for storing the key vault name in the crypto token properties.
-     * Azure Key Vault name, key vault specific, this is the string that will be part of the REST call URI 
-     * https://" + KEY_VAULT_NAME + ".vault.azure.net/
+     * Azure Key Vault name, key vault specific, this is the string that will be part of the REST call URI
+     * If KEY_VAULT_NAME contains a dot, it's assumed to be the full FQDN, i.e. keyvault-name.vault.azure-eu.net
+     *   Resulting URL: https://" + KEY_VAULT_NAME/
+     * If KEY_VAULT_NAME does not contains a dot, it's assumed to only be the hostname of a "default" azure FQDN, 
+     *   i.e KEY_VAULT_NAME=keyvault-name, and automatically appended at the end is ".vault.azure.net"
+     *   Resulting URL: https://" + KEY_VAULT_NAME + ".vault.azure.net/
+     * 
      */
     public static final String KEY_VAULT_NAME = "keyVaultName";
     
@@ -241,7 +246,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             if (log.isDebugEnabled()) {
                 log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
             }
-            final HttpGet request = new HttpGet("https://" + getKeyVaultName() + ".vault.azure.net/keys?api-version=7.0");
+            final HttpGet request = new HttpGet(createFullKeyURL(null) + "?api-version=7.0");
             try (final CloseableHttpResponse response = azureHttpRequest(request)) {
                 // Connect to Azure Key Vault and get the list of keys there.
                 final InputStream is = response.getEntity().getContent();
@@ -345,7 +350,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // remove the key from azure
             // https://docs.microsoft.com/en-us/rest/api/keyvault/deletekey/deletekey
             // DELETE {vaultBaseUrl}/keys/{key-name}?api-version=7.0
-            final HttpDelete request = new HttpDelete("https://" + getKeyVaultName() + ".vault.azure.net/keys/" + alias + "?api-version=7.0");
+            createFullKeyURL(alias);
+            final HttpDelete request = new HttpDelete(createFullKeyURL(alias) + "?api-version=7.0");
             try (final CloseableHttpResponse response = azureHttpRequest(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     final InputStream is = response.getEntity().getContent();
@@ -425,7 +431,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             }
             str.append(", \"attributes\": {\"enabled\": true}}");
             //  generate key in our previously created key vault.
-            final HttpPost request = new HttpPost("https://" + getKeyVaultName() + ".vault.azure.net/keys/" + alias + "/create?api-version=7.0");
+            final HttpPost request = new HttpPost(createFullKeyURL(alias) + "/create?api-version=7.0");
             request.setHeader("Content-Type", "application/json");
             try {
                 request.setEntity(new StringEntity(str.toString()));
@@ -618,8 +624,23 @@ public class AzureCryptoToken extends BaseCryptoToken {
         }
     }
 
+    /** 
+     * @param alias the key alias you want to access, or null if the key alias should be left out of the returned URL
+     * @return a URL to access a key (without trailing /), i.e. https://vaultname.vault.azure.net/keys/alias, or if alias is null https://vaultname.vault.azure.net/keys
+     */
     private String createFullKeyURL(String alias) {
-        return "https://"+ getKeyVaultName() +".vault.azure.net/keys/" + alias;
+        final String name = getKeyVaultName();
+        final String trailing;
+        if (alias == null) {
+            trailing = "/keys"; 
+        } else {
+            trailing = "/keys/" + alias;
+        }
+        if (StringUtils.contains(name, '.')) {
+            return "https://"+ getKeyVaultName() + trailing;
+        } else {
+            return "https://"+ getKeyVaultName() + ".vault.azure.net" + trailing;
+        }
     }
 
     /** Makes a REST API call to Azure, the REST call may need an authorizationToken, and if one does not exist (in this class) one is retrieved.
