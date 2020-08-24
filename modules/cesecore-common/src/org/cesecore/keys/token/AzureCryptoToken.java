@@ -99,7 +99,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     /** We can make two types of requests, to different hosts/URLs, one is for the REST API requests 
      * and the other for the authorization URL we need to go to if we don't have a valid authorizationHeader
-     * In the init metiond we set some default parameters on these
+     * In the init mentioned we set some default parameters on these
      */
     private CloseableHttpClient httpClient;
     private CloseableHttpClient authHttpClient;
@@ -179,7 +179,18 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private static void checkAliasName(final String alias) throws IllegalArgumentException {
         if (!aliasPattern.matcher(alias).matches()) {
-            throw new IllegalArgumentException("Key Vault only supports numbers, letters and hyphen in alias names. Invalid name: " + alias);
+            throw new IllegalArgumentException("Key Vault aliases only supports numbers, letters and hyphen in alias names. Invalid name: " + alias);
+        }
+    }
+    private static final Pattern aliasPatternPlusDot = Pattern.compile("^[0-9a-zA-Z-.]+$");
+    /** Checks that a key vault name confirms to the Key Vault requirements, same as for an alias, plus dot (for when the full hostname is given).
+     * 
+     * @param vaultName the vault name to check
+     * @throws IllegalArgumentException in case the vault name does not match ^[0-9a-zA-Z-.]+$
+     */
+    private static void checkVaultName(final String vaultName) throws IllegalArgumentException {
+        if (!aliasPatternPlusDot.matcher(vaultName).matches()) {
+            throw new IllegalArgumentException("Key Vault names only supports numbers, letters, hyphen and dots in names. Invalid name: " + vaultName);
         }
     }
     
@@ -205,8 +216,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
         if (keyVaultName == null) {
             throw new NoSuchSlotException("No key vault Name defined for crypto token");
         }
-        // Check that key vault name does not have any bad characters, should follow the same regexp as aliases
-        checkAliasName(keyVaultName);
+        // Check that key vault name does not have any bad characters, should follow the same regexp as aliases, except also allow dots
+        checkVaultName(keyVaultName);
         clientID = properties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);
         log.info("Initializing Azure Key Vault: Type=" + properties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE) + 
                 ", Name=" + keyVaultName + ", clientID=" + clientID);
@@ -316,8 +327,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
     @Override
     public void activate(final char[] authCode) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         clientSecret = new String(authCode);
-        log.info("Activating Key Vault Crypto Token, listing aliases");
-        getAliases(); // getAliases sets status to on-line is it succeeds
+        log.info("Activating Key Vault Crypto Token, listing aliases: " + getKeyVaultName());
+        getAliases(); // getAliases sets status to on-line if it succeeds
     }
 
     @Override
