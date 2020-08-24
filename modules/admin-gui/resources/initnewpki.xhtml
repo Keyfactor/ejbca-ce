@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+    <!--
+ /*************************************************************************
+  *                                                                       *
+  *  EJBCA: The OpenSource Certificate Authority                          *
+  *                                                                       *
+  *  This software is free software; you can redistribute it and/or       *
+  *  modify it under the terms of the GNU Lesser General Public           *
+  *  License as published by the Free Software Foundation; either         *
+  *  version 2.1 of the License, or any later version.                    *
+  *                                                                       *
+  *  See terms of license at gnu.org.                                     *
+  *                                                                       *
+  *************************************************************************/
+
+  -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{initNewPkiMBean}" />
+    <ui:define name="content">
+    <f:metadata>
+        <f:event type="preRenderView" listener="#{initNewPkiMBean.initialize}"/>
+    </f:metadata>
+	<h:form id="initNewPkiForm">
+		
+		<h:panelGroup>
+			<h2><h:outputText value="New PKI" /></h2>
+			<br/>
+			<h3><h:outputText value="Create Management CA"/></h3>
+			<br/>
+		</h:panelGroup>
+
+		<h:panelGroup>
+			<h:selectOneRadio value="#{initNewPkiMBean.cryptoTokenType}">
+           		<f:selectItem itemLabel="Use Existing Crypto Token" itemValue="useExistingToken" />
+           		<f:selectItem itemLabel="Create New Crypto Token" itemValue="createNewToken" />
+				<f:ajax render="initNewPkiForm" />
+			</h:selectOneRadio>
+			<br/>
+		</h:panelGroup>
+		
+		<h:panelGroup rendered="#{!initNewPkiMBean.renderKeyOptions}">
+			<h:outputText value="No Crypto Token available"/>
+			<br/>
+		</h:panelGroup>
+
+		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}">
+
+			<h:outputLabel for="selectToken" value="#{web.text.CRYPTOTOKEN}"/>			
+			<h:selectOneMenu id="selectToken" rendered="#{initNewPkiMBean.suitableCryptoTokenExists}" value="#{initNewPkiMBean.cryptoTokenIdParam}">
+				<f:selectItems value="#{initNewPkiMBean.availableCryptoTokenList}" />
+				<f:ajax event="change" render="initNewPkiForm" />
+			</h:selectOneMenu>
+
+			<h:outputLabel for="selectSigAlg" value="#{web.text.SIGNINGALGORITHM}" />
+			<h:selectOneMenu id="selectSigAlg" name="#{web.text.SELECT_SIGNATUREALGORITHM}" value="#{initNewPkiMBean.caInfoDto.signatureAlgorithmParam}">
+				<f:selectItems value="#{initNewPkiMBean.availableSigningAlgList}" />
+			</h:selectOneMenu>
+			
+			<h:outputLabel for="selectDefaultKey" value="defaultKey"/>
+			<h:selectOneMenu id="selectDefaultKey" value="#{initNewPkiMBean.selectedCryptoTokenDefaultKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesList('defaultKey')}" />
+			</h:selectOneMenu>
+	
+			<h:outputLabel for="selectCertSignKey" value="certSignKey" />
+			<h:selectOneMenu id="selectCertSignKey" value="#{initNewPkiMBean.selectedCryptoTokenCertSignKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesList('certSignKey')}" />
+			</h:selectOneMenu>
+	
+			<h:outputLabel for="selectKeyEncryptKey" value="keyEncryptKey" />
+			<h:selectOneMenu id="selectKeyEncryptKey" value="#{initNewPkiMBean.selectedKeyEncryptKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesListWithDefault('keyEncryptKey')}" />
+			</h:selectOneMenu>
+			
+			<h:outputLabel for="selectTestKey" value="testKey" />
+			<h:selectOneMenu id="selectTestKey" name="selectkeytestkey" value="#{initNewPkiMBean.selectTestKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesListWithDefault('testKey')}" />
+			</h:selectOneMenu>
+			
+			<h:outputLabel for="caName" value="CA Name" />
+			<h:inputText id="caName" value="#{initNewPkiMBean.caName}"/>
+			
+			<h:outputLabel for="caDn" value="Subject DN" />
+			<h:inputText id="caDn" value="#{initNewPkiMBean.caDn}"/>
+			
+			<h:outputLabel for="caValidity" value="Validity (days)" />
+			<h:inputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
+			
+		</h:panelGrid>
+		
+		<h:panelGroup id="nagivationGroup">
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBack}">
+			
+			</h:commandButton>
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNext}">
+				<f:param name="initNewPki" value="{initNewPkiMBean.initNewPkiRedirect}" />
+			</h:commandButton>
+		</h:panelGroup>
+				
+    </h:form>
+    </ui:define>
+</ui:composition>
+</html>

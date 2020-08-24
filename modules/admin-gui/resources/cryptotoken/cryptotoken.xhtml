@@ -25,6 +25,10 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{cryptoTokenMBean}" />
 	<ui:define name="content">
+		<f:metadata>
+	    	<f:viewParam name="initNewPki" value="#{initNewPkiMBean.initNewPkiRedirect}"/>
+	    	<f:event type="preRenderView" listener="#{cryptoTokenMBean.onload}" />
+		</f:metadata>
 		<h1>
 			<h:outputText value="#{web.text.CRYPTOTOKEN_NEW}"
 				rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}" />
@@ -39,10 +43,13 @@
 						value="cryptotokens.jsf">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK}" />
 					</h:outputLink>
-					<h:outputLink
-						rendered="#{cryptoTokenMBean.paramRef eq 'caactivation'}"
+					<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'caactivation'}"
 						value="../ca/caactivation.xhtml">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_ACT}" />
+					</h:outputLink>
+					<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'initpki'}"
+						value="../initnewpki.xhtml">
+						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" />
 					</h:outputLink>
 				</h:panelGroup>
 				<h:commandButton
@@ -535,6 +542,9 @@
 					value="#{cryptoTokenMBean.currentCryptoToken.canGenerateKeyMsg}"
 					rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}" />
 			</h:panelGrid>
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{cryptoTokenMBean.actionNext}" rendered="#{cryptoTokenMBean.initNewPki}">
+			
+			</h:commandButton>
 		</h:form>
 	</ui:define>
 	
