@@ -115,24 +115,22 @@ import org.ejbca.util.query.IllegalQueryException;
 /**
  * API of available methods on the CA that can be invoked by the RA.
  *
- * <p>Implementation restrictions:
+ * <p>Implementation restrictions:</p>
  *
  * <ul>
- * <li> Keep in mind that there is latency, so batch things and don't for things twice unless it is expected to have change.
- * <li> Method names must be unique and signature is not allowed change after a release
- * <li> Any used object in this class must be Java Serializable
- * <li> Any used object in this class should be possible to use with an older or newer version of the peer
+ * <li> Keep in mind that there is latency, so batch things and don't for things twice unless it is expected to have change.</li>
+ * <li> Method names must be unique and signature is not allowed change after a release</li>
+ * <li> Any used object in this class must be Java Serializable</li>
+ * <li> Any used object in this class should be possible to use with an older or newer version of the peer</li>
  * <li> Checked Exceptions are forwarded in full the implementation is responsible for not leaking sensitive information in
- *   nested causedBy exceptions.
- * <li> Query both local and remote, when applicable. Usually, local should be queried first for best performance.
- * <li> Avoid having WS or REST-specific operations here (sometimes this is hard to avoid)
- * <li> Try to put complex business logic into "business logic EJBs" such as CaSession etc. rather than here.
- * <li> Remember to put @since attributes on new methods.
+ *   nested causedBy exceptions.</li>
+ * <li> Query both local and remote, when applicable. Usually, local should be queried first for best performance.</li>
+ * <li> Avoid having WS or REST-specific operations here (sometimes this is hard to avoid)</li>
+ * <li> Try to put complex business logic into "business logic EJBs" such as CaSession etc. rather than here.</li>
+ * <li> Remember to put @since attributes on new methods.</li>
  * </ul>
  *
- * <p>See the "RA Master API conventions" page in Confluence for more detailed information.
- *
- * @version $Id$
+ * <p>See the "RA Master API conventions" page in Confluence for more detailed information.</p>
  */
 public interface RaMasterApi {
 
