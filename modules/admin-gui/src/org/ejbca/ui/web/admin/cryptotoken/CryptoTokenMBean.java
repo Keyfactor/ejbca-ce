@@ -93,6 +93,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, CryptoTokenRules.VIEW.resource());
     }
     
+    public void onload() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
+        String initNewPkiParam = params.get("initNewPki");
+        if (StringUtils.equals(initNewPkiParam, "true")) {
+            initNewPki = true;
+        }
+    }
+    
     /**
      * GUI table representation of a CryptoToken that can be interacted with.
      */
@@ -599,6 +608,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private boolean currentCryptoTokenEditMode = true;  // currentCryptoTokenId==0 from start
     private boolean authorizeInProgress = false;
     private boolean unlimitedOperations = true;
+    private boolean initNewPki;
     private String maxOperationCount;
     private KeyPairTemplate keyPairTemplate; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
 
@@ -643,6 +653,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         currentKeyPairGuiInfo = null;
     }
 
+    public String actionNext() {
+        // Only used while page was redirected from initnewpki.xhtml.
+        // This bean is session scoped. Reset this value to hide button
+        // later on in same session.
+        initNewPki = false;
+        return "next";
+    }
+    
+    public boolean isInitNewPki() {
+        return initNewPki;
+    }
+
     public boolean isAuthorizeInProgress() {
         return authorizeInProgress;
     }
@@ -650,6 +672,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public boolean isUnlimitedOperations() {
         return unlimitedOperations;
     }
+
 
     public void setUnlimitedOperations(boolean unlimitedOperations) {
         this.unlimitedOperations = unlimitedOperations;
@@ -1143,7 +1166,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      */
     public String getParamRef() {
         final String reference = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("ref");
-        if (reference == null || reference.isEmpty()) {
+        if (initNewPki) {
+            return "initpki";
+        } else if (reference == null || reference.isEmpty()) {
             return "default";
         }
         return reference;
