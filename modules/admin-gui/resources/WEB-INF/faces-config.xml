@@ -169,6 +169,47 @@
   </navigation-rule>
 
   <navigation-rule>
+  	<from-view-id>/initpki.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>newPkiMode</from-outcome>
+  		<to-view-id>/initnewpki.xhtml</to-view-id>
+  	</navigation-case>
+	<navigation-case>
+  		<from-outcome>existingPkiMode</from-outcome>
+  		<to-view-id>/initexistingpki.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/initnewpki.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>back</from-outcome>
+  		<to-view-id>/initpki.xhtml</to-view-id>
+  	</navigation-case>
+ 	<navigation-case>
+  		<from-outcome>createNewToken</from-outcome>
+  		<to-view-id>/cryptotoken/cryptotoken.xhtml</to-view-id>
+      	<redirect include-view-params="true"></redirect>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/cryptotoken/cryptotoken.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>next</from-outcome>
+  		<to-view-id>/initnewpki.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/initexistingpki.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>back</from-outcome>
+  		<to-view-id>/initpki.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+
+  <navigation-rule>
   	<from-view-id>/sysconfig/cmpaliases.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>edit</from-outcome>
