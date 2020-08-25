@@ -49,7 +49,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean saveGlobalConfig() {
         try {
-            getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getGlobalConfiguration());
+            getGlobalConfigurationSession().saveConfigurationWithRootAccessCheck(getAuthenticationToken(), getGlobalConfiguration());
             getGlobalConfigurationSession().flushConfigurationCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             return true;
         } catch (AuthorizationDeniedException e) {
