@@ -168,6 +168,15 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             log.trace("<saveGlobalConfiguration()");
         }
     }
+    
+    public void saveConfigurationWithRootAccessCheck(final AuthenticationToken admin, final ConfigurationBase conf) throws AuthorizationDeniedException {
+        final String accessRule = StandardRules.ROLE_ROOT.resource();
+        if (!authorizationSession.isAuthorized(admin, accessRule)) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", accessRule, "Could not save configuration");
+            throw new AuthorizationDeniedException(msg);
+        }
+        saveConfiguration(admin, conf);
+    }
 
     private void assertAuthorization(final AuthenticationToken authenticationToken, final String configID, final String errorMsg) throws AuthorizationDeniedException {
         final String accessRule = getAccessRuleFromConfigId(configID);
