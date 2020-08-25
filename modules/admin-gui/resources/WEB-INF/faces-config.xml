@@ -193,15 +193,39 @@
   	</navigation-case>
   	<navigation-case>
   		<from-outcome>next</from-outcome>
-  		<to-view-id>/initpkitruststore.xhtml</to-view-id>
+  		<to-view-id>/initpkikeystore.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
   
   <navigation-rule>
-  	<from-view-id>/initpkitruststore.xhtml</from-view-id>
+  	<from-view-id>/initpkikeystore.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>back</from-outcome>
   		<to-view-id>/initnewpki.xhtml</to-view-id>
+  	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>next</from-outcome>
+  		<to-view-id>/initpkiadmin.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/initpkiadmin.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>back</from-outcome>
+  		<to-view-id>/initpkikeystore.xhtml</to-view-id>
+  	</navigation-case>
+ 	<navigation-case>
+  		<from-outcome>next</from-outcome>
+  		<to-view-id>/initpkisummary.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/initpkisummary.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>back</from-outcome>
+  		<to-view-id>/initpkiadmin.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
   
