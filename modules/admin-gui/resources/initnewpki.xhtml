@@ -66,32 +66,32 @@
 			</h:selectOneMenu>
 			
 			<h:outputLabel for="selectDefaultKey" value="defaultKey"/>
-			<h:selectOneMenu id="selectDefaultKey" value="#{initNewPkiMBean.selectedCryptoTokenDefaultKey}">
-				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesList('defaultKey')}" />
+			<h:selectOneMenu id="selectDefaultKey" value="#{initNewPkiMBean.caInfoDto.cryptoTokenDefaultKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesList('defaultKey')}"/>
 			</h:selectOneMenu>
 	
-			<h:outputLabel for="selectCertSignKey" value="certSignKey" />
-			<h:selectOneMenu id="selectCertSignKey" value="#{initNewPkiMBean.selectedCryptoTokenCertSignKey}">
+			<h:outputLabel for="selectCertSignKey" value="certSignKey"/>
+			<h:selectOneMenu id="selectCertSignKey" value="#{initNewPkiMBean.caInfoDto.cryptoTokenCertSignKey}">
 				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesList('certSignKey')}" />
 			</h:selectOneMenu>
 	
-			<h:outputLabel for="selectKeyEncryptKey" value="keyEncryptKey" />
-			<h:selectOneMenu id="selectKeyEncryptKey" value="#{initNewPkiMBean.selectedKeyEncryptKey}">
-				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesListWithDefault('keyEncryptKey')}" />
+			<h:outputLabel for="selectKeyEncryptKey" value="keyEncryptKey"/>
+			<h:selectOneMenu id="selectKeyEncryptKey" value="#{initNewPkiMBean.caInfoDto.selectedKeyEncryptKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesListWithDefault('keyEncryptKey')}"/>
 			</h:selectOneMenu>
 			
-			<h:outputLabel for="selectTestKey" value="testKey" />
-			<h:selectOneMenu id="selectTestKey" name="selectkeytestkey" value="#{initNewPkiMBean.selectTestKey}">
-				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesListWithDefault('testKey')}" />
+			<h:outputLabel for="selectTestKey" value="testKey"/>
+			<h:selectOneMenu id="selectTestKey" name="selectkeytestkey" value="#{initNewPkiMBean.caInfoDto.testKey}">
+				<f:selectItems value="#{initNewPkiMBean.getKeyAliasesListWithDefault('testKey')}"/>
 			</h:selectOneMenu>
 			
-			<h:outputLabel for="caName" value="CA Name" />
+			<h:outputLabel for="caName" value="CA Name"/>
 			<h:inputText id="caName" value="#{initNewPkiMBean.caName}"/>
 			
-			<h:outputLabel for="caDn" value="Subject DN" />
+			<h:outputLabel for="caDn" value="Subject DN"/>
 			<h:inputText id="caDn" value="#{initNewPkiMBean.caDn}"/>
 			
-			<h:outputLabel for="caValidity" value="Validity (days)" />
+			<h:outputLabel for="caValidity" value="Validity (days)"/>
 			<h:inputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
 			
 		</h:panelGrid>
