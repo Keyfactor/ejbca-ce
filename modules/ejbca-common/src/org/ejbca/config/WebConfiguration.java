@@ -36,7 +36,9 @@ public class WebConfiguration {
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
 	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
     public static final String CONFIG_DOCBASEURI = "web.docbaseuri";
+    // web.reqcert is replaced by "web.reqauth" but still may be used by existing customers.
     public static final String CONFIG_REQCERT = "web.reqcert";
+    public static final String CONFIG_REQAUTH = "web.reqauth";
 	public static final String CONFIG_REQCERTINDB = "web.reqcertindb";
 	
 	/**
@@ -129,10 +131,27 @@ public class WebConfiguration {
 	/**
 	 * Require administrator certificates to be available to access the Admin GUI
 	 */
+	@Deprecated
 	public static boolean getRequireAdminCertificate() {
         // Anything but an explicit setting this configuration value to "false" will enforce the client certificate check
 	    return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERT));
 	}
+
+    /**
+     * Check if authentication is required to access the Admin GUI.
+     */
+    public static boolean isAdminAuthenticationRequired() {
+        // Anything but explicitly setting these configuration values to "false" should enforce authentication.
+
+        // If CONFIG_REQCERT is not null, its value should be used to support existing customers that
+        // might still be using "web.reqcert" option in their web.properties.
+        if (!StringUtils.isEmpty(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERT)) &&
+            StringUtils.isEmpty(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQAUTH))) {
+            return getRequireAdminCertificate();
+        }
+
+        return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQAUTH));
+    }
 
     /**
      * Require administrator certificates to be available in database for revocation checks.
