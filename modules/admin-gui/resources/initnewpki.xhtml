@@ -97,9 +97,7 @@
 		</h:panelGrid>
 		
 		<h:panelGroup id="nagivationGroup">
-			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBack}">
-			
-			</h:commandButton>
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToInstallation}"/>
 			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNext}">
 				<f:param name="initNewPki" value="{initNewPkiMBean.initNewPkiRedirect}" />
 			</h:commandButton>
