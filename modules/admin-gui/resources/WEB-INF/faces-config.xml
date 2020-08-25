@@ -191,6 +191,18 @@
   		<to-view-id>/cryptotoken/cryptotoken.xhtml</to-view-id>
       	<redirect include-view-params="true"></redirect>
   	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>next</from-outcome>
+  		<to-view-id>/initpkitruststore.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/initpkitruststore.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>back</from-outcome>
+  		<to-view-id>/initnewpki.xhtml</to-view-id>
+  	</navigation-case>
   </navigation-rule>
   
   <navigation-rule>

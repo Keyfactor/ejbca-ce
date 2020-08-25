@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+    <!--
+ /*************************************************************************
+  *                                                                       *
+  *  EJBCA: The OpenSource Certificate Authority                          *
+  *                                                                       *
+  *  This software is free software; you can redistribute it and/or       *
+  *  modify it under the terms of the GNU Lesser General Public           *
+  *  License as published by the Free Software Foundation; either         *
+  *  version 2.1 of the License, or any later version.                    *
+  *                                                                       *
+  *  See terms of license at gnu.org.                                     *
+  *                                                                       *
+  *************************************************************************/
+
+  -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{initNewPkiMBean}" />
+    <ui:define name="content">
+	<h:form id="initNewPkiForm">
+		
+		<h:panelGroup>
+			<h2><h:outputText value="New PKI" /></h2>
+			<br/>
+			<h3><h:outputText value="Create CA Key Store"/></h3>
+			<br/>
+		</h:panelGroup>
+		
+		<h:panelGroup rendered="#{!initNewPkiMBean.renderKeyOptions}">
+			<h:outputText value="No Crypto Token available"/>
+			<br/>
+		</h:panelGroup>
+
+		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}">
+			<h:outputLabel for="serverHostname" value="Server Hostname"/>
+			<h:inputText id="serverHostname" value="#{initNewPkiMBean.serverHostName}"/>
+			
+			<h:outputLabel for="serverDn" value="Server DN"/>
+			<h:inputText id="serverDn" value="#{initNewPkiMBean.serverDn}"/>
+		
+			<h:outputLabel for="keystorePassword" value="KeyStore Password"/>
+			<h:inputSecret id="keystorePassword" value="#{initNewPkiMBean.keyStorePassword}"/>
+			
+			<h:outputLabel for="keystorePasswordRepeat" value="Repeat KeyStore Password"/>
+			<h:inputSecret id="keystorePasswordRepeat" value="#{initNewPkiMBean.keyStorePasswordRepeated}"/>
+		</h:panelGrid>
+		
+		<h:panelGroup id="nagivationGroup">
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBack}"/>
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNext}"/>
+		</h:panelGroup>
+		
+	</h:form>
+	</ui:define>
+</ui:composition>	
+</html>
+		

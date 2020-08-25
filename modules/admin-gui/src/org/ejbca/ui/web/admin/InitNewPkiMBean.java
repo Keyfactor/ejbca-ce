@@ -110,9 +110,12 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             initNewPkiRedirect = true;
             return CREATE_NEW_CRYPTO_TOKEN;
         }
-        // TODO if (selectedCryptoToken != null)
-        // and simplfy this if possible
-        return "next";
+        if (verifyCaFields()) {
+            return "next";
+        }
+        //TODO language file and perhaps describe which field...
+        addErrorMessage("CA Fields Missing");
+        return "";
     }
     
     public String actionBack() {
@@ -175,38 +178,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     public void setCryptoTokenType(String cryptoTokenType) {
         this.cryptoTokenType = cryptoTokenType;
-    }
-    
-    public String getSelectedCryptoTokenDefaultKey() {
-        return caInfoDto.getCryptoTokenDefaultKey();
-    }
-
-    public void setSelectedCryptoTokenDefaultKey(final String selectedCryptoTokenDefaultKey) {
-        caInfoDto.setCryptoTokenDefaultKey(StringUtils.defaultString(selectedCryptoTokenDefaultKey));
-    }
-    
-    public String getSelectedCryptoTokenCertSignKey() {
-        return caInfoDto.getCryptoTokenCertSignKey();
-    }
-
-    public void setSelectedCryptoTokenCertSignKey(final String selectedCryptoTokenCertSignKey) {
-        caInfoDto.setCryptoTokenCertSignKey(StringUtils.defaultString(selectedCryptoTokenCertSignKey));
-    }
-
-    public String getSelectedKeyEncryptKey() {
-        return caInfoDto.getSelectedKeyEncryptKey();
-    }
-
-    public void setSelectedKeyEncryptKey(final String selectedKeyEncryptKey) {
-        caInfoDto.setSelectedKeyEncryptKey(StringUtils.defaultString(selectedKeyEncryptKey));
-    }
-
-    public String getSelectTestKey() {
-        return caInfoDto.getTestKey();
-    }
-
-    public void setSelectTestKey(final String testKey) {
-        caInfoDto.setTestKey(StringUtils.defaultString(testKey));
     }
 
     // Read from cryptotoken.xhtml in order to determine whether an option
@@ -283,6 +254,51 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         resultList.addAll(getKeyAliasesList(keyType));
         return resultList;
     }
+    
+    /** Truststore Methods **/
+    
+    private String serverHostName = "localhost";
+    private String serverDn = "CN=localhost,O=EJBCA Sample,C=SE";
+    private String keyStorePassword;
+    private String keyStorePasswordRepeated;
+    
+    
+    
+    
+    
+    public String getServerHostName() {
+        return serverHostName;
+    }
+
+    public void setServerHostName(String serverHostName) {
+        this.serverHostName = serverHostName;
+    }
+
+    public String getServerDn() {
+        return serverDn;
+    }
+
+    public void setServerDn(String serverDn) {
+        this.serverDn = serverDn;
+    }
+
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    public void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
+    }
+
+    public String getKeyStorePasswordRepeated() {
+        return keyStorePasswordRepeated;
+    }
+
+    public void setKeyStorePasswordRepeated(String keyStorePasswordRepeated) {
+        this.keyStorePasswordRepeated = keyStorePasswordRepeated;
+    }
+
+    /** Private Methods **/
     
     private boolean isSigningAlgorithmApplicableForCryptoToken(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
         String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm);
@@ -386,6 +402,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
                 caInfoDto.setTestKey(alias);
             }
         }
+    }
+    
+    private boolean verifyCaFields() {
+        // TODO check if all CA fields are valid before continuing
+        return true;
     }
     
     private void resetSelections() {
