@@ -31,36 +31,31 @@
 		<h:panelGroup>
 			<h2><h:outputText value="New PKI" /></h2>
 			<br/>
-			<h3><h:outputText value="Create CA Key Store"/></h3>
+			<h3><h:outputText value="Create Super Administrator"/></h3>
 			<br/>
 		</h:panelGroup>
 		
-		<h:panelGroup rendered="#{!initNewPkiMBean.renderKeyOptions}">
-			<h:outputText value="No Crypto Token available"/>
-			<br/>
-		</h:panelGroup>
-
 		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}">
-			<h:outputLabel for="serverHostname" value="Server Hostname"/>
-			<h:inputText id="serverHostname" value="#{initNewPkiMBean.serverHostName}"/>
-			
-			<h:outputLabel for="serverDn" value="Server DN"/>
-			<h:inputText id="serverDn" value="#{initNewPkiMBean.serverDn}"/>
+			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
+			<h:inputText id="adminDN" value="#{initNewPkiMBean.adminDn}"/>
 		
-			<h:outputLabel for="keystorePassword" value="KeyStore Password"/>
-			<h:inputSecret id="keystorePassword" value="#{initNewPkiMBean.keyStorePassword}"/>
+			<h:outputLabel for="adminValidity" value="Super Administrator Validity (days)"/>
+			<h:inputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}"/>
 			
-			<h:outputLabel for="keystorePasswordRepeat" value="Repeat KeyStore Password"/>
-			<h:inputSecret id="keystorePasswordRepeat" value="#{initNewPkiMBean.keyStorePasswordRepeated}"/>
+			<h:outputLabel for="adminKeystorePassword" value="Super Administrator Password"/>
+			<h:inputSecret id="adminKeystorePassword" value="#{initNewPkiMBean.adminKeyStorePassword}"/>
+			
+			<h:outputLabel for="adminKeystorePasswordRepeat" value="Repeat Super Administrator KeyStore Password"/>
+			<h:inputSecret id="adminKeystorePasswordRepeat" value="#{initNewPkiMBean.adminKeyStorePasswordRepeated}"/>
 		</h:panelGrid>
-		
+	
+	
 		<h:panelGroup id="nagivationGroup">
-			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBack}"/>
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToKeyStoreSettings}"/>
 			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNext}"/>
 		</h:panelGroup>
-		
+	
 	</h:form>
 	</ui:define>
-</ui:composition>	
+</ui:composition>
 </html>
-		

@@ -118,8 +118,22 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         return "";
     }
     
-    public String actionBack() {
-        resetSelections();
+    public String actionBackToInstallation() {
+        resetCaSelections();
+        return "back";
+    }
+    
+    public String actionBackToCaSettings() {
+        resetKeyStoreSelections();
+        return "back";
+    }
+    
+    public String actionBackToKeyStoreSettings() {
+        resetSuperAdminSettings();
+        return "back";
+    }
+    
+    public String actionBackToAdminSettings() {
         return "back";
     }
 
@@ -255,15 +269,13 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         return resultList;
     }
     
-    /** Truststore Methods **/
+    /** KeyStore Methods **/
     
     private String serverHostName = "localhost";
     private String serverDn = "CN=localhost,O=EJBCA Sample,C=SE";
+    private String serverAltName = "dnsName=localhost,IPAddress=127.0.0.1";
     private String keyStorePassword;
     private String keyStorePasswordRepeated;
-    
-    
-    
     
     
     public String getServerHostName() {
@@ -281,6 +293,14 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     public void setServerDn(String serverDn) {
         this.serverDn = serverDn;
     }
+    
+    public String getServerAltName() {
+        return serverAltName;
+    }
+
+    public void setServerAltName(String serverAltName) {
+        this.serverAltName = serverAltName;
+    }
 
     public String getKeyStorePassword() {
         return keyStorePassword;
@@ -296,6 +316,45 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     public void setKeyStorePasswordRepeated(String keyStorePasswordRepeated) {
         this.keyStorePasswordRepeated = keyStorePasswordRepeated;
+    }
+
+    /** SuperAdmin Methods **/
+    
+    private String adminDn = "CN=SuperAdmin";
+    private String adminValidity = "730";
+    private String adminKeyStorePassword;
+    private String adminKeyStorePasswordRepeated;
+    
+    public String getAdminDn() {
+        return adminDn;
+    }
+
+    public void setAdminDn(String adminDn) {
+        this.adminDn = adminDn;
+    }
+
+    public String getAdminValidity() {
+        return adminValidity;
+    }
+
+    public void setAdminValidity(String adminValidity) {
+        this.adminValidity = adminValidity;
+    }
+
+    public String getAdminKeyStorePassword() {
+        return adminKeyStorePassword;
+    }
+
+    public void setAdminKeyStorePassword(String adminKeyStorePassword) {
+        this.adminKeyStorePassword = adminKeyStorePassword;
+    }
+
+    public String getAdminKeyStorePasswordRepeated() {
+        return adminKeyStorePasswordRepeated;
+    }
+
+    public void setAdminKeyStorePasswordRepeated(String adminKeyStorePasswordRepeated) {
+        this.adminKeyStorePasswordRepeated = adminKeyStorePasswordRepeated;
     }
 
     /** Private Methods **/
@@ -409,7 +468,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         return true;
     }
     
-    private void resetSelections() {
+    private void resetCaSelections() {
         cryptoTokenType = null;
         currentCryptoTokenId = 0;
         initNewPkiRedirect = false;
@@ -418,5 +477,16 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         availableCryptoTokenKeyAliases = null;
         availableCryptoTokenMixedAliases = null;
         availableCryptoTokenEncryptionAliases = null;
+        this.caInfoDto = new CaInfoDto();
+    }
+    
+    private void resetKeyStoreSelections() {
+        keyStorePassword = null;
+        keyStorePasswordRepeated = null;
+    }
+    
+    private void resetSuperAdminSettings() {
+        adminKeyStorePassword = null;
+        adminKeyStorePasswordRepeated = null;
     }
 }

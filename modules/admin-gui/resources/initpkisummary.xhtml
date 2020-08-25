@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+    <!--
+ /*************************************************************************
+  *                                                                       *
+  *  EJBCA: The OpenSource Certificate Authority                          *
+  *                                                                       *
+  *  This software is free software; you can redistribute it and/or       *
+  *  modify it under the terms of the GNU Lesser General Public           *
+  *  License as published by the Free Software Foundation; either         *
+  *  version 2.1 of the License, or any later version.                    *
+  *                                                                       *
+  *  See terms of license at gnu.org.                                     *
+  *                                                                       *
+  *************************************************************************/
+
+  -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{initNewPkiMBean}" />
+    <ui:define name="content">
+	<h:form id="initNewPkiForm">
+		
+		<h:panelGroup>
+			<h2><h:outputText value="New PKI" /></h2>
+			<br/>
+			<h3><h:outputText value="Summary"/></h3>
+			<br/>
+		</h:panelGroup>
+		
+		<h:panelGrid columns="2" cellpadding="2">
+		
+		<h:outputText value="CA Settings" style="font-weight:bold"/>
+		<h:outputText value=""/>
+			<h:outputLabel for="selectToken" value="#{web.text.CRYPTOTOKEN}"/>			
+			<h:outputText id="selectToken" value="#{initNewPkiMBean.cryptoTokenIdParam}"/>
+			
+			<h:outputLabel for="selectSigAlg" value="#{web.text.SIGNINGALGORITHM}" />
+			<h:outputText id="selectSigAlg" value="#{initNewPkiMBean.caInfoDto.signatureAlgorithmParam}"/>
+				
+			<h:outputLabel for="selectDefaultKey" value="defaultKey"/>
+			<h:outputText id="selectDefaultKey" value="#{initNewPkiMBean.caInfoDto.cryptoTokenDefaultKey}"/>
+			
+			<h:outputLabel for="selectCertSignKey" value="certSignKey"/>
+			<h:outputText id="selectCertSignKey" value="#{initNewPkiMBean.caInfoDto.cryptoTokenCertSignKey}"/>
+	
+			<h:outputLabel for="selectKeyEncryptKey" value="keyEncryptKey"/>
+			<h:outputText id="selectKeyEncryptKey" value="#{initNewPkiMBean.caInfoDto.selectedKeyEncryptKey}"/>
+			
+			<h:outputLabel for="selectTestKey" value="testKey"/>
+			<h:outputText id="selectTestKey" value="#{initNewPkiMBean.caInfoDto.testKey}"/>
+			
+			<h:outputLabel for="caName" value="CA Name"/>
+			<h:outputText id="caName" value="#{initNewPkiMBean.caName}"/>
+			
+			<h:outputLabel for="caDn" value="Subject DN"/>
+			<h:outputText id="caDn" value="#{initNewPkiMBean.caDn}"/>
+			
+			<h:outputLabel for="caValidity" value="Validity (days)"/>
+			<h:outputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
+			
+		<h:outputText value="KeyStore Settings" style="font-weight:bold"/>
+		<h:outputText value=""/>
+			<h:outputLabel for="serverHostname" value="Server Hostname"/>
+			<h:outputText id="serverHostname" value="#{initNewPkiMBean.serverHostName}"/>
+			
+			<h:outputLabel for="serverDn" value="Server Distinguished Name"/>
+			<h:outputText id="serverDn" value="#{initNewPkiMBean.serverDn}"/>
+		
+			<h:outputLabel for="serverAltName" value="Server Subject Alternative Name"/>
+			<h:outputText id="serverAltName" value="#{initNewPkiMBean.serverAltName}"/>
+			
+			
+		<h:outputText value="Super Adminstrator Settings" style="font-weight:bold"/>
+		<h:outputText value=""/>
+			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
+			<h:outputText id="adminDN" value="#{initNewPkiMBean.adminDn}"/>
+		
+			<h:outputLabel for="adminValidity" value="Super Administrator Validity (days)"/>
+			<h:outputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}"/>
+		</h:panelGrid>
+	
+		<h:panelGroup id="nagivationGroup">
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToAdminSettings}"/>
+			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.actionNext}"/>
+		</h:panelGroup>
+	
+	</h:form>
+	</ui:define>
+</ui:composition>
+</html>
