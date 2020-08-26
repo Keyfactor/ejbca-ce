@@ -29,7 +29,7 @@
 	<h:form id="initNewPkiForm">
 		
 		<h:panelGroup>
-			<h2><h:outputText value="New PKI" /></h2>
+			<h2><h:outputText value="Installation" /></h2>
 			<br/>
 			<h3><h:outputText value="Summary"/></h3>
 			<br/>
@@ -37,8 +37,9 @@
 		
 		<h:panelGrid columns="2" cellpadding="2">
 		
-		<h:outputText value="CA Settings" style="font-weight:bold"/>
-		<h:outputText value=""/>
+			<h:outputText value="CA Settings" style="font-weight:bold"/>
+			<h:outputText value=""/>
+			
 			<h:outputLabel for="selectToken" value="#{web.text.CRYPTOTOKEN}"/>			
 			<h:outputText id="selectToken" value="#{initNewPkiMBean.cryptoTokenIdParam}"/>
 			
@@ -66,8 +67,9 @@
 			<h:outputLabel for="caValidity" value="Validity (days)"/>
 			<h:outputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
 			
-		<h:outputText value="KeyStore Settings" style="font-weight:bold"/>
-		<h:outputText value=""/>
+			<h:outputText value="KeyStore Settings" style="font-weight:bold"/>
+			<h:outputText value=""/>
+			
 			<h:outputLabel for="serverHostname" value="Server Hostname"/>
 			<h:outputText id="serverHostname" value="#{initNewPkiMBean.serverHostName}"/>
 			
@@ -77,14 +79,14 @@
 			<h:outputLabel for="serverAltName" value="Server Subject Alternative Name"/>
 			<h:outputText id="serverAltName" value="#{initNewPkiMBean.serverAltName}"/>
 			
-			
-		<h:outputText value="Super Adminstrator Settings" style="font-weight:bold"/>
-		<h:outputText value=""/>
+			<h:outputText value="Super Adminstrator Settings" style="font-weight:bold"/>
+			<h:outputText value=""/>
 			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
 			<h:outputText id="adminDN" value="#{initNewPkiMBean.adminDn}"/>
 		
 			<h:outputLabel for="adminValidity" value="Super Administrator Validity (days)"/>
 			<h:outputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}"/>
+			<br/>
 		</h:panelGrid>
 	
 		<h:panelGroup id="nagivationGroup">
