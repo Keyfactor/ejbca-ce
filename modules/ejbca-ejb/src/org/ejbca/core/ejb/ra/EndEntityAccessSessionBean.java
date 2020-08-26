@@ -610,8 +610,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData.
         Collection<CertificateWrapper> searchResults;
         if (onlyValid) {
-            // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
+            // We will filter out not yet valid certificates later on, but we use the database to not return any expired certificates
             searchResults = EJBTools.wrapCertCollection(certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now));
+            // "active" certificates include two statuses, CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION, this is a bit of tricky corner case unfortunately
+            searchResults.addAll(EJBTools.wrapCertCollection(certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, now)));
         } else {
             searchResults = certificateStoreSession.findCertificatesByUsername(username);
         }
