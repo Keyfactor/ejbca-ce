@@ -82,7 +82,7 @@
 			<h:outputText value="Super Adminstrator Settings" style="font-weight:bold"/>
 			<h:outputText value=""/>
 			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
-			<h:outputText id="adminDN" value="#{initNewPkiMBean.adminDn}"/>
+			<h:outputText id="adminDn" value="#{initNewPkiMBean.adminDn}"/>
 		
 			<h:outputLabel for="adminValidity" value="Super Administrator Validity (days)"/>
 			<h:outputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}"/>
@@ -91,7 +91,7 @@
 	
 		<h:panelGroup id="nagivationGroup">
 			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToAdminSettings}"/>
-			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.actionNext}"/>
+			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.install}"/>
 		</h:panelGroup>
 	
 	</h:form>
