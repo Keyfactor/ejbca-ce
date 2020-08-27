@@ -17,7 +17,7 @@
  -->
 <web-app version="3.1" id="admingui"
     metadata-complete="false"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
@@ -38,7 +38,7 @@
           <param-name>Owasp.CsrfGuard.Config.Print</param-name>
           <param-value>false</param-value>
     </context-param>
-       
+
     <!-- Set to "Development" for debugging.
         "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
         TODO: Set automatically when ejbca.productionmode=false
@@ -48,7 +48,7 @@
         <param-value>Production</param-value>
     </context-param>
 
-    <!-- When using the CSRFGuard filter below we need to hack in before it to set the correct character 
+    <!-- When using the CSRFGuard filter below we need to hack in before it to set the correct character
     encoding (i.e. UTF-8) to support intl characters. We do that using a filter that sits before
     the CSRF Guard filter. -->
 	<filter>
@@ -56,7 +56,7 @@
 		<filter-class>org.ejbca.util.owaspcsrfguard.EncodingFilter</filter-class>
 	</filter>
 	<filter-mapping>
-		<filter-name>EncodingFilter</filter-name> 
+		<filter-name>EncodingFilter</filter-name>
 		<url-pattern>*.jsp</url-pattern>
 	</filter-mapping>
 
@@ -65,10 +65,10 @@
 		<filter-class>org.owasp.csrfguard.CsrfGuardFilter</filter-class>
 	</filter>
 	<filter-mapping>
-		<filter-name>CSRFGuard</filter-name> 
+		<filter-name>CSRFGuard</filter-name>
 		<url-pattern>*.jsp</url-pattern>
 	</filter-mapping>
-	
+
     <filter>
         <filter-name>ProxiedAuthenticationFilter</filter-name>
         <filter-class>org.ejbca.ui.web.admin.ProxiedAuthenticationFilter</filter-class>
@@ -96,8 +96,9 @@
         <filter-name>extensionsFilter</filter-name>
         <url-pattern>*.jsf</url-pattern>
         <!-- The following JSF pages in the AdminGUI are still using <t:inputFileUpload>. They should be converted to use <h:inputFile> instead (ECA-3658) -->
-        <url-pattern>/sysconfig/editctlog.xhtml</url-pattern> 
-        <url-pattern>/sysconfig/systemconfiguration.xhtml</url-pattern> 
+        <url-pattern>/sysconfig/editctlog.xhtml</url-pattern>
+        <url-pattern>/sysconfig/editoauthkey.xhtml</url-pattern>
+        <url-pattern>/sysconfig/systemconfiguration.xhtml</url-pattern>
         <url-pattern>/keybind/keybindings.xhtml</url-pattern>
         <url-pattern>/ca/editcas/importca.xhtml</url-pattern>
         <url-pattern>/ca/editcas/editcapage.xhtml</url-pattern>
@@ -118,10 +119,10 @@
 		<init-param>
             <param-name>frameoptionsmode</param-name>
             <param-value>SAMEORIGIN</param-value>
-        </init-param>		
+        </init-param>
 	</filter>
-	
-	<filter-mapping> 
+
+	<filter-mapping>
 		<filter-name>ContentSecurityPolicyFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
@@ -206,7 +207,7 @@
         <servlet-class>org.ejbca.ui.web.admin.LogOutServlet</servlet-class>
         <load-on-startup>99</load-on-startup>
     </servlet>
-   
+
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -232,7 +233,7 @@
    	  <servlet-name>ProfilesExportServlet</servlet-name>
    	  <url-pattern>/profilesexport</url-pattern>
    </servlet-mapping>
-   
+
    <servlet-mapping>
       <servlet-name>CACert</servlet-name>
       <url-pattern>/ca/cacert</url-pattern>
@@ -308,7 +309,7 @@
             <http-method-omission>POST</http-method-omission>
         </web-resource-collection>
         <auth-constraint />
-    </security-constraint> 
+    </security-constraint>
 
    <!--
    <!ELEMENT mime-mapping (extension, mime-type)>

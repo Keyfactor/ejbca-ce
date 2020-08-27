@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
@@ -35,7 +36,7 @@ import org.ejbca.util.URIUtil;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id$
+ * @version $Id: GlobalConfiguration.java 35186 2020-06-03 12:24:16Z serkano $
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -109,13 +110,16 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = false;
 
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
-    
+
     // Default values for session timeout
     private static final boolean DEFAULTSESSIONTIMEOUT = false;
     private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
-    
+
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
+
+    // Default OAuth Keys
+    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
@@ -184,7 +188,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String REPORTS_PATH        = "reports_path";
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
-    
+
+    private static final   String OAUTH_KEYS          = "oauthkeys";
+
     private static final   String CTLOGS              = "ctlogs";
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
@@ -198,7 +204,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
-    
+
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -303,7 +309,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
                 Integer.parseInt((String) data.get(PUBLICPORT))
         );
     }
-    
+
     public String getAdminWebPath() {
         return getString(ADMINPATH, "adminweb");
     }
@@ -423,7 +429,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
+
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
@@ -530,11 +536,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public boolean getUseSessionTimeout() {
         return getBoolean(ENABLESESSIONTIMEOUT, DEFAULTSESSIONTIMEOUT);
     }
-    
+
     public void setUseSessionTimeout(final boolean value) {
         putBoolean(ENABLESESSIONTIMEOUT, value);
     }
-    
+
     public int getSessionTimeoutTime() {
         Object num = data.get(SESSIONTIMEOUTTIME);
         if(num == null){
@@ -543,7 +549,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
             return ((Integer) num).intValue();
         }
     }
-    
+
     public void setSessionTimeoutTime(int timeInMinutes) {
         if (timeInMinutes < SESSION_TIMEOUT_MIN || timeInMinutes > SESSION_TIMEOUT_MAX) {
             data.put(SESSIONTIMEOUTTIME, DEFAULTSESSIONTIMEOUTTIME);
@@ -551,7 +557,30 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
+        final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);
+        return (ret == null ? OAUTH_KEYS_DEFAULT : new LinkedHashMap<>(ret));
+    }
+
+    /** Sets the available OAuth keys */
+    public void setOauthKeys(LinkedHashMap<Integer,OAuthKeyInfo> oauthKeys) {
+        data.put(OAUTH_KEYS, oauthKeys);
+    }
+
+    public void addOauthKey(OAuthKeyInfo oauthKey) {
+        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        keys.put(oauthKey.getInternalId(), oauthKey);
+        setOauthKeys(keys);
+    }
+
+    public void removeOauthKey(int oauthKeyId) {
+        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        keys.remove(oauthKeyId);
+        setOauthKeys(keys);
+    }
+
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
         final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
