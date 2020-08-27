@@ -570,7 +570,9 @@ public class LdapPublisher extends BasePublisher {
 					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn, e.getMessage());
-					log.error(msg, e);  
+					log.error(msg, e);
+					log.info("If you are trying to publish a CRL, and the LDAP server is complaining about a missing " +
+							"CA certificate attribute, you need first publish the CA certificates to the LDAP server.");
 					throw new PublisherException(msg);            
 				}
 			} catch (UnsupportedEncodingException e) {
@@ -1358,7 +1360,7 @@ public class LdapPublisher extends BasePublisher {
 	 * Can only be used when the same attribute string is used in EJBCA and LDAP
 	 * 
 	 * @param dn The DN to search
-	 * @param oldDn the old DN
+	 * @param oldEntry the old DN
 	 * @param attributes Strings to search for in the DN
 	 * @return An ArrayList containing LDAPModification for DN
 	 */
@@ -1525,9 +1527,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @param email email address for entry, or null
 	 * @param extra if we should add extra attributes except the objectclass to the
 	 *        modificationset.
-	 * @param pserson true if this is a person-entry, false if it is a CA.
 	 * @param password, users password, to be added into SecurityObjects, and AD
-	 * @param overwrite if true then old attributes in LDAP will be overwritten, otherwise not.
 	 * @param cert the Certificate we are publishing, or null
 	 *
 	 * @return List of LDAPModification created...
