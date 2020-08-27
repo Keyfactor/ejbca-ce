@@ -19,7 +19,7 @@
     metadata-complete="false"
     xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                         http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
 
   <managed-bean>
@@ -47,7 +47,7 @@
     	<managed-bean-class>org.ejbca.ui.web.admin.certprof.CertProfileBean</managed-bean-class>
     	<managed-bean-scope>view</managed-bean-scope>
   </managed-bean>
-  
+
   <managed-bean>
     	<managed-bean-name>validatorsBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.ValidatorsBean</managed-bean-class>
@@ -101,8 +101,8 @@
         <managed-bean-class>org.ejbca.ui.web.admin.mypreferences.MyPreferencesMBean</managed-bean-class>
         <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
-  
-  
+
+
   <validator>
         <validator-id>dummyValidator</validator-id>
         <validator-class>org.ejbca.util.validator.DummyValidator</validator-class>
@@ -231,7 +231,7 @@
       <to-view-id>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
-  
+
   <navigation-rule>
     <from-view-id>/ca/editvalidators/editvalidators.xhtml</from-view-id>
     <navigation-case>
@@ -265,7 +265,7 @@
       <to-view-id>/ca/editvalidators/editvalidators.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
-  
+
    <navigation-rule>
     <from-view-id>/approval/editapprovalprofiles.xhtml</from-view-id>
     <navigation-case>
@@ -301,7 +301,7 @@
             <to-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</to-view-id>
         </navigation-case>
 </navigation-rule>
-    
+
   <navigation-rule>
     <from-view-id>/sysconfig/systemconfiguration.xhtml</from-view-id>
     <navigation-case>
@@ -316,8 +316,12 @@
       <from-outcome>editCTLog</from-outcome>
       <to-view-id>/sysconfig/editctlog.xhtml</to-view-id>
     </navigation-case>
+    <navigation-case>
+      <from-outcome>editOAuthKey</from-outcome>
+      <to-view-id>/sysconfig/editoauthkey.xhtml</to-view-id>
+    </navigation-case>
   </navigation-rule>
-  
+
   <navigation-rule>
     <from-view-id>/sysconfig/editctlog.xhtml</from-view-id>
     <navigation-case>
@@ -325,7 +329,15 @@
       <to-view-id>/sysconfig/systemconfiguration.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
-  	
+
+  <navigation-rule>
+    <from-view-id>/sysconfig/editoauthkey.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>saved</from-outcome>
+      <to-view-id>/sysconfig/systemconfiguration.xhtml</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+
   <navigation-rule>
   	<from-view-id>/services/listservices.xhtml</from-view-id>
   	<navigation-case>
@@ -372,7 +384,7 @@
         <to-view-id>/peerconnector/peerinauth.xhtml</to-view-id>
 	</navigation-case>
   </navigation-rule>
-  
+
   <navigation-rule>
   	<from-view-id>/peerconnector/peerconnector.xhtml</from-view-id>
   	<navigation-case>
@@ -387,9 +399,9 @@
   		<to-view-id>/peerconnector/peerconnectors.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
-  
+
   <factory>
   		<exception-handler-factory>org.ejbca.ui.web.admin.CaExceptionHandlerFactory</exception-handler-factory>
   </factory>
-  
+
 </faces-config>
