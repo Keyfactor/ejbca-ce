@@ -46,21 +46,12 @@ public interface GlobalConfigurationSession {
     
     /** Saves the GlobalConfiguration. 
     *
-    * @param authenticationToken an authentication token
+    * @param admin an authentication token
     * @param globconf the new Configuration
     * 
-    * @throws AuthorizationDeniedException if user was not authorized to edit the specific configuration
+    * @throws AuthorizationDeniedException if admin was not authorized to edit the specific configuration
     * @see GlobalConfigurationSessionBean#checkAuthorization
     */
-    void saveConfiguration(AuthenticationToken authenticationToken, ConfigurationBase conf) throws AuthorizationDeniedException;
+   void saveConfiguration(AuthenticationToken admin, ConfigurationBase conf) throws AuthorizationDeniedException;
 
-    /** Saves the GlobalConfiguration and checks whether root access is enabled for the user. 
-    *
-    * @param authenticationToken an authentication token
-    * @param globconf the new Configuration
-    * 
-    * @throws AuthorizationDeniedException if user was not authorized to edit the specific configuration
-    * @see GlobalConfigurationSessionBean#checkAuthorization
-    */
-    void saveConfigurationWithRootAccessCheck(AuthenticationToken authenticationToken, ConfigurationBase conf) throws AuthorizationDeniedException;
 }
