@@ -14,9 +14,11 @@
 package org.ejbca.ui.web.admin;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -32,15 +34,31 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
@@ -72,6 +90,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private String cryptoTokenType;
     private int currentCryptoTokenId = 0;
     
+    @EJB
+    private AuthorizationSystemSessionLocal authorizationSystemSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -146,7 +166,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCaName() {
-        return StringUtils.isEmpty(caInfoDto.getCaSubjectDN()) ? DEFAULT_CA_NAME : caInfoDto.getCaSubjectDN();
+        return StringUtils.isEmpty(caInfoDto.getCaSubjectDN()) ? DEFAULT_CA_NAME : caInfoDto.getCaName();
     }
 
     public void setCaName(String caName) {
@@ -356,8 +376,90 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     public void setAdminKeyStorePasswordRepeated(String adminKeyStorePasswordRepeated) {
         this.adminKeyStorePasswordRepeated = adminKeyStorePasswordRepeated;
     }
+    
+    /** Install 
+     * @throws AuthorizationDeniedException **/
+    public void install() throws AuthorizationDeniedException {
+        CAInfo cainfo = null;
+        
+        final String encodedValidity = getValidity() + "d";        
+        authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(), getAdminDn());
 
+        final Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, caInfoDto.getCryptoTokenDefaultKey());
+        if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
+        }
+        if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
+        }
+        if (!StringUtils.isEmpty(caInfoDto.getSelectedKeyEncryptKey())) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caInfoDto.getSelectedKeyEncryptKey());
+        }
+        if (!StringUtils.isEmpty(caInfoDto.getTestKey())) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, caInfoDto.getTestKey());
+        }
+        // Create the CA Token
+        final CAToken caToken = new CAToken(currentCryptoTokenId, caTokenProperties);
+        caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
+        caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        
+        // Add CA Services
+        String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
+        String extendedServiceKeySpec = caInfoDto.getSignatureAlgorithmParam();
+        if (extendedServiceKeySpec.startsWith("DSA")) {
+            keyType = AlgorithmConstants.KEYALGORITHM_DSA;
+        } else if (extendedServiceKeySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+            keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+        } else if (AlgorithmTools.isDstu4145Enabled() && extendedServiceKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
+            keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
+        } else {
+            keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
+        }
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
+        if (keyType.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            // Never use larger keys than 2048 bit RSA for OCSP signing
+            int len = Integer.parseInt(extendedServiceKeySpec);
+            if (len > 2048) {
+                extendedServiceKeySpec = "2048";
+            }
+        }
+        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + getCaDn(), "",
+                extendedServiceKeySpec, keyType));
+        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        cainfo = createX509CaInfo(getCaDn(), null, getCaName(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, encodedValidity, 
+                CAInfo.SELFSIGNED, caToken, null, extendedcaservices);
+        try {
+            caAdminSession.createCA(getAdmin(), cainfo);
+        } catch (CAExistsException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (CryptoTokenOfflineException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvalidAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (AuthorizationDeniedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    
     /** Private Methods **/
+    
+    private CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
+            List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validityString,
+                signedByCAId, new ArrayList<Certificate>(), catokeninfo);
+        cainfo.setSubjectAltName(subjectAltName);
+        cainfo.setCertificateChain(new ArrayList<Certificate>());
+        cainfo.setPolicies(policies);
+        cainfo.setExtendedCAServiceInfos(extendedcaservices);
+        cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
+        return cainfo;
+    }
     
     private boolean isSigningAlgorithmApplicableForCryptoToken(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
         String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm);
