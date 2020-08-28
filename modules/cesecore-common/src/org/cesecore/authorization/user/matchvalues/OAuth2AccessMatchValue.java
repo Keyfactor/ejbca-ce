@@ -19,7 +19,7 @@ import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
 import org.cesecore.authorization.user.AccessMatchType;
 
 /**
- * @version $Id$
+ * Match values for OAuth2AuthenticationToken
  */
 public enum OAuth2AccessMatchValue implements AccessMatchValue {
     /** Matches the "sub" (subject) claim */

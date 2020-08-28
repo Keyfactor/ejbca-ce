@@ -34,7 +34,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -67,8 +66,6 @@ import com.nimbusds.jose.util.Base64URL;
 
 /**
  * Test of {@link WebAuthenticationProviderSessionBean}. See also WebAuthenticationProviderSessionBeanTest
- *
- * @version $Id$
  */
 public class WebAuthenticationProviderSessionUnitTest {
 
@@ -258,8 +255,6 @@ public class WebAuthenticationProviderSessionUnitTest {
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
         expectAuditLog("authentication.jwt.expired", "johndoe", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
-//        final Date date = new Date(new Date().getTime() - 60*60*1000); // 1 hour old
-//        final String timestamp = String.valueOf(date.getTime() / 1000);
         final String timestamp = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -273,8 +268,6 @@ public class WebAuthenticationProviderSessionUnitTest {
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
         expectAuditLog("authentication.jwt.not_yet_valid", "johndoe", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
-//        final Date date = new Date(new Date().getTime() + 60*60*1000); // 1 hour ahead
-//        final String timestamp = String.valueOf(date.getTime() / 1000);
         final String timestamp = timestampFromNow(60*60*1000); // 1 hour ahead
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"nbf\":" + timestamp + "}", privKey);
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -314,7 +307,7 @@ public class WebAuthenticationProviderSessionUnitTest {
         expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).andReturn(globalConfig);
     }
 
-    @Ignore("Configuration of a 'default key' is not yet implemented.") // TODO
+    @Ignore("Configuration of a 'default key' is not yet implemented.") // TODO enable and update test when ECA-9351 is done
     @Test
     public void successfulRsaDefaultKey() {
         log.trace(">successfulRsaDefaultKey");
@@ -354,13 +347,13 @@ public class WebAuthenticationProviderSessionUnitTest {
     /** Tests with a token with all supported attributes. */
     @Test
     public void successfulComplexToken() {
-        log.trace(">successfulRsaWithKeyId");
+        log.trace(">successfulComplexToken");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
         replay(globalConfigurationSessionMock);
         final String expiry = timestampFromNow(60*60*1000); // 1 hour ahead
         final String notBefore = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}",
-                "{\"aud\":[\"admins\"],\"exp\":\"" + expiry + "\",\"iss\":\"issuer1\",\"nbf\":\"" + notBefore + "\",\"sub\":\"johndoe\"}", privKey);
+                "{\"aud\":[\"admins\"],\"exp\":" + expiry + ",\"iss\":\"issuer1\",\"nbf\":" + notBefore + ",\"sub\":\"johndoe\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
         verify(globalConfigurationSessionMock);
         assertNotNull("Authentication should succeed", admin);
@@ -370,6 +363,6 @@ public class WebAuthenticationProviderSessionUnitTest {
         assertEquals("Incorrect issuer claim", "issuer1", principal.getIssuer());
         assertEquals("Incorrect audience claim", Collections.singletonList("admins"), principal.getAudience());
         assertEquals("Incorrect public key fingerprint", pubKeyFingerprint, admin.getPublicKeyBase64Fingerprint());
-        log.trace("<successfulRsaWithKeyId");
+        log.trace("<successfulComplexToken");
     }
 }

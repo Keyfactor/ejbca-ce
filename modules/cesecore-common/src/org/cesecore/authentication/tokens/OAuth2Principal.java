@@ -21,8 +21,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * OAuth2 principal that contains the JWT claim attributes.
- *
- * @version $Id$
  */
 public class OAuth2Principal implements Principal, Serializable {
 
