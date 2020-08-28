@@ -57,11 +57,6 @@ public class GlobalConfigurationProxySessionBean implements GlobalConfigurationP
     public void saveConfiguration(AuthenticationToken admin, ConfigurationBase conf) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(admin, conf);
     }
-    
-    @Override
-    public void saveConfigurationWithRootAccessCheck(AuthenticationToken admin, ConfigurationBase conf) throws AuthorizationDeniedException {
-        globalConfigurationSession.saveConfigurationWithRootAccessCheck(admin, conf);
-    }
 
     @Override
     public GlobalConfigurationData findByConfigurationId(String configurationId) {
