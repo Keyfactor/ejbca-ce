@@ -21,7 +21,7 @@
      *                                                                       *
      *************************************************************************/
 
-     $Id: systemconfiguration.xhtml 35245 2020-06-16 08:58:58Z anatom $
+     $Id$
      -->
 </ui:remove>
 
@@ -562,85 +562,6 @@
 		</h:dataTable>
 	</h:form>
 
-	<!-- OAuth Keys -->
-
-	<h:form id="oauthkeysform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'OAuth Keys'}">
-		<div class="section-label">
-            <h4>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_EDIT_OAUTHKEY_TITLE}" rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_VIEW_OAUTHKEY_TITLE}" rendered="#{!systemConfigMBean.allowedToEditOauthKeys}"/>
-			</h4>
-        </div>
-		<h:dataTable value="#{systemConfigMBean.oauthKeyManager.allOauthKeys}"
-		    var="oauthkey" rendered="#{not empty systemConfigMBean.oauthKeyManager.allOauthKeys}"
-		    styleClass="grid oauthkeyTable" style="margin: 5px;">
-			<h:column>
-   				<f:facet name="header">
-   				   <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
-   			    </f:facet>
-				<h:outputText value="#{oauthkey.keyIdentifier}"
-				    title="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
-			</h:column>
-			<h:column>
-   				<f:facet name="header">
-   				   <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"/>
-   				</f:facet>
-				<h:outputText value="#{oauthkey.keyFingerprint}"
-				    title="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"
-				    styleClass="monospace"/>
-			</h:column>
-			<h:column>
-		   		<f:facet name="header">
-		   			<h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SKEWLIMIT}"/>
-		   		</f:facet>
-				<h:outputText value="#{oauthkey.skewLimit}"
-					styleClass="numberCell"/>
-			</h:column>
-			<h:column>
-        <f:facet name="header">
-           <h:outputText value="#{web.text.ACTIONS}"/>
-        </f:facet>
-        <h:commandButton action="#{systemConfigMBean.oauthKeyManager.editOauthKey(oauthkey)}"
-            value="#{web.text.EDIT}"
-            rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
-            id="editOauthKeyButton"/>
-        <h:commandButton action="#{systemConfigMBean.oauthKeyManager.removeOauthKey(oauthkey)}"
-             value="#{web.text.REMOVE}"
-             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
-      </h:column>
-		</h:dataTable>
- 		<h:panelGrid styleClass="grid" columns="4" style="border-collapse: collapse; right: auto; left: auto; margin: 5px; width: 1070px;">
-	        <f:facet name="header">
-                <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ADD_NEW}"
-                    rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
-            </f:facet>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"/>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SKEWLIMIT}"/>
-            <h:outputText value="#{web.text.ACTIONS}"/>
-            <h:inputText id="oauthKeyIdInput" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyIdentifier}"
-                         title="#{web.text.FORMAT_URI}" rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
-                         styleClass="wideCTLogInput">
-                <f:converter converterId="trimConverter"/>
-            </h:inputText>
-		    <h:panelGroup>
-		        <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEYFILE}"
-                       rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
-                <t:inputFileUpload id="currentOauthKeyFile"
-                    value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyFile}"
-                    title="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEYFILE}"
-                    rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
-             </h:panelGroup>
-             <h:inputText id="oauthKeySkewLimit" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.skewLimit}"
-                 rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
-                 size="10"
-                 required="true"/>
-	         <h:commandButton id="addOauthKey" value="#{web.text.ADD}"
-                 action="#{systemConfigMBean.oauthKeyManager.addOauthKey}"
-                 rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
-        </h:panelGrid>
-    </h:form>
-
 	<!-- Certificate Transparency Logs -->
 
 	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs' and web.ejbcaWebBean.runningBuildWithCA}">
@@ -1063,3 +984,4 @@
 	</ui:define>
 	</ui:composition>
 </html>
+

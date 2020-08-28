@@ -94,8 +94,6 @@ import org.ejbca.util.query.Query;
 /**
  * Contains methods that are used by both the EjbcaWS, the Ejbca WS tests and by RAMasterApiSessionBean.
  * For instance, methods to convert between EndEntityInformation and UserDataWO.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaWSHelperSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
