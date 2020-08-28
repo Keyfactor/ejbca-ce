@@ -95,8 +95,6 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 /**
  * Check the authentication of the PKIMessage by verifying the signature of the administrator who sent the message
  *
- * @version $Id$
- *
  */
 public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticationModule {
 
@@ -918,6 +916,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             TrustAnchor anchor = new TrustAnchor(rootcert, null);
             PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
             params.setRevocationEnabled(false);
+            params.setSigProvider(BouncyCastleProvider.PROVIDER_NAME);
             CertPathValidator cpv = CertPathValidator.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
             PKIXCertPathValidatorResult result = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
             if (log.isDebugEnabled()) {
