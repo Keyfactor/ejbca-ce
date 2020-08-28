@@ -18,8 +18,8 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -45,18 +45,15 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
-import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
@@ -97,18 +94,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
-    @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     
     private CAInterfaceBean caBean;
     
     public void initialize() {
-//        if (!FacesContext.getCurrentInstance().isPostback())  {
-//            log.info("### is not postback");
-//        } else {
-//            log.info("### is postback");
-//        }
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         try {
             caBean = SessionBeans.getCaBean(request);
@@ -118,7 +108,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
         updateKeyAliases();
-//        }
     }
     
     public InitNewPkiMBean() {
@@ -377,13 +366,26 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         this.adminKeyStorePasswordRepeated = adminKeyStorePasswordRepeated;
     }
     
-    /** Install 
-     * @throws AuthorizationDeniedException **/
-    public void install() throws AuthorizationDeniedException {
+    public void install() {
+        createCa();
+        createKeyStore();
+        createSuperAdmin();
+    }
+    
+    /** Private Methods **/
+   
+    private void createSuperAdmin() {
+        
+    }
+
+    private void createKeyStore() {
+        
+    }
+    
+    private void createCa() {
         CAInfo cainfo = null;
         
         final String encodedValidity = getValidity() + "d";        
-        authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(), getAdminDn());
 
         final Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, caInfoDto.getCryptoTokenDefaultKey());
@@ -431,23 +433,21 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
                 CAInfo.SELFSIGNED, caToken, null, extendedcaservices);
         try {
             caAdminSession.createCA(getAdmin(), cainfo);
+            authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(), getAdminDn());
         } catch (CAExistsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            addErrorMessage("CAALREADYEXISTS", getCaName());
+            log.error("CA " + getCaName() + " already exists.");
         } catch (CryptoTokenOfflineException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            addErrorMessage("CATOKENISOFFLINE");
+            log.error("Crypto token was unavailable: " + e.getMessage());
         } catch (InvalidAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("Algorithm was not valid: " + e.getMessage());
+            addErrorMessage("INVALIDSIGORKEYALGPARAM");
         } catch (AuthorizationDeniedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to create CA");
+            log.error("Not authorized to create CA: " + e.getMessage());
         }
     }
-    
-    
-    /** Private Methods **/
     
     private CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
             List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
