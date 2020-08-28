@@ -220,7 +220,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
-            if (WebConfiguration.getRequireAdminCertificate() && certificate == null) {
+            if (WebConfiguration.isAdminAuthenticationRequired() && certificate == null) {
                 throw new AuthenticationFailedException("Client certificate required.");
             }
             if (certificate != null) {
