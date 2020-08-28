@@ -23,8 +23,6 @@ import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
 
 /**
  * Authentication token for OAuth2 with JWT
- *
- * @version $Id$
  */
 public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
 
@@ -33,7 +31,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
     private static final Logger log = Logger.getLogger(OAuth2AuthenticationToken.class);
     private static final long serialVersionUID = 1L; 
 
-    private OAuth2Principal principal;
+    private final OAuth2Principal principal;
     private final String encodedToken;
     private final String base64Fingerprint;
 
@@ -43,7 +41,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
      *
      * @param principal Principal containing claims (issuer, subject and audience)
      * @param encodedToken Encoded JWT token. For an example see <a href="https://tools.ietf.org/html/rfc7519#section-3.1">RFC-7519 section 3.1</a>.
-     * @param keyFingerprint Base64 encoded SHA-256 fingerprint of public key that was used to verify the JWT.
+     * @param base64Fingerprint Base64 encoded SHA-256 fingerprint of public key that was used to verify the JWT.
      */
     public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedToken, final String base64Fingerprint) {
         super(Collections.singleton(principal), Collections.singleton(encodedToken));
