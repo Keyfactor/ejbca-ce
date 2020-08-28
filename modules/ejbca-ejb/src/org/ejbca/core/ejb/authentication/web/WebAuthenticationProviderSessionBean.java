@@ -127,6 +127,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return null;
                 }
                 final byte[] keyBytes = keyInfo.getPublicKeyBytes();
+                keyFingerprint = keyInfo.getKeyFingerprint();
                 final Key key = KeyTools.getPublicKeyFromBytes(keyBytes);
                 final JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(signedJwt.getHeader(), key);
                 if (!signedJwt.verify(verifier)) {
