@@ -271,13 +271,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     details.put("subject", principal.getSubject());
                 }
                 if (principal.getAudience() != null) {
-                    details.put("audience", principal.getAudience()); // FIXME check that we can store a list here
+                    details.put("audience", Arrays.toString(principal.getAudience().toArray()));
                 }
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
             } else {
-                // TODO: When other types of authentication are implemented, check the distinct configured tokenTypes and try to authenticate for each
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
