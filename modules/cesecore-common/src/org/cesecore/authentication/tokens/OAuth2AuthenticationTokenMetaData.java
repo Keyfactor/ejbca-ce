@@ -18,8 +18,6 @@ import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
 
 /**
  * Meta data definition and ServiceLoader marker for {@link org.cesecore.authentication.tokens.OAuth2AuthenticationToken}.
- *
- * @version $Id$
  */
 public class OAuth2AuthenticationTokenMetaData extends AuthenticationTokenMetaDataBase {
 
