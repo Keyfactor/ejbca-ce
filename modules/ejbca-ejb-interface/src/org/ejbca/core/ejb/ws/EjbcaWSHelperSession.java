@@ -21,7 +21,7 @@ import org.ejbca.core.protocol.ws.objects.SshRequestMessageWs;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 /**
- * @version $Id$
+ * EJBCA WS Helper.
  */
 public interface EjbcaWSHelperSession {
 
