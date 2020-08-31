@@ -59,11 +59,8 @@ import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Primary interface to the EJBCA RA WebService.
- * <p>
- * Observe: All methods have to be called using client authenticated https
- * otherwise an AuthorizationDenied exception will be thrown.
- *
- * @version $Id$
+ * <p>Observe: All methods have to be called using client authenticated https otherwise an AuthorizationDenied exception
+ * will be thrown.</p>
  */
 @SuppressWarnings("deprecation")
 public interface IEjbcaWS {
