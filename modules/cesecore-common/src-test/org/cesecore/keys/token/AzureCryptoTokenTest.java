@@ -19,12 +19,12 @@ import static org.junit.Assert.fail;
 
 /**
  * Makes some basic tests on Azure Crypto Token class
- * TODO: mock Azure REST API to perform REST API tests
+ * Future improvements: ECA-9374: mock Azure REST API to perform REST API tests
  */
 public class AzureCryptoTokenTest extends CryptoTokenTestBase {
 
     @Test
-    public void testKeyVaultNameCheck() throws Exception {
+    public void testKeyVaultNameCheck() {
         AzureCryptoToken.checkAliasName("abcde123ABCDEFf123456");
         AzureCryptoToken.checkAliasName("abcde123ABCDEF-f123456");            
         try {
@@ -54,7 +54,7 @@ public class AzureCryptoTokenTest extends CryptoTokenTestBase {
     }
     
     @Test
-    public void testKeyVaultURL() throws Exception {
+    public void testKeyVaultURL() {
         String url = AzureCryptoToken.createFullKeyURL("myalias", "ejbca-vault");
         assertEquals("URL is not the expected", "https://ejbca-vault.vault.azure.net/keys/myalias", url);
         url = AzureCryptoToken.createFullKeyURL("myalias", "ejbca-vault.vault.azure.net");
@@ -76,7 +76,7 @@ public class AzureCryptoTokenTest extends CryptoTokenTestBase {
 
     @Override
     protected String getProvider() {
-        // TODO Auto-generated method stub
+        // No provider needed here until we implements crypto tests (see ECA-9374)
         return null;
     }
 
