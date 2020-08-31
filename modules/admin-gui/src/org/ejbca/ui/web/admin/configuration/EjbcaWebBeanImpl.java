@@ -224,7 +224,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
-            if (WebConfiguration.getRequireAdminCertificate() && certificate == null && oauthBearerToken == null) {
+            if (WebConfiguration.isAdminAuthenticationRequired() && certificate == null && oauthBearerToken == null) {
                 throw new AuthenticationFailedException("Client certificate or OAuth bearer token required.");
             }
             if (certificate != null) {

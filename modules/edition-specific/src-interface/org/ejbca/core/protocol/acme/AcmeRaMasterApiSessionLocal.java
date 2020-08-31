@@ -25,6 +25,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.ConfigurationBase;
@@ -39,8 +40,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 /**
  * Proxy for identifying all calls that are needed in the RaMasterApi to fully support ACME.
  *
- *
- * @version $Id$
  */
 @Local
 public interface AcmeRaMasterApiSessionLocal {
@@ -52,6 +51,8 @@ public interface AcmeRaMasterApiSessionLocal {
     
     /** @see org.ejbca.core.model.era.RaMasterApi#searchForCertificate(AuthenticationToken, String) */
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
+
+    List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint);
 
     /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAcmeAccount(String) */
     AcmeAccount getAcmeAccount(String accountId);
