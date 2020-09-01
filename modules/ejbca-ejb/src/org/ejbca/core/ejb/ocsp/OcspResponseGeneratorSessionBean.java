@@ -1539,8 +1539,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             log.info("Revoked certificate with serial number " + certId.getSerialNumber().toString(16) + " has revocation reason -1 (not revoked), using revocation reason 0 (unspecified) instead.");
                             reasonCode = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
                         }
+                        final CRLReason crlReason = reasonCode != RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED ? CRLReason.lookup(reasonCode) : null;
                         certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
-                                CRLReason.lookup(reasonCode)));
+                                crlReason));
                         if (!isPreSigning && transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                             transactionLogger.paramPut(TransactionLogger.REV_REASON, reasonCode);
