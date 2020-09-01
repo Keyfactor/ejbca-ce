@@ -13,8 +13,18 @@
 
 package org.ejbca.ui.web.admin;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,27 +45,47 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
+import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
@@ -71,7 +101,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private static final String CREATE_NEW_CRYPTO_TOKEN = "createNewToken";
     private static final String USE_SOFT_CRYPTO_TOKEN = "useExistingToken";
     
-    private static final String DEFAULT_CA_NAME = "Management CA";
+    private static final String DEFAULT_CA_NAME = "ManagementCA";
     private static final String DEFAULT_CA_DN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
     private static final String DEFAULT_CA_VALIDITY = "3650";
 
@@ -87,6 +117,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private String cryptoTokenType;
     private int currentCryptoTokenId = 0;
     
+    String p12Directory = null;
+    
     @EJB
     private AuthorizationSystemSessionLocal authorizationSystemSession;
     @EJB
@@ -95,6 +127,12 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private SignSessionLocal signSession;
     
     private CAInterfaceBean caBean;
     
@@ -133,11 +171,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public String actionBackToCaSettings() {
-        resetKeyStoreSelections();
-        return "back";
-    }
-    
-    public String actionBackToKeyStoreSettings() {
         resetSuperAdminSettings();
         return "back";
     }
@@ -278,54 +311,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         return resultList;
     }
     
-    /** KeyStore Methods **/
-    
-    private String serverHostName = "localhost";
-    private String serverDn = "CN=localhost,O=EJBCA Sample,C=SE";
-    private String serverAltName = "dnsName=localhost,IPAddress=127.0.0.1";
-    private String keyStorePassword;
-    private String keyStorePasswordRepeated;
-    
-    
-    public String getServerHostName() {
-        return serverHostName;
-    }
-
-    public void setServerHostName(String serverHostName) {
-        this.serverHostName = serverHostName;
-    }
-
-    public String getServerDn() {
-        return serverDn;
-    }
-
-    public void setServerDn(String serverDn) {
-        this.serverDn = serverDn;
-    }
-    
-    public String getServerAltName() {
-        return serverAltName;
-    }
-
-    public void setServerAltName(String serverAltName) {
-        this.serverAltName = serverAltName;
-    }
-
-    public String getKeyStorePassword() {
-        return keyStorePassword;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
-    }
-
-    public String getKeyStorePasswordRepeated() {
-        return keyStorePasswordRepeated;
-    }
-
-    public void setKeyStorePasswordRepeated(String keyStorePasswordRepeated) {
-        this.keyStorePasswordRepeated = keyStorePasswordRepeated;
-    }
 
     /** SuperAdmin Methods **/
     
@@ -368,17 +353,12 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     public void install() {
         createCa();
-        createKeyStore();
         createSuperAdmin();
     }
     
     /** Private Methods **/
-   
-    private void createSuperAdmin() {
-        
-    }
 
-    private void createKeyStore() {
+    private void createSuperAdmin() {
         
     }
     
@@ -580,11 +560,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         availableCryptoTokenMixedAliases = null;
         availableCryptoTokenEncryptionAliases = null;
         this.caInfoDto = new CaInfoDto();
-    }
-    
-    private void resetKeyStoreSelections() {
-        keyStorePassword = null;
-        keyStorePasswordRepeated = null;
     }
     
     private void resetSuperAdminSettings() {
