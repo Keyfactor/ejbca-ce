@@ -13,20 +13,20 @@
 
 package org.ejbca.ui.web.admin;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -48,43 +48,43 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.CertificateSignatureException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -131,6 +131,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private KeyStoreCreateSessionLocal keyStoreCreateSession;
     @EJB
     private SignSessionLocal signSession;
     
@@ -351,15 +353,34 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         this.adminKeyStorePasswordRepeated = adminKeyStorePasswordRepeated;
     }
     
-    public void install() {
+    public void install() throws AuthorizationDeniedException {
         createCa();
         createSuperAdmin();
     }
     
     /** Private Methods **/
 
-    private void createSuperAdmin() {
+    private byte[] createSuperAdmin() throws AuthorizationDeniedException {
+//        endEntityManagementSession.adduser()
         
+        final int caId = caSession.getCAInfo(getAdmin(), getCaName()).getCAId();
+        Date notAfter = ValidityDate.getDate(getAdminValidity(), null);
+        KeyStore keyStore = null;
+        try {
+            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmintest", getAdminKeyStorePassword(), 
+                    caId, "2048", "RSA", null, notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        } catch (Exception e) {
+            log.info("SuperAdmin Keystore could not be generated", e);
+            addErrorMessage("SuperAdmin Keystore could not be generated");
+        }
+        
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            keyStore.store(outputStream, getAdminKeyStorePassword().toCharArray());
+            return outputStream.toByteArray();
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            log.error(e); 
+        }
+        return null;
     }
     
     private void createCa() {
