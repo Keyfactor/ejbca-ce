@@ -311,7 +311,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
         // Audit log access rule changes (also for new roles)
         final HashMap<String, Boolean> newAccessRules = role.getAccessRules();
-        final HashMap<String, Boolean> oldAccessRules = roleById==null ? new HashMap<String, Boolean>() : roleById.getAccessRules();
+        final HashMap<String, Boolean> oldAccessRules = roleById==null ? new HashMap<>() : roleById.getAccessRules();
         final Map<Object,Object> oldAuditMap = new HashMap<>();
         for (final Entry<String,Boolean> entry : oldAccessRules.entrySet()) {
             oldAuditMap.put(entry.getKey(), entry.getValue().booleanValue() ? "allow" : "deny");
