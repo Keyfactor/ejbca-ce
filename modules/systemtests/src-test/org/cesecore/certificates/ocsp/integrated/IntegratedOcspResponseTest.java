@@ -623,6 +623,19 @@ public class IntegratedOcspResponseTest {
      */
     @Test
     public void testGetOcspResponseWithRevokedCertificate() throws Exception {
+        doTestWithRevokedCertificate(true, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+    }
+
+    /**
+     * Like testGetOcspResponseWithRevokedCertificate, but tests with the "Unspecified" revocation reason.
+     * Per CA/B Forum Baseline Requirements, the reason code must be omitted when the revocation reason is "Unspecified".
+     */
+    @Test
+    public void testGetOcspResponseWithUnspecifiedRevocationReason() throws Exception {
+        doTestWithRevokedCertificate(false, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+    }
+
+    private void doTestWithRevokedCertificate(final boolean shouldHaveRevocationReason, final int expectedRevocationReason) throws Exception {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
@@ -635,7 +648,7 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
-        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), expectedRevocationReason);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -643,23 +656,7 @@ public class IntegratedOcspResponseTest {
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
-        assertNotNull("OCSP responder replied null", responseBytes);
-
-        OCSPResp response = new OCSPResp(responseBytes);
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.",
-                basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
-        SingleResp[] singleResponses = basicOcspResponse.getResponses();
-        assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-        assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
-                .getSerialNumber());
-        Object status = singleResponses[0].getCertStatus();
-        assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
-        RevokedStatus rev = (RevokedStatus) status;
-        assertTrue("Status does not have reason", rev.hasRevocationReason());
-        int reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        assertRevokedOcspResponse(shouldHaveRevocationReason, expectedRevocationReason, responseBytes);
         
         // Do the same test but using SHA256 as hash algorithm for CertID
         gen = new OCSPReqBuilder();
@@ -670,22 +667,30 @@ public class IntegratedOcspResponseTest {
         req = gen.build();
         responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
-        response = new OCSPResp(responseBytes);
+        assertRevokedOcspResponse(shouldHaveRevocationReason, expectedRevocationReason, responseBytes);
+    }
+
+    private void assertRevokedOcspResponse(final boolean shouldHaveRevocationReason, final int expectedRevocationReason, byte[] responseBytes)
+            throws IOException, OCSPException, OperatorCreationException {
+        assertNotNull("OCSP responder replied null", responseBytes);
+
+        final OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
-        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+        final BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
         assertTrue("OCSP response was not signed correctly.",
                 basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
-        singleResponses = basicOcspResponse.getResponses();
+        final SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
                 .getSerialNumber());
-        status = singleResponses[0].getCertStatus();
+        final Object status = singleResponses[0].getCertStatus();
         assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
-        rev = (RevokedStatus) status;
-        assertTrue("Status does not have reason", rev.hasRevocationReason());
-        reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-
+        final RevokedStatus rev = (RevokedStatus) status;
+        assertEquals("Wrong reason code presence", shouldHaveRevocationReason, rev.hasRevocationReason());
+        if (shouldHaveRevocationReason) {
+            int reason = rev.getRevocationReason();
+            assertEquals("Wrong revocation reason", reason, expectedRevocationReason);
+        }
     }
 
     @Test
