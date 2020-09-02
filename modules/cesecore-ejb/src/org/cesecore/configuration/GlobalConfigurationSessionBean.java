@@ -70,8 +70,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException {
-        assertAuthorization(admin, configID, "Could not read configuration.");
+    public Properties getAllProperties(AuthenticationToken authenticationToken, String configID) throws AuthorizationDeniedException {
+        assertAuthorization(authenticationToken, configID, "Could not read configuration.");
         return GlobalConfigurationCacheHolder.INSTANCE.getAllProperties(configID);
     }
 
@@ -118,12 +118,12 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void saveConfiguration(final AuthenticationToken admin, final ConfigurationBase conf) throws AuthorizationDeniedException {
+    public void saveConfiguration(final AuthenticationToken authenticationToken, final ConfigurationBase conf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveConfiguration()");
         }
         String configID = conf.getConfigurationId();
-        assertAuthorization(admin, configID, "Could not save configuration");
+        assertAuthorization(authenticationToken, configID, "Could not save configuration");
 
         final GlobalConfigurationData gcdata = findByConfigurationId(configID);
         if (gcdata != null) {
@@ -144,7 +144,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 details.put(entry.getKey().toString(), entry.getValue().toString());
             }
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
-                    admin.toString(), null, null, null, details);
+                    authenticationToken.toString(), null, null, null, details);
         } else {
             // Global configuration doesn't yet exist, so persist a new one.
             try {
@@ -153,7 +153,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(conf, configID);
                 final String msg = intres.getLocalizedMessage("globalconfig.createdconf", configID);
                 auditSession.log(EventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, msg);
+                        authenticationToken.toString(), null, null, null, msg);
             } catch (Exception e) {
                 final String msg = intres.getLocalizedMessage("globalconfig.errorcreateconf");
                 log.info(msg, e);
@@ -161,12 +161,22 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
                 auditSession.log(EventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, details);
+                        authenticationToken.toString(), null, null, null, details);
             }
         }
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
         }
+    }
+    
+    @Override
+    public void saveConfigurationWithRootAccessCheck(final AuthenticationToken authenticationToken, final ConfigurationBase conf) throws AuthorizationDeniedException {
+        final String accessRule = StandardRules.ROLE_ROOT.resource();
+        if (!authorizationSession.isAuthorized(authenticationToken, accessRule)) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", accessRule, "Could not save configuration");
+            throw new AuthorizationDeniedException(msg);
+        }
+        saveConfiguration(authenticationToken, conf);
     }
 
     private void assertAuthorization(final AuthenticationToken authenticationToken, final String configID, final String errorMsg) throws AuthorizationDeniedException {
