@@ -1539,6 +1539,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             log.info("Revoked certificate with serial number " + certId.getSerialNumber().toString(16) + " has revocation reason -1 (not revoked), using revocation reason 0 (unspecified) instead.");
                             reasonCode = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
                         }
+                        // CA/B Forum Baseline Requirements 1.7.1+ require that reason code is omitted when it is Unspecified.
+                        // See section 7.3 and 7.2.2 in https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.7.1.pdf
                         final CRLReason crlReason = reasonCode != RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED ? CRLReason.lookup(reasonCode) : null;
                         certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
                                 crlReason));
