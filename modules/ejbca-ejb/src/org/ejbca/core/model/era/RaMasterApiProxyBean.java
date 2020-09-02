@@ -149,8 +149,6 @@ import org.ejbca.util.query.IllegalQueryException;
 /**
  * Proxy implementation of the the RaMasterApi that will get the result of the most preferred API implementation
  * or a mix thereof depending of the type of call.
- *
- * @version $Id$
  */
 @Singleton
 @Startup
@@ -701,6 +699,39 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 try {
                     searchResponse = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
                     if (searchResponse != null) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return searchResponse;
+    }
+
+    @Override
+    public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint) {
+        List<CertificateWrapper> searchResponse = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.getApiVersion() >= 10) {
+                        searchResponse = raMasterApi.searchForCertificateChain(authenticationToken, fingerprint);
+                        if (searchResponse != null) {
+                            break;
+                        }
+                    } else {
+                        searchResponse = new ArrayList<>();
+                        do {
+                            CertificateDataWrapper cdw = raMasterApi.searchForCertificate(authenticationToken, fingerprint);
+                            searchResponse.add(cdw);
+                            if (cdw != null && !cdw.getCertificateData().getCaFingerprint().equals(cdw.getCertificateData().getFingerprint())) {
+                                fingerprint = cdw.getCertificateData().getCaFingerprint();
+                            } else {
+                                fingerprint = null;
+                            }
+
+                        } while (fingerprint != null);
                         break;
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
