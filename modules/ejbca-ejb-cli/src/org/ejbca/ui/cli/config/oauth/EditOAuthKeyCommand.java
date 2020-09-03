@@ -67,6 +67,10 @@ public class EditOAuthKeyCommand extends BaseOAuthConfigCommand {
             if (entry.getValue().getKeyIdentifier().equals(kid)) {
                 if (checkParametersAndSet(parameters.get(NEW_KEY_IDENTIFIER), parameters.get(NEW_SKEW_LIMIT), parameters.get(NEW_PUBLIC_KEY),
                         entry.getValue())) {
+                    OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
+                    if (defaultKey != null && entry.getValue().getInternalId() == defaultKey.getInternalId()) {
+                        getGlobalConfiguration().setDefaultOauthKey(entry.getValue());
+                    }
                     if (saveGlobalConfig()) {
                         log.info("OAuth key with kid: " + kid + " successfully updated!");
                         return CommandResult.SUCCESS;
