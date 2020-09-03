@@ -28,6 +28,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -241,8 +242,11 @@ public class EndEntityAccessSessionTest extends CaTestCase {
             endEntityManagementSessionRemote.changeUser(alwaysAllowToken, user, false);
             certificate2 = createCertificateForUser(alwaysAllowToken, username);
             assertFindCertificateResults(alwaysAllowToken, username, 2, 0);
+            // 1.3 notified about expiration is also valid.
+            certificateStoreSession.setStatus(alwaysAllowToken, CertTools.getFingerprintAsString(certificate2), CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+            assertFindCertificateResults(alwaysAllowToken, username, 2, 0);
             
-            // 1.3 Search for user with valid or unvalid certificates.
+            // 1.4 Search for user with valid or unvalid certificates.
             endEntityManagementSessionRemote.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(certificate1), caInfo.getSubjectDN(), RevocationReasons.UNSPECIFIED.ordinal());
             assertFindCertificateResults(alwaysAllowToken, username, 2, 1);
             endEntityManagementSessionRemote.revokeCert(alwaysAllowToken, CertTools.getSerialNumber(certificate2), caInfo.getSubjectDN(), RevocationReasons.UNSPECIFIED.ordinal());
