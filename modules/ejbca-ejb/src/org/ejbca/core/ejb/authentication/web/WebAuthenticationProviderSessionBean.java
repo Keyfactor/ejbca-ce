@@ -170,12 +170,13 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return key;
                 }
             }
-            return null;
         } else {
-            // Use default key
-            // TODO ECA-9351
-            return null;
+            final OAuthKeyInfo defaultKey = globalConfig.getDefaultOauthKey();
+            if (defaultKey != null) {
+                return defaultKey;
+            }
         }
+        return null;
     }
 
     /**
