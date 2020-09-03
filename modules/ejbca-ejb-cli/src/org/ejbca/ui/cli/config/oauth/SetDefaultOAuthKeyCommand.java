@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -26,59 +24,65 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * Remove already existing OAuth key
- * 
+ * Set a default OAuth key
+ *
  */
-public class RemoveOAuthKeyCommand extends BaseOAuthConfigCommand {
-    
-    private static final Logger log = Logger.getLogger(RemoveOAuthKeyCommand.class);
+public class SetDefaultOAuthKeyCommand extends BaseOAuthConfigCommand {
+
+    private static final Logger log = Logger.getLogger(SetDefaultOAuthKeyCommand.class);
     
     private static final String KEY_IDENTIFIER = "--key_identifier";
-
+    
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the OAuth key which is going to be removed."));
-    }
+                "Key identifier of the OAuth key which is going to be set as the default OAuth key. Setting it as 'null' will clear the default OAuth key."));
+    }   
     
     @Override
     public String getMainCommand() {
-        return "removeoauthkey";
+        return "setdefaultoauthkey";
     }
 
     @Override
     public String getCommandDescription() {
-        return "Remove an existing oauth key from the list of keys.";
+        return "Sets one of the existing oauth keys as default.";
     }
 
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
+        final String kid = parameters.get(KEY_IDENTIFIER);
         
-        String kidToRemove = parameters.get(KEY_IDENTIFIER);
+        if (kid.isEmpty()) {
+            log.info("The key identifier of the default OAuth key has to be specified.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
         
-        LinkedHashMap<Integer, OAuthKeyInfo> currentOAuthKeys = getGlobalConfiguration().getOauthKeys();
-        OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
+        final Collection<OAuthKeyInfo> oauthKeys = getGlobalConfiguration().getOauthKeys().values();
+        OAuthKeyInfo defaultKey = null;
         
-        for (Iterator<Map.Entry<Integer, OAuthKeyInfo>> iterator = currentOAuthKeys.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry<Integer, OAuthKeyInfo> entry = iterator.next();
-            if (entry.getValue().getKeyIdentifier().equals(kidToRemove)) {
-                // Found the kid to be removed!
-                iterator.remove();
-                getGlobalConfiguration().setOauthKeys(currentOAuthKeys);
-                if (defaultKey != null && kidToRemove.equals(defaultKey.getKeyIdentifier())) {
-                    getGlobalConfiguration().setDefaultOauthKey(null);
-                }
-                if(saveGlobalConfig()) {
-                    log.info("OAuth key with kid: " + kidToRemove + " successfully removed!");
-                    return CommandResult.SUCCESS;
-                } else {
-                    log.info("Failed to update configuration due to authorization issue!");
-                    return CommandResult.AUTHORIZATION_FAILURE;
-                }
+        for (final OAuthKeyInfo keyInfo : oauthKeys) {
+            if (kid.equals(keyInfo.getKeyIdentifier())) {
+                defaultKey = keyInfo;
             }
         }
         
-        log.info("OAuth key with kid: " + kidToRemove + " not found!");
-        return CommandResult.FUNCTIONAL_FAILURE;
+        if (kid.equalsIgnoreCase("null")) {
+            // The user wants to clear the defaultKey entry by explicitly setting it as 'null'
+            defaultKey = null;
+        } else if (defaultKey == null) {
+            log.info("OAuth key with the kid " + kid + " doesn't exist. Can't set a nonexistent OAuth Key as default.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        
+        getGlobalConfiguration().setDefaultOauthKey(defaultKey);
+        
+        if (saveGlobalConfig()) {
+            log.info("Default OAuth key with kid: " + kid + " set successfuly!");
+            return CommandResult.SUCCESS;
+        } else {
+            log.info("Failed to update configuration due to authorization issue!");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        }
     }
 
     @Override

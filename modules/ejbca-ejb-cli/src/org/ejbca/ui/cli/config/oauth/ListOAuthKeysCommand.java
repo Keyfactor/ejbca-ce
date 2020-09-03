@@ -40,9 +40,13 @@ public class ListOAuthKeysCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
         Collection<OAuthKeyInfo> oauthKeys = getGlobalConfiguration().getOauthKeys().values();
+        OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
         
-        for(OAuthKeyInfo keyInfo : oauthKeys) {
+        for (OAuthKeyInfo keyInfo : oauthKeys) {
             log.info("Kid: "  + keyInfo.getKeyIdentifier() + " | skew limit: " + keyInfo.getSkewLimit() + " | publickey fingerprint: " + keyInfo.getKeyFingerprint());
+        }
+        if (defaultKey != null) {
+            log.info("Default key kid: " + defaultKey.getKeyIdentifier());
         }
         
         return CommandResult.SUCCESS;
