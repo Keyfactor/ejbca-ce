@@ -634,7 +634,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         authorizedToViewProfile(authenticationToken, profile);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
-            encoder.close();
+            encoder.flush(); // try-with-resource closes it
             return baos.toByteArray();
         } catch (IOException e) {
             String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();

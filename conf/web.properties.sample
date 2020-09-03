@@ -115,11 +115,12 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default: true
 #web.reqcertindb=true
 
-# Enforce secure authentication by client TLS certificate to access the Admin GUI.
+# Enforce secure authentication by client TLS certificate or OAuth token to access the Admin GUI.
 # WARNING: Disabling this is a really good way to get completely pwnd/hacked/compromised and render any support contract invalid.
-# Note that this is different from web.reqcertindb, which still requires a client certificate by a trusted CA.
+# NOTE: If your existing configuration uses the earlier "web.reqcert" setting, it can still be used, however it is
+# deprecated in newer versions. For new installations ONLY "web.reqauth" should be used.
 # Default: true
-#(Read the warning!)web.reqcert=true
+#(Read the warning!)web.reqauth=true
 
 # Allow users to self-register on public web, by entering their information.
 # This creates an approval request for the admin.
