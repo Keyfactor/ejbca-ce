@@ -92,13 +92,20 @@
 			<h:inputText id="caDn" value="#{initNewPkiMBean.caDn}"/>
 			
 			<h:outputLabel for="caValidity" value="Validity (days)"/>
-			<h:inputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
+			<h:panelGroup id="caValidity">
+				<h:inputText value="#{initNewPkiMBean.validity}">
+					<f:validator validatorId="validityDateValidator"/>
+					<f:attribute name="precision" value="seconds" />
+				</h:inputText>
+				<br/>
+				<h:outputText styleClass="smallHelp" value="#{initNewPkiMBean.certificateValidityHelp}"/> 
+			</h:panelGroup>
 			
 		</h:panelGrid>
 		
 		<h:panelGroup id="nagivationGroup">
 			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToInstallation}"/>
-			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNext}">
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNextGoToInitAdmin}">
 				<f:param name="initNewPki" value="{initNewPkiMBean.initNewPkiRedirect}" />
 			</h:commandButton>
 		</h:panelGroup>
