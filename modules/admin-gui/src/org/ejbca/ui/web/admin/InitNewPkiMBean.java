@@ -15,15 +15,13 @@ package org.ejbca.ui.web.admin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -35,11 +33,13 @@ import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,43 +48,38 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.CertificateSignatureException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -98,12 +93,13 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     private static final Logger log = Logger.getLogger(InitNewPkiMBean.class);
     
+    private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String CREATE_NEW_CRYPTO_TOKEN = "createNewToken";
     private static final String USE_SOFT_CRYPTO_TOKEN = "useExistingToken";
     
     private static final String DEFAULT_CA_NAME = "ManagementCA";
     private static final String DEFAULT_CA_DN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
-    private static final String DEFAULT_CA_VALIDITY = "3650";
+    private static final String DEFAULT_CA_VALIDITY = "10y";
 
     private List<SelectItem> availableCryptoTokenSelectItems;
     private List<SelectItem> availableSigningAlgorithmSelectItems;
@@ -117,8 +113,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private String cryptoTokenType;
     private int currentCryptoTokenId = 0;
     
-    String p12Directory = null;
-    
     @EJB
     private AuthorizationSystemSessionLocal authorizationSystemSession;
     @EJB
@@ -130,11 +124,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
-    private EndEntityAccessSessionLocal endEntityAccessSession;
-    @EJB
     private KeyStoreCreateSessionLocal keyStoreCreateSession;
-    @EJB
-    private SignSessionLocal signSession;
     
     private CAInterfaceBean caBean;
     
@@ -154,7 +144,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         super(StandardRules.ROLE_ROOT.resource());
     }
     
-    public String actionNext() {
+    public String actionNextGoToInitAdmin() {
         if (getCryptoTokenType().equals(CREATE_NEW_CRYPTO_TOKEN) && !initNewPkiRedirect) {
             initNewPkiRedirect = true;
             return CREATE_NEW_CRYPTO_TOKEN;
@@ -164,6 +154,13 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         }
         //TODO language file and perhaps describe which field...
         addErrorMessage("CA Fields Missing");
+        return "";
+    }
+    
+    public String actionNextGoToSummary() {
+        if (verifySuperAdminFields()) {
+            return "next";
+        }
         return "";
     }
     
@@ -207,6 +204,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     public String getValidity() {
         return StringUtils.isEmpty(caInfoDto.getCaEncodedValidity()) ? DEFAULT_CA_VALIDITY : caInfoDto.getCaEncodedValidity();
+    }
+    
+    public String getCertificateValidityHelp() {
+        return getEjbcaWebBean().getText("DATE_HELP") + "=" + getEjbcaWebBean().getDateExample() + "." + getEjbcaWebBean().getText("YEAR365DAYS")
+            + ", " + getEjbcaWebBean().getText("MO30DAYS");
     }
     
     public void setValidity(String validity) {
@@ -317,7 +319,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     /** SuperAdmin Methods **/
     
     private String adminDn = "CN=SuperAdmin";
-    private String adminValidity = "730";
+    private String adminValidity = "2y";
     private String adminKeyStorePassword;
     private String adminKeyStorePasswordRepeated;
     
@@ -353,25 +355,49 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         this.adminKeyStorePasswordRepeated = adminKeyStorePasswordRepeated;
     }
     
-    public void install() throws AuthorizationDeniedException {
+    public void install() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, 
+            CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
         createCa();
-        createSuperAdmin();
+        final byte[] keyStore = createSuperAdmin();
+        downloadP12(keyStore);
     }
     
     /** Private Methods **/
 
-    private byte[] createSuperAdmin() throws AuthorizationDeniedException {
-//        endEntityManagementSession.adduser()
-        
+    private void downloadP12(byte[] token) {
+        //Download the token
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+        ec.responseReset(); 
+        ec.setResponseContentType(APPLICATION_X_PKCS12);
+        ec.setResponseContentLength(token.length);
+        final String fileName = getFileName();
+        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + ".p12" + "\"");
+        try (final OutputStream output = ec.getResponseOutputStream()) {
+            output.write(token);
+            output.flush();
+            fc.responseComplete();
+        } catch (IOException e) {
+            addErrorMessage("DOWNLOAD_FAILED", fileName);
+            log.info("Token " + fileName + " could not be downloaded", e);
+        }
+    }
+    
+    private byte[] createSuperAdmin() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, 
+            IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
         final int caId = caSession.getCAInfo(getAdmin(), getCaName()).getCAId();
-        Date notAfter = ValidityDate.getDate(getAdminValidity(), null);
+        endEntityManagementSession.addUser(getAdmin(), "superAdminTest4", getAdminKeyStorePassword(), getAdminDn(), 
+                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.TOKEN_SOFT_P12, caId);
+        Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date());
         KeyStore keyStore = null;
         try {
-            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmintest", getAdminKeyStorePassword(), 
-                    caId, "2048", "RSA", null, notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superAdminTest4", getAdminKeyStorePassword(), 
+                    caId, "2048", "RSA", new Date(), notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         } catch (Exception e) {
             log.info("SuperAdmin Keystore could not be generated", e);
             addErrorMessage("SuperAdmin Keystore could not be generated");
+            return null;
         }
         
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -384,10 +410,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     private void createCa() {
-        CAInfo cainfo = null;
-        
-        final String encodedValidity = getValidity() + "d";        
-
+        final String encodedValidity = getValidity();        
         final Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, caInfoDto.getCryptoTokenDefaultKey());
         if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
@@ -430,10 +453,10 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CmsCertificate, " + getCaDn(), "",
                 extendedServiceKeySpec, keyType));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        cainfo = createX509CaInfo(getCaDn(), null, getCaName(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, encodedValidity, 
+        X509CAInfo caInfo = createX509CaInfo(getCaDn(), null, getCaName(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, encodedValidity, 
                 CAInfo.SELFSIGNED, caToken, null, extendedcaservices);
         try {
-            caAdminSession.createCA(getAdmin(), cainfo);
+            caAdminSession.createCA(getAdmin(), caInfo);
             authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(), getAdminDn());
         } catch (CAExistsException e) {
             addErrorMessage("CAALREADYEXISTS", getCaName());
@@ -450,15 +473,17 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
+    private X509CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
             List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validityString,
                 signedByCAId, new ArrayList<Certificate>(), catokeninfo);
         cainfo.setSubjectAltName(subjectAltName);
         cainfo.setCertificateChain(new ArrayList<Certificate>());
+        cainfo.setEncodedValidity(getValidity());
         cainfo.setPolicies(policies);
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
         cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
+        cainfo.setCaSerialNumberOctetSize(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa());
         return cainfo;
     }
     
@@ -566,8 +591,31 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    private String getFileName() {
+        final String commonName = CertTools.getPartFromDN(getAdminDn(), "CN");
+        if (StringUtils.isEmpty(commonName)) {
+            return "certificatetoken";
+        }
+        if (StringUtils.isAsciiPrintable(commonName)) {
+            return commonName;
+        }
+        return Base64.encodeBase64String(commonName.getBytes());
+    }
+    
+    private boolean verifySuperAdminFields() {
+        if (StringUtils.isEmpty(getAdminKeyStorePassword()) ||
+                !StringUtils.equals(getAdminKeyStorePassword(), getAdminKeyStorePasswordRepeated())) {
+            addErrorMessage("PASSWORDSDOESNTMATCH");
+            return false;
+        }
+        return true;
+    }
+    
     private boolean verifyCaFields() {
-        // TODO check if all CA fields are valid before continuing
+        if (StringUtils.isEmpty(getCryptoTokenIdParam())) {
+            addErrorMessage("CRYPTOTOKEN_MISSING_OR_EMPTY");
+            return false;
+        }
         return true;
     }
     
