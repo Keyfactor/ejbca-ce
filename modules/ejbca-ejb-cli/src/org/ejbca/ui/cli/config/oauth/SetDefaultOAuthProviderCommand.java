@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
-import org.apache.commons.lang.ArrayUtils;
+import java.util.Collection;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -23,69 +24,61 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * Add new OAuth key
+ * Set a default Trusted OAuth Provider
  *
  */
-public class AddOAuthKeyCommand extends BaseOAuthConfigCommand {
+public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
 
-    private static final Logger log = Logger.getLogger(AddOAuthKeyCommand.class);
+    private static final Logger log = Logger.getLogger(SetDefaultOAuthProviderCommand.class);
     
-    private static final String KEY_IDENTIFIER = "--key_identifier";
-    private static final String PUBLIC_KEY = "--public_key";
-    private static final String SKEW_LIMIT = "--skew_limit";
+    private static final String KEY_IDENTIFIER = "--keyidentifier";
     
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the OAuth key which is going to be added."));
-        registerParameter(new Parameter(PUBLIC_KEY, "Public key", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Path to publickey file used by the OAuth issuer."));
-        registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Skew limit to be used."));
-    }
-    
+                "Key identifier of the Trusted OAuth Provider which is going to be set as default. "
+                + "Setting it as 'null' will clear the default Trusted OAuth Provider."));
+    }   
     
     @Override
     public String getMainCommand() {
-        return "addoauthkey";
+        return "setdefaultoauthprovider";
     }
 
     @Override
     public String getCommandDescription() {
-        return "Adds a new oauth key to the list of available keys.";
+        return "Sets one of the existing Trusted OAuth Providers as default.";
     }
 
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
-        String kid = parameters.get(KEY_IDENTIFIER);
-        String publicKey = parameters.get(PUBLIC_KEY);
-        String skewLimit = parameters.get(SKEW_LIMIT);
+        final String kid = parameters.get(KEY_IDENTIFIER);
         
-        byte[] publicKeyByteArray = getOauthKeyPublicKey(publicKey);
-        
-        if(ArrayUtils.isEmpty(publicKeyByteArray)) {
+        if (kid.isEmpty()) {
+            log.info("The key identifier of the default Trusted OAuth Provider has to be specified.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        int skewLimitInt = 0;
-
-        if(validateSkewLimit(skewLimit) >= 0) {
-            skewLimitInt = validateSkewLimit(skewLimit);
-        } else {
-            log.info("Invalid skew limit value!");
+        final Collection<OAuthKeyInfo> oauthKeys = getGlobalConfiguration().getOauthKeys().values();
+        OAuthKeyInfo defaultKey = null;
+        
+        for (final OAuthKeyInfo keyInfo : oauthKeys) {
+            if (kid.equals(keyInfo.getKeyIdentifier())) {
+                defaultKey = keyInfo;
+            }
+        }
+        
+        if (kid.equalsIgnoreCase("null")) {
+            // The user wants to clear the defaultKey entry by explicitly setting it as 'null'
+            defaultKey = null;
+        } else if (defaultKey == null) {
+            log.info("Trusted OAuth Provider with the kid " + kid + " doesn't exist. Can't set a nonexistent Trusted OAuth Provider as default.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt);
+        getGlobalConfiguration().setDefaultOauthKey(defaultKey);
         
-        if (!canAdd(keyInfo)) {
-            log.info("OAuth key with same name or internal Id exists!");
-            return CommandResult.FUNCTIONAL_FAILURE;
-        }
-        
-        getGlobalConfiguration().addOauthKey(keyInfo);
-        
-        if(saveGlobalConfig()) {
-            log.info("OAuth key with kid: " + kid + " added successfuly!");
+        if (saveGlobalConfig()) {
+            log.info("Default Trusted OAuth Provider with kid: " + kid + " set successfuly!");
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");
