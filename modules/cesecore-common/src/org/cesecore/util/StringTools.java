@@ -872,9 +872,12 @@ public final class StringTools {
      * 
      * @param in The encrypted or clear text password to try to decrypt
      * @param sDebug A message to put in the debug log indicating where the password came from, for example 'autoactivation pin', do NOT put the password itself here
-     * @return The decrypted password, or same as input if it was not encrypted
+     * @return The decrypted password, or same as input if it was not encrypted or null
      */
     public static String passwordDecryption(final String in, final String sDebug) {
+        if (in == null) {
+            return null;
+        }
         try {
             final String tmp = pbeDecryptStringWithSha256Aes192(in, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             if (log.isDebugEnabled()) {
