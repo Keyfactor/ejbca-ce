@@ -24,33 +24,26 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{initPkiMBean}" />
+    <ui:param name="resourceBean" value="#{initExistingPkiMBean}" />
     <ui:define name="content">
-	<h:form id="initPkiForm">
-		
-		<h:panelGroup id="informationGroup">
-			<h2><h:outputText value="Installation"/></h2>
-			<h:outputText value="This node is not initialized. Please select a setup procedure"/>
+	<h:form id="initExistingPkiForm">
+		<h:panelGroup>
+			<h2><h:outputText value="Installation" /></h2>
+			<br/>
+			<h3><h:outputText value="Setup Super Administrator Role"/></h3>
 			<br/>
 		</h:panelGroup>
-	
-		<h:panelGroup columns="1">
-			<h:selectOneRadio value="#{initPkiMBean.installationMode}" layout="pageDirection">
-           		<f:selectItem itemLabel="Create a New PKI" itemValue="newPkiMode" />
-           		<f:selectItem itemLabel="Integrate With Existing PKI" itemValue="existingPkiMode" />
-				<f:ajax render="initPkiForm" />
-			</h:selectOneRadio>
-         	<h:outputText styleClass="smallHelp" value="Create a new Management CA and enroll SuperAdmin certificate" rendered="#{!initPkiMBean.installExistingPki}"/> 
-         	<h:outputText styleClass="smallHelp" value="Import existing CA certificate and assign SuperAdmin role" rendered="#{initPkiMBean.installExistingPki}"/> 
-			<br/><br/>
+		
+		<h:outputText value="#{initExistingPkiMBean.roleHelpText}"/>
+		<br/><br/>
+		
+		
+		<h:panelGroup id="nagivationGroup">
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}"/>
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}" disabled="#{!initExistingPkiMBean.caImported}"/>
 		</h:panelGroup>
-    
-    	<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initPkiMBean.actionNext}">
-    		<!-- Insert  <f:param> if parameter is required -->
-    	</h:commandButton>
-    	
-    	
-    </h:form>
-    </ui:define>
+	
+	</h:form>
+</ui:define>
 </ui:composition>
 </html>
