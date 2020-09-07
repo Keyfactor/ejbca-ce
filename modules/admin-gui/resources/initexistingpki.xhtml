@@ -26,19 +26,30 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{initExistingPkiMBean}" />
     <ui:define name="content">
-	<h:form id="initExistingPkiForm">
+	<h:form id="initExistingPkiForm" method="post" enctype='multipart/form-data'>
 		
 		<h:panelGroup>
-			<h2><h:outputText value="Integrate Existing PKI" /></h2>
+			<h2><h:outputText value="Installation" /></h2>
+			<br/>
+			<h3><h:outputText value="Import Management CA"/></h3>
+			<br/>
 		</h:panelGroup>
+		
+		<h:panelGrid columns="2">
+			<h:outputLabel for="textfieldimportcaname" value="#{web.text.IMPORTCA_CANAME}"/>
+			<h:inputText id="textfieldimportcaname" value="#{initExistingPkiMBean.importedCaName}"
+				title="#{web.text.FORMAT_ID_STR}" size="30" maxlength="255">
+			</h:inputText>
+	
+			<h:outputLabel for="profileUploadInput" value="#{web.text.IMPORTCA_CERTIFICATEFILE}"/>
+			<h:inputFile id="profileUploadInput" value="#{initExistingPkiMBean.uploadFile}"/>
+			<h:commandButton id="buttonrecievefile" value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{initExistingPkiMBean.actionImportCa}"/>
+			<br/><br/><br/><br/>
+		</h:panelGrid>
 			
 		<h:panelGroup id="nagivationGroup">
-			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}">
-			
-			</h:commandButton>
-			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}">
-			
-			</h:commandButton>
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}"/>
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}" disabled="#{!initExistingPkiMBean.caImported}"/>
 		</h:panelGroup>
 				
     </h:form>
