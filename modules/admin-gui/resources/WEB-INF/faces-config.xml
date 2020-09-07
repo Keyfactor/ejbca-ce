@@ -231,6 +231,22 @@
   		<from-outcome>back</from-outcome>
   		<to-view-id>/initpki.xhtml</to-view-id>
   	</navigation-case>
+ 	<navigation-case>
+  		<from-outcome>next</from-outcome>
+  		<to-view-id>/initexistingpkirole.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+  	<from-view-id>/initexistingpkirole.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>back</from-outcome>
+  		<to-view-id>/initexistingpki.xhtml</to-view-id>
+  	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>next</from-outcome>
+  		<to-view-id>/administratorprivileges/roles.xhtml</to-view-id>
+  	</navigation-case>
   </navigation-rule>
 
   <navigation-rule>
