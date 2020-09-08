@@ -34,7 +34,7 @@ public class ListOAuthProvidersCommand extends BaseOAuthConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Lists the current oauth keys available in EJBCA";
+        return "Lists the current oauth providers available in EJBCA";
     }
 
     @Override
