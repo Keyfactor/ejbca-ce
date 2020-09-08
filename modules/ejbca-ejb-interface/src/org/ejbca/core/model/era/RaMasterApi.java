@@ -902,10 +902,20 @@ public interface RaMasterApi {
     byte[] cmpDispatch(AuthenticationToken authenticationToken, byte[] pkiMessageBytes, String cmpConfigurationAlias) throws NoSuchAliasException;
 
     /**
+     * @deprecated Since EJBCA 7.5.0, 7.4.3, 7.4.1.1
+     * @see #estDispatch2
+     * @since RA Master API version 2 (EJBCA 6.11.0)
+     */
+    @Deprecated
+    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
+            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
+
+    /**
      * Dispatch EST request over RaMasterApi.
      *
      * Basic ASN.1 validation is performed at a proxy to increase the protection of a CA slightly.
      *
+     * @param authenticationToken the origin of the request
      * @param operation the EST operation to perform
      * @param alias the requested CA configuration that should handle the request.
      * @param cert The client certificate used to request this operation if any
@@ -914,6 +924,7 @@ public interface RaMasterApi {
      * @param requestBody The HTTP request body. Usually a PKCS#10
      * @return the HTTP response body
      *
+     * @throws AuthorizationDeniedException if we don't have access to the CA in the EST alias
      * @throws NoSuchAliasException if the alias doesn't exist
      * @throws CADoesntExistsException if the CA specified in a request for CA certs doesn't exist
      * @throws CertificateCreateException if an error was encountered when trying to enroll
@@ -922,10 +933,11 @@ public interface RaMasterApi {
      *           invalid (depending on authentication method).
      *
      * @see org.ejbca.core.protocol.est.EstOperationsSessionRemote
-     * @since RA Master API version 2 (EJBCA 6.11.0)
+     * @since Added in EJBCA 7.5.0, 7.4.3, 7.4.1.1. Those have different API versions, so this method is not tied to any specific version.
      */
-    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
-            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
+    byte[] estDispatch2(AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username,
+            String password, byte[] requestBody) throws AuthorizationDeniedException, NoSuchAliasException, CADoesntExistsException, CertificateCreateException,
+            CertificateRenewalException, AuthenticationFailedException;
 
     /**
      * Retrieves information about users
