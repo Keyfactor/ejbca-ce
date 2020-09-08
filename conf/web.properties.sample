@@ -261,6 +261,10 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.114.file=/opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so
 #cryptotoken.p11.lib.120.name=YubiHSM2
 #cryptotoken.p11.lib.120.file=/usr/lib/x86_64-linux-gnu/pkcs11/yubihsm_pkcs11.so
+#cryptotoken.p11.lib.130.name=Trident HSM
+#cryptotoken.p11.lib.130.file=/usr/lib/x86_64-linux-gnu/libmpcm-pkcs11.so
+#cryptotoken.p11.lib.131.name=Trident HSM
+#cryptotoken.p11.lib.131.file=/usr/lib64/libmpcm-pkcs11.so
 
 
 #
