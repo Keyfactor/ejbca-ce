@@ -2312,7 +2312,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] estDispatch2(final AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
+    public byte[] estDispatchAuthenticated(final AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException, AuthorizationDeniedException {
         // throws UnsupportedOperationException if EST is not available (Community);
         return estOperationsSessionLocal.dispatchRequest(authenticationToken, operation, alias, cert, username, password, requestBody);

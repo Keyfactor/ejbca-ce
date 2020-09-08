@@ -902,8 +902,8 @@ public interface RaMasterApi {
     byte[] cmpDispatch(AuthenticationToken authenticationToken, byte[] pkiMessageBytes, String cmpConfigurationAlias) throws NoSuchAliasException;
 
     /**
-     * @deprecated Since EJBCA 7.5.0, 7.4.3, 7.4.1.1
-     * @see #estDispatch2
+     * @deprecated Since EJBCA 7.5.0, 7.4.3, 7.4.1.1 (see EJBCAINTER-240)
+     * @see #estDispatchAuthenticated
      * @since RA Master API version 2 (EJBCA 6.11.0)
      */
     @Deprecated
@@ -935,7 +935,7 @@ public interface RaMasterApi {
      * @see org.ejbca.core.protocol.est.EstOperationsSessionRemote
      * @since Added in EJBCA 7.5.0, 7.4.3, 7.4.1.1. Those have different API versions, so this method is not tied to any specific version.
      */
-    byte[] estDispatch2(AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username,
+    byte[] estDispatchAuthenticated(AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username,
             String password, byte[] requestBody) throws AuthorizationDeniedException, NoSuchAliasException, CADoesntExistsException, CertificateCreateException,
             CertificateRenewalException, AuthenticationFailedException;
 
