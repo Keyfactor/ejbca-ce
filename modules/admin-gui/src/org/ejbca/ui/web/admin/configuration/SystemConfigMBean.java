@@ -1900,7 +1900,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             availableTabs.add("Extended Key Usages");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
-            availableTabs.add("OAuth Keys");
+            availableTabs.add("Trusted OAuth Providers");
         }
         if (getEjbcaWebBean().isRunningBuildWithCA()
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
