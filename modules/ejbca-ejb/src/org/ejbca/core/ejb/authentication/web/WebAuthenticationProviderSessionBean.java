@@ -171,10 +171,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 }
             }
         } else {
-            final OAuthKeyInfo defaultKey = globalConfig.getDefaultOauthKey();
-            if (defaultKey != null) {
-                return defaultKey;
-            }
+            return globalConfig.getDefaultOauthKey();
         }
         return null;
     }
