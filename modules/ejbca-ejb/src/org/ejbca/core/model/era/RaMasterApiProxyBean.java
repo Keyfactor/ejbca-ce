@@ -1956,7 +1956,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @SuppressWarnings("deprecation")
     @Override
-    public byte[] estDispatch2(final AuthenticationToken authenticationToken, final String operation, final String alias, final X509Certificate cert, final String username, final String password,
+    public byte[] estDispatchAuthenticated(final AuthenticationToken authenticationToken, final String operation, final String alias, final X509Certificate cert, final String username, final String password,
             final byte[] requestBody) throws AuthorizationDeniedException, NoSuchAliasException,
             CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
         NoSuchAliasException caughtNoAliasException = null;
@@ -1967,13 +1967,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 try {
                     if (raMasterApi.getApiVersion() >= 11) {
                         // We know the new EST call is definitely available
-                        return raMasterApi.estDispatch2(authenticationToken, operation, alias, cert, username, password, requestBody);
+                        return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, cert, username, password, requestBody);
                     } else if (raMasterApi.getApiVersion() >= 9) {
                         // Possibly the new EST call is available, try new version first.
                         // This call is added in 7.5.0, but is backported to 7.4.1.1 (and possibly 7.4.3 if that will be released),
                         // so a regular version check is not possible.
                         try {
-                            return raMasterApi.estDispatch2(authenticationToken, operation, alias, cert, username, password, requestBody);
+                            return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, cert, username, password, requestBody);
                         } catch (UnsupportedOperationException | RaMasterBackendUnavailableException dummy) {
                             // Try once more using the legacy API.
                             log.debug("New EST call failed, attempting legacy EST call");
