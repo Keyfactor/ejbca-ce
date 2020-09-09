@@ -36,6 +36,8 @@ select count(*) from CRLData where issuerDN='CN=ManagementCA,O=EJBCA Sample,C=SE
 -- Should be 1
 -- 
 -- Repeat for all issuerDN.
+-- You can get an overview of issuers and the number of CRLs stored for each issuer with:
+select issuerDN,count(*) from CRLData group by issuerDN;
 
 -- 
 -- Clean old expired certificates from database, if a CRL job is being run so certificate status is set to archived on expired certificates
