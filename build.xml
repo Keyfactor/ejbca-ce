@@ -674,6 +674,7 @@
         		<include name="ejbca-rest-common.jar" />
         		<include name="ejbca-rest-cryptotoken.jar" />
         		<include name="ejbca-rest-camanagement.jar" />
+        		<include name="ejbca-rest-endentity.jar" />
         		<include name="ejbca-ssh.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
@@ -1081,6 +1082,7 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-cryptotoken/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-camanagement/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-endentity/**"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-common/src/org/ejbca/util/swagger/SnakeCaseConverter.java"/>
                 <exclude unless="edition.is.ee" name="lib/ext/jackson2/**"/>
                 <exclude unless="edition.is.ee" name="lib/ext/resteasy-jaxrs-lib/**"/>
