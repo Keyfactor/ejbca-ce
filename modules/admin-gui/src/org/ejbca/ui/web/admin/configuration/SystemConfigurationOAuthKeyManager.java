@@ -39,6 +39,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private UploadedFile publicKeyFile;
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
+        private String defaultKeyIdentifier;
 
         public String getKeyIdentifier() {
             return keyIdentifier;
@@ -50,6 +51,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         public int getSkewLimit() {
             return skewLimit;
+        }
+        
+        public String getDefaultKeyIdentifier() {
+            return defaultKeyIdentifier;
         }
 
         public void setKeyIdentifier(final String keyIdentifier) {
@@ -63,16 +68,21 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void setSkewLimit(final int skewLimit) {
             this.skewLimit = skewLimit;
         }
+        
+        public void setDefaultKeyIdentifier(final String defaultKeyIdentifier) {
+            this.defaultKeyIdentifier = defaultKeyIdentifier;
+        }
 
         /**
          * Load an existing OAuth Key into the editor.
          */
-        public void loadIntoEditor(final OAuthKeyInfo oauthKey) {
+        public void loadIntoEditor(final OAuthKeyInfo oauthKey, String defaultKeyIdentifier) {
             // Only replace the key if a new one was uploaded
             this.publicKeyFile = null;
             this.keyIdentifier = oauthKey.getKeyIdentifier();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
+            this.defaultKeyIdentifier = defaultKeyIdentifier;
         }
 
         /**
@@ -123,6 +133,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
          * @param oauthKeys the OAuth Keys to save
          */
         public void saveOauthKeys(List<OAuthKeyInfo> oauthKeys);
+        
+        /**
+         * Saves a an OAuth Key as the default one to persistent storage.
+         * @param defaultKey the OAuth Key to save as the default key
+         */
+        public void saveDefaultOauthKey(OAuthKeyInfo defaultKey);
     }
 
     public SystemConfigurationOAuthKeyManager(final List<OAuthKeyInfo> oAuthKeys, final SystemConfigurationHelper systemConfigurationHelper) {
@@ -193,8 +209,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
      * @param oauthKey the OAuth Key to be edited
      * @return the constant string EDIT_OAUTH_KEY
      */
-    public String editOauthKey(final OAuthKeyInfo oauthKey) {
-        oauthKeyEditor.loadIntoEditor(oauthKey);
+    public String editOauthKey(final OAuthKeyInfo oauthKey, final String defaultKeyIdentifier) {
+        oauthKeyEditor.loadIntoEditor(oauthKey, defaultKeyIdentifier);
         return EDIT_OAUTH_KEY;
     }
 
@@ -231,6 +247,22 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         if (!super.canEdit(oauthKeyToUpdate, keyIdentifier)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
             return StringUtils.EMPTY;
+        }
+        /* Check if the OAuth key being edited is also set as the default key. Also check whether the key id is being changed. 
+         * If both are true, update the default OAuth key entry.
+         */
+        if (oauthKeyEditor.getDefaultKeyIdentifier() != null && oauthKeyEditor.getDefaultKeyIdentifier().equals(oauthKeyEditor.getOauthKeyBeingEdited().getKeyIdentifier())
+                && !oauthKeyEditor.getOauthKeyBeingEdited().getKeyIdentifier().equals(keyIdentifier)) {
+            // Find the default key among the current OAuth keys
+            OAuthKeyInfo defaultKey = null;
+            for (OAuthKeyInfo info : getAllOauthKeys()) {
+                if (oauthKeyEditor.getDefaultKeyIdentifier().equals(info.getKeyIdentifier())) {
+                    defaultKey = info;
+                }
+            }
+            if (defaultKey != null) {
+                systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
+            }
         }
 
         /* Update the configuration */
