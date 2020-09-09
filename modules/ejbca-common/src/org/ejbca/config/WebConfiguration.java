@@ -333,4 +333,8 @@ public class WebConfiguration {
     public static String getStatedumpTemplatesBasedir() {
         return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
     }
+
+    public static boolean isLegacyEstRaApiAllowed() {
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("raapi.legacyest.enabled"));
+    }
 }
