@@ -23,26 +23,30 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
  * 
  *
  */
-public class ListOAuthKeysCommand extends BaseOAuthConfigCommand {
+public class ListOAuthProvidersCommand extends BaseOAuthConfigCommand {
     
-    private static final Logger log = Logger.getLogger(ListOAuthKeysCommand.class);
+    private static final Logger log = Logger.getLogger(ListOAuthProvidersCommand.class);
 
     @Override
     public String getMainCommand() {
-        return "listoauthkeys";
+        return "listoauthproviders";
     }
 
     @Override
     public String getCommandDescription() {
-        return "Lists the current oauth keys available in EJBCA";
+        return "Lists the current oauth providers available in EJBCA";
     }
 
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
         Collection<OAuthKeyInfo> oauthKeys = getGlobalConfiguration().getOauthKeys().values();
+        OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
         
-        for(OAuthKeyInfo keyInfo : oauthKeys) {
+        for (OAuthKeyInfo keyInfo : oauthKeys) {
             log.info("Kid: "  + keyInfo.getKeyIdentifier() + " | skew limit: " + keyInfo.getSkewLimit() + " | publickey fingerprint: " + keyInfo.getKeyFingerprint());
+        }
+        if (defaultKey != null) {
+            log.info("Default OAuth Provider kid: " + defaultKey.getKeyIdentifier());
         }
         
         return CommandResult.SUCCESS;

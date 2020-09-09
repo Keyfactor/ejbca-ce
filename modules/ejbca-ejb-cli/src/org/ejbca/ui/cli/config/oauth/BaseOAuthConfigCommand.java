@@ -65,7 +65,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
             log.info("Could not parse the public key file.", e);
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         } catch (final Exception e) {
-            log.info("Failed to add OAuth Key.", e);
+            log.info("Failed to add Public Key.", e);
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
     }

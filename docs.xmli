@@ -80,9 +80,11 @@
                    property="AnakiaTask.present">
             <classpath refid="anakia.classpath"/>
         </available>
+        <!-- Mark site as never present as it has moved to an external website, See ECA-9391 for removal of site
         <available file="${site.velocity.props}"
                    property="site.present">
         </available>
+        -->
     </target>
 
     <target name="prepare-error" depends="prepare" unless="AnakiaTask.present">
