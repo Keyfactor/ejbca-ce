@@ -161,7 +161,7 @@ public class Pkcs11SlotLabel {
         final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile);
         final long slots[] = p11.getSlotList();
         if (log.isDebugEnabled()) {
-            log.debug("Found numer of slots:\t" + slots.length);
+            log.debug("Found number of slots:\t" + slots.length);
         }
         for (int i=0; i<slots.length; i++) {
             final long slotID = slots[i];

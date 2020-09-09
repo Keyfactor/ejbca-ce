@@ -391,8 +391,8 @@ public class CRLData extends ProtectedData implements Serializable {
     public static boolean crlExistsForCa(final EntityManager entityManager, final String issuerDn) {
         final Query query = entityManager
                 .createQuery("SELECT a.crlNumber FROM CRLData a WHERE a.issuerDN=:issuerDN");
-        query.setParameter("issuerDN", issuerDn);
-        return QueryResultWrapper.getSingleResult(query) != null;
+        query.setParameter("issuerDN", issuerDn).setMaxResults(1); // we only want to check if there is at least one, speed it up
+        return !query.getResultList().isEmpty(); // if the list is _not_ empty, return true
     }
 
     //
