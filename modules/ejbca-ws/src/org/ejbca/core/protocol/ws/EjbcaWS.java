@@ -50,6 +50,7 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.lf5.LogLevel;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
@@ -505,8 +506,8 @@ public class EjbcaWS implements IEjbcaWS {
         final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
             certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTime(getAdmin(), days, maxNumberOfResults, 0));
-        } catch (AuthorizationDeniedException e1) {
-            // No authorization required.
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, null, ErrorCode.NOT_AUTHORIZED, Level.INFO);
         }
         return unwrapCertificatesOrThrowInternalException(certificates);
     }
@@ -516,8 +517,8 @@ public class EjbcaWS implements IEjbcaWS {
 	    final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
             certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndIssuer(getAdmin(), days, issuer, maxNumberOfResults));
-        } catch (AuthorizationDeniedException e1) {
-            // No authorization required.
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, null, ErrorCode.NOT_AUTHORIZED, Level.INFO);
         }
         return unwrapCertificatesOrThrowInternalException(certificates);
     }
@@ -527,8 +528,8 @@ public class EjbcaWS implements IEjbcaWS {
         final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
             certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndType(getAdmin(), days, certificateType, maxNumberOfResults));
-        } catch (AuthorizationDeniedException e1) {
-            // No authorization required.
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, null, ErrorCode.NOT_AUTHORIZED, Level.INFO);
         }
         return unwrapCertificatesOrThrowInternalException(certificates);
     }
