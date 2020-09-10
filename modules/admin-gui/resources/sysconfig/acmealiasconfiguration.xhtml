@@ -107,6 +107,15 @@
                         </h:inputTextarea>
                         <pre><h:outputText value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/></pre>
                     </h:panelGroup>
+                    
+                    <h:outputLabel for="retryAfter" value="#{web.text.ACME_RETRY_AFTER}" />
+                    <h:panelGroup id="retryAfter" >
+                        <h:inputText title="#{web.text.FORMAT_INTEGER}" value="#{acmeConfigMBean.currentAlias.retryAfter}" 
+                        			 validatorMessage="#{web.text.ONLYNUMBERS_INRETRYAFTER}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                            <f:validateLongRange minimum="0" maximum="2147483647"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.retryAfter}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
 
                     <h:panelGroup/>
 
