@@ -12,6 +12,7 @@ package org.ejbca.config;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -27,7 +28,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     private String configurationId = null;
-    private List<String> caaIdentities = new ArrayList<String>();
+    private List<String> caaIdentities = new ArrayList<>();
 
     private static final String KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING = "requireExternalAccountBinding";
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
@@ -45,6 +46,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL = "termsOfServiceRequireNewApproval";
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
+    private static final String KEY_RETRY_AFTER = "retryAfter";
 
 
     private static final int DEFAULT_END_ENTITY_PROFILE_ID = EndEntityConstants.NO_END_ENTITY_PROFILE;
@@ -202,6 +204,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     public void setDnsPort(final int dnsPort) {
         super.data.put(KEY_DNS_PORT, dnsPort);
+    }
+    
+    public int getRetryAfter() {
+        final Integer retryAfter = (Integer)data.get(KEY_RETRY_AFTER);
+        return Objects.isNull(retryAfter) ? 0 : retryAfter.intValue();
+    }
+    
+    public void setRetryAfter(final int retryAfter) {
+        data.put(KEY_RETRY_AFTER, retryAfter);
     }
     
     public boolean isTermsOfServiceRequireNewApproval() {

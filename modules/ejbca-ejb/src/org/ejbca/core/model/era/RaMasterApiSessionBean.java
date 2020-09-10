@@ -35,6 +35,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -996,8 +998,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint) {
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
-        if (cdw==null || !isNotAuthorizedToCert(authenticationToken, cdw)) {
-            return null;
+        if (Objects.isNull(cdw) || isNotAuthorizedToCert(authenticationToken, cdw)) {
+            return Collections.emptyList();
         }
         final List<CertificateWrapper> retval = new ArrayList<>();
         retval.add(cdw);
