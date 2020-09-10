@@ -274,5 +274,20 @@ public class UnidFnrHandlerTest {
         public void setAdditionalExtraCertsCertificates(List<Certificate> certificates) {
             this.additionalExtraCertsCertificates = certificates;
         }
+        @Override
+        public void setUsername(String username) {
+            // TODO Auto-generated method stub
+            
+        }
+        @Override
+        public void setPassword(String pwd) {
+            // TODO Auto-generated method stub
+            
+        }
+        @Override
+        public void setNotAfter(Date notAfter) {
+            // TODO Auto-generated method stub
+            
+        }
 	}
 }
