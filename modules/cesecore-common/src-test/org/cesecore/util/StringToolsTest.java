@@ -14,6 +14,7 @@ package org.cesecore.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -556,7 +557,8 @@ public class StringToolsTest {
             assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
-                fail("Decryption should not work with wrong key");
+                // If we ended up here, it's a random fluke that decryption works, but we should have gotten garbage back
+                assertNotEquals("Decryption should not work with wrong key, if we ended up here we should at least not have been returned the correct string", "customEncryptionKey", pwd);
             } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException e) {
                 // we should end up here typically when encryption fails, but it's not 100% sure
             }
