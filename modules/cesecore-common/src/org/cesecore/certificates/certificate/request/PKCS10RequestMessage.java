@@ -147,6 +147,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
         } catch (IOException e) {
             log.warn("PKCS10 not initiated! "+e.getMessage());
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -165,6 +166,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     /**
      * force a password, i.e. ignore the challenge password in the request
      */
+    @Override
     public void setPassword(String pwd) {
         this.password = pwd;
     }
@@ -236,6 +238,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     /**
      * force a username, i.e. ignore the DN/username in the request
      */
+    @Override
     public void setUsername(String username) {
         this.username = username;
     }
@@ -246,6 +249,7 @@ public class PKCS10RequestMessage implements RequestMessage {
      * specified here will only be considered if user-defined validity dates are
      * allowed by the certificate profile, e.g. if Validity override" is enabled.
      */
+    @Override
     public void setNotAfter(final Date notAfter) {
         this.notAfter = notAfter;
     }
