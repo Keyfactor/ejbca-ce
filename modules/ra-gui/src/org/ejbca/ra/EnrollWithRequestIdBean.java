@@ -51,6 +51,8 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.ErrorCode;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -195,8 +197,8 @@ public class EnrollWithRequestIdBean implements Serializable {
         generateCertificate();
         if (generatedToken != null) {
             try {
-                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
-                byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                Certificate certificate = CertTools.getCertfromByteArray(generatedToken, Certificate.class);
+                byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
                 downloadToken(pemToDownload, "application/octet-stream", ".pem");
             } catch (CertificateParsingException | CertificateEncodingException e) {
                 log.info(e);
@@ -211,7 +213,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         generateCertificate();
         if (generatedToken != null) {
             try {
-                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
+                Certificate certificate = CertTools.getCertfromByteArray(generatedToken, Certificate.class);
                 CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
                 LinkedList<Certificate> chain = new LinkedList<>(caInfo.getCertificateChain());
                 chain.addFirst(certificate);
@@ -287,12 +289,14 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info("Could not find CSR inside enrollment request with ID " + requestId);
                 return;
             }
-            try {
-                getEndEntityInformation().getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
-            } catch (IOException e) {
+            byte[] binaryReqBytes = RequestMessageUtils.getDecodedBytes(getCertificateRequest().getBytes());
+            RequestMessage reqMsg = RequestMessageUtils.parseRequestMessage(binaryReqBytes);
+            if (reqMsg == null) {
+                // Just make an extra check that it's a valid request
                 raLocaleBean.addMessageError("enroll_invalid_certificate_request");
                 return;
             }
+            getEndEntityInformation().getExtendedInformation().setCertificateRequest(binaryReqBytes);
         }
         generateCertificateAfterCheck();
     }

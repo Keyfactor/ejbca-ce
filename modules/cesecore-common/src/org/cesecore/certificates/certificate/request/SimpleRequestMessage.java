@@ -312,4 +312,10 @@ public class SimpleRequestMessage implements RequestMessage {
     public void setAdditionalExtraCertsCertificates(List<Certificate> additionalExtraCertsCertificates) {
         this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
     }
+
+    @Override
+    public void setNotAfter(Date notAfter) {
+        // TODO Auto-generated method stub
+        
+    }
 } // SimpleRequestMessage
