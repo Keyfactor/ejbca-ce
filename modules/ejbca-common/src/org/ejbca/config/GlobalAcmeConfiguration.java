@@ -86,7 +86,7 @@ public class GlobalAcmeConfiguration extends ConfigurationBase implements Serial
                 acmeConfigurationIds.add(((String)key).substring(KEY_ACME_CONFIGURATION_PREFIX.length()));
             }
         }
-        return new ArrayList<String>(acmeConfigurationIds);
+        return new ArrayList<>(acmeConfigurationIds);
     }
 
     /** @return the AcmeConfiguration that will be based on the configurationId specified in the request path */
