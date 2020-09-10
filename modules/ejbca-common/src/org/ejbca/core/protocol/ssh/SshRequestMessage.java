@@ -305,4 +305,10 @@ public class SshRequestMessage implements RequestMessage {
         return null;
     }
 
+    @Override
+    public void setNotAfter(Date notAfter) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
