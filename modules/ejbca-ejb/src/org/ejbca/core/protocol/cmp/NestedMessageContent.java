@@ -309,4 +309,22 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     public void setResponseKeyInfo(PrivateKey key, String provider) {
     }
 
+    @Override
+    public void setUsername(String username) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setPassword(String pwd) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setNotAfter(Date notAfter) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

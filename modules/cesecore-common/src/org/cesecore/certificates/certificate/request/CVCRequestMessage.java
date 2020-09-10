@@ -384,4 +384,10 @@ public class CVCRequestMessage implements RequestMessage {
         }
     	return new CardVerifiableCertificate(cvcert);
     }
+
+    @Override
+    public void setNotAfter(Date notAfter) {
+        // TODO Auto-generated method stub
+        
+    }
 } // PKCS10RequestMessage

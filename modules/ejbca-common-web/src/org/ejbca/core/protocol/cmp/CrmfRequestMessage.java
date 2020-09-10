@@ -663,4 +663,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         return false;
     }
 
+    @Override
+    public void setNotAfter(Date notAfter) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
