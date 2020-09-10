@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -85,12 +84,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         final List<AcmeAliasGuiInfo> list = new ArrayList<>();
         for (String alias : globalAcmeConfigurationConfig.getAcmeConfigurationIds()) {
             list.add(new AcmeAliasGuiInfo(globalAcmeConfigurationConfig, alias));
-            Collections.sort(list, new Comparator<AcmeAliasGuiInfo>() {
-                @Override
-                public int compare(AcmeAliasGuiInfo alias1, AcmeAliasGuiInfo alias2) {
-                    return alias1.getAlias().compareToIgnoreCase(alias2.getAlias());
-                }
-            });
+            Collections.sort(list, (alias1, alias2) -> alias1.getAlias().compareToIgnoreCase(alias2.getAlias()));
             aliasGuiList = new ListDataModel<>(list);
         }
         // If show the list, then we are on the main page and want to flush the cache
@@ -176,11 +170,9 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     public String getCurrentAliasStr() {
         // Get the HTTP GET/POST parameter named "alias"
         final String inputAlias = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("alias");
-        if (inputAlias != null && inputAlias.length() > 0) {
-            if (!inputAlias.equals(currentAliasStr)) {
-                flushCache();
-                this.currentAliasStr = inputAlias;
-            }
+        if (inputAlias != null && inputAlias.length() > 0 && !inputAlias.equals(currentAliasStr)) {
+            flushCache();
+            this.currentAliasStr = inputAlias;
         }
         return currentAliasStr;
     }
@@ -238,6 +230,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setUseDnsSecValidation(currentAlias.isUseDnsSecValidation());
             acmeConfig.setTermsOfServiceRequireNewApproval(currentAlias.getTermsOfServiceApproval());
             acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl());
+            acmeConfig.setRetryAfter(currentAlias.getRetryAfter());
             
             if(StringUtils.isEmpty(acmeConfig.getTermsOfServiceUrl())) {
                 throw new EjbcaException("Please enter Terms of Service URL");
@@ -312,6 +305,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         private String termsOfServiceUrl;
         private boolean termsOfServiceApproval;
         private boolean useDnsSecValidation;
+        private int retryAfter;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
             if (alias != null) {
@@ -329,6 +323,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.termsOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
                     this.useDnsSecValidation = acmeConfiguration.isUseDnsSecValidation();
                     this.termsOfServiceApproval = acmeConfiguration.isTermsOfServiceRequireNewApproval();
+                    this.retryAfter = acmeConfiguration.getRetryAfter();
                 }
             }
         }
@@ -404,6 +399,15 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         public void setDnsPort(final int dnsPort) {
             this.dnsPort = dnsPort;
         }
+        
+        public int getRetryAfter() {
+            return retryAfter;
+        }
+
+        public void setRetryAfter(final int retryAfter) {
+            this.retryAfter = retryAfter;
+        }
+
 
         public String getTermsOfServiceUrl() {
             return termsOfServiceUrl;
@@ -454,6 +458,5 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         public void setReplayNonceValidity(String replayNonceValidity) {
             this.replayNonceValidity = replayNonceValidity;
         }
-
     }
 }
