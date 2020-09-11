@@ -37,7 +37,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * Protocols currently supporting enable/disable configuration by EJBCA
      */
     public enum AvailableProtocols {
-        // If you add a protocol > 6.11.0 it should be disabled by default
+        // If you add a protocol > 6.11.0 it should be disabled by default by returning false from #getProtocolStatus
         ACME("ACME", "/ejbca/acme"),
         CERT_STORE("Certstore", WebConfiguration.DEFAULT_CERTSTORE_CONTEXTROOT),
         CMP("CMP", "/ejbca/publicweb/cmp"),
@@ -106,7 +106,8 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) || 
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
-                protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()))) {
+                protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
+                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT))) {
             setProtocolStatus(protocol, false);
             return false;
         }
