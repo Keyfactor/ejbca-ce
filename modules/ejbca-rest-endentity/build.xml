@@ -18,32 +18,20 @@
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
-		<path refid="lib.servlet.classpath"/>
-		<path refid="lib.jsf.classpath"/>
-		<path refid="lib.jsp.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-fileupload.classpath"/>
-		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
-		<path refid="lib.commons-codec.classpath"/>
-		<path refid="lib.commons-logging.classpath"/>
-        <path refid="lib.hc.classpath"/>
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.tomahawk.classpath"/>
-		<path refid="lib.json-simple.classpath"/>
+        <path refid="lib.json-simple.classpath"/>
         <path refid="lib.json-smart.classpath"/>
         <path refid="lib.ninbus-jose-jwt.classpath"/>
-		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.swagger.classpath"/>
-		<path refid="lib.jackson2.classpath"/>
-		<path location="${mod.ejbca-entity.lib}"/>
+        <path refid="lib.jackson2.classpath"/>
+        <path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
-		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-rest-common.lib}"/>
-		<path refid="lib.jboss-logging.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
