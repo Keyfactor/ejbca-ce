@@ -480,7 +480,7 @@
         <ant antfile="${mod.ejbca-rest-endentity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
-	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-cryptotoken,ejbca-rest-camanagement" description="Build EJBCA rest api">
+	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" depends="ejbca-rest-common,ejbca-rest-cryptotoken,ejbca-rest-camanagement,ejbca-rest-endentity" description="Build EJBCA rest api">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	
@@ -641,7 +641,7 @@
 		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="ejbca-rest-api-war" if="${mod.ejbca-rest-api.exists}" depends="ejbca-common-web, ejbca-rest-common" description="Build the Ejbca rest api WAR">
+    <target name="ejbca-rest-api-war" if="${mod.ejbca-rest-api.exists}" depends="ejbca-common-web, ejbca-rest-common, ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity" description="Build the Ejbca rest api WAR">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
