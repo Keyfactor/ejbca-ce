@@ -314,8 +314,7 @@ public class SimpleRequestMessage implements RequestMessage {
     }
 
     @Override
-    public void setNotAfter(Date notAfter) {
-        // TODO Auto-generated method stub
-        
+    public void setRequestValidityNotAfter(Date notAfter) {
+        this.validityNotAfter = notAfter;
     }
 } // SimpleRequestMessage
