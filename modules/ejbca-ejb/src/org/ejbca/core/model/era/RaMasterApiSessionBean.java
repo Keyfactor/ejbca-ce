@@ -1791,7 +1791,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
-        req.setNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
+        req.setRequestValidityNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
         try {
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
@@ -2783,7 +2783,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
-        req.setNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
+        req.setRequestValidityNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
         try {
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
