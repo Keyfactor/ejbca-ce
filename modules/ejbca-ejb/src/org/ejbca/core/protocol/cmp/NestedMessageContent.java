@@ -46,9 +46,6 @@ import org.ejbca.config.CmpConfiguration;
 /**
  * Nested Message Content according to RFC4210. The PKI message is signed by an RA authority.
  * The PKIMessage body is another PKIMessage containing the request to be processed. 
- * 
- * @version $Id$
- *
  */
 public class NestedMessageContent extends BaseCmpMessage implements RequestMessage {
   
@@ -311,20 +308,14 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
 
     @Override
     public void setUsername(String username) {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void setPassword(String pwd) {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
-    public void setNotAfter(Date notAfter) {
-        // TODO Auto-generated method stub
-        
+    public void setRequestValidityNotAfter(Date notAfter) {
     }
 
 }
