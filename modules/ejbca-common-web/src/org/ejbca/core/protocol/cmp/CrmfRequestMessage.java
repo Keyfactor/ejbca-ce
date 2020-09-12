@@ -107,6 +107,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     private String password = null;
     /** manually set public and private key, if keys have been server generated */
     private transient KeyPair serverGenKeyPair;
+    /** Overriding the notAfter in the request */
+    protected Date notAfter = null;
 
     /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
      * we can restore the PKIMessage after serialization/deserialization. */
@@ -427,18 +429,31 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     @Override
     public Date getRequestValidityNotAfter() {
         Date ret = null;
-        final CertTemplate templ = getReq().getCertReq().getCertTemplate();
-        final OptionalValidity val = templ.getValidity();
-        if (val != null) {
-            final Time time = val.getNotAfter();
-            if (time != null) {
-                ret = time.getDate();
+        if (notAfter == null) {
+            final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+            final OptionalValidity val = templ.getValidity();
+            if (val != null) {
+                final Time time = val.getNotAfter();
+                if (time != null) {
+                    ret = time.getDate();
+                }
+            }
+        } else {
+            ret = notAfter;
+            if (log.isDebugEnabled()) {
+                log.debug("Overriding Request validity notAfter with explicitly set: " + ret.toString());
             }
         }
         if (log.isDebugEnabled()) {
             log.debug("Request validity notAfter is: " + (ret == null ? "null" : ret.toString()));
         }
         return ret;
+    }
+
+    @Override
+    public void setRequestValidityNotAfter(Date notAfter) {
+        this.notAfter = notAfter;
+        
     }
 
     @Override
@@ -661,12 +676,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             }
         }
         return false;
-    }
-
-    @Override
-    public void setNotAfter(Date notAfter) {
-        // TODO Auto-generated method stub
-        
     }
 
 }
