@@ -50,8 +50,6 @@ import org.cesecore.util.CertTools;
  * Class to handle PKCS10 request messages sent to the CA.
  * 
  * This class implements equals/hashcode, so if any members are added please modify those as well.
- *
- * @version $Id$
  */
 public class PKCS10RequestMessage implements RequestMessage {  
     /**
@@ -147,7 +145,6 @@ public class PKCS10RequestMessage implements RequestMessage {
             pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
         } catch (IOException e) {
             log.warn("PKCS10 not initiated! "+e.getMessage());
-            throw new IllegalArgumentException(e);
         }
     }
 
