@@ -126,7 +126,7 @@ public interface RequestMessage extends Serializable {
      * specified here will only be considered if user-defined validity dates are
      * allowed by the certificate profile, e.g. if Validity override" is enabled.
      */
-    void setNotAfter(final Date notAfter);
+    void setRequestValidityNotAfter(final Date notAfter);
 
 	/**
 	 * Gets any requested extensions, if the request message type is able to contain request extensions
