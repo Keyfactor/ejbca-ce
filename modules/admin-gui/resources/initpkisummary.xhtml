@@ -41,7 +41,7 @@
 			<h:outputText value=""/>
 			
 			<h:outputLabel for="selectToken" value="#{web.text.CRYPTOTOKEN}"/>			
-			<h:outputText id="selectToken" value="#{initNewPkiMBean.cryptoTokenIdParam}"/>
+			<h:outputText id="selectToken" value="#{initNewPkiMBean.selectedCryptoTokenName}"/>
 			
 			<h:outputLabel for="selectSigAlg" value="#{web.text.SIGNINGALGORITHM}" />
 			<h:outputText id="selectSigAlg" value="#{initNewPkiMBean.caInfoDto.signatureAlgorithmParam}"/>
@@ -67,7 +67,7 @@
 			<h:outputLabel for="caValidity" value="Validity (days)"/>
 			<h:outputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
 			
-			<h:outputText value="Super Adminstrator Settings" style="font-weight:bold"/>
+			<h:outputText value="Super Adminstrator Settings" style="font-weight:bold; margin-top: 60px"/>
 			<h:outputText value=""/>
 			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
 			<h:outputText id="adminDn" value="#{initNewPkiMBean.adminDn}"/>
@@ -81,6 +81,9 @@
 			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToAdminSettings}"/>
 			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.install}"/>
 		</h:panelGroup>
+		<br/>
+		<h:outputText styleClass="smallHelp" value="'Install' will create the Management CA and your SuperAdmin Key Store will be downloaded.
+			 The Key Store is used to authenticate the administrator through the CA's interfaces."/> 
 	
 	</h:form>
 	</ui:define>
