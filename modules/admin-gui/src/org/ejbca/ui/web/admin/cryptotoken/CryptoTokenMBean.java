@@ -643,7 +643,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         p11SlotUsed = false;
     }
 
-    public void actionAuthorizeStart() throws AuthorizationDeniedException {
+    public void actionAuthorizeStart() {
         authorizeInProgress = true;
         currentKeyPairGuiInfo = keyPairGuiList.getRowData();
     }
@@ -653,12 +653,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         currentKeyPairGuiInfo = null;
     }
 
-    public String actionNext() {
+    public String actionBackToPkiInstallation() {
         // Only used while page was redirected from initnewpki.xhtml.
         // This bean is session scoped. Reset this value to hide button
         // later on in same session.
         initNewPki = false;
-        return "next";
+        return "back";
     }
     
     public boolean isInitNewPki() {
