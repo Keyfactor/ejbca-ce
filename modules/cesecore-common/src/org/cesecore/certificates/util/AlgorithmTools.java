@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -101,9 +102,7 @@ public abstract class AlgorithmTools {
     public static final String KEYSPEC_UNKNOWN = "unknown";
 
     /** Signature algorithms supported by RSA keys */
-    public static final List<String> SIG_ALGS_RSA = Collections.unmodifiableList(Arrays.asList(
-            AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-            AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1,
+    private static final List<String> SIG_ALGS_RSA_NOSHA1_INTERNAL = Arrays.asList(
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
             AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1,
@@ -113,7 +112,15 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA
-    ));
+    );
+    public static final List<String> SIG_ALGS_RSA_NOSHA1 = Collections.unmodifiableList(SIG_ALGS_RSA_NOSHA1_INTERNAL);
+
+    private static final List<String> SIG_ALGS_RSA_SHA1_INTERNAL = Arrays.asList(
+            AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1
+    );
+    @SuppressWarnings("unchecked")
+    public static final List<String> SIG_ALGS_RSA = Collections.unmodifiableList(ListUtils.union(SIG_ALGS_RSA_SHA1_INTERNAL, SIG_ALGS_RSA_NOSHA1_INTERNAL));
 
     /** Signature algorithms supported by DSA keys */
     public static final List<String> SIG_ALGS_DSA = Collections.unmodifiableList(Arrays.asList(
