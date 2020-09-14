@@ -555,17 +555,11 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if(!authorizedToProfileWithResource(authenticationToken, profile, true, StandardRules.CERTIFICATEPROFILEVIEW.resource())) {
             throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile with id " + profileId);
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
-            //encoder.flush();
         }
-//        catch (IOException e) {
-//            String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
-//            LOG.debug(msg, e);
-//            throw new IllegalStateException(msg, e);
-//        }
-        // try-with-resource closes it and flushes
+        // try-with-resource flushes/closes XMLEncoder
         return baos.toByteArray();
     }
 
