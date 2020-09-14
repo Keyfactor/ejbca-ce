@@ -97,6 +97,11 @@ public class CVCRequestMessage implements RequestMessage {
 		try {
 			CVCObject parsedObject;
 			parsedObject = CertificateParser.parseCVCObject(cvcmsg);
+			if (parsedObject == null) {
+			    final String msg = "Error in init for CVC request, data parses to null.";
+	            log.info(msg);
+	            throw new IllegalArgumentException(msg);
+			}
 			if (parsedObject instanceof CVCertificate) {
 				cvcert = (CVCertificate) parsedObject;
 			} else if (parsedObject instanceof CVCAuthenticatedRequest) {
@@ -104,7 +109,7 @@ public class CVCRequestMessage implements RequestMessage {
 				cvcert = authreq.getRequest();
 			}
 		} catch (ParseException | ConstructionException | NoSuchFieldException e) {
-            log.error("Error in init for CVC request: ", e);
+            log.info("Error in init for CVC request: ", e);
             throw new IllegalArgumentException(e);
 		}
     }
