@@ -632,6 +632,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         try (XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
         }
+        // try-with-resource flushes/closes XMLEncoder
         return baos.toByteArray();
     }
 
