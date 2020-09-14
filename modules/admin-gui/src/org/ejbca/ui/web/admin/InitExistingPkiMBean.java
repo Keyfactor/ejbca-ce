@@ -96,7 +96,7 @@ public class InitExistingPkiMBean extends BaseManagedBean implements Serializabl
     }
 
     public void setImportedCaName(String importedCaName) {
-        this.importedCaName = importedCaName;
+        this.importedCaName = importedCaName.trim();
     }
 
     public void setUploadFile(final Part uploadFile) {
