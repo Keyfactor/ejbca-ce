@@ -24,6 +24,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Testing parsing request messages with RequestMessageUtils
@@ -45,6 +46,10 @@ public class RequestMessageUtilsTest {
         assertEquals("RequestMessage (from DER) should be a CVCRequestMessage", CVCRequestMessage.class.getName(), msg.getClass().getName());
         msg = RequestMessageUtils.parseRequestMessage(cvcEac111ISPEM.getBytes());
         assertEquals("RequestMessage (from PEM) should be a CVCRequestMessage", CVCRequestMessage.class.getName(), msg.getClass().getName());
+        msg = RequestMessageUtils.parseRequestMessage(brokenCVC);
+        assertNull("Unparseable request should return null", msg);
+        msg = RequestMessageUtils.parseRequestMessage(undecodablePEM.getBytes());
+        assertNull("Un-decodeable request should return null", msg);
 
     }
 
@@ -90,6 +95,14 @@ public class RequestMessageUtilsTest {
             "HtqISYD72coDzZq/RIcBAV8gDVNFSVNTRUNQMDAwMDFfN0C+EQysfY036CLPJZZo\n" + 
             "c72tc80pFjWF00vGt9T1OPHFMDkUNTBwreRnQ1JM8Src4H6B3+ZLKDd3nIkFCWFN\n" + 
             "hbjj\n"+
+            "-----END CERTIFICATE REQUEST-----";
+
+    /** a broken CVC request that will not be able to be parsed */
+    private static byte[] brokenCVC = Base64.decode(("GCAX").getBytes());
+
+    /** a broken PEM request that will not be able to be Base64 decoded */
+    private static String undecodablePEM = "-----BEGIN CERTIFICATE REQUEST-----\n"+
+            "fyGCAX\n"+
             "-----END CERTIFICATE REQUEST-----";
 
 }
