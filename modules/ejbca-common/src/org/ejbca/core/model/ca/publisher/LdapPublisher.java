@@ -570,8 +570,10 @@ public class LdapPublisher extends BasePublisher {
 					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn, e.getMessage());
-					log.error(msg, e);  
-					throw new PublisherException(msg);            
+					log.error(msg, e);
+					log.info("If you are trying to publish a CRL, and the LDAP server is complaining about a missing " +
+							"CA certificate attribute, you need first publish the CA certificates to the LDAP server.");
+					throw new PublisherException(msg);
 				}
 			} catch (UnsupportedEncodingException e) {
 				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
