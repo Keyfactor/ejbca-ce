@@ -95,8 +95,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String CREATE_NEW_CRYPTO_TOKEN = "createNewToken";
-    private static final String USE_SOFT_CRYPTO_TOKEN = "useExistingToken";
-    
+    private static final String USE_EXISTING_CRYPTO_TOKEN = "useExistingToken";
     private static final String DEFAULT_CA_NAME = "ManagementCA";
     private static final String DEFAULT_CA_DN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
     private static final String DEFAULT_CA_VALIDITY = "10y";
@@ -142,18 +141,21 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     public InitNewPkiMBean() {
         super(StandardRules.ROLE_ROOT.resource());
+        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam())) {
+            caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        }
     }
     
     public String actionNextGoToInitAdmin() {
-        if (getCryptoTokenType().equals(CREATE_NEW_CRYPTO_TOKEN) && !initNewPkiRedirect) {
+        // Redirect to Crypto Token page if 'Create New..' is selected and we haven't been there yet, 
+        // or if we have been there but yet no tokens exists.
+        if (getCryptoTokenType().equals(CREATE_NEW_CRYPTO_TOKEN) && (!initNewPkiRedirect || getAvailableCryptoTokenList().isEmpty())) {
             initNewPkiRedirect = true;
             return CREATE_NEW_CRYPTO_TOKEN;
         }
         if (verifyCaFields()) {
             return "next";
         }
-        //TODO language file and perhaps describe which field...
-        addErrorMessage("CA Fields Missing");
         return "";
     }
     
@@ -227,13 +229,17 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         return caInfoDto.getCryptoTokenIdParam();
     }
 
+    public String getSelectedCryptoTokenName() {
+        return cryptoTokenManagementSession.getCryptoToken(currentCryptoTokenId).getTokenName();
+    }
+    
     public void setCryptoTokenIdParam(final String cryptoTokenIdParam) {
         caInfoDto.setCryptoTokenIdParam(cryptoTokenIdParam);
         updateKeyAliases();
     }
     
     public String getCryptoTokenType() {
-        return StringUtils.isEmpty(cryptoTokenType) ? USE_SOFT_CRYPTO_TOKEN : cryptoTokenType;
+        return StringUtils.isEmpty(cryptoTokenType) ? USE_EXISTING_CRYPTO_TOKEN : cryptoTokenType;
     }
 
     public void setCryptoTokenType(String cryptoTokenType) {
@@ -253,7 +259,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     public boolean isRenderKeyOptions() {
         return !getAvailableCryptoTokenList().isEmpty() && 
-               (isInitNewPkiRedirect() || StringUtils.equals(getCryptoTokenType(), USE_SOFT_CRYPTO_TOKEN));
+               (isInitNewPkiRedirect() || StringUtils.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN));
     }
     
     public List<SelectItem> getAvailableSigningAlgList() {
@@ -386,13 +392,13 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private byte[] createSuperAdmin() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, 
             IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
         final int caId = caSession.getCAInfo(getAdmin(), getCaName()).getCAId();
-        endEntityManagementSession.addUser(getAdmin(), "superAdminTest4", getAdminKeyStorePassword(), getAdminDn(), 
+        endEntityManagementSession.addUser(getAdmin(), "superadmin", getAdminKeyStorePassword(), getAdminDn(), 
                 null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.TOKEN_SOFT_P12, caId);
         Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date());
         KeyStore keyStore = null;
         try {
-            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superAdminTest4", getAdminKeyStorePassword(), 
+            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
                     caId, "2048", "RSA", new Date(), notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         } catch (Exception e) {
             log.info("SuperAdmin Keystore could not be generated", e);
@@ -608,12 +614,20 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("PASSWORDSDOESNTMATCH");
             return false;
         }
+        if (StringUtils.isEmpty(getAdminDn())) {
+            addErrorMessage("SUBJECTDNINVALID");
+            return false;
+        }
         return true;
     }
     
     private boolean verifyCaFields() {
         if (StringUtils.isEmpty(getCryptoTokenIdParam())) {
             addErrorMessage("CRYPTOTOKEN_MISSING_OR_EMPTY");
+            return false;
+        }
+        if (StringUtils.isEmpty(getCaName()) || StringUtils.isEmpty(getCaDn())) {
+            addErrorMessage("CA_NAME_EMPTY");
             return false;
         }
         return true;
