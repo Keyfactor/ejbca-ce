@@ -119,7 +119,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
         if (newPublicKey != null) {
             if(!ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
-                keyInfoToBeEdited.setOauthPublicKey(getOauthKeyPublicKey(newPublicKey));
+                keyInfoToBeEdited.setPublicKeyBytes(getOauthKeyPublicKey(newPublicKey));
             } else {
                 log.info("New given public key is invalid!");
                 return false;

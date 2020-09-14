@@ -269,7 +269,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         final byte[] keyBytes = oauthKeyEditor.getPublicKeyFile() != null ? getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile())
                 : oauthKeyEditor.getOauthKeyBeingEdited().getPublicKeyBytes();
         final int skewLimit = oauthKeyEditor.getSkewLimit();
-        oauthKeyToUpdate.setOauthPublicKey(keyBytes);
+        oauthKeyToUpdate.setPublicKeyBytes(keyBytes);
         oauthKeyToUpdate.setSkewLimit(skewLimit);
         oauthKeyToUpdate.setKeyIdentifier(keyIdentifier);
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
