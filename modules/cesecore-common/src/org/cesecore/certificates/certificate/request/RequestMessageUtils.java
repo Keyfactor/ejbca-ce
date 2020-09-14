@@ -70,8 +70,17 @@ public abstract class RequestMessageUtils {
 	            ret = genCVCRequestMessage(request);			    
 			}
 		} catch (IllegalArgumentException e) {
-			log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
-			ret = genCVCRequestMessage(request);
+		    if (log.isDebugEnabled()) {
+		        log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
+		    }
+			try {
+			    ret = genCVCRequestMessage(request);
+	        } catch (IllegalArgumentException e1) {
+	            if (log.isDebugEnabled()) {
+	                log.debug("Can not parse CVC request, this is no request that we know, returning null: "+ e1.getMessage());
+	            }
+	            ret = null;
+	        }			
 		}
 		return ret;
 	}
@@ -95,7 +104,7 @@ public abstract class RequestMessageUtils {
 
 	/** Tries to get decoded, if needed, bytes from a certificate request or certificate
 	 *
-	 * @param bytes pem (with headers), plain base64, or binary bytes with a CSR of certificate
+	 * @param bytes PEM (with headers), plain base64, or binary bytes with a CSR of certificate
 	 * @return binary bytes
 	 */
 	public static byte[] getDecodedBytes(byte[] bytes) {

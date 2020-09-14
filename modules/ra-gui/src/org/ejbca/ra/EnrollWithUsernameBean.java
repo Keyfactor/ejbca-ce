@@ -189,13 +189,11 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));            
         }
         RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(valueStr.getBytes());
-        //PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
         if (certRequest == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
         
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
-        //final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
             final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
@@ -214,7 +212,11 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             // For yet unknown reasons, the setter is never when invoked during AJAX request
             certificateRequest = valueStr;
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+            final String msg = raLocaleBean.getMessage("enroll_unknown_key_algorithm");
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ": " + e.getMessage());
+            }
+            throw new ValidatorException(new FacesMessage(msg));
         } catch (NoSuchProviderException e) {
             throw new RuntimeException(e.getMessage());
         }
