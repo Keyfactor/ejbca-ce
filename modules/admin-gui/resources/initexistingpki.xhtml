@@ -31,8 +31,13 @@
 		<h:panelGroup>
 			<h2><h:outputText value="Installation" /></h2>
 			<br/>
-			<h3><h:outputText value="Import Management CA"/></h3>
+			<h3>
+			<h:outputText value="Import Management CA"/>
+			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Installing_EJBCA_as_a_CA_with_a_Management_CA.html')}"
+				escape="false" styleClass="helpReference"/>
+			</h3>
 			<br/>
+         	<h:outputText styleClass="smallHelp" value="#{web.text.CA_MGMT_HELP}"/> 
 		</h:panelGroup>
 		
 		<h:panelGrid columns="2">

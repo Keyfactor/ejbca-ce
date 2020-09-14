@@ -220,7 +220,7 @@
   <navigation-rule>
   	<from-view-id>/cryptotoken/cryptotoken.xhtml</from-view-id>
   	<navigation-case>
-  		<from-outcome>next</from-outcome>
+  		<from-outcome>back</from-outcome>
   		<to-view-id>/initnewpki.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>

@@ -47,10 +47,9 @@
 						value="../ca/caactivation.xhtml">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_ACT}" />
 					</h:outputLink>
-					<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'initpki'}"
-						value="../initnewpki.xhtml">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" />
-					</h:outputLink>
+					<h:commandLink rendered="#{cryptoTokenMBean.paramRef eq 'initpki'}"
+						value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" action="#{cryptoTokenMBean.actionBackToPkiInstallation}">
+					</h:commandLink>
 				</h:panelGroup>
 				<h:commandButton
 					action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}"
@@ -542,9 +541,6 @@
 					value="#{cryptoTokenMBean.currentCryptoToken.canGenerateKeyMsg}"
 					rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}" />
 			</h:panelGrid>
-			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{cryptoTokenMBean.actionNext}" rendered="#{cryptoTokenMBean.initNewPki}">
-			
-			</h:commandButton>
 		</h:form>
 	</ui:define>
 	
