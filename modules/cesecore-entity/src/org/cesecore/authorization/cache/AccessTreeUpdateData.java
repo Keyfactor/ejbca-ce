@@ -57,7 +57,7 @@ public class AccessTreeUpdateData extends ProtectedData implements Serializable 
         return primaryKey;
     }
 
-    public final void setPrimaryKey(final Integer primKey) {
+    public void setPrimaryKey(final Integer primKey) {
         this.primaryKey = primKey;
     }
 
