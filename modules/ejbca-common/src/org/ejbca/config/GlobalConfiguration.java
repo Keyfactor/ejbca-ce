@@ -574,7 +574,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public void removeOauthKey(int oauthKeyId) {
-        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        LinkedHashMap<Integer, OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        if (getDefaultOauthKey().getInternalId() == oauthKeyId) {
+            setDefaultOauthKey(null);
+        }
         keys.remove(oauthKeyId);
         setOauthKeys(keys);
     }
