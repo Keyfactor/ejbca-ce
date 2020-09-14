@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -44,21 +50,27 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
-import org.cesecore.CesecoreException;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
@@ -70,6 +82,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -77,12 +90,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  *
@@ -92,9 +99,12 @@ public abstract class ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
-    private static final String CERTIFICATE_USERNAME = "ocspTest";
+    protected static final String CERTIFICATE_USERNAME = "ocspTest";
+    protected static final String CERTIFICATE_WITH_NO_REVOKE_REASON_USERNAME = "ocspTestNoRevokeReason";
+
     protected static final String ISSUER_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
     private static final String REVOKED_CERT_DN = "CN=ocspTest";
+    private static final String REVOKED_WITH_NO_REASON_CERT_DN = "CN=ocspTestRevokeWithNoReason";
     protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
             + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
@@ -104,11 +114,11 @@ public abstract class ProtocolOcspTestBase {
             + "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
 
-    final protected String httpPort;
-    final protected String httpHost;
-    final protected String httpReqPath;
-    final protected String resourceOcsp;
-    final protected OcspJunitHelper helper;
+    protected final String httpPort;
+    protected final String httpHost;
+    protected final String httpReqPath;
+    protected final String resourceOcsp;
+    protected final OcspJunitHelper helper;
 
     protected X509Certificate cacert = null;
     protected X509Certificate ocspTestCert = null;
@@ -421,37 +431,53 @@ public abstract class ProtocolOcspTestBase {
         assertTrue("Status is not unknown", singleResps[1].getCertStatus() instanceof UnknownStatus);
     }
 
-    protected static void setupTestCertificates(int caId) throws IllegalStateException, InvalidAlgorithmParameterException,
-            AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException,
-            CADoesntExistsException, CertificateCreateException, CesecoreException, CertificateExtensionException {
+    protected static void setupTestCertificateRevocationReasonUnspecified(int caId)
+            throws CertificateRevokeException, CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException,
+            CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            InvalidAlgorithmParameterException, AuthorizationDeniedException, CertificateExtensionException {
+        setupTestCert(caId, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, CERTIFICATE_WITH_NO_REVOKE_REASON_USERNAME, REVOKED_WITH_NO_REASON_CERT_DN);
+    }
+
+    protected static void setupTestCertificates(int caId) throws CertificateRevokeException, CustomCertificateSerialNumberException,
+            IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException,
+            IllegalNameException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            InvalidAlgorithmParameterException, AuthorizationDeniedException, CertificateExtensionException {
+        setupTestCert(caId, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, CERTIFICATE_USERNAME, REVOKED_CERT_DN);
+    }
+
+    private static void setupTestCert(final int caId, final int revocationReason, final String certUserName, final String DN)
+            throws CertificateRevokeException, AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException,
+            CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
+            InvalidAlgorithmParameterException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(ProtocolOcspTestBase.class.getSimpleName());
         KeyPair invalidCertKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         // Issue a certificate in EJBCA for the public key
-        final EndEntityInformation revokedUser = new EndEntityInformation(CERTIFICATE_USERNAME, REVOKED_CERT_DN, caId, null, null,
+        final EndEntityInformation revokedUser = new EndEntityInformation(certUserName, DN, caId, null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
                 EndEntityConstants.TOKEN_USERGEN, null);
         revokedUser.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(invalidCertKeys.getPublic(), revokedUser.getUsername(), revokedUser.getPassword());
-        
-      
-        X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
-                req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
-        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        
+
+        X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken,
+                revokedUser, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
+        internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), revocationReason);
+
         @SuppressWarnings("unused")
-        X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
-                req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
-        
+        X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken,
+                revokedUser, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
     }
     
-    protected static void removeTestCertifices() {
+    
+    protected static void removeTestCertifices(final String certificateUserName) {
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         CertificateStoreSessionRemote certificateStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        List<Certificate> certificates = EJBTools.unwrapCertCollection(certificateStoreSessionRemote.findCertificatesByUsername(CERTIFICATE_USERNAME));
+        List<Certificate> certificates = EJBTools.unwrapCertCollection(certificateStoreSessionRemote.findCertificatesByUsername(certificateUserName));
         for (Certificate certificate : certificates) {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
@@ -463,9 +489,9 @@ public abstract class ProtocolOcspTestBase {
         cacert = getCaCert(ocspTestCert);
     }
 
-    protected X509Certificate getRevokedTestCert() {
+    protected X509Certificate getRevokedTestCert(final String certificateUserName) {
         try {
-            Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME));
+            Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(certificateUserName));
             for (Certificate cert : certs) {
                 CertificateStatus cs = certificateStoreSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
                 if (cs.equals(CertificateStatus.REVOKED)) {
