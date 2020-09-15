@@ -213,7 +213,6 @@ import org.ejbca.util.CAIdTools;
 /**
  * Manages CAs in EJBCA.
  *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -3138,10 +3137,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean exitsPublisherInCAs(int publisherid) {
         for (final Integer caid : caSession.getAllCaIds()) {
-            for (final Integer pubInt : caSession.getCAInfoInternal(caid).getCRLPublishers()) {
-                if (pubInt == publisherid) {
-                    // We have found a match. No point in looking for more..
-                    return true;
+            Collection<Integer> crlPublishers = caSession.getCAInfoInternal(caid).getCRLPublishers();
+            if (crlPublishers != null && !crlPublishers.isEmpty()) {
+                for (final Integer pubInt : crlPublishers) {
+                    if (pubInt == publisherid) {
+                        // We have found a match. No point in looking for more..
+                        return true;
+                    }
                 }
             }
         }
