@@ -25,7 +25,6 @@ import org.cesecore.keys.util.KeyTools;
  * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
  * new OAuth Keys.
  *
- * @version $Id$
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
