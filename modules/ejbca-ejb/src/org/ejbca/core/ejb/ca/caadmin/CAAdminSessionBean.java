@@ -593,7 +593,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (cainfo instanceof X509CAInfo) {
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
             // getCertificateProfile
-            if ((x509cainfo.getPolicies() != null) && (x509cainfo.getPolicies().size() > 0)) {
+            if ((x509cainfo.getPolicies() != null) && !x509cainfo.getPolicies().isEmpty()) {
                 List<CertificatePolicy> policies = certprofile.getCertificatePolicies();
                 policies.addAll(x509cainfo.getPolicies());
                 // If the profile did not say to use the extensions before, add it.
@@ -748,7 +748,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
             try {
                 caSession.editCA(admin, ca, false); // store any activates CA services
-                if (ca.getCaImplType() == X509CA.CA_TYPE) {
+                if (ca.getCaImplType().equals(X509CA.CA_TYPE)) {
                     // create initial CRLs
                     publishingCrlSession.forceCRL(admin, ca.getCAId());
                     publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
@@ -985,7 +985,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
             final CA ca = (CA) caSession.getCAForEdit(authenticationToken, caid);
             final List<Certificate> chain = new ArrayList<>();
-            if (certChain != null && certChain.size() > 0) {
+            if (certChain != null && !certChain.isEmpty()) {
                 chain.addAll(CertTools.createCertChain(certChain));
                 log.debug("Setting request certificate chain of size: " + chain.size());
                 ca.setRequestCertificateChain(chain);
@@ -1057,7 +1057,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             ca.setCAToken(caToken);
             // The CA certificate signing this request is the first in the certificate chain
-            final Certificate caCert = chain.size() == 0 ? null : chain.get(0);
+            final Certificate caCert = chain.isEmpty() ? null : chain.get(0);
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
             final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
             byte[] request = ca.createRequest(cryptoToken, null, signatureAlgorithm, caCert, CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT, certificateProfile, cceConfig);
@@ -1206,7 +1206,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
 
                 Collection<Certificate> reqchain;
-                if (cachain != null && cachain.size() > 0) {
+                if (cachain != null && !cachain.isEmpty()) {
                     //  1. If we have a chain given as parameter, we will use that.
                     reqchain = CertTools.createCertChain(cachain, verifydate);
                     if (log.isDebugEnabled()) {
@@ -1232,7 +1232,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                 }
                             }
                         }
-                        if (reqchain.size() == 0) {
+                        if (reqchain.isEmpty()) {
                             String msg = intres.getLocalizedMessage("caadmin.errornorequestchain", caid, ca.getSubjectDN());
                             log.info(msg);
                             throw new CertPathValidatorException(msg);
@@ -1715,7 +1715,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Process certificate policies.
             ArrayList<CertificatePolicy> policies = new ArrayList<>();
             CertificateProfile certprof = certificateProfileSession.getCertificateProfile(certprofileid);
-            if (certprof.getCertificatePolicies() != null && certprof.getCertificatePolicies().size() > 0) {
+            if (certprof.getCertificatePolicies() != null && !certprof.getCertificatePolicies().isEmpty()) {
                 policies.addAll(certprof.getCertificatePolicies());
             }
             final X509CAInfo x509cainfo = X509CAInfo.getDefaultX509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null,
@@ -3208,7 +3208,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     } else {
                         // We don't have a chain provided, try to find the CA certificate, assuming that we do not have this certificate in the database
                         List<Certificate> cacerts = certificateStoreSession.findCertificatesBySubject(CertTools.getIssuerDN(cert));
-                        if (cacerts != null && cacerts.size() > 0) {
+                        if (cacerts != null && !cacerts.isEmpty()) {
                             for (Certificate cacert : cacerts) {
                                 try {
                                     cert.verify(cacert.getPublicKey());
@@ -3302,7 +3302,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     private void publishCrlPartition(final AuthenticationToken admin, final String caCertFingerprint, final String issuerDn, final int crlPartitionIndex, Collection<Integer> usedpublishers, String caDataDN,
                                      boolean doPublishDeltaCRL) throws AuthorizationDeniedException {
-        final byte crl[] = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false);
+        final byte[] crl = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false);
         if (crl != null) {
             final int nr = crlStoreSession.getLastCRLInfo(issuerDn, crlPartitionIndex, false).getLastCRLNumber();
             publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
@@ -3310,7 +3310,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (!doPublishDeltaCRL) {
             return;
         }
-        final byte deltaCrl[] = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, true);
+        final byte[] deltaCrl = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, true);
         if (deltaCrl != null) {
             final int nr = crlStoreSession.getLastCRLInfo(issuerDn, crlPartitionIndex, true).getLastCRLNumber();
             publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
@@ -3498,7 +3498,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
             // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or SHA256WithDSA, or... 
             boolean containsAlg = keySigAlgs.stream().anyMatch(x -> StringUtils.containsIgnoreCase(x, certSigAlg));
-            if (certSigAlg == null || keySigAlgs == null || !containsAlg) {
+            if (certSigAlg == null || !containsAlg) {
                 if (log.isDebugEnabled()) {
                     log.info("Not trying to verify certificate signed with algorithm " + certSigAlg + " because key is only suitable for " + keySigAlgs);
                 }
