@@ -31,7 +31,7 @@ public class SearchEndEntityCriteriaRestRequest {
     )
     private String property;
 
-    @ApiModelProperty(value = "A search value. This could be sting value, an appropriate string name of End Entity Profile or Certificate Profile or CA",
+    @ApiModelProperty(value = "A search value. This could be string value, an appropriate string name of End Entity Profile or Certificate Profile or CA",
             example = "'username', 'MyEndEntityProfile'")
     private String value;
 
