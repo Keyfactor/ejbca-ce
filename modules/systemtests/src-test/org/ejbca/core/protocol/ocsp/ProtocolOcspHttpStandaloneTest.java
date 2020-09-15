@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.ocsp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -90,7 +91,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 
 /**
- * @version $Id$
+ * 
  */
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
@@ -135,7 +136,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     
     @AfterClass
     public static void afterClass() throws Exception {
-        removeTestCertifices();
+        removeTestCertifices(CERTIFICATE_USERNAME);
+        removeTestCertifices(CERTIFICATE_WITH_NO_REVOKE_REASON_USERNAME);
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);       
         try {
@@ -204,8 +206,11 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test03OcspRevoked() throws Exception {
-       ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        final X509Certificate ocspTestCert = getRevokedTestCert();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        
+        setupTestCertificateRevocationReasonUnspecified(x509ca.getCAId());
+        
+        final X509Certificate ocspTestCert = getRevokedTestCert(CERTIFICATE_WITH_NO_REVOKE_REASON_USERNAME);
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
@@ -221,7 +226,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         Object status = singleResp.getCertStatus();
         assertTrue("Status ("+status+") is not RevokedStatus", status instanceof RevokedStatus);
         RevokedStatus rev = (RevokedStatus) status;
-        assertTrue("Status does not have reason", rev.hasRevocationReason());
+        assertFalse("Status does have a reason", rev.hasRevocationReason());
     }
 
     @Test
@@ -523,7 +528,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Test
     public void testRevokedNextUpdate() throws Exception {
        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        final X509Certificate ocspTestCert = getRevokedTestCert();
+        final X509Certificate ocspTestCert = getRevokedTestCert(CERTIFICATE_USERNAME);
         
         final String oldConfigurationValue1 = configurationSession.getConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".untilNextUpdate");
         final String oldConfigurationValue2 = configurationSession.getConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".revoked.untilNextUpdate");
