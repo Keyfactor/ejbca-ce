@@ -93,7 +93,6 @@ import org.junit.After;
 
 /**
  *
- * @version $Id$
  */
 public abstract class ProtocolOcspTestBase {
 
