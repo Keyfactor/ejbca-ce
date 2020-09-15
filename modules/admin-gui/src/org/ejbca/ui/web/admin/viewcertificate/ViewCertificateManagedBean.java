@@ -65,6 +65,13 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final String ROLE_ID                    = "roleId";
     private static final String KEYBINDING_ID              = "keyBindingId";
 
+    private static final int RETURN_TO_AUDITLOG = 0;
+    private static final int RETURN_TO_PEERCONNECTORS = 1;
+    private static final int RETURN_TO_OCSPKB = 2;
+    private static final int RETURN_TO_AUTHKB = 3;
+    private static final int RETURN_TO_EDITIKB= 4;
+    private static final int RETURN_TO_ROLEMEMBERS = 5;
+    
     private static final String HIDDEN_INDEX               = "hiddenindex";
     
     private boolean noparameter = true;
@@ -201,26 +208,26 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         try {
             final int returnToId = Integer.parseInt(returnToParameter);
             switch (returnToId) {
-            case 0: // 0 = send user to the audit log page
+            case RETURN_TO_AUDITLOG: // 0 = send user to the audit log page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
                 break;
-            case 1: // 1 = send user to the peer overview page
+            case RETURN_TO_PEERCONNECTORS: // 1 = send user to the peer overview page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
                 break;
-            case 2: // 2 = send user to the IKB AKB page
+            case RETURN_TO_OCSPKB: // 2 = send user to the IKB OCSP page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=OcspKeyBinding";
                 break;
-            case 3: // 3 = send user to the IKB OCSP page
+            case RETURN_TO_AUTHKB: // 3 = send user to the IKB AKB page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=AuthenticationKeyBinding";
                 break;
-            case 4: 
+            case RETURN_TO_EDITIKB: // 4 = send user back to Edit IKB page (default to IKB page)
                 if (keyBindingId != 0) {
                     returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybinding.xhtml?internalKeyBindingId=" + keyBindingId;
                 } else {
                     returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml";
                 }
                 break;
-            case 5: // 4 = send user back to role members page
+            case RETURN_TO_ROLEMEMBERS: // 5 = send user back to role members page
                 if (roleId != 0) {
                     returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "administratorprivileges/rolemembers.xhtml?roleId=" + roleId;
                 } else {
