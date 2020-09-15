@@ -87,11 +87,10 @@ public class SearchEndEntitiesRestResponse {
             for (final EndEntityInformation endEntity : raEndEntitySearchResponse.getEndEntities()) {
             	final EndEntityRestResponse endEntityRestResponse;
             	if (endEntity.getExtendedInformation() != null) {
-            		
             		List<ExtendedInformationRestResponseComponent> extensionData = new ArrayList<ExtendedInformationRestResponseComponent>();
             		for (Entry<Object, Object> entry : endEntity.getExtendedInformation().getRawData().entrySet()) {
             		    String name = (String) entry.getKey();
-            		    String value = (String) entry.getValue();
+            		    String value = entry.getValue().toString(); // This can be String, Float, Integer, etc
             		    extensionData.add(ExtendedInformationRestResponseComponent.builder()
             		    		.setName(name)
             		    		.setValue(value)
