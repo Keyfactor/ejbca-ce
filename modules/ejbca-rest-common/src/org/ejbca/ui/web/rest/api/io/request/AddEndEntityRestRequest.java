@@ -1,5 +1,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
+import java.util.List;
+
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -7,8 +9,6 @@ import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidAddEndEntityRestRequest;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.List;
 
 /**
  * JSON input for registration of end entity.
@@ -30,23 +30,90 @@ public class AddEndEntityRestRequest {
     )
     private String token;
     
+    /** default constructor needed for serialization */
     public AddEndEntityRestRequest() {}
+
+    public static class Builder {
+        private String username;
+        private String password;
+        private String subjectDn;
+        private String subjectAltName;
+        private String email;
+        private List<ExtendedInformationRestRequestComponent> extensionData;
+        private String caName;
+        private String certificateProfileName;
+        private String endEntityProfileName;
+        private String token;
+
+        
+        public Builder certificateProfileName(final String certificateProfileName) {
+            this.certificateProfileName = certificateProfileName;
+            return this;
+        }
+
+        public Builder endEntityProfileName(final String endEntityProfileName) {
+            this.endEntityProfileName = endEntityProfileName;
+            return this;
+        }
+
+        public Builder caName(final String caName) {
+            this.caName = caName;
+            return this;
+        }
+
+        public Builder username(final String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder password(final String password) {
+            this.password = password;
+            return this;
+        }
+
+        
+        public Builder subjectDn(String subjectDn) {
+            this.subjectDn = subjectDn;
+            return this;
+        }
+
+        public Builder subjectAltName(String subjectAltName) {
+            this.subjectAltName = subjectAltName;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder extensionData(List<ExtendedInformationRestRequestComponent> extensionData) {
+            this.extensionData = extensionData;
+            return this;
+        }
+
+        public Builder token(String token) {
+            this.token = token;
+            return this;
+        }
+
+        public AddEndEntityRestRequest build() {
+            return new AddEndEntityRestRequest(this);
+        }
+    }
     
-    public AddEndEntityRestRequest(String username, String password, String subjectDn, String subjectAltName,
-			String email, List<ExtendedInformationRestRequestComponent> extensionData, String caName,
-			String certificateProfileName, String endEntityProfileName, String token) {
-		super();
-		this.username = username;
-		this.password = password;
-		this.subjectDn = subjectDn;
-		this.subjectAltName = subjectAltName;
-		this.email = email;
-		this.extensionData = extensionData;
-		this.caName = caName;
-		this.certificateProfileName = certificateProfileName;
-		this.endEntityProfileName = endEntityProfileName;
-		this.token = token;
-	}
+    private AddEndEntityRestRequest(final Builder builder) {
+        this.certificateProfileName = builder.certificateProfileName;
+        this.endEntityProfileName = builder.endEntityProfileName;
+        this.caName = builder.caName;
+        this.username = builder.username;
+        this.password = builder.password;
+        this.subjectDn = builder.subjectDn;
+        this.subjectAltName = builder.subjectAltName;
+        this.email = builder.email;
+        this.extensionData = builder.extensionData;
+        this.token = builder.token;
+    }
 
     /**
      * Returns a converter instance for this class.
