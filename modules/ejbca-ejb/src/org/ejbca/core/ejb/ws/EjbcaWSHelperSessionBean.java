@@ -132,22 +132,36 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
-        final Set<X509Certificate> credentials = new HashSet<>();
-        credentials.add(cert);
-        final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-        final AuthenticationToken admin = authenticationSession.authenticate(subject);
-        if ((admin != null) && (!allowNonAdmins)) {
-            if (!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException {
+        if (cert != null) {
+            final Set<X509Certificate> credentials = new HashSet<>();
+            credentials.add(cert);
+            final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            final AuthenticationToken admin = authenticationSession.authenticate(subject);
+            if ((admin != null) && (!allowNonAdmins)) {
+                if (!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                    final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            } else if (admin == null) {
+                final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber "
+                        + CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert) + "'.");
                 throw new AuthorizationDeniedException(msg);
             }
-        } else if (admin == null) {
-            final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber "
-                    + CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert) + "'.");
+            return admin;
+        } else if (oauthBearerToken != null) {
+            final AuthenticationToken admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+
+            if (admin == null) {
+                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+            }
+
+            return admin;
+        } else {
+            final String msg = "Authorization failed. No certificates or oauth token provided.";
             throw new AuthorizationDeniedException(msg);
         }
-        return admin;
+
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
