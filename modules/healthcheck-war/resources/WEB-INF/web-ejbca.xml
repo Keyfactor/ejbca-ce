@@ -30,11 +30,22 @@
         <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <display-name>VAStatusServlet</display-name>
+        <servlet-name>VAStatusServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.pub.VaStatusServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>EJBCAHealthCheckServlet</servlet-name>
         <url-pattern>/ejbcahealth</url-pattern>
     </servlet-mapping>
-    
+
+    <servlet-mapping>
+        <servlet-name>VAStatusServlet</servlet-name>
+        <url-pattern>/vastatus</url-pattern>
+    </servlet-mapping>
+
     <session-config>
         <session-timeout>15</session-timeout>
         <cookie-config>

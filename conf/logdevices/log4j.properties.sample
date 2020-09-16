@@ -1,5 +1,5 @@
 #
-# $Id$
+# $Id: log4j.properties.sample 11950 2011-05-11 11:20:17Z jeklund $
 #
 # This is a sample file to override properties specific for the Log4j Log Device used 
 # during development (or deployment) of EJBCA
