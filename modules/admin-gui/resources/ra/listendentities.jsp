@@ -131,11 +131,11 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
                                             rabean.initialize(request, ejbcawebbean);
-  final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.xhtml";
+  final String VIEWCERT_LINK            = ejbcawebbean.getAdminWebBaseUrl() + "viewcertificate.xhtml";
   
-  final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
-  final String EDITUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/editendentity.jsp";
-  final String VIEWHISTORY_LINK         = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewhistory.jsp";
+  final String VIEWUSER_LINK            = "viewendentity.jsp";
+  final String EDITUSER_LINK            = "editendentity.jsp";
+  final String VIEWHISTORY_LINK         = "viewhistory.jsp";
   
 
   RequestHelper.setDefaultCharacterEncoding(request);
@@ -167,7 +167,7 @@
   String sortby         = SORTBY_USERNAME_ACC;
 
   boolean blank                   = true;
-  String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/listendentities.jsp";
+  String THIS_FILENAME            =  "listendentities.jsp";
   UserView[] users                = null;
   int numcheckboxes               = 0;
   boolean editbuttonpressed       = false;
