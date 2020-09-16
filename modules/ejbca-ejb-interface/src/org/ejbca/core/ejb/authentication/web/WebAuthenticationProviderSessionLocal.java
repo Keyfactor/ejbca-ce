@@ -27,9 +27,12 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 @Local
 public interface WebAuthenticationProviderSessionLocal extends AuthenticationProvider {
 
-    /** @return a X509CertificateAuthenticationToken based on the provided client TLS certificate. */
+    /** @return an X509CertificateAuthenticationToken based on the provided client TLS certificate. */
     AuthenticationToken authenticateUsingClientCertificate(X509Certificate x509Certificate);
 
     /** @return a PublicAccessAuthenticationToken based on the provided info. */
     AuthenticationToken authenticateUsingNothing(String principal, boolean confidentialTransport);
+
+    /** @return an OAuth2AuthenticationToken based on the given encoded token */
+    AuthenticationToken authenticateUsingOAuthBearerToken(String encodedOauthBearerToken);
 }

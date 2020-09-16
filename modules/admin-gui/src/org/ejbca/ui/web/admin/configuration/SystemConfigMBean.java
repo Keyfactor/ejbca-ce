@@ -128,6 +128,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableCommandLineDefaultUser;
         private boolean enableExternalScripts;
         private List<OAuthKeyInfo> oauthKeys;
+        private String defaultOauthKeyIdentifier;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
@@ -183,6 +184,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.ocspCleanupUse = globalConfig.getOcspCleanupUse();
                 this.ocspCleanupSchedule = globalConfig.getOcspCleanupSchedule();
                 this.ocspCleanupScheduleUnit = globalConfig.getOcspCleanupScheduleUnit();
+                
+                if (globalConfig.getDefaultOauthKey() != null) {
+                    this.defaultOauthKeyIdentifier = globalConfig.getDefaultOauthKey().getKeyIdentifier();
+                }
 
                 // Admin Preferences
                 if(adminPreference == null) {
@@ -244,6 +249,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
         public List<OAuthKeyInfo> getOauthKeys() { return this.oauthKeys; }
         public void setOauthKeys(List<OAuthKeyInfo> oauthKeys) { this.oauthKeys = oauthKeys; }
+        public String getDefaultOauthKeyIdentifier() { return this.defaultOauthKeyIdentifier; }
+        public void setDefaultOauthKeyIdentifier(String defaultOauthKeyIdentifier) { this.defaultOauthKeyIdentifier = defaultOauthKeyIdentifier; }
         public List<CTLogInfo> getCtLogs() { return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs = ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -395,12 +402,23 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
      */
     public SystemConfigurationOAuthKeyManager getOauthKeyManager() {
         if (oauthKeyManager == null) {
+            this.currentConfig = null;
+            this.globalConfig = null;
+            getEjbcaWebBean().reloadGlobalConfiguration();
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getCurrentConfig().getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
                     public void saveOauthKeys(final List<OAuthKeyInfo> oauthKeys) {
                         getCurrentConfig().setOauthKeys(oauthKeys);
                         saveCurrentConfig();
+                    }
+                    
+                    @Override
+                    public void saveDefaultOauthKey(OAuthKeyInfo defaultKey) {
+                        if (defaultKey != null) {
+                            getCurrentConfig().setDefaultOauthKeyIdentifier(defaultKey.getKeyIdentifier());
+                            saveCurrentConfig();
+                        }
                     }
 
                     @Override
@@ -580,6 +598,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.info(msg);
             super.addNonTranslatedErrorMessage(msg);
         }
+    }
+    
+    public OAuthKeyInfo getOauthKeyByIdentifier(String oauthKeyIdentifier) {
+        for (OAuthKeyInfo key : getOauthKeyManager().getAllOauthKeys()) {
+            if (key.getKeyIdentifier().equals(oauthKeyIdentifier)) {
+                return key;
+            }
+        }
+        return null;
     }
 
     public String getStatedumpDir() {
@@ -826,6 +853,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private Integer zeroToNull(int value) {
         return value == 0 ? null : value;
     }
+    
+    public List<SelectItem/*<OAuthKeyInfo,String>*/> getOauthKeySelectItems() {
+        final List<OAuthKeyInfo> keys = getOauthKeyManager().getAllOauthKeys();
+        final List<SelectItem> ret = new ArrayList<>();
+        for (final OAuthKeyInfo key : keys) {
+            ret.add(new SelectItem(key.getKeyIdentifier()));
+        }
+        return ret;
+    }
 
     /** Invoked when admin saves the configurations */
     public void saveCurrentConfig() {
@@ -870,6 +906,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     oauthKeysMap.put(oauthKey.getInternalId(), oauthKey);
                 }
                 globalConfig.setOauthKeys(oauthKeysMap);
+                globalConfig.setDefaultOauthKey(getOauthKeyByIdentifier(currentConfig.getDefaultOauthKeyIdentifier()));
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for (CTLogInfo ctlog : currentConfig.getCtLogs()) {
@@ -1863,7 +1900,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             availableTabs.add("Extended Key Usages");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
-            availableTabs.add("OAuth Keys");
+            availableTabs.add("Trusted OAuth Providers");
         }
         if (getEjbcaWebBean().isRunningBuildWithCA()
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
