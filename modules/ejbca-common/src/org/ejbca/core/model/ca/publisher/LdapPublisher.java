@@ -571,8 +571,7 @@ public class LdapPublisher extends BasePublisher {
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn, e.getMessage());
 					log.error(msg, e);
-					log.info("If you are trying to publish a CRL, and the LDAP server is complaining about a missing " +
-							"CA certificate attribute, you need first publish the CA certificates to the LDAP server.");
+					log.info("If you are trying to publish a CRL, and the LDAP server is complaining about a missing CA certificate attribute, you need first publish the CA certificates to the LDAP server.");
 					throw new PublisherException(msg);            
 				}
 			} catch (UnsupportedEncodingException e) {
@@ -1527,12 +1526,14 @@ public class LdapPublisher extends BasePublisher {
 	 * @param email email address for entry, or null
 	 * @param extra if we should add extra attributes except the objectclass to the
 	 *        modificationset.
+	 * @param person true if this is a person entry, false if it is a CA.
 	 * @param password, users password, to be added into SecurityObjects, and AD
 	 * @param cert the Certificate we are publishing, or null
 	 *
 	 * @return List of LDAPModification created...
 	 */
-	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password, Certificate cert) {
+	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra,
+															 boolean person, String password, Certificate cert) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getModificationSet(dn="+dn+", email="+email+")");			
 		}
