@@ -21,12 +21,11 @@ import java.util.List;
 
 import org.cesecore.util.Base64;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Unit tests for the OAuthKeyManager class. 
- * 
- * @version $Id$
  * 
  */
 public class OAuthKeyManagerUnitTest {
@@ -34,6 +33,11 @@ public class OAuthKeyManagerUnitTest {
     private static final byte[] publicKey1 = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
             "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
 
+    @Before
+    public void setup() {
+        keyManager = new OAuthKeyManager(new ArrayList<OAuthKeyInfo>());
+    }
+    
     @After
     public void tearDown() {
         keyManager = null;
@@ -44,7 +48,6 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testInitOAuthKeyManager() {
-        initManager();
         List<OAuthKeyInfo> keys = keyManager.getAllOauthKeys();
         assertFalse(keys == null);
         assertTrue(keys.isEmpty());
@@ -55,7 +58,6 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testAddOAuthKey() {
-        initManager();
         keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0));
         List<OAuthKeyInfo> keys = keyManager.getAllOauthKeys();        
         assertTrue(keys.size() == 1);
@@ -70,10 +72,12 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveMissingOAuthKey() {
-        initManager();
         keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0));
-        keyManager.removeOauthKey(new OAuthKeyInfo("test2", publicKey1, 0));
-        assertFalse(keyManager.getAllOauthKeys().isEmpty());
+        try {
+            keyManager.removeOauthKey(new OAuthKeyInfo("test2", publicKey1, 0));
+        } finally {
+            assertFalse(keyManager.getAllOauthKeys().isEmpty());
+        }
     }
     
     /**
@@ -81,7 +85,6 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testRemoveExistingOAuthKey() {
-        initManager();
         OAuthKeyInfo key = new OAuthKeyInfo("test", publicKey1, 0);
         keyManager.addOauthKey(key);
         keyManager.removeOauthKey(key);
@@ -93,7 +96,6 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testCanAddOAuthKey() {
-        initManager();
         keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0));
         assertFalse(keyManager.canAdd(new OAuthKeyInfo("test", publicKey1, 100)));
         assertTrue(keyManager.canAdd(new OAuthKeyInfo("test1", publicKey1, 100)));
@@ -104,15 +106,10 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testCanEditOAuthKey() {
-        initManager();
         keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0));
         OAuthKeyInfo keyToEdit = new OAuthKeyInfo("test2", publicKey1, 100);
         keyManager.addOauthKey(keyToEdit);
         assertFalse(keyManager.canEdit(keyToEdit, "test"));
         assertTrue(keyManager.canEdit(keyToEdit, "test3"));
-    }
-    
-    private void initManager() {
-        keyManager = new OAuthKeyManager(new ArrayList<OAuthKeyInfo>());
     }
 }
