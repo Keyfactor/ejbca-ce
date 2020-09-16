@@ -118,6 +118,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
 
+    // Default OAuth Keys
+    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
+
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
 
@@ -187,7 +190,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String THEME_PATH          = "theme_path";
 
     private static final   String OAUTH_KEYS          = "oauthkeys";
-    private static final   String DEFAULT_OAUTH_KEY   = "defaultoauthkey";
 
     private static final   String CTLOGS              = "ctlogs";
 
@@ -559,7 +561,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
         final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);
-        return (ret == null ? new LinkedHashMap<>() : new LinkedHashMap<>(ret));
+        return (ret == null ? OAUTH_KEYS_DEFAULT : new LinkedHashMap<>(ret));
     }
 
     /** Sets the available OAuth keys */
@@ -577,14 +579,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
         keys.remove(oauthKeyId);
         setOauthKeys(keys);
-    }
-    
-    public OAuthKeyInfo getDefaultOauthKey() {
-        return (OAuthKeyInfo)data.get(DEFAULT_OAUTH_KEY);
-    }
-    
-    public void setDefaultOauthKey(OAuthKeyInfo defaultKey) {
-        data.put(DEFAULT_OAUTH_KEY, defaultKey);
     }
 
     @SuppressWarnings("unchecked")
