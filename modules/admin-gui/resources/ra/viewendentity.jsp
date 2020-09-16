@@ -26,7 +26,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
                                             rabean.initialize(request, ejbcawebbean);
                                             cabean.initialize(ejbcawebbean);
-  String THIS_FILENAME                    = globalconfiguration.getRaPath()  + "/viewendentity.jsp";
+  String THIS_FILENAME                    = "viewendentity.jsp";
 
   viewendentityhelper.initialize(ejbcawebbean,rabean,cabean);
   
@@ -45,10 +45,9 @@
 %>
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
-  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
-  <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <link rel="shortcut icon" href="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
+  <link rel="stylesheet" type="text/css" href="<c:out value='<%= ejbcawebbean.getBaseUrl() + ejbcawebbean.getCssFile() %>' />" />
+  <script type="text/javascript" src="<%= ejbcawebbean.getAdminWebBaseUrl() %>ejbcajslib.js"></script>
 </head>
 
 <body class="popup" id="viewendentity">

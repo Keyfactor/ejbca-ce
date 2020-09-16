@@ -110,10 +110,10 @@
     rabean.initialize(request, ejbcawebbean);
     
 
-    final String VIEWUSER_LINK = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
-    final String EDITUSER_LINK = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/editendentity.jsp";
+    final String VIEWUSER_LINK = "viewendentity.jsp";
+    final String EDITUSER_LINK = "editendentity.jsp";
 
-    String THIS_FILENAME = globalconfiguration.getRaPath() + "/addendentity.jsp";
+    String THIS_FILENAME = "addendentity.jsp";
     EndEntityProfile profile = null;
     String[] profilenames = null;
     boolean noprofiles = false;
@@ -771,9 +771,8 @@
 %>
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
-  <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
-  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
+  <link rel="stylesheet" type="text/css" href="<c:out value='<%= ejbcawebbean.getBaseUrl() + ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript">
 
   <% if(!noprofiles){ %>
@@ -1115,7 +1114,7 @@ function checkallfields(){
    
    -->
   </script>
-  <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript" src="<%= ejbcawebbean.getAdminWebBaseUrl() %>ejbcajslib.js"></script>
 </head>
 
 <body onload='<% if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>
@@ -1127,7 +1126,7 @@ function checkallfields(){
   <h1><c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/></h1>
 
   <% 
-  String formAction = ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp";
+  String formAction = "listendentities.jsp";
   %>
   <% if(noprofiles){ %>
     <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"NOTAUTHORIZEDTOCREATEENDENTITY\") %>"/></div>

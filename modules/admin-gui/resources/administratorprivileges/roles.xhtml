@@ -44,11 +44,11 @@
                     <h:outputText value="#{role.roleName}"/>
                 </h:column>
                 <h:column>
-                    <h:outputLink value="rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITROLEMEMBERS}">
+                    <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITROLEMEMBERS}">
                         <f:param name="roleId" value="#{role.roleId}"/>
                         <h:outputText value="#{web.text.ROLEMEMBERS}"/>
                     </h:outputLink>
-                    <h:outputLink value="accessrules.xhtml" styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
+                    <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/accessrules.xhtml" styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
                         <f:param name="roleId" value="#{role.roleId}"/>
                         <h:outputText value="#{web.text.ACCESSRULES}"/>
                     </h:outputLink>
