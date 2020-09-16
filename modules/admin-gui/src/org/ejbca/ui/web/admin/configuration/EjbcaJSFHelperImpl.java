@@ -45,9 +45,10 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
 
 	private boolean initialized = false;
 	
-	public EjbcaJSFHelperImpl(){}
+	public EjbcaJSFHelperImpl() {}
 	
-    public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){
+    @Override
+    public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean) {
     	if(!initialized){
     		this.ejbcawebbean = ejbcawebbean;
     		text = new EjbcaJSFLanguageResourceImpl(ejbcawebbean);
@@ -57,12 +58,14 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
     }
     
     /** Returns the EJBCA version */
-    public String getEjbcaVersion(){
+    @Override
+    public String getEjbcaVersion() {
     	return GlobalConfiguration.EJBCA_VERSION;
     }
 
     /** Returns the EJBCA title */
-    public String getEjbcaTitle(){
+    @Override
+    public String getEjbcaTitle() {
         GlobalConfiguration gc = getEjbcaWebBean().getGlobalConfiguration();
         if (gc == null) {
             log.warn("GlobalConfiguration is null trying to get from EjbcaWebBean, returning default Title.");
@@ -72,28 +75,33 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
     }
     
     /** Returns the EJBCA theme */
-    public String getTheme(){
+    @Override
+    public String getTheme() {
     	return getEjbcaWebBean().getCssFile();
     }
     
     /** Returns the EJBCA base url */
-    public String getEjbcaBaseURL(){
+    @Override
+    public String getEjbcaBaseURL() {
     	return getEjbcaWebBean().getBaseUrl();
     }   
     
     /** Returns the EJBCA content string */
-    public String getContent(){
+    @Override
+    public String getContent() {
     	return "text/html; charset=" + WebConfiguration.getWebContentEncoding();
     } 
     
    /** Used for language resources. */
-    public org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource getText(){
+    @Override
+    public org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource getText() {
     	setEjbcaWebBean(getEjbcaWebBean());
     	return text;
     }
     
     /** Used for image resources. */
-     public org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource getImage(){
+    @Override
+    public org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource getImage() {
         setEjbcaWebBean(getEjbcaWebBean());
      	return image;
      }
@@ -103,8 +111,9 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
      * @throws AuthorizationDeniedException 
       *
       */
-     public void authorizedToApprovalPages() throws AuthorizationDeniedException{
-		  // Check Authorization
+    @Override
+    public void authorizedToApprovalPages() throws AuthorizationDeniedException {
+		// Check Authorization
         boolean approveendentity = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         boolean approvecaaction = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
  		if (!approveendentity && !approvecaaction) {
@@ -112,11 +121,13 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
  		}
      }
      
-     public int getEntriesPerPage(){
+    @Override
+    public int getEntriesPerPage() {
     	 return getEjbcaWebBean().getEntriesPerPage();
      }
     
-     public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaWebBean(){
+     @Override
+    public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaWebBean() {
          if(ejbcawebbean == null) {
              final FacesContext ctx = FacesContext.getCurrentInstance();
              final HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
@@ -130,7 +141,8 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
          return ejbcawebbean;
      }
 
-     public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaErrorWebBean(){
+     @Override
+    public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaErrorWebBean() {
          if(ejbcawebbean == null) {
              final FacesContext ctx = FacesContext.getCurrentInstance();
              final HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
@@ -144,18 +156,20 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
          return ejbcawebbean;
      }
      
-     public AuthenticationToken getAdmin() {
+     @Override
+    public AuthenticationToken getAdmin() {
     	 return getEjbcaWebBean().getAdminObject();
      }
 
-     public static EjbcaJSFHelper getBean(){
+     public static EjbcaJSFHelper getBean() {
     	 FacesContext context = FacesContext.getCurrentInstance();    
     	 Application app = context.getApplication();   
     	 return app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
      }
 
      /** @return true if the client browser has identified itself as a legacy Internet Explorer 10 (or earlier) */
-     public boolean isLegacyInternetExplorer() {
+     @Override
+    public boolean isLegacyInternetExplorer() {
          if (legacyInternetExplorer == null) {
              final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
              final String userAgent = httpServletRequest.getHeader("User-Agent");
