@@ -48,7 +48,7 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.EditEndEntityRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EndEntityRevocationRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntitiesRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
@@ -159,9 +159,9 @@ public class EndEntityRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Revokes all end entity certificates",
-        notes = "Revokes all certificates associated with given end entity name with specified reason code",
+        notes = "Revokes all certificates associated with given end entity name with specified reason code, and optionally deletes the end entity",
         code = 200)
-    public Response activate(
+    public Response revoke(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Name of the end entity")
             @PathParam("endentity_name") String endEntityName,
@@ -182,17 +182,17 @@ public class EndEntityRestResource extends BaseRestResource {
     }
     
     @POST
-    @Path("/{endentity_name}/edit")
+    @Path("/{endentity_name}/setstatus")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Edits end entity",
-        notes = "Edit status / token type of related end entity",
+    @ApiOperation(value = "Edits end entity setting new status",
+        notes = "Edit status, password and token type of related end entity",
         code = 200)
-    public Response edit(
+    public Response setstatus(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Name of the end entity")
+            @ApiParam(value = "Name of the end entity to edit status for")
             @PathParam("endentity_name") String endEntityName,
-            @ApiParam (value="request") EditEndEntityRestRequest request) throws AuthorizationDeniedException, RestException, NoSuchEndEntityException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, CustomFieldException, EndEntityProfileValidationException, WaitingForApprovalException {
+            @ApiParam (value="request") SetEndEntityStatusRestRequest request) throws AuthorizationDeniedException, RestException, NoSuchEndEntityException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, CustomFieldException, EndEntityProfileValidationException, WaitingForApprovalException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         
         EndEntityInformation endEntityInformation = raMasterApiProxy.searchUser(admin, endEntityName);
@@ -202,8 +202,13 @@ public class EndEntityRestResource extends BaseRestResource {
             }
             throw new NoSuchEndEntityException("Could not find  End Entity for the username='" + endEntityName + "'");
         } else {
-        	endEntityInformation.setStatus(EditEndEntityRestRequest.EndEntityStatus.resolveEndEntityStatusByName(request.getStatus()).getStatusValue());
-        	endEntityInformation.setTokenType(EditEndEntityRestRequest.TokenType.resolveEndEntityTokenByName(request.getToken()).getTokenValue());
+            final String status = request.getStatus();
+            final String token = request.getToken();
+            if (log.isDebugEnabled()) {
+                log.debug("Setting status for username='" + endEntityName + "', " + status + ", " + token);
+            }
+        	endEntityInformation.setStatus(SetEndEntityStatusRestRequest.EndEntityStatus.resolveEndEntityStatusByName(status).getStatusValue());
+        	endEntityInformation.setTokenType(SetEndEntityStatusRestRequest.TokenType.resolveEndEntityTokenByName(token).getTokenValue());
         	if (request.getPassword() != null) {
         		endEntityInformation.setPassword(request.getPassword());
         	}
