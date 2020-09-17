@@ -115,6 +115,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTSESSIONTIMEOUT = false;
     private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
 
+    // Default values for healthcheck
+    private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 60;
+
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
 
@@ -204,6 +207,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
+    private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -556,6 +560,19 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         } else {
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }
+    }
+
+    public int getVaStatusTimeConstraint() {
+         final Integer vaStatusTimeConstraint = (Integer) data.get(VA_STATUS_TIME_CONSTRAINT_KEY);
+         if (vaStatusTimeConstraint == null) {
+             return DEFAULT_VA_STATUS_TIME_CONSTRAINT;
+         } else {
+             return vaStatusTimeConstraint;
+         }
+    }
+
+    public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) {
+         data.put(VA_STATUS_TIME_CONSTRAINT_KEY, vaStatusTimeConstraint);
     }
 
     @SuppressWarnings("unchecked")

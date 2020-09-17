@@ -40,8 +40,11 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.peerconnector.publisher.PeerPublisher;
+import org.ejbca.ui.web.pub.VaStatusServlet;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -325,4 +328,11 @@ public class PublisherTest extends RoleUsingTestCase {
         final boolean ret = publisherSession.storeCertificate(internalAdmin, publishers, cdw, "foo123", CertTools.getSubjectDN(testCertificate), null);
         assertTrue("Unable to store certificate for " + publishers.size() + " publishers in one call.", ret);
     }
+
+    @Test
+	public void testPublisherClassNames() {
+		Assert.assertEquals("Hold on mate! The class name of " + PeerPublisher.class.getCanonicalName() + " has changed. " +
+				"Please update the code in " + VaStatusServlet.class.getCanonicalName() + " and then make me pass.",
+				"PeerPublisher", PeerPublisher.class.getSimpleName());
+	}
 }
