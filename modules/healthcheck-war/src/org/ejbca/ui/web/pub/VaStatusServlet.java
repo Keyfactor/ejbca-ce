@@ -16,12 +16,13 @@ package org.ejbca.ui.web.pub;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -34,10 +35,31 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.AbstractMap;
-import java.util.Collection;
 
 /**
- * Servlet used to check which VAs are in sync with the CA.
+ * <p>Servlet used to check which VAs are in sync with the CA. A VA is defined as out of sync if the peer publisher
+ * has at least one item in the queue older than X seconds where X is configured in the GUI.</p>
+ *
+ * <p>Can be used by a load balancer to divert traffic from OCSP responders which do not have the latest
+ * information.</p>
+ *
+ * <p>If all peer publishers have items queued, the servlet returns an empty response to prevent the load
+ * balancer from taking all OCSP responders out of operation at the same time.</p>
+ *
+ * <p>Example of request and response:</p>
+ * <pre>
+ * curl -s http://localhost:8080/ejbca/publicweb/healthcheck/vastatus | jq .
+ * {
+ *   "error": false,
+ *   "outOfSync": [
+ *     {
+ *       "name": "VA Peer Publisher"
+ *     }
+ *   ]
+ * }
+ * </pre>
+ *
+ * <p>Authentication to the servlet is controlled by the property <code>healthcheck.authorizedips</code>.
  */
 public class VaStatusServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(VaStatusServlet.class);
@@ -49,6 +71,8 @@ public class VaStatusServlet extends HttpServlet {
     private PublisherSessionLocal publisherSession;
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
@@ -100,26 +124,45 @@ public class VaStatusServlet extends HttpServlet {
     }
 
     private String createResponse() {
+        boolean atLeastOneVaInSync = false;
         final JSONArray outOfSync = new JSONArray();
         for (final AbstractMap.Entry<Integer, BasePublisher> entry : publisherSession.getAllPublishers().entrySet()) {
             final Integer publisherId = entry.getKey();
             final BasePublisher publisher = entry.getValue();
             if (isPublishingToVa(publisher)) {
-                // TODO Only get entries older than X seconds
-                final Collection<PublisherQueueData> queuedItems = publisherQueueSession.getPendingEntriesForPublisherWithLimit(publisherId, 1);
-                if (!queuedItems.isEmpty()) {
+                if (publisherHasItemInQueue(publisherId)) {
                     final JSONObject vaOutOfSync = new JSONObject();
                     vaOutOfSync.put("name", publisher.getName());
                     outOfSync.add(vaOutOfSync);
+                } else {
+                    atLeastOneVaInSync = true;
                 }
             }
         }
         final JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("error", false);
-        jsonResponse.put("outOfSync", outOfSync);
-        // TODO If all VA nodes are out of sync, report but don't put anything in the outOfSync array, we
-        //  want at least one OCSP responder up and running even if it's not up to date
+        if (atLeastOneVaInSync) {
+            jsonResponse.put("outOfSync", outOfSync);
+        } else {
+            // If all VA nodes are out of sync, do not put any VAs in the response
+            // to avoid the load balancer taking all OCSP responders out of operation
+            // at the same time
+            jsonResponse.put("outOfSync", new JSONArray());
+        }
         return jsonResponse.toJSONString();
+    }
+
+    private boolean publisherHasItemInQueue(final int publisherId) {
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final int[] numberOfQueuedItems = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(
+                publisherId, new int[] { -1 }, new int[] { globalConfiguration.getVaStatusTimeConstraint() });
+        if (log.isDebugEnabled()) {
+            log.debug("Looking for any items older than " + globalConfiguration.getVaStatusTimeConstraint()
+                    + " seconds, in the publisher queue for publisher with ID " + publisherId
+                    + ". Number of such items found = " + numberOfQueuedItems[0] + ".");
+        }
+        return numberOfQueuedItems[0] > 0;
     }
 
     private boolean isPublishingToVa(final BasePublisher publisher) {
