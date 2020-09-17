@@ -1,15 +1,15 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.ejbca.ui.web.rest.api.validator.ValidEditEndEntityRestRequest;
+import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * JSON input for editing of end entity.
  */
-@ValidEditEndEntityRestRequest
-public class EditEndEntityRestRequest {
+@ValidEndEntityStatusRestRequest
+public class SetEndEntityStatusRestRequest {
 
     private String password;
     @ApiModelProperty(value = "Token type property",
@@ -21,9 +21,9 @@ public class EditEndEntityRestRequest {
     )
     private String status;
     
-    public EditEndEntityRestRequest() {}
+    public SetEndEntityStatusRestRequest() {}
     
-    public EditEndEntityRestRequest(String password, String token, String status) {
+    public SetEndEntityStatusRestRequest(String password, String token, String status) {
 		super();
 		this.password = password;
 		this.token = token;
