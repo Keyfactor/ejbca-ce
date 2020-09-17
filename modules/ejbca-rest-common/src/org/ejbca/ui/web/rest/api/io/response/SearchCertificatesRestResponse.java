@@ -98,12 +98,15 @@ public class SearchCertificatesRestResponse {
             searchCertificatesRestResponse.setMoreResults(raCertificateSearchResponse.isMightHaveMoreResults());
             for(final CertificateDataWrapper certificateDataWrapper : raCertificateSearchResponse.getCdws()) {
                 final Certificate certificate = certificateDataWrapper.getCertificate();
-                final CertificateRestResponse certificateRestResponse = CertificateRestResponse.builder()
-                        .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
-                        .setCertificate(Base64.encode(certificate.getEncoded()))
-                        .setResponseFormat("DER")
-                        .build();
-                searchCertificatesRestResponse.getCertificates().add(certificateRestResponse);
+                // We have to check for null as we can issue certificates without storing the certificate data in the database
+                if (certificate != null) { 
+                    final CertificateRestResponse certificateRestResponse = CertificateRestResponse.builder()
+                            .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                            .setCertificate(Base64.encode(certificate.getEncoded()))
+                            .setResponseFormat("DER")
+                            .build();
+                    searchCertificatesRestResponse.getCertificates().add(certificateRestResponse);
+                }
             }
             return searchCertificatesRestResponse;
         }
