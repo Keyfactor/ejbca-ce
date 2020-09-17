@@ -14,7 +14,6 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,10 +50,8 @@ import org.cesecore.audit.log.dto.SecurityEventProperties;
 
 /**
  * Bean managing certificate profiles, see CertificateProfileSession for Javadoc.
- * 
+ *
  * Version moved from EJBCA: CertificateProfileSessionBean.java 11170 2011-01-12 17:08:32Z anatom
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -227,7 +224,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             throw new IllegalStateException(f);
         }
     }
-    
+
     @Override
     public List<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken authenticationToken, final int certificateProfileType) {
         final ArrayList<Integer> returnValues = new ArrayList<>();
@@ -267,8 +264,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             }
         }
         return returnValues;
-    } 
-    
+    }
+
     @Override
     public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken authenticationToken) {
         final ArrayList<Integer> returnValues = new ArrayList<>();
@@ -318,7 +315,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         return returnValue;
     }
-    
+
     @Override
     public Map<Integer, CertificateProfile> getAllCertificateProfiles() {
         return CertificateProfileCache.INSTANCE.getProfileCache(entityManager);
@@ -369,7 +366,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return CertificateProfileCache.INSTANCE.getIdNameMapCache(entityManager);
     }
 
-    /* 
+    /*
      * This method will read all Certificate Profiles and as a side-effect upgrade them if the version if changed for upgrade.
      * Can have a side-effect of upgrading a profile, therefore the Required transaction setting.
      */
@@ -422,7 +419,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                         SecurityEventProperties.builder()
                                 .withMsg(INTRES.getLocalizedMessage("store.renamedprofile", oldCertificateProfileName, newCertificateProfileName))
                                 .build()
-                ); 
+                );
             }
         } else {
             throw new CertificateProfileExistsException(INTRES.getLocalizedMessage("store.errorcertprofileexists", newCertificateProfileName));
@@ -469,7 +466,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         return false;
     }
-    
+
     @Override
     public boolean existsPublisherIdInCertificateProfiles(final int publisherId) {
         for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
@@ -545,7 +542,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, rules.toArray(new String[0]));
     }
-    
+
     @Override
     public byte[] getProfileAsXml(
             final AuthenticationToken authenticationToken,
@@ -558,15 +555,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if(!authorizedToProfileWithResource(authenticationToken, profile, true, StandardRules.CERTIFICATEPROFILEVIEW.resource())) {
             throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile with id " + profileId);
         }
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
-            encoder.flush(); // try-with-resource closes it
-            return baos.toByteArray();
-        } catch (IOException e) {
-            String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
-            LOG.debug(msg, e);
-            throw new IllegalStateException(msg, e);
         }
+        // try-with-resource flushes/closes XMLEncoder, which must be done before using baos
+        return baos.toByteArray();
     }
 
     // Logs a session event preserving constants:
