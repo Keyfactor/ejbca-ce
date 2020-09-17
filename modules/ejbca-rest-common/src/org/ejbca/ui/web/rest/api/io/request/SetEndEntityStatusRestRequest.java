@@ -3,11 +3,16 @@ package org.ejbca.ui.web.rest.api.io.request;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * JSON input for editing of end entity.
  */
+@ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
+        "Available TOKEN - USERGENERATED, P12, JKS, PEM; \n" +
+        "Available STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n"
+)
 @ValidEndEntityStatusRestRequest
 public class SetEndEntityStatusRestRequest {
 
