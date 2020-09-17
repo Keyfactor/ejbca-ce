@@ -153,12 +153,12 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             final AuthenticationToken admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
 
             if (admin == null) {
-                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
             }
 
             return admin;
         } else {
-            final String msg = "Authorization failed. No certificates or oauth token provided.";
+            final String msg = "Authorization failed. No certificates or OAuth token provided.";
             throw new AuthorizationDeniedException(msg);
         }
 
