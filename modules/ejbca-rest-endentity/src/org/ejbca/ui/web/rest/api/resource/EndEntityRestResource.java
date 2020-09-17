@@ -97,6 +97,7 @@ public class EndEntityRestResource extends BaseRestResource {
             @Context HttpServletRequest requestContext,
             @ApiParam (value="request") AddEndEntityRestRequest request) throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
+        validateObject(request);
 
         Map<Integer, String> availableEndEntityProfiles = new HashMap<>();
         Map<Integer, String> availableCertificateProfiles = new HashMap<>();
@@ -194,7 +195,8 @@ public class EndEntityRestResource extends BaseRestResource {
             @PathParam("endentity_name") String endEntityName,
             @ApiParam (value="request") SetEndEntityStatusRestRequest request) throws AuthorizationDeniedException, RestException, NoSuchEndEntityException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, CustomFieldException, EndEntityProfileValidationException, WaitingForApprovalException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
-        
+        validateObject(request);
+
         EndEntityInformation endEntityInformation = raMasterApiProxy.searchUser(admin, endEntityName);
         if (endEntityInformation == null) {
             if (log.isDebugEnabled()) {
