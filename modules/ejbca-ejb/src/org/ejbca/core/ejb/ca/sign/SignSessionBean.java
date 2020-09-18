@@ -517,10 +517,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             cleanUserCertDataSN(endEntityInformation);
             throw e;
         } catch (IllegalKeyException ke) {
-            log.info("Request key is of unknown type: " + ke.getMessage());
-            if (log.isDebugEnabled()) {
-                log.debug("Key is of unknown type: ", ke);
-            }
+            log.error("Key is of unknown type: ", ke);
             throw ke;
         } catch (CryptoTokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
@@ -531,7 +528,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("NoSuchProvider provider: ", e);
             throw new IllegalStateException(e);
         } catch (InvalidKeyException e) {
-            log.error("Invalid key creating certificate response: ", e);
+            log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         } catch (CertificateEncodingException e) {
@@ -978,7 +975,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
-            log.error("Invalid key creating error response: ", e);
+            log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         } catch (CryptoTokenOfflineException ctoe) {
@@ -1016,10 +1013,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
-            log.info("Invalid key in request: " + e.getMessage());
-            if (log.isDebugEnabled()) {
-                log.debug("Invalid key in request: ", e);
-            }
+            log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         } catch (CryptoTokenOfflineException ctoe) {
@@ -1040,11 +1034,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param ca
      * 
      * @throws CryptoTokenOfflineException if the cryptotoken was unavailable.
+     * @throws InvalidKeyException If the key from the request used for verification is invalid.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled algorithm
      * @throws NoSuchProviderException if there is an error with the Provider defined in the request
      */
     private void setDecryptInfo(final CryptoToken cryptoToken, final RequestMessage req, final CA ca)
-            throws CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
+            throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         final CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
@@ -1103,7 +1098,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
-            log.error("Invalid key creating CRL response: ", e);
+            log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         } catch (CRLException e) {
