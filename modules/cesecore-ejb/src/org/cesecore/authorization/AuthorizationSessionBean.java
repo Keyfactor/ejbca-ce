@@ -32,7 +32,6 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -126,10 +125,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     }
 
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
-        if (authenticationToken == null) {
-            log.warn("Authentication token was null, when checking for access to " + StringUtils.join(resources, ","), new Exception()); // log stack trace
-            return false;
-        }
         try {
             final HashMap<String, Boolean> accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
             final Map<String, Object> details = doLogging ? new LinkedHashMap<String, Object>() : null;
@@ -145,9 +140,9 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                     // If we are checking authorization without logging, for example to see if an admin menu should be available, only log at debug level.
                     // Note: same message below, but if debug logging is not enabled we don't want to construct the string at all (to save time and objects) for debug logging, therefore code copied.
                     if (doLogging) {
-                        log.info("Authorization failed for " + authenticationToken + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
+                        log.info("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
                     } else if (log.isDebugEnabled()) {
-                        log.debug("Authorization failed for " + authenticationToken + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
+                        log.debug("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
                     }
                     // We failed one of the checks, so there is no point in continuing..
                     // If we failed an authorization check, there is no need to log successful ones before this point since
@@ -157,14 +152,14 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             }
             if (doLogging) {
                 internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
-                        ServiceTypes.CORE, String.valueOf(authenticationToken), null, null, null, details);
+                        ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
             }
             return true;
         } catch (AuthenticationFailedException e) {
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", InternalResources.getInstance().getLocalizedMessage("authentication.failed", e.getMessage()));
             internalSecurityEventsLoggerSession.log(getTrustedTime(), EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION,
-                    ServiceTypes.CORE, String.valueOf(authenticationToken), null, null, null, details);
+                    ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
         }
         return false;
     }
