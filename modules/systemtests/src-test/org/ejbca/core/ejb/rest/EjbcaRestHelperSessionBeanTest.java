@@ -65,7 +65,7 @@ public class EjbcaRestHelperSessionBeanTest {
 
     @Test
     public void getAdmin_CertOrOauthTokenRequired() throws AuthorizationDeniedException {
-        log.trace(">malformedBase64");
+        log.trace(">getAdmin_CertOrOauthTokenRequired");
         exceptionRule.expect(AuthorizationDeniedException.class);
         exceptionRule.expectMessage("Authorization failed. No certificates or OAuth token provided.");
         ejbcaRestHelperProxySessionRemote.getAdmin(false, null, null);
