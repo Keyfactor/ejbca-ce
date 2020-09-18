@@ -479,10 +479,10 @@ public interface RaMasterApi {
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EjbcaException;
 
     /**
-     * Deletes (end entity) user. Does not propagate the exceptions but logs them, i.e. if end entity does not exist the method still succeeds.
+     * Deletes (end entity) user. Does not propagate the exceptions but logs them.
      * @param authenticationToken authentication token
-     * @param username the username of the end entity user to be deleted
-     * @throws AuthorizationDeniedException if administrator is not authorized to delete user
+     * @param username the username of the end entity user about to delete
+     * @throws AuthorizationDeniedException if administrator isn't authorized to delete user
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     void deleteUser(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException;

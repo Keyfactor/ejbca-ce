@@ -182,8 +182,6 @@
     <property name="mod.ejbca-rest-cryptotoken.lib" location="${mod.dist.path}/ejbca-rest-cryptotoken.jar" />
     <property name="mod.ejbca-rest-camanagement.path" location="${mod.path}/ejbca-rest-camanagement" />
     <property name="mod.ejbca-rest-camanagement.lib" location="${mod.dist.path}/ejbca-rest-camanagement.jar" />
-	<property name="mod.ejbca-rest-endentity.path" location="${mod.path}/ejbca-rest-endentity" />
-	<property name="mod.ejbca-rest-endentity.lib" location="${mod.dist.path}/ejbca-rest-endentity.jar" />
     <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
     <property name="swagger-ui.war" location="${ejbca.home}/lib/swagger/swagger-ui.war" />
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
@@ -569,10 +567,6 @@
 	
     <condition property="mod.ejbca-rest-camanagement.exists">
         <available file="${mod.ejbca-rest-camanagement.path}/build.xml"/>
-    </condition>
-	
-    <condition property="mod.ejbca-rest-endentity.exists">
-        <available file="${mod.ejbca-rest-endentity.path}/build.xml"/>
     </condition>
     
     <condition property="mod.statedump.exists">

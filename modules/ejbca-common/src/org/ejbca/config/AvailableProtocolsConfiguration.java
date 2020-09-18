@@ -37,7 +37,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * Protocols currently supporting enable/disable configuration by EJBCA
      */
     public enum AvailableProtocols {
-        // If you add a protocol > 6.11.0 it should be disabled by default by returning false from #getProtocolStatus
+        // If you add a protocol > 6.11.0 it should be disabled by default
         ACME("ACME", "/ejbca/acme"),
         CERT_STORE("Certstore", WebConfiguration.DEFAULT_CERTSTORE_CONTEXTROOT),
         CMP("CMP", "/ejbca/publicweb/cmp"),
@@ -50,7 +50,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_CA_MANAGEMENT("REST CA Management", "/ejbca/ejbca-rest-api/v1/ca_management"),
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/ca<br/>/ejbca/ejbca-rest-api/v1/certificate"),
         REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
-        REST_ENDENTITY_MANAGEMENT("REST End Entity Management", "/ejbca/ejbca-rest-api/v1/endentity"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
@@ -106,8 +105,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) || 
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
-                protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
-                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT))) {
+                protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
         }
