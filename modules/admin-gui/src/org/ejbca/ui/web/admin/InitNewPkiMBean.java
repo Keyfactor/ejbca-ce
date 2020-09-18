@@ -189,7 +189,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCaName() {
-        return StringUtils.isEmpty(caInfoDto.getCaSubjectDN()) ? DEFAULT_CA_NAME : caInfoDto.getCaName();
+        return StringUtils.isEmpty(caInfoDto.getCaName()) ? DEFAULT_CA_NAME : caInfoDto.getCaName();
     }
 
     public void setCaName(String caName) {
@@ -463,7 +463,9 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
                 CAInfo.SELFSIGNED, caToken, null, extendedcaservices);
         try {
             caAdminSession.createCA(getAdmin(), caInfo);
-            authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(), getAdminDn());
+
+            authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(),
+                    CertTools.getCommonNameFromSubjectDn(getAdminDn()));
         } catch (CAExistsException e) {
             addErrorMessage("CAALREADYEXISTS", getCaName());
             log.error("CA " + getCaName() + " already exists.");
@@ -626,7 +628,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("CRYPTOTOKEN_MISSING_OR_EMPTY");
             return false;
         }
-        if (StringUtils.isEmpty(getCaName()) || StringUtils.isEmpty(getCaDn())) {
+        if (StringUtils.isEmpty(caInfoDto.getCaName()) || StringUtils.isEmpty(caInfoDto.getCaSubjectDN())) {
             addErrorMessage("CA_NAME_EMPTY");
             return false;
         }
