@@ -294,8 +294,8 @@ public interface EndEntityManagementSession {
             WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
     
     /**
-     * Deletes a user from the database. The users certificates should be revoked
-     * BEFORE this method is called, but this is not enforced by this method.
+     * Deletes a user from the database. The users certificates must be revoked
+     * BEFORE this method is called.
      * 
      * @param username the unique username.
      * @throws AuthorizationDeniedException if admin was not authorized to remove end entities
