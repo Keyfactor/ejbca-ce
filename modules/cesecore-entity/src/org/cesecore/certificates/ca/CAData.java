@@ -92,7 +92,7 @@ public class CAData extends ProtectedData implements Serializable {
 	
 	//@Id @Column
 	public Integer getCaId() { return cAId; }
-	public final void setCaId(final Integer cAId) { this.cAId = cAId; }
+	public void setCaId(final Integer cAId) { this.cAId = cAId; }
 
 	//@Column
 	public String getName() { return name; }
