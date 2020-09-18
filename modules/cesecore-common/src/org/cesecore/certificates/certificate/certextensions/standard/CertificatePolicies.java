@@ -101,7 +101,7 @@ public class CertificatePolicies extends StandardCertificateExtension {
     		ret = new DERSequence(seq);        		
     	}
 		if (ret == null) {
-			log.warn("Certificate policies missconfigured, no policies present!");
+			log.warn("Certificate policies misconfigured, no policies present!");
 		}
 		return ret;
 	}	
