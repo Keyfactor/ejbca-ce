@@ -40,7 +40,7 @@
 		
 		<h:panelGroup id="nagivationGroup">
 			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}"/>
-			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}" disabled="#{!initExistingPkiMBean.caImported}"/>
+			<h:button id="nextButton" value="#{web.text.NEXT}" outcome="next" disabled="#{!initExistingPkiMBean.caImported}"/>
 		</h:panelGroup>
 	
 	</h:form>
