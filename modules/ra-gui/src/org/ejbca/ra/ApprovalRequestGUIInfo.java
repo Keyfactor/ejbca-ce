@@ -27,7 +27,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -47,12 +46,9 @@ import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Keeps localized information about an approval request.
- * 
- * @version $Id$
  */
 public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -219,17 +215,15 @@ public class ApprovalRequestGUIInfo implements Serializable {
         public String getHeader() {
             if (approvalDataText.isHeaderTranslateable()) {
                 return raLocaleBean.getMessage("view_request_page_data_header_" + approvalDataText.getHeader());
-            } else {
-                return approvalDataText.getHeader();
             }
+            return approvalDataText.getHeader();
         }
         
         public String getData() {
             if (approvalDataText.isDataTranslatable()) {
                 return raLocaleBean.getMessage("view_request_page_data_value_" + approvalDataText.getData());
-            } else {
-                return approvalDataText.getData();
             }
+            return approvalDataText.getData();
         }
         
         public boolean isEditingSupported() {
@@ -450,15 +444,12 @@ public class ApprovalRequestGUIInfo implements Serializable {
                             final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
                             retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
                             break;
-                        } else if (principal instanceof WebPrincipal) {
-                            // Other things, such as CMP, SCEP, etc. We can get here of requests require approval, such as PENDING and GETCERTINITIAL in SCEP
-                            retval = principal.toString(); // e.g. "NameOfServlet: 198.51.100.123"
-                            break;
                         } else if (principal instanceof UsernamePrincipal) {
                             final String username = principal.toString();
                             retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true) + ": " + username;
                             break;
                         } else {
+                            // Other things, such as CMP, SCEP, etc. We can get here of requests require approval, such as PENDING and GETCERTINITIAL in SCEP
                             retval = principal.toString(); // e.g. NestableAuthenticationToken for example
                             break;
                         }
