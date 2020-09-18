@@ -335,7 +335,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
             endEntityDetails = null;
         }
         
-        requesterName = getRequestAdminName(request);
+        requesterName = getRequestAdminName(request, raLocaleBean);
         
         switch (approvalData.getApprovalType()) {
         case ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN: type = raLocaleBean.getMessage("manage_requests_type_activate_ca_token"); break;
@@ -421,7 +421,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
      * @param request RaApprovalRequestInfo with the approval request info (including the approval request)
      * @return UI presentable request admin String according to above
      */
-    private String getRequestAdminName(RaApprovalRequestInfo request) {
+    private String getRequestAdminName(RaApprovalRequestInfo request, RaLocaleBean raLocaleBean) {
         String retval = null;
         final String reqSubjDN = request.getRequesterSubjectDN();
         if (reqSubjDN != null) {
@@ -437,16 +437,16 @@ public class ApprovalRequestGUIInfo implements Serializable {
                         if (principal instanceof PublicAccessAuthenticationToken.PublicAccessPrincipal) {
                             // Unauthenticated users accessing the RA
                             final String ipAddress = principal.toString();
-                            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true) + ": " + ipAddress;;
+                            retval = raLocaleBean.getMessage("manage_requests_page_colhead_requester_raweb") + ": " + ipAddress;
                             break;
                         } else if (principal instanceof PublicWebPrincipal) {
                             // Mostly self-registration in the Public Web
                             final String ipAddress = ((PublicWebPrincipal) principal).getClientIPAddress();
-                            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PUBLICWEB", true) + ": " + ipAddress;
+                            retval = raLocaleBean.getMessage("manage_requests_page_colhead_requester_publicweb") + ": " + ipAddress;
                             break;
                         } else if (principal instanceof UsernamePrincipal) {
                             final String username = principal.toString();
-                            retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true) + ": " + username;
+                            retval = raLocaleBean.getMessage("manage_requests_page_colhead_requester_cli") + ": " + username;
                             break;
                         } else {
                             // Other things, such as CMP, SCEP, etc. We can get here of requests require approval, such as PENDING and GETCERTINITIAL in SCEP
