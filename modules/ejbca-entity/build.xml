@@ -139,7 +139,7 @@
     	</copy>
 	</target>
 
-    <target name="compile" depends="with.clover">
+    <target name="compile" depends="">
     	<mkdir dir="${ejbca-entity.build.dir}" />
         <javac srcdir="${ejbca-entity.src.dir}" destdir="${ejbca-entity.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath"/>
@@ -155,7 +155,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="true" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 				<pathelement location="${ejbca-entity.build-test.dir}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
@@ -180,7 +179,6 @@
     	<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="false" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 				<pathelement location="${ejbca-entity.build-test.dir}"/>
 			</classpath>
     		<jvmarg line="${tests.jvmargs}"/>
@@ -195,7 +193,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-entity.dir}">
 			<classpath>
 	    		<path refid="test.classpath-nojdbc"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -210,7 +207,7 @@
     </target>
 
 	<!-- ejbca-common,  -->
-	<target name="compile-test" depends="with.clover, build, build-cli-conditional">
+	<target name="compile-test" depends="build, build-cli-conditional">
 	    	<mkdir dir="${ejbca-entity.build-test.dir}" />
 	        <javac destdir="${ejbca-entity.build-test.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath">
@@ -235,7 +232,7 @@
     </target>
 
 	<!-- Monolitic build of the EJBCA DB CLI -->
-    <target name="build-cli" depends="with.clover">
+    <target name="build-cli" depends="">
 		<fail message="Database CLI tool is not distributed with this version of EJBCA">
 		    <condition>
 		    	<not>
@@ -302,7 +299,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath-nojdbc"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
