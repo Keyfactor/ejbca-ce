@@ -13,10 +13,17 @@
 
 package org.ejbca.core.ejb.ra;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Random;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -28,21 +35,19 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.NonEjbTestTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * Test the combined function for editing and requesting a keystore/certificate
@@ -51,20 +56,37 @@ import static org.junit.Assert.fail;
  * Note that the rollback tests requires a transactional database, if using
  * MySQL this means InnoDB and not MyISAM.
  * 
- * @version $Id$
  */
 public class CertificateRequestSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CertificateRequestSessionTest.class);
-    private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateRequestSessionTest"));
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateRequestSessionTest"));
     private final Random random = new Random();
 
-    private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private static final CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
+    private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    
+    private static final String EE_PROFILE_NAME = "TEST_AUTOGEN_USERNAME";
+    private static final String PASSWORD = "foo123";
+    private static final String CN_IGNORED = "CN=Ignored";
+    private static final String NAME_SN_O = ",Name=removed,SN=removed,O=removed,C=SE";
+    private static final String CERT_TOOLS_SUBJDN = "CertTools.getSubjectDN: ";
 
+    
     @Before
     public void setup() throws Exception {
         super.setUp();
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    @Override
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
     }
 
     /**
@@ -74,16 +96,15 @@ public class CertificateRequestSessionTest extends CaTestCase {
     public void testSoftTokenRequestRollback() throws Exception {
         // First try a successful request and validate the returned KeyStore
         String username = "softTokenRequestTest-" + random.nextInt();
-        String password = "foo123";
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, null);
-        userdata.setPassword(password);
+        userdata.setPassword(PASSWORD);
         byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA, true);
-        try {
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(encodedKeyStore)) {
             // Convert encoded KeyStore to the proper return type
             java.security.KeyStore keyStore = java.security.KeyStore.getInstance("JKS");
-            keyStore.load(new ByteArrayInputStream(encodedKeyStore), userdata.getPassword().toCharArray());
+            keyStore.load(byteArrayInputStream, userdata.getPassword().toCharArray());
             assertNotNull(keyStore);
             Enumeration<String> aliases = keyStore.aliases();
             String alias = aliases.nextElement();
@@ -93,9 +114,9 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 alias = aliases.nextElement();
                 cert = keyStore.getCertificate(alias);
             }
-            assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
+            assertEquals(CERT_TOOLS_SUBJDN + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
                     CertTools.getSubjectDN(cert), userdata.getDN());
-            keyStore.getKey(alias, password.toCharArray());
+            keyStore.getKey(alias, PASSWORD.toCharArray());
         } finally {
             endEntityManagementSession.deleteUser(admin, username);
         }
@@ -106,7 +127,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         // We can do this by relying on the Unique Subject DN constraint
         String username2 = "softTokenRequestTest-" + random.nextInt();
         userdata.setUsername(username2); // Still the same Subject DN
-        userdata.setPassword(password);
+        userdata.setPassword(PASSWORD);
         assertFalse(username2 + " already exists.", endEntityManagementSession.existsUser(username2));
         try {
             certificateRequestSession.processSoftTokenReq(admin, userdata, "1024", AlgorithmConstants.KEYALGORITHM_RSA, true);
@@ -125,15 +146,14 @@ public class CertificateRequestSessionTest extends CaTestCase {
         // First try a successful request and validate the returned KeyStore
         final String username = "certificateRequestTest-user1";
         final  String username2 = "certificateRequestTest-user2";
-        final String password = "foo123";
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
-        userdata.setPassword(password);
-        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
+        userdata.setPassword(PASSWORD);
+        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
-            assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
+            assertEquals(CERT_TOOLS_SUBJDN + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
                     CertTools.getSubjectDN(cert), userdata.getDN());
             // Try again with a user that does not exist and use values that we will
             // break certificate generation
@@ -142,7 +162,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
             // We can do this by relying on the Unique Public Key constraint
            
             userdata.setUsername(username2); // Still the same Subject DN
-            userdata.setPassword(password);
+            userdata.setPassword(PASSWORD);
             try {
                 certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
                 fail("Certificate creation did not fail as expected.");
@@ -167,31 +187,63 @@ public class CertificateRequestSessionTest extends CaTestCase {
     public void testEmptyFields() throws Exception {
         // First try a successful request and validate the returned KeyStore
         String username = "certificateRequestTest-" + random.nextInt();
-        String password = "foo123";
     	final String suppliedDn = "CN=" + username + ",Name=removed,SN=removed,GIVENNAME= ,GIVENNAME=,SURNAME= ,SURNAME=,O=removed,C=SE";
-    	final String expectedDn = "CN=" + username + ",Name=removed,SN=removed,O=removed,C=SE";
+    	final String expectedDn = "CN=" + username + NAME_SN_O;
         EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
-        userdata.setPassword(password);
-        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
+        userdata.setPassword(PASSWORD);
+        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
-            assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
+            assertEquals(CERT_TOOLS_SUBJDN + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
                     CertTools.getSubjectDN(cert));
         } finally {
             endEntityManagementSession.deleteUser(admin, username);
         }
     }
 
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
+    /**
+     * Test if username is set to auto generated in EEP certificate should be
+     * issued properly.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testAutoGenerateUserName() throws Exception {
+        
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.DNSERIALNUMBER);
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.NAME);
+        profile.setAutoGeneratedUsername(true);
+        // Profile will be removed in finally clause
+        endEntityProfileSession.addEndEntityProfile(admin, EE_PROFILE_NAME, profile);
+        int profileId = endEntityProfileSession.getEndEntityProfileId(EE_PROFILE_NAME);
+        
+        final String uniqueId = UUID.randomUUID().toString();
+        
+        final String suppliedDn = "CN=Test" + uniqueId + NAME_SN_O;
+        final String expectedDn = "CN=Test" + uniqueId + NAME_SN_O;
+
+        EndEntityInformation userdata = new EndEntityInformation(null, suppliedDn, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), profileId,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+
+        userdata.setPassword(PASSWORD);
+
+        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
+        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+
+        try {
+            final Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
+            assertEquals(CERT_TOOLS_SUBJDN + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
+                    CertTools.getSubjectDN(cert));
+        } finally {
+            endEntityProfileSession.removeEndEntityProfile(admin, EE_PROFILE_NAME);
+        }
     }
 
-    @Override
-    public String getRoleName() {
-        return this.getClass().getSimpleName(); 
-    }
 }
