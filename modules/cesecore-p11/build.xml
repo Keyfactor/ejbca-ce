@@ -11,7 +11,7 @@
 
 	<available classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
 
-	<target name="jar" if="SunPKCS11.present" description="Build sun p11 extra jar" depends="with.clover">
+	<target name="jar" if="SunPKCS11.present" description="Build sun p11 extra jar" depends="">
 		<mkdir dir="${cesecore-p11.build.dir}" />
 		<javac destdir="${cesecore-p11.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<src path="${cesecore-p11.src.dir}"/>

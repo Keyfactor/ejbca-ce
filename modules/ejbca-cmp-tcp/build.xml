@@ -35,7 +35,7 @@
         </war>
     </target>
 
-    <target name="compile" depends="with.clover" if="cmptcpservices.enabled">
+    <target name="compile" depends="" if="cmptcpservices.enabled">
     	<mkdir dir="${ejbca-cmp-tcp.build.dir}/WEB-INF/classes" />
         <javac srcdir="${ejbca-cmp-tcp.src.dir}" destdir="${ejbca-cmp-tcp.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>

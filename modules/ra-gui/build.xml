@@ -44,7 +44,7 @@
         </war>
     </target>
 
-    <target name="compile" depends="with.clover">
+    <target name="compile" depends="">
     	<mkdir dir="${ra-gui.build.dir}/WEB-INF/classes"/>
         <javac srcdir="${ra-gui.src.dir}" destdir="${ra-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>

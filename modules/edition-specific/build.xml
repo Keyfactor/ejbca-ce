@@ -26,7 +26,7 @@
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 	
-	<target name="build" depends="with.clover">
+	<target name="build" depends="">
         <mkdir dir="${edition-specific-interface.build-interface.dir}/classes"/>
         <javac srcdir="${edition-specific-interface.src-interface.dir}" destdir="${edition-specific-interface.build-interface.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
             <classpath refid="compile.classpath"/>
