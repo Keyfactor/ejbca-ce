@@ -91,7 +91,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	public int getId() { return id; }
 
 	/** unique row id */
-	public final void setId(final int id) { this.id = id; }
+	public void setId(final int id) { this.id = id; }
 
 	/**
 	 * Constructed from action data as actiontype, admin, username etc. It should

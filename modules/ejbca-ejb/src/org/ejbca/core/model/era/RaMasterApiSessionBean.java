@@ -35,6 +35,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -142,6 +144,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -994,8 +997,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint) {
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
-        if (cdw==null || !isNotAuthorizedToCert(authenticationToken, cdw)) {
-            return null;
+        if (Objects.isNull(cdw) || isNotAuthorizedToCert(authenticationToken, cdw)) {
+            return Collections.emptyList();
         }
         final List<CertificateWrapper> retval = new ArrayList<>();
         retval.add(cdw);
@@ -2299,7 +2302,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException {
         // throws UnsupportedOperationException if EST is not available (Community);
-        return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password, requestBody);
+        if (!WebConfiguration.isLegacyEstRaApiAllowed()) { // default is off
+            log.info("RA tried to use legacy RA API call for EST, which is disabled by default for security reasons. Please upgrade the RA, or set raapi.legacyest.enabled=true in web.properties to allow this.");
+            throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
+        }
+        try {
+            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legay RA API call"), operation, alias, cert, username, password, requestBody);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Should not get AuthorizationDeniedException with AlwaysAllowLocalAuthenticationToken");
+        }
+    }
+
+    @Override
+    public byte[] estDispatchAuthenticated(final AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
+            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException, AuthorizationDeniedException {
+        // throws UnsupportedOperationException if EST is not available (Community);
+        return estOperationsSessionLocal.dispatchRequest(authenticationToken, operation, alias, cert, username, password, requestBody);
     }
 
     @Override

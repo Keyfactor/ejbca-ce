@@ -16,6 +16,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionRemote;
@@ -32,7 +33,7 @@ public class EstOperationsSessionBean implements EstOperationsSessionLocal, EstO
 
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public byte[] dispatchRequest(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) 
+	public byte[] dispatchRequest(AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) 
 	        throws UnsupportedOperationException{
         throw new UnsupportedOperationException("EST calls are only supported in EJBCA Enterprise");
 	}
