@@ -12,12 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.request;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-
-import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
@@ -32,12 +26,12 @@ import static org.junit.Assert.assertNull;
 public class RequestMessageUtilsTest {
 
     @BeforeClass
-    public static void beforeClass() throws InvalidAlgorithmParameterException {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     @Test
-    public void testParseRequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, IOException, OperatorCreationException {
+    public void testParseRequestMessage() {
         RequestMessage msg = RequestMessageUtils.parseRequestMessage(p10utf8StringPwd);
         assertEquals("RequestMessage (from DER) should be a PKCS10RequestMessage", PKCS10RequestMessage.class.getName(), msg.getClass().getName());
         msg = RequestMessageUtils.parseRequestMessage(p10utf8StringPwdPEM.getBytes());

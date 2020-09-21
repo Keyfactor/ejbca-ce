@@ -43,8 +43,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * Managed bean that backs up the enrollwithusername.xhtml page. Extends EnrollWithRequestIdBean to make use of common code
- * 
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped

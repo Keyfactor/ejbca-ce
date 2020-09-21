@@ -73,8 +73,6 @@ import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
  * - Supported POPO: 
  * -- raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * -- Self signature, using the key in CertTemplate, or POPOSigningKeyInput (name and public key), option 2 and 3 in RFC4211, section "4.1.  Signature Key POP"
- * 
- * @version $Id$
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMessage {
 	
