@@ -29,8 +29,6 @@ import org.cesecore.util.CeSecoreNameStyle;
 
 /**
  * Class to handle simple requests from only a public key, all required parameters must be set.
- *
- * @version $Id$
  */
 public class SimpleRequestMessage implements RequestMessage {
 
