@@ -70,7 +70,7 @@
     	</jar>
     </target>
 
-	<target name="compile-tests" depends="build, with.clover">
+	<target name="compile-tests" depends="build">
     	<mkdir dir="${ejbca-ws-cli.build-test.dir}"/>
 		<javac srcdir="${ejbca-ws-cli.src-test.dir}" destdir="${ejbca-ws-cli.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="test.classpath"/>
@@ -80,7 +80,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ws-cli.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -95,7 +94,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -114,7 +112,7 @@
 		<delete dir="${ejbca-ws-cli.build-test.dir}"/>
     </target>
 	
-    <target name="compile" depends="with.clover">
+    <target name="compile" depends="">
     	<mkdir dir="${ejbca-ws-cli.build.dir}" />
         <javac destdir="${ejbca-ws-cli.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-withws.classpath">
