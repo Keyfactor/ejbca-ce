@@ -104,8 +104,6 @@ import java.util.stream.Collectors;
 
 /**
  * JAX-RS resource handling certificate-related requests.
- *
- * @version $Id$
  */
 @Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
 @SwaggerDefinition(
