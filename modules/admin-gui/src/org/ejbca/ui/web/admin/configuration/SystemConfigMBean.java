@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -60,6 +61,10 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -76,6 +81,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -393,7 +399,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             throw new AuthorizationDeniedException("Administrator was not authorized to any configuration.");
         }
     }
-
+    
     /**
      * Get an object which can be used to manage the OAuth Key configuration. This will create a new OAuth Key manager for
      * the OAuth Keys in the current configuration if no OAuth Key manager has been created, or the old OAuth Key manager
@@ -415,10 +421,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     
                     @Override
                     public void saveDefaultOauthKey(OAuthKeyInfo defaultKey) {
-                        if (defaultKey != null) {
-                            getCurrentConfig().setDefaultOauthKeyIdentifier(defaultKey.getKeyIdentifier());
-                            saveCurrentConfig();
-                        }
+                            if (defaultKey != null) {
+                                getCurrentConfig().setDefaultOauthKeyIdentifier(defaultKey.getKeyIdentifier());
+                                saveCurrentConfig();
+                            }
                     }
 
                     @Override
@@ -437,7 +443,30 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     }
                 });
         }
+        oauthKeyManager.setAdminToken(getAdmin());
         return oauthKeyManager;
+    }
+    
+    /**
+     * Verify that the current administrator can safely configure a new default oauth provider without getting locked out
+     * @param keyId is the key id for the provider to configure
+     * @return true if safe to configure
+     */
+    private boolean defaultOAuthKeySafeToChange(String keyId) {
+        if (getAdmin() instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
+            try {
+                JWT jwt = JWTParser.parse(currentAdminToken.getEncodedToken());
+                SignedJWT signedJwt = (SignedJWT) jwt;
+                String adminTokenkeyId = signedJwt.getHeader().getKeyID();
+                if (adminTokenkeyId == null && !keyId.equals(globalConfig.getDefaultOauthKey().getKeyIdentifier())) {
+                    return false;
+                }
+            } catch (ParseException e) {
+                log.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
+            }    
+        }
+        return true;
     }
 
     /**
@@ -906,7 +935,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     oauthKeysMap.put(oauthKey.getInternalId(), oauthKey);
                 }
                 globalConfig.setOauthKeys(oauthKeysMap);
-                globalConfig.setDefaultOauthKey(getOauthKeyByIdentifier(currentConfig.getDefaultOauthKeyIdentifier()));
+                
+                if (defaultOAuthKeySafeToChange(currentConfig.getDefaultOauthKeyIdentifier())) {
+                    globalConfig.setDefaultOauthKey(getOauthKeyByIdentifier(currentConfig.getDefaultOauthKeyIdentifier()));
+                } else {
+                    addErrorMessage("OAUTHKEYTAB_EDITDEFAULTKEYNOTPOSSIBLE");
+                }
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for (CTLogInfo ctlog : currentConfig.getCtLogs()) {
