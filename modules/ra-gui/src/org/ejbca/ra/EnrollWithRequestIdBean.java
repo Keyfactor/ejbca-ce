@@ -79,8 +79,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Managed bean that backs up the enrollwithrequestid.xhtml page
- *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
