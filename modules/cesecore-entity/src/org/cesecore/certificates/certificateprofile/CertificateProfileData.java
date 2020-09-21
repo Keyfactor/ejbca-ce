@@ -73,7 +73,7 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
         return id;
     }
 
-    public final void setId(final Integer id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
