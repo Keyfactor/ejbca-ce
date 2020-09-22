@@ -29,8 +29,6 @@ import org.bouncycastle.asn1.x509.Extensions;
 /**
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB business methods.
- *
- * @version $Id$
  */
 public interface RequestMessage extends Serializable {
     /**
@@ -41,11 +39,20 @@ public interface RequestMessage extends Serializable {
     String getUsername();
 
     /**
+     * force a username, i.e. ignore the DN/username in the request
+     */
+    void setUsername(String username);
+
+    /**
      * Get the password used to request a certificate from EJBCA.
      *
      * @return The password from the certification request.
      */
     String getPassword();
+    /**
+     * force a password, i.e. ignore the challenge password in the request
+     */
+    void setPassword(String pwd);
 
     /**
      * Gets the issuer DN if contained in the request (the CA the request is targeted at).
@@ -110,6 +117,14 @@ public interface RequestMessage extends Serializable {
      * @return A date in the future for notAfter validity in the certificate, or null if no desired validity is in the certificate.
      */
 	Date getRequestValidityNotAfter();
+
+    /**
+     * Set the date after which the private key no longer will be valid, or null to
+     * use the default validity specified in the certificate profile. The value
+     * specified here will only be considered if user-defined validity dates are
+     * allowed by the certificate profile, e.g. if Validity override" is enabled.
+     */
+    void setRequestValidityNotAfter(final Date notAfter);
 
 	/**
 	 * Gets any requested extensions, if the request message type is able to contain request extensions

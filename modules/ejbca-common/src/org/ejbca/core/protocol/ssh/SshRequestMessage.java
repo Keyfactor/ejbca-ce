@@ -19,8 +19,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -41,9 +39,7 @@ import org.cesecore.certificates.certificate.ssh.SshPublicKey;
 import org.cesecore.keys.util.KeyTools;
 
 /**
- * 
- * @version $Id$
- *
+ * Request message for SSH certificates
  */
 public class SshRequestMessage implements RequestMessage {
 
@@ -56,8 +52,6 @@ public class SshRequestMessage implements RequestMessage {
     private final Map<String, String> criticalOptions;
     private final Map<String, byte[]> additionalExtensions;
     private String username;
-    
-    
     private transient String serialNumber;
     private transient String password;
 
@@ -303,6 +297,10 @@ public class SshRequestMessage implements RequestMessage {
     @Override
     public String getCASequence() {
         return null;
+    }
+
+    @Override
+    public void setRequestValidityNotAfter(Date notAfter) {
     }
 
 }
