@@ -61,8 +61,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
 
 import javax.faces.application.FacesMessage;
@@ -101,7 +99,6 @@ import java.util.zip.ZipInputStream;
 /**
  * Backing bean for the various system configuration pages.
  *
- * @version $Id: SystemConfigMBean.java 35186 2020-06-03 12:24:16Z serkano $
  */
 @ManagedBean
 @SessionScoped
@@ -421,10 +418,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     
                     @Override
                     public void saveDefaultOauthKey(OAuthKeyInfo defaultKey) {
-                            if (defaultKey != null) {
-                                getCurrentConfig().setDefaultOauthKeyIdentifier(defaultKey.getKeyIdentifier());
-                                saveCurrentConfig();
-                            }
+                        if (defaultKey != null) {
+                            getCurrentConfig().setDefaultOauthKeyIdentifier(defaultKey.getKeyIdentifier());
+                            saveCurrentConfig();
+                        }
                     }
 
                     @Override
@@ -456,8 +453,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (getAdmin() instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
             try {
-                JWT jwt = JWTParser.parse(currentAdminToken.getEncodedToken());
-                SignedJWT signedJwt = (SignedJWT) jwt;
+                SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedToken());
                 String adminTokenkeyId = signedJwt.getHeader().getKeyID();
                 if (adminTokenkeyId == null && !keyId.equals(globalConfig.getDefaultOauthKey().getKeyIdentifier())) {
                     return false;
