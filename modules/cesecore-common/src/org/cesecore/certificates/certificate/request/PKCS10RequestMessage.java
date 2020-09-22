@@ -50,8 +50,6 @@ import org.cesecore.util.CertTools;
  * Class to handle PKCS10 request messages sent to the CA.
  * 
  * This class implements equals/hashcode, so if any members are added please modify those as well.
- *
- * @version $Id$
  */
 public class PKCS10RequestMessage implements RequestMessage {  
     /**
@@ -162,9 +160,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         return pkcs10.getPublicKey();
     }
 
-    /**
-     * force a password, i.e. ignore the challenge password in the request
-     */
+    @Override
     public void setPassword(String pwd) {
         this.password = pwd;
     }
@@ -233,20 +229,13 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
 
-    /**
-     * force a username, i.e. ignore the DN/username in the request
-     */
+    @Override
     public void setUsername(String username) {
         this.username = username;
     }
 
-    /**
-     * Set the date after which the private key no longer will be valid, or null to
-     * use the default validity specified in the certificate profile. The value
-     * specified here will only be considered if user-defined validity dates are
-     * allowed by the certificate profile, e.g. if Validity override" is enabled.
-     */
-    public void setNotAfter(final Date notAfter) {
+    @Override
+    public void setRequestValidityNotAfter(final Date notAfter) {
         this.notAfter = notAfter;
     }
 
