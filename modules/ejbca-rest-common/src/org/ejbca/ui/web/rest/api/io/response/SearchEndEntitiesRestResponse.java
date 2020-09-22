@@ -1,3 +1,12 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -7,6 +16,7 @@ import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 /**
  * JSON output for end entity search.
@@ -90,7 +100,7 @@ public class SearchEndEntitiesRestResponse {
             		List<ExtendedInformationRestResponseComponent> extensionData = new ArrayList<ExtendedInformationRestResponseComponent>();
             		for (Entry<Object, Object> entry : endEntity.getExtendedInformation().getRawData().entrySet()) {
             		    String name = (String) entry.getKey();
-            		    String value = entry.getValue().toString(); // This can be String, Float, Integer, etc
+            		    String value = Objects.toString(entry.getValue()); // This can be String, Float, Integer, etc
             		    extensionData.add(ExtendedInformationRestResponseComponent.builder()
             		    		.setName(name)
             		    		.setValue(value)

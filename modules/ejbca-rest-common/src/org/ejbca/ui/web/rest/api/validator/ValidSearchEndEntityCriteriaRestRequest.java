@@ -1,5 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
 
 import javax.validation.Constraint;
@@ -86,17 +96,17 @@ public @interface ValidSearchEndEntityCriteriaRestRequest {
                 return false;
             }
             final String property = searchEndEntityCriteriaRestRequest.getProperty();
-            if (property == null || property.isEmpty()) {
+            if (StringUtils.isEmpty(property)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchEndEntityCriteriaRestRequest.invalid.property.nullOrEmpty}");
                 return false;
             }
             final String value = searchEndEntityCriteriaRestRequest.getValue();
-            if (value == null || value.isEmpty()) {
+            if (StringUtils.isEmpty(value)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchEndEntityCriteriaRestRequest.invalid.value.nullOrEmpty}");
                 return false;
             }
             final String operation = searchEndEntityCriteriaRestRequest.getOperation();
-            if (operation == null || operation.isEmpty()) {
+            if (StringUtils.isEmpty(operation)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchEndEntityCriteriaRestRequest.invalid.operation.nullOrEmpty}");
                 return false;
             }
