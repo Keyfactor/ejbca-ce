@@ -1,3 +1,12 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.CertificateEncodingException;
@@ -133,10 +142,12 @@ public class EndEntityRestResource extends BaseRestResource {
         try {
         	raMasterApiProxy.addUser(admin, endEntityInformation, false);
         } catch (EjbcaException e) {
+            int errorStatusCode = Response.Status.BAD_REQUEST.getStatusCode();
         	ErrorCode errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
                 if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
                     log.info("Client " + admin + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
+                    errorStatusCode = Response.Status.CONFLICT.getStatusCode();
                 } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
                     log.info("End entity " + endEntityInformation.getUsername() + " could not be added: " + e.getMessage() + ", " + errorCode);
                 } else {
@@ -145,10 +156,18 @@ public class EndEntityRestResource extends BaseRestResource {
             } else {
                 log.info("End entity " + endEntityInformation.getUsername() + " could not be added: " + e.getMessage());
             }
-            throw e;
+            // Throw a REST Exception on order to produce a good error for the client
+            throw new RestException(
+                    errorStatusCode,
+                    e.getMessage()
+            );
 		} catch (WaitingForApprovalException e) {
-			log.info(admin + " is not authorized to execute this operation", e);
-			throw e;
+			log.info(admin + " is not authorized to execute this operation without approval", e);
+            // Throw a REST Exception on order to produce a good error for the client
+            throw new RestException(
+                    Response.Status.ACCEPTED.getStatusCode(),
+                    e.getMessage()
+            );
 		}
 
         
@@ -160,7 +179,7 @@ public class EndEntityRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Revokes all end entity certificates",
-        notes = "Revokes all certificates associated with given end entity name with specified reason code, and optionally deletes the end entity",
+        notes = "Revokes all certificates associated with given end entity name with specified reason code (see RFC 5280 Section 5.3.1), and optionally deletes the end entity",
         code = 200)
     public Response revoke(
             @Context HttpServletRequest requestContext,
@@ -168,9 +187,10 @@ public class EndEntityRestResource extends BaseRestResource {
             @PathParam("endentity_name") String endEntityName,
             @ApiParam (value="request") EndEntityRevocationRestRequest request) throws AuthorizationDeniedException, RestException, CryptoTokenOfflineException, CADoesntExistsException, ApprovalException, AlreadyRevokedException, WaitingForApprovalException, CouldNotRemoveEndEntityException, EjbcaException, NoSuchEndEntityException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
+        validateObject(request);
         final int reasonCode = request.getReasonCode();
         final boolean delete = request.isDelete();
-        
+
         try {
 			raMasterApiProxy.revokeUser(admin, endEntityName, reasonCode, delete);
 		} catch (NoSuchEndEntityException e) {
@@ -231,7 +251,7 @@ public class EndEntityRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Deletes end entity",
-        notes = "Deletes specified end entity and keeps certificate information untouched",
+        notes = "Deletes specified end entity and keeps certificate information untouched, if end entity does not exist success is still returned",
         code = 200)
     public Response delete(
             @Context HttpServletRequest requestContext,
