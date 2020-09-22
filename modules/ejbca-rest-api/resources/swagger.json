@@ -600,7 +600,7 @@
             "delete": {
                 "tags": ["v1/endentity"],
                 "summary": "Deletes an End Entity",
-                "description": "Deletes and end entity",
+                "description": "Deletes specified end entity and keeps certificate information untouched, if end entity does not exist success is still returned",
                 "operationId": "delete",
                 "produces": ["application/json"],
                 "parameters": [{
@@ -651,7 +651,7 @@
             "put": {
                 "tags": ["v1/endentity"],
                 "summary": "Revoke",
-                "description": "Revokes all certificates, with specified reason code, associated with given end entity name, and optionally deletes the end entity",
+                "description": "Revokes all certificates associated with given end entity name with specified reason code (see RFC 5280 Section 5.3.1), and optionally deletes the end entity",
                 "operationId": "revoke",
                 "produces": ["application/json"],
                 "parameters": [{
