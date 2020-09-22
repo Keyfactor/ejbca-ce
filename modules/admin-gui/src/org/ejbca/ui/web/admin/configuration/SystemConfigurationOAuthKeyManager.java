@@ -28,8 +28,6 @@ import org.cesecore.util.CertTools;
  * This class is used to manage OAuth Keys in EJBCA's system configuration. It adds some additional
  * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
  * new OAuth Keys.
- *
- * @version $Id$
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
@@ -215,9 +213,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         if (getAdminToken() instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken oauth2token = (OAuth2AuthenticationToken) getAdminToken();
             oauthKeyEditor.loadIntoEditor(oauthKey, oauthKey.getKeyIdentifier());
-            String str = Base64.toBase64String(CertTools.generateSHA256Fingerprint(oauthKeyEditor.oauthKeyBeingEdited.getPublicKeyBytes()));
+            String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(oauthKeyEditor.oauthKeyBeingEdited.getPublicKeyBytes()));
             oauthKeyEditor.stopEditing();
-            if (oauth2token.getPublicKeyBase64Fingerprint().equals(str)) {
+            if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {
                 systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_PUBLICKEYREMOVALNOTPOSSIBLE");
                 return;
             }
