@@ -49,8 +49,6 @@ import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Utility class to gather a few functions
- *
- * @version $Id$
  */
 public abstract class RequestMessageUtils {
 
@@ -65,9 +63,24 @@ public abstract class RequestMessageUtils {
 		RequestMessage ret;
 		try {
 			ret = genPKCS10RequestMessage(request);
+			// It may throw an exception if it's not even parseable data, but if it's properly Base64 encoded, but a CVC request 
+			// instead of a P10, it will create a PKCS10RequestMessage, but not fill it
+			if (ret == null || ((PKCS10RequestMessage)ret).getCertificationRequest() == null) {
+	            log.debug("Can not parse PKCS10 request, trying CVC instead: P10 is parsed to null");
+	            ret = genCVCRequestMessage(request);			    
+			}
 		} catch (IllegalArgumentException e) {
-			log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
-			ret = genCVCRequestMessage(request);
+		    if (log.isDebugEnabled()) {
+		        log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
+		    }
+			try {
+			    ret = genCVCRequestMessage(request);
+	        } catch (IllegalArgumentException e1) {
+	            if (log.isDebugEnabled()) {
+	                log.debug("Can not parse CVC request, this is no request that we know, returning null: "+ e1.getMessage());
+	            }
+	            ret = null;
+	        }			
 		}
 		return ret;
 	}
@@ -91,7 +104,7 @@ public abstract class RequestMessageUtils {
 
 	/** Tries to get decoded, if needed, bytes from a certificate request or certificate
 	 *
-	 * @param bytes pem (with headers), plain base64, or binary bytes with a CSR of certificate
+	 * @param bytes PEM (with headers), plain base64, or binary bytes with a CSR of certificate
 	 * @return binary bytes
 	 */
 	public static byte[] getDecodedBytes(byte[] bytes) {
