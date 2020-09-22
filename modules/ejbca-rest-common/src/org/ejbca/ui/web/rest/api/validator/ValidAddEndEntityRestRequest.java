@@ -1,5 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 
 import javax.validation.Constraint;
@@ -83,32 +93,32 @@ public @interface ValidAddEndEntityRestRequest {
                 return false;
             }
             final String username = addEndEntityRestRequest.getUsername();
-            if (username == null || username.isEmpty()) {
+            if (StringUtils.isEmpty(username)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.username.nullOrEmpty}");
                 return false;
             }
             final String subjectDn = addEndEntityRestRequest.getSubjectDn();
-            if (subjectDn == null || subjectDn.isEmpty()) {
+            if (StringUtils.isEmpty(subjectDn)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");
                 return false;
             }
             final String caName = addEndEntityRestRequest.getCaName();
-            if (caName == null || caName.isEmpty()) {
+            if (StringUtils.isEmpty(caName)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.caName.nullOrEmpty}");
                 return false;
             }
             final String certificateProfileName = addEndEntityRestRequest.getCertificateProfileName();
-            if (certificateProfileName == null || certificateProfileName.isEmpty()) {
+            if (StringUtils.isEmpty(certificateProfileName)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.certificateProfileName.nullOrEmpty}");
                 return false;
             }
             final String endEntityProfileName = addEndEntityRestRequest.getEndEntityProfileName();
-            if (endEntityProfileName == null || endEntityProfileName.isEmpty()) {
+            if (StringUtils.isEmpty(endEntityProfileName)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.endEntityProfileName.nullOrEmpty}");
                 return false;
             }
             final String tokenValue = addEndEntityRestRequest.getToken();
-            if (tokenValue == null || tokenValue.isEmpty()) {
+            if (StringUtils.isEmpty(tokenValue)) {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.token.nullOrEmpty}");
                 return false;
             }

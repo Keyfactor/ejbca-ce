@@ -1,3 +1,12 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,9 +26,9 @@ import java.util.EnumSet;
  */
 @ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
 		"QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username; \n" +
-        "Available STATUS - multiplicity [0, 9] - values are: STATUS_NEW, STATUS_FAILED, " +
-        "STATUS_INITIALIZED, STATUS_INPROCESS, STATUS_GENERATED, STATUS_REVOKED, " +
-        "STATUS_HISTORICAL, STATUS_KEYRECOVERY, STATUS_WAITINGFORADDAPPROVAL;\n" +
+        "Available STATUS - multiplicity [0, 9] - values are: NEW, FAILED, " +
+        "INITIALIZED, INPROCESS, GENERATED, REVOKED, " +
+        "HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n" +
         "\n" +
         "END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \n"
 )
@@ -35,7 +44,7 @@ public class SearchEndEntityCriteriaRestRequest {
             example = "'username', 'MyEndEntityProfile'")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY')",
+    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
             allowableValues = "EQUALS, LIKE",
             dataType = "java.lang.String")
     private String operation;
@@ -145,15 +154,15 @@ public class SearchEndEntityCriteriaRestRequest {
      * The set of end entity status values that are expected for SearchEndEntityCriteriaRestRequest.value attribute in case SearchEndEntityCriteriaRestRequest.property = 'STATUS'.
      */
     public enum EndEntityStatus {
-    	STATUS_NEW(EndEntityConstants.STATUS_NEW),
-    	STATUS_FAILED(EndEntityConstants.STATUS_FAILED),
-    	STATUS_INITIALIZED(EndEntityConstants.STATUS_INITIALIZED),
-    	STATUS_INPROCESS(EndEntityConstants.STATUS_INPROCESS),
-    	STATUS_GENERATED(EndEntityConstants.STATUS_GENERATED),
-    	STATUS_REVOKED(EndEntityConstants.STATUS_REVOKED),
-    	STATUS_HISTORICAL(EndEntityConstants.STATUS_HISTORICAL),
-    	STATUS_KEYRECOVERY(EndEntityConstants.STATUS_KEYRECOVERY),
-    	STATUS_WAITINGFORADDAPPROVAL(EndEntityConstants.STATUS_WAITINGFORADDAPPROVAL);
+    	NEW(EndEntityConstants.STATUS_NEW),
+    	FAILED(EndEntityConstants.STATUS_FAILED),
+    	INITIALIZED(EndEntityConstants.STATUS_INITIALIZED),
+    	INPROCESS(EndEntityConstants.STATUS_INPROCESS),
+    	GENERATED(EndEntityConstants.STATUS_GENERATED),
+    	REVOKED(EndEntityConstants.STATUS_REVOKED),
+    	HISTORICAL(EndEntityConstants.STATUS_HISTORICAL),
+    	KEYRECOVERY(EndEntityConstants.STATUS_KEYRECOVERY),
+    	WAITINGFORADDAPPROVAL(EndEntityConstants.STATUS_WAITINGFORADDAPPROVAL);
 
         private final int statusValue;
 

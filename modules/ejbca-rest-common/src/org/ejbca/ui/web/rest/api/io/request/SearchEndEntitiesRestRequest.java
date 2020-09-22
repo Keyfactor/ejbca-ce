@@ -1,3 +1,12 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -97,7 +106,7 @@ public class SearchEndEntitiesRestRequest {
                 throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
             }
             final RaEndEntitySearchRequest raEndEntitySearchRequest = new RaEndEntitySearchRequest();
-            raEndEntitySearchRequest.setMaxResults(raEndEntitySearchRequest.getMaxResults());
+            raEndEntitySearchRequest.setMaxResults(searchEndEntitiesRestRequest.getMaxNumberOfResults());
             raEndEntitySearchRequest.setEepIds(new ArrayList<Integer>());
             raEndEntitySearchRequest.setCpIds(new ArrayList<Integer>());
             raEndEntitySearchRequest.setCaIds(new ArrayList<Integer>());

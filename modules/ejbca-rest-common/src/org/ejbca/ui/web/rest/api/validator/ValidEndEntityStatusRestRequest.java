@@ -1,5 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 
 import javax.validation.Constraint;
@@ -60,7 +70,7 @@ public @interface ValidEndEntityStatusRestRequest {
                 return false;
             }
             final String tokenValue = editEndEntityRestRequest.getToken();
-            if (tokenValue == null || tokenValue.isEmpty()) {
+            if (StringUtils.isEmpty(tokenValue)) {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.token.nullOrEmpty}");
                 return false;
             }
@@ -70,7 +80,7 @@ public @interface ValidEndEntityStatusRestRequest {
                 return false;
             }
             final String statusValue = editEndEntityRestRequest.getStatus();
-            if (statusValue == null || statusValue.isEmpty()) {
+            if (StringUtils.isEmpty(statusValue)) {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.status.nullOrEmpty}");
                 return false;
             }
