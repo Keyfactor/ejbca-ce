@@ -37,7 +37,6 @@ import org.ejbca.util.HttpTools;
 /**
  * Authentication filter.
  *
- * @version $Id$
  */
 public class AuthenticationFilter implements Filter {
 
