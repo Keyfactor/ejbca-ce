@@ -124,23 +124,21 @@ public class RAInterfaceBean implements Serializable {
 
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) {
     	log.trace(">initialize()");
-    	if (!initialized) {
-    		if (request.getAttribute( "javax.servlet.request.X509Certificate" ) != null || HttpTools.extractBearerAuthorization(request.getHeader(HttpTools.AUTHORIZATION_HEADER)) != null) {
-    			administrator = ejbcawebbean.getAdminObject();
-    		} else {
-                administrator = new PublicAccessAuthenticationToken(request.getRemoteAddr(), true);
-    		}
-    		endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
-    		certificatesession = ejbLocalHelper.getCertificateStoreSession();
-    		caSession = ejbLocalHelper.getCaSession();
-    		authorizationSession = ejbLocalHelper.getAuthorizationSession();
-    		endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-    		keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
-    		certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-    		this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
-    		globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
-    		raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
-    		initialized =true;
+        if (!initialized) {
+            // Choosing the proper admin is done in ejbcawebbean initialize method!
+            administrator = ejbcawebbean.getAdminObject();
+            endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
+            certificatesession = ejbLocalHelper.getCertificateStoreSession();
+            caSession = ejbLocalHelper.getCaSession();
+            authorizationSession = ejbLocalHelper.getAuthorizationSession();
+            endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+            keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
+            certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+            this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
+            globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
+            raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession,
+                    endEntityProfileSession);
+            initialized = true;
     	} else {
     		log.debug("=initialize(): already initialized");
     	}
