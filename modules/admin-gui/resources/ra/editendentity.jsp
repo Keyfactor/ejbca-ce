@@ -603,7 +603,7 @@
         usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
     }
 
-    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid, AccessRulesConstants.EDIT_END_ENTITY);
+    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid);
     if (userdata!=null) {
         editendentitybean.setExtendedInformation(userdata.getExtendedInformation());
     }

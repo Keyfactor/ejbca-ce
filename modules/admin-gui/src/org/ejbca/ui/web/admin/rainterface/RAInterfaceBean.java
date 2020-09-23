@@ -19,7 +19,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,10 +30,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -76,6 +73,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.HttpTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -84,7 +82,6 @@ import org.ejbca.util.query.Query;
  * <p>
  * Semi-deprecated, we should try to move the methods here into session beans.
  *
- * @version $Id$
  */
 public class RAInterfaceBean implements Serializable {
 
@@ -93,6 +90,10 @@ public class RAInterfaceBean implements Serializable {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
+    /* 
+     * These two members are need to be accessible in jsp pages (addendentity.jsp etc.) 
+     * therefore they should be defined as public!
+     */
     public static final String[] tokentexts = SecConst.TOKENTEXTS;
     public static final int[]    tokenids   = SecConst.TOKENIDS;
 
@@ -124,7 +125,7 @@ public class RAInterfaceBean implements Serializable {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) {
     	log.trace(">initialize()");
     	if (!initialized) {
-    		if (request.getAttribute( "javax.servlet.request.X509Certificate" ) != null) {
+    		if (request.getAttribute( "javax.servlet.request.X509Certificate" ) != null || HttpTools.extractBearerAuthorization(request.getHeader(HttpTools.AUTHORIZATION_HEADER)) != null) {
     			administrator = ejbcawebbean.getAdminObject();
     		} else {
                 administrator = new PublicAccessAuthenticationToken(request.getRemoteAddr(), true);
@@ -243,10 +244,9 @@ public class RAInterfaceBean implements Serializable {
     	try {
     		endEntityManagementSession.revokeCert(administrator, serno, issuerdn, reason);
     		success = true;
-    	} catch (AuthorizationDeniedException e) {
-    	} catch (NoSuchEndEntityException e) {
-    	} catch (AlreadyRevokedException e) {
-		}
+    	} catch (AuthorizationDeniedException | NoSuchEndEntityException | AlreadyRevokedException e) {
+    	    success = false;
+    	} 
     	if (log.isTraceEnabled()) {
     		log.trace("<revokeCert(): " + success);
     	}
@@ -300,32 +300,31 @@ public class RAInterfaceBean implements Serializable {
         log.trace("<changeUserData()");
     }
 
-    /** Method to filter out a user by it's username */
-    public UserView[] filterByUsername(String username) {
-    	log.trace(">filterByUserName()");
-    	EndEntityInformation[] userarray = new EndEntityInformation[1];
-    	EndEntityInformation user = null;
-    	try {
-    		user = endEntityAccessSession.findUser(administrator, username);
-    	} catch(AuthorizationDeniedException e) {
-    	}
-    	if (user != null) {
-    		userarray[0]=user;
-    		usersView.setUsers(userarray, caSession.getCAIdToNameMap());
-    	} else {
-    		usersView.setUsers((EndEntityInformation[]) null, caSession.getCAIdToNameMap());
-    	}
-    	log.trace("<filterByUserName()");
-    	return usersView.getUsers(0,1);
+    /** Method to filter out a user by it's username 
+     * @throws AuthorizationDeniedException */
+    public UserView[] filterByUsername(String username) throws AuthorizationDeniedException {
+        log.trace(">filterByUserName()");
+        EndEntityInformation[] userarray = new EndEntityInformation[1];
+        EndEntityInformation user = null;
+        user = endEntityAccessSession.findUser(administrator, username);
+        if (user != null) {
+            userarray[0] = user;
+            usersView.setUsers(userarray, caSession.getCAIdToNameMap());
+        } else {
+            usersView.setUsers((EndEntityInformation[]) null, caSession.getCAIdToNameMap());
+        }
+        log.trace("<filterByUserName()");
+        return usersView.getUsers(0, 1);
     }
 
     /** Method used to check if user exists */
-    public boolean userExist(String username) throws Exception{
+    public boolean userExist(String username) {
     	return endEntityManagementSession.existsUser(username);
     }
 
-    /** Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
-    public UserView findUser(String username) throws Exception{
+    /** Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page
+     * @throws AuthorizationDeniedException */
+    public UserView findUser(String username) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">findUser(" + username + ")");
     	}
@@ -342,17 +341,16 @@ public class RAInterfaceBean implements Serializable {
 
     /** Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/
     public UserView findUserForEdit(String username) throws AuthorizationDeniedException {
-    	UserView userview = null;
-    	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-    	if (user != null) {
-    	    if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-    	        if (!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_END_ENTITY, false)) {
-    	            throw new AuthorizationDeniedException("Not authorized to edit user.");
-    	        }
-    	    }
-    	    userview = new UserView(user, caSession.getCAIdToNameMap());
-    	}
-    	return userview;
+        UserView userview = null;
+        EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
+        if (user != null) {
+            if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()
+                    && !endEntityAuthorization(administrator, user.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, false)) {
+                throw new AuthorizationDeniedException("Not authorized to edit user.");
+            }
+            userview = new UserView(user, caSession.getCAIdToNameMap());
+        }
+        return userview;
     }
 
     /** Method to find all users in database */
@@ -361,56 +359,56 @@ public class RAInterfaceBean implements Serializable {
        return usersView.getUsers(index,size);
     }
 
-    /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. */
-    public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size) throws NumberFormatException {
-    	final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
-    	final List<CertificateDataWrapper> cdws = certificatesession.getCertificateDataBySerno(serno);
-    	final List<EndEntityInformation> userlist = new ArrayList<>();
-    	for (final CertificateDataWrapper next : cdws) {
-    	    final CertificateData certdata = next.getCertificateData();
-    	    try {
-    	        final String username = certdata.getUsername();
-    	        if (username != null) {
-    	            final EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
-    	            if (user != null) {
-    	                userlist.add(user);
-    	            }
-    	        }
-    	        if (userlist.isEmpty()) {
-    	            // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
-    	            final List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, certdata.getSubjectDnNeverNull(), certdata.getIssuerDN());
-    	            userlist.addAll(users);
-    	        }
-    	    } catch(AuthorizationDeniedException e) {}
-    	}
-    	usersView.setUsers(userlist, caSession.getCAIdToNameMap());
-    	return usersView.getUsers(index, size);
+    /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. 
+     * @throws AuthorizationDeniedException */
+    public UserView[] filterByCertificateSerialNumber(final String serialnumber, final int index, final int size)
+            throws AuthorizationDeniedException {
+        final BigInteger serno = new BigInteger(StringTools.stripWhitespace(serialnumber), 16);
+        final List<CertificateDataWrapper> cdws = certificatesession.getCertificateDataBySerno(serno);
+        final List<EndEntityInformation> userlist = new ArrayList<>();
+        for (final CertificateDataWrapper next : cdws) {
+            final CertificateData certdata = next.getCertificateData();
+            final String username = certdata.getUsername();
+            if (username != null) {
+                final EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
+                if (user != null) {
+                    userlist.add(user);
+                }
+            }
+            if (userlist.isEmpty()) {
+                // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
+                final List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator,
+                        certdata.getSubjectDnNeverNull(), certdata.getIssuerDN());
+                userlist.addAll(users);
+            }
+        }
+        usersView.setUsers(userlist, caSession.getCAIdToNameMap());
+        return usersView.getUsers(index, size);
     }
 
-    /** Method that lists all users with certificate's that expires within given days. */
-    public UserView[] filterByExpiringCertificates(String days, int index, int size) throws NumberFormatException {
-    	ArrayList<EndEntityInformation> userlist = new ArrayList<>();
-    	UserView[] returnval = null;
-    	long d = Long.parseLong(days);
-    	Date finddate = new Date();
-    	long millis = (d * 86400000); // One day in milliseconds.
-    	finddate.setTime(finddate.getTime() + millis);
-    	Collection<String> usernames = certificatesession.findUsernamesByExpireTimeWithLimit(finddate);
-    	if (!usernames.isEmpty()) {
-    		Iterator<String> i = usernames.iterator();
-    		while (i.hasNext() && userlist.size() <= getMaximumQueryRowCount()+1 ) {
-    			EndEntityInformation user = null;
-    			try {
-    				user = endEntityAccessSession.findUser(administrator, i.next());
-    				if (user != null) {
-    					userlist.add(user);
-    				}
-    			} catch(AuthorizationDeniedException e) {}
-    		}
-    		usersView.setUsers(userlist, caSession.getCAIdToNameMap());
-    		returnval= usersView.getUsers(index,size);
-    	}
-    	return returnval;
+    /** Method that lists all users with certificate's that expires within given days. 
+     * @throws AuthorizationDeniedException */
+    public UserView[] filterByExpiringCertificates(String days, int index, int size) throws AuthorizationDeniedException {
+        ArrayList<EndEntityInformation> userlist = new ArrayList<>();
+        UserView[] returnval = null;
+        long d = Long.parseLong(days);
+        Date finddate = new Date();
+        long millis = (d * 86400000); // One day in milliseconds.
+        finddate.setTime(finddate.getTime() + millis);
+        Collection<String> usernames = certificatesession.findUsernamesByExpireTimeWithLimit(finddate);
+        if (!usernames.isEmpty()) {
+            Iterator<String> i = usernames.iterator();
+            while (i.hasNext() && userlist.size() <= getMaximumQueryRowCount() + 1) {
+                EndEntityInformation user = null;
+                user = endEntityAccessSession.findUser(administrator, i.next());
+                if (user != null) {
+                    userlist.add(user);
+                }
+            }
+            usersView.setUsers(userlist, caSession.getCAIdToNameMap());
+            returnval = usersView.getUsers(index, size);
+        }
+        return returnval;
     }
 
     public UserView[] filterByQuery(Query query, int index, int size, final String endentityAccessRule) throws IllegalQueryException {
@@ -467,7 +465,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     // Methods dealing with profiles.
-    public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
+    public Map<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
     	return raauthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
@@ -652,15 +650,12 @@ public class RAInterfaceBean implements Serializable {
      * @returns a HashMap of CertificateProfileIds mapped to Lists if CA IDs. It returns a set of available CAs per end entity profile.
      */
 
-    public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid, final String endentityAccessRule) {
+    public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid) {
         final Map<Integer, List<Integer>> ret = new HashMap<>();
+
         // Create a TreeMap to get a sorted list.
-        final TreeMap<CAInfo, Integer> sortedMap = new TreeMap<>(new Comparator<CAInfo>() {
-            @Override
-            public int compare(CAInfo o1, CAInfo o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
+        final TreeMap<CAInfo, Integer> sortedMap = new TreeMap<>((CAInfo o1, CAInfo o2)-> o1.getName().compareToIgnoreCase(o2.getName()));
+        
         // 1. Retrieve a list of all CA's the current user is authorized to
         for (CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(administrator)) {
             sortedMap.put(caInfo, caInfo.getCAId());

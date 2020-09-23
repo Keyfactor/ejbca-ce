@@ -127,7 +127,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
         try {
             final HashMap<String, Boolean> accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
-            final Map<String, Object> details = doLogging ? new LinkedHashMap<String, Object>() : null;
+            final Map<String, Object> details = doLogging ? new LinkedHashMap<>() : null;
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];
                 final boolean authorizedToResource = AccessRulesHelper.hasAccessToResource(accessRules, resource);
