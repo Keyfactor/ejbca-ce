@@ -32,6 +32,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.HttpTools;
 
 /**
  * Authentication filter.
@@ -59,11 +60,12 @@ public class AuthenticationFilter implements Filter {
         }
         try {
             // Check whether AuthenticationFilter has binding
-            if(StringUtils.isNotBlank(accessResourcesByRequestURI)) {
+            if (StringUtils.isNotBlank(accessResourcesByRequestURI)) {
                 final EjbcaWebBean ejbcaWebBean = SessionBeans.getEjbcaWebBean(httpServletRequest);
                 ejbcaWebBean.initialize(httpServletRequest, accessResourcesByRequestURI);
                 final X509Certificate x509Certificate = ejbcaWebBean.getClientX509Certificate(httpServletRequest);
-                if (x509Certificate != null) {
+                final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+                if (x509Certificate != null || oauthBearerToken != null) {
                     final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
                     if (admin != null) {
                         httpServletRequest.setAttribute("authenticationtoken", admin);
