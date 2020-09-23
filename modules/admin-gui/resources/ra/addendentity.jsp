@@ -763,7 +763,8 @@
 
     usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
 
-    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid, AccessRulesConstants.CREATE_END_ENTITY);
+    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid);
+    
     Collection authcas = null;
 
     pageContext.setAttribute("useradded", useradded);
