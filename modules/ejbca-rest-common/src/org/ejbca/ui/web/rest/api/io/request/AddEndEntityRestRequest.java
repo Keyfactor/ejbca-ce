@@ -9,10 +9,12 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import java.util.Date;
 import java.util.List;
 
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidAddEndEntityRestRequest;
@@ -137,25 +139,32 @@ public class AddEndEntityRestRequest {
 
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
         		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
-            final EndEntityInformation eeInformation = new EndEntityInformation();
-            eeInformation.setUsername(addEndEntityRestRequest.getUsername());
-            eeInformation.setPassword(addEndEntityRestRequest.getPassword());
-            eeInformation.setDN(addEndEntityRestRequest.getSubjectDn());
-            eeInformation.setSubjectAltName(addEndEntityRestRequest.getSubjectAltName());
-            eeInformation.setEmail(addEndEntityRestRequest.getEmail());
+            final ExtendedInformation extendedInfo;
             if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-            	ExtendedInformation ei = new ExtendedInformation();
-            	addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-            		ei.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
-            	});
-            	eeInformation.setExtendedInformation(ei);
+                extendedInfo = new ExtendedInformation();
+                addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
+                    extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
+                });
+            } else {
+                extendedInfo = null;
             }
-            eeInformation.setCAId(caId);
-            eeInformation.setCertificateProfileId(certificateProfileId);
-            eeInformation.setEndEntityProfileId(endEntityProfileId);
-            eeInformation.setStatus(EndEntityConstants.STATUS_NEW);
-            eeInformation.setTokenType(TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue());
-        	
+            final Date now = new Date();
+            final int tokenType = TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue();
+            final EndEntityInformation eeInformation = new EndEntityInformation(
+                    addEndEntityRestRequest.getUsername(), 
+                    addEndEntityRestRequest.getSubjectDn(), 
+                    caId, 
+                    addEndEntityRestRequest.getSubjectAltName(), 
+                    addEndEntityRestRequest.getEmail(),
+                    EndEntityConstants.STATUS_NEW, 
+                    EndEntityTypes.ENDUSER.toEndEntityType(), 
+                    endEntityProfileId, 
+                    certificateProfileId, 
+                    now,
+                    now,
+                    tokenType,
+                    extendedInfo);
+            eeInformation.setPassword(addEndEntityRestRequest.getPassword());
             return eeInformation;
         }
     }
