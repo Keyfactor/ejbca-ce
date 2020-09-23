@@ -17,6 +17,8 @@ public class ExtendedInformationRestRequestComponent {
 	private String name;
     private String value;
 
+    private ExtendedInformationRestRequestComponent() {}
+
     private ExtendedInformationRestRequestComponent(String name, String value) {
         this.name = name;
         this.value = value;
