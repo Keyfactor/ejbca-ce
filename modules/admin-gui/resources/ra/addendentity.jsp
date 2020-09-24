@@ -107,7 +107,7 @@
 
     GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
     AccessRulesConstants.REGULAR_CREATEENDENTITY);
-    rabean.initialize(request, ejbcawebbean);
+    rabean.initialize(ejbcawebbean);
     
 
     final String VIEWUSER_LINK = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
