@@ -18,17 +18,17 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
+import org.ejbca.util.HttpTools;
 
 /**
  * Base class for common methods used across all REST resources.
- *
- * @version $Id: BaseRestResource.java 32422 2019-05-27 12:58:04Z tarmo_r_helmes $
  */
 public abstract class BaseRestResource {
 
@@ -66,11 +66,16 @@ public abstract class BaseRestResource {
         if (requestContext == null) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Missing request context");
         }
-        X509Certificate[] certs = (X509Certificate[]) requestContext.getAttribute("javax.servlet.request.X509Certificate");
-        if (certs == null || certs[0] == null) {
-            throw new AuthorizationDeniedException("Error no client certificate received for authentication.");
+
+        final X509Certificate[] certificates = (X509Certificate[]) requestContext.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate certificate = certificates != null ? certificates[0] : null;
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(requestContext.getHeader(HttpTools.AUTHORIZATION_HEADER));
+
+        if (certificate == null && StringUtils.isEmpty(oauthBearerToken)) {
+            throw new AuthorizationDeniedException("Error no client certificate or OAuth token received for authentication.");
         }
-        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certs[0]);
+
+        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken);
     }
 
     // TODO ECA-7119 Due to limited validation exception handling support in JAX-RS 1.1, we validate the object programmatically to handle the response properly.

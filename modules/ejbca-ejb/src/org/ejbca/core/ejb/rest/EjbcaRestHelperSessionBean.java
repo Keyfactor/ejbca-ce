@@ -57,9 +57,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 
-/**
- * @version $Id$
- */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaRestHelperSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, EjbcaRestHelperSessionRemote {
@@ -86,26 +83,40 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
-        final Set<X509Certificate> credentials = new HashSet<>();
-        credentials.add(cert);
-        final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-        final AuthenticationToken admin = authenticationSession.authenticate(subject);
-        
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException {
         if (!raMasterApiProxyBean.isAuthorizedNoLogging(raRestAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST)) {
             throw new AuthorizationDeniedException("REST resources is not authorized for this Peer connection");
         }
-        if ((admin != null) && (!allowNonAdmins)) {
-            if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+
+        if (cert != null) {
+            final Set<X509Certificate> credentials = new HashSet<>();
+            credentials.add(cert);
+            final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            final AuthenticationToken admin = authenticationSession.authenticate(subject);
+
+            if ((admin != null) && (!allowNonAdmins)) {
+                if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                    final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            } else if (admin == null) {
+                final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +
+                        CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert)+"'.");
                 throw new AuthorizationDeniedException(msg);
             }
-        } else if (admin == null) {
-            final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +
-                    CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert)+"'.");
-            throw new AuthorizationDeniedException(msg);
+
+            return admin;
+        } else if (oauthBearerToken != null) {
+            final AuthenticationToken admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+
+            if (admin == null) {
+                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+            }
+
+            return admin;
+        } else {
+            throw new AuthorizationDeniedException("Authorization failed. No certificates or OAuth token provided.");
         }
-        return admin;
     }
 
     @Override

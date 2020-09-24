@@ -145,6 +145,7 @@ import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.protocol.DateNotValidException;
+import org.ejbca.util.HttpTools;
 import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.passgen.IPasswordGenerator;
@@ -228,17 +229,22 @@ public class EjbcaWS implements IEjbcaWS {
     private AuthenticationToken getAdmin(final boolean allowNonAdmins) throws AuthorizationDeniedException {
         final MessageContext msgContext = wsContext.getMessageContext();
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+
         final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate certificate = certificates != null ? certificates[0] : null;
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(request.getHeader(HttpTools.AUTHORIZATION_HEADER));
+
         final boolean isServiceEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus(AvailableProtocols.WS.getName());
+
         // Start with checking if it's enabled, preventing any call back to a CA for example (if using an external RA), if WS is not enabled
         if (!isServiceEnabled) {
             throw new UnsupportedOperationException("Web Services not enabled");
-        } else if ((certificates == null) || (certificates[0] == null)) {
-            throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
+        } else if (certificate == null && StringUtils.isEmpty(oauthBearerToken)) {
+            throw new AuthorizationDeniedException("Error no client certificate or OAuth token received used for authentication.");
         } else if (!raMasterApiProxyBean.isAuthorizedNoLogging(raWsAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_WS)) {
             throw new UnsupportedOperationException("Not authorized to Web Services");
         }
-        return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificates[0]);
+        return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificate, oauthBearerToken);
 
     }
 
