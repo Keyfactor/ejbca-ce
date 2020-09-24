@@ -46,7 +46,7 @@
 		<delete dir="${mod.oldlogexport.dist}" />
     </target>
 	
-    <target name="compile" depends="setup, with.clover">
+    <target name="compile" depends="setup">
     	<mkdir dir="${oldlogexport-cli.build.dir}" />
         <javac destdir="${oldlogexport-cli.build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
             <src path="${ejbca.home}/modules/ejbca-ejb/src" />
