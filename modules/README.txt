@@ -102,7 +102,6 @@ modules/{module-name}/resources   Holds the module's meta-data and templates
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${module-name.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
-        		<path refid="lib.clover.classpath"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">

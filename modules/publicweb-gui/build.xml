@@ -37,7 +37,7 @@
         </war>
     </target>
 
-    <target name="compile" depends="with.clover">
+    <target name="compile" depends="">
     	<mkdir dir="${publicweb-gui.build.dir}/WEB-INF/classes" />
         <javac srcdir="${publicweb-gui.src.dir}" destdir="${publicweb-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
