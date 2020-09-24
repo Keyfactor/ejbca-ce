@@ -42,8 +42,6 @@ import org.junit.Test;
 
 /**
  * Testing of {@link UnidFnrHandler} .
- *
- * @version $Id$
  */
 public class UnidFnrHandlerTest {
 	
@@ -273,6 +271,15 @@ public class UnidFnrHandlerTest {
         @Override
         public void setAdditionalExtraCertsCertificates(List<Certificate> certificates) {
             this.additionalExtraCertsCertificates = certificates;
+        }
+        @Override
+        public void setUsername(String username) {
+        }
+        @Override
+        public void setPassword(String pwd) {
+        }
+        @Override
+        public void setRequestValidityNotAfter(Date notAfter) {
         }
 	}
 }

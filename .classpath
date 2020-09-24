@@ -63,7 +63,6 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-cryptotoken/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-camanagement/src"/>
-	<classpathentry kind="src" path="modules/ejbca-rest-endentity/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webtest/src-test"/>
@@ -137,8 +136,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jaxrs-3.1.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-legacy-3.1.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.1.4.Final.jar"/>
-    <classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-3.1.4.Final.jar"/>
-    <classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-api-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-firefox-driver-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-java-3.141.59.jar"/>

@@ -81,7 +81,7 @@
 		<delete file="${mod.ejbca-ws.wsdl-schema}" />
     </target>
 	
-    <target name="compile" depends="with.clover">
+    <target name="compile" depends="">
     	<mkdir dir="${ejbca-ws.build.dir}" />
         <javac destdir="${ejbca-ws.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath">
@@ -89,7 +89,7 @@
     	</javac>
     </target>
 
-    <target name="compile-library" depends="with.clover">
+    <target name="compile-library" depends="">
     	<mkdir dir="${ejbca-ws.build-lib.dir}" />
         <javac destdir="${ejbca-ws.build-lib.dir}" debug="on" includeantruntime="no" srcdir="${ejbca-ws.src.dir}"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-library.classpath">
