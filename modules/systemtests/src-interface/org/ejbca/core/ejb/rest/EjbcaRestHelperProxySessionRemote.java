@@ -22,6 +22,9 @@ import java.security.cert.X509Certificate;
 public interface EjbcaRestHelperProxySessionRemote {
 
     /**
+     * Gets an AuthenticationToken object authenticated with the given X509 certificate or OAuth token. If both provided,
+     * X509 certificate will be used.
+     *
      * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @param cert X509 certificate
      * @param oauthBearerToken OAuth token for JWT authentication

@@ -49,8 +49,10 @@ import org.ejbca.util.query.Query;
 public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
 
     /**
-     * Gets an AuthenticationToken object for a WS-API administrator authenticated with the given client certificate.
-     * - Checks (through authenticationSession.authenticate) that the certificate is valid
+     * Gets an AuthenticationToken object for a WS-API administrator authenticated with the given client certificate or
+     * OAuth token. If both provided, X509 certificate will be used.
+     *
+     * - Checks (through authenticationSession.authenticate) that the certificate is valid if certificate is used.
      * - If (WebConfiguration.getRequireAdminCertificateInDatabase) checks (through authenticationSession.authenticate) that the admin certificate is not revoked.
      * - If (allowNonAdmin == false), checks that the admin have access to /administrator, i.e. really is an administrator with the certificate mapped in an admin role. 
      *   Does not check any other authorization though, other than that it is an administrator.
