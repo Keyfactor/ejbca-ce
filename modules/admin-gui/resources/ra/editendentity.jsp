@@ -105,7 +105,7 @@
     // Initialize environment.
     GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
     AccessRulesConstants.REGULAR_EDITENDENTITY);
-    rabean.initialize(request, ejbcawebbean);
+    rabean.initialize(ejbcawebbean);
     
     String THIS_FILENAME = globalconfiguration.getRaPath() + "/editendentity.jsp";
     String username = null;
