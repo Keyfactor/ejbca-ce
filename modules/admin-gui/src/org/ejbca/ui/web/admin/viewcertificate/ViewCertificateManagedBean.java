@@ -61,7 +61,17 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final String CERTSERNO_PARAMETER        = "certsernoparameter";
     private static final String CACERT_PARAMETER           = "caid";
     private static final String SERNO_PARAMETER            = "serno";
+    // Used for backlink to Role Members page & IKB page
+    private static final String ROLE_ID                    = "roleId";
+    private static final String KEYBINDING_ID              = "keyBindingId";
 
+    private static final int RETURN_TO_AUDITLOG = 0;
+    private static final int RETURN_TO_PEERCONNECTORS = 1;
+    private static final int RETURN_TO_OCSPKB = 2;
+    private static final int RETURN_TO_AUTHKB = 3;
+    private static final int RETURN_TO_EDITIKB= 4;
+    private static final int RETURN_TO_ROLEMEMBERS = 5;
+    
     private static final String HIDDEN_INDEX               = "hiddenindex";
     
     private boolean noparameter = true;
@@ -75,6 +85,8 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private int numberOfCertificates = 0;
     private int currentIndex = 0;
     private int caId = 0;
+    private int roleId = 0;
+    private int keyBindingId = 0;
     
     private EjbcaWebBean ejbcaBean;
     private CAInterfaceBean caBean;
@@ -137,7 +149,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             caId = Integer.parseInt(caIdParameter);           
         }
         
-        raBean.initialize(request, ejbcaBean);
+        raBean.initialize(ejbcaBean);
         caBean.initialize(ejbcaBean);
         
         useKeyRecovery = globalconfiguration.getEnableKeyRecovery() && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY);
@@ -196,18 +208,31 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         try {
             final int returnToId = Integer.parseInt(returnToParameter);
             switch (returnToId) {
-            case 0: // 0 = send user to the audit log page
+            case RETURN_TO_AUDITLOG: // 0 = send user to the audit log page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
                 break;
-            case 1: // 1 = send user to the peer overview page
+            case RETURN_TO_PEERCONNECTORS: // 1 = send user to the peer overview page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
                 break;
-            case 2: // 2 = send user to the IKB AKB page
+            case RETURN_TO_OCSPKB: // 2 = send user to the IKB OCSP page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=OcspKeyBinding";
                 break;
-            case 3: // 3 = send user to the IKB OCSP page
+            case RETURN_TO_AUTHKB: // 3 = send user to the IKB AKB page
                 returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=AuthenticationKeyBinding";
                 break;
+            case RETURN_TO_EDITIKB: // 4 = send user back to Edit IKB page (default to IKB page)
+                if (keyBindingId != 0) {
+                    returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybinding.xhtml?internalKeyBindingId=" + keyBindingId;
+                } else {
+                    returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml";
+                }
+                break;
+            case RETURN_TO_ROLEMEMBERS: // 5 = send user back to role members page
+                if (roleId != 0) {
+                    returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "administratorprivileges/rolemembers.xhtml?roleId=" + roleId;
+                } else {
+                    returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "administratorprivileges/roles.xhtml";
+                }
             }
         } catch (final NumberFormatException e) {
             // do nothing. null will be returned, if 'return-to' was not specified
@@ -335,6 +360,14 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             noparameter = false;
         }
 
+        if (request.getParameter(ROLE_ID) != null) {
+            roleId = Integer.parseInt(request.getParameter(ROLE_ID));
+        }
+        
+        if (request.getParameter(KEYBINDING_ID) != null) {
+            keyBindingId = Integer.parseInt(request.getParameter(KEYBINDING_ID));
+        }
+        
         if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
             certificateSerNo = request.getParameter(SERNO_PARAMETER);
             noparameter = false;

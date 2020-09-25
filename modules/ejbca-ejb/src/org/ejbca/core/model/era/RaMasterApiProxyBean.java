@@ -1910,6 +1910,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
     }
 
+    @Deprecated
     @Override
     public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password,
             final byte[] requestBody) throws NoSuchAliasException,
@@ -1949,6 +1950,72 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         	        log.info("isBackendAvailable: "+raMasterApi.isBackendAvailable() + ", apiVersion="+raMasterApi.getApiVersion()+", class: "+raMasterApi.getClass().getName());
         	    }
         	}
+            return null;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public byte[] estDispatchAuthenticated(final AuthenticationToken authenticationToken, final String operation, final String alias, final X509Certificate cert, final String username, final String password,
+            final byte[] requestBody) throws AuthorizationDeniedException, NoSuchAliasException,
+            CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
+        NoSuchAliasException caughtNoAliasException = null;
+        AuthenticationFailedException caughtAuthFailedException = null;
+        AuthorizationDeniedException caughtAuthorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.getApiVersion() >= 11) {
+                        // We know the new EST call is definitely available
+                        return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, cert, username, password, requestBody);
+                    } else if (raMasterApi.getApiVersion() >= 9) {
+                        // Possibly the new EST call is available, try new version first.
+                        // This call is added in 7.5.0, but is backported to 7.4.1.1 (and possibly 7.4.3 if that will be released),
+                        // so a regular version check is not possible.
+                        try {
+                            return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, cert, username, password, requestBody);
+                        } catch (UnsupportedOperationException | RaMasterBackendUnavailableException dummy) {
+                            // Try once more using the legacy API.
+                            log.debug("New EST call failed, attempting legacy EST call");
+                            return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
+                        }
+                    } else if (raMasterApi.getApiVersion() >= 2) {
+                        // Legacy EST call in version 2 and later
+                        log.debug("Old peer version, using legacy EST call");
+                        return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
+                    }
+                } catch (NoSuchAliasException e) {
+                    //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
+                    //later though.
+                    caughtNoAliasException = e;
+                } catch (AuthenticationFailedException e) {
+                    // This will occur when WWW_AUTHENTICATE header (authentication method) is sent back to client. We don't want to
+                    // interrupt this 'negotiation' unless all implementations fail (i.e. due to invalid authentication details).
+                    caughtAuthFailedException = e;
+                } catch (AuthorizationDeniedException e) {
+                    // Not authorized to the CA in the EST alias on this peer
+                    caughtAuthorizationDeniedException = e;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+
+        // either throw an exception or return null
+        if (caughtAuthorizationDeniedException != null){
+            throw caughtAuthorizationDeniedException;
+        } else if (caughtNoAliasException != null) {
+            throw caughtNoAliasException;
+        } else if (caughtAuthFailedException != null) {
+            throw caughtAuthFailedException;
+        } else {
+            // No suitable RaMasterAPIs were found?
+            log.info("No suitable RA Master APIs were found among the ones we have: " + raMasterApis.length);
+            if (log.isDebugEnabled()) {
+                for (final RaMasterApi raMasterApi : raMasterApis) {
+                    log.info("isBackendAvailable: "+raMasterApi.isBackendAvailable() + ", apiVersion="+raMasterApi.getApiVersion()+", class: "+raMasterApi.getClass().getName());
+                }
+            }
             return null;
         }
     }
