@@ -36,7 +36,6 @@ import org.ejbca.util.URIUtil;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java 35186 2020-06-03 12:24:16Z serkano $
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -48,9 +47,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final float LATEST_VERSION = 3f;
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
-
-    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
@@ -223,15 +219,15 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
        String tempadminpath = adminpath.trim();
 
-       if(tempadminpath == null) {
-         tempadminpath = "";
-       }
-       if(!tempadminpath.endsWith("/") && !tempadminpath.equals("")){
-         tempadminpath = tempadminpath + "/";   // Add ending '/'
-       }
-       if(tempadminpath.startsWith("/")){
-         tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
-       }
+        if (tempadminpath == null) {
+            tempadminpath = "";
+        }
+        if (!tempadminpath.endsWith("/") && !tempadminpath.equals("")) {
+            tempadminpath = tempadminpath + "/";   // Add ending '/'
+        }
+        if (tempadminpath.startsWith("/")) {
+            tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
+        }
 
        data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());
@@ -452,7 +448,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     	   String ret = (String) data.get(AUTOENROLL_ADSERVER);
    		   return (ret == null ? AUTOENROLL_DEFAULT_ADSERVER : ret);
        }
-       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, Integer.valueOf(caid)); }
+       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, caid); }
        public int getAutoEnrollADPort() {
     	   Integer ret = (Integer) data.get(AUTOENROLL_ADPORT);
    		   return (ret == null ? AUTOENROLL_DEFAULT_ADPORT : ret);
@@ -462,7 +458,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     	   String ret = (String) data.get(AUTOENROLL_BASEDN_USER);
    		   return (ret == null ? AUTOENROLL_DEFAULT_BASEDN_USER : ret);
    	   }
-       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, Integer.valueOf(caid)); }
+       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, caid); }
        public int getAutoEnrollCA() {
     	   Integer ret = (Integer) data.get(AUTOENROLL_CA);
     	   return (ret == null ? AUTOENROLL_DEFAULT_CA : ret);
@@ -544,7 +540,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         if(num == null){
             return DEFAULTSESSIONTIMEOUTTIME;
         } else {
-            return ((Integer) num).intValue();
+            return (Integer) num;
         }
     }
 
@@ -574,7 +570,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public void removeOauthKey(int oauthKeyId) {
-        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        LinkedHashMap<Integer, OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
+        if (getDefaultOauthKey().getInternalId() == oauthKeyId) {
+            setDefaultOauthKey(null);
+        }
         keys.remove(oauthKeyId);
         setOauthKeys(keys);
     }
@@ -651,7 +650,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     		if(data.get(ENABLEICAOCANAMECHANGE) == null) {
                 data.put(ENABLEICAOCANAMECHANGE, Boolean.FALSE);
     		}
-    		data.put(VERSION,  Float.valueOf(LATEST_VERSION));
+    		data.put(VERSION, LATEST_VERSION);
     	}
     }
 

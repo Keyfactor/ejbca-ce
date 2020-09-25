@@ -131,4 +131,8 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
     public String getPublicKeyBase64Fingerprint() {
         return base64Fingerprint;
     }
+    
+    public String getEncodedToken() {
+        return encodedToken;
+    }
 }

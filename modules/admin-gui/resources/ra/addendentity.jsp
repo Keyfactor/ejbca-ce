@@ -107,7 +107,7 @@
 
     GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
     AccessRulesConstants.REGULAR_CREATEENDENTITY);
-    rabean.initialize(request, ejbcawebbean);
+    rabean.initialize(ejbcawebbean);
     
 
     final String VIEWUSER_LINK = "viewendentity.jsp";
@@ -763,7 +763,8 @@
 
     usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
 
-    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid, AccessRulesConstants.CREATE_END_ENTITY);
+    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid);
+    
     Collection authcas = null;
 
     pageContext.setAttribute("useradded", useradded);
