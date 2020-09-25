@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.authorization;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 
 /**
@@ -30,4 +31,8 @@ public interface AuthorizationSystemSession {
      * @throws AuthenticationFailedException On authentication errors, such as an invalid password for a CLI token
      */
     AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+    
+    /** Configure the provided CN as a RoleMember of the Super Administrator Role if the caller has sufficient privileges. */
+    boolean initializeAuthorizationModuleWithSuperAdmin(AuthenticationToken authenticationToken, int caId, String superAdminCN)
+            throws AuthorizationDeniedException;
 }
