@@ -30,9 +30,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
@@ -279,7 +278,6 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     /**
      * Used to reset the preferences page
-     * @return
      */
     public String reset() {
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
@@ -300,13 +298,9 @@ public class RaPreferencesBean implements Converter, Serializable {
      * Returns otherwise. 
      */
     private void checkAdminHasRowInDbOrCreateOne() {
-
-        String certificatefingerprint = CertTools
-                .getFingerprintAsString(((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken()).getCertificate());
-
-        if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint)) {
-            adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
-                    new AdminPreference());
+        final AuthenticationToken admin = raAuthenticationBean.getAuthenticationToken();
+        if (!adminPreferenceSession.existsAdminPreference(admin)) {
+            adminPreferenceSession.addAdminPreference(admin, new AdminPreference());
         }
     }
 }
