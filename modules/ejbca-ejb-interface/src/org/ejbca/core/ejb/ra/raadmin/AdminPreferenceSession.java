@@ -24,13 +24,13 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 public interface AdminPreferenceSession {
     
     /**
-     * Finds the admin preference belonging to a certificate serial number.
+     * Finds the admin preference belonging to the given administrator.
      * 
-     * @param certificatefingerprint The certificate finger print of the certificate the admin uses as a credential.
+     * @param admin Authentication token of the administrator
      * 
-     * @return null if the admin does not exist.
+     * @return null if the admin does not exist, or is a public access admin.
      */
-    AdminPreference getAdminPreference(String certificatefingerprint);
+    AdminPreference getAdminPreference(AuthenticationToken admin);
 
     /**
      * Adds a admin preference to the database.
@@ -41,7 +41,7 @@ public interface AdminPreferenceSession {
      * 
      *  @return  false if admin already exists.
      */
-    boolean addAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
+    boolean addAdminPreference(AuthenticationToken admin, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database.
@@ -52,7 +52,7 @@ public interface AdminPreferenceSession {
      * 
      * @return false if admin does not exist.
      */
-    boolean changeAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
+    boolean changeAdminPreference(AuthenticationToken admin, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database without logging. 
@@ -62,16 +62,16 @@ public interface AdminPreferenceSession {
      * 
      * @return false if admin does not exist.
      */
-    boolean changeAdminPreferenceNoLog(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
+    boolean changeAdminPreferenceNoLog(AuthenticationToken admin, AdminPreference adminpreference);
 
     /** 
-     * Checks if a admin preference exists in the database. 
+     * Checks if an admin preference exists in the database.
      * 
-     * @param certificatefingerprint The certificate finger print of the certificate the admin uses as a credential.
+     * @param admin Authentication token of the administrator
      * 
      * @return true if it exists
      */
-    boolean existsAdminPreference(String certificatefingerprint);
+    boolean existsAdminPreference(AuthenticationToken admin);
 
     /** Function that returns the default admin preference. 
      * 
