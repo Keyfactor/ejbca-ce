@@ -24,7 +24,7 @@
 %><%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
-                                            rabean.initialize(request, ejbcawebbean);
+                                            rabean.initialize(ejbcawebbean);
                                             cabean.initialize(ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getRaPath()  + "/viewendentity.jsp";
 
