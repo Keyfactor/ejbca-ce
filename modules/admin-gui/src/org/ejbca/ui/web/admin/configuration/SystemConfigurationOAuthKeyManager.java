@@ -28,6 +28,9 @@ import org.cesecore.util.CertTools;
  * This class is used to manage OAuth Keys in EJBCA's system configuration. It adds some additional
  * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
  * new OAuth Keys.
+<<<<<<< HEAD
+=======
+>>>>>>> ECA-8982-own-new-installation
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
@@ -302,7 +305,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         final byte[] keyBytes = oauthKeyEditor.getPublicKeyFile() != null ? getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile())
                 : oauthKeyEditor.getOauthKeyBeingEdited().getPublicKeyBytes();
         final int skewLimit = oauthKeyEditor.getSkewLimit();
-        oauthKeyToUpdate.setOauthPublicKey(keyBytes);
+        oauthKeyToUpdate.setPublicKeyBytes(keyBytes);
         oauthKeyToUpdate.setSkewLimit(skewLimit);
         oauthKeyToUpdate.setKeyIdentifier(keyIdentifier);
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
