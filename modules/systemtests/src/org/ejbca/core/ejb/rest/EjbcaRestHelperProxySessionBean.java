@@ -10,23 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authorization;
-
-import java.util.Map;
-
-import javax.ejb.Remote;
+package org.ejbca.core.ejb.rest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.jndi.JndiConstants;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.security.cert.X509Certificate;
 
-/**
- * @see AuthorizationSystemSession
- * @version $Id$
- */
-@Remote
-public interface AuthorizationSystemSessionRemote extends AuthorizationSystemSession {
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaRestHelperProxySessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class EjbcaRestHelperProxySessionBean implements EjbcaRestHelperProxySessionRemote {
+    @EJB
+    private EjbcaRestHelperSessionLocal ejbcaRestHelperSessionLocal;
 
-    /** @return a Map of all authorized <resource,resourceName> on this installation (optionally ignoring if certain resources is not in use) */
-    Map<String,String> getAllResources(AuthenticationToken authenticationToken, boolean ignoreLimitations);
-
+    @Override
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException {
+        return ejbcaRestHelperSessionLocal.getAdmin(allowNonAdmins, cert, oauthBearerToken);
+    }
 }
