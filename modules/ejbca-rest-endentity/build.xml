@@ -52,7 +52,6 @@
 	<path id="test.classpath">
         <path refid="compile-test.classpath"/>
 		<path location="${ejbca-rest-endentity.build-test.dir}"/>
-		<pathelement path="${clover.jar}"/>
         <path refid="lib.jee-client.classpath"/>
 	</path>
 
@@ -66,7 +65,7 @@
         <jar destfile="${mod.ejbca-rest-endentity.lib}" basedir="${ejbca-rest-endentity.build.dir}" includes="**/*.class **/*.xml" />
     </target>
 
-	<target name="compile" depends="with.clover, setup">
+	<target name="compile" depends="setup">
         <javac srcdir="${ejbca-rest-endentity.src.dir}" destdir="${ejbca-rest-endentity.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
@@ -75,7 +74,7 @@
 		<mkdir dir="${ejbca-rest-endentity.build.dir}/WEB-INF/classes"/>
 	</target>
 
-	<target name="compile-tests" depends="build, with.clover">
+	<target name="compile-tests" depends="build">
 		<mkdir dir="${ejbca-rest-endentity.build-test.dir}" />
 		<copy file="${log4j.test.file}" tofile="${ejbca-rest-endentity.build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${ejbca-rest-endentity.build-test.dir}/jndi.properties" failonerror="true"/>
@@ -135,7 +134,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
