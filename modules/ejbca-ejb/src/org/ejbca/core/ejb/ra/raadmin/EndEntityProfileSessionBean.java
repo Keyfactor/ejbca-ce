@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -59,8 +58,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 /**
  * Session bean for handling EndEntityProfiles
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -626,21 +623,17 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Override
     public byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
             throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
-        EndEntityProfile profile = null;
-        profile = getEndEntityProfileNoClone(profileId);
+        final EndEntityProfile profile = getEndEntityProfileNoClone(profileId);
         if (profile == null) {
             throw new EndEntityProfileNotFoundException("Could not find end entity profile with ID '" + profileId + "' in the database.");
         }
         authorizedToViewProfile(authenticationToken, profile);
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
-            encoder.flush(); // try-with-resource closes it
-            return baos.toByteArray();
-        } catch (IOException e) {
-            String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
-            LOG.debug(msg, e);
-            throw new IllegalStateException(msg, e);
         }
+        // try-with-resource flushes/closes XMLEncoder, which must be done before using baos
+        return baos.toByteArray();
     }
 
     private boolean isFreeEndEntityProfileId(final int id) {

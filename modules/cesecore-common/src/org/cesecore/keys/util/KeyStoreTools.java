@@ -301,7 +301,7 @@ public class KeyStoreTools {
         generateKeyPair(
                 new SizeAlgorithmParameterSpec(keySize), keyEntryName,
                 AlgorithmConstants.KEYALGORITHM_RSA,
-                AlgorithmTools.SIG_ALGS_RSA);
+                AlgorithmTools.SIG_ALGS_RSA_NOSHA1);
         if (log.isTraceEnabled()) {
             log.trace("<generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
         }
@@ -403,7 +403,7 @@ public class KeyStoreTools {
             certSignAlgorithms = AlgorithmTools.SIG_ALGS_DSA;
         } else if (specName.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
-            certSignAlgorithms = AlgorithmTools.SIG_ALGS_RSA;
+            certSignAlgorithms = AlgorithmTools.SIG_ALGS_RSA_NOSHA1;
         } else {
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_EC;
             certSignAlgorithms = AlgorithmTools.SIG_ALGS_ECDSA;

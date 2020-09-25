@@ -77,7 +77,7 @@ public final class OAuthKeyInfo implements Serializable {
         return publicKeyBytes;
     }
 
-    public void setOauthPublicKey(final byte[] publicKeyBytes) {
+    public void setPublicKeyBytes(final byte[] publicKeyBytes) {
         this.publicKey = null;
         this.publicKeyBytes = publicKeyBytes;
     }

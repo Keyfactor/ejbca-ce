@@ -28,8 +28,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Data class containing settings for configuration dump.
  * Probably better to use a builder pattern here.
- * 
- * @version $Id$
  *
  */
 public class ConfigdumpSetting implements Serializable {
@@ -56,7 +54,8 @@ public class ConfigdumpSetting implements Serializable {
         VALIDATOR("validators", "Validator"),
         CTLOG("ct-logs", "CT Log"),
         EXTENDEDKEYUSAGE("extended-key-usage", "EXTENDEDKEYUSAGE"),
-        CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION");
+        CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION"),
+        OAUTHKEY("oauth-keys", "OAUTHKEY");
         // Unimplemented:
         // ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
 

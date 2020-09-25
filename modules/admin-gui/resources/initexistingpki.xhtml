@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+    <!--
+ /*************************************************************************
+  *                                                                       *
+  *  EJBCA: The OpenSource Certificate Authority                          *
+  *                                                                       *
+  *  This software is free software; you can redistribute it and/or       *
+  *  modify it under the terms of the GNU Lesser General Public           *
+  *  License as published by the Free Software Foundation; either         *
+  *  version 2.1 of the License, or any later version.                    *
+  *                                                                       *
+  *  See terms of license at gnu.org.                                     *
+  *                                                                       *
+  *************************************************************************/
+
+  -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:param name="resourceBean" value="#{initExistingPkiMBean}" />
+    <ui:define name="content">
+	<h:form id="initExistingPkiForm" method="post" enctype='multipart/form-data'>
+		
+		<h:panelGroup>
+			<h2><h:outputText value="Installation" /></h2>
+			<br/>
+			<h3>
+			<h:outputText value="Import Management CA"/>
+			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Installing_EJBCA_as_a_CA_with_a_Management_CA.html')}"
+				escape="false" styleClass="helpReference"/>
+			</h3>
+			<br/>
+         	<h:outputText styleClass="smallHelp" value="#{web.text.CA_MGMT_HELP}"/> 
+		</h:panelGroup>
+		
+		<h:panelGrid columns="2">
+			<h:outputLabel for="textfieldimportcaname" value="#{web.text.IMPORTCA_CANAME}"/>
+			<h:inputText id="textfieldimportcaname" value="#{initExistingPkiMBean.importedCaName}"
+				title="#{web.text.FORMAT_ID_STR}" size="30" maxlength="255">
+			</h:inputText>
+	
+			<h:outputLabel for="profileUploadInput" value="#{web.text.IMPORTCA_CERTIFICATEFILE}"/>
+			<h:inputFile id="profileUploadInput" value="#{initExistingPkiMBean.uploadFile}"/>
+			<h:commandButton id="buttonrecievefile" value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{initExistingPkiMBean.actionImportCa}"/>
+			<br/><br/><br/><br/>
+		</h:panelGrid>
+			
+		<h:panelGroup id="nagivationGroup">
+			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}"/>
+			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}" disabled="#{!initExistingPkiMBean.caImported}"/>
+		</h:panelGroup>
+				
+    </h:form>
+    </ui:define>
+</ui:composition>
+</html>
