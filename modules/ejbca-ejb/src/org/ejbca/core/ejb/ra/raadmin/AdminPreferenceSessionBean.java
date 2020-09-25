@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -68,15 +69,27 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private RaStyleCacheBean raStyleCacheBean;
+    
+    private String makeAdminPreferenceId(final AuthenticationToken admin) {
+        if (admin instanceof X509CertificateAuthenticationToken) {
+            return CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
+        } else if (admin instanceof PublicAccessAuthenticationToken) {
+            return null;
+        } else {
+            return admin.getClass().getSimpleName() + ":" + admin.getPreferredMatchValue();
+        }
+    }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public AdminPreference getAdminPreference(final String certificatefingerprint) {
+    public AdminPreference getAdminPreference(final AuthenticationToken admin) {
         if (log.isTraceEnabled()) {
             log.trace(">getAdminPreference()");
         }
+        final String id = makeAdminPreferenceId(admin);
         AdminPreference ret = null;
-        if (certificatefingerprint != null) {
-            AdminPreferencesData adminPreferencesData = AdminPreferencesData.findById(entityManager, certificatefingerprint);
+        if (id != null) {
+            final AdminPreferencesData adminPreferencesData = AdminPreferencesData.findById(entityManager, id);
             if (adminPreferencesData != null) {
                 ret = adminPreferencesData.getAdminPreference();
             }
@@ -86,7 +99,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         }
         return ret;
     }
-    
+
     @Override
     public Map<String, AdminPreference> getAdminPreferences() {
         if (log.isTraceEnabled()) {
@@ -107,22 +120,21 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public boolean addAdminPreference(final X509CertificateAuthenticationToken admin, final AdminPreference adminpreference) {
-        String certificatefingerprint = CertTools.getFingerprintAsString(admin.getCertificate());
+    public boolean addAdminPreference(final AuthenticationToken admin, final AdminPreference adminpreference) {
+        String id = makeAdminPreferenceId(admin);
         if (log.isTraceEnabled()) {
-            log.trace(">addAdminPreference(fingerprint : " + certificatefingerprint + ")");
+            log.trace(">addAdminPreference(id : " + id + ")");
         }
         boolean ret = false;
         // EJB 2.1 only?: We must actually check if there is one before we try
         // to add it, because wls does not allow us to catch any errors if
         // creating fails, that sux
-       
-        if (AdminPreferencesData.findById(entityManager, certificatefingerprint) == null) {
+        if (AdminPreferencesData.findById(entityManager, id) == null) {
             try {
-                AdminPreferencesData apdata = new AdminPreferencesData(certificatefingerprint, adminpreference);
+                AdminPreferencesData apdata = new AdminPreferencesData(id, adminpreference);
                 entityManager.persist(apdata);
                 String msg = intres.getLocalizedMessage("ra.adminprefadded", apdata.getId());
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_ADDADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                 ret = true;
@@ -139,24 +151,25 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public boolean changeAdminPreference(final X509CertificateAuthenticationToken admin, final AdminPreference adminpreference) {
+    public boolean changeAdminPreference(final AuthenticationToken admin, final AdminPreference adminpreference) {
         return updateAdminPreference(admin, adminpreference, true);
     }
 
     @Override
-    public boolean changeAdminPreferenceNoLog(final X509CertificateAuthenticationToken admin, final AdminPreference adminpreference) {
+    public boolean changeAdminPreferenceNoLog(final AuthenticationToken admin, final AdminPreference adminpreference) {
         return updateAdminPreference(admin, adminpreference, false);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsAdminPreference(final String certificatefingerprint) {
+    public boolean existsAdminPreference(final AuthenticationToken admin) {
+        final String id = makeAdminPreferenceId(admin);
         if (log.isTraceEnabled()) {
-            log.trace(">existsAdminPreference(fingerprint : " + certificatefingerprint + ")");
+            log.trace(">existsAdminPreference(id : " + id + ")");
         }
         boolean ret = false;
-        if (certificatefingerprint!=null) {
-            final AdminPreferencesData adminPreferencesData = AdminPreferencesData.findById(entityManager, certificatefingerprint);
+        if (id != null) {
+            final AdminPreferencesData adminPreferencesData = AdminPreferencesData.findById(entityManager, id);
             if (adminPreferencesData != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Found admin preferences with id " + adminPreferencesData.getId());
@@ -168,10 +181,11 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         return ret;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public RaStyleInfo getPreferedRaStyleInfo(AuthenticationToken admin) {
-        List<RaStyleInfo> availableRaStyles = getAvailableRaStyleInfos(admin);
-        Integer preferedStyleId = getCurrentRaStyleId(admin);
+    public RaStyleInfo getPreferedRaStyleInfo(final AuthenticationToken admin) {
+        final List<RaStyleInfo> availableRaStyles = getAvailableRaStyleInfos(admin);
+        final Integer preferedStyleId = getCurrentRaStyleId(admin);
         // Administrator hasn't set a preferred style. Use first available
         if (preferedStyleId == null && !availableRaStyles.isEmpty()) {
             return availableRaStyles.get(0);
@@ -182,7 +196,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         }
         
         // Return the style preferred by administrator
-        for (RaStyleInfo rastyle : availableRaStyles) {
+        for (final RaStyleInfo rastyle : availableRaStyles) {
             if (preferedStyleId == rastyle.getArchiveId()) {
                 return rastyle;
             }
@@ -192,6 +206,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         return availableRaStyles.get(0);
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin) {
         return raStyleCacheBean.getAvailableRaStyles(admin);
@@ -236,19 +251,19 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
 
         if (!authorizationSession.isAuthorized(admin, StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
             String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.SYSTEMCONFIGURATION_EDIT, null);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
             throw new AuthorizationDeniedException(msg);
         }
 
-        AdminPreferencesData apdata = AdminPreferencesData.findById(entityManager, DEFAULTUSERPREFERENCE);
+        final AdminPreferencesData apdata = AdminPreferencesData.findById(entityManager, DEFAULTUSERPREFERENCE);
         if (apdata != null) {
             final Map<Object, Object> diff = apdata.getAdminPreference().diff(defaultadminpreference);
             apdata.setAdminPreference(defaultadminpreference);
             final String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 details.put(entry.getKey().toString(), entry.getValue().toString());
@@ -269,13 +284,13 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
      * Changes the admin preference in the database. Returns false if admin
      * preference doesn't exist.
      */
-    private boolean updateAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference, boolean dolog) {
-        String certificatefingerprint = CertTools.getFingerprintAsString(admin.getCertificate());
+    private boolean updateAdminPreference(final AuthenticationToken admin, AdminPreference adminpreference, boolean dolog) {
+        String id = makeAdminPreferenceId(admin);
         if (log.isTraceEnabled()) {
-            log.trace(">updateAdminPreference(fingerprint : " + certificatefingerprint + ")");
+            log.trace(">updateAdminPreference(id : " + id + ")");
         }
         boolean ret = false;
-        AdminPreferencesData apdata1 = AdminPreferencesData.findById(entityManager, certificatefingerprint);
+        final AdminPreferencesData apdata1 = AdminPreferencesData.findById(entityManager, id);
         if (apdata1 != null) {
             final Map<Object, Object> diff = apdata1.getAdminPreference().diff(adminpreference);
             apdata1.setAdminPreference(adminpreference);
@@ -299,8 +314,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
              * +certificatefingerprint); }
              */
             if (dolog) {
-                final String msg = intres.getLocalizedMessage("ra.changedadminpref", certificatefingerprint);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final String msg = intres.getLocalizedMessage("ra.changedadminpref", id);
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                     details.put(entry.getKey().toString(), entry.getValue().toString());
@@ -311,7 +326,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         } else {
             ret = false;
             if (dolog) {
-                final String msg = intres.getLocalizedMessage("ra.adminprefnotfound", certificatefingerprint);
+                final String msg = intres.getLocalizedMessage("ra.adminprefnotfound", id);
                 log.info(msg);
             }
         }
@@ -321,23 +336,15 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         return ret;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Integer getCurrentRaStyleId(AuthenticationToken admin) {
-        
-        if (!(admin instanceof X509CertificateAuthenticationToken)) {
-            return null;
-        }
-
-        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-
-        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-
+    public Integer getCurrentRaStyleId(final AuthenticationToken admin) {
+        final AdminPreference adminPreference = getAdminPreference(admin);
         if (adminPreference == null) {
             return null;
         }
 
-        Integer currentStyleId = adminPreference.getPreferedRaStyleId();
-
+        final Integer currentStyleId = adminPreference.getPreferedRaStyleId();
         if (currentStyleId != null) {
             return currentStyleId;
         }
@@ -346,34 +353,22 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public void setCurrentRaStyleId(int currentStyleId, AuthenticationToken admin) {
-        
-        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-
-        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-        
+    public void setCurrentRaStyleId(final int currentStyleId, final AuthenticationToken admin) {
+        final AdminPreference adminPreference = getAdminPreference(admin);
         adminPreference.setPreferedRaStyleId(currentStyleId);
-        updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);
+        updateAdminPreference(admin, adminPreference, false);
         
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Locale getCurrentRaLocale(AuthenticationToken admin) {
-        
-        if (!(admin instanceof X509CertificateAuthenticationToken)) {
-            return null;
-        }
-
-        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-
-        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-
+    public Locale getCurrentRaLocale(final AuthenticationToken admin) {
+        final AdminPreference adminPreference = getAdminPreference(admin);
         if (adminPreference == null) {
             return getDefaultAdminPreference().getPreferedRaLanguage();
         }
 
-        Locale currentLocale = adminPreference.getPreferedRaLanguage();
-
+        final Locale currentLocale = adminPreference.getPreferedRaLanguage();
         if (currentLocale != null) {
             return currentLocale;
         }
@@ -382,14 +377,10 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public void setCurrentRaLocale(Locale locale, AuthenticationToken admin) {
-        
-        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-        
-        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-        
+    public void setCurrentRaLocale(final Locale locale, final AuthenticationToken admin) {
+        final AdminPreference adminPreference = getAdminPreference(admin);
         adminPreference.setPreferedRaLanguage(locale);
-        updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);
+        updateAdminPreference(admin, adminPreference, false);
         
     }
 
