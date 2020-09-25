@@ -51,20 +51,23 @@ public class AdminPreferenceTest extends CaTestCase {
 
     private AdminPreferenceSessionRemote adminPreferenceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
 
-    private String user;
+    private String adminFingerprint;
 
+    @Override
     public String getRoleName() {
         return "AdminPreferenceTest";
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         authenticatedToken = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
                 .authenticate(new AuthenticationSubject(null, null));
-        user = CertTools.getFingerprintAsString(authenticatedToken.getCertificate());
+        adminFingerprint = CertTools.getFingerprintAsString(authenticatedToken.getCertificate());
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -83,9 +86,9 @@ public class AdminPreferenceTest extends CaTestCase {
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
         boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
-        assertTrue("Adminpref for " + user + " should not exist", ret);
+        assertTrue("Adminpref for " + adminFingerprint + " should not exist", ret);
         ret = this.adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
-        assertFalse("Adminpref for " + user + " should exist", ret);
+        assertFalse("Adminpref for " + adminFingerprint + " should exist", ret);
         log.trace("<test01AddAdminPreference()");
     }
 
@@ -102,13 +105,13 @@ public class AdminPreferenceTest extends CaTestCase {
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
         adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
-        pref = this.adminPreferenceSession.getAdminPreference(user);
+        pref = this.adminPreferenceSession.getAdminPreference(authenticatedToken);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
         boolean ret = this.adminPreferenceSession.changeAdminPreference(authenticatedToken, pref);
-        assertTrue("Adminpref for " + user + " should exist", ret);
-        pref = this.adminPreferenceSession.getAdminPreference(user);
+        assertTrue("Adminpref for " + adminFingerprint + " should exist", ret);
+        pref = this.adminPreferenceSession.getAdminPreference(authenticatedToken);
         assertEquals(pref.getPreferedLanguage(), 2);
         log.trace("<test02ModifyAdminPreference()");
     }
