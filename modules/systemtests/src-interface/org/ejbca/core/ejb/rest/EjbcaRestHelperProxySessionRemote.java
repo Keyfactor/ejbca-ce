@@ -10,24 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.ejb.rest;
-
-import java.security.cert.X509Certificate;
-
-import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.EjbcaException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
-@Local
-public interface EjbcaRestHelperSessionLocal extends EjbcaRestHelperSession {
+import javax.ejb.Remote;
+import java.security.cert.X509Certificate;
+
+@Remote
+public interface EjbcaRestHelperProxySessionRemote {
 
     /**
      * Gets an AuthenticationToken object authenticated with the given X509 certificate or OAuth token. If both provided,
@@ -39,13 +31,5 @@ public interface EjbcaRestHelperSessionLocal extends EjbcaRestHelperSession {
      * @return AuthenticationToken object based on the SSL client certificate
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins = false and the certificate does not belong to an administrator
      */
-    AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException;
-
-    /**
-     * Compose EndEntityInformation object based on EnrollPkcs10CertificateRequest input
-     * @param authenticationToken of the requesting administrator
-     * @param enrollcertificateRequest input data object for enrolling a certificate
-     */
-    public EndEntityInformation convertToEndEntityInformation(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest)
-            throws AuthorizationDeniedException, EndEntityProfileNotFoundException, EjbcaException, CertificateProfileDoesNotExistException, CADoesntExistsException;
+    AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException;
 }
