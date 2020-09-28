@@ -41,12 +41,10 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
@@ -57,10 +55,10 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EndEntityRevocationRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntitiesRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchEndEntitiesRestResponse;
 
@@ -77,11 +75,7 @@ import io.swagger.annotations.ApiParam;
 public class EndEntityRestResource extends BaseRestResource {
 
     @EJB
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     
     private static final Logger log = Logger.getLogger(EndEntityRestResource.class);
 
