@@ -557,7 +557,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public String getBaseUrl() {
-        return globalconfiguration == null ? null : globalconfiguration.getBaseUrl(requestScheme, requestServerName, requestServerPort);
+        return globalconfiguration == null ? null : globalconfiguration.getRelativeUri();
+    }
+
+    @Override
+    public String getAdminWebBaseUrl() {
+        return globalconfiguration == null ? null : globalconfiguration.getRelativeUri() + globalconfiguration.getAdminWebPath();
     }
 
     @Override
@@ -600,7 +605,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (globalconfiguration == null) {
             return null;
         }
-        String returnedurl = null;
         final String[] strs = adminsweblanguage.getAvailableLanguages();
         final int index = currentAdminPreference.getPreferedLanguage();
         final String prefered = strs[index];
@@ -610,53 +614,19 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String theme = currentAdminPreference.getTheme().toLowerCase();
         final String postfix = imagefilename.substring(imagefilename.lastIndexOf('.') + 1);
 
-        final String preferedthemefilename = "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + prefered + "." + postfix;
-        final String secondarythemefilename = "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + secondary + "." + postfix;
-        final String themefilename = "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + postfix;
-
-        final String preferedfilename = "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + prefered + "." + postfix;
-
-        final String secondaryfilename = "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + secondary + "." + postfix;
-
-        final String preferedthemeurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getImagesPath() + "/" + imagefile + "."
-                + theme + "." + prefered + "." + postfix;
-
-        final String secondarythemeurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getImagesPath() + "/" + imagefile + "."
-                + theme + "." + secondary + "." + postfix;
-
-        final String imagethemeurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getImagesPath() + "/" + imagefile + "."
-                + theme + "." + postfix;
-
-        final String preferedurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getImagesPath() + "/" + imagefile + "."
-                + prefered + "." + postfix;
-
-        final String secondaryurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getImagesPath() + "/" + imagefile + "."
-                + secondary + "." + postfix;
-
-        final String imageurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getImagesPath() + "/" + imagefile + "."
-                + postfix;
-        if (this.getClass().getResourceAsStream(preferedthemefilename) != null) {
-            returnedurl = preferedthemeurl;
-        } else {
-            if (this.getClass().getResourceAsStream(secondarythemefilename) != null) {
-                returnedurl = secondarythemeurl;
-            } else {
-                if (this.getClass().getResourceAsStream(themefilename) != null) {
-                    returnedurl = imagethemeurl;
-                } else {
-                    if (this.getClass().getResourceAsStream(preferedfilename) != null) {
-                        returnedurl = preferedurl;
-                    } else {
-                        if (this.getClass().getResourceAsStream(secondaryfilename) != null) {
-                            returnedurl = secondaryurl;
-                        } else {
-                            returnedurl = imageurl;
-                        }
-                    }
-                }
+        final String[] filepaths = new String[] {
+                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + prefered + "." + postfix,
+                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + secondary + "." + postfix,
+                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + postfix,
+                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + prefered + "." + postfix,
+                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + secondary + "." + postfix,
+        };
+        for (final String filepath : filepaths) {
+            if (this.getClass().getResourceAsStream(filepath) != null) {
+                return filepath;
             }
         }
-        return returnedurl;
+        return "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + postfix;
     }
 
     @Override
