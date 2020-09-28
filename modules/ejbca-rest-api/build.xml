@@ -23,6 +23,7 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
+        <path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
         <path refid="lib.json-smart.classpath"/>
@@ -37,7 +38,7 @@
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
         <path location="${mod.ejbca-rest-camanagement.lib}"/>
         <path location="${mod.ejbca-rest-endentity.lib}"/>
-		<path refid="lib.jboss-logging.classpath"/>
+		<path location="${mod.ejbca-ws.lib}"/>
 	</path>
 
 	<path id="compile-test.classpath">
