@@ -162,6 +162,7 @@ public class RestResourceSystemTestBase {
     protected static final int HTTP_STATUS_CODE_ACCEPTED = 202;
 
     static {
+        clearLoginCertificateSetup(); // Always make sure we start with a clean environment
         try {
             // Trusted CA setup: import CA that issued server certificate into trustedKeyStore (configurable with target.servercert.ca)
             final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(INTERNAL_ADMIN_TOKEN);
