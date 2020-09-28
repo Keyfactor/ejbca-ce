@@ -334,6 +334,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     value = parseObject(new InternalKeyBindingTrustEntry());
                     break;
                 case "org.ejbca.core.model.ra.raadmin.UserNotification":
+                case "org.ejbca.core.model.ra.UserDataVO":
                 case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
                 case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
                 case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
