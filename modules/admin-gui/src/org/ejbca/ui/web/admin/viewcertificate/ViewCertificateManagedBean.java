@@ -149,7 +149,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             caId = Integer.parseInt(caIdParameter);           
         }
         
-        raBean.initialize(request, ejbcaBean);
+        raBean.initialize(ejbcaBean);
         caBean.initialize(ejbcaBean);
         
         useKeyRecovery = globalconfiguration.getEnableKeyRecovery() && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY);

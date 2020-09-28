@@ -102,7 +102,11 @@ public interface EjbcaWebBean extends Serializable {
      */
     boolean isAuthorizedNoLogSilent(final String... resources);
 
+    /** Returns a relative URL to the base of the EJBCA application, usually /ejbca/ */
     String getBaseUrl();
+
+    /** Returns a relative URL to the base of the EJBCA admin web, usually /ejbca/adminweb/ */
+    String getAdminWebBaseUrl();
 
     String getReportsPath();
 

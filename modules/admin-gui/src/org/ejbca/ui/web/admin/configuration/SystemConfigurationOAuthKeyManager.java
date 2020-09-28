@@ -16,15 +16,18 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyManager;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 
 /**
  * This class is used to manage OAuth Keys in EJBCA's system configuration. It adds some additional
  * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
  * new OAuth Keys.
- *
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
@@ -32,6 +35,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final OAuthKeyEditor oauthKeyEditor;
+    private AuthenticationToken adminToken;
 
     public class OAuthKeyEditor {
         private String keyIdentifier;
@@ -39,7 +43,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
         private String defaultKeyIdentifier;
-
+        
         public String getKeyIdentifier() {
             return keyIdentifier;
         }
@@ -55,7 +59,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public String getDefaultKeyIdentifier() {
             return defaultKeyIdentifier;
         }
-
+        
         public void setKeyIdentifier(final String keyIdentifier) {
             this.keyIdentifier = keyIdentifier;
         }
@@ -71,7 +75,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void setDefaultKeyIdentifier(final String defaultKeyIdentifier) {
             this.defaultKeyIdentifier = defaultKeyIdentifier;
         }
-
+        
         /**
          * Load an existing OAuth Key into the editor.
          */
@@ -145,6 +149,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         this.systemConfigurationHelper = systemConfigurationHelper;
         this.oauthKeyEditor = new OAuthKeyEditor();
     }
+    
+    public AuthenticationToken getAdminToken() {
+        return adminToken;
+    }
+    
+    public void setAdminToken(final AuthenticationToken adminToken) {
+        this.adminToken = adminToken;
+    }
 
     private byte[] getOauthKeyPublicKey(final UploadedFile upload) {
         if (log.isDebugEnabled()) {
@@ -198,6 +210,16 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
     @Override
     public void removeOauthKey(final OAuthKeyInfo oauthKey) {
+        if (getAdminToken() instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken oauth2token = (OAuth2AuthenticationToken) getAdminToken();
+            oauthKeyEditor.loadIntoEditor(oauthKey, oauthKey.getKeyIdentifier());
+            String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(oauthKeyEditor.oauthKeyBeingEdited.getPublicKeyBytes()));
+            oauthKeyEditor.stopEditing();
+            if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_PUBLICKEYREMOVALNOTPOSSIBLE");
+                return;
+            }
+        }
         super.removeOauthKey(oauthKey);
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
     }
@@ -242,6 +264,18 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
         final OAuthKeyInfo oauthKeyToUpdate = oauthKeyEditor.getOauthKeyBeingEdited();
+        
+        /*
+         * Check that we don't lock out current administrator by changing the key id of currently used token
+         */
+        if ((getAdminToken() != null) && getAdminToken()instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken adminToken = (OAuth2AuthenticationToken) getAdminToken();
+            String str = Base64.toBase64String(CertTools.generateSHA256Fingerprint(oauthKeyToUpdate.getPublicKeyBytes()));
+            if (str.equals(adminToken.getPublicKeyBase64Fingerprint()) && !oauthKeyToUpdate.getKeyIdentifier().equals(oauthKeyEditor.getKeyIdentifier())) {
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_EDITKEYIDNOTPOSSIBLE");
+                return StringUtils.EMPTY;
+            }
+        }
         final String keyIdentifier = oauthKeyEditor.getKeyIdentifier();
         if (!super.canEdit(oauthKeyToUpdate, keyIdentifier)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");

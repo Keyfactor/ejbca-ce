@@ -74,13 +74,13 @@
 			</f:facet>
 		</h:column>
 		<h:column>
-			<h:commandButton actionListener="#{auditor.removeCondition}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-failed.png">
+			<h:commandButton actionListener="#{auditor.removeCondition}" styleClass="commandLink" image="/images/verify-log-failed.png">
 				<f:attribute name="removeCondition" value="#{condition}" />
 			</h:commandButton>
 			<f:facet name="footer">
 				<h:panelGroup rendered="#{auditor.conditionToAdd != null}">
-					<h:commandButton action="#{auditor.addCondition}" styleClass="commandLinkAudit" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-success.png"/>
-					<h:commandButton action="#{auditor.cancelCondition}" styleClass="commandLinkAudit" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-failed.png"/>
+					<h:commandButton action="#{auditor.addCondition}" styleClass="commandLinkAudit" image="/images/verify-log-success.png"/>
+					<h:commandButton action="#{auditor.cancelCondition}" styleClass="commandLinkAudit" image="/images/verify-log-failed.png"/>
 				</h:panelGroup>
 			</f:facet>
 		</h:column>

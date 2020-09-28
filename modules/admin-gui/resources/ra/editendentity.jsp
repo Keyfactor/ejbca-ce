@@ -105,9 +105,9 @@
     // Initialize environment.
     GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
     AccessRulesConstants.REGULAR_EDITENDENTITY);
-    rabean.initialize(request, ejbcawebbean);
+    rabean.initialize(ejbcawebbean);
     
-    String THIS_FILENAME = globalconfiguration.getRaPath() + "/editendentity.jsp";
+    String THIS_FILENAME = "editendentity.jsp";
     String username = null;
     EndEntityProfile profile = null;
     UserView userdata = null;
@@ -603,7 +603,7 @@
         usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
     }
 
-    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid, AccessRulesConstants.EDIT_END_ENTITY);
+    Map<Integer, List<Integer>> availablecas = rabean.getCasAvailableToEndEntity(profileid);
     if (userdata!=null) {
         editendentitybean.setExtendedInformation(userdata.getExtendedInformation());
     }
@@ -614,9 +614,8 @@
 %>
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
-  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
+  <link rel="stylesheet" type="text/css" href="<c:out value='<%= ejbcawebbean.getBaseUrl() + ejbcawebbean.getCssFile() %>' />" />
   <script type="text/javascript">
    <!--
 
@@ -920,7 +919,7 @@ function checkUseInBatch(){
 
    -->
   </script>
-  <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript" src="<%= ejbcawebbean.getAdminWebBaseUrl() %>ejbcajslib.js"></script>
 </head>
 
 <body class="popup" id="editendentity"
