@@ -113,8 +113,6 @@ import org.ejbca.util.HttpTools;
  * <p>
  * Do not add page specific code here, use a ManagedBean for that.
  * </p>
- *
- * @version $Id$
  */
 public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
