@@ -47,8 +47,6 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /**
  * Stores data used by web server clients.
- * 
- * @version $Id: RaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -294,25 +292,6 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         if (apdata1 != null) {
             final Map<Object, Object> diff = apdata1.getAdminPreference().diff(adminpreference);
             apdata1.setAdminPreference(adminpreference);
-            // Earlier we used to remove and re-add the adminpreferences data
-            // I don't know why, but that did not work on Oracle AS, so lets
-            // just do what create does, and setAdminPreference.
-            /*
-             * adminpreferenceshome.remove(certificatefingerprint); try{
-             * AdminPreferencesDataLocal apdata2 =
-             * adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
-             * debug("Found admin preferences with id: "+apdata2.getId()); }
-             * catch (javax.ejb.FinderException fe) {
-             * debug("Admin preferences has been removed: "
-             * +certificatefingerprint); }
-             * adminpreferenceshome.create(certificatefingerprint
-             * ,adminpreference); try{ AdminPreferencesDataLocal apdata3 =
-             * adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
-             * debug("Found admin preferences with id: "+apdata3.getId()); }
-             * catch (javax.ejb.FinderException fe) {
-             * error("Admin preferences was not created: "
-             * +certificatefingerprint); }
-             */
             if (dolog) {
                 final String msg = intres.getLocalizedMessage("ra.changedadminpref", id);
                 final Map<String, Object> details = new LinkedHashMap<>();
