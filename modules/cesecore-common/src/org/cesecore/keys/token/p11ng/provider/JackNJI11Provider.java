@@ -30,7 +30,9 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -40,8 +42,6 @@ import org.pkcs11.jacknji11.CKM;
 
 /**
  * Provider using JackNJI11.
- *
- * @version $Id$
  */
 public class JackNJI11Provider extends Provider {
 
@@ -74,6 +74,13 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED25519, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED448, MySignature.class.getName()));
+        // TODO: workaround for EdDSA. It seems like
+        // org.bouncycastle.operator.jcajce.JcaContentSignerBuilder.build, when passed in Ed25519 converts it into oid 1.3.101.112
+        // but when using ECDSA for example SHA256WithECDSA is passed on with a name
+        putService(new MySigningService(this, "Signature", EdECObjectIdentifiers.id_Ed25519.getId(), MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", EdECObjectIdentifiers.id_Ed448.getId(), MySignature.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA256", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA384", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
@@ -152,7 +159,7 @@ public class JackNJI11Provider extends Provider {
         private static final Logger log = Logger.getLogger(MySignature.class);
 
         private final JackNJI11Provider provider;
-        private final String algorithm;
+        private String algorithm;
         private NJI11Object myKey;
         private long session;
         private ByteArrayOutputStream buffer;
@@ -164,20 +171,37 @@ public class JackNJI11Provider extends Provider {
         private final static int T_DIGEST = 1;
         // constant for type update, token does everything
         private final static int T_UPDATE = 2;
-        // constant for type raw, used with NONEwithRSA only
+        // constant for type raw, used with NONEwithRSA and EdDSA only
         private final static int T_RAW = 3;
         
         
         public MySignature(Provider provider, String algorithm) {
             super();
             this.provider = (JackNJI11Provider) provider;
-            this.algorithm = algorithm;
+            // TODO: workaround for EdDSA. It seems like
+            // org.bouncycastle.operator.jcajce.JcaContentSignerBuilder.build, when passed in Ed25519 converts it into oid 1.3.101.112
+            // but when using ECDSA for example SHA256WithECDSA is passed on with a name
+            try {
+                ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(algorithm);
+                // It was an oid, we should change it into a name
+                if (EdECObjectIdentifiers.id_Ed25519.getId().equals(algorithm)) {
+                    this.algorithm = AlgorithmConstants.KEYALGORITHM_ED25519;
+                } else if (EdECObjectIdentifiers.id_Ed448.getId().equals(algorithm)) {
+                    this.algorithm = AlgorithmConstants.KEYALGORITHM_ED448;
+                } else {
+                    // We don't know pass it as it is
+                    this.algorithm = algorithm;
+                }
+            } catch (IllegalArgumentException e) {
+                // It was not an OID, it was a name
+                this.algorithm = algorithm;
+            }
 
-            if (algorithm.equals("NONEwithRSA")) {
+            if (algorithm.equals("NONEwithRSA") || this.algorithm.startsWith("Ed")) {
                 type = T_RAW;
             } else if (algorithm.contains("ECDSA")) {
                 type = T_DIGEST;
-            } else {
+            } else { // SHA256WithRSA, etc
                 type = T_UPDATE;
             }
         }
