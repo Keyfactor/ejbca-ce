@@ -76,11 +76,6 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED25519, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED448, MySignature.class.getName()));
-        // TODO: workaround for EdDSA. It seems like
-        // org.bouncycastle.operator.jcajce.JcaContentSignerBuilder.build, when passed in Ed25519 converts it into oid 1.3.101.112
-        // but when using ECDSA for example SHA256WithECDSA is passed on with a name
-        putService(new MySigningService(this, "Signature", EdECObjectIdentifiers.id_Ed25519.getId(), MySignature.class.getName()));
-        putService(new MySigningService(this, "Signature", EdECObjectIdentifiers.id_Ed448.getId(), MySignature.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA256", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA384", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
@@ -178,26 +173,8 @@ public class JackNJI11Provider extends Provider {
         public MySignature(Provider provider, String algorithm) {
             super();
             this.provider = (JackNJI11Provider) provider;
-            // TODO: workaround for EdDSA. It seems like
-            // org.bouncycastle.operator.jcajce.JcaContentSignerBuilder.build, when passed in Ed25519 converts it into oid 1.3.101.112
-            // but when using ECDSA for example SHA256WithECDSA is passed on with a name
-            try {
-                ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(algorithm);
-                // It was an oid, we should change it into a name
-                if (EdECObjectIdentifiers.id_Ed25519.getId().equals(algorithm)) {
-                    this.algorithm = AlgorithmConstants.KEYALGORITHM_ED25519;
-                } else if (EdECObjectIdentifiers.id_Ed448.getId().equals(algorithm)) {
-                    this.algorithm = AlgorithmConstants.KEYALGORITHM_ED448;
-                } else {
-                    // We don't know pass it as it is
-                    this.algorithm = algorithm;
-                }
-            } catch (IllegalArgumentException e) {
-                // It was not an OID, it was a name
-                this.algorithm = algorithm;
-            }
-
-            if (algorithm.equals("NONEwithRSA") || this.algorithm.startsWith("Ed")) {
+            this.algorithm = algorithm;
+            if (algorithm.equals("NONEwithRSA") || algorithm.startsWith("Ed")) {
                 type = T_RAW;
             } else if (algorithm.contains("ECDSA")) {
                 type = T_DIGEST;
