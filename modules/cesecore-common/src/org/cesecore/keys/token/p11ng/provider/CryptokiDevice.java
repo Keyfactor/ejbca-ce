@@ -72,6 +72,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -115,8 +116,6 @@ import org.pkcs11.jacknji11.LongRef;
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
- *
- * @version $Id$
  */
 public class CryptokiDevice {
     /** Logger for this class. */
@@ -621,17 +620,23 @@ public class CryptokiDevice {
                         // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
                         {
                             final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
-                            if (bcspec == null) {
+                            if (bcspec != null) {
+                                final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
+                                final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                        ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
+                                final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
+                                final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                                return keyfact.generatePublic(pubKeySpec);
+                            } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
+                                // It is an EdDSA key
+                                X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
+                                final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
+                                return keyfact.generatePublic(edSpec);
+                            } else {
                                 LOG.warn("Could not find an elliptic curve with the specified OID " + oid.getId() + ", not returning public key with alias '" + alias +"'.");
                                 return null;
                             }
-                            final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
-                            final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
-                                    ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
-                            final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
-                            final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
-                            final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
-                            return keyfact.generatePublic(pubKeySpec);
                         }
                     } else {
                         final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
@@ -654,7 +659,7 @@ public class CryptokiDevice {
                     }
                 }
                 return null;
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException | CKRException ex) {
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException | IOException | CKRException ex) {
                 throw new RuntimeException("Unable to fetch public key.", ex);
             } finally {
                 if (session != null) {
@@ -662,6 +667,18 @@ public class CryptokiDevice {
                 }
             }
         }
+        /** Takes the EC point bytes from an EdDSA key and creates a keyspec that we can use to generate the public key object */ 
+        private X509EncodedKeySpec createEdDSAPublicKeySpec(byte[] encPoint) throws IOException {
+            byte[] rawPoint = ASN1OctetString.getInstance(encPoint).getOctets();
+            AlgorithmIdentifier algId;
+            if (rawPoint.length == 32) {
+                algId = new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed25519);
+            } else {
+                algId = new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed448);
+            }
+            return new X509EncodedKeySpec(new SubjectPublicKeyInfo(algId, rawPoint).getEncoded());
+        }
+
 
         public JackNJI11Provider getProvider() {
             return provider;
@@ -973,7 +990,13 @@ public class CryptokiDevice {
                 
                 final LongRef publicKeyRef = new LongRef();
                 final LongRef privateKeyRef = new LongRef();
-                c.GenerateKeyPair(session, new CKM(CKM.ECDSA_KEY_PAIR_GEN), toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
+                final CKM ckm;
+                if (oid.equals(EdECObjectIdentifiers.id_Ed25519) || oid.equals(EdECObjectIdentifiers.id_Ed448)) {
+                    ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
+                } else {
+                    ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
+                }
+                c.GenerateKeyPair(session, ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
                         publicKeyRef, privateKeyRef);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated EC public key " + publicKeyRef.value + " and EC private key " + privateKeyRef.value + ".");
