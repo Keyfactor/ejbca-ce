@@ -513,8 +513,8 @@ public class EjbcaWS implements IEjbcaWS {
         final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
             certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTime(getAdmin(), days, maxNumberOfResults, 0));
-        } catch (AuthorizationDeniedException e1) {
-            // No authorization required.
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, null, ErrorCode.NOT_AUTHORIZED, Level.INFO);
         }
         return unwrapCertificatesOrThrowInternalException(certificates);
     }
@@ -525,8 +525,8 @@ public class EjbcaWS implements IEjbcaWS {
 	    final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
             certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndIssuer(getAdmin(), days, issuer, maxNumberOfResults));
-        } catch (AuthorizationDeniedException e1) {
-            // No authorization required.
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, null, ErrorCode.NOT_AUTHORIZED, Level.INFO);
         }
         return unwrapCertificatesOrThrowInternalException(certificates);
     }
@@ -537,8 +537,8 @@ public class EjbcaWS implements IEjbcaWS {
         final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
             certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndType(getAdmin(), days, certificateType, maxNumberOfResults));
-        } catch (AuthorizationDeniedException e1) {
-            // No authorization required.
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, null, ErrorCode.NOT_AUTHORIZED, Level.INFO);
         }
         return unwrapCertificatesOrThrowInternalException(certificates);
     }

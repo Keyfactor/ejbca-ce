@@ -34,7 +34,7 @@
         </war>
     </target>
 
-    <target name="compile" depends="with.clover">
+    <target name="compile" depends="">
     	<mkdir dir="${renew-war.build.dir}/WEB-INF/classes" />
         <javac srcdir="${renew-war.src.dir}" destdir="${renew-war.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
