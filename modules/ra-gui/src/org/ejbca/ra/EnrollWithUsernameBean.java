@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -29,13 +30,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -43,8 +43,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * Managed bean that backs up the enrollwithusername.xhtml page. Extends EnrollWithRequestIdBean to make use of common code
- * 
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -188,16 +186,15 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             log.info("CSR uploaded was too large: "+valueStr.length());
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));            
         }
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
-        if (pkcs10CertificateRequest == null) {
+        RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(valueStr.getBytes());
+        if (certRequest == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
         
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
-        final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
+            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
@@ -211,9 +208,15 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             }
             setSelectedAlgorithm(keyAlgorithm + " " + keySpecification);
             // For yet unknown reasons, the setter is never when invoked during AJAX request
-            certificateRequest = value.toString();
+            certificateRequest = valueStr;
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+            final String msg = raLocaleBean.getMessage("enroll_unknown_key_algorithm");
+            if (log.isDebugEnabled()) {
+                log.debug(msg + ": " + e.getMessage());
+            }
+            throw new ValidatorException(new FacesMessage(msg));
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 
