@@ -96,8 +96,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     
     @Override
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModel(data);
-        uiModel.add(new DynamicUiProperty<String>("settings"));
+        super.initDynamicUiModel();
         final LinkedHashMap<String,String> labels = new LinkedHashMap<String,String>();
         labels.put("-1", "ALL");
         for (final String algorithm : AlgorithmTools.getAvailableKeyAlgorithms()) {

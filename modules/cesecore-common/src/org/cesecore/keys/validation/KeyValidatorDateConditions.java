@@ -15,7 +15,9 @@ package org.cesecore.keys.validation;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.util.IndexEnum;
 
@@ -95,6 +97,14 @@ public enum KeyValidatorDateConditions implements IndexEnum {
         return result;
     }
 
+    public static final Map<Integer,String> map() {
+        final Map<Integer,String> result = new LinkedHashMap<>();
+        for (KeyValidatorDateConditions index : values()) {
+            result.put(index.getIndex(), index.getLabel());
+        }
+        return result;
+    }
+    
     /**
      * Evaluates a date matches the given condition.
      * @param value the reference value.
