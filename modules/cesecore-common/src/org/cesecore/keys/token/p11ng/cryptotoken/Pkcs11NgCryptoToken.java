@@ -35,6 +35,7 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -55,9 +56,7 @@ import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 
-/**
- * 
- * @version $Id$
+/** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
 public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
 
@@ -259,6 +258,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
                 keyAlg = AlgorithmConstants.KEYALGORITHM_DSTU4145;
             } else if (!Character.isDigit(keySpec.charAt(0))) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+                // ECDSA also handled generation of EdDSA keys, because this is done in PKCS#11 v3 with CKA.EC_PARAMS, but with CKM.EC_EDWARDS_KEY_PAIR_GEN
             }
             if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_RSA)) {
                 slot.generateRsaKeyPair(keySpec, alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
@@ -266,6 +266,10 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
                     slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias);
+                } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias);
+                } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed448.getId()), alias);
                 } else {
                     throw new InvalidAlgorithmParameterException("The elliptic curve " + keySpec + " is not supported.");
                 }
