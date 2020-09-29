@@ -90,7 +90,7 @@
 		</war>
 	</target>
 
-	<target name="compile-war" depends="with.clover, compile">
+	<target name="compile-war" depends="compile">
 		<mkdir dir="${ssh.build-war.dir}/WEB-INF/classes" />
 	    <javac srcdir="${ssh.src-war.dir}" destdir="${ssh.build-war.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 	        	classpathref="compile.war.classpath"/>
@@ -125,7 +125,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ssh.dir}">
 			<classpath>
 	        	<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -141,7 +140,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ssh.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -161,7 +159,6 @@
 			<classpath>
         		<path refid="test.classpath"/>
 				<path location="${ssh.build-test.dir}" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
