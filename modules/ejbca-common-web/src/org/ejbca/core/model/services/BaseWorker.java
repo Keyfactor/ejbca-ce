@@ -178,13 +178,14 @@ public abstract class BaseWorker implements IWorker {
         return timeBeforeExpire * 1000;
     }
 
-	/** returns a collection of String with CAIds as gotten from the property  BaseWorker.PROP_CAIDSTOCHECK.
-	 * @param includeAllCAsIfNull set to true if the 'catch all' SecConst.ALLCAS should be included in the list IF there does not exist a list. This CAId is not recognized by all recipients...
-     * This is due to that the feature of selecting CAs was enabled in EJBCA 3.9.1, and we want the service to keep working even after an upgrade from an earlier version.
-	 * 
-	 * @return Collection<String> of integer CA ids in String form, use Integer.valueOf to convert to int.
-	 * 
-	 * @throws ServiceExecutionFailedException if any of the given values was not an integer, which should not normally happen. 
+	/**
+	 * Get a collection of CA IDS from the property BaseWorker.PROP_CAIDSTOCHECK.
+	 *
+	 * @param includeAllCAsIfNull set to true if the 'catch all' SecConst.ALLCAS should be included in the list if the property
+	 * BaseWorker.PROP_CAIDSTOCHECK does not exist. This is due to that the feature of selecting CAs was enabled in EJBCA 3.9.1,
+	 * and we want the service to keep working even after an upgrade from an earlier version.
+	 * @return a collection of integer CA IDs.
+	 * @throws ServiceExecutionFailedException if a CA ID could not be parsed as an integer, which should not normally happen.
 	 */
 	protected Collection<Integer> getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
 		if(cAIdsToCheck == null){
