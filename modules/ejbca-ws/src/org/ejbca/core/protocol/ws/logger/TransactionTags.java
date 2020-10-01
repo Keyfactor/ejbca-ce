@@ -18,7 +18,9 @@ public enum TransactionTags {
     ADMIN_DN,
     ADMIN_ISSUER_DN,
     ADMIN_REMOTE_IP,
-    ADMIN_FORWARDED_IP;
+    ADMIN_FORWARDED_IP,
+    TOKEN_ISSUER,
+    TOKEN_NAME;
     public String getTag() {
         return "${"+toString()+"}";
     }
