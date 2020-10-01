@@ -15,6 +15,7 @@ package org.cesecore.util.ui;
 
 import java.text.ParseException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.StringTools;
@@ -34,15 +35,22 @@ public class DateValidator implements DynamicUiPropertyValidator<String> {
     
     @Override
     public void validate(String value) throws PropertyValidationException {
-        if (StringTools.hasSqlStripChars(value).isEmpty()) {
-            try {
-                ValidityDate.parseAsIso8601(value);
-            } catch (ParseException e) {
+        if (!StringUtils.isEmpty(value)) {
+            if (StringTools.hasSqlStripChars(value).isEmpty()) {
+                try {
+                    ValidityDate.parseAsIso8601(value);
+                } catch (ParseException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Validating ISO8601 date component with value '" + value + "' failed.");
+                    }        
+                    throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.dateformat.failure", value.toString()));
+                }            
+            } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Validating date component with value '" + value + "' failed.");
-                }        
+                    log.debug("Date component contains offending SQL strip characters: '" + value + "'");
+                }
                 throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.dateformat.failure", value.toString()));
-            }            
+            }
         }
     }
 
