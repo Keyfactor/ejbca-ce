@@ -23,7 +23,6 @@ import org.cesecore.util.IndexEnum;
 
 /**
  * This class contains a representation of mathematical conditions, i.e <, <=, >, >=.
- * @version $Id$
  */
 public enum KeyValidatorDateConditions implements IndexEnum {
     /**
@@ -97,6 +96,9 @@ public enum KeyValidatorDateConditions implements IndexEnum {
         return result;
     }
 
+    /**
+     * @return index-label map of all date conditions.
+     */
     public static final Map<Integer,String> map() {
         final Map<Integer,String> result = new LinkedHashMap<>();
         for (KeyValidatorDateConditions index : values()) {

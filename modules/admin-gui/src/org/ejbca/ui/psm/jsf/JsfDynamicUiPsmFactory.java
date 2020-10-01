@@ -51,7 +51,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /**
  * Factory for PSM JSF 2 HTML components.
  *
- * @version $Id$
  */
 public class JsfDynamicUiPsmFactory {
 

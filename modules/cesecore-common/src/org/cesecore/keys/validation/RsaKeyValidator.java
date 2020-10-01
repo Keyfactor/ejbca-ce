@@ -43,7 +43,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
  * requirements. See: <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR section 6.1.6 (PDF)</a>
  *
- * @version $Id$
  */
 public class RsaKeyValidator extends KeyValidatorBase {
 
@@ -295,17 +294,9 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @param keyValidator
      */
     private void setCertProfileSettings() {
-        setBitLengths(new ArrayList<String>());
         // We'll only reset the bit lengths, because this is what is passed on to the certificate profiles
         // The other settings must be set manually anyhow and should not be reset
-//        setPublicKeyExponentOnlyAllowOdd(false);
-//        setPublicKeyExponentMin(null);
-//        setPublicKeyExponentMax(null);
-//        setPublicKeyModulusOnlyAllowOdd(false);
-//        setPublicKeyModulusDontAllowPowerOfPrime(false);
-//        setPublicKeyModulusMinFactor(null);
-//        setPublicKeyModulusMin(null);
-//        setPublicKeyModulusMax(null);
+        setBitLengths(new ArrayList<String>());
     }
 
     /**

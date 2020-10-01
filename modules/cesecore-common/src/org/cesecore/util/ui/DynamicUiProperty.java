@@ -895,6 +895,10 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return Boolean.class.getName().equals(getType().getName());
     }
 
+    /**
+     * Returns true if the property type is java.util.Date (this method is used because of the lack of 'instanceof' operator in JSF EL).
+     * @return true if the property type is java.util.Date
+     */
     public boolean isDateType() {
         return Date.class.getName().equals(getType().getName());
     }
