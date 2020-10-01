@@ -34,7 +34,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
-	<target name="jar" depends="with.clover">
+	<target name="jar" depends="">
 		<mkdir dir="${cesecore-entity.build.dir}/classes" />
 		<javac srcdir="${cesecore-entity.dir}/src" destdir="${cesecore-entity.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath" />
@@ -55,7 +55,7 @@
 		<delete dir="${cesecore-entity.build-test.dir}" />
 	</target>
 
-	<target name="compile-tests" depends="jar, with.clover">
+	<target name="compile-tests" depends="jar">
 		<mkdir dir="${cesecore-entity.build-test.dir}" />
 		<javac destdir="${cesecore-entity.build-test.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
 			<src path="${cesecore-common.dir}/cesecore-common/src-test"/>
@@ -78,7 +78,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-entity.dir}">
 			<classpath>
 				<path refid="test.classpath" />
-				<pathelement path="${clover.jar}" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -95,7 +94,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath" />
-				<pathelement path="${clover.jar}" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
