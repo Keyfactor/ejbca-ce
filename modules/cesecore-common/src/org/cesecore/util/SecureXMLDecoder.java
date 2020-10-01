@@ -327,6 +327,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     // so we can't recover that property
                     value = parseObject(new EndEntityInformation());
                     break;
+                    case "":
                 case "org.cesecore.certificates.endentity.ExtendedInformation":
                     value = parseObject(new ExtendedInformation());
                     break;
@@ -335,6 +336,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     break;
                 case "org.ejbca.core.model.ra.raadmin.UserNotification":
                 case "org.ejbca.core.model.ra.UserDataVO":
+                case "org.ejbca.core.model.ra.ExtendedInformation":
                 case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
                 case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
                 case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
