@@ -39,7 +39,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A, who both originate from X9.62)
  * requirements. See: <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR section 6.1.6 (PDF)</a>
  * 
- * @version $Id$
  */
 public class EccKeyValidator extends KeyValidatorBase {
 
