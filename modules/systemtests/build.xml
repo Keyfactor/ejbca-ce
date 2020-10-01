@@ -73,7 +73,6 @@
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
-		<pathelement path="${clover.jar}"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.json-smart.classpath"/>
 	</path>
@@ -148,7 +147,7 @@
 		<delete dir="${systemtests.dir}/reports" />
 	</target>
 
-	<target name="systemtest-compile-interfaces" depends="with.clover">
+	<target name="systemtest-compile-interfaces" depends="">
 		<mkdir dir="${systemtests.build.interface.dir}" />
 		<javac srcdir="${systemtests.src.interface.dir}" destdir="${systemtests.build.interface.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="interfaces.classpath" target="${java.target.version}">
@@ -158,7 +157,7 @@
 		<copy file="${systemtests.properties.file}" todir="${systemtests.build.interface.dir}" failonerror="false"/>
 	</target>
 
-	<target name="systemtest-compile-common" depends="with.clover">
+	<target name="systemtest-compile-common" depends="">
 		<mkdir dir="${systemtests.build.common.dir}" />
 		<javac srcdir="${systemtests.src.dir}" destdir="${systemtests.build.common.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="common.classpath" target="${java.target.version}">
@@ -175,7 +174,7 @@
 		</javac>
 	</target>
 
-	<target name="systemtest-compile-src" depends="with.clover">
+	<target name="systemtest-compile-src" depends="">
 		<mkdir dir="${systemtests.build.src.dir}" />
 		<javac srcdir="${systemtests.src.dir}" destdir="${systemtests.build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="UTF-8" classpathref="compile-ejb.classpath" target="${java.target.version}">	
@@ -204,7 +203,7 @@
 		</jar>
 	</target>
 
-	<target name="compile-tests" depends="assert-notinproduction, with.clover">
+	<target name="compile-tests" depends="assert-notinproduction">
 		<ant dir="${mod.ejbca-common.path}" target="compile-tests" inheritall="true" inheritrefs="true"/>
 		<mkdir dir="${systemtests.build.test.dir}" />
 		<javac srcdir="${systemtests.src.test.dir}" destdir="${systemtests.build.test.dir}" debug="on" includeantruntime="no"
@@ -270,7 +269,7 @@
 		<fail message="Please start application server before running this script" if="appserver.notrunning.ocsp"/>
 	</target>
 
-	<!-- If using antcall you must use inheritrefs="true" in order for not having to call clover-setup every time -->
+	<!-- If using antcall you must use inheritrefs="true" in order for not having to call some setup every time -->
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
 		<property name="test.runoneexclude" value=""/>
@@ -297,7 +296,6 @@
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="${runone-internal.classpath}" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
 			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
@@ -343,7 +341,6 @@
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
@@ -425,7 +422,6 @@
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
@@ -459,7 +455,6 @@
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
@@ -524,7 +519,6 @@
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
