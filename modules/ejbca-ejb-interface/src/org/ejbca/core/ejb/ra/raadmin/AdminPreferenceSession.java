@@ -17,69 +17,80 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
-/** Session bean to handle admin preference administration
- * 
- * @version $Id$
+/**
+ * Session bean to handle admin preference administration.
+ *
+ * Saving administrator preferences requires an authentication token that uniquely identifies
+ * the administrator (so it will not work with a public access authentication token).
+ *
+ * Currently the {@link X509CertificateAuthenticationToken} and
+ * {@link org.cesecore.authentication.tokens#OAuth2AuthenticationToken OAuth2AuthenticationToken}
+ * authentication tokens are supported.
  */
 public interface AdminPreferenceSession {
     
     /**
-     * Finds the admin preference belonging to a certificate serial number.
-     * 
-     * @param certificatefingerprint The certificate finger print of the certificate the admin uses as a credential.
-     * 
-     * @return null if the admin does not exist.
+     * Finds the admin preference belonging to the given administrator.
+     *
+     * @param admin Authentication token of the administrator
+     *
+     * @return null if the admin does not exist, or is a public access admin.
      */
-    AdminPreference getAdminPreference(String certificatefingerprint);
+    AdminPreference getAdminPreference(AuthenticationToken admin);
 
     /**
      * Adds a admin preference to the database.
-     * 
-     * @param admin An {@link X509CertificateAuthenticationToken} representing the admin the preference should 
-     *              cover.
+     *
+     * @param admin An {@link X509CertificateAuthenticationToken} or {@link org.cesecore.authentication.tokens#OAuth2AuthenticationToken OAuth2AuthenticationToken}
+     *              representing the admin the preference should cover.
      * @param adminpreference the admin preference to add. 
-     * 
-     *  @return  false if admin already exists.
+     *
+     * @return  false if admin already exists.
      */
-    boolean addAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
+    boolean addAdminPreference(AuthenticationToken admin, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database.
-     * 
-     * @param admin An {@link X509CertificateAuthenticationToken} representing the admin the preference should 
-     *              cover.
+     *
+     * @param admin An {@link X509CertificateAuthenticationToken} or {@link org.cesecore.authentication.tokens#OAuth2AuthenticationToken OAuth2AuthenticationToken}
+     *              representing the admin the preference should cover.
      * @param adminpreference the admin preference to add. 
-     * 
+     *
      * @return false if admin does not exist.
      */
-    boolean changeAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
+    boolean changeAdminPreference(AuthenticationToken admin, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database without logging. 
-     * @param admin An {@link X509CertificateAuthenticationToken} representing the admin the preference should 
-     *              cover.
+     *
+     * @param admin An {@link X509CertificateAuthenticationToken} or {@link org.cesecore.authentication.tokens#OAuth2AuthenticationToken OAuth2AuthenticationToken}
+     *              representing the admin the preference should cover.
      * @param adminpreference the admin preference to add. 
-     * 
+     *
      * @return false if admin does not exist.
      */
-    boolean changeAdminPreferenceNoLog(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
+    boolean changeAdminPreferenceNoLog(AuthenticationToken admin, AdminPreference adminpreference);
 
     /** 
-     * Checks if a admin preference exists in the database. 
-     * 
-     * @param certificatefingerprint The certificate finger print of the certificate the admin uses as a credential.
-     * 
+     * Checks if an admin preference exists in the database.
+     * Returns false if the authentication token is of an unsupported type
+     * (such as a public access token).
+     *
+     * @param admin Authentication token of the administrator
+     *
      * @return true if it exists
      */
-    boolean existsAdminPreference(String certificatefingerprint);
+    boolean existsAdminPreference(AuthenticationToken admin);
 
-    /** Function that returns the default admin preference. 
-     * 
+    /**
+     * Function that returns the default admin preference.
+     *
      * @return the default admin preference. 
      */
     AdminPreference getDefaultAdminPreference();
 
-    /** Function that saves the default admin preference. 
+    /**
+     * Function that saves the default admin preference.
      * @param admin An {@link AuthenticationToken} for authorization.
      * @param adminpreference The {@link AdminPreference} to save as default.
      * @throws AuthorizationDeniedException if the local {@link AuthenticationToken} wasn't authorized to /system_functionality/edit_systemconfiguration
