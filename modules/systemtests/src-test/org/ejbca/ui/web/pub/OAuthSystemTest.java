@@ -81,14 +81,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
  * Tests http requests with bearer token (oauth)
  */
-public class OauthSystemTest {
+public class OAuthSystemTest {
 
     private static final String OAUTH_SUB = "OauthSystemTestSub";
     private static final String CA = "OauthSystemTestCA";
@@ -316,6 +315,26 @@ public class OauthSystemTest {
         String response = getResponse(connection.getInputStream());
         assertTrue("Authentication should fail", response.contains("Authentication failed using OAuth Bearer Token"));
 
+    }
+
+    @Test
+    public void testServlet() throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
+        final HttpURLConnection connection = doGetRequest(url, token);
+        assertEquals("Response code was not 200", 200, connection.getResponseCode());
+        String response = getResponse(connection.getInputStream());
+        assertFalse("Response body should not be empty", response.isEmpty());
+    }
+
+    @Test
+    public void testServletWithExpiredToken() throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
+        final HttpURLConnection connection = doGetRequest(url, expiredToken);
+        assertEquals("Response code was not 200", 403, connection.getResponseCode());
+        String response = getResponse(connection.getErrorStream());
+        System.out.println(response);
+        assertEquals("Authentication should fail", "Forbidden", connection.getResponseMessage());
+        assertTrue("Authentication should fail", response.contains("Authorization Denied"));
     }
 
     private String getResponse(InputStream inputStream) throws IOException {
