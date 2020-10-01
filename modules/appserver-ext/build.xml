@@ -43,7 +43,7 @@
         <jar basedir="${appserver-ext.build-jbosslogsigning.dir}" jarfile="${mod.logsigning.lib}"/>
     </target>
 	
-    <target name="compile-jbosslogsigning" depends="with.clover">
+    <target name="compile-jbosslogsigning" depends="">
     	<mkdir dir="${appserver-ext.build-jbosslogsigning.dir}" />
         <javac srcdir="${appserver-ext.src.dir}" destdir="${appserver-ext.build-jbosslogsigning.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="compile-jbosslogsigning.classpath">
             <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender.java"/>
