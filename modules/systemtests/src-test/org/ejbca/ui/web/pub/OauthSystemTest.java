@@ -299,6 +299,25 @@ public class OauthSystemTest {
         ejbcaWSPort.getAvailableCAs();
     }
 
+    @Test
+    public void testJspPage() throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
+        final HttpURLConnection connection = doGetRequest(url, token);
+        assertEquals("Response code was not 200", 200, connection.getResponseCode());
+        String response = getResponse(connection.getInputStream());
+        assertTrue("Search End Entities page should be accessible", response.contains("<h1>Search End Entities</h1>"));
+    }
+
+    @Test
+    public void testJspPageWithExpiredToken() throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
+        final HttpURLConnection connection = doGetRequest(url, expiredToken);
+        assertEquals("Response code was not 200", 200, connection.getResponseCode());
+        String response = getResponse(connection.getInputStream());
+        assertTrue("Authentication should fail", response.contains("Authentication failed using OAuth Bearer Token"));
+
+    }
+
     private String getResponse(InputStream inputStream) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder sb = new StringBuilder();
