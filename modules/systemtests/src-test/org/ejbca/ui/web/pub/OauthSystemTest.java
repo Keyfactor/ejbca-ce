@@ -44,15 +44,26 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -65,6 +76,10 @@ import java.security.cert.CertificateParsingException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -134,6 +149,8 @@ public class OauthSystemTest {
     private static String token;
     private static String expiredToken;
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException, AuthorizationDeniedException, RoleExistsException, CertificateParsingException, OperatorCreationException, CryptoTokenOfflineException {
@@ -267,6 +284,21 @@ public class OauthSystemTest {
         assertTrue("Authentication should fail", response.contains("Authentication failed using OAuth Bearer Token"));
     }
 
+    @Test
+    public void testEjbcaWs() throws MalformedURLException, AuthorizationDeniedException_Exception, EjbcaException_Exception {
+        EjbcaWS ejbcaWSPort = getEjbcaWS(token);
+        List<NameAndId> availableCAs = ejbcaWSPort.getAvailableCAs();
+        assertEquals("Sould return empty list of CAs", 0, availableCAs.size());
+    }
+
+    @Test
+    public void testEjbcaWsWithExpiredToken() throws MalformedURLException, EjbcaException_Exception, AuthorizationDeniedException_Exception {
+        exceptionRule.expect(AuthorizationDeniedException_Exception.class);
+        exceptionRule.expectMessage("Authentication failed using OAuth Bearer Token");
+        EjbcaWS ejbcaWSPort = getEjbcaWS(expiredToken);
+        ejbcaWSPort.getAvailableCAs();
+    }
+
     private String getResponse(InputStream inputStream) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder sb = new StringBuilder();
@@ -285,6 +317,18 @@ public class OauthSystemTest {
         connection.connect();
         connection.disconnect();
         return connection;
+    }
+
+    private EjbcaWS getEjbcaWS(String token) throws MalformedURLException {
+        String url = "https://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca/ejbcaws/ejbcaws?wsdl";
+        QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+        EjbcaWSService service = new EjbcaWSService(new URL(url), qname);
+        EjbcaWS ejbcaWSPort = service.getEjbcaWSPort();
+        BindingProvider bindingProvider = (BindingProvider) ejbcaWSPort;
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Authorization", Collections.singletonList("Bearer " + token));
+        bindingProvider.getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, headers);
+        return ejbcaWSPort;
     }
 
 }
