@@ -74,7 +74,7 @@
 		</jar>
 	</target>
 	
-	<target name="compile-common-web" depends="with.clover">
+	<target name="compile-common-web" depends="">
 		<mkdir dir="${ejbca-common-web.build.dir}" />
 		<javac srcdir="${ejbca-common-web.src.dir}" destdir="${ejbca-common-web.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	 classpathref="compile-common-web.classpath"/>
@@ -114,7 +114,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-common-web.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -129,7 +128,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -141,7 +139,7 @@
 		</junit>
 	</target>
 	
-	<target name="compile-tests-web" depends="with.clover">
+	<target name="compile-tests-web" depends="">
 		<mkdir dir="${ejbca-common-web.build-test.dir}" />
 		<javac srcdir="${ejbca-common-web.src-test.dir}" destdir="${ejbca-common-web.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>

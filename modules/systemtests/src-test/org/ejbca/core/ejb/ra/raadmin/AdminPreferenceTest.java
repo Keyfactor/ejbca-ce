@@ -16,11 +16,14 @@ package org.ejbca.core.ejb.ra.raadmin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import java.util.Collections;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -36,8 +39,6 @@ import org.junit.Test;
 
 /**
  * Tests the admin preference entity bean.
- *
- * @version $Id$
  */
 public class AdminPreferenceTest extends CaTestCase {
     private static Logger log = Logger.getLogger(AdminPreferenceTest.class);
@@ -47,86 +48,98 @@ public class AdminPreferenceTest extends CaTestCase {
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    private TestX509CertificateAuthenticationToken authenticatedToken;
+    private TestX509CertificateAuthenticationToken authenticatedTokenCert;
+    private OAuth2AuthenticationToken authenticatedTokenOAuth;
 
     private AdminPreferenceSessionRemote adminPreferenceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
 
-    private String user;
+    private String adminFingerprint;
 
+    @Override
     public String getRoleName() {
         return "AdminPreferenceTest";
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        authenticatedToken = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+        authenticatedTokenCert = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
                 .authenticate(new AuthenticationSubject(null, null));
-        user = CertTools.getFingerprintAsString(authenticatedToken.getCertificate());
+        authenticatedTokenOAuth = new OAuth2AuthenticationToken(
+                new OAuth2Principal("Issuer", "Admin", Collections.emptyList()), "", ""); // using empty token for testing
+        adminFingerprint = CertTools.getFingerprintAsString(authenticatedTokenCert.getCertificate());
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
     /**
-     * tests adding an administrator preference
-     * 
-     * @throws Exception
-     *             error
+     * Tests adding an administrator preference, with the administrator using a client certificate token.
      */
     @Test
-    public void testAddAdminPreference() throws Exception {
-        log.trace(">test01AddAdminPreference()");
+    public void addAdminPreferenceCert() throws Exception {
+        log.trace(">addAdminPreferenceCert()");
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
-        assertTrue("Adminpref for " + user + " should not exist", ret);
-        ret = this.adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
-        assertFalse("Adminpref for " + user + " should exist", ret);
-        log.trace("<test01AddAdminPreference()");
+        boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenCert, pref);
+        assertTrue("Adminpref for " + adminFingerprint + " should not exist", ret);
+        ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenCert, pref);
+        assertFalse("Adminpref for " + adminFingerprint + " should exist", ret);
+        log.trace("<addAdminPreferenceCert()");
     }
 
     /**
-     * tests modifying an administrator preference
-     * 
-     * @throws Exception
-     *             error
+     * Tests adding an administrator preference, with the administrator using an OAuth token.
      */
     @Test
-    public void testModifyAdminPreference() throws Exception {
-        log.trace(">test02ModifyAdminPreference()");
+    public void addAdminPreferenceOAuth() throws Exception {
+        log.trace(">addAdminPreferenceOAuth()");
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
-        pref = this.adminPreferenceSession.getAdminPreference(user);
+        boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
+        assertTrue("Adminpref for " + adminFingerprint + " should not exist", ret);
+        ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
+        assertFalse("Adminpref for " + adminFingerprint + " should exist", ret);
+        log.trace("<addAdminPreferenceOAuth()");
+    }
+
+    /**
+     * Tests modifying an administrator preference
+     */
+    @Test
+    public void modifyAdminPreference() throws Exception {
+        log.trace(">modifyAdminPreference()");
+        AdminPreference pref = new AdminPreference();
+        pref.setPreferedLanguage(1);
+        pref.setTheme("TEST");
+        adminPreferenceSession.addAdminPreference(authenticatedTokenCert, pref);
+        pref = this.adminPreferenceSession.getAdminPreference(authenticatedTokenCert);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
-        boolean ret = this.adminPreferenceSession.changeAdminPreference(authenticatedToken, pref);
-        assertTrue("Adminpref for " + user + " should exist", ret);
-        pref = this.adminPreferenceSession.getAdminPreference(user);
+        boolean ret = this.adminPreferenceSession.changeAdminPreference(authenticatedTokenCert, pref);
+        assertTrue("Adminpref for " + adminFingerprint + " should exist", ret);
+        pref = this.adminPreferenceSession.getAdminPreference(authenticatedTokenCert);
         assertEquals(pref.getPreferedLanguage(), 2);
-        log.trace("<test02ModifyAdminPreference()");
+        log.trace("<modifyAdminPreference()");
+    }
+
+    @Test(expected = AuthorizationDeniedException.class)
+    public void saveDefaultAdminPreferenceAuthorization() throws AuthorizationDeniedException {
+        log.trace(">saveDefaultAdminPreferenceAuthorization()");
+        adminPreferenceSession.saveDefaultAdminPreference(authenticatedTokenCert, null);
+        log.trace("<saveDefaultAdminPreferenceAuthorization()");
     }
 
     @Test
-    public void testSaveDefaultAdminPreferenceAuthorization() {
-        boolean caught = false;
-        try {
-            adminPreferenceSession.saveDefaultAdminPreference(authenticatedToken, null);
-            fail("Authorization should have thrown exception");
-        } catch (AuthorizationDeniedException e) {
-            caught = true;
-        }
-        assertTrue("Authorization should have thrown exception", caught);
-    }
-
-    @Test
-    public void testSaveDefaultAdminPreference() throws AuthorizationDeniedException {
+    public void saveDefaultAdminPreference() throws AuthorizationDeniedException {
+        log.trace(">saveDefaultAdminPreference()");
         final AdminPreference defaultAdminPreference = adminPreferenceSession.getDefaultAdminPreference();
         try {
             int language = defaultAdminPreference.getPreferedLanguage() + 1;
@@ -137,7 +150,7 @@ public class AdminPreferenceTest extends CaTestCase {
         } finally {
             adminPreferenceSession.saveDefaultAdminPreference(internalToken, defaultAdminPreference);
         }
-
+        log.trace("<saveDefaultAdminPreference()");
     }
 
 }

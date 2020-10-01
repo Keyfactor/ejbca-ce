@@ -58,7 +58,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -114,8 +113,6 @@ import org.ejbca.util.HttpTools;
  * <p>
  * Do not add page specific code here, use a ManagedBean for that.
  * </p>
- *
- * @version $Id$
  */
 public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
@@ -276,6 +273,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
+                usercommonname = principal.getSubject();
             } else {
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
                 final Map<String, Object> details = new LinkedHashMap<>();
@@ -305,7 +303,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             throw e;
         }
         if (!initialized) {
-            currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(administrator);
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
@@ -444,14 +442,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public boolean existsAdminPreference() {
-        return adminPreferenceSession.existsAdminPreference(certificateFingerprint);
+        return adminPreferenceSession.existsAdminPreference(administrator);
     }
 
     @Override
     public void addAdminPreference(final AdminPreference adminPreference) throws AdminExistsException {
         currentAdminPreference = adminPreference;
-        if (administrator instanceof X509CertificateAuthenticationToken) {
-            if (!adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken)administrator, adminPreference)) {
+        if (!(administrator instanceof PublicAccessAuthenticationToken)) {
+            if (!adminPreferenceSession.addAdminPreference(administrator, adminPreference)) {
                 throw new AdminExistsException("Admin already exists in the database.");
             }
         } else {
@@ -464,8 +462,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void changeAdminPreference(final AdminPreference adminPreference) throws AdminDoesntExistException {
         currentAdminPreference = adminPreference;
-        if (administrator instanceof X509CertificateAuthenticationToken) {
-            if (!adminPreferenceSession.changeAdminPreference((X509CertificateAuthenticationToken)administrator, adminPreference)) {
+        if (!(administrator instanceof PublicAccessAuthenticationToken)) {
+            if (!adminPreferenceSession.changeAdminPreference(administrator, adminPreference)) {
                 throw new AdminDoesntExistException("Admin does not exist in the database.");
             }
         } else {
@@ -479,7 +477,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public AdminPreference getAdminPreference() {
         if (currentAdminPreference==null) {
-            currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(administrator);
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
@@ -488,13 +486,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     private void saveCurrentAdminPreference() throws AdminDoesntExistException, AdminExistsException {
-        if (administrator instanceof X509CertificateAuthenticationToken) {
+        if (!(administrator instanceof PublicAccessAuthenticationToken)) {
             if (existsAdminPreference()) {
-                if (!adminPreferenceSession.changeAdminPreferenceNoLog((X509CertificateAuthenticationToken)administrator, currentAdminPreference)) {
+                if (!adminPreferenceSession.changeAdminPreferenceNoLog(administrator, currentAdminPreference)) {
                     throw new AdminDoesntExistException("Admin does not exist in the database.");
                 }
             } else {
-                if (!adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken)administrator, currentAdminPreference)) {
+                if (!adminPreferenceSession.addAdminPreference(administrator, currentAdminPreference)) {
                     throw new AdminExistsException("Admin already exists in the database.");
                 }
             }
@@ -518,7 +516,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public void saveDefaultAdminPreference(final AdminPreference adminPreference) throws AuthorizationDeniedException {
         adminPreferenceSession.saveDefaultAdminPreference(administrator, adminPreference);
         // Reload preferences
-        currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
+        currentAdminPreference = adminPreferenceSession.getAdminPreference(administrator);
         if (currentAdminPreference == null) {
             currentAdminPreference = getDefaultAdminPreference();
         }

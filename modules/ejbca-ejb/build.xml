@@ -75,7 +75,6 @@
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
-		<pathelement path="${clover.jar}"/>
 	</path>
 
 	<condition property="exclude.ee-ejbbridge-implementation" value="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionBean.java" else="exclude.ee-ejbbridge-implementation.nonexistingvalue">
@@ -124,14 +123,14 @@
 		</jar>
 	</target>
 
-	<target name="compile-ejbca-ejb" depends="with.clover">
+	<target name="compile-ejbca-ejb" depends="">
 		<mkdir dir="${ejbca-ejb.build.dir}"/>
 		<javac srcdir="${ejbca-ejb.src.dir}" destdir="${ejbca-ejb.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
 	</target>
 
 	<!--depends="cesecore-ejb, ejbca-ejb"  -->
-	<target name="compile-tests" depends="with.clover">
+	<target name="compile-tests" depends="">
 		<mkdir dir="${ejbca-ejb.build-test.dir}" />
 		<javac srcdir="${ejbca-ejb.src-test.dir}" destdir="${ejbca-ejb.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
@@ -201,7 +200,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ejb.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -239,7 +237,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">

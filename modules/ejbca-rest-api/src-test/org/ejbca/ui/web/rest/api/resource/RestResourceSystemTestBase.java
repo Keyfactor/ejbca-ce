@@ -135,18 +135,23 @@ public class RestResourceSystemTestBase {
     //
     private static final String HTTPS_HOST = SystemTestsConfiguration.getRemoteHost(CONFIGURATION_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
     private static final String HTTPS_PORT = SystemTestsConfiguration.getRemotePortHttps(CONFIGURATION_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS));
-    private static final HttpClient HTTP_CLIENT;
-    private static ClientExecutor clientExecutor;
     //
     private static final String KEY_STORE_PASSWORD = "changeit";
     private static final String TRUSTED_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "truststore_" + new Date().getTime() + ".jks";
     private static final String CERTIFICATE_USER_NAME = "RestApiTestUser";
     private static final String CERTIFICATE_SUBJECT_DN = "CN=" + CERTIFICATE_USER_NAME;
+    private static final String CERTIFICATE_USER_NAME_NOADMIN = "RestApiTestUserNoAdmin";
+    private static final String CERTIFICATE_SUBJECT_DN_NOADMIN = "CN=" + CERTIFICATE_USER_NAME_NOADMIN;
     private static final String CERTIFICATE_PASSWORD = "RestApiTestUser123";
     private static final X509Certificate X_509_CERTIFICATE;
+    private static final X509Certificate X_509_CERTIFICATE_NOADMIN;
     private static final String LOGIN_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "restapitestuser_" + new Date().getTime() + ".jks";
+    private static final String LOGIN_STORE_PATH_NOADMIN = System.getProperty("java.io.tmpdir") + File.separator + "restapitestuser_noadmin_" + new Date().getTime() + ".jks";
     private static final String SUPER_ADMINISTRATOR_ROLE_NAME = "Super Administrator Role";
     private static final RoleMember ROLE_MEMBER;
+    private static final KeyStore ADMIN_KEYSTORE;
+    private static final KeyStore NOADMIN_KEYSTORE;
+    private static final KeyStore TRUST_KEYSTORE;
     private static AvailableProtocolsConfiguration protocolConfigBackup;
     
     protected static final AuthenticationToken INTERNAL_ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiTest"));
@@ -157,29 +162,26 @@ public class RestResourceSystemTestBase {
     protected static final int HTTP_STATUS_CODE_ACCEPTED = 202;
 
     static {
+        clearLoginCertificateSetup(); // Always make sure we start with a clean environment
         try {
             // Trusted CA setup: import CA that issued server certificate into trustedKeyStore (configurable with target.servercert.ca)
             final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(INTERNAL_ADMIN_TOKEN);
             final CAInfo clientCertCaInfo = CaTestUtils.getClientCertCaInfo(INTERNAL_ADMIN_TOKEN);
             final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
-            final KeyStore trustedKeyStore = initJksKeyStore(TRUSTED_STORE_PATH);
-            importDataIntoJksKeystore(TRUSTED_STORE_PATH, trustedKeyStore, serverCertCaInfo.getName().toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), null, null);
-            final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(trustedKeyStore);
+            TRUST_KEYSTORE = initJksKeyStore(TRUSTED_STORE_PATH);
+            importDataIntoJksKeystore(TRUSTED_STORE_PATH, TRUST_KEYSTORE, serverCertCaInfo.getName().toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), null, null);
             // Login Certificate setup:
             // - - Import trusted CA (configurable with target.clientcert.ca) into loginKeyStore
             // - Sign a certificate using this CA
             // - RestApiTestUser certificate and private key import into loginKeyStore
-            final KeyStore loginKeyStore = initJksKeyStore(LOGIN_STORE_PATH);
-            final EndEntityInformation endEntityInformation = createEndEntityInformation(clientCertCaInfo.getCAId());
-            final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+            // admin
+            ADMIN_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH);
+            final EndEntityInformation endEntityInformation = createEndEntityInformation(CERTIFICATE_USER_NAME, CERTIFICATE_SUBJECT_DN, clientCertCaInfo.getCAId());
+            final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, endEntityInformation, false);
-            final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+            SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
             final X509ResponseMessage x509ResponseMessage = (X509ResponseMessage) signSession.createCertificate(INTERNAL_ADMIN_TOKEN, simpleRequestMessage, X509ResponseMessage.class, endEntityInformation);
             X_509_CERTIFICATE = (X509Certificate) x509ResponseMessage.getCertificate();
-            importDataIntoJksKeystore(LOGIN_STORE_PATH, loginKeyStore, CERTIFICATE_USER_NAME.toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), keyPair, X_509_CERTIFICATE.getEncoded());
-            final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-            keyManagerFactory.init(loginKeyStore, KEY_STORE_PASSWORD.toCharArray());
             final Role role = roleSession.getRole(INTERNAL_ADMIN_TOKEN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
             ROLE_MEMBER = roleMemberSession.persist(INTERNAL_ADMIN_TOKEN,
                     new RoleMember(
@@ -192,15 +194,18 @@ public class RestResourceSystemTestBase {
                             CERTIFICATE_USER_NAME + " for REST API Tests"
                     )
             );
-            // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
-            final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-            HTTP_CLIENT = HttpClients.custom()
-                    .setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                    .build();
+            importDataIntoJksKeystore(LOGIN_STORE_PATH, ADMIN_KEYSTORE, CERTIFICATE_USER_NAME.toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), keyPair, X_509_CERTIFICATE.getEncoded());
+
+            // noadmin
+            NOADMIN_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH_NOADMIN);
+            final EndEntityInformation endEntityInformationNoAdmin = createEndEntityInformation(CERTIFICATE_USER_NAME_NOADMIN, CERTIFICATE_SUBJECT_DN_NOADMIN, clientCertCaInfo.getCAId());
+            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, endEntityInformationNoAdmin, false);
+            simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformationNoAdmin.getUsername(), endEntityInformationNoAdmin.getPassword());
+            final X509ResponseMessage x509ResponseMessageNoAdmin = (X509ResponseMessage) signSession.createCertificate(INTERNAL_ADMIN_TOKEN, simpleRequestMessage, X509ResponseMessage.class, endEntityInformationNoAdmin);
+            X_509_CERTIFICATE_NOADMIN = (X509Certificate) x509ResponseMessageNoAdmin.getCertificate();
+            importDataIntoJksKeystore(LOGIN_STORE_PATH_NOADMIN, NOADMIN_KEYSTORE, CERTIFICATE_USER_NAME_NOADMIN.toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), keyPair, X_509_CERTIFICATE_NOADMIN.getEncoded());
         } catch (AuthorizationDeniedException | CertificateException | NoSuchAlgorithmException | IOException |
-                KeyStoreException | UnrecoverableKeyException | KeyManagementException | InvalidAlgorithmParameterException |
+                KeyStoreException | InvalidAlgorithmParameterException |
                 CertificateSerialNumberException | EndEntityExistsException | CADoesntExistsException |
                 WaitingForApprovalException | EndEntityProfileValidationException | ApprovalException |
                 IllegalNameException | CustomFieldException | InvalidAlgorithmException | CustomCertificateSerialNumberException |
@@ -225,6 +230,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), true);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
@@ -234,6 +240,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
@@ -257,9 +264,9 @@ public class RestResourceSystemTestBase {
         if(loginStore.exists()) {
             loginStore.delete();
         }
-        // Close connections
-        if(clientExecutor != null) {
-            clientExecutor.close();
+        final File loginStoreNoAdmin = new File(LOGIN_STORE_PATH_NOADMIN);
+        if(loginStore.exists()) {
+            loginStore.delete();
         }
         restoreProtocolConfiguration();
     }
@@ -272,13 +279,47 @@ public class RestResourceSystemTestBase {
      * @param uriPath a part of URL to make request on.
      *
      * @return An instance of ClientRequest.
+     * @throws NoSuchAlgorithmException 
+     * @throws KeyStoreException 
+     * @throws UnrecoverableKeyException 
+     * @throws KeyManagementException 
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
-    ClientRequest newRequest(final String uriPath) {
-        clientExecutor = new ApacheHttpClient4Executor(HTTP_CLIENT);
+    ClientRequest newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
+        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(TRUST_KEYSTORE);
+        final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        keyManagerFactory.init(ADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
+        sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        HttpClient client = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                .build();
+
+        ClientExecutor clientExecutor = new ApacheHttpClient4Executor(client);
         return new ClientRequest(getBaseUrl() + uriPath, clientExecutor);
     }
+
+    ClientRequest newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
+        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(TRUST_KEYSTORE);
+        final KeyManagerFactory keyManagerFactoryNoAdmin = KeyManagerFactory.getInstance("SunX509");
+        keyManagerFactoryNoAdmin.init(NOADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
+        sslContext.init(keyManagerFactoryNoAdmin.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        HttpClient client = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                .build();
+        ClientExecutor clientExecutor = new ApacheHttpClient4Executor(client);
+        return new ClientRequest(getBaseUrl() + uriPath, clientExecutor);
+    }
+
+
 
     private static String getBaseUrl() {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
@@ -323,10 +364,10 @@ public class RestResourceSystemTestBase {
         return certificateFactory.generateCertificate(certificateInputStream);
     }
 
-    private static EndEntityInformation createEndEntityInformation(final int caId) {
+    private static EndEntityInformation createEndEntityInformation(final String username, final String subjectDN, final int caId) {
         final EndEntityInformation endEntityInformation = new EndEntityInformation(
-                CERTIFICATE_USER_NAME,
-                CERTIFICATE_SUBJECT_DN,
+                username,
+                subjectDN,
                 caId,
                 null,
                 null,
@@ -349,9 +390,20 @@ public class RestResourceSystemTestBase {
                 log.error("Cannot remove the user [" + CERTIFICATE_USER_NAME + "]", e);
             }
         }
-        // Remove the certificate if exists
+        if (endEntityManagementSession.existsUser(CERTIFICATE_USER_NAME_NOADMIN)) {
+            try {
+                endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, CERTIFICATE_USER_NAME_NOADMIN);
+            }
+            catch (AuthorizationDeniedException | NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
+                log.error("Cannot remove the user [" + CERTIFICATE_USER_NAME_NOADMIN + "]", e);
+            }
+        }
+        // Remove the certificates if exists
         if(X_509_CERTIFICATE != null) {
             internalCertificateStoreSession.removeCertificate(X_509_CERTIFICATE);
+        }
+        if(X_509_CERTIFICATE_NOADMIN != null) {
+            internalCertificateStoreSession.removeCertificate(X_509_CERTIFICATE_NOADMIN);
         }
         // Remove the membership
         if(ROLE_MEMBER != null) {
