@@ -55,6 +55,7 @@ import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -250,15 +251,20 @@ public class EjbcaWS implements IEjbcaWS {
 
     private void logAdminName(final AuthenticationToken admin, final IPatternLogger logger) {
         // Log certificate info
-        final X509Certificate cert = ((X509CertificateAuthenticationToken)admin).getCertificate();
-        logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
-        logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
-
-        // Log IP address
-        MessageContext msgCtx = wsContext.getMessageContext();
-        HttpServletRequest request = (HttpServletRequest)msgCtx.get(MessageContext.SERVLET_REQUEST);
-        logger.paramPut(TransactionTags.ADMIN_REMOTE_IP.toString(), request.getRemoteAddr());
-        logger.paramPut(TransactionTags.ADMIN_FORWARDED_IP.toString(), StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
+        if (admin instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) admin;
+            logger.paramPut(TransactionTags.TOKEN_NAME.toString(), token.getClaims().getName());
+            logger.paramPut(TransactionTags.TOKEN_ISSUER.toString(), token.getClaims().getIssuer());
+        } else {
+            final X509Certificate cert = ((X509CertificateAuthenticationToken) admin).getCertificate();
+            logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
+            logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
+        }
+            // Log IP address
+            MessageContext msgCtx = wsContext.getMessageContext();
+            HttpServletRequest request = (HttpServletRequest) msgCtx.get(MessageContext.SERVLET_REQUEST);
+            logger.paramPut(TransactionTags.ADMIN_REMOTE_IP.toString(), request.getRemoteAddr());
+            logger.paramPut(TransactionTags.ADMIN_FORWARDED_IP.toString(), StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
     }
 
     @Override
