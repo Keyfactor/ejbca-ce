@@ -22,12 +22,10 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.ui.DateValidator;
 import org.cesecore.util.ui.DynamicUiModel;
+import org.cesecore.util.ui.DynamicUiProperty;
 
-/**
- * @version $Id$
- *
- */
 public abstract class KeyValidatorBase extends ValidatorBase implements KeyValidator {
 
     /** Class logger. */
@@ -43,6 +41,7 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
      */
     public KeyValidatorBase() {
         super();
+        uiModel = new DynamicUiModel(data);
     }
     
     /**
@@ -68,6 +67,26 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
    
     @Override
     public void initDynamicUiModel() {
+        uiModel.add(new DynamicUiProperty<String>("settings"));
+        
+        final DynamicUiProperty<Integer> issuedBeforeCondition = new DynamicUiProperty<>(Integer.class, NOT_BEFORE_CONDITION, getNotBeforeCondition(), KeyValidatorDateConditions.index());
+        final DynamicUiProperty<String> notBefore = new DynamicUiProperty<String>(String.class, NOT_BEFORE, getNotBeforeAsString());
+        issuedBeforeCondition.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
+        issuedBeforeCondition.setLabels(KeyValidatorDateConditions.map());
+        issuedBeforeCondition.setRequired(true);
+        notBefore.setValidator(new DateValidator());
+        
+        final DynamicUiProperty<Integer> issuedAfterCondition = new DynamicUiProperty<>(Integer.class, NOT_AFTER_CONDITION, getNotAfterCondition(), KeyValidatorDateConditions.index());
+        final DynamicUiProperty<String> notAfter = new DynamicUiProperty<String>(String.class, NOT_AFTER, getNotAfterAsString());
+        issuedAfterCondition.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
+        issuedAfterCondition.setLabels(KeyValidatorDateConditions.map());
+        issuedAfterCondition.setRequired(true);
+        notAfter.setValidator(new DateValidator());
+
+        uiModel.add(issuedBeforeCondition);
+        uiModel.add(notBefore);
+        uiModel.add(issuedAfterCondition);
+        uiModel.add(notAfter);
     }
 
     @Override
@@ -82,7 +101,16 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
     
     @Override
     public Date getNotBefore() {
-        return (Date) data.get(NOT_BEFORE);
+        // Prior ECA-6320, dates were stored as serialized java.util.Date
+        if (data.get(NOT_BEFORE) instanceof Date) {
+            return (Date) data.get(NOT_BEFORE);
+        }
+        try {
+            return parseDate((String)data.get(NOT_BEFORE));
+        } catch (ParseException e) {
+            log.warn("Could not parse 'notBefore' date from database: '" + (String)data.get(NOT_BEFORE) + "'");
+            return null;
+        }
     }
 
     @Override
@@ -102,7 +130,16 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
 
     @Override
     public Date getNotAfter() {
-        return (Date) data.get(NOT_AFTER);
+        // Prior ECA-6320, dates were stored as serialized java.util.Date
+        if (data.get(NOT_AFTER) instanceof Date) {
+            return (Date) data.get(NOT_AFTER);
+        }
+        try {
+            return parseDate((String)data.get(NOT_AFTER));
+        } catch (ParseException e) {
+            log.warn("Could not parse 'notAfter' date from database: '" + (String)data.get(NOT_AFTER) + "'");
+            return null;
+        }
     }
 
     @Override
