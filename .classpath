@@ -186,7 +186,7 @@
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.4.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/snakeyaml-1.19.jar"/>
+	<classpathentry kind="lib" path="lib/snakeyaml-1.27.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-1.5.22.jar"/>
