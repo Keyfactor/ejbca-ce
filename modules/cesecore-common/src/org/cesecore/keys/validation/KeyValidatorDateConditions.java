@@ -15,13 +15,14 @@ package org.cesecore.keys.validation;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.util.IndexEnum;
 
 /**
  * This class contains a representation of mathematical conditions, i.e <, <=, >, >=.
- * @version $Id$
  */
 public enum KeyValidatorDateConditions implements IndexEnum {
     /**
@@ -95,6 +96,17 @@ public enum KeyValidatorDateConditions implements IndexEnum {
         return result;
     }
 
+    /**
+     * @return index-label map of all date conditions.
+     */
+    public static final Map<Integer,String> map() {
+        final Map<Integer,String> result = new LinkedHashMap<>();
+        for (KeyValidatorDateConditions index : values()) {
+            result.put(index.getIndex(), index.getLabel());
+        }
+        return result;
+    }
+    
     /**
      * Evaluates a date matches the given condition.
      * @param value the reference value.

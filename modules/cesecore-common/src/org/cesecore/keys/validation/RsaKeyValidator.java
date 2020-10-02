@@ -34,7 +34,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
-import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
@@ -44,7 +43,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
  * requirements. See: <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR section 6.1.6 (PDF)</a>
  *
- * @version $Id$
  */
 public class RsaKeyValidator extends KeyValidatorBase {
 
@@ -132,47 +130,6 @@ public class RsaKeyValidator extends KeyValidatorBase {
         // --- end BC code
         return false;
     }
-//    public static boolean isPowerOfPrime(BigInteger modulus) {
-//        BigInteger n = modulus;
-//        final Set<BigInteger> result = new TreeSet<BigInteger>();
-//        for (BigInteger i = BigInteger.valueOf(2); i.compareTo(n.divide(i).add(BigInteger.ONE)) == -1; i = i.add(BigInteger.ONE)) {
-//            while (n.mod(i).compareTo(BigInteger.ZERO) == 0) {
-//                if (result.contains(i)) { // is power of a prime.
-//                    return true;
-//                }
-//                result.add(i);
-//                n = n.divide(i);
-//            }
-//        }
-//        if (n.compareTo(BigInteger.ONE) == 1) {
-//            if (result.contains(n)) { // is power of a prime.
-//                return true;
-//            }
-//            result.add(n);
-//        }
-//        return false;
-//    }
-
-//  /**
-  //     * Checks if the given value is a prime.
-  //     * @param value the positive integer value.
-  //     * @return true if the value is a prime.
-  //     */
-  //    public static final boolean isPrime(BigInteger value) {
-  //        if (!value.isProbablePrime(5)) {
-  //            return false;
-  //        }
-  //        final BigInteger two = BigInteger.valueOf(2);
-  //        if (!two.equals(value) && BigInteger.ZERO.equals(value.mod(two))) {
-  //            return false;
-  //        }
-  //        for (BigInteger i = BigInteger.valueOf(3); i.multiply(i).compareTo(value) < 1; i = i.add(two)) {
-  //            if (value.mod(i).equals(BigInteger.ZERO)) {
-  //                return false;
-  //            }
-  //        }
-  //        return true;
-  //    }
 
     /**
      * Gets the smallest factor of the positive natural number greater than 2.
@@ -180,7 +137,6 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @return the smallest factor or 2 for n=0.
      */
     protected static final boolean hasSmallerFactorThan(BigInteger n, int intFactor) {
-        //        BigInteger factor = BigInteger.valueOf(intFactor);
         final BigInteger two = new BigInteger("2");
         if (intFactor < 3) {
             return false;
@@ -231,11 +187,9 @@ public class RsaKeyValidator extends KeyValidatorBase {
         }
     }
 
-    @Override
     @SuppressWarnings({ "serial", "unchecked" })
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModel(data);
-        uiModel.add(new DynamicUiProperty<String>("settings"));
+        super.initDynamicUiModel();
         final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
         settingsTemplate.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
         settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
@@ -340,17 +294,9 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @param keyValidator
      */
     private void setCertProfileSettings() {
-        setBitLengths(new ArrayList<String>());
         // We'll only reset the bit lengths, because this is what is passed on to the certificate profiles
         // The other settings must be set manually anyhow and should not be reset
-//        setPublicKeyExponentOnlyAllowOdd(false);
-//        setPublicKeyExponentMin(null);
-//        setPublicKeyExponentMax(null);
-//        setPublicKeyModulusOnlyAllowOdd(false);
-//        setPublicKeyModulusDontAllowPowerOfPrime(false);
-//        setPublicKeyModulusMinFactor(null);
-//        setPublicKeyModulusMin(null);
-//        setPublicKeyModulusMax(null);
+        setBitLengths(new ArrayList<String>());
     }
 
     /**
@@ -413,9 +359,8 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public BigInteger getPublicKeyExponentMin() {
         if (StringUtils.isNotBlank((String) data.get(PUBLIC_KEY_EXPONENT_MIN))) {
             return new BigInteger(((String) data.get(PUBLIC_KEY_EXPONENT_MIN)));
-        } else {
-            return null;
         }
+        return null;
     }
 
     public String getPublicKeyExponentMinAsString() {
@@ -456,9 +401,8 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public BigInteger getPublicKeyExponentMax() {
         if (StringUtils.isNotBlank((String) data.get(PUBLIC_KEY_EXPONENT_MAX))) {
             return new BigInteger(((String) data.get(PUBLIC_KEY_EXPONENT_MAX)));
-        } else {
-            return null;
         }
+        return null;
     }
 
     public String getPublicKeyExponentMaxAsString() {
@@ -544,9 +488,8 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public BigInteger getPublicKeyModulusMin() {
         if (StringUtils.isNotBlank((String) data.get(PUBLIC_KEY_MODULUS_MIN))) {
             return new BigInteger(((String) data.get(PUBLIC_KEY_MODULUS_MIN)));
-        } else {
-            return null;
         }
+        return null;
     }
 
     public String getPublicKeyModulusMinAsString() {
@@ -587,9 +530,8 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public BigInteger getPublicKeyModulusMax() {
         if (StringUtils.isNotBlank((String) data.get(PUBLIC_KEY_MODULUS_MAX))) {
             return new BigInteger((String) data.get(PUBLIC_KEY_MODULUS_MAX));
-        } else {
-            return null;
         }
+        return null;
     }
 
     public String getPublicKeyModulusMaxAsString() {
