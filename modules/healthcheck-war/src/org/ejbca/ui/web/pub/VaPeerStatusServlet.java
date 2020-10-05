@@ -23,6 +23,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -120,68 +121,78 @@ public class VaPeerStatusServlet extends HttpServlet {
 
     @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+        response.setContentType("application/json");
         if (isAuthorized(request)) {
-            final String jsonResponse = getRateLimitedResult();
-            response.setContentType("application/json");
-            try (final Writer responseToMonitoringSystem = response.getWriter()) {
-                responseToMonitoringSystem.write(jsonResponse);
+            try {
+                final AbstractMap.SimpleEntry<JSONObject, Integer> jsonAndResponseCode = createResponse(request.getParameter("name"));
+                try (final Writer responseToMonitoringSystem = response.getWriter()) {
+                    responseToMonitoringSystem.write(jsonAndResponseCode.getKey().toJSONString());
+                }
+                response.setStatus(jsonAndResponseCode.getValue());
+            } catch (final Throwable error) {
+                log.error("An unexpected error occurred when querying the VA status servlet.");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        errorResponseFrom(error.getMessage()));
             }
         } else {
             log.error("The IP " + request.getRemoteAddr() + " is not authorized.");
-            final JSONObject errorResponse = new JSONObject();
-            errorResponse.put("error", true);
-            errorResponse.put("message", "Requests from " + request.getRemoteAddr() + " are not authorized.");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorResponse.toJSONString());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    errorResponseFrom("Requests from " + request.getRemoteAddr() + " are not authorized."));
         }
+    }
+
+    private String errorResponseFrom(final String errorMessage) {
+        final JSONObject errorResponse = new JSONObject();
+        errorResponse.put("error", true);
+        errorResponse.put("message", errorMessage);
+        return errorResponse.toJSONString();
     }
     
     private boolean isAuthorized(final HttpServletRequest request) {
         return anyIpAuthorized || ArrayUtils.contains(authIps, request.getRemoteAddr());
     }
-    
-    private String getRateLimitedResult() {
-        final SameRequestRateLimiter<String>.Result result = rateLimiter.getResult();
-        if (result.isFirst()) {
-            try {
-                result.setValue(createResponse());
-            } catch (final Throwable error) {
-                result.setError(error);
-            }
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Re-using previous answer to conserve server load.");
-            }
-        }
-        return result.getValue();
-    }
 
-    private String createResponse() {
+    /**
+     * Create a JSON response and an HTTP status code.
+     *
+     * @param publisherName The name of a publisher the monitoring system is querying the status for, or null if
+     *                      the monitoring system is querying for all VAs.
+     * @return a JSON object and an HTTP status code to send back to the monitoring system.
+     */
+    private AbstractMap.SimpleEntry<JSONObject, Integer> createResponse(final String publisherName) {
         boolean atLeastOneVaInSync = false;
         final JSONArray outOfSync = new JSONArray();
         for (final AbstractMap.Entry<Integer, BasePublisher> entry : publisherSession.getAllPublishers().entrySet()) {
             final Integer publisherId = entry.getKey();
             final BasePublisher publisher = entry.getValue();
-            if (isPublishingToVa(publisher)) {
-                if (publisherHasItemInQueue(publisherId)) {
-                    final JSONObject vaOutOfSync = new JSONObject();
-                    vaOutOfSync.put("name", publisher.getName());
-                    outOfSync.add(vaOutOfSync);
-                } else {
-                    atLeastOneVaInSync = true;
-                }
+            if (!isPublishingToVa(publisher)) {
+                continue;
+            }
+            final boolean vaIsOutOfSync = publisherHasItemInQueue(publisherId);
+            if (!vaIsOutOfSync) {
+                atLeastOneVaInSync = true;
+                continue;
+            }
+            if (publisherName == null || StringUtils.equals(publisherName, publisher.getName())) {
+                final JSONObject vaOutOfSync = new JSONObject();
+                vaOutOfSync.put("name", publisher.getName());
+                outOfSync.add(vaOutOfSync);
             }
         }
         final JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("error", false);
-        if (atLeastOneVaInSync) {
-            jsonResponse.put("outOfSync", outOfSync);
+        jsonResponse.put("outOfSync", outOfSync);
+        // Send the response back together with a status code.
+        //     503 = Take VA(s) out of operation
+        //     200 = Do nothing
+        // If all VA nodes are out of sync, do not send a 503 response to the monitoring system
+        // to avoid a load balancer from taking all OCSP responders out of operation at the same
+        // time.
+        if (!outOfSync.isEmpty() && atLeastOneVaInSync) {
+            return new AbstractMap.SimpleEntry<>(jsonResponse, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         } else {
-            // If all VA nodes are out of sync, do not put any VAs in the response
-            // to avoid the load balancer taking all OCSP responders out of operation
-            // at the same time
-            jsonResponse.put("outOfSync", new JSONArray());
+            return new AbstractMap.SimpleEntry<>(jsonResponse, HttpServletResponse.SC_OK);
         }
-        return jsonResponse.toJSONString();
     }
 
     private boolean publisherHasItemInQueue(final int publisherId) {
