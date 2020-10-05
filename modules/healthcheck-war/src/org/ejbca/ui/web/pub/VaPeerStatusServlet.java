@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.pub;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -35,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 
 /**
@@ -120,6 +122,7 @@ public class VaPeerStatusServlet extends HttpServlet {
 
     @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+        final long startTime = System.currentTimeMillis();
         response.setContentType("application/json");
         if (isAuthorized(request)) {
             try {
@@ -141,6 +144,17 @@ public class VaPeerStatusServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                     errorResponseFrom("Requests from " + request.getRemoteAddr() + " are not authorized."));
         }
+        if (log.isDebugEnabled()) {
+            logBenchmark(request, response, System.currentTimeMillis() - startTime);
+        }
+    }
+
+    private void logBenchmark(final HttpServletRequest request,
+                              final HttpServletResponse response,
+                              final long processingTime) {
+        log.debug("Created response for " + request.getRemoteAddr() + " in " + processingTime + " ms.");
+        log.debug("The request was: " + request.getQueryString() + ".");
+        log.debug("The HTTP status code sent to the client was: " + response.getStatus());
     }
 
     private String errorResponseFrom(final String errorMessage) {
