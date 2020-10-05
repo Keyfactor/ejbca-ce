@@ -177,7 +177,7 @@ public class RestResourceSystemTestBase {
             // admin
             ADMIN_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH);
             final EndEntityInformation endEntityInformation = createEndEntityInformation(CERTIFICATE_USER_NAME, CERTIFICATE_SUBJECT_DN, clientCertCaInfo.getCAId());
-            final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, endEntityInformation, false);
             SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
             final X509ResponseMessage x509ResponseMessage = (X509ResponseMessage) signSession.createCertificate(INTERNAL_ADMIN_TOKEN, simpleRequestMessage, X509ResponseMessage.class, endEntityInformation);
@@ -199,6 +199,7 @@ public class RestResourceSystemTestBase {
             // noadmin
             NOADMIN_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH_NOADMIN);
             final EndEntityInformation endEntityInformationNoAdmin = createEndEntityInformation(CERTIFICATE_USER_NAME_NOADMIN, CERTIFICATE_SUBJECT_DN_NOADMIN, clientCertCaInfo.getCAId());
+            keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, endEntityInformationNoAdmin, false);
             simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformationNoAdmin.getUsername(), endEntityInformationNoAdmin.getPassword());
             final X509ResponseMessage x509ResponseMessageNoAdmin = (X509ResponseMessage) signSession.createCertificate(INTERNAL_ADMIN_TOKEN, simpleRequestMessage, X509ResponseMessage.class, endEntityInformationNoAdmin);
