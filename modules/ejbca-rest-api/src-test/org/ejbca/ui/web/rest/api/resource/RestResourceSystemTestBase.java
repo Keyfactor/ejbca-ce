@@ -265,10 +265,6 @@ public class RestResourceSystemTestBase {
         if(loginStore.exists()) {
             loginStore.delete();
         }
-        final File loginStoreNoAdmin = new File(LOGIN_STORE_PATH_NOADMIN);
-        if(loginStore.exists()) {
-            loginStore.delete();
-        }
         restoreProtocolConfiguration();
     }
 
