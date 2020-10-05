@@ -93,8 +93,8 @@ import java.util.AbstractMap;
  *     sync).</li>
  * </ul>
  */
-public class VaStatusServlet extends HttpServlet {
-    private static final Logger log = Logger.getLogger(VaStatusServlet.class);
+public class VaPeerStatusServlet extends HttpServlet {
+    private static final Logger log = Logger.getLogger(VaPeerStatusServlet.class);
     private static final long serialVersionUID = 1L;
     private static final SameRequestRateLimiter<String> rateLimiter = new SameRequestRateLimiter<>();
     private String[] authIps = null;
@@ -123,8 +123,8 @@ public class VaStatusServlet extends HttpServlet {
         if (isAuthorized(request)) {
             final String jsonResponse = getRateLimitedResult();
             response.setContentType("application/json");
-            try (final Writer responseToLoadBalancer = response.getWriter()) {
-                responseToLoadBalancer.write(jsonResponse);
+            try (final Writer responseToMonitoringSystem = response.getWriter()) {
+                responseToMonitoringSystem.write(jsonResponse);
             }
         } else {
             log.error("The IP " + request.getRemoteAddr() + " is not authorized.");
