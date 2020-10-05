@@ -253,8 +253,8 @@ public class EjbcaWS implements IEjbcaWS {
         // Log certificate info
         if (admin instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) admin;
-            logger.paramPut(TransactionTags.TOKEN_NAME.toString(), token.getClaims().getName());
-            logger.paramPut(TransactionTags.TOKEN_ISSUER.toString(), token.getClaims().getIssuer());
+            logger.paramPut(TransactionTags.OAUTH_NAME.toString(), token.getClaims().getName());
+            logger.paramPut(TransactionTags.OAUTH_ISSUER.toString(), token.getClaims().getIssuer());
         } else {
             final X509Certificate cert = ((X509CertificateAuthenticationToken) admin).getCertificate();
             logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
