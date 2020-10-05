@@ -81,7 +81,6 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
@@ -156,13 +155,13 @@ public class OAuthSystemTest {
     private static RoleMember roleMember;
     private static String token;
     private static String expiredToken;
-    private static SSLSocketFactory socketFactory;
+    private static SSLSocketFactory defaultSocketFactory;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @BeforeClass
-    public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException, AuthorizationDeniedException, RoleExistsException, CertificateParsingException, OperatorCreationException, CryptoTokenOfflineException {
+    public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException, AuthorizationDeniedException, RoleExistsException, CertificateException, OperatorCreationException, CryptoTokenOfflineException, KeyManagementException, KeyStoreException, IOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         // Public key
         byte[] pubKeyBytes = KeyTools.getBytesFromPEM(PUBLIC_KEY, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
@@ -201,6 +200,8 @@ public class OAuthSystemTest {
         token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\"}", privKey);
         final String timestamp = String.valueOf((System.currentTimeMillis() + -60 * 60 * 1000) / 1000); // 1 hour old
         expiredToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
+        defaultSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
+        HttpsURLConnection.setDefaultSSLSocketFactory(getSSLFactory());
     }
 
     @AfterClass
@@ -217,6 +218,7 @@ public class OAuthSystemTest {
             roleMemberSession.remove(authenticationToken, roleMember.getId());
             roleSession.deleteRoleIdempotent(authenticationToken, roleMember.getRoleId());
         }
+        HttpsURLConnection.setDefaultSSLSocketFactory(defaultSocketFactory);
     }
 
     private static String encodeToken(final String headerJson, final String payloadJson, final PrivateKey key) {
@@ -298,14 +300,14 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testEjbcaWs() throws IOException, AuthorizationDeniedException_Exception, EjbcaException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testEjbcaWs() throws IOException, AuthorizationDeniedException_Exception, EjbcaException_Exception {
         EjbcaWS ejbcaWSPort = getEjbcaWS(token);
         List<NameAndId> availableCAs = ejbcaWSPort.getAvailableCAs();
         assertEquals("Sould return empty list of CAs", 0, availableCAs.size());
     }
 
     @Test
-    public void testEjbcaWsWithExpiredToken() throws IOException, EjbcaException_Exception, AuthorizationDeniedException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testEjbcaWsWithExpiredToken() throws IOException, EjbcaException_Exception, AuthorizationDeniedException_Exception {
         exceptionRule.expect(AuthorizationDeniedException_Exception.class);
         exceptionRule.expectMessage("Authentication failed using OAuth Bearer Token");
         EjbcaWS ejbcaWSPort = getEjbcaWS(expiredToken);
@@ -360,9 +362,8 @@ public class OAuthSystemTest {
         return sb.toString();
     }
 
-    private HttpsURLConnection doGetRequest(URL url, String token) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    private HttpsURLConnection doGetRequest(URL url, String token) throws IOException {
         final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setSSLSocketFactory(getSSLFactory());
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + token);
         connection.getDoOutput();
@@ -371,7 +372,7 @@ public class OAuthSystemTest {
         return connection;
     }
 
-    private EjbcaWS getEjbcaWS(String token) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    private EjbcaWS getEjbcaWS(String token) throws IOException {
         String url = "https://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca/ejbcaws/ejbcaws?wsdl";
         QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
         EjbcaWSService service = new EjbcaWSService(new URL(url), qname);
@@ -380,7 +381,6 @@ public class OAuthSystemTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Authorization", Collections.singletonList("Bearer " + token));
         bindingProvider.getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, headers);
-        bindingProvider.getRequestContext().put("com.sun.xml.internal.ws.transport.https.client.SSLSocketFactory", getSSLFactory());
         return ejbcaWSPort;
     }
 
@@ -395,7 +395,6 @@ public class OAuthSystemTest {
         trustManagerFactory.init(trustKeyStore);
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
-        socketFactory = sslContext.getSocketFactory();
-        return socketFactory;
+        return sslContext.getSocketFactory();
     }
 }
