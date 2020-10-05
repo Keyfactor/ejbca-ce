@@ -766,7 +766,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         try (final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(bytes))) {
             lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(type, LinkedHashMap.class, HashMap.class, HashSet.class, DynamicUiPropertyCallback.class, 
                   AccessMatchType.class, UrlString.class, MultiLineString.class, String.class, Date.class,
-                  PositiveIntegerValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
+                  PositiveIntegerValidator.class, DateValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
                   Collections.emptyList().getClass().asSubclass(Serializable.class), 
                   Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
                   Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class),
