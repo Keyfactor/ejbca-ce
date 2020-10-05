@@ -31,9 +31,9 @@
     </servlet>
 
     <servlet>
-        <display-name>VAStatusServlet</display-name>
-        <servlet-name>VAStatusServlet</servlet-name>
-        <servlet-class>org.ejbca.ui.web.pub.VaStatusServlet</servlet-class>
+        <display-name>VaPeerStatusServlet</display-name>
+        <servlet-name>VaPeerStatusServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.pub.VaPeerStatusServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -42,7 +42,7 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>VAStatusServlet</servlet-name>
+        <servlet-name>VaPeerStatusServlet</servlet-name>
         <url-pattern>/vastatus</url-pattern>
     </servlet-mapping>
 
