@@ -30,14 +30,10 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
-import org.ejbca.ui.web.pub.VaPeerStatusServlet;
 import org.ejbca.util.URIUtil;
-
 
 /**
  * This is a  class containing global configuration parameters.
- *
- * @version $Id: GlobalConfiguration.java 35186 2020-06-03 12:24:16Z serkano $
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -120,7 +116,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     /**
      * The number of seconds an item can remain in a peer publisher queue
      * before the corresponding VA is considered out of sync with the CA.
-     * Used by the {@link VaPeerStatusServlet}.
+     * Used by the VA peer status servlet.
      *
      * The default value was chosen as 4 hours, half the time required by the
      * Baseline Requirements v1.7.2 section 4.9.10, for OCSP responses valid
@@ -577,7 +573,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     /**
      * <p>Get the VA status time constraint for this CA in seconds.
      *
-     * <p>The VA status time constraint is used by {@link VaPeerStatusServlet}
+     * <p>The VA status time constraint is used by the VA peer status servlet.
      * and defines the time an item can remain in the publisher queue before the corresponding
      * VA is considered out of sync.
      *
