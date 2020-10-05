@@ -97,7 +97,6 @@ import java.util.AbstractMap;
 public class VaPeerStatusServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(VaPeerStatusServlet.class);
     private static final long serialVersionUID = 1L;
-    private static final SameRequestRateLimiter<String> rateLimiter = new SameRequestRateLimiter<>();
     private String[] authIps = null;
     private boolean anyIpAuthorized = false;
     @EJB
@@ -130,7 +129,10 @@ public class VaPeerStatusServlet extends HttpServlet {
                 }
                 response.setStatus(jsonAndResponseCode.getValue());
             } catch (final Throwable error) {
-                log.error("An unexpected error occurred when querying the VA status servlet.");
+                log.error("An unexpected error occurred when querying the VA status servlet: " + error.getMessage());
+                if (log.isDebugEnabled()) {
+                    log.debug(error);
+                }
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                         errorResponseFrom(error.getMessage()));
             }
@@ -178,6 +180,14 @@ public class VaPeerStatusServlet extends HttpServlet {
                 vaOutOfSync.put("name", publisher.getName());
                 outOfSync.add(vaOutOfSync);
             }
+        }
+        // Sanity check, produce a log message on error level if the monitoring
+        // system is querying the status of a VA using a publisher which does
+        // not exist.
+        if (publisherName != null && !atLeastOneVaInSync && outOfSync.isEmpty()) {
+            log.error("The publisher with the name '" + publisherName + "' does not exist. I will return HTTP status " +
+                    "code 200 for this request, but this may not be accurate. Please update the configuration for " +
+                    "your monitoring system.");
         }
         final JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("error", false);
