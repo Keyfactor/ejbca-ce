@@ -243,7 +243,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testAdminWeb() throws IOException {
+    public void testAdminWeb() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -252,7 +252,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testAdminWebWithExpiredToken() throws IOException {
+    public void testAdminWebWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -261,7 +261,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testRaWeb() throws IOException {
+    public void testRaWeb() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/ra");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -270,7 +270,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testAdminRaWithExpiredToken() throws IOException {
+    public void testAdminRaWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/ra");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -279,7 +279,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testRestApiWeb() throws IOException {
+    public void testRestApiWeb() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/ejbca-rest-api/v1/ca");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -288,7 +288,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testAdminRestApiWithExpiredToken() throws IOException {
+    public void testAdminRestApiWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/ejbca-rest-api/v1/ca");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 403", 403, connection.getResponseCode());
@@ -313,7 +313,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testJspPage() throws IOException {
+    public void testJspPage() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -322,7 +322,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testJspPageWithExpiredToken() throws IOException {
+    public void testJspPageWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -332,7 +332,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testServlet() throws IOException {
+    public void testServlet() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -341,7 +341,7 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testServletWithExpiredToken() throws IOException {
+    public void testServletWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 403, connection.getResponseCode());
@@ -360,24 +360,14 @@ public class OAuthSystemTest {
         return sb.toString();
     }
 
-    private HttpURLConnection doGetRequest(URL url, String token) throws IOException {
-        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        setUpConnection(token, connection);
-        return connection;
-    }
-
-    private void setUpConnection(String token, HttpURLConnection connection) throws IOException {
+    private HttpsURLConnection doGetRequest(URL url, String token) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setSSLSocketFactory(getSSLFactory());
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + token);
         connection.getDoOutput();
         connection.connect();
         connection.disconnect();
-    }
-
-    private HttpsURLConnection doHttpsGetRequest(URL url, String token) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setSSLSocketFactory(getSSLFactory());
-        setUpConnection(token, connection);
         return connection;
     }
 
