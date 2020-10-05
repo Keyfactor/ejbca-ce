@@ -27,6 +27,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -55,6 +56,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.MessageContext;
@@ -63,15 +68,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -147,6 +156,7 @@ public class OAuthSystemTest {
     private static RoleMember roleMember;
     private static String token;
     private static String expiredToken;
+    private static SSLSocketFactory socketFactory;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -191,18 +201,22 @@ public class OAuthSystemTest {
         token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\"}", privKey);
         final String timestamp = String.valueOf((System.currentTimeMillis() + -60 * 60 * 1000) / 1000); // 1 hour old
         expiredToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
-
     }
-
 
     @AfterClass
     public static void afterClass() throws AuthorizationDeniedException {
-        CaTestUtils.removeCa(authenticationToken, adminca.getCAInfo());
+        if (adminca != null) {
+            CaTestUtils.removeCa(authenticationToken, adminca.getCAInfo());
+        }
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        globalConfiguration.removeOauthKey(oAuthKeyInfoInternalId);
-        globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
-        roleMemberSession.remove(authenticationToken, roleMember.getId());
-        roleSession.deleteRoleIdempotent(authenticationToken, roleMember.getRoleId());
+        if (globalConfiguration.getOauthKeys().get(oAuthKeyInfoInternalId) != null) {
+            globalConfiguration.removeOauthKey(oAuthKeyInfoInternalId);
+            globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
+        }
+        if (roleMember != null) {
+            roleMemberSession.remove(authenticationToken, roleMember.getId());
+            roleSession.deleteRoleIdempotent(authenticationToken, roleMember.getRoleId());
+        }
     }
 
     private static String encodeToken(final String headerJson, final String payloadJson, final PrivateKey key) {
@@ -284,14 +298,14 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testEjbcaWs() throws MalformedURLException, AuthorizationDeniedException_Exception, EjbcaException_Exception {
+    public void testEjbcaWs() throws IOException, AuthorizationDeniedException_Exception, EjbcaException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         EjbcaWS ejbcaWSPort = getEjbcaWS(token);
         List<NameAndId> availableCAs = ejbcaWSPort.getAvailableCAs();
         assertEquals("Sould return empty list of CAs", 0, availableCAs.size());
     }
 
     @Test
-    public void testEjbcaWsWithExpiredToken() throws MalformedURLException, EjbcaException_Exception, AuthorizationDeniedException_Exception {
+    public void testEjbcaWsWithExpiredToken() throws IOException, EjbcaException_Exception, AuthorizationDeniedException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         exceptionRule.expect(AuthorizationDeniedException_Exception.class);
         exceptionRule.expectMessage("Authentication failed using OAuth Bearer Token");
         EjbcaWS ejbcaWSPort = getEjbcaWS(expiredToken);
@@ -332,7 +346,6 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 403, connection.getResponseCode());
         String response = getResponse(connection.getErrorStream());
-        System.out.println(response);
         assertEquals("Authentication should fail", "Forbidden", connection.getResponseMessage());
         assertTrue("Authentication should fail", response.contains("Authorization Denied"));
     }
@@ -349,15 +362,30 @@ public class OAuthSystemTest {
 
     private HttpURLConnection doGetRequest(URL url, String token) throws IOException {
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        setUpConnection(token, connection);
+        return connection;
+    }
+
+    private void setUpConnection(String token, HttpURLConnection connection) throws IOException {
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + token);
+        connection.getDoOutput();
+        connection.connect();
+        connection.disconnect();
+    }
+
+    private HttpsURLConnection doHttpsGetRequest(URL url, String token) throws IOException {
+        final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization", "Bearer " + token);
+        connection.setSSLSocketFactory(socketFactory);
         connection.getDoOutput();
         connection.connect();
         connection.disconnect();
         return connection;
     }
 
-    private EjbcaWS getEjbcaWS(String token) throws MalformedURLException {
+    private EjbcaWS getEjbcaWS(String token) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String url = "https://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca/ejbcaws/ejbcaws?wsdl";
         QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
         EjbcaWSService service = new EjbcaWSService(new URL(url), qname);
@@ -366,7 +394,22 @@ public class OAuthSystemTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Authorization", Collections.singletonList("Bearer " + token));
         bindingProvider.getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, headers);
+        bindingProvider.getRequestContext().put("com.sun.xml.internal.ws.transport.https.client.SSLSocketFactory", getSSLFactory());
         return ejbcaWSPort;
     }
 
+    private static SSLSocketFactory getSSLFactory() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, KeyManagementException {
+        final CAInfo serverCaInfo = CaTestUtils.getServerCertCaInfo(authenticationToken);
+        final List<Certificate> chain = serverCaInfo.getCertificateChain();
+        Certificate serverCertificate = chain.get(0);
+        final KeyStore trustKeyStore = KeyStore.getInstance("JKS");
+        trustKeyStore.load(null);
+        trustKeyStore.setCertificateEntry("caCert", serverCertificate);
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(trustKeyStore);
+        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+        socketFactory = sslContext.getSocketFactory();
+        return socketFactory;
+    }
 }
