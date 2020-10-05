@@ -2185,7 +2185,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     @Override
     public void upgrade() {
-        final Float previousVersion = getVersion();
+        final float previousVersion = getVersion();
         super.upgrade();
         if (Float.compare(LATEST_VERSION, previousVersion) != 0) {
             // New version of the class, upgrade
