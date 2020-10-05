@@ -374,14 +374,10 @@ public class OAuthSystemTest {
         connection.disconnect();
     }
 
-    private HttpsURLConnection doHttpsGetRequest(URL url, String token) throws IOException {
+    private HttpsURLConnection doHttpsGetRequest(URL url, String token) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", "Bearer " + token);
-        connection.setSSLSocketFactory(socketFactory);
-        connection.getDoOutput();
-        connection.connect();
-        connection.disconnect();
+        connection.setSSLSocketFactory(getSSLFactory());
+        setUpConnection(token, connection);
         return connection;
     }
 
