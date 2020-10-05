@@ -41,7 +41,6 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
      */
     public KeyValidatorBase() {
         super();
-        uiModel = new DynamicUiModel(data);
     }
     
     /**
@@ -67,6 +66,7 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
    
     @Override
     public void initDynamicUiModel() {
+        uiModel = new DynamicUiModel(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
         
         final DynamicUiProperty<Integer> issuedBeforeCondition = new DynamicUiProperty<>(Integer.class, NOT_BEFORE_CONDITION, getNotBeforeCondition(), KeyValidatorDateConditions.index());
