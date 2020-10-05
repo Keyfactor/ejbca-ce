@@ -116,7 +116,18 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
 
     // Default values for healthcheck
-    private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 60;
+    /**
+     * The number of seconds an item can remain in a peer publisher queue
+     * before the corresponding VA is considered out of sync with the CA.
+     * Used by the {@link org.ejbca.ui.web.pub.VaStatusServlet}.
+     *
+     * The default value was chosen as 4 hours, half the time required by the
+     * Baseline Requirements v1.7.2 section 4.9.10, for OCSP responses valid
+     * for less than 16 hours. This gives the CA administrator ample time
+     * to manually correct a problem with the publisher (4 hours) while
+     * remaining compliant with the BRs.
+     */
+    private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 14400;
 
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
@@ -562,6 +573,19 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         }
     }
 
+    /**
+     * <p>Get the VA status time constraint for this CA in seconds.
+     *
+     * <p>The VA status time constraint is used by {@link org.ejbca.ui.web.pub.VaStatusServlet}
+     * and defines the time an item can remain in the publisher queue before the corresponding
+     * VA is considered out of sync.
+     *
+     * <p>If no value has been specified by the CA administrator, the default value
+     * {@value DEFAULT_VA_STATUS_TIME_CONSTRAINT} is returned.
+     *
+     * @return the VA status time constraint in seconds.
+     * @since EJBCA 7.4.3
+     */
     public int getVaStatusTimeConstraint() {
          final Integer vaStatusTimeConstraint = (Integer) data.get(VA_STATUS_TIME_CONSTRAINT_KEY);
          if (vaStatusTimeConstraint == null) {
